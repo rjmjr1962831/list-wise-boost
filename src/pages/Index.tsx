@@ -27,15 +27,15 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20 md:py-32 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            <Zap className="h-4 w-4" />
-            AI-Optimized Business Listings
+            <TrendingUp className="h-4 w-4" />
+            Future-Proof Your Marketing
           </div>
           <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-            Get Found by AI Search Engines
+            SEO is Dead. <span className="text-primary">GEO</span> is the Future.
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Be visible when customers use ChatGPT, Perplexity, and other AI tools to find local services. 
-            Top10Lists.us ensures your business appears in AI-generated recommendations.
+            Your customers aren't clicking links anymore—they're asking ChatGPT, Perplexity, and Claude. 
+            While traditional SEO traffic drops 25% annually, GEO gets you directly into AI-generated answers.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-lg px-8">
@@ -48,17 +48,54 @@ const Index = () => {
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground pt-8">
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
-              <span>No Long-Term Contract</span>
+              <span>GEO Optimized</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
-              <span>LLM Optimized</span>
+              <span>No Contract</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
-              <span>Updated Monthly</span>
+              <span>Live in 48 Hours</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* The Problem */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">The Truth About Traditional Marketing</h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            Businesses like yours have seen a <span className="text-primary font-bold">25% drop in organic traffic and bookings</span> over the past year. 
+            And it's accelerating.
+          </p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <Card className="border-destructive/50">
+            <CardContent className="pt-6 space-y-4">
+              <h3 className="text-xl font-bold text-destructive">❌ The Old Way (SEO/SEM)</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li>• Users click through 10 blue links</li>
+                <li>• Compete for Google rankings</li>
+                <li>• Pay-per-click ads burning budget</li>
+                <li>• Traffic declining 25% year-over-year</li>
+                <li>• Zero visibility in AI answers</li>
+              </ul>
+            </CardContent>
+          </Card>
+          <Card className="border-primary">
+            <CardContent className="pt-6 space-y-4">
+              <h3 className="text-xl font-bold text-primary">✓ The New Way (GEO)</h3>
+              <ul className="space-y-2 text-muted-foreground">
+                <li>• AI gives direct recommendations</li>
+                <li>• You're the answer, not a link</li>
+                <li>• Higher-intent customers</li>
+                <li>• Growing audience daily</li>
+                <li>• Future-proof positioning</li>
+              </ul>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -66,9 +103,9 @@ const Index = () => {
       <section id="how-it-works" className="bg-card py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">How GEO Works</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Simple, transparent process to get your business listed and visible to AI search
+              Get visible in AI-generated recommendations where your customers are actually searching
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -88,9 +125,9 @@ const Index = () => {
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                   <span className="text-2xl font-bold text-primary">2</span>
                 </div>
-                <h3 className="text-xl font-bold">Get Listed</h3>
+                <h3 className="text-xl font-bold">GEO Optimization</h3>
                 <p className="text-muted-foreground">
-                  We optimize and publish your listing within 48 hours on our AI-friendly platform
+                  We structure your data for AI engines and publish within 48 hours
                 </p>
               </CardContent>
             </Card>
@@ -99,9 +136,9 @@ const Index = () => {
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
                   <span className="text-2xl font-bold text-primary">3</span>
                 </div>
-                <h3 className="text-xl font-bold">Get Discovered</h3>
+                <h3 className="text-xl font-bold">Get Recommended</h3>
                 <p className="text-muted-foreground">
-                  Your business appears when potential customers search via AI tools like ChatGPT
+                  Appear in AI-generated answers when customers ask for your services
                 </p>
               </CardContent>
             </Card>
@@ -161,12 +198,12 @@ const Index = () => {
               </div>
               <ul className="space-y-4">
                 {[
-                  "Premium listing on Top10Lists.us",
-                  "Optimized for AI search engines",
+                  "GEO-optimized listing on Top10Lists.us",
+                  "Visible in ChatGPT, Perplexity, Claude",
                   "Monthly data updates & verification",
-                  "Structured data markup",
+                  "AI-friendly structured data",
                   "Performance analytics dashboard",
-                  "Priority customer support",
+                  "Priority support",
                 ].map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -191,11 +228,11 @@ const Index = () => {
           <CardContent className="py-16 text-center space-y-6">
             <Search className="h-16 w-16 mx-auto opacity-90" />
             <h2 className="text-3xl md:text-4xl font-bold">
-              Ready to Be Found?
+              Don't Get Left Behind
             </h2>
             <p className="text-lg opacity-90 max-w-2xl mx-auto">
-              Join hundreds of businesses already getting discovered through AI search. 
-              Get your listing live in 48 hours.
+              While your competitors watch their SEO traffic decline, position yourself in the AI-powered future. 
+              Get listed in 48 hours and start appearing in AI recommendations today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" variant="secondary" className="text-lg px-8">
@@ -221,7 +258,7 @@ const Index = () => {
                 <span className="text-xl font-bold">Top10Lists.us</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                AI-optimized business listings that get you found by tomorrow's search engines.
+                GEO-optimized business listings for the AI search era. Future-proof your marketing today.
               </p>
             </div>
             <div>
