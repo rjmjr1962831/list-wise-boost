@@ -62,6 +62,50 @@ const Index = () => {
         </div>
       </section>
 
+      {/* What is GEO */}
+      <section className="bg-card py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-6">What is GEO?</h2>
+            </div>
+            <Card className="border-2 border-primary/20">
+              <CardContent className="pt-8 space-y-6">
+                <p className="text-lg leading-relaxed">
+                  <span className="font-bold text-primary">GEO (Generative Engine Optimization)</span> is the practice of optimizing your business presence for AI-powered search engines like ChatGPT, Perplexity, Claude, and Google's AI Overviews.
+                </p>
+                <p className="text-lg leading-relaxed text-muted-foreground">
+                  Unlike traditional SEO that fights for position #1 on a search results page, GEO ensures your business is the answer—directly recommended by AI when users ask for services like yours. No more competing for clicks. You become the recommendation.
+                </p>
+                <div className="grid md:grid-cols-3 gap-6 pt-6">
+                  <div className="space-y-2">
+                    <Zap className="h-8 w-8 text-primary mb-3" />
+                    <h3 className="font-bold">Structured Data</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Information formatted specifically for AI engines to understand and cite
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Search className="h-8 w-8 text-primary mb-3" />
+                    <h3 className="font-bold">Direct Answers</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Your business appears in conversational AI responses, not just link lists
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <TrendingUp className="h-8 w-8 text-primary mb-3" />
+                    <h3 className="font-bold">Future-Proof</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Positioned for the next decade of search behavior
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* The Problem */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
