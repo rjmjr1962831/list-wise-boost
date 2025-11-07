@@ -61,15 +61,44 @@ const Index = () => {
         </div>
       </section>
 
+      {/* What Is Top10Lists.us */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <h2 className="text-3xl md:text-4xl font-bold">What Is Top10Lists.us?</h2>
+          <p className="text-xl text-muted-foreground leading-relaxed">
+            Top10Lists.us is a <span className="font-semibold text-foreground">curated directory of the top 10 service providers</span> in every major U.S. city—starting with high-trust professions like:
+          </p>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto pt-4">
+            {[
+              "Realtors",
+              "Lawyers",
+              "Accountants",
+              "Dentists",
+              "Contractors",
+              "Therapists"
+            ].map((profession, index) => (
+              <div key={index} className="px-6 py-4 bg-primary/5 rounded-lg border border-primary/20">
+                <span className="font-semibold text-foreground">{profession}</span>
+              </div>
+            ))}
+          </div>
+          <div className="pt-4">
+            <p className="text-lg text-muted-foreground">
+              Each list is housed at a clean, location-specific URL like:
+            </p>
+            <div className="mt-3 inline-block px-6 py-3 bg-card rounded-lg border-2 border-primary/30">
+              <code className="text-primary font-mono font-semibold">top10lists.us/az/gilbert/realtors</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Why You Should Be on the List */}
       <section className="bg-card py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">Why You Should Be on the List</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Each list is housed at a clean, location-specific URL like <span className="font-mono text-primary">top10lists.us/az/gilbert/realtors</span>
-              </p>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="border-2">
