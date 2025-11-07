@@ -4,6 +4,16 @@ import { Badge } from "@/components/ui/badge";
 import { Star, MapPin, Phone, Globe, Award, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import sarahMitchellImg from "@/assets/dentists/sarah-mitchell.jpg";
+import michaelChenImg from "@/assets/dentists/michael-chen.jpg";
+import jenniferRodriguezImg from "@/assets/dentists/jennifer-rodriguez.jpg";
+import jamesThompsonImg from "@/assets/dentists/james-thompson.jpg";
+import amandaLeeImg from "@/assets/dentists/amanda-lee.jpg";
+import robertMartinezImg from "@/assets/dentists/robert-martinez.jpg";
+import emilyFosterImg from "@/assets/dentists/emily-foster.jpg";
+import davidParkImg from "@/assets/dentists/david-park.jpg";
+import lisaWangImg from "@/assets/dentists/lisa-wang.jpg";
+import christopherHayesImg from "@/assets/dentists/christopher-hayes.jpg";
 
 const dentists = [
   {
@@ -17,7 +27,8 @@ const dentists = [
     phone: "(480) 555-0101",
     website: "gilbertsmiilestudio.com",
     description: "Award-winning cosmetic dentist with over 15 years of experience. Known for painless procedures and beautiful smile transformations.",
-    verified: true
+    verified: true,
+    image: sarahMitchellImg
   },
   {
     rank: 2,
@@ -30,7 +41,8 @@ const dentists = [
     phone: "(480) 555-0102",
     website: "desertridgedental.com",
     description: "Comprehensive family dental care with same-day emergency appointments. Gentle approach perfect for anxious patients.",
-    verified: true
+    verified: true,
+    image: michaelChenImg
   },
   {
     rank: 3,
@@ -43,7 +55,8 @@ const dentists = [
     phone: "(480) 555-0103",
     website: "lifetimedentalaz.com",
     description: "Specialized in pediatric care with a kid-friendly environment. Building healthy smiles for the whole family.",
-    verified: true
+    verified: true,
+    image: jenniferRodriguezImg
   },
   {
     rank: 4,
@@ -56,7 +69,8 @@ const dentists = [
     phone: "(480) 555-0104",
     website: "advanceddentalarts.com",
     description: "Specializing in complex restorative procedures and dental implants. State-of-the-art technology and expert care.",
-    verified: true
+    verified: true,
+    image: jamesThompsonImg
   },
   {
     rank: 5,
@@ -69,7 +83,8 @@ const dentists = [
     phone: "(480) 555-0105",
     website: "brightfuturedentistry.com",
     description: "Creating confident smiles through advanced cosmetic dentistry. Featured in Arizona Health Magazine 2024.",
-    verified: true
+    verified: true,
+    image: amandaLeeImg
   },
   {
     rank: 6,
@@ -82,7 +97,8 @@ const dentists = [
     phone: "(480) 555-0106",
     website: "gilbertfamilydental.com",
     description: "Three generations of dental excellence. Personalized care in a comfortable, welcoming environment.",
-    verified: true
+    verified: true,
+    image: robertMartinezImg
   },
   {
     rank: 7,
@@ -95,7 +111,8 @@ const dentists = [
     phone: "(480) 555-0107",
     website: "precisiondentalaz.com",
     description: "Utilizing cutting-edge digital technology for precise, efficient care. Same-day crowns and minimally invasive treatments.",
-    verified: true
+    verified: true,
+    image: emilyFosterImg
   },
   {
     rank: 8,
@@ -108,7 +125,8 @@ const dentists = [
     phone: "(480) 555-0108",
     website: "heritagedentalstudio.com",
     description: "Compassionate care for patients with dental anxiety. Full sedation options and gentle techniques.",
-    verified: true
+    verified: true,
+    image: davidParkImg
   },
   {
     rank: 9,
@@ -121,7 +139,8 @@ const dentists = [
     phone: "(480) 555-0109",
     website: "modernsmilesgilbert.com",
     description: "Holistic approach to dental health with biocompatible materials. Whole-body wellness through oral care.",
-    verified: true
+    verified: true,
+    image: lisaWangImg
   },
   {
     rank: 10,
@@ -134,7 +153,8 @@ const dentists = [
     phone: "(480) 555-0110",
     website: "elitedentalpartners.com",
     description: "Specialized periodontal care and advanced gum disease treatment. Saving smiles through expert surgical care.",
-    verified: true
+    verified: true,
+    image: christopherHayesImg
   }
 ];
 
@@ -261,8 +281,13 @@ const SampleDentistList = () => {
             <Card key={dentist.rank} className="border-2 hover:shadow-lg transition-shadow">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
-                  {/* Rank Badge */}
-                  <div className="flex-shrink-0">
+                  {/* Photo and Rank */}
+                  <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
+                    <img 
+                      src={dentist.image} 
+                      alt={dentist.name}
+                      className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
+                    />
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary">
                       <span className="text-2xl font-bold text-primary">#{dentist.rank}</span>
                     </div>
