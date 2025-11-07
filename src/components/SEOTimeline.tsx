@@ -165,12 +165,12 @@ export const SEOTimeline = memo(() => {
                     {expandedIndex === index ? (
                       <>
                         <ChevronUp className="w-4 h-4" />
-                        Hide Top SEO Strategies
+                        Hide Top SEO Strategies of the era
                       </>
                     ) : (
                       <>
                         <ChevronDown className="w-4 h-4" />
-                        Show Top SEO Strategies
+                        Show Top SEO Strategies of the era
                       </>
                     )}
                   </button>
