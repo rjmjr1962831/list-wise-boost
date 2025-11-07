@@ -34,7 +34,7 @@ const eras: TimelineEra[] = [
     emoji: "🏭",
     years: "2005–2010",
     title: "The Industrial Revolution",
-    description: "Nofollow links • Bing launches • Focus on quality",
+    description: "Nofollow links • Bing launches • Focus on quality • Google is undisputed in the category. Continues to change to fight 'gamers.'",
     color: "bg-blue-100 border-blue-300"
   },
   {
