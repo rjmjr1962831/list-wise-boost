@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Search, TrendingUp, Zap } from "lucide-react";
+import { SEOTimeline } from "@/components/SEOTimeline";
 
 const Index = () => {
   return (
@@ -72,140 +73,7 @@ const Index = () => {
               </p>
             </div>
 
-            <div className="space-y-8">
-              {/* 1990-1995: The Stone Age */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-2xl">🪨</span>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold">1990–1995: The Stone Age of SEO</h3>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">1991:</span> First website launched by Tim Berners-Lee.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">1994–1995:</span> Yahoo, Lycos, AltaVista, and Excite emerge; SEO begins with manual directory submissions and keyword stuffing.
-                  </p>
-                </div>
-              </div>
-
-              {/* 1995-2000: The Wild West */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-2xl">🤠</span>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold">1995–2000: The Wild West</h3>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">1996:</span> Google's precursor "Backrub" is created, introducing backlink-based ranking.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">1997:</span> The term "Search Engine Optimization" is coined.
-                  </p>
-                  <p className="text-muted-foreground">
-                    SEO tactics include hidden text, meta tag stuffing, and doorway pages.
-                  </p>
-                </div>
-              </div>
-
-              {/* 2000-2005: The Gold Rush */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-2xl">💰</span>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold">2000–2005: The Gold Rush</h3>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2000:</span> Google AdWords launches, blending paid and organic strategies.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2003:</span> Google's Florida Update penalizes spammy tactics—first major algorithm purge.
-                  </p>
-                  <p className="text-muted-foreground">
-                    SEO becomes more professionalized; agencies emerge.
-                  </p>
-                </div>
-              </div>
-
-              {/* 2005-2010: The Industrial Revolution */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-2xl">🏭</span>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold">2005–2010: The Industrial Revolution</h3>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2005:</span> Introduction of "nofollow" links to combat comment spam.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2009:</span> Bing launches; Google introduces real-time search.
-                  </p>
-                  <p className="text-muted-foreground">
-                    SEO shifts toward content quality and user experience.
-                  </p>
-                </div>
-              </div>
-
-              {/* 2010-2015: The Dark Ages */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-2xl">🌑</span>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold">2010–2015: The Dark Ages (Google's Great Purge)</h3>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2011:</span> Panda Update targets thin content.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2012:</span> Penguin Update penalizes link schemes.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2013:</span> Hummingbird Update introduces semantic search and natural language processing.
-                  </p>
-                  <p className="text-muted-foreground">
-                    SEO becomes less about tricks, more about relevance and authority.
-                  </p>
-                </div>
-              </div>
-
-              {/* 2015-2020: The Renaissance */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-2xl">🎨</span>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold">2015–2020: The Renaissance</h3>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2015:</span> RankBrain (Google's AI) begins influencing search results.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2018:</span> Mobile-first indexing rolls out.
-                  </p>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2019:</span> BERT Update improves understanding of search intent.
-                  </p>
-                  <p className="text-muted-foreground">
-                    SEO integrates UX, mobile optimization, and structured data.
-                  </p>
-                </div>
-              </div>
-
-              {/* 2020-2025: The AI Revolution */}
-              <div className="flex gap-6 items-start">
-                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-2xl">🤖</span>
-                </div>
-                <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold text-primary">2020–2025: The AI Revolution</h3>
-                  <p className="text-muted-foreground">
-                    <span className="font-semibold text-foreground">2023–2025:</span> Generative AI tools like ChatGPT, Perplexity, and Google SGE reshape how users interact with search.
-                  </p>
-                  <p className="text-muted-foreground">
-                    GEO (Generative Engine Optimization) emerges as a new discipline.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <SEOTimeline />
 
             {/* The Shift */}
             <div className="bg-primary/5 rounded-lg p-8 border-2 border-primary/20 space-y-4">
