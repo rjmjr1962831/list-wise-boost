@@ -79,7 +79,7 @@ const Index = () => {
                   <span className="text-2xl">🕰️</span>
                 </div>
                 <div className="space-y-2 flex-1">
-                  <h3 className="text-xl font-bold">Early 2000s: The Wild West</h3>
+                  <h3 className="text-xl font-bold">Late 90's: The Wild West</h3>
                   <p className="text-muted-foreground">
                     Remember when you could hide "Pamela Anderson" in white text on any website and rocket to #1 on Yahoo!? 
                     Search engines were primitive. They counted keywords, not context. It was easy to game—and everyone did.
