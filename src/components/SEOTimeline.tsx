@@ -13,7 +13,7 @@ const eras: TimelineEra[] = [
     emoji: "🪨",
     years: "1990–1995",
     title: "The Stone Age",
-    description: "First websites • Yahoo & AltaVista launch • Manual submissions",
+    description: "First websites • Yahoo & AltaVista launch • Manual submissions • Pamela Anderson is the most searched term",
     color: "bg-gray-100 border-gray-300"
   },
   {
