@@ -40,8 +40,8 @@ const Index = () => {
             <Button size="lg" className="text-lg px-8">
               Claim Your Spot
             </Button>
-            <Button size="lg" variant="outline" className="text-lg px-8">
-              View Sample List
+            <Button size="lg" variant="outline" className="text-lg px-8" asChild>
+              <a href="/az/gilbert/dentists">View Sample List</a>
             </Button>
           </div>
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground pt-8">
@@ -423,8 +423,8 @@ const Index = () => {
               <Button size="lg" variant="secondary" className="text-lg px-8">
                 Apply Now
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary">
-                View Sample Lists
+              <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
+                <a href="/az/gilbert/dentists">View Sample Lists</a>
               </Button>
             </div>
           </CardContent>
