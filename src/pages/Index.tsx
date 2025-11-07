@@ -61,6 +61,96 @@ const Index = () => {
         </div>
       </section>
 
+      {/* SEO Evolution Story */}
+      <section className="bg-card py-20 border-y">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto space-y-12">
+            <div className="text-center space-y-4">
+              <h2 className="text-3xl md:text-4xl font-bold">The Game Has Changed</h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                If you've invested in SEO, you know the rules keep changing. Here's how we got here—and why traditional SEO is losing ground.
+              </p>
+            </div>
+
+            <div className="space-y-8">
+              {/* Stage 1 */}
+              <div className="flex gap-6 items-start">
+                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <span className="text-2xl">🕰️</span>
+                </div>
+                <div className="space-y-2 flex-1">
+                  <h3 className="text-xl font-bold">Early 2000s: The Wild West</h3>
+                  <p className="text-muted-foreground">
+                    Remember when you could hide "Pamela Anderson" in white text on any website and rocket to #1 on Google? 
+                    Search engines were primitive. They counted keywords, not context. It was easy to game—and everyone did.
+                  </p>
+                </div>
+              </div>
+
+              {/* Stage 2 */}
+              <div className="flex gap-6 items-start">
+                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                  <span className="text-2xl">📝</span>
+                </div>
+                <div className="space-y-2 flex-1">
+                  <h3 className="text-xl font-bold">2010s: Keyword Stuffing Era</h3>
+                  <p className="text-muted-foreground">
+                    Google got smarter, but not smart enough. The game became about cramming pages with keywords that didn't 
+                    read naturally. <span className="font-semibold text-foreground">"Best dentist Gilbert best dentist near me top Gilbert dentist affordable dentist Gilbert AZ..."</span> 
+                    It worked for rankings, but readers hated it.
+                  </p>
+                </div>
+              </div>
+
+              {/* Stage 3 */}
+              <div className="flex gap-6 items-start">
+                <div className="flex-shrink-0 w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                  <span className="text-2xl">🤖</span>
+                </div>
+                <div className="space-y-2 flex-1">
+                  <h3 className="text-xl font-bold text-primary">Today: The AI Revolution</h3>
+                  <p className="text-muted-foreground">
+                    Google and Bing are <span className="font-semibold text-foreground">losing search traffic</span> because consumers are moving to AI—ChatGPT, Perplexity, Google SGE. 
+                    But here's the problem: <span className="font-semibold text-foreground">AI doesn't care about your keywords or blog posts.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* The Shift */}
+            <div className="bg-primary/5 rounded-lg p-8 border-2 border-primary/20 space-y-4">
+              <h3 className="text-2xl font-bold text-center">AI Looks for Three Things</h3>
+              <div className="grid md:grid-cols-3 gap-6 pt-4">
+                <div className="text-center space-y-2">
+                  <div className="text-3xl mb-2">🏗️</div>
+                  <h4 className="font-bold">Structure</h4>
+                  <p className="text-sm text-muted-foreground">Organized, machine-readable data</p>
+                </div>
+                <div className="text-center space-y-2">
+                  <div className="text-3xl mb-2">📚</div>
+                  <h4 className="font-bold">Citations</h4>
+                  <p className="text-sm text-muted-foreground">Trusted, authoritative sources</p>
+                </div>
+                <div className="text-center space-y-2">
+                  <div className="text-3xl mb-2">✨</div>
+                  <h4 className="font-bold">Curation</h4>
+                  <p className="text-sm text-muted-foreground">Vetted lists, not random websites</p>
+                </div>
+              </div>
+            </div>
+
+            {/* The Solution */}
+            <div className="text-center space-y-4 pt-4">
+              <h3 className="text-2xl md:text-3xl font-bold">That's What We Do.</h3>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                By adding you to the Top 10 list for your profession and location, we build an <span className="font-semibold text-foreground">ecosystem of structure, relevance, and authority</span> that you tap into. 
+                <span className="block mt-3 text-xl font-semibold text-primary">Because AI trusts us, they trust you.</span>
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* What Is Top10Lists.us */}
       <section className="container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center space-y-8">
