@@ -27,7 +27,7 @@ const eras: TimelineEra[] = [
     emoji: "💰",
     years: "2000–2005",
     title: "The Gold Rush",
-    description: "AdWords launches • Florida Update purge • SEO agencies emerge",
+    description: "AdWords launches • Google begins actively changing to combat sites trying to play the game • SEO agencies emerge",
     color: "bg-yellow-100 border-yellow-300"
   },
   {
