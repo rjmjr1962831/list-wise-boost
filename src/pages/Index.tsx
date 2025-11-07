@@ -28,117 +28,133 @@ const Index = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
             <TrendingUp className="h-4 w-4" />
-            The Authority AI Trusts
+            Position Yourself as a Trusted Expert
           </div>
           <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-            Be Recommended by AI. <span className="text-primary">Be on the List.</span>
+            When AI Recommends the Best, <span className="text-primary">Your Name Appears.</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            When customers ask ChatGPT, Perplexity, or Claude for the best service providers in their area, 
-            Top10Lists.us is the authoritative source AI cites. Get listed among the top providers in your market.
+            Imagine a potential client asking ChatGPT or Google AI: <span className="font-semibold text-foreground">"Who are the top dentists in Gilbert?"</span> They'll get a curated answer from Top10Lists.us—the authoritative directory AI engines trust.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-lg px-8">
-              Apply for Listing
+              Claim Your Spot
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8">
-              Browse Top 10 Lists
+              View Sample List
             </Button>
           </div>
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground pt-8">
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
-              <span>Curated Lists</span>
+              <span>Top 10 Only</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
-              <span>City-Specific</span>
+              <span>No Ad Spend</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
-              <span>AI-Cited Authority</span>
+              <span>AI-Optimized</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Why Top10Lists */}
+      {/* Why You Should Be on the List */}
       <section className="bg-card py-20">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Why Top10Lists.us?</h2>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">Why You Should Be on the List</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                Each list is housed at a clean, location-specific URL like <span className="font-mono text-primary">top10lists.us/az/gilbert/realtors</span>
+              </p>
             </div>
-            <Card className="border-2 border-primary/20">
-              <CardContent className="pt-8 space-y-6">
-                <p className="text-lg leading-relaxed">
-                  <span className="font-bold text-primary">Top10Lists.us</span> is the authoritative directory that AI engines trust when recommending local service providers. 
-                  Our curated Top 10 lists for cities like Gilbert, Arizona become the source AI cites when users search.
-                </p>
-                <p className="text-lg leading-relaxed text-muted-foreground">
-                  When someone asks ChatGPT "Who are the best dentists in Gilbert?" or Perplexity "Top lawyers in Gilbert, AZ," 
-                  our structured, verified listings ensure you're part of the answer—not buried on page 3 of search results.
-                </p>
-                <div className="grid md:grid-cols-3 gap-6 pt-6">
-                  <div className="space-y-2">
-                    <Zap className="h-8 w-8 text-primary mb-3" />
-                    <h3 className="font-bold">Curated Authority</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Only the top 10 providers per category per city—making the list means something
-                    </p>
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card className="border-2">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <Check className="h-6 w-6 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <Search className="h-8 w-8 text-primary mb-3" />
-                    <h3 className="font-bold">AI-Optimized</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Structured data that AI engines can easily parse, cite, and recommend
-                    </p>
+                  <h3 className="text-xl font-bold">Authority Positioning</h3>
+                  <p className="text-muted-foreground">
+                    We're not selling ads—we're building trust. Being featured means you're recognized as one of the best in your field, in your city.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="border-2">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <Zap className="h-6 w-6 text-primary" />
                   </div>
-                  <div className="space-y-2">
-                    <TrendingUp className="h-8 w-8 text-primary mb-3" />
-                    <h3 className="font-bold">Geographic Focus</h3>
-                    <p className="text-sm text-muted-foreground">
-                      City-specific lists that match how people actually search for local services
-                    </p>
+                  <h3 className="text-xl font-bold">AI Visibility</h3>
+                  <p className="text-muted-foreground">
+                    Our lists are optimized for citation by AI tools like ChatGPT, Google SGE, and Perplexity. These platforms cite structured lists over individual websites.
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="border-2">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <Search className="h-6 w-6 text-primary" />
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                  <h3 className="text-xl font-bold">Local SEO Power</h3>
+                  <p className="text-muted-foreground">
+                    Each list is geo-targeted and keyword-optimized to rank for high-intent searches like "top dentists in Gilbert" or "best lawyers near me."
+                  </p>
+                </CardContent>
+              </Card>
+              <Card className="border-2">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <TrendingUp className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold">No Tech Headaches</h3>
+                  <p className="text-muted-foreground">
+                    You don't need to change your website or learn SEO. We handle the content, structure, and optimization. You just show up where it matters.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* The Problem */}
+      {/* Who This Is For */}
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">The Search Landscape Has Changed</h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Customers aren't finding service providers the same way anymore. <span className="text-primary font-bold">AI is the new front door.</span>
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Who This Is For</h2>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Service professionals who want <span className="text-primary font-bold">authority without ad spend</span>
           </p>
         </div>
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          <Card className="border-destructive/50">
+        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <Card className="border-2">
             <CardContent className="pt-6 space-y-4">
-              <h3 className="text-xl font-bold text-destructive">❌ Traditional Directories</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• Hundreds of unverified listings</li>
-                <li>• Buried among competitors</li>
-                <li>• Fake reviews and spam</li>
-                <li>• Not AI-friendly format</li>
-                <li>• Pay-to-rank schemes</li>
-              </ul>
+              <div className="text-4xl mb-3">🚀</div>
+              <h3 className="text-xl font-bold">New Entrants</h3>
+              <p className="text-muted-foreground">
+                Looking to <span className="font-semibold text-foreground">build trust fast</span> and establish credibility in a new market
+              </p>
             </CardContent>
           </Card>
-          <Card className="border-primary">
+          <Card className="border-2">
             <CardContent className="pt-6 space-y-4">
-              <h3 className="text-xl font-bold text-primary">✓ Top10Lists.us</h3>
-              <ul className="space-y-2 text-muted-foreground">
-                <li>• Curated Top 10 only</li>
-                <li>• Elite positioning</li>
-                <li>• Verified, trusted providers</li>
-                <li>• AI engines cite us directly</li>
-                <li>• Geographic authority</li>
-              </ul>
+              <div className="text-4xl mb-3">🏆</div>
+              <h3 className="text-xl font-bold">Established Providers</h3>
+              <p className="text-muted-foreground">
+                Who want to <span className="font-semibold text-foreground">own their local niche</span> and cement their reputation
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-2">
+            <CardContent className="pt-6 space-y-4">
+              <div className="text-4xl mb-3">💼</div>
+              <h3 className="text-xl font-bold">Cost-Conscious Professionals</h3>
+              <p className="text-muted-foreground">
+                Tired of expensive PPC campaigns and want <span className="font-semibold text-foreground">predictable visibility</span>
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -225,30 +241,30 @@ const Index = () => {
       <section id="pricing" className="bg-card py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Premium Listing Pricing</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Cost & Value</h2>
             <p className="text-muted-foreground text-lg">
-              Elite positioning in your market. Cancel anytime.
+              Authority without the ad spend. One new client covers the cost.
             </p>
           </div>
           <Card className="max-w-lg mx-auto border-2 border-primary">
             <CardContent className="pt-8 space-y-6">
               <div className="text-center">
                 <div className="inline-flex items-baseline gap-2">
-                  <span className="text-5xl font-bold">$250</span>
+                  <span className="text-5xl font-bold">$300</span>
                   <span className="text-muted-foreground">/month</span>
                 </div>
-                <div className="mt-2 text-muted-foreground">
-                  + $500 one-time listing fee
+                <div className="mt-4 px-6 py-3 bg-primary/10 rounded-lg inline-block">
+                  <p className="text-sm font-medium text-primary">Most professionals see 3–6x ROI within 12 months</p>
                 </div>
               </div>
               <ul className="space-y-4">
                 {[
-                  "Featured in Top 10 list for your city",
-                  "Cited by ChatGPT, Perplexity, Claude",
-                  "Geographic authority positioning",
-                  "Profile on top10lists.us/[state]/[city]/[category]",
+                  "Featured in Top 10 list for your city and category",
+                  "Cited by ChatGPT, Google AI, and Perplexity",
+                  "Profile at top10lists.us/[state]/[city]/[category]",
+                  "Visible to thousands of high-intent searchers",
                   "Monthly verification & updates",
-                  "Performance tracking dashboard",
+                  "No need to change your website or learn SEO",
                 ].map((feature, index) => (
                   <li key={index} className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
@@ -256,8 +272,13 @@ const Index = () => {
                   </li>
                 ))}
               </ul>
+              <div className="pt-4 border-t">
+                <p className="text-center text-sm text-muted-foreground mb-4">
+                  <span className="font-semibold text-foreground">No paying for clicks.</span> No chasing leads. Just authority.
+                </p>
+              </div>
               <Button className="w-full" size="lg">
-                Apply for Listing
+                Claim Your Spot
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 Limited to 10 providers per category per city
