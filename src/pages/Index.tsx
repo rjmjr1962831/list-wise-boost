@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import thinkerHero from "@/assets/thinker-hero.jpg";
+import { Brain } from "lucide-react";
 
 const Index = () => {
   const [formData, setFormData] = useState({
@@ -51,17 +51,14 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-muted p-4">
       <div className="max-w-4xl w-full space-y-8">
-        {/* Hero Image */}
-        <div className="flex justify-center mb-8">
-          <img
-            src={thinkerHero}
-            alt="The Thinker statue in contemplation"
-            className="w-full max-w-2xl h-auto rounded-lg shadow-2xl"
-          />
-        </div>
-
-        {/* Text Content */}
-        <div className="text-center space-y-4">
+        {/* Hero Section */}
+        <div className="text-center space-y-6">
+          <div className="flex justify-center">
+            <div className="relative">
+              <Brain className="w-32 h-32 md:w-40 md:h-40 text-primary animate-pulse" />
+              <div className="absolute inset-0 bg-primary/20 blur-3xl -z-10" />
+            </div>
+          </div>
           <h1 className="text-5xl md:text-6xl font-bold text-foreground">
             We're thinking.
           </h1>
