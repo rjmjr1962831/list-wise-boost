@@ -171,7 +171,7 @@ const realtors = [
     address: "123 N Gilbert Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0208",
     website: "lisabrownluxury.com",
-    description: "Fiercely client-focused with a reputation for making every client feel like a priority. Provides detailed market updates, answers questions at all hours, and maintains constant communication. Clients describe her as 'always there when you need her.'",
+    description: "Fiercely hustling with a reputation for making every client feel like a priority. Provides detailed market updates, answers questions at all hours, and maintains constant communication. Clients describe her as 'always there when you need her.'",
     stats: {
       salesLast12Mo: 29,
       saleToListRatio: "97.76%",
@@ -546,7 +546,7 @@ const GilbertRealtorList = () => {
             <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
                 <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                  Hungry & Client-Focused
+                  Hungry & Hustling
                   <Badge variant="secondary" className="text-sm">Next 5</Badge>
                 </h2>
                 <p className="text-muted-foreground">Responsive agents who prioritize client satisfaction and personalized attention</p>
@@ -554,7 +554,7 @@ const GilbertRealtorList = () => {
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-9 p-0">
                   <ChevronDown className={`h-4 w-4 transition-transform ${hungryOpen ? 'rotate-180' : ''}`} />
-                  <span className="sr-only">Toggle Hungry & Client-Focused</span>
+                  <span className="sr-only">Toggle Hungry & Hustling</span>
                 </Button>
               </CollapsibleTrigger>
             </div>
