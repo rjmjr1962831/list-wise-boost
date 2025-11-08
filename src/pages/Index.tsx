@@ -186,19 +186,6 @@ const Index = () => {
           </p>
         </div>
 
-        {/* Demo Pages Links */}
-        <div className="bg-card p-6 rounded-lg shadow-lg border border-border max-w-xl mx-auto">
-          <h2 className="text-xl font-bold mb-4 text-center">View Sample Pages</h2>
-          <div className="flex flex-col gap-3">
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/az/gilbert/dentists">Top 10 Dentists in Gilbert, AZ</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full">
-              <Link to="/az/gilbert/top10realtors">Top 10 Realtors in Gilbert, AZ</Link>
-            </Button>
-          </div>
-        </div>
-
         {/* Contact Form */}
         <div className="bg-card p-8 rounded-lg shadow-lg border border-border max-w-xl mx-auto">
           <form onSubmit={handleSubmit} className="space-y-6">
