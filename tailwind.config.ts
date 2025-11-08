@@ -95,10 +95,18 @@ export default {
             height: "0",
           },
         },
+        "color-shift": {
+          "0%": { color: "hsl(234, 45%, 21%)" },
+          "25%": { color: "hsl(186, 100%, 50%)" },
+          "50%": { color: "hsl(234, 45%, 21%)" },
+          "75%": { color: "hsl(186, 100%, 50%)" },
+          "100%": { color: "hsl(234, 45%, 21%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "color-shift": "color-shift 4s ease-in-out infinite",
       },
     },
   },

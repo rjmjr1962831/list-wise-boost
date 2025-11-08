@@ -159,22 +159,22 @@ const Index = () => {
                 </circle>
               </svg>
               
-              {/* Four brains positioned at corners */}
+              {/* Four brains positioned at corners with color-changing animation */}
               <div className="absolute top-0 left-0 w-24 h-24">
-                <Brain className="w-full h-full text-primary animate-pulse" />
-                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" />
+                <Brain className="w-full h-full animate-color-shift drop-shadow-2xl" />
+                <div className="absolute inset-0 bg-gradient-to-br from-aqua/40 to-indigo/40 blur-2xl -z-10 animate-pulse" />
               </div>
               <div className="absolute top-0 right-0 w-24 h-24">
-                <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '0.5s' }} />
-                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '0.5s' }} />
+                <Brain className="w-full h-full animate-color-shift drop-shadow-2xl" style={{ animationDelay: '1s' }} />
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo/40 to-aqua/40 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '1s' }} />
               </div>
               <div className="absolute bottom-0 left-0 w-24 h-24">
-                <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '1s' }} />
-                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '1s' }} />
+                <Brain className="w-full h-full animate-color-shift drop-shadow-2xl" style={{ animationDelay: '2s' }} />
+                <div className="absolute inset-0 bg-gradient-to-br from-aqua/40 to-primary/40 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
               </div>
               <div className="absolute bottom-0 right-0 w-24 h-24">
-                <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '1.5s' }} />
-                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '1.5s' }} />
+                <Brain className="w-full h-full animate-color-shift drop-shadow-2xl" style={{ animationDelay: '3s' }} />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/40 to-indigo/40 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '3s' }} />
               </div>
             </div>
           </div>
