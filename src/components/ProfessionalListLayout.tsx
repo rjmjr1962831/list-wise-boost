@@ -1,0 +1,261 @@
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Award, Star, TrendingUp, MapPin, Users, Home } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useEffect, ReactNode } from "react";
+import { PageMetadata, Professional } from "@/types/professional";
+
+interface ProfessionalListLayoutProps {
+  metadata: PageMetadata;
+  professionals: Professional[];
+  children: ReactNode;
+  heroIcons?: Array<{ icon: ReactNode; label: string }>;
+}
+
+export const ProfessionalListLayout = ({
+  metadata,
+  professionals,
+  children,
+  heroIcons
+}: ProfessionalListLayoutProps) => {
+  
+  useEffect(() => {
+    // Update page title and meta tags for SEO
+    document.title = metadata.title;
+    
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute("content", metadata.description);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = "description";
+      meta.content = metadata.description;
+      document.head.appendChild(meta);
+    }
+
+    // Add JSON-LD structured data for SEO
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": metadata.title,
+      "description": metadata.description,
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "numberOfItems": professionals.length,
+      "itemListElement": professionals.map(professional => ({
+        "@type": "ListItem",
+        "position": professional.rank,
+        "item": {
+          "@type": metadata.profession.schemaType,
+          "name": professional.name,
+          "description": professional.description,
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": professional.address.split(",")[0],
+            "addressLocality": metadata.location.city,
+            "addressRegion": metadata.location.stateAbbr,
+            "addressCountry": "US",
+            "postalCode": professional.address.match(/\d{5}/)?.[0]
+          },
+          "telephone": professional.phone,
+          "url": `https://${professional.website}`,
+          "image": professional.image,
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": professional.rating,
+            "reviewCount": professional.reviews,
+            "bestRating": 5
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "33.3528",
+            "longitude": "-111.7890"
+          },
+          "areaServed": {
+            "@type": "City",
+            "name": metadata.location.city,
+            "containedIn": {
+              "@type": "State",
+              "name": metadata.location.state
+            }
+          }
+        }
+      }))
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.text = JSON.stringify(structuredData);
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+    };
+  }, [metadata, professionals]);
+
+  const defaultHeroIcons = [
+    { icon: <Award className="h-5 w-5 text-primary" />, label: "All Verified" },
+    { icon: <Star className="h-5 w-5 text-primary" />, label: "4.6+ Average Rating" },
+    { icon: <TrendingUp className="h-5 w-5 text-primary" />, label: "Proven Records" },
+    { icon: <MapPin className="h-5 w-5 text-primary" />, label: `${metadata.location.city} Specialists` }
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-20 right-10 w-64 h-64 bg-turquoise/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-96 left-0 w-80 h-80 bg-sunset-orange/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-96 right-20 w-72 h-72 bg-terracotta/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-cactus-green/10 rounded-full blur-3xl pointer-events-none" />
+      
+      {/* Header */}
+      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2">
+            <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-lg">T10</span>
+            </div>
+            <span className="text-xl font-bold">Top10Lists.us</span>
+          </Link>
+          <Button asChild>
+            <Link to="/">Apply to Get Listed</Link>
+          </Button>
+        </div>
+      </header>
+
+      {/* Breadcrumb */}
+      <nav className="bg-muted/50 border-b" aria-label="Breadcrumb">
+        <div className="container mx-auto px-4 py-3">
+          <ol className="flex items-center gap-2 text-sm text-muted-foreground" itemScope itemType="https://schema.org/BreadcrumbList">
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <Link to="/" className="hover:text-foreground transition-colors" itemProp="item">
+                <span itemProp="name">Home</span>
+              </Link>
+              <meta itemProp="position" content="1" />
+            </li>
+            {metadata.breadcrumbs.map((crumb, index) => (
+              <>
+                <span>/</span>
+                <li key={index} itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+                  {crumb.path ? (
+                    <Link to={crumb.path} className="hover:text-foreground transition-colors" itemProp="item">
+                      <span itemProp="name">{crumb.name}</span>
+                    </Link>
+                  ) : (
+                    <span className="text-foreground font-medium" itemProp="name">{crumb.name}</span>
+                  )}
+                  <meta itemProp="position" content={(index + 2).toString()} />
+                </li>
+              </>
+            ))}
+          </ol>
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-12 md:py-16">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Link>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="px-3 py-1">Verified List</Badge>
+              <Badge variant="outline" className="px-3 py-1">Updated Monthly</Badge>
+              <Badge variant="outline" className="px-3 py-1">2025</Badge>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold">
+              {metadata.title}
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              {metadata.description}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-4 pt-2">
+            {(heroIcons || defaultHeroIcons).map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                {item.icon}
+                <span className="text-sm font-medium">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Main Content */}
+      <section className="container mx-auto px-4 pb-20">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {children}
+        </div>
+      </section>
+
+      {/* Info Section */}
+      <section className="bg-muted/50 py-12 border-t relative">
+        <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-turquoise/20 to-transparent rounded-br-full" />
+        <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-terracotta/20 to-transparent rounded-tl-full" />
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-3xl mx-auto space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold text-center">About This List</h2>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-turquoise/20 to-turquoise/10 rounded-full flex items-center justify-center ring-2 ring-turquoise/20">
+                  <Users className="h-6 w-6 text-turquoise" />
+                </div>
+                <h3 className="font-semibold">Verified Professionals</h3>
+                <p className="text-sm text-muted-foreground">
+                  All professionals verified for active licensing, performance records, and professional standing
+                </p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-sunset-orange/20 to-sunset-orange/10 rounded-full flex items-center justify-center ring-2 ring-sunset-orange/20">
+                  <TrendingUp className="h-6 w-6 text-sunset-orange" />
+                </div>
+                <h3 className="font-semibold">Performance Metrics</h3>
+                <p className="text-sm text-muted-foreground">
+                  Ranked by key performance indicators and client reviews
+                </p>
+              </div>
+              <div className="text-center space-y-2">
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-cactus-green/20 to-cactus-green/10 rounded-full flex items-center justify-center ring-2 ring-cactus-green/20">
+                  <Home className="h-6 w-6 text-cactus-green" />
+                </div>
+                <h3 className="font-semibold">Local Expertise</h3>
+                <p className="text-sm text-muted-foreground">
+                  Deep knowledge of {metadata.location.city} and surrounding areas
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-card py-16 border-t">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <h2 className="text-2xl md:text-3xl font-bold">
+              Are You a Top {metadata.profession.singular}?
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Apply to be featured on our verified list of top professionals in {metadata.location.city}. 
+              Boost your visibility and connect with more clients.
+            </p>
+            <Button asChild size="lg">
+              <Link to="/">Apply for Listing</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t bg-muted/30 py-6">
+        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+          <p>&copy; 2025 Top10Lists.us. All rights reserved.</p>
+          <Link to="/" className="hover:text-foreground transition-colors inline-block mt-2">
+            Return to Homepage
+          </Link>
+        </div>
+      </footer>
+    </div>
+  );
+};
