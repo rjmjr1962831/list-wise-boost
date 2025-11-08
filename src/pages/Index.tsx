@@ -30,7 +30,7 @@ const Index = () => {
       const { error } = await supabase.from("contacts").insert([
         {
           full_name: formData.fullName,
-          email: "robert@top10lists.us",
+          email: formData.email,
           phone: formData.phone || null,
           message: formData.message,
         },
