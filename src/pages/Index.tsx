@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Brain } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [formData, setFormData] = useState({
@@ -183,6 +184,19 @@ const Index = () => {
           <p className="text-xl md:text-2xl text-muted-foreground">
             Leave us a note and we'll get back to you
           </p>
+        </div>
+
+        {/* Demo Pages Links */}
+        <div className="bg-card p-6 rounded-lg shadow-lg border border-border max-w-xl mx-auto">
+          <h2 className="text-xl font-bold mb-4 text-center">View Sample Pages</h2>
+          <div className="flex flex-col gap-3">
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/az/gilbert/dentists">Top 10 Dentists in Gilbert, AZ</Link>
+            </Button>
+            <Button asChild variant="outline" className="w-full">
+              <Link to="/az/gilbert/top10realtors">Top 10 Realtors in Gilbert, AZ</Link>
+            </Button>
+          </div>
         </div>
 
         {/* Contact Form */}
