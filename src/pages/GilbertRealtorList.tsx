@@ -1,9 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, Phone, Globe, Award, ArrowLeft, TrendingUp, Home, Users } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Award, ArrowLeft, TrendingUp, Home, Users, ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import ashleyPickensImg from "@/assets/realtors/ashley-pickens.jpg";
 import zacharyCatesImg from "@/assets/realtors/zachary-cates.jpg";
 import maryJoImg from "@/assets/realtors/mary-jo.jpg";
@@ -219,6 +224,12 @@ const realtors = [
 ];
 
 const GilbertRealtorList = () => {
+  const [establishedOpen, setEstablishedOpen] = useState(true);
+  const [upAndComersOpen, setUpAndComersOpen] = useState(true);
+
+  const establishedRealtors = realtors.slice(0, 5);
+  const upAndComersRealtors = realtors.slice(5, 10);
+
   useEffect(() => {
     // Update page title and meta tags for SEO
     document.title = "Top 10 Real Estate Agents in Gilbert, AZ (2025) | Best Realtors";
@@ -383,8 +394,28 @@ const GilbertRealtorList = () => {
 
       {/* Realtor List */}
       <section className="container mx-auto px-4 pb-20">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {realtors.map((realtor) => (
+        <div className="max-w-4xl mx-auto space-y-8">
+          
+          {/* Established Section */}
+          <Collapsible open={establishedOpen} onOpenChange={setEstablishedOpen}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="space-y-1">
+                <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                  Established Leaders
+                  <Badge variant="secondary" className="text-sm">Top 5</Badge>
+                </h2>
+                <p className="text-muted-foreground">Proven track records with years of excellence in Gilbert real estate</p>
+              </div>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-9 p-0">
+                  <ChevronDown className={`h-4 w-4 transition-transform ${establishedOpen ? 'rotate-180' : ''}`} />
+                  <span className="sr-only">Toggle Established</span>
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+            
+            <CollapsibleContent className="space-y-6">
+              {establishedRealtors.map((realtor) => (
             <Card key={realtor.rank} className="border-2 hover:shadow-lg transition-shadow" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
@@ -506,7 +537,154 @@ const GilbertRealtorList = () => {
                 </div>
               </CardContent>
             </Card>
-          ))}
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Up and Comers Section */}
+          <Collapsible open={upAndComersOpen} onOpenChange={setUpAndComersOpen}>
+            <div className="flex items-center justify-between mb-6">
+              <div className="space-y-1">
+                <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                  Up and Comers
+                  <Badge variant="secondary" className="text-sm">Rising Stars</Badge>
+                </h2>
+                <p className="text-muted-foreground">Emerging talent making waves in Gilbert's real estate market</p>
+              </div>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" size="sm" className="w-9 p-0">
+                  <ChevronDown className={`h-4 w-4 transition-transform ${upAndComersOpen ? 'rotate-180' : ''}`} />
+                  <span className="sr-only">Toggle Up and Comers</span>
+                </Button>
+              </CollapsibleTrigger>
+            </div>
+            
+            <CollapsibleContent className="space-y-6">
+              {upAndComersRealtors.map((realtor) => (
+            <Card key={realtor.rank} className="border-2 hover:shadow-lg transition-shadow" itemScope itemType="https://schema.org/RealEstateAgent">
+              <CardContent className="pt-6">
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Photo and Rank */}
+                  <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
+                    <img 
+                      src={realtor.image} 
+                      alt={`${realtor.name} - Gilbert Real Estate Agent`}
+                      className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
+                      itemProp="image"
+                    />
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary">
+                      <span className="text-2xl font-bold text-primary">#{realtor.rank}</span>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h2 className="text-2xl font-bold" itemProp="name">{realtor.name}</h2>
+                          <p className="text-lg text-muted-foreground" itemProp="affiliation">{realtor.brokerage}</p>
+                        </div>
+                        {realtor.verified && (
+                          <Badge variant="secondary" className="gap-1">
+                            <Award className="h-3 w-3" />
+                            Verified
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Rating */}
+                      <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-5 w-5 ${
+                                i < Math.floor(realtor.rating)
+                                  ? "fill-primary text-primary"
+                                  : "text-muted"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="font-semibold" itemProp="ratingValue">{realtor.rating}</span>
+                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{realtor.reviews}</span> reviews)</span>
+                        <meta itemProp="bestRating" content="5" />
+                      </div>
+
+                      {/* Statistics */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
+                        <div className="text-center md:text-left">
+                          <div className="text-2xl font-bold text-primary">{realtor.stats.salesLast12Mo}</div>
+                          <div className="text-xs text-muted-foreground">Sales (12mo)</div>
+                        </div>
+                        <div className="text-center md:text-left">
+                          <div className="text-2xl font-bold text-primary">{realtor.stats.saleToListRatio}</div>
+                          <div className="text-xs text-muted-foreground">Sale to List</div>
+                        </div>
+                        <div className="text-center md:text-left">
+                          <div className="text-2xl font-bold text-primary">{realtor.stats.avgDaysOnMarket}</div>
+                          <div className="text-xs text-muted-foreground">Avg Days Market</div>
+                        </div>
+                        <div className="text-center md:text-left">
+                          <div className="text-2xl font-bold text-primary">{realtor.stats.yearsExperience}</div>
+                          <div className="text-xs text-muted-foreground">Years Exp.</div>
+                        </div>
+                      </div>
+
+                      {/* Specialties */}
+                      <div className="flex flex-wrap gap-2">
+                        {realtor.specialties.map((specialty, idx) => (
+                          <Badge key={idx} variant="outline">
+                            {specialty}
+                          </Badge>
+                        ))}
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-muted-foreground leading-relaxed" itemProp="description">
+                        {realtor.description}
+                      </p>
+
+                      {/* Contact Info */}
+                      <div className="grid sm:grid-cols-3 gap-3 pt-2">
+                        <div className="flex items-center gap-2 text-sm" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
+                          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="text-muted-foreground">
+                            <span itemProp="streetAddress">{realtor.address.split(",")[0]}</span>,{" "}
+                            <span itemProp="addressLocality">Gilbert</span>,{" "}
+                            <span itemProp="addressRegion">AZ</span>{" "}
+                            <span itemProp="postalCode">{realtor.address.match(/\d{5}/)?.[0]}</span>
+                            <meta itemProp="addressCountry" content="US" />
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <a href={`tel:${realtor.phone}`} className="text-primary hover:underline" itemProp="telephone">
+                            {realtor.phone}
+                          </a>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <a
+                            href={`https://${realtor.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline"
+                            itemProp="url"
+                          >
+                            {realtor.website}
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
         </div>
       </section>
 
