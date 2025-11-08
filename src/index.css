@@ -38,11 +38,21 @@ All colors MUST be HSL.
 
     --radius: 0.5rem;
 
+    /* Arizona-themed accent colors */
+    --terracotta: 14 80% 58%;
+    --turquoise: 180 65% 55%;
+    --sunset-orange: 25 95% 60%;
+    --desert-sand: 35 45% 75%;
+    --cactus-green: 145 40% 50%;
+
     /* Custom tokens for minimalist design */
     --gradient-primary: linear-gradient(135deg, hsl(214 95% 50%), hsl(214 85% 60%));
+    --gradient-sunset: linear-gradient(135deg, hsl(25 95% 60%), hsl(14 80% 58%));
+    --gradient-arizona: linear-gradient(135deg, hsl(180 65% 55%), hsl(145 40% 50%));
     --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(220 13% 98%));
     --shadow-soft: 0 2px 8px hsl(220 13% 13% / 0.08);
     --shadow-medium: 0 4px 16px hsl(220 13% 13% / 0.12);
+    --shadow-colored: 0 8px 24px hsl(14 80% 58% / 0.15);
   }
 
   .dark {

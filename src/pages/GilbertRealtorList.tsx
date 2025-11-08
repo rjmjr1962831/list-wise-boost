@@ -304,7 +304,13 @@ const GilbertRealtorList = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-20 right-10 w-64 h-64 bg-turquoise/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-96 left-0 w-80 h-80 bg-sunset-orange/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-96 right-20 w-72 h-72 bg-terracotta/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 left-10 w-96 h-96 bg-cactus-green/10 rounded-full blur-3xl pointer-events-none" />
+      
       {/* Header */}
       <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -398,7 +404,9 @@ const GilbertRealtorList = () => {
           
           {/* Established Section */}
           <Collapsible open={establishedOpen} onOpenChange={setEstablishedOpen}>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 relative">
+              {/* Decorative accent */}
+              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-primary to-turquoise rounded-full" />
               <div className="space-y-1">
                 <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
                   Established Leaders
@@ -416,7 +424,7 @@ const GilbertRealtorList = () => {
             
             <CollapsibleContent className="space-y-6">
               {establishedRealtors.map((realtor) => (
-            <Card key={realtor.rank} className="border-2 hover:shadow-lg transition-shadow" itemScope itemType="https://schema.org/RealEstateAgent">
+            <Card key={realtor.rank} className="border-2 border-l-4 border-l-primary hover:shadow-lg hover:shadow-primary/10 transition-all" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Photo and Rank */}
@@ -541,9 +549,11 @@ const GilbertRealtorList = () => {
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Hungry & Client-Focused Section */}
+          {/* Hungry & Hustling Section */}
           <Collapsible open={hungryOpen} onOpenChange={setHungryOpen}>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 relative">
+              {/* Decorative accent */}
+              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-sunset-orange to-terracotta rounded-full" />
               <div className="space-y-1">
                 <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
                   Hungry & Hustling
@@ -561,7 +571,7 @@ const GilbertRealtorList = () => {
             
             <CollapsibleContent className="space-y-6">
               {hungryRealtors.map((realtor) => (
-            <Card key={realtor.rank} className="border-2 hover:shadow-lg transition-shadow" itemScope itemType="https://schema.org/RealEstateAgent">
+            <Card key={realtor.rank} className="border-2 border-l-4 border-l-sunset-orange hover:shadow-lg hover:shadow-sunset-orange/10 transition-all" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Photo and Rank */}
@@ -689,14 +699,17 @@ const GilbertRealtorList = () => {
       </section>
 
       {/* Info Section */}
-      <section className="bg-muted/50 py-12 border-t">
-        <div className="container mx-auto px-4">
+      <section className="bg-muted/50 py-12 border-t relative">
+        {/* Decorative corner accents */}
+        <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-turquoise/20 to-transparent rounded-br-full" />
+        <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-terracotta/20 to-transparent rounded-tl-full" />
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto space-y-6">
             <h2 className="text-2xl md:text-3xl font-bold text-center">About This List</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Users className="h-6 w-6 text-primary" />
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-turquoise/20 to-turquoise/10 rounded-full flex items-center justify-center ring-2 ring-turquoise/20">
+                  <Users className="h-6 w-6 text-turquoise" />
                 </div>
                 <h3 className="font-semibold">Verified Agents</h3>
                 <p className="text-sm text-muted-foreground">
@@ -704,8 +717,8 @@ const GilbertRealtorList = () => {
                 </p>
               </div>
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <TrendingUp className="h-6 w-6 text-primary" />
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-sunset-orange/20 to-sunset-orange/10 rounded-full flex items-center justify-center ring-2 ring-sunset-orange/20">
+                  <TrendingUp className="h-6 w-6 text-sunset-orange" />
                 </div>
                 <h3 className="font-semibold">Performance Metrics</h3>
                 <p className="text-sm text-muted-foreground">
@@ -713,8 +726,8 @@ const GilbertRealtorList = () => {
                 </p>
               </div>
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Home className="h-6 w-6 text-primary" />
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-cactus-green/20 to-cactus-green/10 rounded-full flex items-center justify-center ring-2 ring-cactus-green/20">
+                  <Home className="h-6 w-6 text-cactus-green" />
                 </div>
                 <h3 className="font-semibold">Local Expertise</h3>
                 <p className="text-sm text-muted-foreground">
