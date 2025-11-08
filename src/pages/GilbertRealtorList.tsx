@@ -547,7 +547,7 @@ const GilbertRealtorList = () => {
               <div className="space-y-1">
                 <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
                   Hungry & Hustling
-                  <Badge variant="secondary" className="text-sm">Next 5</Badge>
+                  <Badge variant="secondary" className="text-sm">Top 5</Badge>
                 </h2>
                 <p className="text-muted-foreground">Responsive agents who prioritize client satisfaction and personalized attention</p>
               </div>
