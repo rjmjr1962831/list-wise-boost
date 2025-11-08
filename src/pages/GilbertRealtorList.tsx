@@ -131,7 +131,7 @@ const realtors = [
     address: "2340 E Guadalupe Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0206",
     website: "sarahjohnsonhomes.com",
-    description: "Rising star with fresh perspective and modern marketing approach. Quickly building a strong client base by specializing in helping first-time buyers navigate Gilbert's market with confidence.",
+    description: "Known for exceptional responsiveness and client-first approach. Returns calls within 30 minutes and provides personalized attention throughout the entire buying process. Clients consistently praise her availability and dedication.",
     stats: {
       salesLast12Mo: 42,
       saleToListRatio: "97.89%",
@@ -151,7 +151,7 @@ const realtors = [
     address: "4567 S Greenfield Rd, Gilbert, AZ 85297",
     phone: "(480) 555-0207",
     website: "robertandersonrealty.com",
-    description: "Dynamic agent with strong tech background making waves in new construction. Building impressive track record by connecting young families with Gilbert's newest communities and smart home features.",
+    description: "Hungry and highly motivated agent who treats every client like they're his only client. Available evenings and weekends, responds to texts immediately, and goes above and beyond to ensure smooth transactions and happy clients.",
     stats: {
       salesLast12Mo: 38,
       saleToListRatio: "98.12%",
@@ -171,7 +171,7 @@ const realtors = [
     address: "123 N Gilbert Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0208",
     website: "lisabrownluxury.com",
-    description: "Creative marketing specialist bringing fresh energy to Sotheby's. Leveraging social media expertise and professional staging to showcase Gilbert properties in innovative ways that attract buyers fast.",
+    description: "Fiercely client-focused with a reputation for making every client feel like a priority. Provides detailed market updates, answers questions at all hours, and maintains constant communication. Clients describe her as 'always there when you need her.'",
     stats: {
       salesLast12Mo: 29,
       saleToListRatio: "97.76%",
@@ -191,7 +191,7 @@ const realtors = [
     address: "789 E Elliot Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0209",
     website: "davidkimhomes.com",
-    description: "Digital-first agent revolutionizing how buyers find homes in Gilbert. Expert in 3D virtual tours and remote transactions, helping out-of-state buyers relocate with confidence through innovative technology.",
+    description: "Extremely responsive and tech-savvy agent who makes himself available via text, email, and video calls. Known for quick turnaround times and proactive communication. Hungry to earn every client's business and referrals.",
     stats: {
       salesLast12Mo: 34,
       saleToListRatio: "97.45%",
@@ -211,7 +211,7 @@ const realtors = [
     address: "2890 S Higley Rd, Gilbert, AZ 85295",
     phone: "(480) 555-0210",
     website: "christinamartinezaz.com",
-    description: "Passionate advocate for sustainable living and eco-friendly homes. Quickly becoming Gilbert's go-to agent for environmentally conscious buyers seeking energy-efficient properties and green technologies.",
+    description: "Puts clients first with unwavering dedication and personal attention. Available seven days a week and provides detailed follow-ups after every showing. Clients appreciate her patience, thoroughness, and genuine care for their success.",
     stats: {
       salesLast12Mo: 31,
       saleToListRatio: "97.34%",
@@ -225,10 +225,10 @@ const realtors = [
 
 const GilbertRealtorList = () => {
   const [establishedOpen, setEstablishedOpen] = useState(true);
-  const [upAndComersOpen, setUpAndComersOpen] = useState(true);
+  const [hungryOpen, setHungryOpen] = useState(true);
 
   const establishedRealtors = realtors.slice(0, 5);
-  const upAndComersRealtors = realtors.slice(5, 10);
+  const hungryRealtors = realtors.slice(5, 10);
 
   useEffect(() => {
     // Update page title and meta tags for SEO
@@ -541,26 +541,26 @@ const GilbertRealtorList = () => {
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Up and Comers Section */}
-          <Collapsible open={upAndComersOpen} onOpenChange={setUpAndComersOpen}>
+          {/* Hungry & Client-Focused Section */}
+          <Collapsible open={hungryOpen} onOpenChange={setHungryOpen}>
             <div className="flex items-center justify-between mb-6">
               <div className="space-y-1">
                 <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                  Up and Comers
-                  <Badge variant="secondary" className="text-sm">Rising Stars</Badge>
+                  Hungry & Client-Focused
+                  <Badge variant="secondary" className="text-sm">Next 5</Badge>
                 </h2>
-                <p className="text-muted-foreground">Emerging talent making waves in Gilbert's real estate market</p>
+                <p className="text-muted-foreground">Responsive agents who prioritize client satisfaction and personalized attention</p>
               </div>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-9 p-0">
-                  <ChevronDown className={`h-4 w-4 transition-transform ${upAndComersOpen ? 'rotate-180' : ''}`} />
-                  <span className="sr-only">Toggle Up and Comers</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${hungryOpen ? 'rotate-180' : ''}`} />
+                  <span className="sr-only">Toggle Hungry & Client-Focused</span>
                 </Button>
               </CollapsibleTrigger>
             </div>
             
             <CollapsibleContent className="space-y-6">
-              {upAndComersRealtors.map((realtor) => (
+              {hungryRealtors.map((realtor) => (
             <Card key={realtor.rank} className="border-2 hover:shadow-lg transition-shadow" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
