@@ -57,11 +57,21 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Tidal Shift Brand Colors
+        indigo: "hsl(var(--indigo))",
+        aqua: "hsl(var(--aqua))",
+        beige: "hsl(var(--beige))",
+        graphite: "hsl(var(--graphite))",
+        // Legacy Arizona colors
         terracotta: "hsl(var(--terracotta))",
         turquoise: "hsl(var(--turquoise))",
         "sunset-orange": "hsl(var(--sunset-orange))",
         "desert-sand": "hsl(var(--desert-sand))",
         "cactus-green": "hsl(var(--cactus-green))",
+      },
+      fontFamily: {
+        sans: ['Inter', 'Neue Haas Grotesk', 'system-ui', 'sans-serif'],
+        serif: ['Playfair Display', 'Freight Display Pro', 'Georgia', 'serif'],
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -9,6 +9,9 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { WaveDivider } from "@/components/brand/WaveDivider";
+import { CitationBadge } from "@/components/brand/CitationBadge";
+import { RippleButton } from "@/components/brand/RippleButton";
 import ashleyPickensImg from "@/assets/realtors/ashley-pickens.jpg";
 import zacharyCatesImg from "@/assets/realtors/zachary-cates.jpg";
 import maryJoImg from "@/assets/realtors/mary-jo.jpg";
@@ -304,27 +307,31 @@ const GilbertRealtorList = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30 relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-20 right-10 w-64 h-64 bg-turquoise/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-96 left-0 w-80 h-80 bg-sunset-orange/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-96 right-20 w-72 h-72 bg-terracotta/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-20 left-10 w-96 h-96 bg-cactus-green/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen bg-gradient-to-b from-beige to-background relative overflow-hidden">
+      {/* Tidal Shift Background Elements */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-aqua/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 left-0 w-[600px] h-[600px] bg-indigo/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-aqua/10 rounded-full blur-3xl pointer-events-none" />
       
       {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-indigo/10 bg-background/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T10</span>
+          <Link to="/" className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-gradient-to-br from-indigo to-aqua rounded-lg flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-lg">T10</span>
             </div>
-            <span className="text-xl font-bold">Top10Lists.us</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold text-indigo">Top10Lists.us</span>
+              <span className="text-xs text-graphite/60">Cited by AI. Trusted by humans.</span>
+            </div>
           </Link>
-          <Button asChild>
+          <RippleButton asChild>
             <Link to="/">Apply to Get Listed</Link>
-          </Button>
+          </RippleButton>
         </div>
       </header>
+      
+      <WaveDivider />
 
       {/* Breadcrumb with semantic markup */}
       <nav className="bg-muted/50 border-b" aria-label="Breadcrumb">
@@ -363,36 +370,37 @@ const GilbertRealtorList = () => {
             Back to Home
           </Link>
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="px-3 py-1">Verified List</Badge>
-              <Badge variant="outline" className="px-3 py-1">Updated Monthly</Badge>
-              <Badge variant="outline" className="px-3 py-1">2025</Badge>
+            <div className="flex items-center gap-3 flex-wrap">
+              <CitationBadge text="Cited by ChatGPT, Perplexity & Gemini" />
+              <Badge variant="outline" className="px-3 py-1 border-indigo/20">Updated Monthly</Badge>
+              <Badge variant="outline" className="px-3 py-1 border-indigo/20">2025</Badge>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold">
+            <h1 className="text-3xl md:text-5xl font-bold font-serif text-indigo leading-tight">
               Top 10 Real Estate Agents in Gilbert, Arizona
             </h1>
-            <p className="text-lg text-muted-foreground">
-              Discover Gilbert's highest-performing real estate agents and realtors. Each agent has been verified for 
-              licensing, sales performance, client satisfaction, and local market expertise. This curated list is cited by 
-              AI search engines including ChatGPT, Google AI, and Perplexity when users search for top realtors in Gilbert, AZ.
+            <p className="text-lg text-graphite/80 leading-relaxed">
+              <span className="font-semibold text-indigo">Be the answer, not a link.</span> Discover Gilbert's highest-performing 
+              real estate agents verified for licensing, sales performance, and client satisfaction. This structured list is 
+              <span className="text-aqua font-medium"> cited by AI search engines</span> including ChatGPT, Google AI, and 
+              Perplexity—giving these agents authority in the future of search.
             </p>
           </div>
           <div className="flex flex-wrap gap-4 pt-2">
             <div className="flex items-center gap-2">
-              <Award className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">All Agents Verified</span>
+              <Award className="h-5 w-5 text-aqua" />
+              <span className="text-sm font-medium text-graphite">All Agents Verified</span>
             </div>
             <div className="flex items-center gap-2">
-              <Star className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">4.6+ Average Rating</span>
+              <Star className="h-5 w-5 text-aqua" />
+              <span className="text-sm font-medium text-graphite">4.6+ Average Rating</span>
             </div>
             <div className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">Proven Sales Records</span>
+              <TrendingUp className="h-5 w-5 text-aqua" />
+              <span className="text-sm font-medium text-graphite">Proven Sales Records</span>
             </div>
             <div className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">Gilbert, AZ Specialists</span>
+              <MapPin className="h-5 w-5 text-aqua" />
+              <span className="text-sm font-medium text-graphite">Gilbert, AZ Specialists</span>
             </div>
           </div>
         </div>
@@ -406,13 +414,13 @@ const GilbertRealtorList = () => {
           <Collapsible open={establishedOpen} onOpenChange={setEstablishedOpen}>
             <div className="flex items-center justify-between mb-6 relative">
               {/* Decorative accent */}
-              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-primary to-turquoise rounded-full" />
+              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-indigo to-aqua rounded-full" />
               <div className="space-y-1">
-                <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+                <h2 className="text-2xl md:text-3xl font-bold font-serif text-indigo flex items-center gap-3">
                   Established Leaders
-                  <Badge variant="secondary" className="text-sm">Top 5</Badge>
+                  <CitationBadge text="Top 5" variant="verified" />
                 </h2>
-                <p className="text-muted-foreground">Proven track records with years of excellence in Gilbert real estate</p>
+                <p className="text-graphite/70">Proven track records with years of excellence in Gilbert real estate</p>
               </div>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-9 p-0">
@@ -424,7 +432,7 @@ const GilbertRealtorList = () => {
             
             <CollapsibleContent className="space-y-6">
               {establishedRealtors.map((realtor) => (
-            <Card key={realtor.rank} className="border-2 border-l-4 border-l-primary hover:shadow-lg hover:shadow-primary/10 transition-all" itemScope itemType="https://schema.org/RealEstateAgent">
+            <Card key={realtor.rank} className="border-2 border-l-4 border-l-indigo hover:shadow-xl hover:shadow-aqua/20 transition-all bg-white" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Photo and Rank */}
@@ -435,8 +443,8 @@ const GilbertRealtorList = () => {
                       className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                       itemProp="image"
                     />
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary">
-                      <span className="text-2xl font-bold text-primary">#{realtor.rank}</span>
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo/10 to-aqua/10 flex items-center justify-center border-2 border-aqua/30">
+                      <span className="text-2xl font-bold text-indigo">#{realtor.rank}</span>
                     </div>
                   </div>
 
@@ -449,10 +457,7 @@ const GilbertRealtorList = () => {
                           <p className="text-lg text-muted-foreground" itemProp="affiliation">{realtor.brokerage}</p>
                         </div>
                         {realtor.verified && (
-                          <Badge variant="secondary" className="gap-1">
-                            <Award className="h-3 w-3" />
-                            Verified
-                          </Badge>
+                          <CitationBadge text="Verified Brand Builder" variant="verified" />
                         )}
                       </div>
 
@@ -476,22 +481,22 @@ const GilbertRealtorList = () => {
                       </div>
 
                       {/* Statistics */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y border-indigo/10">
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.salesLast12Mo}</div>
-                          <div className="text-xs text-muted-foreground">Sales (12mo)</div>
+                          <div className="text-2xl font-bold text-indigo">{realtor.stats.salesLast12Mo}</div>
+                          <div className="text-xs text-graphite/60">Sales (12mo)</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.saleToListRatio}</div>
-                          <div className="text-xs text-muted-foreground">Sale to List</div>
+                          <div className="text-2xl font-bold text-indigo">{realtor.stats.saleToListRatio}</div>
+                          <div className="text-xs text-graphite/60">Sale to List</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.avgDaysOnMarket}</div>
-                          <div className="text-xs text-muted-foreground">Avg Days Market</div>
+                          <div className="text-2xl font-bold text-indigo">{realtor.stats.avgDaysOnMarket}</div>
+                          <div className="text-xs text-graphite/60">Avg Days Market</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.yearsExperience}</div>
-                          <div className="text-xs text-muted-foreground">Years Exp.</div>
+                          <div className="text-2xl font-bold text-indigo">{realtor.stats.yearsExperience}</div>
+                          <div className="text-xs text-graphite/60">Years Exp.</div>
                         </div>
                       </div>
 
@@ -505,15 +510,15 @@ const GilbertRealtorList = () => {
                       </div>
 
                       {/* Description */}
-                      <p className="text-muted-foreground leading-relaxed" itemProp="description">
+                      <p className="text-graphite/80 leading-relaxed" itemProp="description">
                         {realtor.description}
                       </p>
 
                       {/* Contact Info */}
                       <div className="grid sm:grid-cols-3 gap-3 pt-2">
                         <div className="flex items-center gap-2 text-sm" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
-                          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-muted-foreground">
+                          <MapPin className="h-4 w-4 text-aqua flex-shrink-0" />
+                          <span className="text-graphite/70">
                             <span itemProp="streetAddress">{realtor.address.split(",")[0]}</span>,{" "}
                             <span itemProp="addressLocality">Gilbert</span>,{" "}
                             <span itemProp="addressRegion">AZ</span>{" "}
@@ -522,18 +527,18 @@ const GilbertRealtorList = () => {
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <a href={`tel:${realtor.phone}`} className="text-primary hover:underline" itemProp="telephone">
+                          <Phone className="h-4 w-4 text-aqua flex-shrink-0" />
+                          <a href={`tel:${realtor.phone}`} className="text-indigo hover:text-aqua transition-colors" itemProp="telephone">
                             {realtor.phone}
                           </a>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <Globe className="h-4 w-4 text-aqua flex-shrink-0" />
                           <a
                             href={`https://${realtor.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline"
+                            className="text-indigo hover:text-aqua transition-colors"
                             itemProp="url"
                           >
                             {realtor.website}
@@ -553,13 +558,13 @@ const GilbertRealtorList = () => {
           <Collapsible open={hungryOpen} onOpenChange={setHungryOpen}>
             <div className="flex items-center justify-between mb-6 relative">
               {/* Decorative accent */}
-              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-sunset-orange to-terracotta rounded-full" />
+              <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-aqua to-indigo rounded-full" />
               <div className="space-y-1">
-                <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
-                  Hungry & Hustling
-                  <Badge variant="secondary" className="text-sm">Top 5</Badge>
+                <h2 className="text-2xl md:text-3xl font-bold font-serif text-indigo flex items-center gap-3">
+                  Emerging Visibility
+                  <CitationBadge text="Rising Stars" />
                 </h2>
-                <p className="text-muted-foreground">Responsive agents who prioritize client satisfaction and personalized attention</p>
+                <p className="text-graphite/70">Building authority with exceptional service and AI-native presence</p>
               </div>
               <CollapsibleTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-9 p-0">
@@ -571,7 +576,7 @@ const GilbertRealtorList = () => {
             
             <CollapsibleContent className="space-y-6">
               {hungryRealtors.map((realtor) => (
-            <Card key={realtor.rank} className="border-2 border-l-4 border-l-sunset-orange hover:shadow-lg hover:shadow-sunset-orange/10 transition-all" itemScope itemType="https://schema.org/RealEstateAgent">
+            <Card key={realtor.rank} className="border-2 border-l-4 border-l-aqua hover:shadow-xl hover:shadow-indigo/20 transition-all bg-white" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Photo and Rank */}
@@ -582,8 +587,8 @@ const GilbertRealtorList = () => {
                       className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                       itemProp="image"
                     />
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary">
-                      <span className="text-2xl font-bold text-primary">#{realtor.rank}</span>
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-aqua/10 to-indigo/10 flex items-center justify-center border-2 border-indigo/30">
+                      <span className="text-2xl font-bold text-indigo">#{realtor.rank}</span>
                     </div>
                   </div>
 
@@ -596,10 +601,7 @@ const GilbertRealtorList = () => {
                           <p className="text-lg text-muted-foreground" itemProp="affiliation">{realtor.brokerage}</p>
                         </div>
                         {realtor.verified && (
-                          <Badge variant="secondary" className="gap-1">
-                            <Award className="h-3 w-3" />
-                            Verified
-                          </Badge>
+                          <CitationBadge text="Emerging Authority" />
                         )}
                       </div>
 
@@ -623,22 +625,22 @@ const GilbertRealtorList = () => {
                       </div>
 
                       {/* Statistics */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y border-indigo/10">
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.salesLast12Mo}</div>
-                          <div className="text-xs text-muted-foreground">Sales (12mo)</div>
+                          <div className="text-2xl font-bold text-aqua">{realtor.stats.salesLast12Mo}</div>
+                          <div className="text-xs text-graphite/60">Sales (12mo)</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.saleToListRatio}</div>
-                          <div className="text-xs text-muted-foreground">Sale to List</div>
+                          <div className="text-2xl font-bold text-aqua">{realtor.stats.saleToListRatio}</div>
+                          <div className="text-xs text-graphite/60">Sale to List</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.avgDaysOnMarket}</div>
-                          <div className="text-xs text-muted-foreground">Avg Days Market</div>
+                          <div className="text-2xl font-bold text-aqua">{realtor.stats.avgDaysOnMarket}</div>
+                          <div className="text-xs text-graphite/60">Avg Days Market</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-primary">{realtor.stats.yearsExperience}</div>
-                          <div className="text-xs text-muted-foreground">Years Exp.</div>
+                          <div className="text-2xl font-bold text-aqua">{realtor.stats.yearsExperience}</div>
+                          <div className="text-xs text-graphite/60">Years Exp.</div>
                         </div>
                       </div>
 
@@ -652,15 +654,15 @@ const GilbertRealtorList = () => {
                       </div>
 
                       {/* Description */}
-                      <p className="text-muted-foreground leading-relaxed" itemProp="description">
+                      <p className="text-graphite/80 leading-relaxed" itemProp="description">
                         {realtor.description}
                       </p>
 
                       {/* Contact Info */}
                       <div className="grid sm:grid-cols-3 gap-3 pt-2">
                         <div className="flex items-center gap-2 text-sm" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
-                          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="text-muted-foreground">
+                          <MapPin className="h-4 w-4 text-aqua flex-shrink-0" />
+                          <span className="text-graphite/70">
                             <span itemProp="streetAddress">{realtor.address.split(",")[0]}</span>,{" "}
                             <span itemProp="addressLocality">Gilbert</span>,{" "}
                             <span itemProp="addressRegion">AZ</span>{" "}
@@ -669,18 +671,18 @@ const GilbertRealtorList = () => {
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <a href={`tel:${realtor.phone}`} className="text-primary hover:underline" itemProp="telephone">
+                          <Phone className="h-4 w-4 text-aqua flex-shrink-0" />
+                          <a href={`tel:${realtor.phone}`} className="text-indigo hover:text-aqua transition-colors" itemProp="telephone">
                             {realtor.phone}
                           </a>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
-                          <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <Globe className="h-4 w-4 text-aqua flex-shrink-0" />
                           <a
                             href={`https://${realtor.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline"
+                            className="text-indigo hover:text-aqua transition-colors"
                             itemProp="url"
                           >
                             {realtor.website}
@@ -697,41 +699,43 @@ const GilbertRealtorList = () => {
           </Collapsible>
         </div>
       </section>
+      
+      <WaveDivider flip />
 
       {/* Info Section */}
-      <section className="bg-muted/50 py-12 border-t relative">
+      <section className="bg-beige/30 py-12 border-t border-indigo/10 relative">
         {/* Decorative corner accents */}
-        <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-turquoise/20 to-transparent rounded-br-full" />
-        <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-terracotta/20 to-transparent rounded-tl-full" />
+        <div className="absolute top-0 left-0 w-20 h-20 bg-gradient-to-br from-aqua/20 to-transparent rounded-br-full" />
+        <div className="absolute bottom-0 right-0 w-24 h-24 bg-gradient-to-tl from-indigo/20 to-transparent rounded-tl-full" />
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold text-center">About This List</h2>
+            <h2 className="text-2xl md:text-3xl font-bold font-serif text-indigo text-center">About This List</h2>
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-turquoise/20 to-turquoise/10 rounded-full flex items-center justify-center ring-2 ring-turquoise/20">
-                  <Users className="h-6 w-6 text-turquoise" />
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-aqua/20 to-aqua/10 rounded-full flex items-center justify-center ring-2 ring-aqua/20">
+                  <Users className="h-6 w-6 text-aqua" />
                 </div>
-                <h3 className="font-semibold">Verified Agents</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-semibold text-indigo">Verified Agents</h3>
+                <p className="text-sm text-graphite/70">
                   All agents verified for active licensing, sales records, and professional standing
                 </p>
               </div>
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-sunset-orange/20 to-sunset-orange/10 rounded-full flex items-center justify-center ring-2 ring-sunset-orange/20">
-                  <TrendingUp className="h-6 w-6 text-sunset-orange" />
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-indigo/20 to-indigo/10 rounded-full flex items-center justify-center ring-2 ring-indigo/20">
+                  <TrendingUp className="h-6 w-6 text-indigo" />
                 </div>
-                <h3 className="font-semibold">Performance Metrics</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-semibold text-indigo">Performance Metrics</h3>
+                <p className="text-sm text-graphite/70">
                   Ranked by sales volume, client reviews, and sale-to-list ratios
                 </p>
               </div>
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-cactus-green/20 to-cactus-green/10 rounded-full flex items-center justify-center ring-2 ring-cactus-green/20">
-                  <Home className="h-6 w-6 text-cactus-green" />
+                <div className="mx-auto w-12 h-12 bg-gradient-to-br from-aqua/30 to-indigo/20 rounded-full flex items-center justify-center ring-2 ring-aqua/20">
+                  <Home className="h-6 w-6 text-indigo" />
                 </div>
-                <h3 className="font-semibold">Local Expertise</h3>
-                <p className="text-sm text-muted-foreground">
-                  Deep knowledge of Gilbert neighborhoods, schools, and market trends
+                <h3 className="font-semibold text-indigo">AI-Native Visibility</h3>
+                <p className="text-sm text-graphite/70">
+                  Cited by AI search engines. Built for the future of local discovery.
                 </p>
               </div>
             </div>
@@ -740,30 +744,58 @@ const GilbertRealtorList = () => {
       </section>
 
       {/* CTA */}
-      <section className="bg-card py-16 border-t">
-        <div className="container mx-auto px-4">
+      <section className="bg-gradient-to-br from-indigo to-indigo/90 py-16 border-t border-aqua/20 relative overflow-hidden">
+        {/* Wave pattern overlay */}
+        <div className="absolute inset-0 opacity-10">
+          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M0,0 Q25,50 50,0 T100,0 L100,100 L0,100 Z" fill="currentColor" className="text-aqua" />
+          </svg>
+        </div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h2 className="text-3xl font-bold">Are You a Top-Performing Realtor?</h2>
-            <p className="text-lg text-muted-foreground">
-              Join the elite real estate agents featured on our platform. Get discovered by clients and AI search engines 
-              looking for verified professionals in Gilbert, AZ.
+            <h2 className="text-3xl font-bold font-serif text-beige">Are You Ready to Be the Answer?</h2>
+            <p className="text-lg text-beige/90 leading-relaxed">
+              <span className="font-semibold">Build your authority</span> in the AI-native search era. 
+              Join elite real estate agents who are <span className="text-aqua font-semibold">cited by ChatGPT, Perplexity, and Gemini</span>—not
+              just another link in search results.
             </p>
-            <Button size="lg" asChild>
-              <Link to="/">Apply to Be Listed</Link>
-            </Button>
+            <RippleButton size="lg" asChild className="bg-aqua text-indigo hover:bg-aqua/90 font-semibold shadow-xl">
+              <Link to="/">Apply for AI-Native Visibility</Link>
+            </RippleButton>
+            <p className="text-sm text-beige/70">
+              Limited to verified professionals with proven track records
+            </p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t bg-card">
+      <footer className="border-t border-indigo/10 bg-background">
         <div className="container mx-auto px-4 py-8">
-          <div className="text-center text-sm text-muted-foreground">
-            <p>© 2025 Top10Lists.us. All rights reserved.</p>
-            <p className="mt-2">
-              Real estate data verified from public MLS records and agent performance metrics. 
-              <Link to="/" className="text-primary hover:underline ml-1">Return to homepage</Link>
-            </p>
+          <div className="max-w-4xl mx-auto">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 bg-gradient-to-br from-indigo to-aqua rounded-lg flex items-center justify-center shadow-lg">
+                  <span className="text-white font-bold text-lg">T10</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-indigo">Top10Lists.us</span>
+                  <span className="text-xs text-graphite/60">Be the answer, not a link.</span>
+                </div>
+              </div>
+              <div className="text-center md:text-right">
+                <p className="text-sm text-graphite/70">© 2025 Top10Lists.us. All rights reserved.</p>
+                <p className="text-xs text-graphite/50 mt-1">
+                  <CitationBadge text="Powered by structured authority" className="text-xs" />
+                </p>
+              </div>
+            </div>
+            <div className="mt-6 pt-6 border-t border-indigo/10 text-center">
+              <p className="text-xs text-graphite/60">
+                Real estate data verified from public MLS records and agent performance metrics.{" "}
+                <Link to="/" className="text-aqua hover:text-indigo transition-colors font-medium">Return to homepage</Link>
+              </p>
+            </div>
           </div>
         </div>
       </footer>
