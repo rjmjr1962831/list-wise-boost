@@ -30,7 +30,7 @@ const Index = () => {
       const { error } = await supabase.from("contacts").insert([
         {
           full_name: formData.fullName,
-          email: formData.email,
+          email: "robert@top10lists.us",
           phone: formData.phone || null,
           message: formData.message,
         },
@@ -54,9 +54,44 @@ const Index = () => {
         {/* Hero Section */}
         <div className="text-center space-y-6">
           <div className="flex justify-center">
-            <div className="relative">
-              <Brain className="w-32 h-32 md:w-40 md:h-40 text-primary animate-pulse" />
-              <div className="absolute inset-0 bg-primary/20 blur-3xl -z-10" />
+            <div className="relative w-full max-w-md aspect-square">
+              {/* SVG for connecting lines with animated light */}
+              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 400">
+                <defs>
+                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+                    <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="1">
+                      <animate attributeName="offset" values="0;1;0" dur="3s" repeatCount="indefinite" />
+                    </stop>
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+                  </linearGradient>
+                </defs>
+                {/* Lines connecting the brains */}
+                <line x1="100" y1="100" x2="300" y2="100" stroke="url(#lineGradient)" strokeWidth="2" />
+                <line x1="300" y1="100" x2="300" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
+                <line x1="300" y1="300" x2="100" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
+                <line x1="100" y1="300" x2="100" y2="100" stroke="url(#lineGradient)" strokeWidth="2" />
+                <line x1="100" y1="100" x2="300" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
+                <line x1="300" y1="100" x2="100" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
+              </svg>
+              
+              {/* Four brains positioned at corners */}
+              <div className="absolute top-0 left-0 w-24 h-24">
+                <Brain className="w-full h-full text-primary animate-pulse" />
+                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+              </div>
+              <div className="absolute top-0 right-0 w-24 h-24">
+                <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '0.5s' }} />
+                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+              </div>
+              <div className="absolute bottom-0 left-0 w-24 h-24">
+                <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '1s' }} />
+                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+              </div>
+              <div className="absolute bottom-0 right-0 w-24 h-24">
+                <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '1.5s' }} />
+                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+              </div>
             </div>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-foreground">
