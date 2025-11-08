@@ -59,7 +59,14 @@ const Index = () => {
               <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 400">
                 <defs>
                   <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                  <filter id="strongGlow">
+                    <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
                     <feMerge>
                       <feMergeNode in="coloredBlur"/>
                       <feMergeNode in="SourceGraphic"/>
@@ -67,76 +74,106 @@ const Index = () => {
                   </filter>
                   <radialGradient id="packetGradient">
                     <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+                    <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.8" />
                     <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
                   </radialGradient>
                 </defs>
                 
-                {/* Curved neuron paths connecting all brains */}
-                {/* Top-left to Top-right */}
-                <path id="path1" d="M 80 80 Q 200 60 320 80" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
-                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
-                  <animateMotion dur="2s" repeatCount="indefinite">
-                    <mpath href="#path1" />
-                  </animateMotion>
+                {/* Top-left to Top-right - curved path */}
+                <path id="path1" d="M 80 80 Q 200 40 320 80" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" opacity="0.4" filter="url(#glow)" />
+                <circle r="8" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.5s" repeatCount="indefinite"><mpath href="#path1" /></animateMotion>
+                </circle>
+                <circle r="6" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.5s" repeatCount="indefinite" begin="0.5s"><mpath href="#path1" /></animateMotion>
+                </circle>
+                <circle r="7" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.5s" repeatCount="indefinite" begin="1s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path1" /></animateMotion>
                 </circle>
                 
-                {/* Top-right to Bottom-right */}
-                <path id="path2" d="M 320 80 Q 340 200 320 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
-                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
-                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="0.3s">
-                    <mpath href="#path2" />
-                  </animateMotion>
+                {/* Top-right to Bottom-right - curved path */}
+                <path id="path2" d="M 320 80 Q 360 200 320 320" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" opacity="0.4" filter="url(#glow)" />
+                <circle r="7" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.8s" repeatCount="indefinite" begin="0.2s"><mpath href="#path2" /></animateMotion>
+                </circle>
+                <circle r="8" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.8s" repeatCount="indefinite" begin="0.8s"><mpath href="#path2" /></animateMotion>
+                </circle>
+                <circle r="6" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.8s" repeatCount="indefinite" begin="0.4s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path2" /></animateMotion>
                 </circle>
                 
-                {/* Bottom-right to Bottom-left */}
-                <path id="path3" d="M 320 320 Q 200 340 80 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
-                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
-                  <animateMotion dur="2.4s" repeatCount="indefinite" begin="0.6s">
-                    <mpath href="#path3" />
-                  </animateMotion>
+                {/* Bottom-right to Bottom-left - curved path */}
+                <path id="path3" d="M 320 320 Q 200 360 80 320" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" opacity="0.4" filter="url(#glow)" />
+                <circle r="9" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.6s" repeatCount="indefinite" begin="0.3s"><mpath href="#path3" /></animateMotion>
+                </circle>
+                <circle r="7" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.6s" repeatCount="indefinite" begin="0.9s"><mpath href="#path3" /></animateMotion>
+                </circle>
+                <circle r="6" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.6s" repeatCount="indefinite" begin="0.1s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path3" /></animateMotion>
                 </circle>
                 
-                {/* Bottom-left to Top-left */}
-                <path id="path4" d="M 80 320 Q 60 200 80 80" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
-                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
-                  <animateMotion dur="2.6s" repeatCount="indefinite" begin="0.9s">
-                    <mpath href="#path4" />
-                  </animateMotion>
+                {/* Bottom-left to Top-left - curved path */}
+                <path id="path4" d="M 80 320 Q 40 200 80 80" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" opacity="0.4" filter="url(#glow)" />
+                <circle r="8" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="2s" repeatCount="indefinite" begin="0.6s"><mpath href="#path4" /></animateMotion>
+                </circle>
+                <circle r="7" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="2s" repeatCount="indefinite" begin="0s"><mpath href="#path4" /></animateMotion>
+                </circle>
+                <circle r="6" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="2s" repeatCount="indefinite" begin="0.7s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path4" /></animateMotion>
                 </circle>
                 
-                {/* Top-left to Bottom-right (diagonal) */}
-                <path id="path5" d="M 80 80 Q 150 150 320 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
-                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
-                  <animateMotion dur="2.8s" repeatCount="indefinite" begin="1.2s">
-                    <mpath href="#path5" />
-                  </animateMotion>
+                {/* Top-left to Bottom-right - organic diagonal */}
+                <path id="path5" d="M 80 80 Q 180 180 320 320" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" opacity="0.4" filter="url(#glow)" />
+                <circle r="9" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="0.4s"><mpath href="#path5" /></animateMotion>
+                </circle>
+                <circle r="7" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="1.1s"><mpath href="#path5" /></animateMotion>
+                </circle>
+                <circle r="8" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="0.2s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path5" /></animateMotion>
+                </circle>
+                <circle r="6" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="1.5s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path5" /></animateMotion>
                 </circle>
                 
-                {/* Top-right to Bottom-left (diagonal) */}
-                <path id="path6" d="M 320 80 Q 250 150 80 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
-                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
-                  <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s">
-                    <mpath href="#path6" />
-                  </animateMotion>
+                {/* Top-right to Bottom-left - organic diagonal */}
+                <path id="path6" d="M 320 80 Q 220 180 80 320" stroke="hsl(var(--primary))" strokeWidth="2.5" fill="none" opacity="0.4" filter="url(#glow)" />
+                <circle r="7" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.9s" repeatCount="indefinite" begin="0.5s"><mpath href="#path6" /></animateMotion>
+                </circle>
+                <circle r="8" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.9s" repeatCount="indefinite" begin="1.2s"><mpath href="#path6" /></animateMotion>
+                </circle>
+                <circle r="9" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.9s" repeatCount="indefinite" begin="0.3s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path6" /></animateMotion>
+                </circle>
+                <circle r="6" fill="url(#packetGradient)" filter="url(#strongGlow)">
+                  <animateMotion dur="1.9s" repeatCount="indefinite" begin="0.8s" keyPoints="1;0" keyTimes="0;1"><mpath href="#path6" /></animateMotion>
                 </circle>
               </svg>
               
               {/* Four brains positioned at corners */}
               <div className="absolute top-0 left-0 w-24 h-24">
                 <Brain className="w-full h-full text-primary animate-pulse" />
-                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" />
               </div>
               <div className="absolute top-0 right-0 w-24 h-24">
                 <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '0.5s' }} />
-                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '0.5s' }} />
               </div>
               <div className="absolute bottom-0 left-0 w-24 h-24">
                 <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '1s' }} />
-                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '1s' }} />
               </div>
               <div className="absolute bottom-0 right-0 w-24 h-24">
                 <Brain className="w-full h-full text-primary animate-pulse" style={{ animationDelay: '1.5s' }} />
-                <div className="absolute inset-0 bg-primary/20 blur-2xl -z-10" />
+                <div className="absolute inset-0 bg-primary/30 blur-2xl -z-10 animate-pulse" style={{ animationDelay: '1.5s' }} />
               </div>
             </div>
           </div>
