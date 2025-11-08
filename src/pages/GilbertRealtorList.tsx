@@ -127,16 +127,16 @@ const realtors = [
     brokerage: "Realty ONE Group",
     rating: 4.7,
     reviews: 203,
-    specialties: ["Downsizing", "Senior Living", "Estate Sales"],
+    specialties: ["First-Time Buyers", "Condos", "Millennial Homes"],
     address: "2340 E Guadalupe Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0206",
     website: "sarahjohnsonhomes.com",
-    description: "Compassionate realtor specializing in downsizing and senior transitions. Over 18 years helping Gilbert residents find their next chapter with care and expertise.",
+    description: "Rising star with fresh perspective and modern marketing approach. Quickly building a strong client base by specializing in helping first-time buyers navigate Gilbert's market with confidence.",
     stats: {
-      salesLast12Mo: 67,
+      salesLast12Mo: 42,
       saleToListRatio: "97.89%",
-      avgDaysOnMarket: 51,
-      yearsExperience: 18
+      avgDaysOnMarket: 38,
+      yearsExperience: 4
     },
     verified: true,
     image: sarahJohnsonImg
@@ -147,16 +147,16 @@ const realtors = [
     brokerage: "HomeSmart",
     rating: 4.7,
     reviews: 187,
-    specialties: ["Land Sales", "New Development", "Builders"],
+    specialties: ["New Construction", "Young Families", "Smart Homes"],
     address: "4567 S Greenfield Rd, Gilbert, AZ 85297",
     phone: "(480) 555-0207",
     website: "robertandersonrealty.com",
-    description: "New construction and land development expert. Strong relationships with Gilbert's top builders and extensive knowledge of upcoming developments.",
+    description: "Dynamic agent with strong tech background making waves in new construction. Building impressive track record by connecting young families with Gilbert's newest communities and smart home features.",
     stats: {
-      salesLast12Mo: 82,
+      salesLast12Mo: 38,
       saleToListRatio: "98.12%",
-      avgDaysOnMarket: 36,
-      yearsExperience: 16
+      avgDaysOnMarket: 32,
+      yearsExperience: 5
     },
     verified: true,
     image: robertAndersonImg
@@ -167,16 +167,16 @@ const realtors = [
     brokerage: "Russ Lyon Sotheby's International Realty",
     rating: 4.7,
     reviews: 176,
-    specialties: ["Historic Homes", "Downtown Gilbert", "Equestrian Properties"],
+    specialties: ["Social Media Marketing", "Video Tours", "Staging"],
     address: "123 N Gilbert Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0208",
     website: "lisabrownluxury.com",
-    description: "Historic Gilbert expert and equestrian property specialist. Featured agent for Sotheby's with unmatched knowledge of Gilbert's heritage district.",
+    description: "Creative marketing specialist bringing fresh energy to Sotheby's. Leveraging social media expertise and professional staging to showcase Gilbert properties in innovative ways that attract buyers fast.",
     stats: {
-      salesLast12Mo: 58,
+      salesLast12Mo: 29,
       saleToListRatio: "97.76%",
-      avgDaysOnMarket: 48,
-      yearsExperience: 13
+      avgDaysOnMarket: 35,
+      yearsExperience: 3
     },
     verified: true,
     image: lisaBrownImg
@@ -187,16 +187,16 @@ const realtors = [
     brokerage: "Keller Williams Arizona Realty",
     rating: 4.6,
     reviews: 164,
-    specialties: ["Tech-Savvy Marketing", "Virtual Tours", "International Buyers"],
+    specialties: ["Tech-Savvy Marketing", "3D Virtual Tours", "Remote Buyers"],
     address: "789 E Elliot Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0209",
     website: "davidkimhomes.com",
-    description: "Digital marketing innovator with cutting-edge virtual tour technology. Multilingual agent specializing in helping international buyers relocate to Gilbert.",
+    description: "Digital-first agent revolutionizing how buyers find homes in Gilbert. Expert in 3D virtual tours and remote transactions, helping out-of-state buyers relocate with confidence through innovative technology.",
     stats: {
-      salesLast12Mo: 71,
+      salesLast12Mo: 34,
       saleToListRatio: "97.45%",
-      avgDaysOnMarket: 40,
-      yearsExperience: 9
+      avgDaysOnMarket: 33,
+      yearsExperience: 5
     },
     verified: true,
     image: davidKimImg
@@ -207,16 +207,16 @@ const realtors = [
     brokerage: "Engel & Völkers Scottsdale",
     rating: 4.6,
     reviews: 152,
-    specialties: ["Pool Homes", "Smart Homes", "Energy Efficient"],
+    specialties: ["Sustainable Homes", "Solar Properties", "Green Living"],
     address: "2890 S Higley Rd, Gilbert, AZ 85295",
     phone: "(480) 555-0210",
     website: "christinamartinezaz.com",
-    description: "Sustainable living advocate specializing in energy-efficient and smart home technologies. Helping environmentally conscious buyers find their dream homes.",
+    description: "Passionate advocate for sustainable living and eco-friendly homes. Quickly becoming Gilbert's go-to agent for environmentally conscious buyers seeking energy-efficient properties and green technologies.",
     stats: {
-      salesLast12Mo: 63,
+      salesLast12Mo: 31,
       saleToListRatio: "97.34%",
-      avgDaysOnMarket: 44,
-      yearsExperience: 10
+      avgDaysOnMarket: 37,
+      yearsExperience: 4
     },
     verified: true,
     image: christinaMartinezImg
