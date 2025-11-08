@@ -55,24 +55,70 @@ const Index = () => {
         <div className="text-center space-y-6">
           <div className="flex justify-center">
             <div className="relative w-full max-w-md aspect-square">
-              {/* SVG for connecting lines with animated light */}
+              {/* SVG for neuron-like connections with animated light packets */}
               <svg className="absolute inset-0 w-full h-full" viewBox="0 0 400 400">
                 <defs>
-                  <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
-                    <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="1">
-                      <animate attributeName="offset" values="0;1;0" dur="3s" repeatCount="indefinite" />
-                    </stop>
-                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
-                  </linearGradient>
+                  <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"/>
+                      <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                  </filter>
+                  <radialGradient id="packetGradient">
+                    <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+                    <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+                  </radialGradient>
                 </defs>
-                {/* Lines connecting the brains */}
-                <line x1="100" y1="100" x2="300" y2="100" stroke="url(#lineGradient)" strokeWidth="2" />
-                <line x1="300" y1="100" x2="300" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
-                <line x1="300" y1="300" x2="100" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
-                <line x1="100" y1="300" x2="100" y2="100" stroke="url(#lineGradient)" strokeWidth="2" />
-                <line x1="100" y1="100" x2="300" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
-                <line x1="300" y1="100" x2="100" y2="300" stroke="url(#lineGradient)" strokeWidth="2" />
+                
+                {/* Curved neuron paths connecting all brains */}
+                {/* Top-left to Top-right */}
+                <path id="path1" d="M 80 80 Q 200 60 320 80" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
+                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
+                  <animateMotion dur="2s" repeatCount="indefinite">
+                    <mpath href="#path1" />
+                  </animateMotion>
+                </circle>
+                
+                {/* Top-right to Bottom-right */}
+                <path id="path2" d="M 320 80 Q 340 200 320 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
+                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
+                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="0.3s">
+                    <mpath href="#path2" />
+                  </animateMotion>
+                </circle>
+                
+                {/* Bottom-right to Bottom-left */}
+                <path id="path3" d="M 320 320 Q 200 340 80 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
+                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
+                  <animateMotion dur="2.4s" repeatCount="indefinite" begin="0.6s">
+                    <mpath href="#path3" />
+                  </animateMotion>
+                </circle>
+                
+                {/* Bottom-left to Top-left */}
+                <path id="path4" d="M 80 320 Q 60 200 80 80" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
+                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
+                  <animateMotion dur="2.6s" repeatCount="indefinite" begin="0.9s">
+                    <mpath href="#path4" />
+                  </animateMotion>
+                </circle>
+                
+                {/* Top-left to Bottom-right (diagonal) */}
+                <path id="path5" d="M 80 80 Q 150 150 320 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
+                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
+                  <animateMotion dur="2.8s" repeatCount="indefinite" begin="1.2s">
+                    <mpath href="#path5" />
+                  </animateMotion>
+                </circle>
+                
+                {/* Top-right to Bottom-left (diagonal) */}
+                <path id="path6" d="M 320 80 Q 250 150 80 320" stroke="hsl(var(--primary))" strokeWidth="2" fill="none" opacity="0.3" />
+                <circle r="6" fill="url(#packetGradient)" filter="url(#glow)">
+                  <animateMotion dur="3s" repeatCount="indefinite" begin="1.5s">
+                    <mpath href="#path6" />
+                  </animateMotion>
+                </circle>
               </svg>
               
               {/* Four brains positioned at corners */}
