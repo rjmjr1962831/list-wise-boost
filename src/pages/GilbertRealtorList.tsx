@@ -224,8 +224,8 @@ const realtors = [
 ];
 
 const GilbertRealtorList = () => {
-  const [establishedOpen, setEstablishedOpen] = useState(true);
-  const [hungryOpen, setHungryOpen] = useState(true);
+  const [establishedOpen, setEstablishedOpen] = useState(false);
+  const [hungryOpen, setHungryOpen] = useState(false);
 
   const establishedRealtors = realtors.slice(0, 5);
   const hungryRealtors = realtors.slice(5, 10);
