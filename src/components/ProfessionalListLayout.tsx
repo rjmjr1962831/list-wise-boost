@@ -33,6 +33,38 @@ export const ProfessionalListLayout = ({
       document.head.appendChild(meta);
     }
 
+    // Add canonical URL
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', window.location.href);
+
+    // Add Open Graph and Twitter meta tags
+    const metaTags = [
+      { property: 'og:title', content: metadata.title },
+      { property: 'og:description', content: metadata.description },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: window.location.href },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: metadata.title },
+      { name: 'twitter:description', content: metadata.description }
+    ];
+
+    metaTags.forEach(tag => {
+      const attr = tag.property ? 'property' : 'name';
+      const value = tag.property || tag.name;
+      let metaTag = document.querySelector(`meta[${attr}="${value}"]`);
+      if (!metaTag) {
+        metaTag = document.createElement('meta');
+        metaTag.setAttribute(attr, value);
+        document.head.appendChild(metaTag);
+      }
+      metaTag.setAttribute('content', tag.content);
+    });
+
     // Add JSON-LD structured data for SEO
     const structuredData = {
       "@context": "https://schema.org",
@@ -48,6 +80,7 @@ export const ProfessionalListLayout = ({
           "@type": metadata.profession.schemaType,
           "name": professional.name,
           "description": professional.description,
+          "knowsAbout": professional.specialties,
           "address": {
             "@type": "PostalAddress",
             "streetAddress": professional.address.split(",")[0],

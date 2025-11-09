@@ -29,7 +29,7 @@ export const ProfessionalCard = ({
           <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
             <img 
               src={professional.image} 
-              alt={`${professional.name}${professional.title ? `, ${professional.title}` : ''}`}
+              alt={`${professional.name} - Top Ranked #${professional.rank} specializing in ${professional.specialties.slice(0, 3).join(', ')}`}
               className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
               itemProp="image"
             />

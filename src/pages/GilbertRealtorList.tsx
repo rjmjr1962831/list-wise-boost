@@ -234,18 +234,51 @@ const GilbertRealtorList = () => {
   const hungryRealtors = realtors.slice(5, 10);
 
   useEffect(() => {
-    // Update page title and meta tags for SEO
-    document.title = "Top 10 Real Estate Agents in Gilbert, AZ (2025) | Best Realtors";
+    // Update page title and meta tags for SEO (optimized to under 60 chars)
+    document.title = "Top 10 Gilbert AZ Realtors (2025) | Best Agents";
     
     const metaDescription = document.querySelector('meta[name="description"]');
+    const descriptionText = "Top 10 real estate agents in Gilbert AZ. Verified professionals with proven sales, 4.6+ ratings, and local expertise. Updated 2025.";
     if (metaDescription) {
-      metaDescription.setAttribute("content", "Discover the top 10 real estate agents and realtors in Gilbert, Arizona. Verified professionals with proven sales records, client reviews, and local expertise. Updated 2025.");
+      metaDescription.setAttribute("content", descriptionText);
     } else {
       const meta = document.createElement('meta');
       meta.name = "description";
-      meta.content = "Discover the top 10 real estate agents and realtors in Gilbert, Arizona. Verified professionals with proven sales records, client reviews, and local expertise. Updated 2025.";
+      meta.content = descriptionText;
       document.head.appendChild(meta);
     }
+
+    // Add canonical URL
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', window.location.href);
+
+    // Add Open Graph and Twitter meta tags
+    const metaTags = [
+      { property: 'og:title', content: 'Top 10 Real Estate Agents in Gilbert, Arizona' },
+      { property: 'og:description', content: descriptionText },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: window.location.href },
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: 'Top 10 Real Estate Agents in Gilbert, Arizona' },
+      { name: 'twitter:description', content: descriptionText }
+    ];
+
+    metaTags.forEach(tag => {
+      const attr = tag.property ? 'property' : 'name';
+      const value = tag.property || tag.name;
+      let metaTag = document.querySelector(`meta[${attr}="${value}"]`);
+      if (!metaTag) {
+        metaTag = document.createElement('meta');
+        metaTag.setAttribute(attr, value);
+        document.head.appendChild(metaTag);
+      }
+      metaTag.setAttribute('content', tag.content);
+    });
 
     // Add JSON-LD structured data for SEO and local business schema
     const structuredData = {
@@ -262,6 +295,7 @@ const GilbertRealtorList = () => {
           "@type": "RealEstateAgent",
           "name": realtor.name,
           "description": realtor.description,
+          "knowsAbout": realtor.specialties,
           "address": {
             "@type": "PostalAddress",
             "streetAddress": realtor.address.split(",")[0],
@@ -439,7 +473,7 @@ const GilbertRealtorList = () => {
                   <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
                     <img 
                       src={realtor.image} 
-                      alt={`${realtor.name} - Gilbert Real Estate Agent`}
+                      alt={`${realtor.name} - Top Real Estate Agent #${realtor.rank} in Gilbert AZ specializing in ${realtor.specialties.slice(0, 3).join(', ')}`}
                       className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                       itemProp="image"
                     />
@@ -583,7 +617,7 @@ const GilbertRealtorList = () => {
                   <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
                     <img 
                       src={realtor.image} 
-                      alt={`${realtor.name} - Gilbert Real Estate Agent`}
+                      alt={`${realtor.name} - Top Real Estate Agent #${realtor.rank} in Gilbert AZ specializing in ${realtor.specialties.slice(0, 3).join(', ')}`}
                       className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                       itemProp="image"
                     />

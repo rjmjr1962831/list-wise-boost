@@ -160,6 +160,47 @@ const dentists = [
 
 const SampleDentistList = () => {
   useEffect(() => {
+    // Set page title and meta description for SEO (under 60 chars for title, 160 for desc)
+    document.title = "Top 10 Dentists Gilbert AZ (2025) | Best Dental Care";
+    
+    const metaDescription = document.querySelector('meta[name="description"]');
+    const descriptionText = "Discover Gilbert AZ's top 10 dentists. Verified professionals with proven expertise, 4.6+ ratings, and exceptional patient care. Updated 2025.";
+    if (metaDescription) {
+      metaDescription.setAttribute("content", descriptionText);
+    } else {
+      const meta = document.createElement('meta');
+      meta.name = "description";
+      meta.content = descriptionText;
+      document.head.appendChild(meta);
+    }
+
+    // Add canonical URL
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', window.location.href);
+
+    // Add Open Graph meta tags
+    const ogTags = [
+      { property: 'og:title', content: 'Top 10 Dentists in Gilbert, Arizona' },
+      { property: 'og:description', content: descriptionText },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: window.location.href }
+    ];
+
+    ogTags.forEach(tag => {
+      let ogTag = document.querySelector(`meta[property="${tag.property}"]`);
+      if (!ogTag) {
+        ogTag = document.createElement('meta');
+        ogTag.setAttribute('property', tag.property);
+        document.head.appendChild(ogTag);
+      }
+      ogTag.setAttribute('content', tag.content);
+    });
+
     // Add JSON-LD structured data for SEO and AI citation
     const structuredData = {
       "@context": "https://schema.org",
@@ -175,20 +216,36 @@ const SampleDentistList = () => {
           "@type": "Dentist",
           "name": dentist.practice,
           "description": dentist.description,
+          "knowsAbout": dentist.specialties,
           "address": {
             "@type": "PostalAddress",
             "streetAddress": dentist.address.split(",")[0],
             "addressLocality": "Gilbert",
             "addressRegion": "AZ",
-            "addressCountry": "US"
+            "addressCountry": "US",
+            "postalCode": dentist.address.match(/\d{5}/)?.[0]
           },
           "telephone": dentist.phone,
           "url": `https://${dentist.website}`,
+          "image": dentist.image,
           "aggregateRating": {
             "@type": "AggregateRating",
             "ratingValue": dentist.rating,
             "reviewCount": dentist.reviews,
             "bestRating": 5
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": "33.3528",
+            "longitude": "-111.7890"
+          },
+          "areaServed": {
+            "@type": "City",
+            "name": "Gilbert",
+            "containedIn": {
+              "@type": "State",
+              "name": "Arizona"
+            }
           }
         }
       }))
@@ -221,20 +278,34 @@ const SampleDentistList = () => {
         </div>
       </header>
 
-      {/* Breadcrumb */}
-      <div className="bg-muted/50 border-b">
+      {/* Breadcrumb with schema.org markup */}
+      <nav className="bg-muted/50 border-b" aria-label="Breadcrumb">
         <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
+          <ol className="flex items-center gap-2 text-sm text-muted-foreground" itemScope itemType="https://schema.org/BreadcrumbList">
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <Link to="/" className="hover:text-foreground transition-colors" itemProp="item">
+                <span itemProp="name">Home</span>
+              </Link>
+              <meta itemProp="position" content="1" />
+            </li>
             <span>/</span>
-            <span className="text-foreground font-medium">Arizona</span>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <span className="text-foreground font-medium" itemProp="name">Arizona</span>
+              <meta itemProp="position" content="2" />
+            </li>
             <span>/</span>
-            <span className="text-foreground font-medium">Gilbert</span>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <span className="text-foreground font-medium" itemProp="name">Gilbert</span>
+              <meta itemProp="position" content="3" />
+            </li>
             <span>/</span>
-            <span className="text-foreground font-medium">Dentists</span>
-          </div>
+            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <span className="text-foreground font-medium" itemProp="name">Top Dentists</span>
+              <meta itemProp="position" content="4" />
+            </li>
+          </ol>
         </div>
-      </div>
+      </nav>
 
       {/* Hero */}
       <section className="container mx-auto px-4 py-12 md:py-16">
@@ -285,7 +356,7 @@ const SampleDentistList = () => {
                   <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
                     <img 
                       src={dentist.image} 
-                      alt={dentist.name}
+                      alt={`${dentist.name} - Top Ranked Dentist #${dentist.rank} in Gilbert, Arizona specializing in ${dentist.specialties.join(', ')}`}
                       className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                     />
                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary">
