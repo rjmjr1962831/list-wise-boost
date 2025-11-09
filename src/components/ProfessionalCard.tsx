@@ -134,9 +134,19 @@ export const ProfessionalCard = ({
                     successRate: "Success Rate"
                   };
                   
+                  // Format values based on type
+                  let formattedValue = value;
+                  if (key === 'salesLast12Mo' && typeof value === 'number') {
+                    formattedValue = '$' + (value / 1000000).toFixed(1) + 'M';
+                  } else if (key === 'patientsServed' && typeof value === 'number') {
+                    formattedValue = value.toLocaleString();
+                  } else if (typeof value === 'number' && key !== 'successRate') {
+                    formattedValue = value.toLocaleString();
+                  }
+                  
                   return (
                     <div key={key} className="text-center md:text-left">
-                      <div className="text-2xl font-bold text-primary">{value}</div>
+                      <div className="text-2xl font-bold text-primary">{formattedValue}</div>
                       <div className="text-xs text-muted-foreground">{labels[key] || key}</div>
                     </div>
                   );
