@@ -1,0 +1,267 @@
+import { Professional } from '@/types/professional';
+
+// Phoenix, Arizona - Sample Data for All Categories
+
+export const phoenixDentists: Professional[] = [
+  {
+    rank: 1,
+    name: "Dr. Sarah Chen",
+    company: "Phoenix Premier Dental",
+    rating: 4.9,
+    reviews: 342,
+    specialties: ["Cosmetic Dentistry", "Implants", "Emergency Care"],
+    address: "1234 N Central Ave, Phoenix, AZ 85004",
+    phone: "(602) 555-0101",
+    website: "https://phoenixpremierdental.com",
+    description: "Award-winning cosmetic and restorative dentistry with state-of-the-art technology.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { patientsServed: 5000, yearsExperience: 15 }
+  },
+  {
+    rank: 2,
+    name: "Dr. Michael Rodriguez",
+    company: "Desert Dental Care",
+    rating: 4.8,
+    reviews: 289,
+    specialties: ["Family Dentistry", "Orthodontics", "Pediatrics"],
+    address: "5678 E Camelback Rd, Phoenix, AZ 85018",
+    phone: "(602) 555-0102",
+    website: "https://desertdentalcare.com",
+    description: "Comprehensive family dental care serving Phoenix for over 20 years.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { patientsServed: 8000, yearsExperience: 20 }
+  }
+];
+
+export const phoenixRealtors: Professional[] = [
+  {
+    rank: 1,
+    name: "Jennifer Martinez",
+    company: "Sonoran Realty Group",
+    rating: 5.0,
+    reviews: 156,
+    specialties: ["Luxury Homes", "Investment Properties", "First-Time Buyers"],
+    address: "2100 N Central Ave, Phoenix, AZ 85004",
+    phone: "(602) 555-0201",
+    website: "https://sonoranrealty.com",
+    description: "$50M+ in sales. Expert in Phoenix luxury market and investment properties.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { salesLast12Mo: 52000000, yearsExperience: 12 }
+  },
+  {
+    rank: 2,
+    name: "David Thompson",
+    company: "Valley Home Experts",
+    rating: 4.9,
+    reviews: 201,
+    specialties: ["Relocation", "New Construction", "Veterans"],
+    address: "3456 E Indian School Rd, Phoenix, AZ 85018",
+    phone: "(602) 555-0202",
+    website: "https://valleyhomeexperts.com",
+    description: "Relocation specialist helping families transition to the Phoenix area.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { salesLast12Mo: 38000000, yearsExperience: 9 }
+  }
+];
+
+export const phoenixLawyers: Professional[] = [
+  {
+    rank: 1,
+    name: "Robert Anderson",
+    company: "Anderson & Associates Law",
+    rating: 4.9,
+    reviews: 127,
+    specialties: ["Civil Litigation", "Contract Law", "Appeals"],
+    address: "100 W Washington St, Phoenix, AZ 85003",
+    phone: "(602) 555-0301",
+    website: "https://andersonlawaz.com",
+    description: "Board-certified attorney with 25 years experience in complex litigation.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 25 }
+  }
+];
+
+export const phoenixPersonalInjuryLawyers: Professional[] = [
+  {
+    rank: 1,
+    name: "Maria Sanchez",
+    company: "Sanchez Personal Injury Law",
+    rating: 5.0,
+    reviews: 89,
+    specialties: ["Car Accidents", "Slip & Fall", "Medical Malpractice"],
+    address: "1800 N Central Ave, Phoenix, AZ 85004",
+    phone: "(602) 555-0401",
+    website: "https://sanchezinjurylaw.com",
+    description: "$100M+ recovered for clients. No fees unless we win your case.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 18, successRate: "95%" }
+  }
+];
+
+export const phoenixBusinessLawyers: Professional[] = [
+  {
+    rank: 1,
+    name: "James Wilson",
+    company: "Wilson Corporate Law",
+    rating: 4.8,
+    reviews: 73,
+    specialties: ["Business Formation", "Contracts", "M&A"],
+    address: "2600 N Central Ave, Phoenix, AZ 85004",
+    phone: "(602) 555-0501",
+    website: "https://wilsoncorporatelaw.com",
+    description: "Helping startups and established businesses navigate complex corporate matters.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 16 }
+  }
+];
+
+export const phoenixRealEstateLawyers: Professional[] = [
+  {
+    rank: 1,
+    name: "Patricia Lee",
+    company: "Lee Real Estate Law",
+    rating: 4.9,
+    reviews: 94,
+    specialties: ["Closings", "Title Issues", "Commercial Real Estate"],
+    address: "3200 N Central Ave, Phoenix, AZ 85012",
+    phone: "(602) 555-0601",
+    website: "https://leerealestatelaw.com",
+    description: "Protecting your interests in residential and commercial real estate transactions.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 22 }
+  }
+];
+
+export const phoenixRestaurants: Professional[] = [
+  {
+    rank: 1,
+    name: "The Copper Cactus",
+    company: "Fine Southwestern Dining",
+    rating: 4.8,
+    reviews: 856,
+    specialties: ["Southwestern", "Steaks", "Craft Cocktails"],
+    address: "4500 E Camelback Rd, Phoenix, AZ 85018",
+    phone: "(602) 555-0701",
+    website: "https://coppercactus.com",
+    description: "Award-winning Southwestern cuisine with panoramic mountain views.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 12 }
+  }
+];
+
+export const phoenixChineseRestaurants: Professional[] = [
+  {
+    rank: 1,
+    name: "Golden Dragon",
+    company: "Authentic Szechuan Cuisine",
+    rating: 4.7,
+    reviews: 423,
+    specialties: ["Szechuan", "Dim Sum", "Hot Pot"],
+    address: "8765 N 19th Ave, Phoenix, AZ 85021",
+    phone: "(602) 555-0801",
+    website: "https://goldendragonphx.com",
+    description: "Family-owned restaurant serving authentic Chinese cuisine for 30 years.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 30 }
+  }
+];
+
+export const phoenixPizzaRestaurants: Professional[] = [
+  {
+    rank: 1,
+    name: "Valley Pizza Co.",
+    company: "Wood-Fired Pizza",
+    rating: 4.9,
+    reviews: 678,
+    specialties: ["Wood-Fired", "NY Style", "Craft Beer"],
+    address: "2345 E Thomas Rd, Phoenix, AZ 85016",
+    phone: "(602) 555-0901",
+    website: "https://valleypizzaco.com",
+    description: "Artisan pizzas made with locally-sourced ingredients and wood-fired ovens.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 8 }
+  }
+];
+
+export const phoenixItalianRestaurants: Professional[] = [
+  {
+    rank: 1,
+    name: "Bella Napoli",
+    company: "Traditional Italian",
+    rating: 4.8,
+    reviews: 534,
+    specialties: ["Pasta", "Risotto", "Wine Bar"],
+    address: "5670 N 7th St, Phoenix, AZ 85014",
+    phone: "(602) 555-1001",
+    website: "https://bellanapoli.com",
+    description: "Northern Italian cuisine with homemade pasta and extensive wine list.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 15 }
+  }
+];
+
+export const phoenixSportsBars: Professional[] = [
+  {
+    rank: 1,
+    name: "Champions Sports Grill",
+    company: "Premier Sports Bar",
+    rating: 4.6,
+    reviews: 912,
+    specialties: ["Game Day", "Wings", "Craft Beer"],
+    address: "1234 E Indian School Rd, Phoenix, AZ 85014",
+    phone: "(602) 555-1101",
+    website: "https://championssportsgrill.com",
+    description: "50+ HD TVs, outstanding wings, and the best game day atmosphere in Phoenix.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 10 }
+  }
+];
+
+export const phoenixFancyRestaurants: Professional[] = [
+  {
+    rank: 1,
+    name: "Elements",
+    company: "Modern American Fine Dining",
+    rating: 4.9,
+    reviews: 287,
+    specialties: ["Farm-to-Table", "Tasting Menu", "Wine Pairing"],
+    address: "5532 N Palo Cristi Rd, Phoenix, AZ 85253",
+    phone: "(602) 555-1201",
+    website: "https://elementsphx.com",
+    description: "Michelin-recommended restaurant featuring seasonal tasting menus and curated wine pairings.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 7 }
+  }
+];
+
+export const phoenixCheapButGood: Professional[] = [
+  {
+    rank: 1,
+    name: "Los Favoritos Taco Shop",
+    company: "Authentic Mexican Street Food",
+    rating: 4.8,
+    reviews: 1243,
+    specialties: ["Tacos", "Burritos", "Breakfast"],
+    address: "3456 W McDowell Rd, Phoenix, AZ 85009",
+    phone: "(602) 555-1301",
+    website: "https://losfavoritostaco.com",
+    description: "Award-winning street tacos and authentic Mexican food at unbeatable prices.",
+    verified: true,
+    image: "/api/placeholder/400/400",
+    stats: { yearsExperience: 25 }
+  }
+];
