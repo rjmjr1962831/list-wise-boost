@@ -54,6 +54,7 @@ export const CollapsibleListSection = ({
         </CollapsibleTrigger>
       </div>
       
+      {/* Content always in DOM for SEO, visibility controlled by CSS */}
       <CollapsibleContent className="space-y-6">
         {section.items.map((professional) => (
           <ProfessionalCard 

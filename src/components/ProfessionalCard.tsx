@@ -43,10 +43,11 @@ export const ProfessionalCard = ({
             <div className="space-y-2">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-2xl font-bold" itemProp="name">
-                    {professional.name}
+                  {/* Semantic heading with rank for SEO */}
+                  <h3 className="text-2xl font-bold" itemProp="name">
+                    Top Professional #{professional.rank}: {professional.name}
                     {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
-                  </h2>
+                  </h3>
                   <p className="text-lg text-muted-foreground" itemProp="affiliation">
                     {professional.company}
                   </p>
@@ -99,22 +100,33 @@ export const ProfessionalCard = ({
                 })}
               </div>
 
-              {/* Specialties */}
-              <div className="flex flex-wrap gap-2">
-                {professional.specialties.map((specialty, idx) => (
-                  <Badge key={idx} variant="outline">
-                    {specialty}
-                  </Badge>
-                ))}
+
+              {/* Bio/Description with semantic structure */}
+              <div itemProp="description">
+                <h4 className="sr-only">Professional Bio</h4>
+                <p className="text-muted-foreground leading-relaxed">
+                  {professional.description}
+                </p>
               </div>
 
-              {/* Description */}
-              <p className="text-muted-foreground leading-relaxed" itemProp="description">
-                {professional.description}
-              </p>
+              {/* Specialties Section */}
+              <div>
+                <h4 className="sr-only">Areas of Expertise</h4>
+                <div className="flex flex-wrap gap-2">
+                  {professional.specialties.map((specialty, idx) => (
+                    <span key={idx} itemProp="knowsAbout">
+                      <Badge variant="outline">
+                        {specialty}
+                      </Badge>
+                    </span>
+                  ))}
+                </div>
+              </div>
 
-              {/* Contact Info */}
-              <div className="grid sm:grid-cols-3 gap-3 pt-2">
+              {/* Contact Information Section */}
+              <div>
+                <h4 className="sr-only">Contact Information</h4>
+                <div className="grid sm:grid-cols-3 gap-3 pt-2">
                 <div className="flex items-center gap-2 text-sm" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
                   <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <span className="text-muted-foreground">
@@ -142,6 +154,7 @@ export const ProfessionalCard = ({
                   >
                     {professional.website}
                   </a>
+                </div>
                 </div>
               </div>
             </div>
