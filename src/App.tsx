@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import SampleDentistList from "./pages/SampleDentistList";
 import GilbertRealtorList from "./pages/GilbertRealtorList";
 import Privacy from "./pages/Privacy";
+import TermsOfService from "./pages/TermsOfService";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/az/gilbert/dentists" element={<SampleDentistList />} />
           <Route path="/az/gilbert/top10realtors" element={<GilbertRealtorList />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<TermsOfService />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
