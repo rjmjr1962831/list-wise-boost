@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, Phone, Globe, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp } from "lucide-react";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
@@ -20,6 +22,7 @@ export const ProfessionalCard = ({
   agentType = ""
 }: ProfessionalCardProps) => {
   const { trackEvent } = useGA4Tracking();
+  const [showAllReviews, setShowAllReviews] = useState(false);
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
 
@@ -216,6 +219,56 @@ export const ProfessionalCard = ({
                 </div>
                 </div>
               </div>
+
+              {/* Client Testimonials Section */}
+              {professional.testimonials && professional.testimonials.length > 0 && (
+                <div className="mt-4 pt-4 border-t">
+                  <h4 className="text-lg font-semibold mb-3">Client Reviews</h4>
+                  <div className="space-y-3">
+                    {professional.testimonials.slice(0, showAllReviews ? undefined : 1).map((testimonial, idx) => (
+                      <div key={idx} className="bg-muted/30 rounded-lg p-4 border border-border/50" itemProp="review" itemScope itemType="https://schema.org/Review">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div>
+                            <p className="font-semibold text-sm" itemProp="author">{testimonial.author}</p>
+                            {testimonial.source && testimonial.date && (
+                              <p className="text-xs text-muted-foreground">
+                                {testimonial.source} • {testimonial.date}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className="h-3 w-3 fill-primary text-primary" />
+                            ))}
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground leading-relaxed" itemProp="reviewBody">
+                          {testimonial.text}
+                        </p>
+                        <meta itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" content="5" />
+                      </div>
+                    ))}
+                  </div>
+                  {professional.testimonials.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAllReviews(!showAllReviews)}
+                      className="mt-2 text-primary hover:text-primary/80"
+                    >
+                      {showAllReviews ? (
+                        <>
+                          Show Less <ChevronUp className="ml-1 h-4 w-4" />
+                        </>
+                      ) : (
+                        <>
+                          Read More Reviews ({professional.testimonials.length - 1} more) <ChevronDown className="ml-1 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>

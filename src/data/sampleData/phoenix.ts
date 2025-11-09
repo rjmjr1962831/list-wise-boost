@@ -49,7 +49,27 @@ export const phoenixRealtors: Professional[] = [
     description: "$50M+ in sales. Expert in Phoenix luxury market and investment properties.",
     verified: true,
     image: "/api/placeholder/400/400",
-    stats: { salesLast12Mo: 52000000, yearsExperience: 12 }
+    stats: { salesLast12Mo: 52000000, yearsExperience: 12 },
+    testimonials: [
+      {
+        author: "Michael & Sarah T.",
+        text: "Jennifer made our luxury home purchase completely stress-free. Her knowledge of the Paradise Valley market is unmatched, and she negotiated an amazing deal for us. We saved over $100K thanks to her expertise and connections. She was always available to answer questions and guided us through every step with patience and professionalism.",
+        source: "Zillow",
+        date: "January 2025"
+      },
+      {
+        author: "Robert Chen",
+        text: "As an out-of-state investor, I needed someone I could trust completely. Jennifer exceeded all expectations. She found us three investment properties that are already generating positive cash flow. Her market analysis was spot-on and she has a great network of property managers and contractors.",
+        source: "Google Reviews",
+        date: "December 2024"
+      },
+      {
+        author: "Amanda Rodriguez",
+        text: "Working with Jennifer was the best decision we made! She sold our previous home for $50K over asking in just 5 days, then helped us find our dream home in Arcadia. Her staging recommendations and marketing strategy were incredible. Jennifer truly goes above and beyond for her clients.",
+        source: "Realtor.com",
+        date: "November 2024"
+      }
+    ]
   },
   {
     rank: 2,
@@ -64,7 +84,27 @@ export const phoenixRealtors: Professional[] = [
     description: "Relocation specialist helping families transition to the Phoenix area.",
     verified: true,
     image: "/api/placeholder/400/400",
-    stats: { salesLast12Mo: 38000000, yearsExperience: 9 }
+    stats: { salesLast12Mo: 38000000, yearsExperience: 9 },
+    testimonials: [
+      {
+        author: "The Johnson Family",
+        text: "Relocating from Chicago was daunting, but David made it seamless. He sent us video tours of homes, coordinated everything remotely, and even recommended great schools and neighborhoods for our kids. We closed on our perfect home in Chandler without any stress. David is simply the best relocation specialist in the Valley!",
+        source: "Yelp",
+        date: "February 2025"
+      },
+      {
+        author: "Lisa Patterson",
+        text: "David's knowledge of new construction communities is exceptional. He walked us through the entire build process, attended meetings with the builder, and caught several issues during inspections that saved us thousands. His attention to detail and commitment to his clients is remarkable.",
+        source: "Google Reviews", 
+        date: "January 2025"
+      },
+      {
+        author: "Mark & Jennifer W.",
+        text: "We interviewed five realtors before choosing David, and we are so glad we did. He understood exactly what we wanted and showed us only homes that fit our criteria. His negotiation skills got us $15K in closing cost credits. Professional, responsive, and genuinely cares about his clients.",
+        source: "Facebook",
+        date: "December 2024"
+      }
+    ]
   },
   {
     rank: 3,
@@ -79,7 +119,27 @@ export const phoenixRealtors: Professional[] = [
     description: "Condo specialist helping first-time buyers find their perfect downtown home.",
     verified: true,
     image: "/api/placeholder/400/400",
-    stats: { salesLast12Mo: 18000000, yearsExperience: 7 }
+    stats: { salesLast12Mo: 18000000, yearsExperience: 7 },
+    testimonials: [
+      {
+        author: "Jessica Martinez",
+        text: "As a first-time homebuyer, I was overwhelmed by the process. Emily made everything easy to understand and never pressured me. She found me an amazing condo in Roosevelt Row within my budget and even connected me with a great lender who got me an incredible rate. Could not have done this without her!",
+        source: "Zillow",
+        date: "February 2025"
+      },
+      {
+        author: "Alex Thompson",
+        text: "Emily knows downtown Phoenix like no one else. She showed me condos I never would have found on my own and gave me insider info on upcoming developments and neighborhood trends. Her expertise helped me find an investment property that has already appreciated 12% in six months!",
+        source: "Google Reviews",
+        date: "January 2025"
+      },
+      {
+        author: "Samantha & Chris L.",
+        text: "We wanted urban living without breaking the bank. Emily found us the perfect loft in the Arts District with walkability to everything we love. She negotiated a great price and her recommendations for contractors helped us customize our space beautifully. Highly recommend!",
+        source: "Realtor.com",
+        date: "December 2024"
+      }
+    ]
   },
   {
     rank: 4,

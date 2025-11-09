@@ -8,6 +8,13 @@ export interface ProfessionalStats {
   [key: string]: string | number | undefined;
 }
 
+export interface Testimonial {
+  author: string;
+  text: string;
+  source?: string;
+  date?: string;
+}
+
 export interface Professional {
   rank: number;
   name: string;
@@ -23,6 +30,7 @@ export interface Professional {
   stats: ProfessionalStats;
   verified: boolean;
   image: string;
+  testimonials?: Testimonial[];
 }
 
 export interface ListSection {
