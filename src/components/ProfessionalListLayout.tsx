@@ -4,6 +4,7 @@ import { ArrowLeft, Award, Star, TrendingUp, MapPin, Users, Home } from "lucide-
 import { Link } from "react-router-dom";
 import { useEffect, ReactNode } from "react";
 import { PageMetadata, Professional } from "@/types/professional";
+import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
 interface ProfessionalListLayoutProps {
   metadata: PageMetadata;
@@ -18,7 +19,28 @@ export const ProfessionalListLayout = ({
   children,
   heroIcons
 }: ProfessionalListLayoutProps) => {
+  const { trackEvent } = useGA4Tracking();
   
+  useEffect(() => {
+    // Scroll depth tracking (75%)
+    const handleScroll = () => {
+      const scrollDepth = (window.scrollY + window.innerHeight) / document.body.scrollHeight;
+      if (scrollDepth > 0.75 && !window._scrollTracked) {
+        window._scrollTracked = true;
+        trackEvent('scroll_depth', {
+          percent_scrolled: 75,
+          page_path: window.location.pathname
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window._scrollTracked = false;
+    };
+  }, [trackEvent]);
+
   useEffect(() => {
     // Update page title and meta tags for SEO
     document.title = metadata.title;

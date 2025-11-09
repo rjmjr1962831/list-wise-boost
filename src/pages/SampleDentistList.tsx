@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, MapPin, Phone, Globe, Award, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import sarahMitchellImg from "@/assets/dentists/sarah-mitchell.jpg";
 import michaelChenImg from "@/assets/dentists/michael-chen.jpg";
 import jenniferRodriguezImg from "@/assets/dentists/jennifer-rodriguez.jpg";
@@ -159,6 +160,46 @@ const dentists = [
 ];
 
 const SampleDentistList = () => {
+  const { trackEvent } = useGA4Tracking();
+
+  const handleWebsiteClick = (dentist: typeof dentists[0]) => {
+    trackEvent('agent_profile_click', {
+      agent_name: dentist.name,
+      market: 'Gilbert, AZ',
+      destination_url: `https://${dentist.website}`,
+      agent_type: 'Dentist'
+    });
+  };
+
+  const handleBadgeHover = (dentist: typeof dentists[0]) => {
+    if (dentist.verified) {
+      trackEvent('badge_hover', {
+        badge_type: 'Verified',
+        agent_name: dentist.name,
+        market: 'Gilbert, AZ'
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Scroll depth tracking
+    const handleScroll = () => {
+      const scrollDepth = (window.scrollY + window.innerHeight) / document.body.scrollHeight;
+      if (scrollDepth > 0.75 && !window._scrollTracked) {
+        window._scrollTracked = true;
+        trackEvent('scroll_depth', {
+          percent_scrolled: 75,
+          page_path: window.location.pathname
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window._scrollTracked = false;
+    };
+  }, [trackEvent]);
   useEffect(() => {
     // Set page title and meta description for SEO (under 60 chars for title, 160 for desc)
     document.title = "Top 10 Dentists Gilbert AZ (2025) | Best Dental Care";
@@ -373,7 +414,11 @@ const SampleDentistList = () => {
                           <p className="text-lg text-muted-foreground">{dentist.practice}</p>
                         </div>
                         {dentist.verified && (
-                          <Badge variant="secondary" className="gap-1">
+                          <Badge 
+                            variant="secondary" 
+                            className="gap-1 agent-badge"
+                            onMouseEnter={() => handleBadgeHover(dentist)}
+                          >
                             <Award className="h-3 w-3" />
                             Verified
                           </Badge>
@@ -430,7 +475,8 @@ const SampleDentistList = () => {
                             href={`https://${dentist.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline"
+                            className="text-primary hover:underline agent-profile-link"
+                            onClick={() => handleWebsiteClick(dentist)}
                           >
                             {dentist.website}
                           </a>

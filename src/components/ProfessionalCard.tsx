@@ -2,20 +2,45 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, MapPin, Phone, Globe, Award } from "lucide-react";
 import { Professional } from "@/types/professional";
+import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
 interface ProfessionalCardProps {
   professional: Professional;
   accentColor?: "primary" | "sunset-orange" | "terracotta" | "turquoise" | "cactus-green";
   schemaType?: string;
+  market?: string;
+  agentType?: string;
 }
 
 export const ProfessionalCard = ({ 
   professional, 
   accentColor = "primary",
-  schemaType = "Person"
+  schemaType = "Person",
+  market = "",
+  agentType = ""
 }: ProfessionalCardProps) => {
+  const { trackEvent } = useGA4Tracking();
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
+
+  const handleWebsiteClick = () => {
+    trackEvent('agent_profile_click', {
+      agent_name: professional.name,
+      market,
+      destination_url: `https://${professional.website}`,
+      agent_type: agentType
+    });
+  };
+
+  const handleBadgeHover = () => {
+    if (professional.verified) {
+      trackEvent('badge_hover', {
+        badge_type: 'Verified',
+        agent_name: professional.name,
+        market
+      });
+    }
+  };
 
   return (
     <Card 
@@ -53,7 +78,11 @@ export const ProfessionalCard = ({
                   </p>
                 </div>
                 {professional.verified && (
-                  <Badge variant="secondary" className="gap-1">
+                  <Badge 
+                    variant="secondary" 
+                    className="gap-1 agent-badge"
+                    onMouseEnter={handleBadgeHover}
+                  >
                     <Award className="h-3 w-3" />
                     Verified
                   </Badge>
@@ -149,8 +178,9 @@ export const ProfessionalCard = ({
                     href={`https://${professional.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-primary hover:underline"
+                    className="text-primary hover:underline agent-profile-link"
                     itemProp="url"
+                    onClick={handleWebsiteClick}
                   >
                     {professional.website}
                   </a>

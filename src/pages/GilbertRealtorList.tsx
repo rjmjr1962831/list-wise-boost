@@ -12,6 +12,7 @@ import {
 import { WaveDivider } from "@/components/brand/WaveDivider";
 import { CitationBadge } from "@/components/brand/CitationBadge";
 import { RippleButton } from "@/components/brand/RippleButton";
+import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import ashleyPickensImg from "@/assets/realtors/ashley-pickens.jpg";
 import zacharyCatesImg from "@/assets/realtors/zachary-cates.jpg";
 import maryJoImg from "@/assets/realtors/mary-jo.jpg";
@@ -229,9 +230,59 @@ const realtors = [
 const GilbertRealtorList = () => {
   const [establishedOpen, setEstablishedOpen] = useState(false);
   const [hungryOpen, setHungryOpen] = useState(false);
+  const { trackEvent } = useGA4Tracking();
 
   const establishedRealtors = realtors.slice(0, 5);
   const hungryRealtors = realtors.slice(5, 10);
+
+  const handleSectionToggle = (sectionName: string, isOpen: boolean) => {
+    if (isOpen) {
+      trackEvent('agent_card_expand', {
+        agent_name: sectionName,
+        market: 'Gilbert, AZ',
+        agent_type: sectionName
+      });
+    }
+  };
+
+  const handleWebsiteClick = (realtor: typeof realtors[0], agentType: string) => {
+    trackEvent('agent_profile_click', {
+      agent_name: realtor.name,
+      market: 'Gilbert, AZ',
+      destination_url: `https://${realtor.website}`,
+      agent_type: agentType
+    });
+  };
+
+  const handleBadgeHover = (realtor: typeof realtors[0]) => {
+    if (realtor.verified) {
+      trackEvent('badge_hover', {
+        badge_type: 'Verified Brand Builder',
+        agent_name: realtor.name,
+        market: 'Gilbert, AZ'
+      });
+    }
+  };
+
+  useEffect(() => {
+    // Scroll depth tracking
+    const handleScroll = () => {
+      const scrollDepth = (window.scrollY + window.innerHeight) / document.body.scrollHeight;
+      if (scrollDepth > 0.75 && !window._scrollTracked) {
+        window._scrollTracked = true;
+        trackEvent('scroll_depth', {
+          percent_scrolled: 75,
+          page_path: window.location.pathname
+        });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window._scrollTracked = false;
+    };
+  }, [trackEvent]);
 
   useEffect(() => {
     // Update page title and meta tags for SEO (optimized to under 60 chars)
@@ -445,7 +496,10 @@ const GilbertRealtorList = () => {
         <div className="max-w-4xl mx-auto space-y-8">
           
           {/* Established Section */}
-          <Collapsible open={establishedOpen} onOpenChange={setEstablishedOpen}>
+          <Collapsible open={establishedOpen} onOpenChange={(open) => {
+            setEstablishedOpen(open);
+            handleSectionToggle('Established Leaders', open);
+          }} className="agent-card" data-agent-name="Established Leaders" data-market="Gilbert, AZ" data-agent-type="Established">
             <div className="flex items-center justify-between mb-6 relative">
               {/* Decorative accent */}
               <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-indigo to-aqua rounded-full" />
@@ -491,7 +545,12 @@ const GilbertRealtorList = () => {
                           <p className="text-lg text-muted-foreground" itemProp="affiliation">{realtor.brokerage}</p>
                         </div>
                         {realtor.verified && (
-                          <CitationBadge text="Verified Brand Builder" variant="verified" />
+                          <div onMouseEnter={() => handleBadgeHover(realtor)} className="agent-badge">
+                            <CitationBadge 
+                              text="Verified Brand Builder" 
+                              variant="verified" 
+                            />
+                          </div>
                         )}
                       </div>
 
@@ -572,8 +631,9 @@ const GilbertRealtorList = () => {
                             href={`https://${realtor.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-indigo hover:text-aqua transition-colors"
+                            className="text-indigo hover:text-aqua transition-colors agent-profile-link"
                             itemProp="url"
+                            onClick={() => handleWebsiteClick(realtor, 'Established')}
                           >
                             {realtor.website}
                           </a>
@@ -589,7 +649,10 @@ const GilbertRealtorList = () => {
           </Collapsible>
 
           {/* Hungry & Hustling Section */}
-          <Collapsible open={hungryOpen} onOpenChange={setHungryOpen}>
+          <Collapsible open={hungryOpen} onOpenChange={(open) => {
+            setHungryOpen(open);
+            handleSectionToggle('Hungry & Hustling', open);
+          }} className="agent-card" data-agent-name="Hungry & Hustling" data-market="Gilbert, AZ" data-agent-type="Emerging">
             <div className="flex items-center justify-between mb-6 relative">
               {/* Decorative accent */}
               <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-aqua to-indigo rounded-full" />
@@ -635,7 +698,9 @@ const GilbertRealtorList = () => {
                           <p className="text-lg text-muted-foreground" itemProp="affiliation">{realtor.brokerage}</p>
                         </div>
                         {realtor.verified && (
-                          <CitationBadge text="Emerging Authority" />
+                          <div onMouseEnter={() => handleBadgeHover(realtor)} className="agent-badge">
+                            <CitationBadge text="Emerging Authority" />
+                          </div>
                         )}
                       </div>
 
@@ -716,8 +781,9 @@ const GilbertRealtorList = () => {
                             href={`https://${realtor.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-indigo hover:text-aqua transition-colors"
+                            className="text-indigo hover:text-aqua transition-colors agent-profile-link"
                             itemProp="url"
+                            onClick={() => handleWebsiteClick(realtor, 'Emerging')}
                           >
                             {realtor.website}
                           </a>

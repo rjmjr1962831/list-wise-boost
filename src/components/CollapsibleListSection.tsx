@@ -9,19 +9,34 @@ import {
 } from "@/components/ui/collapsible";
 import { ProfessionalCard } from "./ProfessionalCard";
 import { ListSection } from "@/types/professional";
+import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
 interface CollapsibleListSectionProps {
   section: ListSection;
   defaultOpen?: boolean;
   schemaType?: string;
+  market?: string;
 }
 
 export const CollapsibleListSection = ({ 
   section, 
   defaultOpen = false,
-  schemaType = "Person"
+  schemaType = "Person",
+  market = ""
 }: CollapsibleListSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const { trackEvent } = useGA4Tracking();
+
+  const handleToggle = (open: boolean) => {
+    setIsOpen(open);
+    if (open) {
+      trackEvent('agent_card_expand', {
+        agent_name: section.title,
+        market,
+        agent_type: section.title
+      });
+    }
+  };
 
   const getGradientClass = (color: string) => {
     const gradients: Record<string, string> = {
@@ -35,7 +50,7 @@ export const CollapsibleListSection = ({
   };
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+    <Collapsible open={isOpen} onOpenChange={handleToggle} className="agent-card" data-agent-name={section.title} data-market={market} data-agent-type={section.title}>
       <div className="flex items-center justify-between mb-6 relative">
         {/* Decorative accent */}
         <div className={`absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b ${getGradientClass(section.accentColor)} rounded-full`} />
@@ -62,6 +77,8 @@ export const CollapsibleListSection = ({
             professional={professional}
             accentColor={section.accentColor}
             schemaType={schemaType}
+            market={market}
+            agentType={section.title}
           />
         ))}
       </CollapsibleContent>
