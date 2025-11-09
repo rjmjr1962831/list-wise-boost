@@ -252,6 +252,20 @@ const GilbertRealtorList = () => {
       destination_url: `https://${realtor.website}`,
       agent_type: agentType
     });
+    
+    trackEvent('contact_cta_click', {
+      agent_name: realtor.name,
+      market: 'Gilbert, AZ',
+      agent_type: agentType
+    });
+  };
+
+  const handlePhoneClick = (realtor: typeof realtors[0], agentType: string) => {
+    trackEvent('contact_cta_click', {
+      agent_name: realtor.name,
+      market: 'Gilbert, AZ',
+      agent_type: agentType
+    });
   };
 
   const handleBadgeHover = (realtor: typeof realtors[0]) => {
@@ -621,7 +635,12 @@ const GilbertRealtorList = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="h-4 w-4 text-aqua flex-shrink-0" />
-                          <a href={`tel:${realtor.phone}`} className="text-indigo hover:text-aqua transition-colors" itemProp="telephone">
+                          <a 
+                            href={`tel:${realtor.phone}`} 
+                            className="text-indigo hover:text-aqua transition-colors contact-agent-button" 
+                            itemProp="telephone"
+                            onClick={() => handlePhoneClick(realtor, 'Established')}
+                          >
                             {realtor.phone}
                           </a>
                         </div>
@@ -771,7 +790,12 @@ const GilbertRealtorList = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="h-4 w-4 text-aqua flex-shrink-0" />
-                          <a href={`tel:${realtor.phone}`} className="text-indigo hover:text-aqua transition-colors" itemProp="telephone">
+                          <a 
+                            href={`tel:${realtor.phone}`} 
+                            className="text-indigo hover:text-aqua transition-colors contact-agent-button" 
+                            itemProp="telephone"
+                            onClick={() => handlePhoneClick(realtor, 'Hungry')}
+                          >
                             {realtor.phone}
                           </a>
                         </div>

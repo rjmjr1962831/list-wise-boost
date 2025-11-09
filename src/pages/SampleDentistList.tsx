@@ -169,6 +169,20 @@ const SampleDentistList = () => {
       destination_url: `https://${dentist.website}`,
       agent_type: 'Dentist'
     });
+    
+    trackEvent('contact_cta_click', {
+      agent_name: dentist.name,
+      market: 'Gilbert, AZ',
+      agent_type: 'Dentist'
+    });
+  };
+
+  const handlePhoneClick = (dentist: typeof dentists[0]) => {
+    trackEvent('contact_cta_click', {
+      agent_name: dentist.name,
+      market: 'Gilbert, AZ',
+      agent_type: 'Dentist'
+    });
   };
 
   const handleBadgeHover = (dentist: typeof dentists[0]) => {
@@ -465,7 +479,11 @@ const SampleDentistList = () => {
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <a href={`tel:${dentist.phone}`} className="text-primary hover:underline">
+                          <a 
+                            href={`tel:${dentist.phone}`} 
+                            className="text-primary hover:underline contact-agent-button"
+                            onClick={() => handlePhoneClick(dentist)}
+                          >
                             {dentist.phone}
                           </a>
                         </div>

@@ -30,6 +30,20 @@ export const ProfessionalCard = ({
       destination_url: `https://${professional.website}`,
       agent_type: agentType
     });
+    
+    trackEvent('contact_cta_click', {
+      agent_name: professional.name,
+      market,
+      agent_type: agentType
+    });
+  };
+
+  const handlePhoneClick = () => {
+    trackEvent('contact_cta_click', {
+      agent_name: professional.name,
+      market,
+      agent_type: agentType
+    });
   };
 
   const handleBadgeHover = () => {
@@ -168,7 +182,12 @@ export const ProfessionalCard = ({
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <a href={`tel:${professional.phone}`} className="text-primary hover:underline" itemProp="telephone">
+                  <a 
+                    href={`tel:${professional.phone}`} 
+                    className="text-primary hover:underline contact-agent-button" 
+                    itemProp="telephone"
+                    onClick={handlePhoneClick}
+                  >
                     {professional.phone}
                   </a>
                 </div>
