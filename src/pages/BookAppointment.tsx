@@ -164,21 +164,51 @@ const BookAppointment = () => {
       const endMin = (startHour * 60 + startMin + duration) % 60;
       const endTime = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
 
-      const { error } = await supabase.from("appointments").insert([
-        {
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          reason: formData.reason,
-          appointment_type_id: selectedAppointmentType,
-          appointment_date: selectedDate.toISOString().split('T')[0],
-          start_time: selectedTime,
-          end_time: endTime,
-          status: 'scheduled',
-        },
-      ]);
+      const { data: appointmentData, error } = await supabase
+        .from("appointments")
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            reason: formData.reason,
+            appointment_type_id: selectedAppointmentType,
+            appointment_date: selectedDate.toISOString().split('T')[0],
+            start_time: selectedTime,
+            end_time: endTime,
+            status: 'scheduled',
+          },
+        ])
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Generate Zoom meeting link
+      if (appointmentData) {
+        try {
+          const appointmentDateTime = new Date(selectedDate);
+          const [startHour, startMin] = selectedTime.split(':').map(Number);
+          appointmentDateTime.setHours(startHour, startMin, 0);
+
+          const { error: zoomError } = await supabase.functions.invoke('generate-zoom-meeting', {
+            body: {
+              appointmentId: appointmentData.id,
+              topic: `${appointmentType?.name || 'Appointment'} with ${formData.name}`,
+              startTime: appointmentDateTime.toISOString(),
+              duration: appointmentType?.duration_minutes || 30,
+            }
+          });
+
+          if (zoomError) {
+            console.error("Error generating Zoom meeting:", zoomError);
+            // Don't fail the booking if Zoom generation fails
+          }
+        } catch (zoomErr) {
+          console.error("Error invoking generate-zoom-meeting:", zoomErr);
+          // Don't fail the booking if Zoom generation fails
+        }
+      }
 
       // Track successful booking
       trackEvent('appointment_booked', {
