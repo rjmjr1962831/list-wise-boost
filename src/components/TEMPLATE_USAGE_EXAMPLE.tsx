@@ -30,6 +30,7 @@ const professionals: Professional[] = [
     specialties: ["Specialty 1", "Specialty 2", "Specialty 3"],
     address: "123 Main St, Gilbert, AZ 85295",
     phone: "(480) 555-0100",
+    email: "contact@example.com",
     website: "example.com",
     description: "Brief description highlighting achievements and expertise.",
     stats: {

@@ -34,6 +34,7 @@ const realtors = [
     specialties: ["Luxury Homes", "First-Time Buyers", "Investment Properties"],
     address: "1245 E Williams Field Rd, Gilbert, AZ 85295",
     phone: "(480) 555-0201",
+    email: "ashley@ashleypickensrealty.com",
     website: "ashleypickensrealty.com",
     description: "Top producer with 732 home sales in the last 12 months. Exceptional 99.43% sale-to-list ratio and extensive knowledge of Gilbert's luxury market. Featured in Arizona Real Estate Magazine 2024.",
     stats: {
@@ -74,6 +75,7 @@ const realtors = [
     specialties: ["Family Homes", "New Construction", "Relocation"],
     address: "2450 S Val Vista Dr, Gilbert, AZ 85295",
     phone: "(480) 555-0202",
+    email: "maryjo@maryjogilbert.com",
     website: "maryjogilbert.com",
     description: "Elite realtor with 128 transactions last year and outstanding 99.26% sale-to-list ratio. Specializes in helping families find their perfect home in Gilbert's top school districts.",
     stats: {
@@ -114,6 +116,7 @@ const realtors = [
     specialties: ["Commercial", "Investment", "Property Management"],
     address: "3567 E Baseline Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0203",
+    email: "zach@zachcatesrealty.com",
     website: "zachcatesrealty.com",
     description: "Award-winning agent with proven results - 97.96% sale-to-list ratio and average 94 days on market. Expert in commercial real estate and investment properties throughout Gilbert.",
     stats: {
@@ -154,6 +157,7 @@ const realtors = [
     specialties: ["Luxury Estates", "Golf Course Properties", "Custom Homes"],
     address: "890 S Gilbert Rd, Gilbert, AZ 85296",
     phone: "(480) 555-0204",
+    email: "jennifer@jenniferwalshrealty.com",
     website: "jenniferwalshrealty.com",
     description: "Luxury home specialist with over $45M in sales volume last year. Deep connections in Gilbert's exclusive communities and master-planned neighborhoods.",
     stats: {
@@ -194,6 +198,7 @@ const realtors = [
     specialties: ["Short Sales", "Foreclosures", "VA Loans"],
     address: "1567 N Cooper Rd, Gilbert, AZ 85233",
     phone: "(480) 555-0205",
+    email: "michael@michaeltorresaz.com",
     website: "michaeltorresaz.com",
     description: "Military veteran and VA loan specialist helping families achieve homeownership. Expert negotiator with 98.2% satisfaction rate and fast closings.",
     stats: {
@@ -237,6 +242,7 @@ const realtors = [
     specialties: ["First-Time Buyers", "Relocation", "Investment Properties"],
     address: "2450 E Baseline Rd, Gilbert, AZ 85234",
     phone: "(602) 908-2740",
+    email: "kim@nowsellingazhomes.com",
     website: "nowsellingazhomes.com",
     description: "Known for exceptional responsiveness and client-first approach. Kim and her team return calls within 30 minutes and provide personalized attention throughout the entire buying process. With over 220 verified reviews, clients consistently praise their availability and dedication.",
     stats: {
@@ -277,6 +283,7 @@ const realtors = [
     specialties: ["First-Time Buyers", "Smart Homes", "Young Families"],
     address: "3530 S Val Vista Dr, Gilbert, AZ 85297",
     phone: "(480) 343-7653",
+    email: "zack@zacksellsaz.com",
     website: "zacksellsaz.com",
     description: "Hungry and highly motivated agent who treats every client like they're his only client. Available evenings and weekends, responds to texts immediately, and goes above and beyond to ensure smooth transactions. Rising star with deep local market knowledge.",
     stats: {
@@ -317,6 +324,7 @@ const realtors = [
     specialties: ["Social Media Marketing", "Video Tours", "Staging"],
     address: "4365 E Pecos Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0208",
+    email: "lindsay@lindsaywhitt.com",
     website: "lindsaywhitt.com",
     description: "Fiercely hustling with a reputation for making every client feel like a priority. Provides detailed market updates, answers questions at all hours, and maintains constant communication. Clients describe her as 'always there when you need her.'",
     stats: {
@@ -357,6 +365,7 @@ const realtors = [
     specialties: ["Tech-Savvy Marketing", "3D Virtual Tours", "Remote Buyers"],
     address: "936 E Williams Field Rd, Gilbert, AZ 85295",
     phone: "(480) 603-3310",
+    email: "heather@huntrealestate.com",
     website: "huntrealestate.com",
     description: "Extremely responsive and tech-savvy agent who makes herself available via text, email, and video calls. Known for quick turnaround times and proactive communication. Hungry to earn every client's business and referrals through exceptional service.",
     stats: {
@@ -397,6 +406,7 @@ const realtors = [
     specialties: ["Sustainable Homes", "Solar Properties", "New Construction"],
     address: "2890 S Higley Rd, Gilbert, AZ 85295",
     phone: "(480) 555-0210",
+    email: "michael@mikegetsitsold.com",
     website: "mikegetsitsold.com",
     description: "Puts clients first with unwavering dedication and personal attention. Available seven days a week and provides detailed follow-ups after every showing. Clients appreciate his patience, thoroughness, and genuine care for their success.",
     stats: {

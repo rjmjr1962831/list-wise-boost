@@ -25,6 +25,7 @@ export interface Professional {
   specialties: string[];
   address: string;
   phone: string;
+  email: string;
   website: string;
   description: string;
   stats: ProfessionalStats;
