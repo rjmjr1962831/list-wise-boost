@@ -36,7 +36,7 @@ const App = () => (
             {/* Static pages */}
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/book-appointment" element={<BookAppointment />} />
+            <Route path="/book-appointment-robert" element={<BookAppointment />} />
             {/* Catch-all 404 route */}
             <Route path="*" element={<NotFound />} />
           </Routes>

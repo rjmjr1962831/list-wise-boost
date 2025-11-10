@@ -19,7 +19,7 @@ const Index = () => {
             <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
             <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
             <a href="#industries" className="text-muted-foreground hover:text-foreground transition-colors">Industries</a>
-            <a href="https://robert-bookings.top10lists.us" className="text-muted-foreground hover:text-foreground transition-colors">Let's Talk</a>
+            <a href="/book-appointment-robert" className="text-muted-foreground hover:text-foreground transition-colors">Let's Talk</a>
           </nav>
           <Button>Get Listed</Button>
         </div>
