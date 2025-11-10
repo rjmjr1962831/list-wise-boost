@@ -16,6 +16,8 @@ import TermsOfService from "./pages/TermsOfService";
 import CityLanding from "./pages/CityLanding";
 import DynamicCategoryList from "./pages/DynamicCategoryList";
 import BookAppointment from "./pages/BookAppointment";
+import AdminLogin from "./pages/AdminLogin";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,9 @@ const App = () => (
                 {/* Dynamic city and category routes */}
                 <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                 <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
+                {/* Admin routes */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route path="/admin" element={<AdminDashboard />} />
                 {/* Static pages */}
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<TermsOfService />} />
