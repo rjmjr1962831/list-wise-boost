@@ -22,7 +22,7 @@ import sarahJohnsonImg from "@/assets/realtors/sarah-johnson.jpg";
 import robertAndersonImg from "@/assets/realtors/robert-anderson.jpg";
 import lindsayWhittImg from "@/assets/realtors/lindsay-whitt.jpg";
 import heatherMarloweImg from "@/assets/realtors/heather-marlowe.jpg";
-import christinaMartinezImg from "@/assets/realtors/christina-martinez.jpg";
+import michaelPiorkImg from "@/assets/realtors/michael-piork.jpg";
 
 const realtors = [
   {
@@ -418,7 +418,7 @@ const realtors = [
       yearsExperience: 4
     },
     verified: true,
-    image: christinaMartinezImg,
+    image: michaelPiorkImg,
     testimonials: [
       {
         author: "Jessica & Brian L.",
