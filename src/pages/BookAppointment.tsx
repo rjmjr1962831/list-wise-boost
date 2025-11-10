@@ -187,6 +187,30 @@ const BookAppointment = () => {
         page_path: '/book-appointment',
       });
 
+      // Send confirmation email
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-booking-confirmation', {
+          body: {
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            appointmentType: appointmentType?.name,
+            appointmentDate: selectedDate.toISOString().split('T')[0],
+            startTime: selectedTime,
+            endTime: endTime,
+            reason: formData.reason,
+          },
+        });
+
+        if (emailError) {
+          console.error("Error sending confirmation email:", emailError);
+          // Don't fail the booking if email fails
+        }
+      } catch (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+        // Don't fail the booking if email fails
+      }
+
       toast.success("Appointment booked! You'll receive a confirmation email soon.");
       setBookingComplete(true);
       
