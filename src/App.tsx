@@ -13,6 +13,7 @@ import Privacy from "./pages/Privacy";
 import TermsOfService from "./pages/TermsOfService";
 import CityLanding from "./pages/CityLanding";
 import DynamicCategoryList from "./pages/DynamicCategoryList";
+import BookAppointment from "./pages/BookAppointment";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             {/* Static pages */}
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/book-appointment" element={<BookAppointment />} />
             {/* Catch-all 404 route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
