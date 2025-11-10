@@ -243,7 +243,7 @@ const realtors = [
       salesLast12Mo: 42,
       saleToListRatio: "98.1%",
       avgDaysOnMarket: 38,
-      yearsExperience: 8
+      yearsExperience: 5
     },
     verified: true,
     image: sarahJohnsonImg,
@@ -278,12 +278,12 @@ const realtors = [
     address: "3530 S Val Vista Dr, Gilbert, AZ 85297",
     phone: "(480) 343-7653",
     website: "zacksellsaz.com",
-    description: "Hungry and highly motivated agent who treats every client like they're his only client. Available evenings and weekends, responds to texts immediately, and goes above and beyond to ensure smooth transactions. Selling real estate since 2001 with deep local market knowledge.",
+    description: "Hungry and highly motivated agent who treats every client like they're his only client. Available evenings and weekends, responds to texts immediately, and goes above and beyond to ensure smooth transactions. Rising star with deep local market knowledge.",
     stats: {
       salesLast12Mo: 38,
       saleToListRatio: "98.2%",
       avgDaysOnMarket: 32,
-      yearsExperience: 23
+      yearsExperience: 5
     },
     verified: true,
     image: robertAndersonImg,
@@ -296,7 +296,7 @@ const realtors = [
       },
       {
         author: "Sarah Lopez",
-        text: "As a young professional, I appreciated Zack's tech-savvy approach. He set up a custom search portal for me and sent instant alerts for new listings. His 23 years of experience combined with modern tools make him unbeatable!",
+        text: "As a young professional, I appreciated Zack's tech-savvy approach. He set up a custom search portal for me and sent instant alerts for new listings. His drive and modern tools make him unbeatable!",
         source: "Google Reviews",
         date: "January 2025"
       },
@@ -323,7 +323,7 @@ const realtors = [
       salesLast12Mo: 29,
       saleToListRatio: "97.8%",
       avgDaysOnMarket: 35,
-      yearsExperience: 6
+      yearsExperience: 5
     },
     verified: true,
     image: lisaBrownImg,
