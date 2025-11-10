@@ -23,10 +23,10 @@ const dentists = [
     practice: "Gilbert Smile Studio",
     rating: 4.9,
     reviews: 287,
-    specialties: ["Cosmetic Dentistry", "Implants", "Invisalign"],
+    specialties: ["Cosmetic", "General", "Implants", "Invisalign", "Veneers", "Teeth Whitening"],
     address: "123 E Baseline Rd, Gilbert, AZ 85234",
     phone: "(480) 555-0101",
-    website: "gilbertsmiilestudio.com",
+    website: "gilbertsmilestudio.com",
     description: "Award-winning cosmetic dentist with over 15 years of experience. Known for painless procedures and beautiful smile transformations.",
     verified: true,
     image: sarahMitchellImg
