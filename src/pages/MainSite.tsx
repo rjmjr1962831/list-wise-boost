@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Search, TrendingUp, Zap } from "lucide-react";
-import { SEOTimeline } from "@/components/SEOTimeline";
 
 const Index = () => {
   return (
@@ -39,53 +38,6 @@ const Index = () => {
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
               <span>AI-Optimized</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SEO Evolution Story */}
-      <section className="bg-card py-20 border-y">
-        <div className="container mx-auto px-4">
-          <div className="max-w-5xl mx-auto space-y-12">
-            <div className="text-center space-y-4">
-              <h2 className="text-3xl md:text-4xl font-bold">The Game Has Changed</h2>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                If you've invested in SEO, you know the rules keep changing. Here's how we got here—and why traditional SEO is losing ground.
-              </p>
-            </div>
-
-            <SEOTimeline />
-
-            {/* The Shift */}
-            <div className="bg-primary/5 rounded-lg p-8 border-2 border-primary/20 space-y-4">
-              <h3 className="text-2xl font-bold text-center">AI Looks for Three Things</h3>
-              <div className="grid md:grid-cols-3 gap-6 pt-4">
-                <div className="text-center space-y-2">
-                  <div className="text-3xl mb-2">🏗️</div>
-                  <h4 className="font-bold">Structure</h4>
-                  <p className="text-sm text-muted-foreground">Organized, machine-readable data</p>
-                </div>
-                <div className="text-center space-y-2">
-                  <div className="text-3xl mb-2">📚</div>
-                  <h4 className="font-bold">Citations</h4>
-                  <p className="text-sm text-muted-foreground">Trusted, authoritative sources</p>
-                </div>
-                <div className="text-center space-y-2">
-                  <div className="text-3xl mb-2">✨</div>
-                  <h4 className="font-bold">Curation</h4>
-                  <p className="text-sm text-muted-foreground">Vetted lists, not random websites</p>
-                </div>
-              </div>
-            </div>
-
-            {/* The Solution */}
-            <div className="text-center space-y-4 pt-4">
-              <h3 className="text-2xl md:text-3xl font-bold">That's What We Do.</h3>
-              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-                By adding you to the Top 10 list for your profession and location, we build an <span className="font-semibold text-foreground">ecosystem of structure, relevance, and authority</span> that you tap into. 
-                <span className="block mt-3 text-xl font-semibold text-primary">Because AI trusts us, they trust you.</span>
-              </p>
             </div>
           </div>
         </div>
