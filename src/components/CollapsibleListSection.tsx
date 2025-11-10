@@ -62,8 +62,8 @@ export const CollapsibleListSection = ({
           <p className="text-muted-foreground">{section.description}</p>
         </div>
         <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm" className="w-10 p-0 hover:bg-accent">
-            <ChevronDown className={`h-6 w-6 text-primary transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <Button variant="outline" size="lg" className="h-12 w-12 rounded-full border-2 border-primary hover:bg-primary hover:text-primary-foreground">
+            <ChevronDown className={`h-7 w-7 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
             <span className="sr-only">Toggle {section.title}</span>
           </Button>
         </CollapsibleTrigger>
