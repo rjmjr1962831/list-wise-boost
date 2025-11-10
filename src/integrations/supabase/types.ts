@@ -20,6 +20,7 @@ export type Database = {
           color: string | null
           created_at: string
           description: string | null
+          display_order: number | null
           duration_minutes: number
           id: string
           name: string
@@ -29,6 +30,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number | null
           duration_minutes?: number
           id?: string
           name: string
@@ -38,6 +40,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           description?: string | null
+          display_order?: number | null
           duration_minutes?: number
           id?: string
           name?: string

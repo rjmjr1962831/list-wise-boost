@@ -65,7 +65,7 @@ const BookAppointment = () => {
         .from("appointment_types")
         .select("*")
         .eq("active", true)
-        .order("name");
+        .order("display_order");
       
       if (error) {
         console.error("Error fetching appointment types:", error);
