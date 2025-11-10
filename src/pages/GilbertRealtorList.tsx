@@ -20,7 +20,7 @@ import jenniferWalshImg from "@/assets/realtors/jennifer-walsh.jpg";
 import michaelTorresImg from "@/assets/realtors/michael-torres.jpg";
 import sarahJohnsonImg from "@/assets/realtors/sarah-johnson.jpg";
 import robertAndersonImg from "@/assets/realtors/robert-anderson.jpg";
-import lisaBrownImg from "@/assets/realtors/lisa-brown.jpg";
+import lindsayWhittImg from "@/assets/realtors/lindsay-whitt.jpg";
 import heatherMarloweImg from "@/assets/realtors/heather-marlowe.jpg";
 import christinaMartinezImg from "@/assets/realtors/christina-martinez.jpg";
 
@@ -325,7 +325,7 @@ const realtors = [
     reviews: 45,
     specialties: ["Social Media Marketing", "Video Tours", "Staging"],
     address: "4365 E Pecos Rd, Gilbert, AZ 85234",
-    phone: "(480) 555-0208", // ⚠️ UNVERIFIED - Phone not displayed on lindsaywhitt.com. CHECK Zillow/Realtor.com/Yelp
+    phone: "(201) 249-1398", // ✓ VERIFIED from lindsaywhitt.com front page
     email: "lindsay@lindsaywhitt.com",
     website: "lindsaywhitt.com",
     description: "Fiercely hustling with a reputation for making every client feel like a priority. Provides detailed market updates, answers questions at all hours, and maintains constant communication. Clients describe her as 'always there when you need her.'",
@@ -336,7 +336,7 @@ const realtors = [
       yearsExperience: 5
     },
     verified: true,
-    image: lisaBrownImg,
+    image: lindsayWhittImg,
     testimonials: [
       {
         author: "Kevin & Amanda S.",
