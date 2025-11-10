@@ -21,7 +21,7 @@ import michaelTorresImg from "@/assets/realtors/michael-torres.jpg";
 import sarahJohnsonImg from "@/assets/realtors/sarah-johnson.jpg";
 import robertAndersonImg from "@/assets/realtors/robert-anderson.jpg";
 import lisaBrownImg from "@/assets/realtors/lisa-brown.jpg";
-import davidKimImg from "@/assets/realtors/david-kim.jpg";
+import heatherMarloweImg from "@/assets/realtors/heather-marlowe.jpg";
 import christinaMartinezImg from "@/assets/realtors/christina-martinez.jpg";
 
 const realtors = [
@@ -366,7 +366,7 @@ const realtors = [
       yearsExperience: 5
     },
     verified: true,
-    image: davidKimImg,
+    image: heatherMarloweImg,
     testimonials: [
       {
         author: "Jennifer & Mark D.",
