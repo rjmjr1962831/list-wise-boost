@@ -24,7 +24,7 @@ import lindsayWhittImg from "@/assets/realtors/lindsay-whitt.jpg";
 import heatherMarloweImg from "@/assets/realtors/heather-marlowe.jpg";
 import sarahNibargerImg from "@/assets/realtors/sarah-nibarger.jpg";
 
-const realtors = [
+const realEstateAgents = [
   {
     rank: 1,
     name: "Ashley Pickens",
@@ -48,7 +48,7 @@ const realtors = [
     testimonials: [
       {
         author: "Mark & Jennifer C.",
-        text: "Ashley helped us find our dream luxury home in Val Vista Lakes. She understood exactly what we wanted and showed us only properties that matched our criteria. Her negotiation skills saved us $75K, and she walked us through every step with incredible professionalism. Best realtor in Gilbert!",
+        text: "Ashley helped us find our dream luxury home in Val Vista Lakes. She understood exactly what we wanted and showed us only properties that matched our criteria. Her negotiation skills saved us $75K, and she walked us through every step with incredible professionalism. Best real estate agent in Gilbert!",
         source: "Zillow",
         date: "February 2025"
       },
@@ -77,7 +77,7 @@ const realtors = [
     phone: "(480) 555-0202",
     email: "maryjo@maryjogilbert.com",
     website: "maryjogilbert.com",
-    description: "Elite realtor with 128 transactions last year and outstanding 99.26% sale-to-list ratio. Specializes in helping families find their perfect home in Gilbert's top school districts.",
+    description: "Elite real estate agent with 128 transactions last year and outstanding 99.26% sale-to-list ratio. Specializes in helping families find their perfect home in Gilbert's top school districts.",
     stats: {
       salesLast12Mo: 128,
       saleToListRatio: "99.26%",
@@ -101,7 +101,7 @@ const realtors = [
       },
       {
         author: "Lisa & Tom W.",
-        text: "We interviewed six realtors before choosing Mary Jo, and we're so glad we did. She understood exactly what we needed for our growing family and showed us homes near the best schools. Professional, responsive, and genuinely cares. Highly recommend!",
+        text: "We interviewed six real estate agents before choosing Mary Jo, and we're so glad we did. She understood exactly what we needed for our growing family and showed us homes near the best schools. Professional, responsive, and genuinely cares. Highly recommend!",
         source: "Facebook",
         date: "December 2024"
       }
@@ -405,7 +405,7 @@ const realtors = [
     phone: "(208) 871-8722", // ✓ VERIFIED from user
     email: "Sarah.nibarger@soldbylimitless.com", // ✓ VERIFIED from user
     website: "soldbylimitless.com/agent/sarah-nibarger",
-    description: "Rising star realtor with a passion for staging and interior design. Background in flipping houses brings unique expertise to help buyers visualize potential. Available and responsive to client needs throughout the buying process.",
+    description: "Rising star real estate agent with a passion for staging and interior design. Background in flipping houses brings unique expertise to help buyers visualize potential. Available and responsive to client needs throughout the buying process.",
     stats: {
       salesLast12Mo: 31,
       saleToListRatio: "97.4%",
@@ -437,14 +437,14 @@ const realtors = [
   }
 ];
 
-const GilbertRealtorList = () => {
+const GilbertRealEstateAgentList = () => {
   const [establishedOpen, setEstablishedOpen] = useState(false);
   const [hungryOpen, setHungryOpen] = useState(false);
   const [expandedReviews, setExpandedReviews] = useState<Record<number, boolean>>({});
   const { trackEvent } = useGA4Tracking();
 
-  const establishedRealtors = realtors.slice(0, 6);
-  const hungryRealtors = realtors.slice(6, 10);
+  const establishedRealEstateAgents = realEstateAgents.slice(0, 6);
+  const hungryRealEstateAgents = realEstateAgents.slice(6, 10);
 
   const handleSectionToggle = (sectionName: string, isOpen: boolean) => {
     if (isOpen) {
@@ -456,34 +456,34 @@ const GilbertRealtorList = () => {
     }
   };
 
-  const handleWebsiteClick = (realtor: typeof realtors[0], agentType: string) => {
+  const handleWebsiteClick = (agent: typeof realEstateAgents[0], agentType: string) => {
     trackEvent('agent_profile_click', {
-      agent_name: realtor.name,
+      agent_name: agent.name,
       market: 'Gilbert, AZ',
-      destination_url: `https://${realtor.website}`,
+      destination_url: `https://${agent.website}`,
       agent_type: agentType
     });
     
     trackEvent('contact_cta_click', {
-      agent_name: realtor.name,
+      agent_name: agent.name,
       market: 'Gilbert, AZ',
       agent_type: agentType
     });
   };
 
-  const handlePhoneClick = (realtor: typeof realtors[0], agentType: string) => {
+  const handlePhoneClick = (agent: typeof realEstateAgents[0], agentType: string) => {
     trackEvent('contact_cta_click', {
-      agent_name: realtor.name,
+      agent_name: agent.name,
       market: 'Gilbert, AZ',
       agent_type: agentType
     });
   };
 
-  const handleBadgeHover = (realtor: typeof realtors[0]) => {
-    if (realtor.verified) {
+  const handleBadgeHover = (agent: typeof realEstateAgents[0]) => {
+    if (agent.verified) {
       trackEvent('badge_hover', {
         badge_type: 'Verified Brand Builder',
-        agent_name: realtor.name,
+        agent_name: agent.name,
         market: 'Gilbert, AZ'
       });
     }
@@ -511,7 +511,7 @@ const GilbertRealtorList = () => {
 
   useEffect(() => {
     // Update page title and meta tags for SEO (optimized to under 60 chars)
-    document.title = "Top 10 Gilbert AZ Realtors (2025) | Best Agents";
+    document.title = "Top 10 Gilbert AZ Real Estate Agents (2025) | Best";
     
     const metaDescription = document.querySelector('meta[name="description"]');
     const descriptionText = "Top 10 real estate agents in Gilbert AZ. Verified professionals with proven sales, 4.6+ ratings, and local expertise. Updated 2025.";
@@ -561,32 +561,32 @@ const GilbertRealtorList = () => {
       "@context": "https://schema.org",
       "@type": "ItemList",
       "name": "Top 10 Real Estate Agents in Gilbert, Arizona",
-      "description": "Curated list of the top-rated real estate agents and realtors in Gilbert, AZ, verified for sales performance, client satisfaction, and market expertise.",
+      "description": "Curated list of the top-rated real estate agents in Gilbert, AZ, verified for sales performance, client satisfaction, and market expertise.",
       "itemListOrder": "https://schema.org/ItemListOrderDescending",
       "numberOfItems": 10,
-      "itemListElement": realtors.map(realtor => ({
+      "itemListElement": realEstateAgents.map(agent => ({
         "@type": "ListItem",
-        "position": realtor.rank,
+        "position": agent.rank,
         "item": {
           "@type": "RealEstateAgent",
-          "name": realtor.name,
-          "description": realtor.description,
-          "knowsAbout": realtor.specialties,
+          "name": agent.name,
+          "description": agent.description,
+          "knowsAbout": agent.specialties,
           "address": {
             "@type": "PostalAddress",
-            "streetAddress": realtor.address.split(",")[0],
+            "streetAddress": agent.address.split(",")[0],
             "addressLocality": "Gilbert",
             "addressRegion": "AZ",
             "addressCountry": "US",
-            "postalCode": realtor.address.match(/\d{5}/)?.[0]
+            "postalCode": agent.address.match(/\d{5}/)?.[0]
           },
-          "telephone": realtor.phone,
-          "url": `https://${realtor.website}`,
-          "image": realtor.image,
+          "telephone": agent.phone,
+          "url": `https://${agent.website}`,
+          "image": agent.image,
           "aggregateRating": {
             "@type": "AggregateRating",
-            "ratingValue": realtor.rating,
-            "reviewCount": realtor.reviews,
+            "ratingValue": agent.rating,
+            "reviewCount": agent.reviews,
             "bestRating": 5
           },
           "geo": {
@@ -665,7 +665,7 @@ const GilbertRealtorList = () => {
             </li>
             <span>/</span>
             <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-              <span className="text-foreground font-medium" itemProp="name">Top Realtors</span>
+              <span className="text-foreground font-medium" itemProp="name">Top Real Estate Agents</span>
               <meta itemProp="position" content="4" />
             </li>
           </ol>
@@ -742,20 +742,20 @@ const GilbertRealtorList = () => {
             </div>
             
             <CollapsibleContent className="space-y-6">
-              {establishedRealtors.map((realtor) => (
-            <Card key={realtor.rank} className="border-2 border-l-4 border-l-indigo hover:shadow-xl hover:shadow-aqua/20 transition-all bg-white" itemScope itemType="https://schema.org/RealEstateAgent">
+              {establishedRealEstateAgents.map((agent) => (
+            <Card key={agent.rank} className="border-2 border-l-4 border-l-indigo hover:shadow-xl hover:shadow-aqua/20 transition-all bg-white" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Photo and Rank */}
                   <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
                     <img 
-                      src={realtor.image} 
-                      alt={`${realtor.name} - Top Real Estate Agent #${realtor.rank} in Gilbert AZ specializing in ${realtor.specialties.slice(0, 3).join(', ')}`}
+                      src={agent.image} 
+                      alt={`${agent.name} - Top Real Estate Agent #${agent.rank} in Gilbert AZ specializing in ${agent.specialties.slice(0, 3).join(', ')}`}
                       className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                       itemProp="image"
                     />
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo/10 to-aqua/10 flex items-center justify-center border-2 border-aqua/30">
-                      <span className="text-2xl font-bold text-indigo">#{realtor.rank}</span>
+                      <span className="text-2xl font-bold text-indigo">#{agent.rank}</span>
                     </div>
                   </div>
 
@@ -764,11 +764,11 @@ const GilbertRealtorList = () => {
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h2 className="text-2xl font-bold" itemProp="name">{realtor.name}</h2>
-                          <p className="text-lg text-muted-foreground" itemProp="affiliation">{realtor.brokerage}</p>
+                          <h2 className="text-2xl font-bold" itemProp="name">{agent.name}</h2>
+                          <p className="text-lg text-muted-foreground" itemProp="affiliation">{agent.brokerage}</p>
                         </div>
-                        {realtor.verified && (
-                          <div onMouseEnter={() => handleBadgeHover(realtor)} className="agent-badge">
+                        {agent.verified && (
+                          <div onMouseEnter={() => handleBadgeHover(agent)} className="agent-badge">
                             <CitationBadge 
                               text="Verified Brand Builder" 
                               variant="verified" 
@@ -784,41 +784,41 @@ const GilbertRealtorList = () => {
                             <Star
                               key={i}
                               className={`h-5 w-5 ${
-                                i < Math.floor(realtor.rating)
+                                i < Math.floor(agent.rating)
                                   ? "fill-primary text-primary"
                                   : "text-muted"
                               }`}
                             />
                           ))}
                         </div>
-                        <span className="font-semibold" itemProp="ratingValue">{realtor.rating}</span>
-                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{realtor.reviews}</span> reviews)</span>
+                        <span className="font-semibold" itemProp="ratingValue">{agent.rating}</span>
+                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{agent.reviews}</span> reviews)</span>
                         <meta itemProp="bestRating" content="5" />
                       </div>
 
                       {/* Statistics */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y border-indigo/10">
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-indigo">{realtor.stats.salesLast12Mo}</div>
+                          <div className="text-2xl font-bold text-indigo">{agent.stats.salesLast12Mo}</div>
                           <div className="text-xs text-graphite/60">Sales (12mo)</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-indigo">{realtor.stats.saleToListRatio}</div>
+                          <div className="text-2xl font-bold text-indigo">{agent.stats.saleToListRatio}</div>
                           <div className="text-xs text-graphite/60">Sale to List</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-indigo">{realtor.stats.avgDaysOnMarket}</div>
+                          <div className="text-2xl font-bold text-indigo">{agent.stats.avgDaysOnMarket}</div>
                           <div className="text-xs text-graphite/60">Avg Days Market</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-indigo">{realtor.stats.yearsExperience}</div>
+                          <div className="text-2xl font-bold text-indigo">{agent.stats.yearsExperience}</div>
                           <div className="text-xs text-graphite/60">Years Exp.</div>
                         </div>
                       </div>
 
                       {/* Specialties */}
                       <div className="flex flex-wrap gap-2">
-                        {realtor.specialties.map((specialty, idx) => (
+                        {agent.specialties.map((specialty, idx) => (
                           <Badge key={idx} variant="outline">
                             {specialty}
                           </Badge>
@@ -827,7 +827,7 @@ const GilbertRealtorList = () => {
 
                       {/* Description */}
                       <p className="text-graphite/80 leading-relaxed" itemProp="description">
-                        {realtor.description}
+                        {agent.description}
                       </p>
 
                       {/* Contact Info */}
@@ -835,45 +835,45 @@ const GilbertRealtorList = () => {
                         <div className="flex items-center gap-2 text-sm" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
                           <MapPin className="h-4 w-4 text-aqua flex-shrink-0" />
                           <span className="text-graphite/70">
-                            <span itemProp="streetAddress">{realtor.address.split(",")[0]}</span>,{" "}
+                            <span itemProp="streetAddress">{agent.address.split(",")[0]}</span>,{" "}
                             <span itemProp="addressLocality">Gilbert</span>,{" "}
                             <span itemProp="addressRegion">AZ</span>{" "}
-                            <span itemProp="postalCode">{realtor.address.match(/\d{5}/)?.[0]}</span>
+                            <span itemProp="postalCode">{agent.address.match(/\d{5}/)?.[0]}</span>
                             <meta itemProp="addressCountry" content="US" />
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="h-4 w-4 text-aqua flex-shrink-0" />
                           <a 
-                            href={`tel:${realtor.phone}`} 
+                            href={`tel:${agent.phone}`} 
                             className="text-indigo hover:text-aqua transition-colors contact-agent-button" 
                             itemProp="telephone"
-                            onClick={() => handlePhoneClick(realtor, 'Established')}
+                            onClick={() => handlePhoneClick(agent, 'Established')}
                           >
-                            {realtor.phone}
+                            {agent.phone}
                           </a>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Globe className="h-4 w-4 text-aqua flex-shrink-0" />
                           <a
-                            href={`https://${realtor.website}`}
+                            href={`https://${agent.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-indigo hover:text-aqua transition-colors agent-profile-link"
                             itemProp="url"
-                            onClick={() => handleWebsiteClick(realtor, 'Established')}
+                            onClick={() => handleWebsiteClick(agent, 'Established')}
                           >
-                            {realtor.website}
+                            {agent.website}
                           </a>
                         </div>
                       </div>
 
                       {/* Client Testimonials */}
-                      {realtor.testimonials && realtor.testimonials.length > 0 && (
+                      {agent.testimonials && agent.testimonials.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-indigo/10">
                           <h4 className="text-lg font-semibold mb-3 text-indigo">Client Reviews</h4>
                           <div className="space-y-3">
-                            {realtor.testimonials.slice(0, expandedReviews[realtor.rank] ? undefined : 1).map((testimonial, idx) => (
+                            {agent.testimonials.slice(0, expandedReviews[agent.rank] ? undefined : 1).map((testimonial, idx) => (
                               <div key={idx} className="bg-gradient-to-br from-indigo/5 to-aqua/5 rounded-lg p-4 border border-indigo/20" itemProp="review" itemScope itemType="https://schema.org/Review">
                                 <div className="flex items-start justify-between gap-2 mb-2">
                                   <div>
@@ -897,20 +897,20 @@ const GilbertRealtorList = () => {
                               </div>
                             ))}
                           </div>
-                          {realtor.testimonials.length > 1 && (
+                          {agent.testimonials.length > 1 && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setExpandedReviews(prev => ({ ...prev, [realtor.rank]: !prev[realtor.rank] }))}
+                              onClick={() => setExpandedReviews(prev => ({ ...prev, [agent.rank]: !prev[agent.rank] }))}
                               className="mt-2 text-indigo hover:text-aqua hover:bg-indigo/5"
                             >
-                              {expandedReviews[realtor.rank] ? (
+                              {expandedReviews[agent.rank] ? (
                                 <>
                                   Show Less <ChevronUp className="ml-1 h-4 w-4" />
                                 </>
                               ) : (
                                 <>
-                                  Read More Reviews ({realtor.testimonials.length - 1} more) <ChevronDown className="ml-1 h-4 w-4" />
+                                  Read More Reviews ({agent.testimonials.length - 1} more) <ChevronDown className="ml-1 h-4 w-4" />
                                 </>
                               )}
                             </Button>
@@ -950,20 +950,20 @@ const GilbertRealtorList = () => {
             </div>
             
             <CollapsibleContent className="space-y-6">
-              {hungryRealtors.map((realtor) => (
-            <Card key={realtor.rank} className="border-2 border-l-4 border-l-aqua hover:shadow-xl hover:shadow-indigo/20 transition-all bg-white" itemScope itemType="https://schema.org/RealEstateAgent">
+              {hungryRealEstateAgents.map((agent) => (
+            <Card key={agent.rank} className="border-2 border-l-4 border-l-aqua hover:shadow-xl hover:shadow-indigo/20 transition-all bg-white" itemScope itemType="https://schema.org/RealEstateAgent">
               <CardContent className="pt-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   {/* Photo and Rank */}
                   <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
                     <img 
-                      src={realtor.image} 
-                      alt={`${realtor.name} - Top Real Estate Agent #${realtor.rank} in Gilbert AZ specializing in ${realtor.specialties.slice(0, 3).join(', ')}`}
+                      src={agent.image} 
+                      alt={`${agent.name} - Top Real Estate Agent #${agent.rank} in Gilbert AZ specializing in ${agent.specialties.slice(0, 3).join(', ')}`}
                       className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                       itemProp="image"
                     />
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-aqua/10 to-indigo/10 flex items-center justify-center border-2 border-indigo/30">
-                      <span className="text-2xl font-bold text-indigo">#{realtor.rank}</span>
+                      <span className="text-2xl font-bold text-indigo">#{agent.rank}</span>
                     </div>
                   </div>
 
@@ -972,11 +972,11 @@ const GilbertRealtorList = () => {
                     <div className="space-y-2">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <h2 className="text-2xl font-bold" itemProp="name">{realtor.name}</h2>
-                          <p className="text-lg text-muted-foreground" itemProp="affiliation">{realtor.brokerage}</p>
+                          <h2 className="text-2xl font-bold" itemProp="name">{agent.name}</h2>
+                          <p className="text-lg text-muted-foreground" itemProp="affiliation">{agent.brokerage}</p>
                         </div>
-                        {realtor.verified && (
-                          <div onMouseEnter={() => handleBadgeHover(realtor)} className="agent-badge">
+                        {agent.verified && (
+                          <div onMouseEnter={() => handleBadgeHover(agent)} className="agent-badge">
                             <CitationBadge text="Emerging Authority" />
                           </div>
                         )}
@@ -989,41 +989,41 @@ const GilbertRealtorList = () => {
                             <Star
                               key={i}
                               className={`h-5 w-5 ${
-                                i < Math.floor(realtor.rating)
+                                i < Math.floor(agent.rating)
                                   ? "fill-primary text-primary"
                                   : "text-muted"
                               }`}
                             />
                           ))}
                         </div>
-                        <span className="font-semibold" itemProp="ratingValue">{realtor.rating}</span>
-                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{realtor.reviews}</span> reviews)</span>
+                        <span className="font-semibold" itemProp="ratingValue">{agent.rating}</span>
+                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{agent.reviews}</span> reviews)</span>
                         <meta itemProp="bestRating" content="5" />
                       </div>
 
                       {/* Statistics */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y border-indigo/10">
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-aqua">{realtor.stats.salesLast12Mo}</div>
+                          <div className="text-2xl font-bold text-aqua">{agent.stats.salesLast12Mo}</div>
                           <div className="text-xs text-graphite/60">Sales (12mo)</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-aqua">{realtor.stats.saleToListRatio}</div>
+                          <div className="text-2xl font-bold text-aqua">{agent.stats.saleToListRatio}</div>
                           <div className="text-xs text-graphite/60">Sale to List</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-aqua">{realtor.stats.avgDaysOnMarket}</div>
+                          <div className="text-2xl font-bold text-aqua">{agent.stats.avgDaysOnMarket}</div>
                           <div className="text-xs text-graphite/60">Avg Days Market</div>
                         </div>
                         <div className="text-center md:text-left">
-                          <div className="text-2xl font-bold text-aqua">{realtor.stats.yearsExperience}</div>
+                          <div className="text-2xl font-bold text-aqua">{agent.stats.yearsExperience}</div>
                           <div className="text-xs text-graphite/60">Years Exp.</div>
                         </div>
                       </div>
 
                       {/* Specialties */}
                       <div className="flex flex-wrap gap-2">
-                        {realtor.specialties.map((specialty, idx) => (
+                        {agent.specialties.map((specialty, idx) => (
                           <Badge key={idx} variant="outline">
                             {specialty}
                           </Badge>
@@ -1032,7 +1032,7 @@ const GilbertRealtorList = () => {
 
                       {/* Description */}
                       <p className="text-graphite/80 leading-relaxed" itemProp="description">
-                        {realtor.description}
+                        {agent.description}
                       </p>
 
                       {/* Contact Info */}
@@ -1040,45 +1040,45 @@ const GilbertRealtorList = () => {
                         <div className="flex items-center gap-2 text-sm" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
                           <MapPin className="h-4 w-4 text-aqua flex-shrink-0" />
                           <span className="text-graphite/70">
-                            <span itemProp="streetAddress">{realtor.address.split(",")[0]}</span>,{" "}
+                            <span itemProp="streetAddress">{agent.address.split(",")[0]}</span>,{" "}
                             <span itemProp="addressLocality">Gilbert</span>,{" "}
                             <span itemProp="addressRegion">AZ</span>{" "}
-                            <span itemProp="postalCode">{realtor.address.match(/\d{5}/)?.[0]}</span>
+                            <span itemProp="postalCode">{agent.address.match(/\d{5}/)?.[0]}</span>
                             <meta itemProp="addressCountry" content="US" />
                           </span>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Phone className="h-4 w-4 text-aqua flex-shrink-0" />
                           <a 
-                            href={`tel:${realtor.phone}`} 
+                            href={`tel:${agent.phone}`} 
                             className="text-indigo hover:text-aqua transition-colors contact-agent-button" 
                             itemProp="telephone"
-                            onClick={() => handlePhoneClick(realtor, 'Hungry')}
+                            onClick={() => handlePhoneClick(agent, 'Hungry')}
                           >
-                            {realtor.phone}
+                            {agent.phone}
                           </a>
                         </div>
                         <div className="flex items-center gap-2 text-sm">
                           <Globe className="h-4 w-4 text-aqua flex-shrink-0" />
                           <a
-                            href={`https://${realtor.website}`}
+                            href={`https://${agent.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-indigo hover:text-aqua transition-colors agent-profile-link"
                             itemProp="url"
-                            onClick={() => handleWebsiteClick(realtor, 'Emerging')}
+                            onClick={() => handleWebsiteClick(agent, 'Emerging')}
                           >
-                            {realtor.website}
+                            {agent.website}
                           </a>
                         </div>
                       </div>
 
                       {/* Client Testimonials */}
-                      {realtor.testimonials && realtor.testimonials.length > 0 && (
+                      {agent.testimonials && agent.testimonials.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-aqua/10">
                           <h4 className="text-lg font-semibold mb-3 text-indigo">Client Reviews</h4>
                           <div className="space-y-3">
-                            {realtor.testimonials.slice(0, expandedReviews[realtor.rank] ? undefined : 1).map((testimonial, idx) => (
+                            {agent.testimonials.slice(0, expandedReviews[agent.rank] ? undefined : 1).map((testimonial, idx) => (
                               <div key={idx} className="bg-gradient-to-br from-aqua/5 to-indigo/5 rounded-lg p-4 border border-aqua/20" itemProp="review" itemScope itemType="https://schema.org/Review">
                                 <div className="flex items-start justify-between gap-2 mb-2">
                                   <div>
@@ -1102,20 +1102,20 @@ const GilbertRealtorList = () => {
                               </div>
                             ))}
                           </div>
-                          {realtor.testimonials.length > 1 && (
+                          {agent.testimonials.length > 1 && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setExpandedReviews(prev => ({ ...prev, [realtor.rank]: !prev[realtor.rank] }))}
+                              onClick={() => setExpandedReviews(prev => ({ ...prev, [agent.rank]: !prev[agent.rank] }))}
                               className="mt-2 text-indigo hover:text-aqua hover:bg-aqua/5"
                             >
-                              {expandedReviews[realtor.rank] ? (
+                              {expandedReviews[agent.rank] ? (
                                 <>
                                   Show Less <ChevronUp className="ml-1 h-4 w-4" />
                                 </>
                               ) : (
                                 <>
-                                  Read More Reviews ({realtor.testimonials.length - 1} more) <ChevronDown className="ml-1 h-4 w-4" />
+                                  Read More Reviews ({agent.testimonials.length - 1} more) <ChevronDown className="ml-1 h-4 w-4" />
                                 </>
                               )}
                             </Button>
@@ -1236,4 +1236,4 @@ const GilbertRealtorList = () => {
   );
 };
 
-export default GilbertRealtorList;
+export default GilbertRealEstateAgentList;

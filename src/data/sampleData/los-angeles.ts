@@ -37,7 +37,7 @@ export const losAngelesDentists: Professional[] = [
   }
 ];
 
-export const losAngelesRealtors: Professional[] = [
+export const losAngelesRealEstateAgents: Professional[] = [
   {
     rank: 1,
     name: "Victoria Chen",

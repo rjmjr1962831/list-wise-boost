@@ -14,7 +14,7 @@ type CityDataMap = {
 const cityData: CityDataMap = {
   'phoenix': {
     'dentists': phoenix.phoenixDentists,
-    'realtors': phoenix.phoenixRealtors,
+    'real-estate-agents': phoenix.phoenixRealEstateAgents,
     'lawyers': phoenix.phoenixLawyers,
     'personal-injury-lawyers': phoenix.phoenixPersonalInjuryLawyers,
     'business-lawyers': phoenix.phoenixBusinessLawyers,
@@ -29,7 +29,7 @@ const cityData: CityDataMap = {
   },
   'los-angeles': {
     'dentists': losAngeles.losAngelesDentists,
-    'realtors': losAngeles.losAngelesRealtors,
+    'real-estate-agents': losAngeles.losAngelesRealEstateAgents,
     'lawyers': losAngeles.losAngelesLawyers,
     'personal-injury-lawyers': losAngeles.losAngelesPersonalInjuryLawyers,
     'business-lawyers': losAngeles.losAngelesBusinessLawyers,

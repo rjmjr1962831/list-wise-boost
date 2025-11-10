@@ -22,7 +22,7 @@ export default function CityLanding() {
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute('content', 
-        `Find the best dentists, realtors, lawyers, and restaurants in ${formatCityName(city)}. Expert-vetted professionals with verified reviews.`
+        `Find the best dentists, real estate agents, lawyers, and restaurants in ${formatCityName(city)}. Expert-vetted professionals with verified reviews.`
       );
     }
 
@@ -72,7 +72,7 @@ export default function CityLanding() {
               Find Top-Rated Professionals in {city.name}
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Discover the best dentists, realtors, lawyers, and restaurants in {formatCityName(city)}. 
+              Discover the best dentists, real estate agents, lawyers, and restaurants in {formatCityName(city)}. 
               All professionals are expert-vetted with verified reviews.
             </p>
             {!hasData && (

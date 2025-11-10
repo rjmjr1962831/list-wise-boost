@@ -11,13 +11,13 @@ interface QuizPreferences {
   timeline: string;
 }
 
-interface RealtorQuizModalProps {
+interface RealEstateAgentQuizModalProps {
   open: boolean;
   onComplete: (preferences: QuizPreferences) => void;
   city: string;
 }
 
-export function RealtorQuizModal({ open, onComplete, city }: RealtorQuizModalProps) {
+export function RealEstateAgentQuizModal({ open, onComplete, city }: RealEstateAgentQuizModalProps) {
   const [step, setStep] = useState(1);
   const [propertyType, setPropertyType] = useState('');
   const [priceRange, setPriceRange] = useState('');
@@ -55,7 +55,7 @@ export function RealtorQuizModal({ open, onComplete, city }: RealtorQuizModalPro
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle>Find Your Perfect {city} Realtor</DialogTitle>
+          <DialogTitle>Find Your Perfect {city} Real Estate Agent</DialogTitle>
           <DialogDescription>
             Answer 3 quick questions to get matched with agents who specialize in your needs.
           </DialogDescription>

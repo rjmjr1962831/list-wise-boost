@@ -11,15 +11,15 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'blue',
     searchTerms: ['dental', 'dentist', 'teeth', 'oral health']
   },
-  realtors: {
-    id: 'realtors',
-    name: 'Realtor',
-    pluralName: 'Realtors',
+  'real-estate-agents': {
+    id: 'real-estate-agents',
+    name: 'Real Estate Agent',
+    pluralName: 'Real Estate Agents',
     icon: 'Home',
     description: 'Premier real estate agents',
     schemaType: 'RealEstateAgent',
     accentColor: 'green',
-    searchTerms: ['realtor', 'real estate', 'homes', 'property']
+    searchTerms: ['real estate agent', 'real estate', 'homes', 'property']
   },
   lawyers: {
     id: 'lawyers',

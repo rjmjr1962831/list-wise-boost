@@ -38,7 +38,7 @@ const professionals: Professional[] = [
       yearsExperience: 15,
       patientsServed: 5000,
       successRate: "98%",
-      // For realtors: salesLast12Mo, saleToListRatio, avgDaysOnMarket
+      // For real estate agents: salesLast12Mo, saleToListRatio, avgDaysOnMarket
     },
     verified: true,
     image: exampleImg

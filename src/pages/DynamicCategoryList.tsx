@@ -7,7 +7,7 @@ import { getCategoryBySlug } from '@/data/categoryConfig';
 import { getProfessionalsByCategory } from '@/data/professionalData';
 import { generatePageTitle, generateMetaDescription, formatCityName } from '@/utils/routeHelpers';
 import { ListSection, Professional } from '@/types/professional';
-import { RealtorQuizModal } from '@/components/RealtorQuizModal';
+import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
 
 export default function DynamicCategoryList() {
   const { stateSlug, citySlug, categorySlug } = useParams<{ 
@@ -24,10 +24,10 @@ export default function DynamicCategoryList() {
   const [filteredProfessionals, setFilteredProfessionals] = useState<Professional[]>(allProfessionals);
   const [quizCompleted, setQuizCompleted] = useState(false);
 
-  // Check if quiz should be shown for realtors category
+  // Check if quiz should be shown for real estate agents category
   useEffect(() => {
-    if (categorySlug === 'realtors' && city) {
-      const storageKey = `quiz_completed_${city.slug}_realtors`;
+    if (categorySlug === 'real-estate-agents' && city) {
+      const storageKey = `quiz_completed_${city.slug}_real-estate-agents`;
       const completed = localStorage.getItem(storageKey);
       
       if (!completed) {
@@ -45,7 +45,7 @@ export default function DynamicCategoryList() {
     if (!city) return;
 
     // Store completion in localStorage
-    const storageKey = `quiz_completed_${city.slug}_realtors`;
+    const storageKey = `quiz_completed_${city.slug}_real-estate-agents`;
     localStorage.setItem(storageKey, JSON.stringify(preferences));
     
     // Filter professionals based on preferences
@@ -94,7 +94,7 @@ export default function DynamicCategoryList() {
   const sections: ListSection[] = [
     {
       title: `Top ${category.pluralName}`,
-      description: quizCompleted && categorySlug === 'realtors'
+      description: quizCompleted && categorySlug === 'real-estate-agents'
         ? `Agents matched to your preferences in ${formatCityName(city)}`
         : `The highest-rated ${category.pluralName.toLowerCase()} in ${formatCityName(city)}`,
       items: filteredProfessionals,
@@ -125,8 +125,8 @@ export default function DynamicCategoryList() {
 
   return (
     <>
-      {categorySlug === 'realtors' && city && (
-        <RealtorQuizModal 
+      {categorySlug === 'real-estate-agents' && city && (
+        <RealEstateAgentQuizModal
           open={showQuiz} 
           onComplete={handleQuizComplete}
           city={city.name}
