@@ -137,7 +137,7 @@ const Index = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">Who This Is For</h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Service professionals who want <span className="text-primary font-bold">authority without ad spend</span>
+            Top-tier service professionals who apply. Once past our screening and invited to be on the list, you choose your investment per month based on your business needs.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
