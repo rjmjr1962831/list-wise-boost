@@ -34,7 +34,7 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
-              <span>No Ad Spend</span>
+              <span>Verified Experts</span>
             </div>
             <div className="flex items-center gap-2">
               <Check className="h-5 w-5 text-primary" />
