@@ -6,25 +6,6 @@ import { SEOTimeline } from "@/components/SEOTimeline";
 const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T10</span>
-            </div>
-            <span className="text-xl font-bold">Top10Lists.us</span>
-          </div>
-          <nav className="hidden md:flex gap-6">
-            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-            <a href="#industries" className="text-muted-foreground hover:text-foreground transition-colors">Industries</a>
-            <a href="/book-appointment-robert" className="text-muted-foreground hover:text-foreground transition-colors">Let's Talk</a>
-          </nav>
-          <Button>Get Listed</Button>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 md:py-32 text-center">
         <div className="max-w-4xl mx-auto space-y-8">

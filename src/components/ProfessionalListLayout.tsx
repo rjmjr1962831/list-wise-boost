@@ -162,21 +162,6 @@ export const ProfessionalListLayout = ({
       <div className="absolute bottom-96 right-20 w-72 h-72 bg-terracotta/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-20 left-10 w-96 h-96 bg-cactus-green/10 rounded-full blur-3xl pointer-events-none" />
       
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T10</span>
-            </div>
-            <span className="text-xl font-bold">Top10Lists.us</span>
-          </Link>
-          <Button asChild>
-            <Link to="/">Apply to Get Listed</Link>
-          </Button>
-        </div>
-      </header>
-
       {/* Breadcrumb */}
       <nav className="bg-muted/50 border-b" aria-label="Breadcrumb">
         <div className="container mx-auto px-4 py-3">
