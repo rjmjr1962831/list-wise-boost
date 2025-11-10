@@ -734,8 +734,8 @@ const GilbertRealEstateAgentList = () => {
                 <p className="text-graphite/70">Proven track records with years of excellence in Gilbert real estate</p>
               </div>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 p-0">
-                  <ChevronDown className={`h-4 w-4 transition-transform ${establishedOpen ? 'rotate-180' : ''}`} />
+                <Button variant="outline" size="lg" className="h-12 w-12 rounded-full border-2 border-primary hover:bg-primary hover:text-primary-foreground">
+                  <ChevronDown className={`h-7 w-7 transition-transform duration-300 ${establishedOpen ? 'rotate-180' : ''}`} />
                   <span className="sr-only">Toggle Established</span>
                 </Button>
               </CollapsibleTrigger>
@@ -942,8 +942,8 @@ const GilbertRealEstateAgentList = () => {
                 <p className="text-graphite/70">Building authority with exceptional service and AI-native presence</p>
               </div>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 p-0">
-                  <ChevronDown className={`h-4 w-4 transition-transform ${hungryOpen ? 'rotate-180' : ''}`} />
+                <Button variant="outline" size="lg" className="h-12 w-12 rounded-full border-2 border-primary hover:bg-primary hover:text-primary-foreground">
+                  <ChevronDown className={`h-7 w-7 transition-transform duration-300 ${hungryOpen ? 'rotate-180' : ''}`} />
                   <span className="sr-only">Toggle Hungry & Hustling</span>
                 </Button>
               </CollapsibleTrigger>
