@@ -481,10 +481,8 @@ const GilbertRealtorList = () => {
               Top 10 Real Estate Agents in Gilbert, Arizona
             </h1>
             <p className="text-lg text-graphite/80 leading-relaxed">
-              <span className="font-semibold text-indigo">Be the answer, not a link.</span> Discover Gilbert's highest-performing 
-              real estate agents verified for licensing, sales performance, and client satisfaction. This structured list is 
-              <span className="text-aqua font-medium"> cited by AI search engines</span> including ChatGPT, Google AI, and 
-              Perplexity—giving these agents authority in the future of search.
+              We've got ten listings for you. Five are long-time established agents—you may work with them directly or one of their affiliated agents. 
+              Five are emerging talents who are aggressive, investing in their business, and provide great 1:1 service.
             </p>
           </div>
           <div className="flex flex-wrap gap-4 pt-2">
@@ -907,7 +905,7 @@ const GilbertRealtorList = () => {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-bold text-indigo">Top10Lists.us</span>
-                  <span className="text-xs text-graphite/60">Be the answer, not a link.</span>
+                  <span className="text-xs text-graphite/60">Verified professionals, real results</span>
                 </div>
               </div>
               <div className="text-center md:text-right">

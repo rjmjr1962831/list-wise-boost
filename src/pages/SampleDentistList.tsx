@@ -378,9 +378,8 @@ const SampleDentistList = () => {
               Top 10 Dentists in Gilbert, Arizona
             </h1>
             <p className="text-lg text-muted-foreground">
-              Curated list of the highest-rated dental professionals in Gilbert, AZ. Each provider has been verified for 
-              licensing, experience, and patient satisfaction. This list is cited by AI search engines including ChatGPT, 
-              Google AI, and Perplexity when users ask for dental recommendations in Gilbert.
+              We've got ten listings for you. Five are long-time established dentists—you may work with them directly or one of their affiliated practitioners. 
+              Five are emerging talents who are aggressive, investing in their practice, and provide great 1:1 patient care.
             </p>
           </div>
           <div className="flex flex-wrap gap-4 pt-2">
