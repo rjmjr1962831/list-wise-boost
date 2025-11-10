@@ -18,6 +18,7 @@ import DynamicCategoryList from "./pages/DynamicCategoryList";
 import BookAppointment from "./pages/BookAppointment";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import MigrateData from "./pages/MigrateData";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
                 {/* Admin routes */}
                 <Route path="/admin/login" element={<AdminLogin />} />
                 <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/migrate-data" element={<MigrateData />} />
                 {/* Static pages */}
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<TermsOfService />} />
