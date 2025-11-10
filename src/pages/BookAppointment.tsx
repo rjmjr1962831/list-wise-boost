@@ -203,12 +203,22 @@ const BookAppointment = () => {
 
           if (zoomError) {
             console.error("Error generating Zoom meeting:", zoomError);
+            toast.error("We couldn't generate a Zoom link right now. We'll email it separately if needed.");
+            trackEvent('zoom_generation_failed', {
+              market: 'booking_page',
+              page_path: '/book-appointment',
+            });
           } else if (zoomData?.joinUrl) {
             zoomJoinUrl = zoomData.joinUrl;
             console.log("Zoom meeting created successfully");
           }
         } catch (zoomErr) {
           console.error("Error invoking generate-zoom-meeting:", zoomErr);
+          toast.error("Zoom integration issue detected. Your appointment is booked; we'll follow up with the meeting link.");
+          trackEvent('zoom_generation_failed', {
+            market: 'booking_page',
+            page_path: '/book-appointment',
+          });
         }
       }
 
