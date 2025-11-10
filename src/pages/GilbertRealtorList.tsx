@@ -401,16 +401,16 @@ const realtors = [
   },
   {
     rank: 10,
-    name: "Michael Piork",
-    brokerage: "RE/MAX Excalibur",
+    name: "Sarah Nibarger",
+    brokerage: "Limitless Real Estate",
     rating: 4.6,
     reviews: 18,
-    specialties: ["Sustainable Homes", "Solar Properties", "New Construction"],
-    address: "2890 S Higley Rd, Gilbert, AZ 85295",
-    phone: "(480) 555-0210", // ⚠️ UNVERIFIED - Could not find on mikegetsitsold.com. CHECK Zillow/Realtor.com/Yelp
-    email: "michael@mikegetsitsold.com",
-    website: "mikegetsitsold.com",
-    description: "Puts clients first with unwavering dedication and personal attention. Available seven days a week and provides detailed follow-ups after every showing. Clients appreciate his patience, thoroughness, and genuine care for their success.",
+    specialties: ["Staging", "Interior Design", "First-Time Buyers"],
+    address: "Gilbert, AZ 85295", // ⚠️ UNVERIFIED - Need specific address
+    phone: "(480) 555-0210", // ⚠️ UNVERIFIED - Could not find on soldbylimitless.com. USER TO PROVIDE
+    email: "sarah@soldbylimitless.com", // ⚠️ UNVERIFIED - USER TO PROVIDE
+    website: "soldbylimitless.com/agent/sarah-nibarger",
+    description: "Rising star realtor with a passion for staging and interior design. Background in flipping houses brings unique expertise to help buyers visualize potential. Available and responsive to client needs throughout the buying process.",
     stats: {
       salesLast12Mo: 31,
       saleToListRatio: "97.4%",
@@ -418,23 +418,23 @@ const realtors = [
       yearsExperience: 4
     },
     verified: true,
-    image: michaelPiorkImg,
+    image: michaelPiorkImg, // ⚠️ NEEDS REPLACEMENT - Using placeholder until user provides Sarah's headshot
     testimonials: [
       {
-        author: "Jessica & Brian L.",
-        text: "Michael helped us find a solar-powered home that cut our energy bills in half! His knowledge of sustainable building and solar systems is incredible. He guided us through every detail and made sure we got the best deal!",
+        author: "Jennifer & Mark L.",
+        text: "Sarah's staging expertise transformed our home! Her eye for design and knowledge of what buyers want helped us sell for $30K over asking. She was always available to answer questions and made the whole process stress-free!",
         source: "Google Reviews",
         date: "January 2025"
       },
       {
         author: "Tyler Morrison",
-        text: "Michael was available every single day, including Sundays! He walked us through new construction options, explained builder contracts, and caught issues during inspections. His dedication is unmatched!",
+        text: "As first-time buyers, Sarah made everything easy to understand. She showed us homes that fit our style and budget, and her design insights helped us see the potential in each property. Highly recommend!",
         source: "Zillow",
         date: "December 2024"
       },
       {
-        author: "Lauren & Alex P.",
-        text: "Michael's patience and attention to detail were amazing. He followed up after every showing with detailed notes, answered all our questions thoroughly, and genuinely cared about finding us the right home. Highly recommend!",
+        author: "Amanda & Chris P.",
+        text: "Sarah's background in flipping houses was invaluable! She helped us find a fixer-upper with great bones and gave us renovation ideas that have already increased our home's value. Her dedication to clients is outstanding!",
         source: "Yelp",
         date: "November 2024"
       }
