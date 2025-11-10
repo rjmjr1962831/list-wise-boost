@@ -14,6 +14,122 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_types: {
+        Row: {
+          active: boolean | null
+          color: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean | null
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      appointments: {
+        Row: {
+          appointment_date: string
+          appointment_type_id: string | null
+          created_at: string
+          email: string
+          end_time: string
+          id: string
+          location: string | null
+          meeting_link: string | null
+          name: string
+          phone: string
+          reason: string
+          start_time: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          appointment_date: string
+          appointment_type_id?: string | null
+          created_at?: string
+          email: string
+          end_time: string
+          id?: string
+          location?: string | null
+          meeting_link?: string | null
+          name: string
+          phone: string
+          reason: string
+          start_time: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          appointment_date?: string
+          appointment_type_id?: string | null
+          created_at?: string
+          email?: string
+          end_time?: string
+          id?: string
+          location?: string | null
+          meeting_link?: string | null
+          name?: string
+          phone?: string
+          reason?: string
+          start_time?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_appointment_type_id_fkey"
+            columns: ["appointment_type_id"]
+            isOneToOne: false
+            referencedRelation: "appointment_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      availability_slots: {
+        Row: {
+          active: boolean | null
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          start_time: string
+        }
+        Insert: {
+          active?: boolean | null
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          start_time: string
+        }
+        Update: {
+          active?: boolean | null
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          start_time?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
           created_at: string
