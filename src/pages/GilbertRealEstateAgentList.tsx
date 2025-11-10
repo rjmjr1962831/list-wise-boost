@@ -936,7 +936,7 @@ const GilbertRealEstateAgentList = () => {
               <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-aqua to-indigo rounded-full" />
               <div className="space-y-1">
                 <h2 className="text-2xl md:text-3xl font-bold font-serif text-indigo flex items-center gap-3">
-                  Emerging Visibility
+                  Emerging Talent
                   <CitationBadge text="Rising Stars" />
                 </h2>
                 <p className="text-graphite/70">Building authority with exceptional service and AI-native presence</p>
@@ -1166,7 +1166,7 @@ const GilbertRealEstateAgentList = () => {
                 <div className="mx-auto w-12 h-12 bg-gradient-to-br from-aqua/30 to-indigo/20 rounded-full flex items-center justify-center ring-2 ring-aqua/20">
                   <Home className="h-6 w-6 text-indigo" />
                 </div>
-                <h3 className="font-semibold text-indigo">AI-Native Visibility</h3>
+                <h3 className="font-semibold text-indigo">AI-Native Talent</h3>
                 <p className="text-sm text-graphite/70">
                   Cited by AI search engines. Built for the future of local discovery.
                 </p>
@@ -1193,7 +1193,7 @@ const GilbertRealEstateAgentList = () => {
               just another link in search results.
             </p>
             <RippleButton size="lg" asChild className="bg-aqua text-indigo hover:bg-aqua/90 font-semibold shadow-xl">
-              <Link to="/">Apply for AI-Native Visibility</Link>
+              <Link to="/">Apply for AI-Native Talent</Link>
             </RippleButton>
             <p className="text-sm text-beige/70">
               Limited to verified professionals with proven track records

@@ -293,7 +293,7 @@ export const ProfessionalListLayout = ({
             </h2>
             <p className="text-lg text-muted-foreground">
               Apply to be featured on our verified list of top professionals in {metadata.location.city}. 
-              Boost your visibility and connect with more clients.
+              Boost your talent and connect with more clients.
             </p>
             <Button asChild size="lg">
               <Link to="/">Apply for Listing</Link>

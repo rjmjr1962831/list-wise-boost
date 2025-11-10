@@ -166,7 +166,7 @@ const Index = () => {
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                     <Zap className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold">AI Visibility</h3>
+                  <h3 className="text-xl font-bold">AI Talent</h3>
                   <p className="text-muted-foreground">
                     Our lists are optimized for citation by AI tools like ChatGPT, Google SGE, and Perplexity. These platforms cite structured lists over individual websites.
                   </p>
@@ -231,7 +231,7 @@ const Index = () => {
               <div className="text-4xl mb-3">💼</div>
               <h3 className="text-xl font-bold">Cost-Conscious Professionals</h3>
               <p className="text-muted-foreground">
-                Tired of expensive PPC campaigns and want <span className="font-semibold text-foreground">predictable visibility</span>
+                Tired of expensive PPC campaigns and want <span className="font-semibold text-foreground">predictable talent</span>
               </p>
             </CardContent>
           </Card>
