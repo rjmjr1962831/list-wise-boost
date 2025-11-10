@@ -22,7 +22,7 @@ import sarahJohnsonImg from "@/assets/realtors/sarah-johnson.jpg";
 import robertAndersonImg from "@/assets/realtors/robert-anderson.jpg";
 import lindsayWhittImg from "@/assets/realtors/lindsay-whitt.jpg";
 import heatherMarloweImg from "@/assets/realtors/heather-marlowe.jpg";
-import michaelPiorkImg from "@/assets/realtors/michael-piork.jpg";
+import sarahNibargerImg from "@/assets/realtors/sarah-nibarger.jpg";
 
 const realtors = [
   {
@@ -406,9 +406,9 @@ const realtors = [
     rating: 4.6,
     reviews: 18,
     specialties: ["Staging", "Interior Design", "First-Time Buyers"],
-    address: "Gilbert, AZ 85295", // ⚠️ UNVERIFIED - Need specific address
-    phone: "(480) 555-0210", // ⚠️ UNVERIFIED - Could not find on soldbylimitless.com. USER TO PROVIDE
-    email: "sarah@soldbylimitless.com", // ⚠️ UNVERIFIED - USER TO PROVIDE
+    address: "Gilbert, AZ 85295",
+    phone: "(208) 871-8722", // ✓ VERIFIED from user
+    email: "Sarah.nibarger@soldbylimitless.com", // ✓ VERIFIED from user
     website: "soldbylimitless.com/agent/sarah-nibarger",
     description: "Rising star realtor with a passion for staging and interior design. Background in flipping houses brings unique expertise to help buyers visualize potential. Available and responsive to client needs throughout the buying process.",
     stats: {
@@ -418,7 +418,7 @@ const realtors = [
       yearsExperience: 4
     },
     verified: true,
-    image: michaelPiorkImg, // ⚠️ NEEDS REPLACEMENT - Using placeholder until user provides Sarah's headshot
+    image: sarahNibargerImg,
     testimonials: [
       {
         author: "Jennifer & Mark L.",
