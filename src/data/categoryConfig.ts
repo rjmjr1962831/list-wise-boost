@@ -1,8 +1,8 @@
 import { CategoryConfig } from '@/types/directory';
 
 export const categories: Record<string, CategoryConfig> = {
-  dentists: {
-    id: 'dentists',
+  top10dentists: {
+    id: 'top10dentists',
     name: 'Dentist',
     pluralName: 'Dentists',
     icon: 'Activity',
@@ -11,8 +11,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'blue',
     searchTerms: ['dental', 'dentist', 'teeth', 'oral health']
   },
-  'real-estate-agents': {
-    id: 'real-estate-agents',
+  'top10realestateagents': {
+    id: 'top10realestateagents',
     name: 'Real Estate Agent',
     pluralName: 'Real Estate Agents',
     icon: 'Home',
@@ -21,8 +21,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'green',
     searchTerms: ['real estate agent', 'real estate', 'homes', 'property']
   },
-  lawyers: {
-    id: 'lawyers',
+  top10lawyers: {
+    id: 'top10lawyers',
     name: 'Lawyer',
     pluralName: 'Lawyers',
     icon: 'Scale',
@@ -31,8 +31,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'purple',
     searchTerms: ['lawyer', 'attorney', 'legal']
   },
-  'personal-injury-lawyers': {
-    id: 'personal-injury-lawyers',
+  'top10personalinjurylawyers': {
+    id: 'top10personalinjurylawyers',
     name: 'Personal Injury Lawyer',
     pluralName: 'Personal Injury Lawyers',
     icon: 'ShieldAlert',
@@ -41,8 +41,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'red',
     searchTerms: ['personal injury', 'accident lawyer', 'injury attorney']
   },
-  'business-lawyers': {
-    id: 'business-lawyers',
+  'top10businesslawyers': {
+    id: 'top10businesslawyers',
     name: 'Business Lawyer',
     pluralName: 'Business Lawyers',
     icon: 'Briefcase',
@@ -51,8 +51,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'indigo',
     searchTerms: ['business lawyer', 'corporate attorney', 'business law']
   },
-  'real-estate-lawyers': {
-    id: 'real-estate-lawyers',
+  'top10realestatellawyers': {
+    id: 'top10realestatellawyers',
     name: 'Real Estate Lawyer',
     pluralName: 'Real Estate Lawyers',
     icon: 'Building',
@@ -61,8 +61,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'teal',
     searchTerms: ['real estate lawyer', 'property attorney', 'real estate law']
   },
-  restaurants: {
-    id: 'restaurants',
+  top10restaurants: {
+    id: 'top10restaurants',
     name: 'Restaurant',
     pluralName: 'Restaurants',
     icon: 'Utensils',
@@ -71,8 +71,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'orange',
     searchTerms: ['restaurant', 'dining', 'food']
   },
-  'chinese-restaurants': {
-    id: 'chinese-restaurants',
+  'top10chineserestaurants': {
+    id: 'top10chineserestaurants',
     name: 'Chinese Restaurant',
     pluralName: 'Chinese Restaurants',
     icon: 'UtensilsCrossed',
@@ -81,8 +81,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'rose',
     searchTerms: ['chinese food', 'chinese restaurant', 'asian cuisine']
   },
-  'pizza-restaurants': {
-    id: 'pizza-restaurants',
+  'top10pizzarestaurants': {
+    id: 'top10pizzarestaurants',
     name: 'Pizza Restaurant',
     pluralName: 'Pizza Restaurants',
     icon: 'Pizza',
@@ -91,8 +91,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'amber',
     searchTerms: ['pizza', 'pizzeria', 'italian pizza']
   },
-  'italian-restaurants': {
-    id: 'italian-restaurants',
+  'top10italianrestaurants': {
+    id: 'top10italianrestaurants',
     name: 'Italian Restaurant',
     pluralName: 'Italian Restaurants',
     icon: 'Wine',
@@ -101,8 +101,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'emerald',
     searchTerms: ['italian food', 'italian restaurant', 'pasta']
   },
-  'sports-bars': {
-    id: 'sports-bars',
+  'top10sportsbars': {
+    id: 'top10sportsbars',
     name: 'Sports Bar',
     pluralName: 'Sports Bars',
     icon: 'Trophy',
@@ -111,8 +111,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'cyan',
     searchTerms: ['sports bar', 'sports pub', 'game day']
   },
-  'fancy-restaurants': {
-    id: 'fancy-restaurants',
+  'top10fancyrestaurants': {
+    id: 'top10fancyrestaurants',
     name: 'Fine Dining Restaurant',
     pluralName: 'Fine Dining Restaurants',
     icon: 'Sparkles',
@@ -121,8 +121,8 @@ export const categories: Record<string, CategoryConfig> = {
     accentColor: 'violet',
     searchTerms: ['fine dining', 'upscale restaurant', 'fancy restaurant']
   },
-  'cheap-but-good': {
-    id: 'cheap-but-good',
+  'top10cheapbutgood': {
+    id: 'top10cheapbutgood',
     name: 'Budget-Friendly Restaurant',
     pluralName: 'Budget-Friendly Restaurants',
     icon: 'DollarSign',

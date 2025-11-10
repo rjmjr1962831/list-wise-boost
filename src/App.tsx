@@ -27,7 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/main" element={<MainSite />} />
             {/* Legacy routes */}
-            <Route path="/az/gilbert/dentists" element={<SampleDentistList />} />
+            <Route path="/az/gilbert/top10dentists" element={<SampleDentistList />} />
             <Route path="/az/gilbert/top10realestateagents" element={<GilbertRealEstateAgentList />} />
             {/* Dynamic city and category routes */}
             <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />

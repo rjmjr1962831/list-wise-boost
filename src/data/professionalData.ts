@@ -13,34 +13,34 @@ type CityDataMap = {
 
 const cityData: CityDataMap = {
   'phoenix': {
-    'dentists': phoenix.phoenixDentists,
-    'real-estate-agents': phoenix.phoenixRealEstateAgents,
-    'lawyers': phoenix.phoenixLawyers,
-    'personal-injury-lawyers': phoenix.phoenixPersonalInjuryLawyers,
-    'business-lawyers': phoenix.phoenixBusinessLawyers,
-    'real-estate-lawyers': phoenix.phoenixRealEstateLawyers,
-    'restaurants': phoenix.phoenixRestaurants,
-    'chinese-restaurants': phoenix.phoenixChineseRestaurants,
-    'pizza-restaurants': phoenix.phoenixPizzaRestaurants,
-    'italian-restaurants': phoenix.phoenixItalianRestaurants,
-    'sports-bars': phoenix.phoenixSportsBars,
-    'fancy-restaurants': phoenix.phoenixFancyRestaurants,
-    'cheap-but-good': phoenix.phoenixCheapButGood
+    'top10dentists': phoenix.phoenixDentists,
+    'top10realestateagents': phoenix.phoenixRealEstateAgents,
+    'top10lawyers': phoenix.phoenixLawyers,
+    'top10personalinjurylawyers': phoenix.phoenixPersonalInjuryLawyers,
+    'top10businesslawyers': phoenix.phoenixBusinessLawyers,
+    'top10realestatellawyers': phoenix.phoenixRealEstateLawyers,
+    'top10restaurants': phoenix.phoenixRestaurants,
+    'top10chineserestaurants': phoenix.phoenixChineseRestaurants,
+    'top10pizzarestaurants': phoenix.phoenixPizzaRestaurants,
+    'top10italianrestaurants': phoenix.phoenixItalianRestaurants,
+    'top10sportsbars': phoenix.phoenixSportsBars,
+    'top10fancyrestaurants': phoenix.phoenixFancyRestaurants,
+    'top10cheapbutgood': phoenix.phoenixCheapButGood
   },
   'los-angeles': {
-    'dentists': losAngeles.losAngelesDentists,
-    'real-estate-agents': losAngeles.losAngelesRealEstateAgents,
-    'lawyers': losAngeles.losAngelesLawyers,
-    'personal-injury-lawyers': losAngeles.losAngelesPersonalInjuryLawyers,
-    'business-lawyers': losAngeles.losAngelesBusinessLawyers,
-    'real-estate-lawyers': losAngeles.losAngelesRealEstateLawyers,
-    'restaurants': losAngeles.losAngelesRestaurants,
-    'chinese-restaurants': losAngeles.losAngelesChineseRestaurants,
-    'pizza-restaurants': losAngeles.losAngelesPizzaRestaurants,
-    'italian-restaurants': losAngeles.losAngelesItalianRestaurants,
-    'sports-bars': losAngeles.losAngelesSportsBars,
-    'fancy-restaurants': losAngeles.losAngelesFancyRestaurants,
-    'cheap-but-good': losAngeles.losAngelesCheapButGood
+    'top10dentists': losAngeles.losAngelesDentists,
+    'top10realestateagents': losAngeles.losAngelesRealEstateAgents,
+    'top10lawyers': losAngeles.losAngelesLawyers,
+    'top10personalinjurylawyers': losAngeles.losAngelesPersonalInjuryLawyers,
+    'top10businesslawyers': losAngeles.losAngelesBusinessLawyers,
+    'top10realestatellawyers': losAngeles.losAngelesRealEstateLawyers,
+    'top10restaurants': losAngeles.losAngelesRestaurants,
+    'top10chineserestaurants': losAngeles.losAngelesChineseRestaurants,
+    'top10pizzarestaurants': losAngeles.losAngelesPizzaRestaurants,
+    'top10italianrestaurants': losAngeles.losAngelesItalianRestaurants,
+    'top10sportsbars': losAngeles.losAngelesSportsBars,
+    'top10fancyrestaurants': losAngeles.losAngelesFancyRestaurants,
+    'top10cheapbutgood': losAngeles.losAngelesCheapButGood
   }
 };
 

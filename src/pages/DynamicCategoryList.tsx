@@ -26,8 +26,8 @@ export default function DynamicCategoryList() {
 
   // Check if quiz should be shown for real estate agents category
   useEffect(() => {
-    if (categorySlug === 'real-estate-agents' && city) {
-      const storageKey = `quiz_completed_${city.slug}_real-estate-agents`;
+    if (categorySlug === 'top10realestateagents' && city) {
+      const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
       const completed = localStorage.getItem(storageKey);
       
       if (!completed) {
@@ -45,7 +45,7 @@ export default function DynamicCategoryList() {
     if (!city) return;
 
     // Store completion in localStorage
-    const storageKey = `quiz_completed_${city.slug}_real-estate-agents`;
+    const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
     localStorage.setItem(storageKey, JSON.stringify(preferences));
     
     // Filter professionals based on preferences
@@ -94,7 +94,7 @@ export default function DynamicCategoryList() {
   const sections: ListSection[] = [
     {
       title: `Top ${category.pluralName}`,
-      description: quizCompleted && categorySlug === 'real-estate-agents'
+      description: quizCompleted && categorySlug === 'top10realestateagents'
         ? `Agents matched to your preferences in ${formatCityName(city)}`
         : `The highest-rated ${category.pluralName.toLowerCase()} in ${formatCityName(city)}`,
       items: filteredProfessionals,
@@ -125,7 +125,7 @@ export default function DynamicCategoryList() {
 
   return (
     <>
-      {categorySlug === 'real-estate-agents' && city && (
+      {categorySlug === 'top10realestateagents' && city && (
         <RealEstateAgentQuizModal
           open={showQuiz} 
           onComplete={handleQuizComplete}
