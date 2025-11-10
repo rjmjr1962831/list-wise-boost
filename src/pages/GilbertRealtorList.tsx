@@ -241,7 +241,7 @@ const realtors = [
     reviews: 220,
     specialties: ["First-Time Buyers", "Relocation", "Investment Properties"],
     address: "2450 E Baseline Rd, Gilbert, AZ 85234",
-    phone: "(602) 908-2740",
+    phone: "(602) 908-2740", // ✓ VERIFIED from nowsellingazhomes.com
     email: "kim@nowsellingazhomes.com",
     website: "nowsellingazhomes.com",
     description: "Known for exceptional responsiveness and client-first approach. Kim and her team return calls within 30 minutes and provide personalized attention throughout the entire buying process. With over 220 verified reviews, clients consistently praise their availability and dedication.",
@@ -274,6 +274,8 @@ const realtors = [
       }
     ]
   },
+  // ⚠️ WARNING: Zack Bennett's website states "selling real estate since 2001" = 24 years experience
+  // He should NOT be in "Hungry & Hustling" section (requires ≤5 years). NEEDS REPLACEMENT.
   {
     rank: 7,
     name: "Zack Bennett",
@@ -282,7 +284,7 @@ const realtors = [
     reviews: 30,
     specialties: ["First-Time Buyers", "Smart Homes", "Young Families"],
     address: "3530 S Val Vista Dr, Gilbert, AZ 85297",
-    phone: "(480) 343-7653",
+    phone: "(480) 343-7653", // ⚠️ UNVERIFIED - Could not find on zacksellsaz.com
     email: "zack@zacksellsaz.com",
     website: "zacksellsaz.com",
     description: "Hungry and highly motivated agent who treats every client like they're his only client. Available evenings and weekends, responds to texts immediately, and goes above and beyond to ensure smooth transactions. Rising star with deep local market knowledge.",
@@ -323,7 +325,7 @@ const realtors = [
     reviews: 45,
     specialties: ["Social Media Marketing", "Video Tours", "Staging"],
     address: "4365 E Pecos Rd, Gilbert, AZ 85234",
-    phone: "(480) 555-0208",
+    phone: "(480) 555-0208", // ⚠️ UNVERIFIED - Phone not displayed on lindsaywhitt.com. CHECK Zillow/Realtor.com/Yelp
     email: "lindsay@lindsaywhitt.com",
     website: "lindsaywhitt.com",
     description: "Fiercely hustling with a reputation for making every client feel like a priority. Provides detailed market updates, answers questions at all hours, and maintains constant communication. Clients describe her as 'always there when you need her.'",
@@ -364,7 +366,7 @@ const realtors = [
     reviews: 22,
     specialties: ["Tech-Savvy Marketing", "3D Virtual Tours", "Remote Buyers"],
     address: "936 E Williams Field Rd, Gilbert, AZ 85295",
-    phone: "(480) 603-3310",
+    phone: "(480) 603-3310", // ✓ VERIFIED from reviews.listen360.com/heather-marlowe-gilbert
     email: "heather@huntrealestate.com",
     website: "huntrealestate.com",
     description: "Extremely responsive and tech-savvy agent who makes herself available via text, email, and video calls. Known for quick turnaround times and proactive communication. Hungry to earn every client's business and referrals through exceptional service.",
@@ -405,7 +407,7 @@ const realtors = [
     reviews: 18,
     specialties: ["Sustainable Homes", "Solar Properties", "New Construction"],
     address: "2890 S Higley Rd, Gilbert, AZ 85295",
-    phone: "(480) 555-0210",
+    phone: "(480) 555-0210", // ⚠️ UNVERIFIED - Could not find on mikegetsitsold.com. CHECK Zillow/Realtor.com/Yelp
     email: "michael@mikegetsitsold.com",
     website: "mikegetsitsold.com",
     description: "Puts clients first with unwavering dedication and personal attention. Available seven days a week and provides detailed follow-ups after every showing. Clients appreciate his patience, thoroughness, and genuine care for their success.",
