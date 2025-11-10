@@ -130,6 +130,16 @@ export const categories: Record<string, CategoryConfig> = {
     schemaType: 'Restaurant',
     accentColor: 'lime',
     searchTerms: ['cheap eats', 'affordable dining', 'budget restaurant']
+  },
+  'top10neurologists': {
+    id: 'top10neurologists',
+    name: 'Neurologist',
+    pluralName: 'Neurologists',
+    icon: 'Brain',
+    description: 'Top neurologists specializing in brain and nervous system disorders',
+    schemaType: 'Physician',
+    accentColor: 'primary',
+    searchTerms: ['neurologist', 'brain doctor', 'movement disorders', 'neurology', 'parkinson\'s', 'epilepsy']
   }
 };
 

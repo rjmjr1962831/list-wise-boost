@@ -25,7 +25,8 @@ const cityData: CityDataMap = {
     'top10italianrestaurants': phoenix.phoenixItalianRestaurants,
     'top10sportsbars': phoenix.phoenixSportsBars,
     'top10fancyrestaurants': phoenix.phoenixFancyRestaurants,
-    'top10cheapbutgood': phoenix.phoenixCheapButGood
+    'top10cheapbutgood': phoenix.phoenixCheapButGood,
+    'top10neurologists': phoenix.phoenixNeurologists
   },
   'los-angeles': {
     'top10dentists': losAngeles.losAngelesDentists,
@@ -40,7 +41,8 @@ const cityData: CityDataMap = {
     'top10italianrestaurants': losAngeles.losAngelesItalianRestaurants,
     'top10sportsbars': losAngeles.losAngelesSportsBars,
     'top10fancyrestaurants': losAngeles.losAngelesFancyRestaurants,
-    'top10cheapbutgood': losAngeles.losAngelesCheapButGood
+    'top10cheapbutgood': losAngeles.losAngelesCheapButGood,
+    'top10neurologists': []
   }
 };
 

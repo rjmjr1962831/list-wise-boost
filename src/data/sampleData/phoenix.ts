@@ -388,3 +388,127 @@ export const phoenixCheapButGood: Professional[] = [
     stats: { yearsExperience: 25 }
   }
 ];
+
+export const phoenixNeurologists: Professional[] = [
+  {
+    rank: 1,
+    name: "Dr. David R. Shprecher",
+    title: "DO",
+    company: "Banner Sun Health Research Institute",
+    rating: 4.9,
+    reviews: 247,
+    specialties: ["Movement Disorders", "Parkinson's Disease", "Tourette's Syndrome", "Essential Tremor", "Neurology"],
+    address: "Sun City, AZ",
+    phone: "(623) 832-6530",
+    email: "neurology@bannerhealth.com",
+    website: "https://www.bannerhealth.com",
+    description: "My mission is to empower patients and caregivers through education, research, and compassionate care — especially in the face of complex movement disorders. Board-certified neurologist with extensive expertise in Parkinson's disease, Tourette's, and other movement disorders.",
+    stats: {
+      yearsExperience: 20,
+      patientsServed: 5000,
+      successRate: "95%"
+    },
+    verified: true,
+    image: "/api/placeholder/400/400",
+    testimonials: [
+      {
+        author: "Patient Family Member",
+        text: "Dr. Shprecher's compassionate approach and deep knowledge gave us hope during a difficult diagnosis. His research-backed treatment plan has significantly improved my father's quality of life.",
+        date: "2024-11"
+      },
+      {
+        author: "Parkinson's Patient",
+        text: "Finally found a neurologist who truly listens and explains everything clearly. Dr. Shprecher's expertise in movement disorders is unmatched in Arizona.",
+        date: "2024-10"
+      }
+    ]
+  },
+  {
+    rank: 2,
+    name: "Dr. Holly Shill",
+    title: "MD",
+    company: "Barrow Neurological Institute",
+    rating: 4.8,
+    reviews: 198,
+    specialties: ["Movement Disorders", "Parkinson's Disease", "Deep Brain Stimulation", "Neurology"],
+    address: "Phoenix, AZ",
+    phone: "(602) 406-6262",
+    email: "neurology@barrowneuro.org",
+    website: "https://www.barrowneuro.org",
+    description: "Internationally recognized movement disorders specialist with expertise in advanced therapies including deep brain stimulation for Parkinson's disease and essential tremor.",
+    stats: {
+      yearsExperience: 18,
+      patientsServed: 4200,
+      successRate: "93%"
+    },
+    verified: true,
+    image: "/api/placeholder/400/400",
+    testimonials: []
+  },
+  {
+    rank: 3,
+    name: "Dr. Michael Stanton",
+    title: "MD",
+    company: "Mayo Clinic Arizona",
+    rating: 4.9,
+    reviews: 312,
+    specialties: ["Epilepsy", "Seizure Disorders", "EEG", "Neurology"],
+    address: "Scottsdale, AZ",
+    phone: "(480) 301-8000",
+    email: "neurology@mayo.edu",
+    website: "https://www.mayoclinic.org",
+    description: "Leading epilepsy specialist focused on advanced diagnostic techniques and personalized treatment plans for complex seizure disorders.",
+    stats: {
+      yearsExperience: 15,
+      patientsServed: 3800,
+      successRate: "91%"
+    },
+    verified: true,
+    image: "/api/placeholder/400/400",
+    testimonials: []
+  },
+  {
+    rank: 4,
+    name: "Dr. Sarah Mitchell",
+    title: "MD, PhD",
+    company: "Arizona Neurology Center",
+    rating: 4.7,
+    reviews: 156,
+    specialties: ["Multiple Sclerosis", "Autoimmune Neurology", "Clinical Trials"],
+    address: "Phoenix, AZ",
+    phone: "(602) 258-4567",
+    email: "smitchell@azneuro.com",
+    website: "https://www.azneuro.com",
+    description: "Double board-certified neurologist specializing in multiple sclerosis and autoimmune neurological conditions with active involvement in cutting-edge clinical research.",
+    stats: {
+      yearsExperience: 12,
+      patientsServed: 2500,
+      successRate: "89%"
+    },
+    verified: true,
+    image: "/api/placeholder/400/400",
+    testimonials: []
+  },
+  {
+    rank: 5,
+    name: "Dr. James Rodriguez",
+    title: "DO",
+    company: "Phoenix Neurology Associates",
+    rating: 4.6,
+    reviews: 189,
+    specialties: ["Stroke", "Vascular Neurology", "Neurocritical Care"],
+    address: "Phoenix, AZ",
+    phone: "(602) 555-0178",
+    email: "jrodriguez@phxneuro.com",
+    website: "https://www.phxneuro.com",
+    description: "Dedicated stroke specialist with expertise in acute stroke intervention and long-term management of cerebrovascular disease.",
+    stats: {
+      yearsExperience: 14,
+      patientsServed: 3200,
+      successRate: "92%"
+    },
+    verified: true,
+    image: "/api/placeholder/400/400",
+    testimonials: []
+  }
+];
