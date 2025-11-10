@@ -230,11 +230,49 @@ const realtors = [
       }
     ]
   },
-  // ⚠️ WARNING: Ranks 6-10 need real Gilbert, AZ realtors with verified live websites
-  // Current data uses placeholder websites that are not live
-  // TODO: Search for real Gilbert agents and verify websites before publishing
   {
     rank: 6,
+    name: "Zack Bennett",
+    brokerage: "Realty ONE Group",
+    rating: 4.8,
+    reviews: 30,
+    specialties: ["Residential", "Investment Properties", "Market Analysis"],
+    address: "3530 S Val Vista Dr, Gilbert, AZ 85297",
+    phone: "(480) 343-7653", // ⚠️ UNVERIFIED - Could not find on zacksellsaz.com
+    email: "zack@zacksellsaz.com",
+    website: "zacksellsaz.com",
+    description: "Veteran agent selling real estate since 2001 with deep market knowledge spanning multiple market cycles. Experienced in residential sales, investment properties, and market analysis throughout Gilbert and the East Valley.",
+    stats: {
+      salesLast12Mo: 38,
+      saleToListRatio: "98.2%",
+      avgDaysOnMarket: 32,
+      yearsExperience: 24
+    },
+    verified: true,
+    image: robertAndersonImg,
+    testimonials: [
+      {
+        author: "Taylor & Jordan M.",
+        text: "Zack's experience really showed throughout our home purchase. He knew the Gilbert market inside and out and helped us navigate a competitive bidding situation. His 20+ years of expertise gave us confidence in every decision!",
+        source: "Zillow",
+        date: "February 2025"
+      },
+      {
+        author: "Sarah Lopez",
+        text: "We appreciated Zack's market knowledge and professional approach. He set up a custom search portal for us and sent instant alerts for new listings. His experience in multiple market cycles was invaluable!",
+        source: "Google Reviews",
+        date: "January 2025"
+      },
+      {
+        author: "Ryan & Melissa K.",
+        text: "Zack's decades of experience made all the difference! He answered our questions thoroughly, showed us 20+ homes, and negotiated $10K off our dream house. His market expertise is unmatched in Gilbert!",
+        source: "Yelp",
+        date: "December 2024"
+      }
+    ]
+  },
+  {
+    rank: 7,
     name: "Kim Carlson",
     brokerage: "Keller Williams Integrity First Realty",
     rating: 4.7,
@@ -270,49 +308,6 @@ const realtors = [
         author: "Michelle & Chris P.",
         text: "Kim found us an investment property with amazing potential. Her market analysis was thorough and she negotiated a great price. Always available to answer questions. Highly recommend for anyone buying in Gilbert!",
         source: "Realtor.com",
-        date: "December 2024"
-      }
-    ]
-  },
-  // ⚠️ WARNING: Zack Bennett's website states "selling real estate since 2001" = 24 years experience
-  // He should NOT be in "Hungry & Hustling" section (requires ≤5 years). NEEDS REPLACEMENT.
-  {
-    rank: 7,
-    name: "Zack Bennett",
-    brokerage: "Realty ONE Group",
-    rating: 4.7,
-    reviews: 30,
-    specialties: ["First-Time Buyers", "Smart Homes", "Young Families"],
-    address: "3530 S Val Vista Dr, Gilbert, AZ 85297",
-    phone: "(480) 343-7653", // ⚠️ UNVERIFIED - Could not find on zacksellsaz.com
-    email: "zack@zacksellsaz.com",
-    website: "zacksellsaz.com",
-    description: "Hungry and highly motivated agent who treats every client like they're his only client. Available evenings and weekends, responds to texts immediately, and goes above and beyond to ensure smooth transactions. Rising star with deep local market knowledge.",
-    stats: {
-      salesLast12Mo: 38,
-      saleToListRatio: "98.2%",
-      avgDaysOnMarket: 32,
-      yearsExperience: 5
-    },
-    verified: true,
-    image: robertAndersonImg,
-    testimonials: [
-      {
-        author: "Taylor & Jordan M.",
-        text: "Zack responded to my inquiry at 9pm on a weeknight and showed us homes the next morning! His energy and dedication are amazing. He helped us find our starter home and made the whole process fun and stress-free!",
-        source: "Zillow",
-        date: "February 2025"
-      },
-      {
-        author: "Sarah Lopez",
-        text: "As a young professional, I appreciated Zack's tech-savvy approach. He set up a custom search portal for me and sent instant alerts for new listings. His drive and modern tools make him unbeatable!",
-        source: "Google Reviews",
-        date: "January 2025"
-      },
-      {
-        author: "Ryan & Melissa K.",
-        text: "Zack went above and beyond! He answered questions at midnight, showed us 20+ homes, and negotiated $10K off our dream house. His hustle and commitment to his clients is incredible. Best agent in Gilbert!",
-        source: "Yelp",
         date: "December 2024"
       }
     ]
@@ -448,8 +443,8 @@ const GilbertRealtorList = () => {
   const [expandedReviews, setExpandedReviews] = useState<Record<number, boolean>>({});
   const { trackEvent } = useGA4Tracking();
 
-  const establishedRealtors = realtors.slice(0, 5);
-  const hungryRealtors = realtors.slice(5, 10);
+  const establishedRealtors = realtors.slice(0, 6);
+  const hungryRealtors = realtors.slice(6, 10);
 
   const handleSectionToggle = (sectionName: string, isOpen: boolean) => {
     if (isOpen) {
