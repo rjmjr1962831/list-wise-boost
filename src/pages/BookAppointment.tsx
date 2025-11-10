@@ -103,36 +103,68 @@ const BookAppointment = () => {
       return;
     }
 
-    const dayOfWeek = selectedDate.getDay();
-    const daySlots = availabilitySlots.filter(slot => slot.day_of_week === dayOfWeek);
+    const fetchSlotsWithAvailability = async () => {
+      const dayOfWeek = selectedDate.getDay();
+      const daySlots = availabilitySlots.filter(slot => slot.day_of_week === dayOfWeek);
 
-    if (daySlots.length === 0) {
-      setTimeSlots([]);
-      return;
-    }
-
-    // Generate 30-minute intervals
-    const slots: TimeSlot[] = [];
-    daySlots.forEach(slot => {
-      const [startHour, startMin] = slot.start_time.split(':').map(Number);
-      const [endHour, endMin] = slot.end_time.split(':').map(Number);
-      
-      let currentHour = startHour;
-      let currentMin = startMin;
-      
-      while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
-        const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
-        slots.push({ time: timeStr, available: true });
-        
-        currentMin += 30;
-        if (currentMin >= 60) {
-          currentMin = 0;
-          currentHour++;
-        }
+      if (daySlots.length === 0) {
+        setTimeSlots([]);
+        return;
       }
-    });
 
-    setTimeSlots(slots);
+      // Fetch existing appointments for the selected date
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      const { data: existingAppointments, error } = await supabase
+        .from('appointments')
+        .select('start_time, end_time')
+        .eq('appointment_date', dateStr)
+        .eq('status', 'scheduled');
+
+      if (error) {
+        console.error('Error fetching existing appointments:', error);
+      }
+
+      // Generate 30-minute intervals
+      const slots: TimeSlot[] = [];
+      daySlots.forEach(slot => {
+        const [startHour, startMin] = slot.start_time.split(':').map(Number);
+        const [endHour, endMin] = slot.end_time.split(':').map(Number);
+        
+        let currentHour = startHour;
+        let currentMin = startMin;
+        
+        while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
+          const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
+          
+          // Check if this time slot conflicts with any existing appointments
+          let isAvailable = true;
+          if (existingAppointments) {
+            for (const apt of existingAppointments) {
+              const aptStart = apt.start_time.substring(0, 5); // Get HH:MM format
+              const aptEnd = apt.end_time.substring(0, 5);
+              
+              // Check if current slot overlaps with existing appointment
+              if (timeStr >= aptStart && timeStr < aptEnd) {
+                isAvailable = false;
+                break;
+              }
+            }
+          }
+          
+          slots.push({ time: timeStr, available: isAvailable });
+          
+          currentMin += 30;
+          if (currentMin >= 60) {
+            currentMin = 0;
+            currentHour++;
+          }
+        }
+      });
+
+      setTimeSlots(slots);
+    };
+
+    fetchSlotsWithAvailability();
   }, [selectedDate, availabilitySlots]);
 
   const handleSubmit = async (e: React.FormEvent) => {
