@@ -185,13 +185,14 @@ const BookAppointment = () => {
       if (error) throw error;
 
       // Generate Zoom meeting link
+      let zoomJoinUrl = '';
       if (appointmentData) {
         try {
           const appointmentDateTime = new Date(selectedDate);
           const [startHour, startMin] = selectedTime.split(':').map(Number);
           appointmentDateTime.setHours(startHour, startMin, 0);
 
-          const { error: zoomError } = await supabase.functions.invoke('generate-zoom-meeting', {
+          const { data: zoomData, error: zoomError } = await supabase.functions.invoke('generate-zoom-meeting', {
             body: {
               appointmentId: appointmentData.id,
               topic: `${appointmentType?.name || 'Appointment'} with ${formData.name}`,
@@ -202,11 +203,12 @@ const BookAppointment = () => {
 
           if (zoomError) {
             console.error("Error generating Zoom meeting:", zoomError);
-            // Don't fail the booking if Zoom generation fails
+          } else if (zoomData?.joinUrl) {
+            zoomJoinUrl = zoomData.joinUrl;
+            console.log("Zoom meeting created successfully");
           }
         } catch (zoomErr) {
           console.error("Error invoking generate-zoom-meeting:", zoomErr);
-          // Don't fail the booking if Zoom generation fails
         }
       }
 
@@ -217,7 +219,7 @@ const BookAppointment = () => {
         page_path: '/book-appointment',
       });
 
-      // Send confirmation email
+      // Send confirmation email with Zoom link
       try {
         const { error: emailError } = await supabase.functions.invoke('send-booking-confirmation', {
           body: {
@@ -229,6 +231,7 @@ const BookAppointment = () => {
             startTime: selectedTime,
             endTime: endTime,
             reason: formData.reason,
+            meetingLink: zoomJoinUrl || undefined,
           },
         });
 

@@ -17,6 +17,7 @@ interface BookingConfirmationRequest {
   startTime: string;
   endTime: string;
   reason: string;
+  meetingLink?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -35,6 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
       startTime,
       endTime,
       reason,
+      meetingLink,
     }: BookingConfirmationRequest = await req.json();
 
     console.log("Sending booking confirmation to:", email);
@@ -108,6 +110,20 @@ const handler = async (req: Request): Promise<Response> => {
                     <div class="label">Time</div>
                     <div class="value">${formatTime(startTime)} - ${formatTime(endTime)}</div>
                   </div>
+                  
+                  ${meetingLink ? `
+                  <div class="detail-row" style="background: #e0f2fe; border-left: 4px solid #0ea5e9;">
+                    <div class="label" style="color: #0369a1;">📹 Zoom Meeting</div>
+                    <div class="value" style="margin-top: 10px;">
+                      <a href="${meetingLink}" class="button" style="display: inline-block; padding: 12px 24px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                        Join Zoom Meeting
+                      </a>
+                      <p style="margin-top: 10px; font-size: 12px; color: #64748b;">
+                        Click the button above to join your appointment at the scheduled time.
+                      </p>
+                    </div>
+                  </div>
+                  ` : ''}
                   
                   ${phone ? `
                   <div class="detail-row">
