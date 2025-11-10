@@ -7,11 +7,11 @@ import { useEffect, useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { WaveDivider } from "@/components/brand/WaveDivider";
 import { CitationBadge } from "@/components/brand/CitationBadge";
 import { RippleButton } from "@/components/brand/RippleButton";
+import { CollapsibleHeader } from "@/components/CollapsibleHeader";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import ashleyPickensImg from "@/assets/realtors/ashley-pickens.jpg";
 import zacharyCatesImg from "@/assets/realtors/zachary-cates.jpg";
@@ -723,7 +723,7 @@ const GilbertRealEstateAgentList = () => {
             setEstablishedOpen(open);
             handleSectionToggle('Established Leaders', open);
           }} className="agent-card" data-agent-name="Established Leaders" data-market="Gilbert, AZ" data-agent-type="Established">
-            <div className="flex items-center justify-between mb-6 relative">
+            <CollapsibleHeader isOpen={establishedOpen} ariaLabel="Toggle Established">
               {/* Decorative accent */}
               <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-indigo to-aqua rounded-full" />
               <div className="space-y-1">
@@ -733,13 +733,7 @@ const GilbertRealEstateAgentList = () => {
                 </h2>
                 <p className="text-graphite/70">Proven track records with years of excellence in Gilbert real estate</p>
               </div>
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" size="lg" className="h-12 w-12 rounded-full border-2 border-primary hover:bg-primary hover:text-primary-foreground">
-                  <ChevronDown className={`h-7 w-7 transition-transform duration-300 ${establishedOpen ? 'rotate-180' : ''}`} />
-                  <span className="sr-only">Toggle Established</span>
-                </Button>
-              </CollapsibleTrigger>
-            </div>
+            </CollapsibleHeader>
             
             <CollapsibleContent className="space-y-6">
               {establishedRealEstateAgents.map((agent) => (
@@ -931,7 +925,7 @@ const GilbertRealEstateAgentList = () => {
             setHungryOpen(open);
             handleSectionToggle('Hungry & Hustling', open);
           }} className="agent-card" data-agent-name="Hungry & Hustling" data-market="Gilbert, AZ" data-agent-type="Emerging">
-            <div className="flex items-center justify-between mb-6 relative">
+            <CollapsibleHeader isOpen={hungryOpen} ariaLabel="Toggle Hungry & Hustling">
               {/* Decorative accent */}
               <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b from-aqua to-indigo rounded-full" />
               <div className="space-y-1">
@@ -941,13 +935,7 @@ const GilbertRealEstateAgentList = () => {
                 </h2>
                 <p className="text-graphite/70">Building authority with exceptional service and AI-native presence</p>
               </div>
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" size="lg" className="h-12 w-12 rounded-full border-2 border-primary hover:bg-primary hover:text-primary-foreground">
-                  <ChevronDown className={`h-7 w-7 transition-transform duration-300 ${hungryOpen ? 'rotate-180' : ''}`} />
-                  <span className="sr-only">Toggle Hungry & Hustling</span>
-                </Button>
-              </CollapsibleTrigger>
-            </div>
+            </CollapsibleHeader>
             
             <CollapsibleContent className="space-y-6">
               {hungryRealEstateAgents.map((agent) => (

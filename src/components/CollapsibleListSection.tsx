@@ -1,13 +1,11 @@
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ProfessionalCard } from "./ProfessionalCard";
+import { CollapsibleHeader } from "./CollapsibleHeader";
 import { ListSection } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
@@ -51,7 +49,7 @@ export const CollapsibleListSection = ({
 
   return (
     <Collapsible open={isOpen} onOpenChange={handleToggle} className="agent-card" data-agent-name={section.title} data-market={market} data-agent-type={section.title}>
-      <div className="flex items-center justify-between mb-6 relative">
+      <CollapsibleHeader isOpen={isOpen} ariaLabel={`Toggle ${section.title}`}>
         {/* Decorative accent */}
         <div className={`absolute -left-4 top-1/2 -translate-y-1/2 w-1 h-16 bg-gradient-to-b ${getGradientClass(section.accentColor)} rounded-full`} />
         <div className="space-y-1">
@@ -61,13 +59,7 @@ export const CollapsibleListSection = ({
           </h2>
           <p className="text-muted-foreground">{section.description}</p>
         </div>
-        <CollapsibleTrigger asChild>
-          <Button variant="outline" size="lg" className="h-12 w-12 rounded-full border-2 border-primary hover:bg-primary hover:text-primary-foreground">
-            <ChevronDown className={`h-7 w-7 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-            <span className="sr-only">Toggle {section.title}</span>
-          </Button>
-        </CollapsibleTrigger>
-      </div>
+      </CollapsibleHeader>
       
       {/* Content always in DOM for SEO, visibility controlled by CSS */}
       <CollapsibleContent className="space-y-6">
