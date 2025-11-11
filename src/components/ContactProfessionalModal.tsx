@@ -13,6 +13,7 @@ interface ContactProfessionalModalProps {
   onOpenChange: (open: boolean) => void;
   professionalName: string;
   professionalId: string;
+  professionalEmail?: string;
   listingUrl: string;
   citySlug?: string;
   categorySlug?: string;
@@ -26,6 +27,7 @@ export function ContactProfessionalModal({
   onOpenChange, 
   professionalName,
   professionalId,
+  professionalEmail,
   listingUrl,
   citySlug,
   categorySlug,
@@ -79,10 +81,20 @@ export function ContactProfessionalModal({
         professional_id: professionalId,
       });
 
+      // Check if this is first contact (no verification token exists)
+      const { data: professional } = await supabase
+        .from('professionals')
+        .select('verification_token')
+        .eq('id', professionalId)
+        .single();
+
+      const isFirstContact = !professional?.verification_token;
+
       const { error } = await supabase.functions.invoke('send-contact-email', {
         body: {
           professionalName,
           professionalId,
+          professionalEmail: professionalEmail || '',
           listingUrl,
           contactName: fullName,
           contactEmail: email,
@@ -92,6 +104,7 @@ export function ContactProfessionalModal({
           categoryName: categoryName || 'Professional',
           professionalWebsite: professionalWebsite || '',
           quizPreferences: quizPreferences || {},
+          isFirstContact,
         },
       });
 
