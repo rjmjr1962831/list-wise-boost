@@ -143,8 +143,8 @@ export const ProfessionalCard = ({
                       onClick={() => {
                         window.open(licenseLookupUrl, '_blank');
                         trackEvent('license_verify_click', {
-                          agent_name: professional.name,
-                          license_number: professional.license_number,
+                          professional_name: professional.name,
+                          license_number: professional.license_number || '',
                           state: stateAbbr
                         });
                       }}

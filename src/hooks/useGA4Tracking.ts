@@ -7,6 +7,7 @@ declare global {
   }
 }
 
+// GA4 event parameters for tracking user interactions
 export interface GA4EventParams {
   agent_name?: string;
   market?: string;
