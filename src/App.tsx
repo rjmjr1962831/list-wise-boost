@@ -23,6 +23,7 @@ import BookAppointment from "./pages/BookAppointment";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import MigrateData from "./pages/MigrateData";
+import VerifyAgentListing from "./pages/VerifyAgentListing";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/verify/:token/details" element={<VerifyDetails />} />
                 <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                 <Route path="/verify/:token/cities" element={<VerifyCities />} />
+                <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
                 {/* Catch-all 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

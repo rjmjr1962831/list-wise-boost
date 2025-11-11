@@ -332,6 +332,30 @@ export const ZillowAgentImporter = () => {
 
       if (insertError) throw insertError;
 
+      // Send SMS notification for established agents (high rating/reviews)
+      const isEstablished = (agent.reviewCount && agent.reviewCount > 50) || 
+                           (agent.reviewStarRating && agent.reviewStarRating >= 4.5);
+      
+      if (isEstablished && insertedData && professionalData.phone) {
+        try {
+          const cityData = cities.find(c => c.id === selectedCityId);
+          const cityName = cityData?.name || 'the area';
+          
+          await supabase.functions.invoke('send-agent-sms', {
+            body: {
+              professionalId: insertedData.id,
+              phone: professionalData.phone,
+              cityName: cityName
+            }
+          });
+
+          console.log(`SMS notification sent to ${professionalData.name}`);
+        } catch (smsError) {
+          console.error('Error sending SMS:', smsError);
+          // Don't fail the import if SMS fails
+        }
+      }
+
       // Auto-generate bio if missing
       if (!professionalData.description && insertedData) {
         try {
