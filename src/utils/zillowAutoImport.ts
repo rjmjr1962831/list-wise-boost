@@ -104,7 +104,7 @@ export async function autoImportZillowAgents(
           specialty: [],
           years_experience: null,
           license_number: null,
-          description: agent.reviewExcerpt || null,
+          description: agent.description || agent.bio || agent.about || null,
           city_id: cityId,
           category_id: categoryId,
           type: i < 5 ? 'established' : 'emerging', // First 5 as established, rest as emerging
