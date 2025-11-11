@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Search, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 
 interface Professional {
   id: string;
@@ -43,6 +44,8 @@ const ProfessionalsManager = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProfessional, setEditingProfessional] = useState<Professional | null>(null);
+  const [isBulkLookupRunning, setIsBulkLookupRunning] = useState(false);
+  const [lookupProgress, setLookupProgress] = useState({ current: 0, total: 0, found: 0 });
   const [formData, setFormData] = useState({
     name: "",
     title: "",
@@ -193,6 +196,105 @@ const ProfessionalsManager = () => {
     });
   };
 
+  const handleBulkLicenseLookup = async () => {
+    if (!confirm("This will attempt to find license numbers for all agents that are missing them. This may take several minutes. Continue?")) {
+      return;
+    }
+
+    setIsBulkLookupRunning(true);
+    let foundCount = 0;
+
+    try {
+      // Get all professionals without license numbers that are real estate agents
+      const { data: professionalsToLookup, error: queryError } = await supabase
+        .from("professionals")
+        .select("*, cities(state, state_slug), categories(slug)")
+        .is("license_number", null)
+        .eq("active", true);
+
+      if (queryError) throw queryError;
+
+      if (!professionalsToLookup || professionalsToLookup.length === 0) {
+        toast.info("No professionals found that need license lookup");
+        setIsBulkLookupRunning(false);
+        return;
+      }
+
+      // Filter to only real estate agents
+      const realEstateAgents = professionalsToLookup.filter(p => 
+        p.categories?.slug === "top10realestateagents"
+      );
+
+      if (realEstateAgents.length === 0) {
+        toast.info("No real estate agents found that need license lookup");
+        setIsBulkLookupRunning(false);
+        return;
+      }
+
+      setLookupProgress({ current: 0, total: realEstateAgents.length, found: 0 });
+
+      toast.info(`Starting license lookup for ${realEstateAgents.length} agents...`);
+
+      // Process each agent
+      for (let i = 0; i < realEstateAgents.length; i++) {
+        const agent = realEstateAgents[i];
+        const stateAbbr = agent.cities?.state_slug?.toUpperCase() || "";
+        
+        setLookupProgress({ current: i + 1, total: realEstateAgents.length, found: foundCount });
+
+        try {
+          const lookupUrl = getLicenseLookupByStateAbbr(stateAbbr);
+          if (!lookupUrl) {
+            console.log(`No lookup URL for state: ${stateAbbr}`);
+            continue;
+          }
+
+          const { data: licenseData, error: licenseError } = await supabase.functions.invoke('lookup-agent-license', {
+            body: {
+              agentName: agent.name,
+              state: stateAbbr,
+              licensePortalUrl: lookupUrl,
+            }
+          });
+
+          if (licenseError) {
+            console.error(`License lookup failed for ${agent.name}:`, licenseError);
+            continue;
+          }
+
+          if (licenseData?.success && licenseData?.licenseNumber) {
+            // Update the agent with the found license number
+            const { error: updateError } = await supabase
+              .from("professionals")
+              .update({ license_number: licenseData.licenseNumber })
+              .eq("id", agent.id);
+
+            if (!updateError) {
+              foundCount++;
+              console.log(`Found license for ${agent.name}: ${licenseData.licenseNumber}`);
+            }
+          }
+
+          // Add a small delay to avoid overwhelming the API
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        } catch (err) {
+          console.error(`Error processing ${agent.name}:`, err);
+        }
+      }
+
+      toast.success(`Bulk lookup complete! Found ${foundCount} license numbers out of ${realEstateAgents.length} agents.`);
+      
+      // Refresh the data
+      fetchData();
+    } catch (error: any) {
+      console.error('Bulk license lookup error:', error);
+      toast.error("Bulk license lookup failed: " + error.message);
+    } finally {
+      setIsBulkLookupRunning(false);
+      setLookupProgress({ current: 0, total: 0, found: 0 });
+    }
+  };
+
   if (isLoading) {
     return <div>Loading professionals...</div>;
   }
@@ -201,17 +303,35 @@ const ProfessionalsManager = () => {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Professionals ({professionals.length})</CardTitle>
-        <Dialog open={isDialogOpen} onOpenChange={(open) => {
-          setIsDialogOpen(open);
-          if (!open) resetForm();
-        }}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Professional
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleBulkLicenseLookup}
+            disabled={isBulkLookupRunning}
+          >
+            {isBulkLookupRunning ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Looking up... ({lookupProgress.current}/{lookupProgress.total}, found: {lookupProgress.found})
+              </>
+            ) : (
+              <>
+                <Search className="mr-2 h-4 w-4" />
+                Bulk License Lookup
+              </>
+            )}
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) resetForm();
+          }}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Professional
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingProfessional ? "Edit Professional" : "Add New Professional"}</DialogTitle>
             </DialogHeader>
@@ -422,6 +542,7 @@ const ProfessionalsManager = () => {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         <Table>
