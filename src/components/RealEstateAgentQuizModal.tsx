@@ -13,11 +13,12 @@ interface QuizPreferences {
 
 interface RealEstateAgentQuizModalProps {
   open: boolean;
+  onOpenChange: (open: boolean) => void;
   onComplete: (preferences: QuizPreferences) => void;
   city: string;
 }
 
-export function RealEstateAgentQuizModal({ open, onComplete, city }: RealEstateAgentQuizModalProps) {
+export function RealEstateAgentQuizModal({ open, onOpenChange, onComplete, city }: RealEstateAgentQuizModalProps) {
   const [step, setStep] = useState(1);
   const [propertyType, setPropertyType] = useState('');
   const [priceRange, setPriceRange] = useState('');
@@ -52,8 +53,8 @@ export function RealEstateAgentQuizModal({ open, onComplete, city }: RealEstateA
   const canProceed = (step === 1 && propertyType) || (step === 2 && priceRange) || (step === 3 && timeline);
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Find Your Perfect {city} Real Estate Agent</DialogTitle>
           <DialogDescription>

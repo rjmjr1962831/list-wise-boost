@@ -373,7 +373,8 @@ export default function DynamicCategoryList() {
     <>
       {categorySlug === 'top10realestateagents' && city && (
         <RealEstateAgentQuizModal
-          open={showQuiz} 
+          open={showQuiz}
+          onOpenChange={setShowQuiz}
           onComplete={handleQuizComplete}
           city={city.name}
         />
