@@ -316,6 +316,7 @@ export type Database = {
           claim_status: Database["public"]["Enums"]["claim_status"]
           claimed_at: string | null
           claimed_by: string | null
+          company: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -343,6 +344,7 @@ export type Database = {
           claim_status?: Database["public"]["Enums"]["claim_status"]
           claimed_at?: string | null
           claimed_by?: string | null
+          company?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -370,6 +372,7 @@ export type Database = {
           claim_status?: Database["public"]["Enums"]["claim_status"]
           claimed_at?: string | null
           claimed_by?: string | null
+          company?: string | null
           created_at?: string
           description?: string | null
           email?: string | null

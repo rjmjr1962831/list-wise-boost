@@ -15,6 +15,7 @@ const corsHeaders = {
 interface ContactEmailRequest {
   professionalName: string;
   professionalId: string;
+  professionalEmail: string;
   listingUrl: string;
   contactName: string;
   contactEmail: string;
@@ -24,6 +25,7 @@ interface ContactEmailRequest {
   categoryName: string;
   professionalWebsite?: string;
   quizPreferences?: Record<string, string>;
+  isFirstContact?: boolean;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -36,6 +38,7 @@ const handler = async (req: Request): Promise<Response> => {
     const {
       professionalName,
       professionalId,
+      professionalEmail,
       listingUrl,
       contactName,
       contactEmail,
@@ -45,9 +48,41 @@ const handler = async (req: Request): Promise<Response> => {
       categoryName,
       professionalWebsite,
       quizPreferences,
+      isFirstContact,
     }: ContactEmailRequest = await req.json();
 
     console.log('Sending contact form email for:', professionalName);
+
+    // Generate verification token if this is first contact
+    let verificationLink = '';
+    if (isFirstContact && professionalEmail) {
+      const token = crypto.randomUUID();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30); // Token expires in 30 days
+
+      // Create Supabase client
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      
+      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+      const supabase = createClient(supabaseUrl, supabaseKey);
+
+      // Update professional with verification token
+      const { error: updateError } = await supabase
+        .from('professionals')
+        .update({
+          verification_token: token,
+          verification_token_expires_at: expiresAt.toISOString()
+        })
+        .eq('id', professionalId);
+
+      if (updateError) {
+        console.error('Error updating professional with token:', updateError);
+      } else {
+        verificationLink = `${supabaseUrl.replace('bgdtekbhelormzbymkhh.supabase.co', 'top10lists.us')}/verify/${token}`;
+        console.log('Generated verification link:', verificationLink);
+      }
+    }
 
     // Initialize SMTP client
     const client = new SMTPClient({
@@ -207,6 +242,21 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
             ` : ''}
 
+            ${verificationLink ? `
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 8px; margin: 30px 0; text-align: center;">
+                <h3 style="color: white; margin-top: 0;">🎉 Claim Your Free Listing</h3>
+                <p style="color: white; margin: 15px 0;">Take control of your Top10Lists profile and unlock premium features!</p>
+                <a href="${verificationLink}" style="display: inline-block; background: white; color: #667eea; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: bold; margin: 10px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                  Verify Your Listing →
+                </a>
+                <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 15px 0 0 0;">
+                  ✓ Control your information<br/>
+                  ✓ Get a verified badge<br/>
+                  ✓ Receive 3x more leads
+                </p>
+              </div>
+            ` : ''}
+
             <a href="${listingUrl}" class="button">View Listing</a>
           </div>
 
@@ -221,13 +271,24 @@ const handler = async (req: Request): Promise<Response> => {
     // Build subject line with City, Type, and Agent Name
     const subject = `${cityName}: ${categoryName} - ${professionalName}`;
 
-    // Send email
+    // Send email to the admin email
     await client.send({
       from: SMTP_FROM_EMAIL!,
       to: 'contactforms@top10lists.us',
       subject: subject,
       html: emailHtml,
     });
+
+    // If verification link exists, also send copy to professional
+    if (verificationLink && professionalEmail) {
+      await client.send({
+        from: SMTP_FROM_EMAIL!,
+        to: professionalEmail,
+        subject: `New Lead from Top10Lists + Verify Your Listing`,
+        html: emailHtml,
+      });
+      console.log('Verification email also sent to professional:', professionalEmail);
+    }
 
     await client.close();
 
