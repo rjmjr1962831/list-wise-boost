@@ -260,6 +260,44 @@ export const ZillowAgentImporter = () => {
     setImportingIds(prev => new Set(prev).add(index));
     
     try {
+      // Attempt automatic license lookup if not already provided
+      let finalLicenseNumber = licenseNumbers[index] || agent.licenseNumber || null;
+      
+      if (!finalLicenseNumber) {
+        try {
+          const lookupUrl = getLicenseLookupByStateAbbr(state);
+          if (lookupUrl) {
+            console.log(`Attempting automatic license lookup for ${agent.fullName}`);
+            const { data: licenseData } = await supabase.functions.invoke('lookup-agent-license', {
+              body: {
+                agentName: agent.fullName,
+                state: state,
+                licensePortalUrl: lookupUrl,
+              }
+            });
+
+            if (licenseData?.success && licenseData?.licenseNumber) {
+              finalLicenseNumber = licenseData.licenseNumber;
+              console.log(`Auto-found license: ${finalLicenseNumber}`);
+              
+              // Update UI with found license
+              setLicenseNumbers(prev => ({
+                ...prev,
+                [index]: finalLicenseNumber
+              }));
+              
+              toast({
+                title: "License Found",
+                description: `Found license ${finalLicenseNumber} for ${agent.fullName}`,
+              });
+            }
+          }
+        } catch (licenseError) {
+          console.error('License lookup failed:', licenseError);
+          // Continue with import even if license lookup fails
+        }
+      }
+      
       // Get the next rank for this city/category combination
       const { data: existingPros, error: rankError } = await supabase
         .from('professionals')
@@ -326,7 +364,7 @@ export const ZillowAgentImporter = () => {
         image_url: imageUrl,
         specialty: agent.specialties || [],
         years_experience: agent.yearsOfExperience || agent.experience || null,
-        license_number: licenseNumbers[index] || agent.licenseNumber || null,
+        license_number: finalLicenseNumber,
         description: agent.description || agent.bio || agent.about || null,
         city_id: selectedCityId,
         category_id: selectedCategoryId,
