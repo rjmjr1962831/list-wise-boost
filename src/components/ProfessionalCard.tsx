@@ -37,6 +37,7 @@ export const ProfessionalCard = ({
   const { trackEvent } = useGA4Tracking();
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
   
@@ -221,9 +222,38 @@ export const ProfessionalCard = ({
               {/* Bio/Description with semantic structure */}
               <div itemProp="description">
                 <h4 className="sr-only">Professional Bio</h4>
-                <p className="text-muted-foreground leading-relaxed">
-                  {professional.description}
-                </p>
+                {(() => {
+                  const description = professional.description || '';
+                  const lines = description.split('\n').length;
+                  const wordCount = description.split(' ').length;
+                  const isLong = lines > 3 || wordCount > 60;
+                  
+                  if (!isLong) {
+                    return (
+                      <p className="text-muted-foreground leading-relaxed">
+                        {description}
+                      </p>
+                    );
+                  }
+                  
+                  return (
+                    <>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {showFullDescription 
+                          ? description 
+                          : description.split(' ').slice(0, 60).join(' ') + '...'}
+                      </p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowFullDescription(!showFullDescription)}
+                        className="mt-2 h-auto p-0 text-primary hover:text-primary/80 hover:bg-transparent"
+                      >
+                        {showFullDescription ? 'Show Less' : 'More'}
+                      </Button>
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Specialties Section */}
