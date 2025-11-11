@@ -3,6 +3,9 @@ project_id = "bgdtekbhelormzbymkhh"
 [functions.check-rate-limit]
 verify_jwt = false
 
+[functions.fetch-zillow-agents]
+verify_jwt = false
+
 [functions.migrate-data]
 verify_jwt = false
 
