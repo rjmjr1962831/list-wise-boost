@@ -11,6 +11,180 @@ interface LicenseLookupRequest {
   licensePortalUrl: string;
 }
 
+// State-specific search implementations
+async function searchArizona(agentName: string): Promise<string | null> {
+  try {
+    const [lastName, firstName] = agentName.split(' ').reverse();
+    const searchUrl = `https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses`;
+    
+    // Arizona requires a POST request with form data
+    const formData = new URLSearchParams({
+      'LastName': lastName || '',
+      'FirstName': firstName || '',
+      'LicenseNumber': '',
+      'Status': 'Active'
+    });
+
+    const response = await fetch(searchUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+      body: formData.toString(),
+    });
+
+    if (!response.ok) return null;
+
+    const html = await response.text();
+    
+    // Arizona license numbers are typically SA followed by numbers
+    const licenseMatch = html.match(/SA\d{9}/i) || html.match(/License\s*Number[:\s]*([A-Z]{2}\d{9})/i);
+    return licenseMatch ? licenseMatch[0] : null;
+  } catch (error) {
+    console.error('Arizona search error:', error);
+    return null;
+  }
+}
+
+async function searchCalifornia(agentName: string): Promise<string | null> {
+  try {
+    const [lastName, firstName] = agentName.split(' ').reverse();
+    const searchUrl = `https://www2.dre.ca.gov/PublicASP/pplinfo.asp?License_id=&firstname=${encodeURIComponent(firstName || '')}&lastname=${encodeURIComponent(lastName || '')}`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const html = await response.text();
+    
+    // California license numbers are typically 8 digits preceded by "01" or "02"
+    const licenseMatch = html.match(/License\s*#?\s*:?\s*(\d{8})/i);
+    return licenseMatch ? licenseMatch[1] : null;
+  } catch (error) {
+    console.error('California search error:', error);
+    return null;
+  }
+}
+
+async function searchTexas(agentName: string): Promise<string | null> {
+  try {
+    const searchUrl = `https://www.trec.texas.gov/apps/license-holder-search/?name=${encodeURIComponent(agentName)}`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const html = await response.text();
+    
+    // Texas license numbers are typically 6-7 digits
+    const licenseMatch = html.match(/License\s*(?:Number|#)\s*:?\s*(\d{6,7})/i);
+    return licenseMatch ? licenseMatch[1] : null;
+  } catch (error) {
+    console.error('Texas search error:', error);
+    return null;
+  }
+}
+
+async function searchFlorida(agentName: string): Promise<string | null> {
+  try {
+    const [lastName, firstName] = agentName.split(' ').reverse();
+    const searchUrl = `https://www.myfloridalicense.com/wl11.asp?mode=0&SID=&brd=&typ=&lnm=${encodeURIComponent(lastName || '')}&fnm=${encodeURIComponent(firstName || '')}`;
+    
+    const response = await fetch(searchUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const html = await response.text();
+    
+    // Florida license numbers can vary - look for common patterns
+    const licenseMatch = html.match(/License\s*(?:Number|#)\s*:?\s*([A-Z]{2}\d{7}|\d{7})/i);
+    return licenseMatch ? licenseMatch[1] : null;
+  } catch (error) {
+    console.error('Florida search error:', error);
+    return null;
+  }
+}
+
+async function genericSearch(agentName: string, portalUrl: string): Promise<string | null> {
+  try {
+    // Try to construct a search URL with the agent name as a query parameter
+    const nameParam = encodeURIComponent(agentName);
+    const [lastName, firstName] = agentName.split(' ').reverse();
+    
+    // Try common search URL patterns
+    const searchPatterns = [
+      `${portalUrl}?name=${nameParam}`,
+      `${portalUrl}?lastname=${encodeURIComponent(lastName || '')}&firstname=${encodeURIComponent(firstName || '')}`,
+      `${portalUrl}/search?q=${nameParam}`,
+    ];
+
+    for (const searchUrl of searchPatterns) {
+      try {
+        const response = await fetch(searchUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          },
+        });
+
+        if (!response.ok) continue;
+
+        const html = await response.text();
+        
+        // Look for the agent name in the results
+        const nameLower = agentName.toLowerCase();
+        if (!html.toLowerCase().includes(nameLower)) continue;
+
+        // Try to find license number near the name
+        const nameIndex = html.toLowerCase().indexOf(nameLower);
+        const context = html.substring(
+          Math.max(0, nameIndex - 1000),
+          Math.min(html.length, nameIndex + 1000)
+        );
+
+        // Try common license number patterns
+        const patterns = [
+          /License\s*(?:Number|#|No\.?)\s*:?\s*([A-Z]{1,3}\d{6,10})/i,
+          /Lic\s*(?:Number|#|No\.?)\s*:?\s*([A-Z]{1,3}\d{6,10})/i,
+          /\b([A-Z]{2}\d{7,10})\b/g,
+          /\b(\d{7,10})\b/g,
+        ];
+
+        for (const pattern of patterns) {
+          const match = context.match(pattern);
+          if (match && match[1]) {
+            // Validate it looks like a real license number
+            const candidate = match[1];
+            if (candidate.length >= 6 && /[0-9]/.test(candidate)) {
+              return candidate;
+            }
+          }
+        }
+      } catch (err) {
+        console.error(`Error trying search pattern ${searchUrl}:`, err);
+        continue;
+      }
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Generic search error:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,51 +196,32 @@ serve(async (req) => {
     console.log(`Looking up license for ${agentName} in ${state}`);
     console.log(`Portal URL: ${licensePortalUrl}`);
 
-    // Fetch the license portal page
-    const response = await fetch(licensePortalUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
+    let licenseNumber: string | null = null;
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch portal: ${response.status}`);
+    // Use state-specific search methods
+    switch (state.toUpperCase()) {
+      case 'AZ':
+      case 'ARIZONA':
+        licenseNumber = await searchArizona(agentName);
+        break;
+      case 'CA':
+      case 'CALIFORNIA':
+        licenseNumber = await searchCalifornia(agentName);
+        break;
+      case 'TX':
+      case 'TEXAS':
+        licenseNumber = await searchTexas(agentName);
+        break;
+      case 'FL':
+      case 'FLORIDA':
+        licenseNumber = await searchFlorida(agentName);
+        break;
+      default:
+        // Try generic search for other states
+        licenseNumber = await genericSearch(agentName, licensePortalUrl);
     }
 
-    const html = await response.text();
-    
-    // Parse HTML to find license information
-    // This is a basic implementation - each state portal has different structure
-    let licenseNumber = null;
-    
-    // Try common patterns for license numbers
-    const patterns = [
-      /license[:\s#]*([A-Z0-9-]{5,20})/gi,
-      /lic[:\s#]*([A-Z0-9-]{5,20})/gi,
-      /\b([A-Z]{2}\d{6,10})\b/g,
-      /\b(\d{6,10})\b/g,
-    ];
-
-    // Search for agent name in the HTML
-    const nameIndex = html.toLowerCase().indexOf(agentName.toLowerCase());
-    if (nameIndex !== -1) {
-      // Extract surrounding context (500 chars before and after)
-      const context = html.substring(
-        Math.max(0, nameIndex - 500),
-        Math.min(html.length, nameIndex + 500)
-      );
-
-      // Try to find license number in context
-      for (const pattern of patterns) {
-        const matches = context.match(pattern);
-        if (matches && matches.length > 0) {
-          licenseNumber = matches[0].replace(/license[:\s#]*/gi, '').trim();
-          break;
-        }
-      }
-    }
-
-    console.log(`License lookup result: ${licenseNumber || 'Not found'}`);
+    console.log(`License lookup result for ${agentName}: ${licenseNumber || 'Not found'}`);
 
     return new Response(
       JSON.stringify({
@@ -75,8 +230,8 @@ serve(async (req) => {
         agentName,
         state,
         message: licenseNumber 
-          ? 'License number found' 
-          : 'License number not found - manual verification required',
+          ? `License number found: ${licenseNumber}` 
+          : 'License number not found - the agent may not be licensed or manual verification is required',
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
