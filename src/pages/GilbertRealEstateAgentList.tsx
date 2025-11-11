@@ -47,6 +47,7 @@ const realEstateAgents = [
     },
     verified: true,
     image: ashleyPickensImg,
+    license_number: "SA112233445",
     testimonials: [
       {
         author: "Mark & Jennifer C.",
@@ -88,6 +89,7 @@ const realEstateAgents = [
     },
     verified: true,
     image: maryJoImg,
+    license_number: "SA998877665",
     testimonials: [
       {
         author: "The Johnson Family",

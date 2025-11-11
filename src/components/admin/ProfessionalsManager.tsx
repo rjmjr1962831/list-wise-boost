@@ -58,6 +58,7 @@ const ProfessionalsManager = () => {
     website: "",
     description: "",
     badges: "",
+    license_number: "",
     active: true,
   });
 
@@ -157,6 +158,7 @@ const ProfessionalsManager = () => {
         website: data.website || "",
         description: data.description || "",
         badges: data.badges?.join(", ") || "",
+        license_number: data.license_number || "",
         active: data.active,
       });
       setIsDialogOpen(true);
@@ -180,6 +182,7 @@ const ProfessionalsManager = () => {
       website: "",
       description: "",
       badges: "",
+      license_number: "",
       active: true,
     });
   };
@@ -322,6 +325,16 @@ const ProfessionalsManager = () => {
                   value={formData.badges}
                   onChange={(e) => setFormData({ ...formData, badges: e.target.value })}
                   placeholder="Top Rated, Verified"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="license_number">License Number (for Real Estate Agents)</Label>
+                <Input
+                  id="license_number"
+                  value={formData.license_number}
+                  onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                  placeholder="SA123456789"
                 />
               </div>
 
