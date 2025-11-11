@@ -21,11 +21,15 @@ serve(async (req) => {
       throw new Error('RapidAPI credentials not configured');
     }
 
-    console.log(`Fetching agents for ${city}, ${state}`);
+    // Capitalize city and ensure state is uppercase
+    const formattedCity = city.charAt(0).toUpperCase() + city.slice(1).toLowerCase();
+    const formattedState = state.toUpperCase();
+    
+    console.log(`Fetching agents for ${formattedCity}, ${formattedState}`);
 
     // Call RapidAPI Zillow endpoint
     const response = await fetch(
-      `https://${RAPIDAPI_HOST}/zillow/agents?location=${encodeURIComponent(city + ', ' + state)}&page=1`,
+      `https://${RAPIDAPI_HOST}/zillow/agents?location=${encodeURIComponent(formattedCity + ', ' + formattedState)}&page=1`,
       {
         method: 'GET',
         headers: {
