@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Search, TrendingUp, Zap } from "lucide-react";
 import { useMarketingContent } from "@/hooks/useMarketingContent";
+import { Top10SearchForm } from "@/components/Top10SearchForm";
 
 const Index = () => {
   const { data: content, isLoading } = useMarketingContent('main');
@@ -24,11 +25,8 @@ const Index = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 md:py-32 text-center">
         <div className="max-w-4xl mx-auto space-y-8">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
-            <TrendingUp className="h-4 w-4" />
-            {getContent('hero', 'badge_text', 'Position Yourself as a Trusted Expert')}
-          </div>
-          <h1 
+          <Top10SearchForm />
+          <h1
             className="text-4xl md:text-6xl font-bold leading-tight"
             dangerouslySetInnerHTML={{ 
               __html: getContent('hero', 'title', 'When AI Recommends the Best, <span class="text-primary">Your Name Appears.</span>')
