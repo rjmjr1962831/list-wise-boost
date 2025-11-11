@@ -198,11 +198,12 @@ export const Top10SearchForm = () => {
                       <CommandItem
                         key={state}
                         value={state}
-                        onSelect={() => {
-                          setSelectedState(state);
-                          setStateInput(state);
-                          setStateOpen(false);
-                        }}
+                      onSelect={() => {
+                        setSelectedState(state);
+                        setStateInput(state);
+                        setSelectedCity(''); // Reset city when state changes
+                        setStateOpen(false);
+                      }}
                       >
                         <Check
                           className={cn(
@@ -221,6 +222,7 @@ export const Top10SearchForm = () => {
         </div>
 
         <Select 
+          key={selectedState} 
           value={selectedCity} 
           onValueChange={setSelectedCity}
           disabled={!selectedState}
