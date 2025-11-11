@@ -26,34 +26,60 @@ serve(async (req) => {
     
     console.log(`Fetching agents for ${location}`);
 
-    // Call Zillow Agent Data API - Agent Search requires a name; use a broad match
-    const response = await fetch(
-      `https://${RAPIDAPI_HOST}/?data_type=search_agents&name=a&location=${encodeURIComponent(location)}&page_number=1`,
-      {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-key': RAPIDAPI_KEY,
-          'x-rapidapi-host': RAPIDAPI_HOST,
-        },
+    // Aggregate search: API requires a name term; iterate common fragments until we collect results
+    const fragments = ['a','e','i','o','u','s','m','c','b','t','r','n'];
+
+    const dedup = new Map<string, any>();
+
+    for (const frag of fragments) {
+      try {
+        const url = `https://${RAPIDAPI_HOST}/?data_type=search_agents&name=${encodeURIComponent(frag)}&location=${encodeURIComponent(location)}&page_number=1`;
+        const resp = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'x-rapidapi-key': RAPIDAPI_KEY,
+            'x-rapidapi-host': RAPIDAPI_HOST,
+          },
+        });
+
+        if (!resp.ok) {
+          const txt = await resp.text();
+          console.warn('Partial fetch error', resp.status, txt);
+          continue;
+        }
+
+        const data = await resp.json();
+        const arr = data?.agents || data?.results || data?.data || (Array.isArray(data) ? data : []);
+        console.log(`Fragment '${frag}' returned ${Array.isArray(arr) ? arr.length : 0} items`);
+
+        if (Array.isArray(arr)) {
+          for (const item of arr) {
+            const a = item || {};
+            const normalized = {
+              fullName: a.fullName || a.name || a.agentName || null,
+              businessName: a.businessName || a.company || a.brokerage || null,
+              phoneNumber: a.phoneNumber || a.phone || a.contactPhone || null,
+              profilePhotoSrc: a.profilePhotoSrc || a.photo || a.image || a.avatar || null,
+              profileLink: a.profileLink || a.profile_url || a.url || null,
+              reviewExcerpt: a.reviewExcerpt || a.latestReview || a.topReview || null,
+              zuid: a.zuid || a.id || a.zillowUserId || null,
+            };
+
+            const key = normalized.zuid || normalized.profileLink || `${normalized.fullName}|${normalized.businessName}`;
+            if (key && !dedup.has(key)) dedup.set(key, normalized);
+          }
+        }
+
+        // Stop early if we have enough
+        if (dedup.size >= 30) break;
+      } catch (e) {
+        console.error('Error on fragment fetch', frag, e);
+        continue;
       }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('RapidAPI error:', response.status, errorText);
-      throw new Error(`RapidAPI request failed: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log('Successfully fetched agent data');
-    console.log('API Response structure:', JSON.stringify(data, null, 2));
-    
-    // Extract agents array from response - may be in different formats
-    const agents = data?.agents || data?.results || (Array.isArray(data) ? data : []);
-    console.log('Number of agents found:', agents.length);
-    if (agents.length > 0) {
-      console.log('First agent sample:', JSON.stringify(agents[0], null, 2));
-    }
+    const agents = Array.from(dedup.values()).slice(0, 50);
+    console.log('Total aggregated agents:', agents.length);
 
     return new Response(JSON.stringify(agents), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
