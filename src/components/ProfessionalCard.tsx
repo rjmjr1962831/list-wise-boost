@@ -245,13 +245,22 @@ export const ProfessionalCard = ({
                 <div className="grid sm:grid-cols-3 gap-3 pt-2">
                 <div className="flex items-center gap-2 text-sm" itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
                   <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  <span className="text-muted-foreground">
-                    <span itemProp="streetAddress">{professional.address.split(",")[0]}</span>,{" "}
-                    <span itemProp="addressLocality">{professional.address.split(",")[1]?.trim()}</span>,{" "}
-                    <span itemProp="addressRegion">{professional.address.match(/[A-Z]{2}/)?.[0]}</span>{" "}
-                    <span itemProp="postalCode">{professional.address.match(/\d{5}/)?.[0]}</span>
-                    <meta itemProp="addressCountry" content="US" />
-                  </span>
+                  {/(\d)/.test(professional.address || '') ? (
+                    <span className="text-muted-foreground">
+                      <span itemProp="streetAddress">{professional.address.split(",")[0]}</span>,{" "}
+                      <span itemProp="addressLocality">{professional.address.split(",")[1]?.trim()}</span>,{" "}
+                      <span itemProp="addressRegion">{professional.address.match(/[A-Z]{2}/)?.[0]}</span>{" "}
+                      <span itemProp="postalCode">{professional.address.match(/\d{5}/)?.[0]}</span>
+                      <meta itemProp="addressCountry" content="US" />
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground">
+                      <span itemProp="addressLocality">{market?.split(',')[0]?.trim()}</span>
+                      {market?.includes(',') && ", "}
+                      <span itemProp="addressRegion">{market?.split(',')[1]?.trim()}</span>
+                      <meta itemProp="addressCountry" content="US" />
+                    </span>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />

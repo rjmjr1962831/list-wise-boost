@@ -85,7 +85,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     rating: rating,
     reviews: reviews,
     specialties: dbProf.specialty || [],
-    address: '123 Main St',
+    address: '',
     phone: dbProf.phone || '(555) 555-5555',
     email: dbProf.email || 'contact@example.com',
     website: dbProf.website || 'https://example.com',
