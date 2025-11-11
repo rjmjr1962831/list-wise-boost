@@ -16,6 +16,8 @@ interface CollapsibleListSectionProps {
   market?: string;
   citySlug?: string;
   categorySlug?: string;
+  onContactClick?: () => void;
+  quizCompleted?: boolean;
 }
 
 export const CollapsibleListSection = ({ 
@@ -24,7 +26,9 @@ export const CollapsibleListSection = ({
   schemaType = "Person",
   market = "",
   citySlug,
-  categorySlug
+  categorySlug,
+  onContactClick,
+  quizCompleted = true
 }: CollapsibleListSectionProps) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const { trackEvent } = useGA4Tracking();
@@ -77,6 +81,8 @@ export const CollapsibleListSection = ({
             agentType={section.title}
             citySlug={citySlug}
             categorySlug={categorySlug}
+            onContactClick={onContactClick}
+            quizCompleted={quizCompleted}
           />
         ))}
       </CollapsibleContent>

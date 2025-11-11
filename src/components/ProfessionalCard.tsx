@@ -15,6 +15,8 @@ interface ProfessionalCardProps {
   agentType?: string;
   citySlug?: string;
   categorySlug?: string;
+  onContactClick?: () => void;
+  quizCompleted?: boolean;
 }
 
 export const ProfessionalCard = ({ 
@@ -24,7 +26,9 @@ export const ProfessionalCard = ({
   market = "",
   agentType = "",
   citySlug,
-  categorySlug
+  categorySlug,
+  onContactClick,
+  quizCompleted = true
 }: ProfessionalCardProps) => {
   const { trackEvent } = useGA4Tracking();
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -232,12 +236,21 @@ export const ProfessionalCard = ({
               <div className="pt-4 border-t">
                 <Button 
                   onClick={() => {
-                    setShowContactModal(true);
-                    trackEvent('contact_cta_click', {
-                      agent_name: professional.name,
-                      market: market,
-                      agent_type: agentType
-                    });
+                    // For real estate agents, check if quiz is completed first
+                    if (categorySlug === 'top10realestateagents' && !quizCompleted) {
+                      // Trigger quiz first
+                      if (onContactClick) {
+                        onContactClick();
+                      }
+                    } else {
+                      // Show contact modal directly
+                      setShowContactModal(true);
+                      trackEvent('contact_cta_click', {
+                        agent_name: professional.name,
+                        market: market,
+                        agent_type: agentType
+                      });
+                    }
                   }}
                   className="w-full"
                   variant="default"

@@ -301,6 +301,15 @@ export default function DynamicCategoryList() {
     setFilteredProfessionals(filtered.length > 0 ? filtered : allProfessionals);
     setQuizCompleted(true);
     setShowQuiz(false);
+    
+    // Show toast to click contact button again
+    toast.success('Quiz completed! You can now contact any agent.');
+  };
+
+  const handleContactClick = () => {
+    if (categorySlug === 'top10realestateagents' && !quizCompleted) {
+      setShowQuiz(true);
+    }
   };
 
   useEffect(() => {
@@ -392,6 +401,8 @@ export default function DynamicCategoryList() {
             market={formatCityName(city)}
             citySlug={city.slug}
             categorySlug={categorySlug}
+            onContactClick={handleContactClick}
+            quizCompleted={quizCompleted}
           />
         ))}
       </ProfessionalListLayout>
