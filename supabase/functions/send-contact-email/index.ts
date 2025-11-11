@@ -23,6 +23,7 @@ interface ContactEmailRequest {
   cityName: string;
   categoryName: string;
   professionalWebsite?: string;
+  quizPreferences?: Record<string, string>;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -43,6 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
       cityName,
       categoryName,
       professionalWebsite,
+      quizPreferences,
     }: ContactEmailRequest = await req.json();
 
     console.log('Sending contact form email for:', professionalName);
@@ -180,9 +182,27 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
             </div>
 
-            ${message ? `
+            ${quizPreferences && Object.keys(quizPreferences).length > 0 ? `
               <div class="message-box">
-                <div class="info-label">Message:</div>
+                <div class="info-label">Quiz Responses:</div>
+                <div class="info-value">
+                  ${Object.entries(quizPreferences)
+                    .map(([key, value]) => {
+                      // Format the key to be more readable
+                      const label = key
+                        .replace(/([A-Z])/g, ' $1')
+                        .replace(/^./, str => str.toUpperCase())
+                        .trim();
+                      return `<strong>${label}:</strong> ${value}`;
+                    })
+                    .join('<br>')}
+                </div>
+              </div>
+            ` : ''}
+
+            ${message ? `
+              <div class="message-box" style="margin-top: 15px;">
+                <div class="info-label">Additional Message:</div>
                 <div class="info-value">${message.replace(/\n/g, '<br>')}</div>
               </div>
             ` : ''}

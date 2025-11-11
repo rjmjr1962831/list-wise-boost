@@ -38,10 +38,11 @@ export function ContactProfessionalModal({
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quizPreferences, setQuizPreferences] = useState<Record<string, string> | null>(null);
   const { toast } = useToast();
   const { trackEvent } = useGA4Tracking();
 
-  // Pre-populate from quiz data if available
+  // Load quiz data if available
   useEffect(() => {
     if (open && citySlug && categorySlug) {
       const storageKey = `quiz_completed_${citySlug}_${categorySlug}`;
@@ -50,11 +51,7 @@ export function ContactProfessionalModal({
       if (quizData) {
         try {
           const preferences = JSON.parse(quizData);
-          // Store preferences in the message for context
-          const prefText = Object.entries(preferences)
-            .map(([key, value]) => `${key}: ${value}`)
-            .join(', ');
-          setMessage(`My preferences: ${prefText}\n\n`);
+          setQuizPreferences(preferences);
         } catch (e) {
           console.error('Error parsing quiz data:', e);
         }
@@ -90,10 +87,11 @@ export function ContactProfessionalModal({
           contactName: fullName,
           contactEmail: email,
           contactPhone: phone,
-          message: message || 'No additional message provided.',
+          message: message || '',
           cityName: cityName || 'Unknown City',
           categoryName: categoryName || 'Professional',
           professionalWebsite: professionalWebsite || '',
+          quizPreferences: quizPreferences || {},
         },
       });
 
