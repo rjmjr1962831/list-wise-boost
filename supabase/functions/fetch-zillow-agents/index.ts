@@ -27,9 +27,10 @@ serve(async (req) => {
     
     console.log(`Fetching agents for ${formattedCity}, ${formattedState}`);
 
-    // Call RapidAPI Zillow endpoint - using search_agents endpoint
+    // Call RapidAPI Zillow Agent Data API - using search endpoint
+    const searchQuery = `${formattedCity}, ${formattedState}`;
     const response = await fetch(
-      `https://${RAPIDAPI_HOST}/search_agents?location=${encodeURIComponent(formattedCity + ', ' + formattedState)}`,
+      `https://${RAPIDAPI_HOST}/?data_type=search_agents&location=${encodeURIComponent(searchQuery)}`,
       {
         method: 'GET',
         headers: {
@@ -46,11 +47,14 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Successfully fetched agent data');
+    console.log('Successfully fetched agent data from zillow-agent-data-api');
     console.log('API Response structure:', JSON.stringify(data, null, 2));
-    console.log('First agent data:', JSON.stringify(data[0] || data.results?.[0] || data.agents?.[0], null, 2));
+    
+    // Extract agents array from response
+    const agents = data?.agents || data?.results || (Array.isArray(data) ? data : []);
+    console.log('First agent data:', JSON.stringify(agents[0], null, 2));
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify(agents), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
