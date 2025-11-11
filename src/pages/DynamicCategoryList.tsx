@@ -262,16 +262,29 @@ export default function DynamicCategoryList() {
     }
   };
 
-  // Check if quiz should be shown for real estate agents category
+  // Check if quiz has been completed for real estate agents category
   useEffect(() => {
     if (categorySlug === 'top10realestateagents' && city && allProfessionals.length > 0) {
       const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
       const completed = localStorage.getItem(storageKey);
       
-      if (!completed) {
-        setShowQuiz(true);
-      } else {
+      if (completed) {
         setQuizCompleted(true);
+        // Apply saved preferences filter if available
+        try {
+          const preferences = JSON.parse(completed);
+          const filtered = allProfessionals.filter(prof => {
+            const matchesPropertyType = !preferences.propertyType || 
+              prof.specialties?.some(s => s.toLowerCase().includes(preferences.propertyType.toLowerCase()));
+            const matchesPriceRange = !preferences.priceRange || 
+              prof.specialties?.some(s => s.toLowerCase().includes(preferences.priceRange.toLowerCase()));
+            return matchesPropertyType || matchesPriceRange;
+          });
+          setFilteredProfessionals(filtered.length > 0 ? filtered : allProfessionals);
+        } catch {
+          setFilteredProfessionals(allProfessionals);
+        }
+      } else {
         setFilteredProfessionals(allProfessionals);
       }
     } else {
