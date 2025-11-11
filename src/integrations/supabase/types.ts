@@ -318,6 +318,7 @@ export type Database = {
           claimed_by: string | null
           company: string | null
           created_at: string
+          current_listings: number | null
           description: string | null
           email: string | null
           id: string
@@ -329,6 +330,7 @@ export type Database = {
           rank: number
           specialty: string[] | null
           title: string | null
+          total_sales: number | null
           type: string
           updated_at: string
           verification_started_at: string | null
@@ -349,6 +351,7 @@ export type Database = {
           claimed_by?: string | null
           company?: string | null
           created_at?: string
+          current_listings?: number | null
           description?: string | null
           email?: string | null
           id?: string
@@ -360,6 +363,7 @@ export type Database = {
           rank: number
           specialty?: string[] | null
           title?: string | null
+          total_sales?: number | null
           type: string
           updated_at?: string
           verification_started_at?: string | null
@@ -380,6 +384,7 @@ export type Database = {
           claimed_by?: string | null
           company?: string | null
           created_at?: string
+          current_listings?: number | null
           description?: string | null
           email?: string | null
           id?: string
@@ -391,6 +396,7 @@ export type Database = {
           rank?: number
           specialty?: string[] | null
           title?: string | null
+          total_sales?: number | null
           type?: string
           updated_at?: string
           verification_started_at?: string | null

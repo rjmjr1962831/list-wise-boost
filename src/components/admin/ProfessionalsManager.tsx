@@ -59,6 +59,8 @@ const ProfessionalsManager = () => {
     description: "",
     badges: "",
     license_number: "",
+    current_listings: 0,
+    total_sales: 0,
     active: true,
   });
 
@@ -159,6 +161,8 @@ const ProfessionalsManager = () => {
         description: data.description || "",
         badges: data.badges?.join(", ") || "",
         license_number: data.license_number || "",
+        current_listings: data.current_listings || 0,
+        total_sales: data.total_sales || 0,
         active: data.active,
       });
       setIsDialogOpen(true);
@@ -183,6 +187,8 @@ const ProfessionalsManager = () => {
       description: "",
       badges: "",
       license_number: "",
+      current_listings: 0,
+      total_sales: 0,
       active: true,
     });
   };
@@ -295,6 +301,31 @@ const ProfessionalsManager = () => {
                     value={formData.years_experience}
                     onChange={(e) => setFormData({ ...formData, years_experience: parseInt(e.target.value) || 0 })}
                     min="0"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="current_listings">Current Listings</Label>
+                  <Input
+                    id="current_listings"
+                    type="number"
+                    value={formData.current_listings}
+                    onChange={(e) => setFormData({ ...formData, current_listings: parseInt(e.target.value) || 0 })}
+                    min="0"
+                    placeholder="Number of active listings"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="total_sales">Total Sales</Label>
+                  <Input
+                    id="total_sales"
+                    type="number"
+                    value={formData.total_sales}
+                    onChange={(e) => setFormData({ ...formData, total_sales: parseInt(e.target.value) || 0 })}
+                    min="0"
+                    placeholder="Total completed sales"
                   />
                 </div>
               </div>

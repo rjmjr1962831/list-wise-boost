@@ -5,6 +5,8 @@ export interface ProfessionalStats {
   yearsExperience?: number;
   patientsServed?: number;
   successRate?: string;
+  currentListings?: number;
+  totalSales?: number;
   [key: string]: string | number | undefined;
 }
 

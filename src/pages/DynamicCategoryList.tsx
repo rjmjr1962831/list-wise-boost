@@ -44,6 +44,8 @@ interface DBProfessional {
   image_url: string | null;
   zuid: string | null;
   company: string | null;
+  current_listings: number | null;
+  total_sales: number | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -82,6 +84,12 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
   const stats: Record<string, number | string> = {};
   if (typeof dbProf.years_experience === 'number') {
     stats.yearsExperience = dbProf.years_experience;
+  }
+  if (typeof dbProf.current_listings === 'number') {
+    stats.currentListings = dbProf.current_listings;
+  }
+  if (typeof dbProf.total_sales === 'number') {
+    stats.totalSales = dbProf.total_sales;
   }
   
   return {

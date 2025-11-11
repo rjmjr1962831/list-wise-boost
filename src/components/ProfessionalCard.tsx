@@ -196,7 +196,9 @@ export const ProfessionalCard = ({
                     avgDaysOnMarket: "Avg Days Market",
                     yearsExperience: "Years Exp.",
                     patientsServed: "Patients Served",
-                    successRate: "Success Rate"
+                    successRate: "Success Rate",
+                    currentListings: "Current Listings",
+                    totalSales: "Total Sales"
                   };
                   
                   // Format values based on type
