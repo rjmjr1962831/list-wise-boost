@@ -13,6 +13,10 @@ import SampleDentistList from "./pages/SampleDentistList";
 import GilbertRealEstateAgentList from "./pages/GilbertRealEstateAgentList";
 import Privacy from "./pages/Privacy";
 import TermsOfService from "./pages/TermsOfService";
+import VerifyListing from "./pages/VerifyListing";
+import VerifyDetails from "./pages/VerifyDetails";
+import VerifySpecialties from "./pages/VerifySpecialties";
+import VerifyCities from "./pages/VerifyCities";
 import CityLanding from "./pages/CityLanding";
 import DynamicCategoryList from "./pages/DynamicCategoryList";
 import BookAppointment from "./pages/BookAppointment";
@@ -49,6 +53,11 @@ const App = () => (
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/book-appointment-robert" element={<BookAppointment />} />
+                {/* Verification funnel */}
+                <Route path="/verify/:token" element={<VerifyListing />} />
+                <Route path="/verify/:token/details" element={<VerifyDetails />} />
+                <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
+                <Route path="/verify/:token/cities" element={<VerifyCities />} />
                 {/* Catch-all 404 route */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

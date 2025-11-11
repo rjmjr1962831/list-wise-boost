@@ -259,12 +259,63 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_claims: {
+        Row: {
+          admin_notes: string | null
+          claim_message: string | null
+          claim_status: Database["public"]["Enums"]["claim_status"]
+          claimed_by: string
+          created_at: string
+          id: string
+          professional_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          claim_message?: string | null
+          claim_status?: Database["public"]["Enums"]["claim_status"]
+          claimed_by: string
+          created_at?: string
+          id?: string
+          professional_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          claim_message?: string | null
+          claim_status?: Database["public"]["Enums"]["claim_status"]
+          claimed_by?: string
+          created_at?: string
+          id?: string
+          professional_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_claims_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           active: boolean
           badges: string[] | null
           category_id: string
           city_id: string
+          claim_notes: string | null
+          claim_status: Database["public"]["Enums"]["claim_status"]
+          claimed_at: string | null
+          claimed_by: string | null
           created_at: string
           description: string | null
           email: string | null
@@ -277,6 +328,9 @@ export type Database = {
           title: string | null
           type: string
           updated_at: string
+          verification_started_at: string | null
+          verification_token: string | null
+          verification_token_expires_at: string | null
           website: string | null
           years_experience: number | null
         }
@@ -285,6 +339,10 @@ export type Database = {
           badges?: string[] | null
           category_id: string
           city_id: string
+          claim_notes?: string | null
+          claim_status?: Database["public"]["Enums"]["claim_status"]
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -297,6 +355,9 @@ export type Database = {
           title?: string | null
           type: string
           updated_at?: string
+          verification_started_at?: string | null
+          verification_token?: string | null
+          verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
         }
@@ -305,6 +366,10 @@ export type Database = {
           badges?: string[] | null
           category_id?: string
           city_id?: string
+          claim_notes?: string | null
+          claim_status?: Database["public"]["Enums"]["claim_status"]
+          claimed_at?: string | null
+          claimed_by?: string | null
           created_at?: string
           description?: string | null
           email?: string | null
@@ -317,6 +382,9 @@ export type Database = {
           title?: string | null
           type?: string
           updated_at?: string
+          verification_started_at?: string | null
+          verification_token?: string | null
+          verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
         }
@@ -364,6 +432,41 @@ export type Database = {
         }
         Relationships: []
       }
+      specialties: {
+        Row: {
+          active: boolean
+          category_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          active?: boolean
+          category_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "specialties_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -400,6 +503,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer"
+      claim_status: "unclaimed" | "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -528,6 +632,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "editor", "viewer"],
+      claim_status: ["unclaimed", "pending", "approved", "rejected"],
     },
   },
 } as const
