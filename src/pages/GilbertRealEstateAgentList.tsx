@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, MapPin, Phone, Globe, Award, ArrowLeft, TrendingUp, Home, Users, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Award, ArrowLeft, TrendingUp, Home, Users, ChevronDown, ChevronUp, Shield, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
@@ -15,6 +15,7 @@ import { CollapsibleHeader } from "@/components/CollapsibleHeader";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { RealEstateAgentQuizModal } from "@/components/RealEstateAgentQuizModal";
 import { ContactProfessionalModal } from "@/components/ContactProfessionalModal";
+import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import ashleyPickensImg from "@/assets/realtors/ashley-pickens.jpg";
 import zacharyCatesImg from "@/assets/realtors/zachary-cates.jpg";
 import maryJoImg from "@/assets/realtors/mary-jo.jpg";
@@ -932,6 +933,33 @@ const GilbertRealEstateAgentList = () => {
                         </div>
                       </div>
 
+                      {/* License Number */}
+                      {agent.license_number && (
+                        <div className="flex items-center gap-2 pt-2">
+                          <Shield className="h-4 w-4 text-aqua" />
+                          <span className="text-sm font-medium">License: {agent.license_number}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1 text-xs ml-2"
+                            onClick={() => {
+                              const licenseLookupUrl = getLicenseLookupByStateAbbr('AZ');
+                              if (licenseLookupUrl) {
+                                window.open(licenseLookupUrl, '_blank');
+                                trackEvent('license_verify_click', {
+                                  professional_name: agent.name,
+                                  license_number: agent.license_number || '',
+                                  state: 'AZ'
+                                });
+                              }
+                            }}
+                          >
+                            Verify License
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
+
                       {/* Contact Button */}
                       <div className="pt-3">
                         <RippleButton 
@@ -1140,6 +1168,33 @@ const GilbertRealEstateAgentList = () => {
                           </a>
                         </div>
                       </div>
+
+                      {/* License Number */}
+                      {agent.license_number && (
+                        <div className="flex items-center gap-2 pt-2">
+                          <Shield className="h-4 w-4 text-aqua" />
+                          <span className="text-sm font-medium">License: {agent.license_number}</span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1 text-xs ml-2"
+                            onClick={() => {
+                              const licenseLookupUrl = getLicenseLookupByStateAbbr('AZ');
+                              if (licenseLookupUrl) {
+                                window.open(licenseLookupUrl, '_blank');
+                                trackEvent('license_verify_click', {
+                                  professional_name: agent.name,
+                                  license_number: agent.license_number || '',
+                                  state: 'AZ'
+                                });
+                              }
+                            }}
+                          >
+                            Verify License
+                            <ExternalLink className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
 
                       {/* Contact Button */}
                       <div className="pt-3">
