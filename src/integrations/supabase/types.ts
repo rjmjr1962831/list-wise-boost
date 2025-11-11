@@ -226,6 +226,39 @@ export type Database = {
         }
         Relationships: []
       }
+      marketing_content: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          page: string
+          section: string
+          type: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          page: string
+          section: string
+          type?: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          page?: string
+          section?: string
+          type?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
       professionals: {
         Row: {
           active: boolean

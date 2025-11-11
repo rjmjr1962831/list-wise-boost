@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Building2, Tag, Users } from "lucide-react";
+import { LogOut, Building2, Tag, Users, FileText } from "lucide-react";
 import { toast } from "sonner";
 import CitiesManager from "@/components/admin/CitiesManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
+import { MarketingContentManager } from "@/components/admin/MarketingContentManager";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -83,7 +84,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="cities" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-md">
+          <TabsList className="grid w-full grid-cols-4 max-w-2xl">
             <TabsTrigger value="cities">
               <Building2 className="mr-2 h-4 w-4" />
               Cities
@@ -95,6 +96,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="professionals">
               <Users className="mr-2 h-4 w-4" />
               Professionals
+            </TabsTrigger>
+            <TabsTrigger value="marketing">
+              <FileText className="mr-2 h-4 w-4" />
+              Marketing
             </TabsTrigger>
           </TabsList>
 
@@ -108,6 +113,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="professionals" className="space-y-4">
             <ProfessionalsManager />
+          </TabsContent>
+
+          <TabsContent value="marketing" className="space-y-4">
+            <MarketingContentManager />
           </TabsContent>
         </Tabs>
       </div>
