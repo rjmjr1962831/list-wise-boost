@@ -7,6 +7,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Brain } from "lucide-react";
 import { Link } from "react-router-dom";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  fullName: z.string().trim().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
+  email: z.string().trim().email("Invalid email address").max(255, "Email must be less than 255 characters"),
+  phone: z.string().trim().max(20, "Phone must be less than 20 characters").optional().or(z.literal('')),
+  message: z.string().trim().min(10, "Please provide at least 10 characters").max(2000, "Message must be less than 2000 characters")
+});
 
 const Index = () => {
   const [formData, setFormData] = useState({
@@ -19,9 +27,11 @@ const Index = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.fullName || !formData.email || !formData.message) {
-      toast.error("Please fill in all required fields");
+
+    const validationResult = contactSchema.safeParse(formData);
+
+    if (!validationResult.success) {
+      toast.error(validationResult.error.errors[0].message);
       return;
     }
 
@@ -30,10 +40,10 @@ const Index = () => {
     try {
       const { error } = await supabase.from("contacts").insert([
         {
-          full_name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone || null,
-          message: formData.message,
+          full_name: validationResult.data.fullName,
+          email: validationResult.data.email,
+          phone: validationResult.data.phone || null,
+          message: validationResult.data.message,
         },
       ]);
 
@@ -42,7 +52,9 @@ const Index = () => {
       toast.success("Thank you! We'll get back to you soon.");
       setFormData({ fullName: "", email: "", phone: "", message: "" });
     } catch (error) {
-      console.error("Error submitting form:", error);
+      if (import.meta.env.DEV) {
+        console.error("Error submitting form:", error);
+      }
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
