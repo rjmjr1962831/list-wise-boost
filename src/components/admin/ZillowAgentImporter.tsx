@@ -355,10 +355,35 @@ export const ZillowAgentImporter = () => {
       }
 
       // Map Zillow data to our professional structure
-      // Calculate estimated stats based on reviews (Zillow API doesn't provide direct sales data)
+      // Try to fetch detailed stats from profile page
+      let actualStats = null;
+      const profileLink = agent.profileLink || '';
+      
+      if (profileLink) {
+        try {
+          console.log(`Fetching detailed stats for ${agent.fullName}`);
+          const { data: statsData } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+            body: {
+              profileUrl: profileLink,
+              agentName: agent.fullName
+            }
+          });
+
+          if (statsData?.success && statsData?.stats) {
+            actualStats = statsData.stats;
+            console.log(`Got actual stats:`, actualStats);
+          }
+        } catch (statsError) {
+          console.error('Failed to fetch profile stats:', statsError);
+          // Continue with estimates if profile scraping fails
+        }
+      }
+      
+      // Use actual stats if available, otherwise estimate from reviews
       const reviewCount = agent.numTotalReviews || agent.reviewCount || 0;
-      const estimatedTotalSales = reviewCount > 0 ? Math.floor(reviewCount / 8) : 0; // ~1 review per 8 sales
-      const estimatedCurrentListings = reviewCount > 0 ? Math.max(1, Math.floor(reviewCount / 100)) : 0;
+      const totalSales = actualStats?.totalSales || (reviewCount > 0 ? Math.floor(reviewCount / 8) : 0);
+      const currentListings = actualStats?.currentListings || (reviewCount > 0 ? Math.max(1, Math.floor(reviewCount / 100)) : 0);
+      const yearsExp = actualStats?.yearsExperience || agent.yearsOfExperience || agent.experience || null;
       
       // Determine agent type based on reviews and rating
       const rating = agent.reviewStarsRating || agent.rating || 0;
@@ -372,7 +397,7 @@ export const ZillowAgentImporter = () => {
         website: websiteUrl,
         image_url: imageUrl,
         specialty: agent.specialties || [],
-        years_experience: agent.yearsOfExperience || agent.experience || null,
+        years_experience: yearsExp,
         license_number: finalLicenseNumber,
         description: agent.description || agent.bio || agent.about || null,
         city_id: selectedCityId,
@@ -380,8 +405,8 @@ export const ZillowAgentImporter = () => {
         type: isEstablished ? 'established' : 'emerging',
         rank: nextRank,
         active: true,
-        total_sales: estimatedTotalSales,
-        current_listings: estimatedCurrentListings,
+        total_sales: totalSales,
+        current_listings: currentListings,
       };
 
       console.log('Importing agent:', professionalData);
