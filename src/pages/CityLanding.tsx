@@ -1,12 +1,10 @@
 import { useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CategoryCard } from '@/components/CategoryCard';
 import { getCityBySlug } from '@/data/cities';
-import { getAllCategories } from '@/data/categoryConfig';
-import { hasDataForCity, getAvailableCategories, getProfessionalsByCategory } from '@/data/professionalData';
+import { hasDataForCity } from '@/data/professionalData';
 import { formatCityName } from '@/utils/routeHelpers';
-import { MapPin, Home } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
@@ -40,9 +38,6 @@ export default function CityLanding() {
     return <Navigate to="/404" replace />;
   }
 
-  const allCategories = getAllCategories();
-  const availableCategories = hasData ? getAvailableCategories(city.slug) : [];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Hero Section */}
@@ -67,30 +62,6 @@ export default function CityLanding() {
                 </p>
               </div>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* Categories Grid */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-bold mb-12 text-center">Browse by Category</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
-            {allCategories.map((category) => {
-              const isAvailable = availableCategories.includes(category.id);
-              const professionalCount = isAvailable 
-                ? getProfessionalsByCategory(city, category.id).length 
-                : 0;
-              
-              return (
-                <CategoryCard
-                  key={category.id}
-                  category={category}
-                  city={city}
-                  professionalCount={professionalCount}
-                />
-              );
-            })}
           </div>
         </div>
       </section>
