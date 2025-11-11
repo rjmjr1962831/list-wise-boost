@@ -53,7 +53,6 @@ export const phoenixRealEstateAgents: Professional[] = [
     verified: true,
     image: "/api/placeholder/400/400",
     stats: { salesLast12Mo: 52000000, yearsExperience: 12 },
-    license_number: "SA123456789",
     testimonials: [
       {
         author: "Michael & Sarah T.",
@@ -90,7 +89,6 @@ export const phoenixRealEstateAgents: Professional[] = [
     verified: true,
     image: "/api/placeholder/400/400",
     stats: { salesLast12Mo: 38000000, yearsExperience: 9 },
-    license_number: "SA987654321",
     testimonials: [
       {
         author: "The Johnson Family",
@@ -127,7 +125,6 @@ export const phoenixRealEstateAgents: Professional[] = [
     verified: true,
     image: "/api/placeholder/400/400",
     stats: { salesLast12Mo: 18000000, yearsExperience: 7 },
-    license_number: "SA567891234",
     testimonials: [
       {
         author: "Jessica Martinez",

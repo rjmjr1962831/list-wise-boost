@@ -128,8 +128,8 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
-              {/* License Number Badge - Only for Real Estate Agents */}
-              {professional.license_number && (
+              {/* License Number Badge - Only show if verified by agent */}
+              {professional.license_number && professional.license_verified_at && (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="gap-1.5 px-3 py-1">
                     <Shield className="h-3.5 w-3.5 text-primary" />

@@ -48,7 +48,6 @@ const realEstateAgents = [
     },
     verified: true,
     image: ashleyPickensImg,
-    license_number: "SA112233445",
     testimonials: [
       {
         author: "Mark & Jennifer C.",
@@ -90,7 +89,6 @@ const realEstateAgents = [
     },
     verified: true,
     image: maryJoImg,
-    license_number: "SA998877665",
     testimonials: [
       {
         author: "The Johnson Family",
@@ -933,33 +931,6 @@ const GilbertRealEstateAgentList = () => {
                         </div>
                       </div>
 
-                      {/* License Number */}
-                      {agent.license_number && (
-                        <div className="flex items-center gap-2 pt-2">
-                          <Shield className="h-4 w-4 text-aqua" />
-                          <span className="text-sm font-medium">License: {agent.license_number}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 gap-1 text-xs ml-2"
-                            onClick={() => {
-                              const licenseLookupUrl = getLicenseLookupByStateAbbr('AZ');
-                              if (licenseLookupUrl) {
-                                window.open(licenseLookupUrl, '_blank');
-                                trackEvent('license_verify_click', {
-                                  professional_name: agent.name,
-                                  license_number: agent.license_number || '',
-                                  state: 'AZ'
-                                });
-                              }
-                            }}
-                          >
-                            Verify License
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
-
                       {/* Contact Button */}
                       <div className="pt-3">
                         <RippleButton 
@@ -1168,33 +1139,6 @@ const GilbertRealEstateAgentList = () => {
                           </a>
                         </div>
                       </div>
-
-                      {/* License Number */}
-                      {agent.license_number && (
-                        <div className="flex items-center gap-2 pt-2">
-                          <Shield className="h-4 w-4 text-aqua" />
-                          <span className="text-sm font-medium">License: {agent.license_number}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 gap-1 text-xs ml-2"
-                            onClick={() => {
-                              const licenseLookupUrl = getLicenseLookupByStateAbbr('AZ');
-                              if (licenseLookupUrl) {
-                                window.open(licenseLookupUrl, '_blank');
-                                trackEvent('license_verify_click', {
-                                  professional_name: agent.name,
-                                  license_number: agent.license_number || '',
-                                  state: 'AZ'
-                                });
-                              }
-                            }}
-                          >
-                            Verify License
-                            <ExternalLink className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      )}
 
                       {/* Contact Button */}
                       <div className="pt-3">
