@@ -389,6 +389,8 @@ export default function DynamicCategoryList() {
             defaultOpen={true}
             schemaType="RealEstateAgent"
             market={formatCityName(city)}
+            citySlug={city.slug}
+            categorySlug={categorySlug}
           />
         ))}
       </ProfessionalListLayout>

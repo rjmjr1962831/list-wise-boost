@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp } from "lucide-react";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { ContactProfessionalModal } from "./ContactProfessionalModal";
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -12,6 +13,8 @@ interface ProfessionalCardProps {
   schemaType?: string;
   market?: string;
   agentType?: string;
+  citySlug?: string;
+  categorySlug?: string;
 }
 
 export const ProfessionalCard = ({ 
@@ -19,12 +22,17 @@ export const ProfessionalCard = ({
   accentColor = "primary",
   schemaType = "Person",
   market = "",
-  agentType = ""
+  agentType = "",
+  citySlug,
+  categorySlug
 }: ProfessionalCardProps) => {
   const { trackEvent } = useGA4Tracking();
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
+  
+  const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   const handleWebsiteClick = () => {
     trackEvent('agent_profile_click', {
@@ -220,6 +228,24 @@ export const ProfessionalCard = ({
                 </div>
               </div>
 
+              {/* Contact Button */}
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={() => {
+                    setShowContactModal(true);
+                    trackEvent('contact_cta_click', {
+                      agent_name: professional.name,
+                      market: market,
+                      agent_type: agentType
+                    });
+                  }}
+                  className="w-full"
+                  variant="default"
+                >
+                  Contact {professional.name.split(' ')[0]}
+                </Button>
+              </div>
+
               {/* Client Testimonials Section */}
               {professional.testimonials && professional.testimonials.length > 0 && (
                 <div className="mt-4 pt-4 border-t">
@@ -273,6 +299,16 @@ export const ProfessionalCard = ({
           </div>
         </div>
       </CardContent>
+
+      <ContactProfessionalModal
+        open={showContactModal}
+        onOpenChange={setShowContactModal}
+        professionalName={professional.name}
+        professionalId={professional.rank.toString()}
+        listingUrl={listingUrl}
+        citySlug={citySlug}
+        categorySlug={categorySlug}
+      />
     </Card>
   );
 };
