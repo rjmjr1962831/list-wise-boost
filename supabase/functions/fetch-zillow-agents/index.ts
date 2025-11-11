@@ -46,13 +46,23 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log('Successfully fetched agent data');
-    console.log('API Response structure:', JSON.stringify(data, null, 2));
     
     // Extract agents array from response
     const agents = data?.agents || data?.results || (Array.isArray(data) ? data : []);
     console.log('Number of agents found:', agents.length);
+    
+    // Log first agent with all fields to help debug stats extraction
     if (agents.length > 0) {
-      console.log('First agent sample:', JSON.stringify(agents[0], null, 2));
+      const firstAgent = agents[0];
+      console.log('=== First agent detailed fields ===');
+      console.log('Name:', firstAgent.fullName || firstAgent.name);
+      console.log('Reviews:', firstAgent.numTotalReviews || firstAgent.reviewCount);
+      console.log('Total Sales:', firstAgent.totalSales || firstAgent.sales || firstAgent.totalTransactions || 'NOT FOUND');
+      console.log('Active Listings:', firstAgent.activeListings || firstAgent.currentListings || 'NOT FOUND');
+      console.log('Rental Listings:', firstAgent.rentalListings || 'NOT FOUND');
+      console.log('Years Experience:', firstAgent.yearsOfExperience || firstAgent.experience || 'NOT FOUND');
+      console.log('All agent keys:', Object.keys(firstAgent));
+      console.log('Full agent object:', JSON.stringify(firstAgent, null, 2));
     }
 
     return new Response(JSON.stringify(agents), {

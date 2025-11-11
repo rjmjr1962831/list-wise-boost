@@ -379,11 +379,24 @@ export const ZillowAgentImporter = () => {
         }
       }
       
-      // Use actual stats if available, otherwise estimate from reviews
+      // Extract stats with priority: API data > scraped stats > estimates
       const reviewCount = agent.numTotalReviews || agent.reviewCount || 0;
-      const totalSales = actualStats?.totalSales || (reviewCount > 0 ? Math.floor(reviewCount / 8) : 0);
-      const currentListings = actualStats?.currentListings || (reviewCount > 0 ? Math.max(1, Math.floor(reviewCount / 100)) : 0);
+      
+      // Try to get sales from API first
+      const totalSales = agent.totalSales || agent.sales || agent.totalTransactions || 
+                        actualStats?.totalSales || 
+                        (reviewCount > 0 ? Math.floor(reviewCount / 8) : 0);
+      
+      // Try to get listings from API first (both active and rental)
+      const activeListings = agent.activeListings || agent.currentListings || 
+                            actualStats?.currentListings || 
+                            (reviewCount > 0 ? Math.max(1, Math.floor(reviewCount / 100)) : 0);
+      const rentalListings = agent.rentalListings || 0;
+      const currentListings = activeListings + rentalListings;
+      
       const yearsExp = actualStats?.yearsExperience || agent.yearsOfExperience || agent.experience || null;
+      
+      console.log(`Agent ${agent.fullName}: reviews=${reviewCount}, totalSales=${totalSales}, activeListings=${activeListings}, rentalListings=${rentalListings}`);
       
       // Determine agent type based on reviews and rating
       const rating = agent.reviewStarsRating || agent.rating || 0;
