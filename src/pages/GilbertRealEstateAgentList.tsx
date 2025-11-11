@@ -13,6 +13,8 @@ import { CitationBadge } from "@/components/brand/CitationBadge";
 import { RippleButton } from "@/components/brand/RippleButton";
 import { CollapsibleHeader } from "@/components/CollapsibleHeader";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { RealEstateAgentQuizModal } from "@/components/RealEstateAgentQuizModal";
+import { ContactProfessionalModal } from "@/components/ContactProfessionalModal";
 import ashleyPickensImg from "@/assets/realtors/ashley-pickens.jpg";
 import zacharyCatesImg from "@/assets/realtors/zachary-cates.jpg";
 import maryJoImg from "@/assets/realtors/mary-jo.jpg";
@@ -441,6 +443,10 @@ const GilbertRealEstateAgentList = () => {
   const [establishedOpen, setEstablishedOpen] = useState(false);
   const [hungryOpen, setHungryOpen] = useState(false);
   const [expandedReviews, setExpandedReviews] = useState<Record<number, boolean>>({});
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<typeof realEstateAgents[0] | null>(null);
+  const [showContactModal, setShowContactModal] = useState(false);
   const { trackEvent } = useGA4Tracking();
 
   const establishedRealEstateAgents = realEstateAgents.slice(0, 6);
@@ -479,6 +485,35 @@ const GilbertRealEstateAgentList = () => {
     });
   };
 
+  const handleContactClick = (agent: typeof realEstateAgents[0], agentType: string) => {
+    setSelectedAgent(agent);
+    
+    if (!quizCompleted) {
+      setShowQuiz(true);
+    } else {
+      setShowContactModal(true);
+    }
+    
+    trackEvent('contact_cta_click', {
+      agent_name: agent.name,
+      market: 'Gilbert, AZ',
+      agent_type: agentType
+    });
+  };
+
+  const handleQuizComplete = (preferences: { propertyType: string; priceRange: string; timeline: string }) => {
+    const storageKey = 'quiz_completed_gilbert_top10realestateagents';
+    localStorage.setItem(storageKey, JSON.stringify(preferences));
+    
+    setQuizCompleted(true);
+    setShowQuiz(false);
+    
+    // Auto-open contact modal for the selected agent
+    if (selectedAgent) {
+      setShowContactModal(true);
+    }
+  };
+
   const handleBadgeHover = (agent: typeof realEstateAgents[0]) => {
     if (agent.verified) {
       trackEvent('badge_hover', {
@@ -488,6 +523,16 @@ const GilbertRealEstateAgentList = () => {
       });
     }
   };
+
+  // Check if quiz has been completed on mount
+  useEffect(() => {
+    const storageKey = 'quiz_completed_gilbert_top10realestateagents';
+    const completed = localStorage.getItem(storageKey);
+    
+    if (completed) {
+      setQuizCompleted(true);
+    }
+  }, []);
 
   useEffect(() => {
     // Scroll depth tracking
@@ -617,7 +662,28 @@ const GilbertRealEstateAgentList = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-beige to-background relative overflow-hidden">
+    <>
+      <RealEstateAgentQuizModal
+        open={showQuiz}
+        onOpenChange={setShowQuiz}
+        onComplete={handleQuizComplete}
+        city="Gilbert"
+      />
+      {selectedAgent && (
+        <ContactProfessionalModal
+          open={showContactModal}
+          onOpenChange={setShowContactModal}
+          professionalName={selectedAgent.name}
+          professionalId={`gilbert-realtor-${selectedAgent.rank}`}
+          listingUrl={typeof window !== 'undefined' ? window.location.href : ''}
+          citySlug="gilbert"
+          categorySlug="top10realestateagents"
+          cityName="Gilbert"
+          categoryName="Real Estate Agent"
+          professionalWebsite={selectedAgent.website}
+        />
+      )}
+      <div className="min-h-screen bg-gradient-to-b from-beige to-background relative overflow-hidden">
       {/* Tidal Shift Background Elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-aqua/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute top-1/3 left-0 w-[600px] h-[600px] bg-indigo/5 rounded-full blur-3xl pointer-events-none" />
@@ -864,6 +930,16 @@ const GilbertRealEstateAgentList = () => {
                         </div>
                       </div>
 
+                      {/* Contact Button */}
+                      <div className="pt-3">
+                        <RippleButton 
+                          onClick={() => handleContactClick(agent, 'Established')}
+                          className="w-full"
+                        >
+                          Contact Agent
+                        </RippleButton>
+                      </div>
+
                       {/* Client Testimonials */}
                       {agent.testimonials && agent.testimonials.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-indigo/10">
@@ -1063,6 +1139,16 @@ const GilbertRealEstateAgentList = () => {
                         </div>
                       </div>
 
+                      {/* Contact Button */}
+                      <div className="pt-3">
+                        <RippleButton 
+                          onClick={() => handleContactClick(agent, 'Emerging')}
+                          className="w-full"
+                        >
+                          Contact Agent
+                        </RippleButton>
+                      </div>
+
                       {/* Client Testimonials */}
                       {agent.testimonials && agent.testimonials.length > 0 && (
                         <div className="mt-4 pt-4 border-t border-aqua/10">
@@ -1225,6 +1311,7 @@ const GilbertRealEstateAgentList = () => {
         </div>
       </footer>
     </div>
+    </>
   );
 };
 
