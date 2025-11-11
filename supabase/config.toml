@@ -6,6 +6,9 @@ verify_jwt = false
 [functions.fetch-zillow-agents]
 verify_jwt = false
 
+[functions.fetch-zillow-reviews]
+verify_jwt = false
+
 [functions.migrate-data]
 verify_jwt = false
 

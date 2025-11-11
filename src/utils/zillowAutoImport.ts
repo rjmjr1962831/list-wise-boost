@@ -110,6 +110,7 @@ export async function autoImportZillowAgents(
           type: i < 5 ? 'established' : 'emerging', // First 5 as established, rest as emerging
           rank: i + 1,
           active: true,
+          zuid: agent.zuid || null,
         };
 
         const { error: insertError } = await supabase

@@ -34,6 +34,7 @@ export interface Professional {
   testimonials?: Testimonial[];
   license_number?: string;
   license_verified_at?: string;
+  zuid?: string | null; // Zillow unique agent ID
 }
 
 export interface ListSection {

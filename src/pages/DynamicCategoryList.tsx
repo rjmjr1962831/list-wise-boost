@@ -42,6 +42,7 @@ interface DBProfessional {
   website: string | null;
   description: string | null;
   image_url: string | null;
+  zuid: string | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -93,7 +94,8 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     stats: { yearsExperience: dbProf.years_experience || 5 },
     verified: true,
     image: dbProf.image_url || '/api/placeholder/400/400',
-    testimonials: testimonialTemplates
+    testimonials: testimonialTemplates,
+    zuid: dbProf.zuid || null
   };
 }
 

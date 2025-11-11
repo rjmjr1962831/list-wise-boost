@@ -336,6 +336,7 @@ export type Database = {
           verification_token_expires_at: string | null
           website: string | null
           years_experience: number | null
+          zuid: string | null
         }
         Insert: {
           active?: boolean
@@ -366,6 +367,7 @@ export type Database = {
           verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
+          zuid?: string | null
         }
         Update: {
           active?: boolean
@@ -396,6 +398,7 @@ export type Database = {
           verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
+          zuid?: string | null
         }
         Relationships: [
           {

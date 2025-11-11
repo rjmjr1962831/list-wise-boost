@@ -6,6 +6,7 @@ import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, Exte
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
+import { ZillowReviewsSection } from "./ZillowReviewsSection";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 
 interface ProfessionalCardProps {
@@ -321,6 +322,9 @@ export const ProfessionalCard = ({
                   Contact {professional.name.split(' ')[0]}
                 </Button>
               </div>
+
+              {/* Zillow Reviews Section */}
+              {professional.zuid && <ZillowReviewsSection zuid={professional.zuid} />}
 
               {/* Client Testimonials Section */}
               {professional.testimonials && professional.testimonials.length > 0 && (
