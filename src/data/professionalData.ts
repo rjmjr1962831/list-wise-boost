@@ -2,6 +2,7 @@ import { Professional } from '@/types/professional';
 import { City } from '@/types/directory';
 import * as phoenix from './sampleData/phoenix';
 import * as losAngeles from './sampleData/los-angeles';
+import * as anaheim from './sampleData/anaheim';
 
 type CategoryDataMap = {
   [categorySlug: string]: Professional[];
@@ -43,6 +44,9 @@ const cityData: CityDataMap = {
     'top10fancyrestaurants': losAngeles.losAngelesFancyRestaurants,
     'top10cheapbutgood': losAngeles.losAngelesCheapButGood,
     'top10neurologists': []
+  },
+  'anaheim': {
+    'top10realestateagents': anaheim.anaheimRealEstateAgents
   }
 };
 
