@@ -314,7 +314,7 @@ export const ZillowAgentImporter = () => {
         specialty: agent.specialties || [],
         years_experience: agent.yearsOfExperience || agent.experience || null,
         license_number: agent.licenseNumber || null,
-        description: agent.reviewExcerpt || agent.description || agent.bio || null,
+        description: agent.description || agent.bio || agent.about || null,
         city_id: selectedCityId,
         category_id: selectedCategoryId,
         type: 'emerging',
