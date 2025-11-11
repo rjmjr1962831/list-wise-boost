@@ -27,9 +27,9 @@ serve(async (req) => {
     
     console.log(`Fetching agents for ${formattedCity}, ${formattedState}`);
 
-    // Call RapidAPI Zillow endpoint
+    // Call RapidAPI Zillow endpoint - using search_agents endpoint
     const response = await fetch(
-      `https://${RAPIDAPI_HOST}/zillow/agents?location=${encodeURIComponent(formattedCity + ', ' + formattedState)}&page=1`,
+      `https://${RAPIDAPI_HOST}/search_agents?location=${encodeURIComponent(formattedCity + ', ' + formattedState)}`,
       {
         method: 'GET',
         headers: {

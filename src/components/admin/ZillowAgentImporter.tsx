@@ -71,7 +71,7 @@ export const ZillowAgentImporter = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<string>("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [testMode, setTestMode] = useState(true);
+  const [testMode, setTestMode] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
