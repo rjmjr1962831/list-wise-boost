@@ -229,6 +229,33 @@ export default function DynamicCategoryList() {
       toast.error('Failed to create listings');
     } else {
       toast.success(`Created ${generated.length} ${categoryData.plural_name}!`);
+      
+      // Send notifications for professionals without photos
+      const pageUrl = `${window.location.origin}/${cityData.state_slug}/${cityData.slug}/${categoryData.slug}`;
+      
+      for (const prof of generated) {
+        // Check if professional has placeholder image
+        if (prof.image_url === '/api/placeholder/400/400' || !prof.image_url) {
+          try {
+            await supabase.functions.invoke('notify-missing-photo', {
+              body: {
+                professionalName: prof.name,
+                professionalEmail: prof.email,
+                professionalPhone: prof.phone,
+                professionalWebsite: prof.website,
+                rank: prof.rank,
+                category: categoryData.plural_name,
+                city: cityData.name,
+                state: cityData.state,
+                pageUrl: pageUrl
+              }
+            });
+            console.log(`Notification sent for ${prof.name} missing photo`);
+          } catch (notifyError) {
+            console.error(`Failed to send notification for ${prof.name}:`, notifyError);
+          }
+        }
+      }
     }
   };
 

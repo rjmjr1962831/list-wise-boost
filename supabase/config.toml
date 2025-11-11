@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.migrate-data]
 verify_jwt = false
+
+[functions.notify-missing-photo]
+verify_jwt = false
