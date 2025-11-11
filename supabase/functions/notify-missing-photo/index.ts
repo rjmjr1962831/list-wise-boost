@@ -1,7 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const SMTP_HOST = "mail.privateemail.com";
+const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "465");
+const SMTP_USERNAME = Deno.env.get("SMTP_USERNAME");
+const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD");
+const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -42,56 +46,147 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Sending notification for ${professionalName} without photo`);
 
-    const emailResponse = await resend.emails.send({
-      from: "Top10Lists Notifications <onboarding@resend.dev>",
-      to: ["robert@top10lists.us"],
+    // Initialize SMTP client
+    const client = new SMTPClient({
+      connection: {
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        tls: true,
+        auth: {
+          username: SMTP_USERNAME!,
+          password: SMTP_PASSWORD!,
+        },
+      },
+    });
+
+    // Send notification email
+    await client.send({
+      from: SMTP_FROM_EMAIL!,
+      to: "robert@top10lists.us",
       subject: `New Listee Without Photo: ${professionalName} - ${city}, ${state}`,
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #333; border-bottom: 2px solid #0066cc; padding-bottom: 10px;">
-            New Listee Added Without Photo
-          </h1>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+            }
+            .header {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              padding: 30px;
+              text-align: center;
+              border-radius: 8px 8px 0 0;
+            }
+            .content {
+              background: #f9f9f9;
+              padding: 30px;
+              border-radius: 0 0 8px 8px;
+            }
+            .info-box {
+              background-color: #f5f5f5;
+              padding: 20px;
+              border-radius: 5px;
+              margin: 20px 0;
+            }
+            .warning-box {
+              background-color: #fff3cd;
+              padding: 15px;
+              border-left: 4px solid #ffc107;
+              margin: 20px 0;
+              color: #856404;
+            }
+            .detail-row {
+              margin: 15px 0;
+              padding: 12px;
+              background: white;
+              border-radius: 6px;
+            }
+            .label {
+              font-weight: bold;
+              color: #667eea;
+              margin-bottom: 5px;
+            }
+            .value {
+              color: #333;
+            }
+            .button {
+              display: inline-block;
+              background-color: #667eea;
+              color: white;
+              padding: 12px 24px;
+              text-decoration: none;
+              border-radius: 5px;
+              font-weight: bold;
+              margin: 20px 0;
+            }
+            .footer {
+              margin-top: 30px;
+              padding-top: 20px;
+              border-top: 1px solid #ddd;
+              color: #666;
+              font-size: 12px;
+              text-align: center;
+            }
+            ul {
+              line-height: 1.8;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 style="margin: 0;">New Listee Added Without Photo</h1>
+          </div>
           
-          <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin: 20px 0;">
-            <h2 style="color: #0066cc; margin-top: 0;">Listee Information</h2>
-            <p><strong>Name:</strong> ${professionalName}</p>
-            <p><strong>Rank:</strong> #${rank}</p>
-            <p><strong>Category:</strong> ${category}</p>
-            <p><strong>Location:</strong> ${city}, ${state}</p>
-          </div>
+          <div class="content">
+            <div class="info-box">
+              <h2 style="color: #667eea; margin-top: 0;">Listee Information</h2>
+              <p><strong>Name:</strong> ${professionalName}</p>
+              <p><strong>Rank:</strong> #${rank}</p>
+              <p><strong>Category:</strong> ${category}</p>
+              <p><strong>Location:</strong> ${city}, ${state}</p>
+            </div>
 
-          <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-            <p style="margin: 0; color: #856404;">
-              <strong>⚠️ Action Required:</strong> This listee was added without a professional photo.
-            </p>
-          </div>
+            <div class="warning-box">
+              <p style="margin: 0;">
+                <strong>⚠️ Action Required:</strong> This listee was added without a professional photo.
+              </p>
+            </div>
 
-          <div style="margin: 20px 0;">
-            <h3 style="color: #333;">Contact Details:</h3>
-            <ul style="line-height: 1.8;">
-              ${professionalEmail ? `<li><strong>Email:</strong> <a href="mailto:${professionalEmail}">${professionalEmail}</a></li>` : '<li>Email: Not provided</li>'}
-              ${professionalPhone ? `<li><strong>Phone:</strong> ${professionalPhone}</li>` : '<li>Phone: Not provided</li>'}
-              ${professionalWebsite ? `<li><strong>Website:</strong> <a href="https://${professionalWebsite}" target="_blank">${professionalWebsite}</a></li>` : '<li>Website: Not provided</li>'}
-            </ul>
-          </div>
+            <div style="margin: 20px 0;">
+              <h3 style="color: #333;">Contact Details:</h3>
+              <ul>
+                ${professionalEmail ? `<li><strong>Email:</strong> <a href="mailto:${professionalEmail}">${professionalEmail}</a></li>` : '<li>Email: Not provided</li>'}
+                ${professionalPhone ? `<li><strong>Phone:</strong> ${professionalPhone}</li>` : '<li>Phone: Not provided</li>'}
+                ${professionalWebsite ? `<li><strong>Website:</strong> <a href="https://${professionalWebsite}" target="_blank">${professionalWebsite}</a></li>` : '<li>Website: Not provided</li>'}
+              </ul>
+            </div>
 
-          <div style="margin: 30px 0;">
-            <a href="${pageUrl}" 
-               style="display: inline-block; background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">
-              View Page
-            </a>
-          </div>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${pageUrl}" class="button">View Page</a>
+            </div>
 
-          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
-            <p>This is an automated notification from Top10Lists.us</p>
+            <div class="footer">
+              <p>This is an automated notification from Top10Lists.us</p>
+            </div>
           </div>
-        </div>
+        </body>
+        </html>
       `,
     });
 
-    console.log("Notification email sent successfully:", emailResponse);
+    await client.close();
 
-    return new Response(JSON.stringify(emailResponse), {
+    console.log("Notification email sent successfully to robert@top10lists.us");
+
+    return new Response(JSON.stringify({ success: true }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
