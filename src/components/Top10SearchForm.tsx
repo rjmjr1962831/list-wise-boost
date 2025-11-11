@@ -162,11 +162,20 @@ export const Top10SearchForm = () => {
     const city = cities.find(c => c.id === selectedCity);
     const category = categories.find(c => c.id === selectedCategory);
 
-    if (city && category) {
-      // Navigate to the list page
-      const url = `/${city.state_slug}/${city.slug}/${category.slug}`;
-      navigate(url);
+    if (!city) {
+      toast.error('City not found. Please try selecting again.');
+      return;
     }
+
+    if (!category) {
+      toast.error('Category not found. Please try selecting again.');
+      return;
+    }
+
+    // Navigate to the list page
+    const url = `/${city.state_slug}/${city.slug}/${category.slug}`;
+    console.log('Navigating to:', url);
+    navigate(url);
   };
 
   return (
