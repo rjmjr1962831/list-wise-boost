@@ -47,6 +47,8 @@ serve(async (req) => {
 
     const data = await response.json();
     console.log('Successfully fetched agent data');
+    console.log('API Response structure:', JSON.stringify(data, null, 2));
+    console.log('First agent data:', JSON.stringify(data[0] || data.results?.[0] || data.agents?.[0], null, 2));
 
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

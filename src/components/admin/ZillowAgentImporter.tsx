@@ -214,10 +214,16 @@ export const ZillowAgentImporter = () => {
         if (error) throw error;
 
         console.log('Zillow API response:', data);
+        console.log('Response type:', typeof data);
+        console.log('Is array?', Array.isArray(data));
+        console.log('Keys:', Object.keys(data || {}));
         
         // The structure will depend on your specific RapidAPI endpoint
         // Adjust this parsing based on the actual response format
-        agentList = Array.isArray(data) ? data : data.agents || data.results || [];
+        agentList = Array.isArray(data) ? data : data.agents || data.results || data.data || [];
+        
+        console.log('Parsed agent list:', agentList);
+        console.log('First agent:', agentList[0]);
       }
       
       setAgents(agentList);
