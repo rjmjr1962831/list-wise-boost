@@ -5,10 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Download, Check } from "lucide-react";
+import { Loader2, Download, Check, ExternalLink } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import placeholderAgent from "@/assets/placeholder-agent.jpg";
+import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 
 // Mock data for testing
 const MOCK_GILBERT_AGENTS = [
@@ -155,6 +156,7 @@ export const ZillowAgentImporter = () => {
   const [selectedCityId, setSelectedCityId] = useState<string>("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [testMode, setTestMode] = useState(false);
+  const [licenseNumbers, setLicenseNumbers] = useState<Record<number, string>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -313,7 +315,7 @@ export const ZillowAgentImporter = () => {
         image_url: imageUrl,
         specialty: agent.specialties || [],
         years_experience: agent.yearsOfExperience || agent.experience || null,
-        license_number: agent.licenseNumber || null,
+        license_number: licenseNumbers[index] || agent.licenseNumber || null,
         description: agent.description || agent.bio || agent.about || null,
         city_id: selectedCityId,
         category_id: selectedCategoryId,
@@ -598,6 +600,49 @@ export const ZillowAgentImporter = () => {
                             "{agent.reviewExcerpt}"
                           </p>
                         )}
+                        
+                        {/* License Verification */}
+                        <div className="pt-3 border-t space-y-2">
+                          <div className="flex gap-2">
+                            <div className="flex-1">
+                              <Input
+                                placeholder="Enter license number (optional)"
+                                value={licenseNumbers[index] || ''}
+                                onChange={(e) => setLicenseNumbers(prev => ({
+                                  ...prev,
+                                  [index]: e.target.value
+                                }))}
+                                className="text-sm"
+                              />
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const lookupUrl = getLicenseLookupByStateAbbr(state);
+                                if (lookupUrl) {
+                                  window.open(lookupUrl, '_blank');
+                                  toast({
+                                    title: "License Lookup Opened",
+                                    description: `Search for ${agent.fullName} on the ${state} licensing portal`,
+                                  });
+                                } else {
+                                  toast({
+                                    title: "Portal Not Available",
+                                    description: `No license lookup URL found for ${state}`,
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-1" />
+                              Verify
+                            </Button>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Click "Verify" to check license on {state} state portal
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
