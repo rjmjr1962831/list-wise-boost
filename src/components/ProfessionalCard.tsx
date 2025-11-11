@@ -282,7 +282,7 @@ export const ProfessionalCard = ({
                     itemProp="url"
                     onClick={handleWebsiteClick}
                   >
-                    {professional.website}
+                    Zillow Listing
                   </a>
                 </div>
                 </div>
