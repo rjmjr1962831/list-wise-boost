@@ -9,8 +9,6 @@ import { Footer } from "@/components/Footer";
 import Index from "./pages/Index";
 import MainSite from "./pages/MainSite";
 import NotFound from "./pages/NotFound";
-import SampleDentistList from "./pages/SampleDentistList";
-import GilbertRealEstateAgentList from "./pages/GilbertRealEstateAgentList";
 import Privacy from "./pages/Privacy";
 import TermsOfService from "./pages/TermsOfService";
 import VerifyListing from "./pages/VerifyListing";
@@ -40,9 +38,6 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/main" element={<MainSite />} />
-                {/* Legacy routes */}
-                <Route path="/az/gilbert/top10dentists" element={<SampleDentistList />} />
-                <Route path="/az/gilbert/top10realestateagents" element={<GilbertRealEstateAgentList />} />
                 {/* Dynamic city and category routes */}
                 <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                 <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
