@@ -355,6 +355,15 @@ export const ZillowAgentImporter = () => {
       }
 
       // Map Zillow data to our professional structure
+      // Calculate estimated stats based on reviews (Zillow API doesn't provide direct sales data)
+      const reviewCount = agent.numTotalReviews || agent.reviewCount || 0;
+      const estimatedTotalSales = reviewCount > 0 ? Math.floor(reviewCount / 8) : 0; // ~1 review per 8 sales
+      const estimatedCurrentListings = reviewCount > 0 ? Math.max(1, Math.floor(reviewCount / 100)) : 0;
+      
+      // Determine agent type based on reviews and rating
+      const rating = agent.reviewStarsRating || agent.rating || 0;
+      const isEstablished = reviewCount >= 200 || (reviewCount >= 100 && rating >= 4.8);
+      
       const professionalData = {
         name: agent.fullName || "Unknown Agent",
         company: agent.businessName || null,
@@ -368,9 +377,11 @@ export const ZillowAgentImporter = () => {
         description: agent.description || agent.bio || agent.about || null,
         city_id: selectedCityId,
         category_id: selectedCategoryId,
-        type: 'emerging',
+        type: isEstablished ? 'established' : 'emerging',
         rank: nextRank,
         active: true,
+        total_sales: estimatedTotalSales,
+        current_listings: estimatedCurrentListings,
       };
 
       console.log('Importing agent:', professionalData);
@@ -383,10 +394,7 @@ export const ZillowAgentImporter = () => {
 
       if (insertError) throw insertError;
 
-      // Send SMS notification for established agents (high rating/reviews)
-      const isEstablished = (agent.reviewCount && agent.reviewCount > 50) || 
-                           (agent.reviewStarRating && agent.reviewStarRating >= 4.5);
-      
+      // Send SMS notification for established agents
       if (isEstablished && insertedData && professionalData.phone) {
         try {
           const cityData = cities.find(c => c.id === selectedCityId);
