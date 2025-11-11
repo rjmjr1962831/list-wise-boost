@@ -25,18 +25,72 @@ interface City {
   slug: string;
 }
 
+const ALL_STATES = [
+  'Alabama',
+  'Alaska',
+  'Arizona',
+  'Arkansas',
+  'California',
+  'Colorado',
+  'Connecticut',
+  'Delaware',
+  'District of Columbia',
+  'Florida',
+  'Georgia',
+  'Hawaii',
+  'Idaho',
+  'Illinois',
+  'Indiana',
+  'Iowa',
+  'Kansas',
+  'Kentucky',
+  'Louisiana',
+  'Maine',
+  'Maryland',
+  'Massachusetts',
+  'Michigan',
+  'Minnesota',
+  'Mississippi',
+  'Missouri',
+  'Montana',
+  'Nebraska',
+  'Nevada',
+  'New Hampshire',
+  'New Jersey',
+  'New Mexico',
+  'New York',
+  'North Carolina',
+  'North Dakota',
+  'Ohio',
+  'Oklahoma',
+  'Oregon',
+  'Pennsylvania',
+  'Puerto Rico',
+  'Rhode Island',
+  'South Carolina',
+  'South Dakota',
+  'Tennessee',
+  'Texas',
+  'Utah',
+  'Vermont',
+  'Virginia',
+  'Washington',
+  'West Virginia',
+  'Wisconsin',
+  'Wyoming'
+];
+
 export const Top10SearchForm = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
-  const [states, setStates] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState('');
   const [stateInput, setStateInput] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
   const [stateOpen, setStateOpen] = useState(false);
-  const [filteredStates, setFilteredStates] = useState<string[]>([]);
+  const [filteredStates, setFilteredStates] = useState<string[]>(ALL_STATES);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,9 +114,6 @@ export const Top10SearchForm = () => {
       
       if (!citiesError && citiesData) {
         setCities(citiesData);
-        // Extract unique states
-        const uniqueStates = Array.from(new Set(citiesData.map(city => city.state))).sort();
-        setStates(uniqueStates);
       }
     };
 
@@ -81,14 +132,14 @@ export const Top10SearchForm = () => {
 
   useEffect(() => {
     if (stateInput) {
-      const filtered = states.filter(state => 
+      const filtered = ALL_STATES.filter(state => 
         state.toLowerCase().includes(stateInput.toLowerCase())
       );
       setFilteredStates(filtered);
     } else {
-      setFilteredStates(states);
+      setFilteredStates(ALL_STATES);
     }
-  }, [stateInput, states]);
+  }, [stateInput]);
 
   const handleSearch = () => {
     if (!selectedState || !selectedCity || !selectedCategory) {
