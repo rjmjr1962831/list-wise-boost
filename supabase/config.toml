@@ -12,6 +12,9 @@ verify_jwt = false
 [functions.generate-agent-bios]
 verify_jwt = false
 
+[functions.lookup-agent-license]
+verify_jwt = false
+
 [functions.migrate-data]
 verify_jwt = false
 

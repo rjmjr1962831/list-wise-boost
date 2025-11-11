@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -9,6 +10,88 @@ interface LicenseLookupRequest {
   agentName: string;
   state: string;
   licensePortalUrl: string;
+}
+
+// Use AI to intelligently parse any state license portal
+async function lookupWithAI(agentName: string, portalUrl: string, state: string): Promise<string | null> {
+  const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+  
+  if (!OPENAI_API_KEY) {
+    console.error('OPENAI_API_KEY not configured');
+    return null;
+  }
+
+  try {
+    // Fetch the license portal page
+    console.log(`Fetching portal: ${portalUrl}`);
+    const response = await fetch(portalUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
+    
+    if (!response.ok) {
+      console.error(`Portal fetch failed: ${response.status}`);
+      return null;
+    }
+    
+    const html = await response.text();
+    
+    // Use OpenAI to intelligently extract license information
+    console.log(`Using AI to parse license for ${agentName}`);
+    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `You are an expert at extracting real estate license numbers from state licensing board websites. 
+Given an HTML page and an agent name, find and return ONLY the license number.
+Return "NOT_FOUND" if you cannot find a license number for this person.
+Only return the license number itself, nothing else - no explanations, no additional text.`
+          },
+          {
+            role: 'user',
+            content: `State: ${state}
+Agent Name: ${agentName}
+Portal URL: ${portalUrl}
+
+HTML Content (first 8000 chars):
+${html.substring(0, 8000)}
+
+Find the license number for ${agentName}. Return ONLY the license number or "NOT_FOUND".`
+          }
+        ],
+        max_tokens: 100,
+        temperature: 0.1,
+      }),
+    });
+
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('OpenAI API error:', aiResponse.status, errorText);
+      return null;
+    }
+
+    const aiData = await aiResponse.json();
+    const licenseNumber = aiData.choices[0]?.message?.content?.trim();
+    
+    console.log(`AI response: ${licenseNumber}`);
+    
+    if (licenseNumber && licenseNumber !== 'NOT_FOUND' && licenseNumber !== 'null' && licenseNumber.length > 0) {
+      return licenseNumber;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('AI lookup error:', error);
+    return null;
+  }
 }
 
 // State-specific search implementations
@@ -198,27 +281,36 @@ serve(async (req) => {
 
     let licenseNumber: string | null = null;
 
-    // Use state-specific search methods
-    switch (state.toUpperCase()) {
-      case 'AZ':
-      case 'ARIZONA':
-        licenseNumber = await searchArizona(agentName);
-        break;
-      case 'CA':
-      case 'CALIFORNIA':
-        licenseNumber = await searchCalifornia(agentName);
-        break;
-      case 'TX':
-      case 'TEXAS':
-        licenseNumber = await searchTexas(agentName);
-        break;
-      case 'FL':
-      case 'FLORIDA':
-        licenseNumber = await searchFlorida(agentName);
-        break;
-      default:
-        // Try generic search for other states
-        licenseNumber = await genericSearch(agentName, licensePortalUrl);
+    // Try AI-powered lookup first for all states with a portal URL
+    if (licensePortalUrl) {
+      console.log('Attempting AI-powered license lookup...');
+      licenseNumber = await lookupWithAI(agentName, licensePortalUrl, state);
+    }
+
+    // Fallback to state-specific scrapers if AI fails
+    if (!licenseNumber) {
+      console.log('AI lookup failed, trying state-specific scraper...');
+      switch (state.toUpperCase()) {
+        case 'AZ':
+        case 'ARIZONA':
+          licenseNumber = await searchArizona(agentName);
+          break;
+        case 'CA':
+        case 'CALIFORNIA':
+          licenseNumber = await searchCalifornia(agentName);
+          break;
+        case 'TX':
+        case 'TEXAS':
+          licenseNumber = await searchTexas(agentName);
+          break;
+        case 'FL':
+        case 'FLORIDA':
+          licenseNumber = await searchFlorida(agentName);
+          break;
+        default:
+          // Try generic search for other states
+          licenseNumber = await genericSearch(agentName, licensePortalUrl);
+      }
     }
 
     console.log(`License lookup result for ${agentName}: ${licenseNumber || 'Not found'}`);
