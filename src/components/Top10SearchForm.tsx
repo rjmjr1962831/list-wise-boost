@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -28,9 +31,12 @@ export const Top10SearchForm = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [states, setStates] = useState<string[]>([]);
   const [selectedState, setSelectedState] = useState('');
+  const [stateInput, setStateInput] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
+  const [stateOpen, setStateOpen] = useState(false);
+  const [filteredStates, setFilteredStates] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -73,6 +79,17 @@ export const Top10SearchForm = () => {
     }
   }, [selectedState, cities]);
 
+  useEffect(() => {
+    if (stateInput) {
+      const filtered = states.filter(state => 
+        state.toLowerCase().includes(stateInput.toLowerCase())
+      );
+      setFilteredStates(filtered);
+    } else {
+      setFilteredStates(states);
+    }
+  }, [stateInput, states]);
+
   const handleSearch = () => {
     if (!selectedState || !selectedCity || !selectedCategory) {
       toast.error('Please select state, city, and category');
@@ -97,18 +114,50 @@ export const Top10SearchForm = () => {
       </div>
       
       <div className="grid md:grid-cols-4 gap-4">
-        <Select value={selectedState} onValueChange={setSelectedState}>
-          <SelectTrigger className="bg-background">
-            <SelectValue placeholder="Select State" />
-          </SelectTrigger>
-          <SelectContent className="bg-background z-50">
-            {states.map(state => (
-              <SelectItem key={state} value={state}>
-                {state}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Popover open={stateOpen} onOpenChange={setStateOpen}>
+          <PopoverTrigger asChild>
+            <div className="relative">
+              <Input
+                placeholder="Type state name..."
+                value={stateInput}
+                onChange={(e) => {
+                  setStateInput(e.target.value);
+                  setStateOpen(true);
+                }}
+                onFocus={() => setStateOpen(true)}
+                className="bg-background"
+              />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0 bg-background" align="start">
+            <Command>
+              <CommandList>
+                <CommandEmpty>No state found.</CommandEmpty>
+                <CommandGroup>
+                  {filteredStates.map((state) => (
+                    <CommandItem
+                      key={state}
+                      value={state}
+                      onSelect={() => {
+                        setSelectedState(state);
+                        setStateInput(state);
+                        setStateOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          selectedState === state ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {state}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
 
         <Select 
           value={selectedCity} 
