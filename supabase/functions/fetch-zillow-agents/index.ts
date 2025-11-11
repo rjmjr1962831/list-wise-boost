@@ -14,8 +14,8 @@ serve(async (req) => {
   try {
     const { city, state } = await req.json();
     
-    const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY');
-    const RAPIDAPI_HOST = Deno.env.get('RAPIDAPI_HOST');
+    const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY')?.trim();
+    const RAPIDAPI_HOST = Deno.env.get('RAPIDAPI_HOST')?.trim();
 
     if (!RAPIDAPI_KEY || !RAPIDAPI_HOST) {
       throw new Error('RapidAPI credentials not configured');
