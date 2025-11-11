@@ -406,6 +406,9 @@ export default function DynamicCategoryList() {
           listingUrl={typeof window !== 'undefined' ? window.location.href : ''}
           citySlug={city.slug}
           categorySlug={categorySlug}
+          cityName={city.name}
+          categoryName={category.name}
+          professionalWebsite={selectedProfessional.website}
         />
       )}
       <ProfessionalListLayout

@@ -16,6 +16,9 @@ interface ContactProfessionalModalProps {
   listingUrl: string;
   citySlug?: string;
   categorySlug?: string;
+  cityName?: string;
+  categoryName?: string;
+  professionalWebsite?: string;
 }
 
 export function ContactProfessionalModal({ 
@@ -25,7 +28,10 @@ export function ContactProfessionalModal({
   professionalId,
   listingUrl,
   citySlug,
-  categorySlug
+  categorySlug,
+  cityName,
+  categoryName,
+  professionalWebsite
 }: ContactProfessionalModalProps) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -85,6 +91,9 @@ export function ContactProfessionalModal({
           contactEmail: email,
           contactPhone: phone,
           message: message || 'No additional message provided.',
+          cityName: cityName || 'Unknown City',
+          categoryName: categoryName || 'Professional',
+          professionalWebsite: professionalWebsite || '',
         },
       });
 

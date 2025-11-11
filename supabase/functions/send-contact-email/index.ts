@@ -20,6 +20,9 @@ interface ContactEmailRequest {
   contactEmail: string;
   contactPhone: string;
   message: string;
+  cityName: string;
+  categoryName: string;
+  professionalWebsite?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -37,6 +40,9 @@ const handler = async (req: Request): Promise<Response> => {
       contactEmail,
       contactPhone,
       message,
+      cityName,
+      categoryName,
+      professionalWebsite,
     }: ContactEmailRequest = await req.json();
 
     console.log('Sending contact form email for:', professionalName);
@@ -138,10 +144,23 @@ const handler = async (req: Request): Promise<Response> => {
               <div class="info-label">Professional:</div>
               <div class="info-value"><strong>${professionalName}</strong> (ID: ${professionalId})</div>
               
-              <div class="info-label">Listing URL:</div>
+              <div class="info-label">City:</div>
+              <div class="info-value">${cityName}</div>
+              
+              <div class="info-label">Type:</div>
+              <div class="info-value">${categoryName}</div>
+              
+              <div class="info-label">Top10Lists Profile:</div>
               <div class="info-value">
                 <a href="${listingUrl}" style="color: #667eea;">${listingUrl}</a>
               </div>
+              
+              ${professionalWebsite ? `
+                <div class="info-label">Professional Website:</div>
+                <div class="info-value">
+                  <a href="${professionalWebsite.startsWith('http') ? professionalWebsite : 'https://' + professionalWebsite}" style="color: #667eea;" target="_blank">${professionalWebsite}</a>
+                </div>
+              ` : ''}
             </div>
 
             <div class="info-section">
@@ -179,11 +198,14 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
+    // Build subject line with City, Type, and Agent Name
+    const subject = `${cityName}: ${categoryName} - ${professionalName}`;
+
     // Send email
     await client.send({
       from: SMTP_FROM_EMAIL!,
-      to: 'robert@top10lists.us',
-      subject: 'New Message for Unverified Listee',
+      to: 'contactforms@top10lists.us',
+      subject: subject,
       html: emailHtml,
     });
 
