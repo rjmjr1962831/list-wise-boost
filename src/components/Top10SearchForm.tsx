@@ -167,20 +167,19 @@ export const Top10SearchForm = () => {
       <div className="grid md:grid-cols-4 gap-4">
         <Popover open={stateOpen} onOpenChange={setStateOpen}>
           <PopoverTrigger asChild>
-            <div className="relative">
-              <Input
-                placeholder="Type state name..."
-                value={stateInput}
-                onChange={(e) => {
-                  setStateInput(e.target.value);
-                  setStateOpen(true);
-                }}
-                onFocus={() => setStateOpen(true)}
-                className="bg-background"
-              />
-            </div>
+            <Input
+              placeholder="Type state name..."
+              value={stateInput}
+              onChange={(e) => {
+                setStateInput(e.target.value);
+                setStateOpen(true);
+              }}
+              onFocus={() => setStateOpen(true)}
+              onBlur={() => setTimeout(() => setStateOpen(false), 200)}
+              className="bg-background"
+            />
           </PopoverTrigger>
-          <PopoverContent className="w-[200px] p-0 bg-background" align="start">
+          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-background" align="start">
             <Command>
               <CommandList>
                 <CommandEmpty>No state found.</CommandEmpty>
