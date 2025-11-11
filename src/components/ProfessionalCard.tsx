@@ -17,6 +17,7 @@ interface ProfessionalCardProps {
   categorySlug?: string;
   onContactClick?: () => void;
   quizCompleted?: boolean;
+  showContactModal?: boolean;
 }
 
 export const ProfessionalCard = ({ 
@@ -28,7 +29,8 @@ export const ProfessionalCard = ({
   citySlug,
   categorySlug,
   onContactClick,
-  quizCompleted = true
+  quizCompleted = true,
+  showContactModal: externalShowContactModal
 }: ProfessionalCardProps) => {
   const { trackEvent } = useGA4Tracking();
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -37,6 +39,9 @@ export const ProfessionalCard = ({
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
   
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
+  
+  // Use external control if provided, otherwise use local state
+  const isContactModalOpen = externalShowContactModal !== undefined ? externalShowContactModal : showContactModal;
 
   const handleWebsiteClick = () => {
     trackEvent('agent_profile_click', {
@@ -236,20 +241,18 @@ export const ProfessionalCard = ({
               <div className="pt-4 border-t">
                 <Button 
                   onClick={() => {
-                    // For real estate agents, check if quiz is completed first
-                    if (categorySlug === 'top10realestateagents' && !quizCompleted) {
-                      // Trigger quiz first
-                      if (onContactClick) {
-                        onContactClick();
-                      }
+                    trackEvent('contact_cta_click', {
+                      agent_name: professional.name,
+                      market: market,
+                      agent_type: agentType
+                    });
+                    
+                    if (onContactClick) {
+                      // Use parent's contact handling
+                      onContactClick();
                     } else {
-                      // Show contact modal directly
+                      // Fallback to local modal
                       setShowContactModal(true);
-                      trackEvent('contact_cta_click', {
-                        agent_name: professional.name,
-                        market: market,
-                        agent_type: agentType
-                      });
                     }
                   }}
                   className="w-full"
@@ -313,15 +316,17 @@ export const ProfessionalCard = ({
         </div>
       </CardContent>
 
-      <ContactProfessionalModal
-        open={showContactModal}
-        onOpenChange={setShowContactModal}
-        professionalName={professional.name}
-        professionalId={professional.rank.toString()}
-        listingUrl={listingUrl}
-        citySlug={citySlug}
-        categorySlug={categorySlug}
-      />
+      {!onContactClick && (
+        <ContactProfessionalModal
+          open={isContactModalOpen}
+          onOpenChange={setShowContactModal}
+          professionalName={professional.name}
+          professionalId={professional.rank.toString()}
+          listingUrl={listingUrl}
+          citySlug={citySlug}
+          categorySlug={categorySlug}
+        />
+      )}
     </Card>
   );
 };

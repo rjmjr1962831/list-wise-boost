@@ -6,6 +6,7 @@ import { CollapsibleListSection } from '@/components/CollapsibleListSection';
 import { generatePageTitle, generateMetaDescription, formatCityName } from '@/utils/routeHelpers';
 import { ListSection, Professional } from '@/types/professional';
 import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
+import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
 import { generateProfessionals } from '@/utils/professionalGenerator';
 import { toast } from 'sonner';
 
@@ -110,6 +111,8 @@ export default function DynamicCategoryList() {
   const [showQuiz, setShowQuiz] = useState(false);
   const [filteredProfessionals, setFilteredProfessionals] = useState<Professional[]>([]);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
+  const [showContactModal, setShowContactModal] = useState(false);
 
   // Fetch city and category data
   useEffect(() => {
@@ -302,13 +305,19 @@ export default function DynamicCategoryList() {
     setQuizCompleted(true);
     setShowQuiz(false);
     
-    // Show toast to click contact button again
-    toast.success('Quiz completed! You can now contact any agent.');
+    // Auto-open contact modal for the selected professional
+    if (selectedProfessional) {
+      setShowContactModal(true);
+    }
   };
 
-  const handleContactClick = () => {
+  const handleContactClick = (professional: Professional) => {
+    setSelectedProfessional(professional);
+    
     if (categorySlug === 'top10realestateagents' && !quizCompleted) {
       setShowQuiz(true);
+    } else {
+      setShowContactModal(true);
     }
   };
 
@@ -386,6 +395,17 @@ export default function DynamicCategoryList() {
           onOpenChange={setShowQuiz}
           onComplete={handleQuizComplete}
           city={city.name}
+        />
+      )}
+      {selectedProfessional && city && category && (
+        <ContactProfessionalModal
+          open={showContactModal}
+          onOpenChange={setShowContactModal}
+          professionalName={selectedProfessional.name}
+          professionalId={`${city.id}-${category.id}-${selectedProfessional.rank}`}
+          listingUrl={typeof window !== 'undefined' ? window.location.href : ''}
+          citySlug={city.slug}
+          categorySlug={categorySlug}
         />
       )}
       <ProfessionalListLayout

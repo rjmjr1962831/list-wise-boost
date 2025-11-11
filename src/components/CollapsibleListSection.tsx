@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ProfessionalCard } from "./ProfessionalCard";
 import { CollapsibleHeader } from "./CollapsibleHeader";
-import { ListSection } from "@/types/professional";
+import { ListSection, Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
 interface CollapsibleListSectionProps {
@@ -16,7 +16,7 @@ interface CollapsibleListSectionProps {
   market?: string;
   citySlug?: string;
   categorySlug?: string;
-  onContactClick?: () => void;
+  onContactClick?: (professional: Professional) => void;
   quizCompleted?: boolean;
 }
 
@@ -81,7 +81,7 @@ export const CollapsibleListSection = ({
             agentType={section.title}
             citySlug={citySlug}
             categorySlug={categorySlug}
-            onContactClick={onContactClick}
+            onContactClick={() => onContactClick?.(professional)}
             quizCompleted={quizCompleted}
           />
         ))}
