@@ -43,6 +43,7 @@ interface DBProfessional {
   description: string | null;
   image_url: string | null;
   zuid: string | null;
+  company: string | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -78,11 +79,16 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     }
   ];
   
+  const stats: Record<string, number | string> = {};
+  if (typeof dbProf.years_experience === 'number') {
+    stats.yearsExperience = dbProf.years_experience;
+  }
+  
   return {
     rank: dbProf.rank,
     name: dbProf.name,
     title: dbProf.title || undefined,
-    company: 'Local Professional',
+    company: dbProf.company || '',
     rating: rating,
     reviews: reviews,
     specialties: dbProf.specialty || [],
@@ -90,8 +96,8 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     phone: dbProf.phone || '(555) 555-5555',
     email: dbProf.email || 'contact@example.com',
     website: dbProf.website || 'https://example.com',
-    description: dbProf.description || 'Experienced professional',
-    stats: { yearsExperience: dbProf.years_experience || 5 },
+    description: dbProf.description || '',
+    stats,
     verified: true,
     image: dbProf.image_url || '/api/placeholder/400/400',
     testimonials: testimonialTemplates,
