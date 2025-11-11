@@ -208,6 +208,34 @@ export default function DynamicCategoryList() {
   }, [stateSlug, citySlug, categorySlug]);
 
   const generateAndInsertProfessionals = async (cityData: City, categoryData: Category) => {
+    // For real estate agents, use Zillow auto-import
+    if (categoryData.slug === 'top10realestateagents') {
+      toast.info(`Importing ${categoryData.plural_name} from Zillow for ${cityData.name}...`);
+      
+      try {
+        const { autoImportZillowAgents } = await import('@/utils/zillowAutoImport');
+        const result = await autoImportZillowAgents(
+          cityData.id,
+          cityData.name,
+          cityData.state
+        );
+        
+        if (result.success) {
+          toast.success(`Imported ${result.imported} real estate agents from Zillow!`);
+          // Refresh the page to show the new data
+          window.location.reload();
+        } else {
+          toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
+        }
+        return;
+      } catch (error: any) {
+        console.error('Error importing from Zillow:', error);
+        toast.error(`Zillow import failed: ${error.message}`);
+        return;
+      }
+    }
+    
+    // Fall back to fake data generator for other categories
     const generated = generateProfessionals(
       cityData.id,
       cityData.name,
