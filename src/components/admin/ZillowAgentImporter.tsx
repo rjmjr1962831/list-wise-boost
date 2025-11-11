@@ -324,16 +324,47 @@ export const ZillowAgentImporter = () => {
 
       console.log('Importing agent:', professionalData);
 
-      const { error: insertError } = await supabase
+      const { data: insertedData, error: insertError } = await supabase
         .from('professionals')
-        .insert([professionalData]);
+        .insert([professionalData])
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
-      toast({
-        title: "Success",
-        description: `${professionalData.name} imported successfully`,
-      });
+      // Auto-generate bio if missing
+      if (!professionalData.description && insertedData) {
+        try {
+          toast({
+            title: "Generating bio...",
+            description: `Creating professional bio for ${professionalData.name}`,
+          });
+
+          const { data: bioData, error: bioError } = await supabase.functions.invoke('generate-agent-bios', {
+            body: {
+              professional_ids: [insertedData.id]
+            }
+          });
+
+          if (bioError) {
+            console.error('Bio generation error:', bioError);
+            // Don't fail the import if bio generation fails
+          } else if (bioData?.results?.[0]?.success) {
+            toast({
+              title: "Success",
+              description: `${professionalData.name} imported with generated bio`,
+            });
+          }
+        } catch (bioErr) {
+          console.error('Error generating bio:', bioErr);
+          // Don't fail the import if bio generation fails
+        }
+      } else {
+        toast({
+          title: "Success",
+          description: `${professionalData.name} imported successfully`,
+        });
+      }
 
       // Remove the agent from the list after successful import
       setAgents(prev => prev.filter((_, i) => i !== index));

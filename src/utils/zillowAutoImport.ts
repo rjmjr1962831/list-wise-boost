@@ -93,7 +93,6 @@ export async function autoImportZillowAgents(
             : `https://www.zillow.com${agent.profileLink}`;
         }
 
-        // Map Zillow data to professional structure
         const professionalData = {
           name: agent.fullName || "Unknown Agent",
           company: agent.businessName || null,
@@ -113,14 +112,36 @@ export async function autoImportZillowAgents(
           zuid: agent.zuid || null,
         };
 
-        const { error: insertError } = await supabase
+        const { data: insertedData, error: insertError } = await supabase
           .from('professionals')
-          .insert([professionalData]);
+          .insert([professionalData])
+          .select()
+          .single();
 
         if (insertError) {
           result.errors.push(`Failed to import ${professionalData.name}: ${insertError.message}`);
         } else {
           result.imported++;
+          
+          // Auto-generate bio if missing
+          if (!professionalData.description && insertedData) {
+            try {
+              console.log(`Generating bio for ${professionalData.name}...`);
+              const { error: bioError } = await supabase.functions.invoke('generate-agent-bios', {
+                body: {
+                  professional_ids: [insertedData.id]
+                }
+              });
+              
+              if (bioError) {
+                console.error(`Bio generation failed for ${professionalData.name}:`, bioError);
+              } else {
+                console.log(`Bio generated for ${professionalData.name}`);
+              }
+            } catch (bioErr) {
+              console.error(`Error generating bio for ${professionalData.name}:`, bioErr);
+            }
+          }
         }
       } catch (importError: any) {
         result.errors.push(`Error importing agent ${i + 1}: ${importError.message}`);
