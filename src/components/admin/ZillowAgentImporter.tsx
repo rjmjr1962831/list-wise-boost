@@ -297,16 +297,16 @@ export const ZillowAgentImporter = () => {
 
       // Map Zillow data to our professional structure
       const professionalData = {
-        name: agent.name || agent.screenName || agent.fullName || "Unknown Agent",
-        company: agent.businessName || agent.brokerageName || null,
-        phone: agent.phoneNumbers?.cell || agent.phoneNumbers?.business || agent.phone || agent.phoneNumber || null,
-        email: agent.email || null,
-        website: agent.url || agent.profileUrl || agent.website || null,
+        name: agent.fullName || "Unknown Agent",
+        company: agent.businessName || null,
+        phone: agent.phoneNumber || null,
+        email: null, // API doesn't provide email
+        website: agent.profileLink ? `https://www.zillow.com${agent.profileLink}` : null,
         image_url: imageUrl,
         specialty: agent.specialties || [],
         years_experience: agent.yearsOfExperience || agent.experience || null,
         license_number: agent.licenseNumber || null,
-        description: agent.description || agent.bio || null,
+        description: agent.reviewExcerpt || agent.description || agent.bio || null,
         city_id: selectedCityId,
         category_id: selectedCategoryId,
         type: 'emerging',
@@ -455,7 +455,7 @@ export const ZillowAgentImporter = () => {
                         <div className="flex-shrink-0">
                           <img 
                             src={agent.profilePhotoSrc} 
-                            alt={agent.name || agent.screenName}
+                            alt={agent.fullName}
                             className="w-20 h-20 rounded-full object-cover"
                             onError={(e) => {
                               e.currentTarget.src = '/placeholder.svg';
@@ -469,11 +469,11 @@ export const ZillowAgentImporter = () => {
                         <div className="flex justify-between items-start">
                           <div>
                             <p className="font-semibold text-lg">
-                              {agent.name || agent.screenName || "Unknown"}
+                              {agent.fullName}
                             </p>
-                            {agent.url && (
+                            {agent.profileLink && (
                               <a 
-                                href={agent.url} 
+                                href={`https://www.zillow.com${agent.profileLink}`}
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="text-sm text-primary hover:underline"
@@ -502,45 +502,38 @@ export const ZillowAgentImporter = () => {
                         </div>
                         
                         <p className="text-sm font-medium text-muted-foreground">
-                          {agent.businessName || agent.brokerageName}
+                          {agent.businessName}
                         </p>
                         
                         {/* Contact Info */}
                         <div className="space-y-1">
-                          {(agent.phoneNumbers?.cell || agent.phone) && (
+                          {agent.phoneNumber && (
                             <p className="text-sm">
-                              📱 Cell: {agent.phoneNumbers?.cell || agent.phone}
+                              📱 Phone: {agent.phoneNumber}
                             </p>
                           )}
-                          {agent.phoneNumbers?.business && (
-                            <p className="text-sm">
-                              📞 Business: {agent.phoneNumbers.business}
-                            </p>
-                          )}
-                          {agent.email && (
-                            <p className="text-sm">
-                              ✉️ {agent.email}
+                          {agent.location && (
+                            <p className="text-sm text-muted-foreground">
+                              📍 {agent.location}
                             </p>
                           )}
                         </div>
                         
-                        {/* Business Address */}
-                        {agent.businessAddress && (
-                          <p className="text-sm text-muted-foreground">
-                            📍 {agent.businessAddress.address1}
-                            {agent.businessAddress.address2 && `, ${agent.businessAddress.address2}`}
-                            , {agent.businessAddress.city}, {agent.businessAddress.state} {agent.businessAddress.postalCode}
-                          </p>
-                        )}
-                        
                         {/* Ratings */}
-                        {agent.ratings && agent.ratings.count > 0 && (
+                        {agent.numTotalReviews > 0 && (
                           <div className="flex items-center gap-2 text-sm">
-                            <span className="font-medium">⭐ {agent.ratings.average.toFixed(1)}</span>
+                            <span className="font-medium">⭐ {agent.reviewStarsRating}</span>
                             <span className="text-muted-foreground">
-                              ({agent.ratings.count} reviews)
+                              ({agent.numTotalReviews} reviews)
                             </span>
                           </div>
+                        )}
+                        
+                        {/* Review Excerpt */}
+                        {agent.reviewExcerpt && (
+                          <p className="text-sm text-muted-foreground italic">
+                            "{agent.reviewExcerpt}"
+                          </p>
                         )}
                       </div>
                     </div>
