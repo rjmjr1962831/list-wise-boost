@@ -631,7 +631,9 @@ const GilbertRealEstateAgentList = () => {
               <span className="text-white font-bold text-lg">T10</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-indigo">Top10Lists.us</span>
+              <span className="text-xl font-bold text-indigo">
+                Top<span className="text-2xl">10</span>Lists.us
+              </span>
               <span className="text-xs text-graphite/60">Cited by AI. Trusted by humans.</span>
             </div>
           </Link>
@@ -1200,12 +1202,14 @@ const GilbertRealEstateAgentList = () => {
                   <span className="text-white font-bold text-lg">T10</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-bold text-indigo">Top10Lists.us</span>
+                  <span className="font-bold text-indigo">
+                    Top<span className="text-lg">10</span>Lists.us
+                  </span>
                   <span className="text-xs text-graphite/60">Verified professionals, real results</span>
                 </div>
               </div>
               <div className="text-center md:text-right">
-                <p className="text-sm text-graphite/70">© 2025 Top10Lists.us. All rights reserved.</p>
+                <p className="text-sm text-graphite/70">© 2025 Top<span className="font-semibold">10</span>Lists.us. All rights reserved.</p>
                 <p className="text-xs text-graphite/50 mt-1">
                   <CitationBadge text="Powered by structured authority" className="text-xs" />
                 </p>

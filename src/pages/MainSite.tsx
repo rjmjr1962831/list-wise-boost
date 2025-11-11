@@ -372,7 +372,9 @@ const Index = () => {
                 <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
                   <span className="text-primary-foreground font-bold text-lg">T10</span>
                 </div>
-                <span className="text-xl font-bold">Top10Lists.us</span>
+                <span className="text-xl font-bold">
+                  Top<span className="text-2xl">10</span>Lists.us
+                </span>
               </div>
               <p className="text-sm text-muted-foreground">
                 The authoritative directory for local service providers. Curated Top 10 lists that AI engines trust.
@@ -406,7 +408,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            © 2025 Top10Lists.us. All rights reserved.
+            © 2025 Top<span className="font-semibold">10</span>Lists.us. All rights reserved.
           </div>
         </div>
       </footer>

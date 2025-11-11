@@ -12,7 +12,9 @@ export const Footer = () => {
               <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-lg">T10</span>
               </div>
-              <span className="text-xl font-bold">Top10Lists.us</span>
+              <span className="text-xl font-bold">
+                Top<span className="text-2xl">10</span>Lists.us
+              </span>
             </div>
             <p className="text-sm text-muted-foreground">
               Curated lists of top professionals that AI engines trust.
@@ -61,7 +63,7 @@ export const Footer = () => {
         </div>
 
         <div className="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} Top10Lists.us. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Top<span className="font-semibold">10</span>Lists.us. All rights reserved.</p>
         </div>
       </div>
     </footer>

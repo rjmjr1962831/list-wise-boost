@@ -10,7 +10,9 @@ export const Header = () => {
           <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-lg">T10</span>
           </div>
-          <span className="text-xl font-bold">Top10Lists.us</span>
+          <span className="text-xl font-bold">
+            Top<span className="text-2xl">10</span>Lists.us
+          </span>
         </Link>
         <nav className="hidden md:flex gap-6">
           <a href="/main#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
