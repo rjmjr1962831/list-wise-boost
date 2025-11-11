@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Building2, Tag, Users, FileText, Home, Wand2 } from "lucide-react";
+import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import CitiesManager from "@/components/admin/CitiesManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
@@ -11,6 +11,7 @@ import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
 import { MarketingContentManager } from "@/components/admin/MarketingContentManager";
 import { ZillowAgentImporter } from "@/components/admin/ZillowAgentImporter";
 import { BioGenerator } from "@/components/admin/BioGenerator";
+import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -86,7 +87,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="cities" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 max-w-4xl">
+          <TabsList className="grid w-full grid-cols-7 max-w-5xl">
             <TabsTrigger value="cities">
               <Building2 className="mr-2 h-4 w-4" />
               Cities
@@ -110,6 +111,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="bio-generator">
               <Wand2 className="mr-2 h-4 w-4" />
               AI Bios
+            </TabsTrigger>
+            <TabsTrigger value="license-tester">
+              <FlaskConical className="mr-2 h-4 w-4" />
+              Test License
             </TabsTrigger>
           </TabsList>
 
@@ -135,6 +140,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="bio-generator" className="space-y-4">
             <BioGenerator />
+          </TabsContent>
+
+          <TabsContent value="license-tester" className="space-y-4">
+            <LicenseLookupTester />
           </TabsContent>
         </Tabs>
       </div>
