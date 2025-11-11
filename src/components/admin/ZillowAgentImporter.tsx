@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Download, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import placeholderAgent from "@/assets/placeholder-agent.jpg";
 
 export const ZillowAgentImporter = () => {
   const [city, setCity] = useState("");
@@ -105,6 +106,41 @@ export const ZillowAgentImporter = () => {
 
       const nextRank = existingPros && existingPros.length > 0 ? existingPros[0].rank + 1 : 1;
 
+      // Get agent photo or use placeholder
+      let imageUrl = agent.photo || agent.photoUrl || agent.image || null;
+      
+      // If no photo from Zillow, upload placeholder to storage
+      if (!imageUrl) {
+        try {
+          // Fetch the placeholder image
+          const response = await fetch(placeholderAgent);
+          const blob = await response.blob();
+          
+          // Generate unique filename
+          const fileName = `placeholder-${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
+          
+          // Upload to Supabase storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('professional-photos')
+            .upload(fileName, blob, {
+              contentType: 'image/jpeg',
+              cacheControl: '3600',
+            });
+
+          if (uploadError) throw uploadError;
+
+          // Get public URL
+          const { data: { publicUrl } } = supabase.storage
+            .from('professional-photos')
+            .getPublicUrl(fileName);
+
+          imageUrl = publicUrl;
+        } catch (uploadErr) {
+          console.error('Error uploading placeholder:', uploadErr);
+          // Continue without image if upload fails
+        }
+      }
+
       // Map Zillow data to our professional structure
       const professionalData = {
         name: agent.name || agent.fullName || "Unknown Agent",
@@ -112,7 +148,7 @@ export const ZillowAgentImporter = () => {
         phone: agent.phone || agent.phoneNumber || null,
         email: agent.email || null,
         website: agent.profileUrl || agent.website || null,
-        image_url: agent.photo || agent.photoUrl || agent.image || null,
+        image_url: imageUrl,
         specialty: agent.specialties || [],
         years_experience: agent.yearsOfExperience || agent.experience || null,
         license_number: agent.licenseNumber || null,
