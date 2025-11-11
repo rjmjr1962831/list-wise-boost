@@ -32,6 +32,8 @@ export interface Professional {
   verified: boolean;
   image: string;
   testimonials?: Testimonial[];
+  license_number?: string;
+  license_verified_at?: string;
 }
 
 export interface ListSection {

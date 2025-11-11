@@ -322,6 +322,8 @@ export type Database = {
           email: string | null
           id: string
           image_url: string | null
+          license_number: string | null
+          license_verified_at: string | null
           name: string
           phone: string | null
           rank: number
@@ -350,6 +352,8 @@ export type Database = {
           email?: string | null
           id?: string
           image_url?: string | null
+          license_number?: string | null
+          license_verified_at?: string | null
           name: string
           phone?: string | null
           rank: number
@@ -378,6 +382,8 @@ export type Database = {
           email?: string | null
           id?: string
           image_url?: string | null
+          license_number?: string | null
+          license_verified_at?: string | null
           name?: string
           phone?: string | null
           rank?: number

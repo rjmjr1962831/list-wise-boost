@@ -28,7 +28,8 @@ export default function VerifyDetails() {
     phone: '',
     company: '',
     email: '',
-    website: ''
+    website: '',
+    license_number: ''
   });
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function VerifyDetails() {
       try {
         const { data, error } = await supabase
           .from('professionals')
-          .select('id, name, email, phone, company, website')
+          .select('id, name, email, phone, company, website, license_number')
           .eq('verification_token', token)
           .gt('verification_token_expires_at', new Date().toISOString())
           .single();
@@ -61,7 +62,8 @@ export default function VerifyDetails() {
           phone: data.phone || '',
           company: data.company || '',
           email: data.email || '',
-          website: data.website || ''
+          website: data.website || '',
+          license_number: data.license_number || ''
         });
       } catch (err) {
         toast({
@@ -103,6 +105,7 @@ export default function VerifyDetails() {
           company: formData.company,
           email: formData.email,
           website: formData.website,
+          license_number: formData.license_number || null,
           verification_started_at: new Date().toISOString()
         })
         .eq('id', professional.id);
@@ -201,6 +204,20 @@ export default function VerifyDetails() {
                     onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                     placeholder="https://yourwebsite.com"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="license_number">License Number (Real Estate Agents)</Label>
+                  <Input
+                    id="license_number"
+                    type="text"
+                    value={formData.license_number}
+                    onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
+                    placeholder="Enter state-issued license number"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    For real estate professionals - will display with verify link
+                  </p>
                 </div>
 
                 <div className="flex justify-between pt-6">

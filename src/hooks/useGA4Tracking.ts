@@ -21,6 +21,8 @@ export interface GA4EventParams {
   block_type?: string;
   professional_name?: string;
   professional_id?: string;
+  license_number?: string;
+  state?: string;
 }
 
 export const useGA4Tracking = () => {

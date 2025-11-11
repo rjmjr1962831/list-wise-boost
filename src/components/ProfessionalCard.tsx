@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ExternalLink } from "lucide-react";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
+import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -39,6 +40,10 @@ export const ProfessionalCard = ({
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
   
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
+  
+  // Extract state abbreviation from market (e.g., "Gilbert, AZ" -> "AZ")
+  const stateAbbr = market?.split(',').pop()?.trim() || '';
+  const licenseLookupUrl = stateAbbr ? getLicenseLookupByStateAbbr(stateAbbr) : null;
   
   // Use external control if provided, otherwise use local state
   const isContactModalOpen = externalShowContactModal !== undefined ? externalShowContactModal : showContactModal;
@@ -122,6 +127,34 @@ export const ProfessionalCard = ({
                   </Badge>
                 )}
               </div>
+
+              {/* License Number Badge - Only for Real Estate Agents */}
+              {professional.license_number && (
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="gap-1.5 px-3 py-1">
+                    <Shield className="h-3.5 w-3.5 text-primary" />
+                    <span className="font-mono text-xs">License: {professional.license_number}</span>
+                  </Badge>
+                  {licenseLookupUrl && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 gap-1 text-xs"
+                      onClick={() => {
+                        window.open(licenseLookupUrl, '_blank');
+                        trackEvent('license_verify_click', {
+                          agent_name: professional.name,
+                          license_number: professional.license_number,
+                          state: stateAbbr
+                        });
+                      }}
+                    >
+                      Verify License
+                      <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              )}
 
               {/* Rating */}
               <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
