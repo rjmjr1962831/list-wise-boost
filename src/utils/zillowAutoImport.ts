@@ -85,13 +85,21 @@ export async function autoImportZillowAgents(
           }
         }
 
+        // Build website URL - handle both relative and absolute URLs
+        let websiteUrl = null;
+        if (agent.profileLink) {
+          websiteUrl = agent.profileLink.startsWith('http') 
+            ? agent.profileLink 
+            : `https://www.zillow.com${agent.profileLink}`;
+        }
+
         // Map Zillow data to professional structure
         const professionalData = {
           name: agent.fullName || "Unknown Agent",
           company: agent.businessName || null,
           phone: agent.phoneNumber || null,
           email: null,
-          website: agent.profileLink ? `https://www.zillow.com${agent.profileLink}` : null,
+          website: websiteUrl,
           image_url: imageUrl,
           specialty: [],
           years_experience: null,
