@@ -229,6 +229,17 @@ export const ZillowAgentImporter = () => {
       }
       
       setAgents(agentList);
+      
+      // Auto-populate license numbers from API data
+      const licenses: Record<number, string> = {};
+      agentList.forEach((agent, index) => {
+        const licenseNum = agent.licenseNumber || agent.license || agent.license_number;
+        if (licenseNum) {
+          licenses[index] = licenseNum;
+        }
+      });
+      setLicenseNumbers(licenses);
+      
       toast({
         title: "Success",
         description: `Found ${agentList.length} agents${testMode ? ' (Test Mode)' : ''}`,
