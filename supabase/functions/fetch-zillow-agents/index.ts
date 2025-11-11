@@ -27,15 +27,15 @@ serve(async (req) => {
     
     console.log(`Fetching agents for ${formattedCity}, ${formattedState}`);
 
-    // Call RapidAPI Zillow Agent Data API - using search endpoint
+    // Call RapidAPI Zillow Agent Data API - using search endpoint (page 1)
     const searchQuery = `${formattedCity}, ${formattedState}`;
     const response = await fetch(
-      `https://${RAPIDAPI_HOST}/?data_type=search_agents&location=${encodeURIComponent(searchQuery)}`,
+      `https://${RAPIDAPI_HOST}/?data_type=search_agents&location=${encodeURIComponent(searchQuery)}&page_number=1`,
       {
         method: 'GET',
         headers: {
-          'X-RapidAPI-Key': RAPIDAPI_KEY,
-          'X-RapidAPI-Host': RAPIDAPI_HOST,
+          'x-rapidapi-key': RAPIDAPI_KEY,
+          'x-rapidapi-host': RAPIDAPI_HOST,
         },
       }
     );
