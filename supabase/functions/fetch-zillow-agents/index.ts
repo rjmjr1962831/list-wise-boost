@@ -21,14 +21,15 @@ serve(async (req) => {
       throw new Error('RapidAPI credentials not configured');
     }
 
-    // Format location string
+    // Format location for the API (City, State format)
     const location = `${city}, ${state}`;
     
     console.log(`Fetching agents for ${location}`);
 
-    // Call RapidAPI Zillow endpoint - using search_agents with location
+    // Call Zillow Agent Data API - using search endpoint with location
+    // Based on docs: search by location with pagination
     const response = await fetch(
-      `https://${RAPIDAPI_HOST}/search_agents?location=${encodeURIComponent(location)}`,
+      `https://${RAPIDAPI_HOST}/?data_type=search_agents&location=${encodeURIComponent(location)}&page_number=1`,
       {
         method: 'GET',
         headers: {
@@ -47,9 +48,15 @@ serve(async (req) => {
     const data = await response.json();
     console.log('Successfully fetched agent data');
     console.log('API Response structure:', JSON.stringify(data, null, 2));
-    console.log('First agent data:', JSON.stringify(data[0] || data.results?.[0] || data.agents?.[0], null, 2));
+    
+    // Extract agents array from response - may be in different formats
+    const agents = data?.agents || data?.results || (Array.isArray(data) ? data : []);
+    console.log('Number of agents found:', agents.length);
+    if (agents.length > 0) {
+      console.log('First agent sample:', JSON.stringify(agents[0], null, 2));
+    }
 
-    return new Response(JSON.stringify(data), {
+    return new Response(JSON.stringify(agents), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
