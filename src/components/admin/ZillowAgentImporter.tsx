@@ -157,6 +157,8 @@ export const ZillowAgentImporter = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [testMode, setTestMode] = useState(false);
   const [licenseNumbers, setLicenseNumbers] = useState<Record<number, string>>({});
+  const [useApify, setUseApify] = useState(false);
+  const [apifyApiKey, setApifyApiKey] = useState<string>("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -355,27 +357,27 @@ export const ZillowAgentImporter = () => {
       }
 
       // Map Zillow data to our professional structure
-      // Try to fetch detailed stats from profile page
+      // Optionally fetch detailed stats using Apify
       let actualStats = null;
       const profileLink = agent.profileLink || '';
       
-      if (profileLink) {
+      if (useApify && profileLink) {
         try {
-          console.log(`Fetching detailed stats for ${agent.fullName}`);
-          const { data: statsData } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+          console.log(`Fetching detailed stats from Apify for ${agent.fullName}`);
+          const { data: apifyData } = await supabase.functions.invoke('fetch-apify-agent-stats', {
             body: {
-              profileUrl: profileLink,
-              agentName: agent.fullName
+              profileUrl: `https://www.zillow.com${profileLink}`,
+              apifyApiKey: apifyApiKey || undefined
             }
           });
 
-          if (statsData?.success && statsData?.stats) {
-            actualStats = statsData.stats;
-            console.log(`Got actual stats:`, actualStats);
+          if (apifyData?.success && apifyData?.stats) {
+            actualStats = apifyData.stats;
+            console.log(`Got actual stats from Apify:`, actualStats);
           }
-        } catch (statsError) {
-          console.error('Failed to fetch profile stats:', statsError);
-          // Continue with estimates if profile scraping fails
+        } catch (apifyError) {
+          console.error('Failed to fetch Apify stats:', apifyError);
+          // Continue with estimates if Apify fails
         }
       }
       
@@ -597,6 +599,40 @@ export const ZillowAgentImporter = () => {
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="apify-mode" className="text-base font-semibold">
+                Use Apify for Accurate Stats
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Fetch real sales data from Zillow profiles ($2/1000 agents)
+              </p>
+            </div>
+            <Switch
+              id="apify-mode"
+              checked={useApify}
+              onCheckedChange={setUseApify}
+            />
+          </div>
+          
+          {useApify && (
+            <div className="space-y-2">
+              <Label htmlFor="apify-key">Apify API Key (optional)</Label>
+              <Input
+                id="apify-key"
+                type="password"
+                placeholder="Leave empty to use configured secret"
+                value={apifyApiKey}
+                onChange={(e) => setApifyApiKey(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Get your API key from <a href="https://console.apify.com/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Apify Console</a>
+              </p>
+            </div>
+          )}
         </div>
 
         <Button 
