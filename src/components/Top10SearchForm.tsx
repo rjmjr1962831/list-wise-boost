@@ -82,6 +82,7 @@ const ALL_STATES = [
 
 export const Top10SearchForm = () => {
   const navigate = useNavigate();
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedState, setSelectedState] = useState('');
@@ -141,6 +142,17 @@ export const Top10SearchForm = () => {
     }
   }, [stateInput]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setStateOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSearch = () => {
     if (!selectedState || !selectedCity || !selectedCategory) {
       toast.error('Please select state, city, and category');
@@ -165,49 +177,48 @@ export const Top10SearchForm = () => {
       </div>
       
       <div className="grid md:grid-cols-4 gap-4">
-        <Popover open={stateOpen} onOpenChange={setStateOpen}>
-          <PopoverTrigger asChild>
-            <Input
-              placeholder="Type state name..."
-              value={stateInput}
-              onChange={(e) => {
-                setStateInput(e.target.value);
-                setStateOpen(true);
-              }}
-              onFocus={() => setStateOpen(true)}
-              onBlur={() => setTimeout(() => setStateOpen(false), 200)}
-              className="bg-background"
-            />
-          </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-background" align="start">
-            <Command>
-              <CommandList>
-                <CommandEmpty>No state found.</CommandEmpty>
-                <CommandGroup>
-                  {filteredStates.map((state) => (
-                    <CommandItem
-                      key={state}
-                      value={state}
-                      onSelect={() => {
-                        setSelectedState(state);
-                        setStateInput(state);
-                        setStateOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedState === state ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {state}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </PopoverContent>
-        </Popover>
+        <div className="relative" ref={dropdownRef}>
+          <Input
+            placeholder="Enter State"
+            value={stateInput}
+            onChange={(e) => {
+              setStateInput(e.target.value);
+              setStateOpen(true);
+            }}
+            onFocus={() => setStateOpen(true)}
+            className="bg-background"
+          />
+          {stateOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-md border bg-background shadow-md max-h-60 overflow-auto">
+              <Command>
+                <CommandList>
+                  <CommandEmpty>No state found.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredStates.map((state) => (
+                      <CommandItem
+                        key={state}
+                        value={state}
+                        onSelect={() => {
+                          setSelectedState(state);
+                          setStateInput(state);
+                          setStateOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedState === state ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {state}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </div>
+          )}
+        </div>
 
         <Select 
           value={selectedCity} 
