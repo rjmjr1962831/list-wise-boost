@@ -49,13 +49,23 @@ export const ProfessionalCard = ({
   const isContactModalOpen = externalShowContactModal !== undefined ? externalShowContactModal : showContactModal;
 
   const handleWebsiteClick = () => {
+    const url = (() => {
+      let v = (professional.website || '').trim();
+      // Fix common malformed patterns
+      if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
+      if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
+      if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
+      if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+      return v;
+    })();
+
     trackEvent('agent_profile_click', {
       agent_name: professional.name,
       market,
-      destination_url: `https://${professional.website}`,
+      destination_url: url,
       agent_type: agentType
     });
-    
+
     trackEvent('contact_cta_click', {
       agent_name: professional.name,
       market,
@@ -257,7 +267,15 @@ export const ProfessionalCard = ({
                 <div className="flex items-center gap-2 text-sm">
                   <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                   <a
-                    href={`https://${professional.website}`}
+                    href={(() => {
+                      let v = (professional.website || '').trim();
+                      // Fix common malformed patterns
+                      if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
+                      if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
+                      if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
+                      if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+                      return v;
+                    })()}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-primary hover:underline agent-profile-link"

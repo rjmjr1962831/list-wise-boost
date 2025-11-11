@@ -481,7 +481,7 @@ export const ZillowAgentImporter = () => {
                             </p>
                             {agent.profileLink && (
                               <a 
-                                href={`https://www.zillow.com${agent.profileLink}`}
+                                href={agent.profileLink.startsWith('http') ? agent.profileLink : `https://www.zillow.com${agent.profileLink}`}
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="text-sm text-primary hover:underline"
