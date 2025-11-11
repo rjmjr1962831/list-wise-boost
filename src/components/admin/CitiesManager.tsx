@@ -64,11 +64,40 @@ const CitiesManager = () => {
         if (error) throw error;
         toast.success("City updated successfully");
       } else {
-        const { error } = await supabase
+        const { data: newCity, error } = await supabase
           .from("cities")
-          .insert([formData]);
+          .insert([formData])
+          .select()
+          .single();
         if (error) throw error;
+        
         toast.success("City created successfully");
+        
+        // Auto-import agents from Zillow in the background
+        if (newCity) {
+          toast.loading("Importing agents from Zillow...", { id: "zillow-import" });
+          
+          // Dynamic import to avoid circular dependencies
+          const { autoImportZillowAgents } = await import("@/utils/zillowAutoImport");
+          
+          const importResult = await autoImportZillowAgents(
+            newCity.id,
+            formData.name,
+            formData.state
+          );
+          
+          if (importResult.success) {
+            toast.success(
+              `Successfully imported ${importResult.imported} agents from Zillow`,
+              { id: "zillow-import" }
+            );
+          } else {
+            toast.error(
+              `Failed to import agents: ${importResult.errors.join(", ")}`,
+              { id: "zillow-import" }
+            );
+          }
+        }
       }
       setIsDialogOpen(false);
       resetForm();
