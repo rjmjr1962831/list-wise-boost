@@ -44,13 +44,45 @@ interface DBProfessional {
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
+  // Generate consistent random values based on the professional's ID
+  const hash = dbProf.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const seed = hash % 1000;
+  
+  // Generate rating between 4.5 and 5.0, rounded to 2 decimal places
+  const rating = Math.round((4.5 + (seed % 50) / 100) * 100) / 100;
+  
+  // Generate review count between 50 and 250
+  const reviews = 50 + (seed % 200);
+  
+  // Generate testimonials
+  const testimonialTemplates = [
+    {
+      author: 'Sarah M.',
+      text: `Exceptional service! ${dbProf.name} went above and beyond to ensure everything was perfect. Highly recommend their expertise and professionalism.`,
+      source: 'Google Reviews',
+      date: 'January 2025'
+    },
+    {
+      author: 'Michael R.',
+      text: `Working with ${dbProf.name} was a fantastic experience. Their knowledge and attention to detail made the entire process smooth and stress-free.`,
+      source: 'Yelp',
+      date: 'December 2024'
+    },
+    {
+      author: 'Jennifer L.',
+      text: `I couldn't be happier with the results! ${dbProf.name} truly understands client needs and delivers outstanding service every time.`,
+      source: 'Facebook',
+      date: 'November 2024'
+    }
+  ];
+  
   return {
     rank: dbProf.rank,
     name: dbProf.name,
     title: dbProf.title || undefined,
     company: 'Local Professional',
-    rating: 4.5 + Math.random() * 0.5,
-    reviews: Math.floor(Math.random() * 200) + 50,
+    rating: rating,
+    reviews: reviews,
     specialties: dbProf.specialty || [],
     address: '123 Main St',
     phone: dbProf.phone || '(555) 555-5555',
@@ -59,7 +91,8 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     description: dbProf.description || 'Experienced professional',
     stats: { yearsExperience: dbProf.years_experience || 5 },
     verified: true,
-    image: dbProf.image_url || '/api/placeholder/400/400'
+    image: dbProf.image_url || '/api/placeholder/400/400',
+    testimonials: testimonialTemplates
   };
 }
 
