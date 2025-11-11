@@ -14,47 +14,130 @@ import placeholderAgent from "@/assets/placeholder-agent.jpg";
 const MOCK_GILBERT_AGENTS = [
   {
     name: "Sarah Johnson",
+    screenName: "Sarah Johnson",
     businessName: "Keller Williams Realty",
-    phone: "(480) 555-0123",
+    phoneNumbers: {
+      cell: "(480) 555-0123",
+      business: "(480) 555-0124",
+      brokerage: null
+    },
     email: "sarah.johnson@kwaz.com",
-    profileUrl: "https://zillow.com/profile/sarah-johnson",
+    profilePhotoSrc: "https://photos.zillowstatic.com/fp/placeholder-agent.jpg",
+    url: "https://www.zillow.com/profile/sarah-johnson",
+    businessAddress: {
+      address1: "123 Main Street",
+      city: "Gilbert",
+      state: "AZ",
+      postalCode: "85296"
+    },
+    ratings: {
+      count: 42,
+      average: 4.8
+    },
     specialties: ["Luxury Homes", "First-Time Buyers"],
     yearsOfExperience: 12,
     description: "Specializing in Gilbert luxury homes with over a decade of experience."
   },
   {
     name: "Michael Chen",
+    screenName: "Michael Chen",
     businessName: "RE/MAX Fine Properties",
-    phone: "(480) 555-0456",
+    phoneNumbers: {
+      cell: "(480) 555-0456",
+      business: "(480) 555-0457",
+      brokerage: null
+    },
     email: "mchen@remax.com",
+    profilePhotoSrc: "https://photos.zillowstatic.com/fp/placeholder-agent.jpg",
+    url: "https://www.zillow.com/profile/michael-chen",
+    businessAddress: {
+      address1: "456 Oak Avenue",
+      city: "Gilbert",
+      state: "AZ",
+      postalCode: "85295"
+    },
+    ratings: {
+      count: 28,
+      average: 4.9
+    },
     specialties: ["Relocation", "Investment Properties"],
     yearsOfExperience: 8,
     description: "Expert in relocation and investment properties in the Gilbert area."
   },
   {
     name: "Jennifer Martinez",
+    screenName: "Jennifer Martinez",
     businessName: "HomeSmart",
-    phone: "(480) 555-0789",
+    phoneNumbers: {
+      cell: "(480) 555-0789",
+      business: null,
+      brokerage: "(480) 555-0790"
+    },
     email: "jennifer@homesmart.com",
-    profileUrl: "https://zillow.com/profile/jennifer-martinez",
+    profilePhotoSrc: "https://photos.zillowstatic.com/fp/placeholder-agent.jpg",
+    url: "https://www.zillow.com/profile/jennifer-martinez",
+    businessAddress: {
+      address1: "789 Pine Road",
+      city: "Gilbert",
+      state: "AZ",
+      postalCode: "85297"
+    },
+    ratings: {
+      count: 56,
+      average: 5.0
+    },
     specialties: ["New Construction", "Family Homes"],
     yearsOfExperience: 15,
     description: "Helping families find their dream homes in Gilbert since 2008."
   },
   {
     name: "David Thompson",
+    screenName: "David Thompson",
     businessName: "Coldwell Banker Realty",
-    phone: "(480) 555-0321",
+    phoneNumbers: {
+      cell: "(480) 555-0321",
+      business: "(480) 555-0322",
+      brokerage: null
+    },
+    email: "dthompson@coldwellbanker.com",
+    profilePhotoSrc: "https://photos.zillowstatic.com/fp/placeholder-agent.jpg",
+    url: "https://www.zillow.com/profile/david-thompson",
+    businessAddress: {
+      address1: "321 Elm Street",
+      city: "Gilbert",
+      state: "AZ",
+      postalCode: "85234"
+    },
+    ratings: {
+      count: 35,
+      average: 4.7
+    },
     specialties: ["Commercial", "Residential"],
     yearsOfExperience: 10,
     description: "Full-service real estate agent serving Gilbert and surrounding areas."
   },
   {
     name: "Lisa Anderson",
+    screenName: "Lisa Anderson",
     businessName: "Russ Lyon Sotheby's",
-    phone: "(480) 555-0654",
+    phoneNumbers: {
+      cell: "(480) 555-0654",
+      business: "(480) 555-0655",
+      brokerage: null
+    },
     email: "landerson@russlyon.com",
-    profileUrl: "https://zillow.com/profile/lisa-anderson",
+    profilePhotoSrc: "https://photos.zillowstatic.com/fp/placeholder-agent.jpg",
+    url: "https://www.zillow.com/profile/lisa-anderson",
+    businessAddress: {
+      address1: "654 Maple Drive",
+      city: "Gilbert",
+      state: "AZ",
+      postalCode: "85298"
+    },
+    ratings: {
+      count: 89,
+      average: 4.9
+    },
     specialties: ["Estate Sales", "Luxury Properties"],
     yearsOfExperience: 18,
     description: "Premier luxury real estate specialist in the East Valley."
@@ -172,7 +255,7 @@ export const ZillowAgentImporter = () => {
       const nextRank = existingPros && existingPros.length > 0 ? existingPros[0].rank + 1 : 1;
 
       // Get agent photo or use placeholder
-      let imageUrl = agent.photo || agent.photoUrl || agent.image || null;
+      let imageUrl = agent.profilePhotoSrc || agent.photo || agent.photoUrl || agent.image || null;
       
       // If no photo from Zillow, upload placeholder to storage
       if (!imageUrl) {
@@ -208,11 +291,11 @@ export const ZillowAgentImporter = () => {
 
       // Map Zillow data to our professional structure
       const professionalData = {
-        name: agent.name || agent.fullName || "Unknown Agent",
+        name: agent.name || agent.screenName || agent.fullName || "Unknown Agent",
         company: agent.businessName || agent.brokerageName || null,
-        phone: agent.phone || agent.phoneNumber || null,
+        phone: agent.phoneNumbers?.cell || agent.phoneNumbers?.business || agent.phone || agent.phoneNumber || null,
         email: agent.email || null,
-        website: agent.profileUrl || agent.website || null,
+        website: agent.url || agent.profileUrl || agent.website || null,
         image_url: imageUrl,
         specialty: agent.specialties || [],
         years_experience: agent.yearsOfExperience || agent.experience || null,
@@ -360,38 +443,100 @@ export const ZillowAgentImporter = () => {
               {agents.map((agent, index) => (
                 <Card key={index}>
                   <CardContent className="pt-6">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <p className="font-semibold">
-                          {agent.name || agent.fullName || "Unknown"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex gap-4">
+                      {/* Agent Photo */}
+                      {agent.profilePhotoSrc && (
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={agent.profilePhotoSrc} 
+                            alt={agent.name || agent.screenName}
+                            className="w-20 h-20 rounded-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Agent Details */}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-semibold text-lg">
+                              {agent.name || agent.screenName || "Unknown"}
+                            </p>
+                            {agent.url && (
+                              <a 
+                                href={agent.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary hover:underline"
+                              >
+                                View Zillow Profile →
+                              </a>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => importAgent(agent, index)}
+                            disabled={importingIds.has(index)}
+                          >
+                            {importingIds.has(index) ? (
+                              <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Importing...
+                              </>
+                            ) : (
+                              <>
+                                <Check className="mr-2 h-4 w-4" />
+                                Import
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                        
+                        <p className="text-sm font-medium text-muted-foreground">
                           {agent.businessName || agent.brokerageName}
                         </p>
-                        {agent.phone && (
-                          <p className="text-sm">{agent.phone}</p>
+                        
+                        {/* Contact Info */}
+                        <div className="space-y-1">
+                          {(agent.phoneNumbers?.cell || agent.phone) && (
+                            <p className="text-sm">
+                              📱 Cell: {agent.phoneNumbers?.cell || agent.phone}
+                            </p>
+                          )}
+                          {agent.phoneNumbers?.business && (
+                            <p className="text-sm">
+                              📞 Business: {agent.phoneNumbers.business}
+                            </p>
+                          )}
+                          {agent.email && (
+                            <p className="text-sm">
+                              ✉️ {agent.email}
+                            </p>
+                          )}
+                        </div>
+                        
+                        {/* Business Address */}
+                        {agent.businessAddress && (
+                          <p className="text-sm text-muted-foreground">
+                            📍 {agent.businessAddress.address1}
+                            {agent.businessAddress.address2 && `, ${agent.businessAddress.address2}`}
+                            , {agent.businessAddress.city}, {agent.businessAddress.state} {agent.businessAddress.postalCode}
+                          </p>
                         )}
-                        {agent.email && (
-                          <p className="text-sm text-muted-foreground">{agent.email}</p>
+                        
+                        {/* Ratings */}
+                        {agent.ratings && agent.ratings.count > 0 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="font-medium">⭐ {agent.ratings.average.toFixed(1)}</span>
+                            <span className="text-muted-foreground">
+                              ({agent.ratings.count} reviews)
+                            </span>
+                          </div>
                         )}
                       </div>
-                      <Button
-                        size="sm"
-                        onClick={() => importAgent(agent, index)}
-                        disabled={importingIds.has(index)}
-                      >
-                        {importingIds.has(index) ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Importing...
-                          </>
-                        ) : (
-                          <>
-                            <Check className="mr-2 h-4 w-4" />
-                            Import
-                          </>
-                        )}
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
