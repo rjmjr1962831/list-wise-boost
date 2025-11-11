@@ -7,7 +7,59 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Download, Check } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import placeholderAgent from "@/assets/placeholder-agent.jpg";
+
+// Mock data for testing
+const MOCK_GILBERT_AGENTS = [
+  {
+    name: "Sarah Johnson",
+    businessName: "Keller Williams Realty",
+    phone: "(480) 555-0123",
+    email: "sarah.johnson@kwaz.com",
+    profileUrl: "https://zillow.com/profile/sarah-johnson",
+    specialties: ["Luxury Homes", "First-Time Buyers"],
+    yearsOfExperience: 12,
+    description: "Specializing in Gilbert luxury homes with over a decade of experience."
+  },
+  {
+    name: "Michael Chen",
+    businessName: "RE/MAX Fine Properties",
+    phone: "(480) 555-0456",
+    email: "mchen@remax.com",
+    specialties: ["Relocation", "Investment Properties"],
+    yearsOfExperience: 8,
+    description: "Expert in relocation and investment properties in the Gilbert area."
+  },
+  {
+    name: "Jennifer Martinez",
+    businessName: "HomeSmart",
+    phone: "(480) 555-0789",
+    email: "jennifer@homesmart.com",
+    profileUrl: "https://zillow.com/profile/jennifer-martinez",
+    specialties: ["New Construction", "Family Homes"],
+    yearsOfExperience: 15,
+    description: "Helping families find their dream homes in Gilbert since 2008."
+  },
+  {
+    name: "David Thompson",
+    businessName: "Coldwell Banker Realty",
+    phone: "(480) 555-0321",
+    specialties: ["Commercial", "Residential"],
+    yearsOfExperience: 10,
+    description: "Full-service real estate agent serving Gilbert and surrounding areas."
+  },
+  {
+    name: "Lisa Anderson",
+    businessName: "Russ Lyon Sotheby's",
+    phone: "(480) 555-0654",
+    email: "landerson@russlyon.com",
+    profileUrl: "https://zillow.com/profile/lisa-anderson",
+    specialties: ["Estate Sales", "Luxury Properties"],
+    yearsOfExperience: 18,
+    description: "Premier luxury real estate specialist in the East Valley."
+  }
+];
 
 export const ZillowAgentImporter = () => {
   const [city, setCity] = useState("");
@@ -19,6 +71,7 @@ export const ZillowAgentImporter = () => {
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<string>("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+  const [testMode, setTestMode] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -60,22 +113,34 @@ export const ZillowAgentImporter = () => {
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-zillow-agents', {
-        body: { city: city.trim(), state: state.trim() }
-      });
-
-      if (error) throw error;
-
-      console.log('Zillow API response:', data);
+      let agentList = [];
       
-      // The structure will depend on your specific RapidAPI endpoint
-      // Adjust this parsing based on the actual response format
-      const agentList = Array.isArray(data) ? data : data.agents || data.results || [];
+      if (testMode) {
+        // Use mock data in test mode
+        console.log('Using mock Gilbert agents data');
+        agentList = MOCK_GILBERT_AGENTS;
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+      } else {
+        // Real API call
+        const { data, error } = await supabase.functions.invoke('fetch-zillow-agents', {
+          body: { city: city.trim(), state: state.trim() }
+        });
+
+        if (error) throw error;
+
+        console.log('Zillow API response:', data);
+        
+        // The structure will depend on your specific RapidAPI endpoint
+        // Adjust this parsing based on the actual response format
+        agentList = Array.isArray(data) ? data : data.agents || data.results || [];
+      }
       
       setAgents(agentList);
       toast({
         title: "Success",
-        description: `Found ${agentList.length} agents`,
+        description: `Found ${agentList.length} agents${testMode ? ' (Test Mode)' : ''}`,
       });
     } catch (error) {
       console.error('Error fetching agents:', error);
@@ -201,6 +266,19 @@ export const ZillowAgentImporter = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+          <div className="space-y-0.5">
+            <Label htmlFor="test-mode" className="text-base font-semibold">Test Mode</Label>
+            <p className="text-sm text-muted-foreground">
+              Use sample Gilbert agent data instead of calling the API
+            </p>
+          </div>
+          <Switch
+            id="test-mode"
+            checked={testMode}
+            onCheckedChange={setTestMode}
+          />
+        </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="city">City to Search</Label>
