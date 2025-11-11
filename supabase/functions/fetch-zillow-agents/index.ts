@@ -26,10 +26,9 @@ serve(async (req) => {
     
     console.log(`Fetching agents for ${location}`);
 
-    // Call Zillow Agent Data API - using search endpoint with location
-    // Based on docs: search by location with pagination
+    // Call Zillow Agent Data API - Agent Search requires a name; use wildcard
     const response = await fetch(
-      `https://${RAPIDAPI_HOST}/?data_type=search_agents&location=${encodeURIComponent(location)}&page_number=1`,
+      `https://${RAPIDAPI_HOST}/?data_type=search_agents&name=*&location=${encodeURIComponent(location)}&page_number=1`,
       {
         method: 'GET',
         headers: {
