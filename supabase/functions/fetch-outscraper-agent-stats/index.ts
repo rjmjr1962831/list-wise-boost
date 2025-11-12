@@ -30,20 +30,19 @@ serve(async (req) => {
 
     console.log('Fetching Outscraper data for:', profileUrl);
 
-    // Use Zillow Search API with agent profile URL as query
-    const params = new URLSearchParams({
-      query: profileUrl,
-      limit: '1',
-      async: 'false', // Synchronous for immediate response
-    });
-
+    // Use Zillow Profiles API with agent profile URL
     const resp = await fetch(
-      `https://api.app.outscraper.com/zillow/search?${params.toString()}`,
+      'https://api.app.outscraper.com/zillow/profiles',
       {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'X-API-KEY': apiKey,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          query: [profileUrl],
+          async: false,
+        }),
       }
     );
 
@@ -63,33 +62,31 @@ serve(async (req) => {
     const data = await resp.json();
     console.log('Outscraper response:', JSON.stringify(data, null, 2));
 
-    // Response structure: { data: [{ query: "...", listings: [...] }] }
-    const queryResult = Array.isArray(data?.data) ? data.data[0] : null;
-    const listings = Array.isArray(queryResult?.listings) ? queryResult.listings : [];
+    // Response structure: { data: [{ agent_profile_name, agent_profile_for_sale, ... }] }
+    const profiles = Array.isArray(data?.data) ? data.data : [];
 
-    if (listings.length === 0) {
+    if (profiles.length === 0) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'No listings found for this agent',
+          error: 'No profile found for this agent',
           stats: null,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get agent stats from the first listing's agent profile
-    const firstListing = listings[0];
-    const agent = firstListing?.agent_profile || {};
+    // Get agent stats from the first profile
+    const profile = profiles[0];
 
     const stats = {
-      forSale: toInt(agent.for_sale ?? agent.agent_profile_for_sale),
-      sold: toInt(agent.total_sales ?? agent.agent_profile_total_sales),
-      forRent: toInt(agent.for_rent ?? agent.agent_profile_for_rent),
-      reviews: toInt(agent.reviews ?? agent.agent_profile_reviews),
-      currentListings: toInt(agent.for_sale ?? agent.agent_profile_for_sale),
-      totalSales: toInt(agent.total_sales ?? agent.agent_profile_total_sales),
-      yearsExperience: toInt(agent.years_of_experience ?? agent.agent_profile_years_of_experience),
+      forSale: toInt(profile.agent_profile_for_sale),
+      sold: toInt(profile.agent_profile_total_sales),
+      forRent: toInt(profile.agent_profile_for_rent),
+      reviews: toInt(profile.agent_profile_reviews),
+      currentListings: toInt(profile.agent_profile_for_sale),
+      totalSales: toInt(profile.agent_profile_total_sales),
+      yearsExperience: toInt(profile.agent_profile_years_of_experience),
     };
 
     console.log('Mapped stats:', stats);
@@ -99,7 +96,7 @@ serve(async (req) => {
         success: true,
         stats,
         source: 'outscraper',
-        rawData: agent,
+        rawData: profile,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
