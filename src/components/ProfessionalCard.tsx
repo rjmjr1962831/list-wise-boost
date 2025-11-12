@@ -418,7 +418,7 @@ export const ProfessionalCard = ({
                       rel="noopener noreferrer"
                       className="text-primary hover:underline agent-profile-link"
                       itemProp="url"
-                      onClick={(e) => { e.preventDefault(); handleWebsiteClick(); }}
+                      onClick={handleWebsiteClick}
                     >
                       Visit Website
                     </a>
