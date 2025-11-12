@@ -95,11 +95,12 @@ export const Top10SearchForm = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Fetch categories
+      // Fetch only real estate agent categories
       const { data: categoriesData, error: categoriesError } = await supabase
         .from('categories')
         .select('*')
         .eq('active', true)
+        .or('slug.eq.realtors,slug.eq.real-estate-agents')
         .order('name');
       
       if (!categoriesError && categoriesData) {
