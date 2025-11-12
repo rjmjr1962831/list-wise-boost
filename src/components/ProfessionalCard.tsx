@@ -312,6 +312,7 @@ export const ProfessionalCard = ({
                   );
 
                   const yearsExperience = (
+                    (professional.years_experience && professional.years_experience > 0) ? professional.years_experience :
                     (zillowStats?.yearsExperience && zillowStats.yearsExperience > 0) ? zillowStats.yearsExperience :
                     (Number(statFromObj(professional, 'stats.yearsExperience')) > 0 ? Number(statFromObj(professional, 'stats.yearsExperience')) :
                       Math.max(2, Math.round(reviews / 15)))
