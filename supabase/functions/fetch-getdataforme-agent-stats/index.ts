@@ -34,21 +34,25 @@ serve(async (req) => {
       );
     }
 
-    console.log('Starting GetDataForMe scraper for:', profileUrl);
+    console.log('Starting Apify zillow-agent-scraper for:', profileUrl);
 
-    // Start the actor run
-    const actorId = 'getdataforme/zillow-agents-reviews-scraper';
+    // Extract agent name from URL for search
+    const urlParts = profileUrl.split('/');
+    const agentSlug = urlParts[urlParts.length - 1];
+    const searchName = agentSlug.replace(/-/g, ' ');
+    
+    console.log('Searching for agent:', searchName);
+
+    // Start the actor run - this scraper searches by location
+    const actorId = 'scraped/zillow-agent-scraper';
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agent_url: profileUrl,
-          itemLimit: 50,
-          proxyConfiguration: {
-            useApifyProxy: false
-          }
+          location: 'Arizona', // Search broadly, then filter by URL
+          maxPages: 3 // Search more pages to find the agent
         })
       }
     );
@@ -112,46 +116,55 @@ serve(async (req) => {
     }
 
     const rawData = await resultsResponse.json();
-    console.log(`Got ${rawData.length} items from dataset`);
+    console.log(`Got ${rawData.length} agents from dataset`);
 
     if (!rawData || rawData.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, stats: null, reviews: [], message: 'No data found' }),
+        JSON.stringify({ success: true, stats: null, message: 'No data found' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Format the data
-    const firstItem = rawData[0];
+    // Find the matching agent by URL
+    const matchingAgent = rawData.find((agent: any) => {
+      const agentProfileUrl = agent['Profile Link'] || '';
+      return agentProfileUrl.toLowerCase().includes(agentSlug.toLowerCase());
+    });
+
+    if (!matchingAgent) {
+      console.log('No matching agent found for URL:', profileUrl);
+      return new Response(
+        JSON.stringify({ success: true, stats: null, message: 'Agent not found in results' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('Found matching agent:', matchingAgent['Full Name']);
     
+    // Format the data using the scraped/zillow-agent-scraper field names
     const formattedData = {
       success: true,
       stats: {
-        fullName: firstItem.agent_name || null,
-        brokerage: firstItem.company_name || firstItem.brokerage || null,
-        starRating: parseFloat(firstItem.agent_rating || firstItem.rating) || null,
-        totalReviews: rawData.length,
-        phoneNumber: firstItem.phone || firstItem.phone_number || null,
-        email: firstItem.email || null,
-        yearsExperience: firstItem.years_of_experience || null,
-        bio: firstItem.bio || firstItem.description || null,
-        specialties: firstItem.specialties || [],
-        currentListings: firstItem.current_listings || null,
-        totalSales: firstItem.total_sales || null,
+        fullName: matchingAgent['Full Name'] || null,
+        brokerage: matchingAgent['Business Name'] || null,
+        starRating: parseFloat(matchingAgent['Review Stars Rating']) || null,
+        totalReviews: parseInt(matchingAgent['Total Reviews']) || null,
+        phoneNumber: matchingAgent['Phone Number'] || null,
+        currentListings: null, // Not provided by this scraper
+        totalSales: parseInt(matchingAgent['Sale Count All Time']) || null,
+        salesLastYear: parseInt(matchingAgent['Sale Count Last Year']) || null,
+        yearsExperience: null, // Not provided by this scraper
+        priceRangeMin: parseInt(matchingAgent['Sale Price Range (Min)']) || null,
+        priceRangeMax: parseInt(matchingAgent['Sale Price Range (Max)']) || null,
+        isTopAgent: matchingAgent['Is Top Agent'] === 'TRUE' || matchingAgent['Is Top Agent'] === true,
+        isTeamLead: matchingAgent['Is Team Lead'] === 'TRUE' || matchingAgent['Is Team Lead'] === true,
+        profileUrl: matchingAgent['Profile Link'] || null,
+        location: matchingAgent['Location'] || null,
       },
-      reviews: rawData.map((review: any) => ({
-        reviewerName: review.reviewer_name || 'Anonymous',
-        text: review.review_text || review.review_comment || '',
-        date: review.review_date || review.date || '',
-        rating: parseFloat(review.rating) || 0,
-        dealType: review.deal_type || '',
-        propertyType: review.property_type || '',
-        verified: review.verified || false
-      })),
-      rawDataSample: firstItem // For debugging
+      rawDataSample: matchingAgent // For debugging
     };
 
-    console.log('Successfully formatted agent data with', formattedData.reviews.length, 'reviews');
+    console.log('Successfully formatted agent data for:', formattedData.stats.fullName);
 
     return new Response(
       JSON.stringify(formattedData),

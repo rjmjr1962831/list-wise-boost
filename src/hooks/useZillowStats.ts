@@ -38,13 +38,13 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
         
         if (data?.success && data.stats) {
           resolvedStats = {
-            forSale: data.stats.forSale || 0,
-            sold: data.stats.sold || 0,
-            forRent: data.stats.forRent || 0,
+            forSale: 0,
+            sold: data.stats.totalSales || 0,
+            forRent: 0,
             reviews: data.stats.totalReviews || 0,
-            currentListings: data.stats.currentListings || 0,
+            currentListings: 0, // Not provided by scraped/zillow-agent-scraper
             totalSales: data.stats.totalSales || 0,
-            yearsExperience: data.stats.yearsExperience || 0,
+            yearsExperience: 0, // Not provided by scraped/zillow-agent-scraper
           };
         }
 
