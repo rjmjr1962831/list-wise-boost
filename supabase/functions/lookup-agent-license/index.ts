@@ -377,19 +377,27 @@ async function searchFlorida(agentName: string): Promise<string | null> {
         const html = await response.text();
         console.log(`FL response HTML length: ${html.length}`);
         
-        // Florida license number patterns: SL#######, BK#######, or just 7 digits
+        // Try AI extraction for Florida since patterns are unreliable
+        const licenseNumber = await lookupWithAI(name, searchUrl, 'Florida');
+        if (licenseNumber) {
+          console.log(`Found FL license via AI for ${name}: ${licenseNumber}`);
+          return licenseNumber;
+        }
+        
+        // Fallback to pattern matching
         const patterns = [
           /\b(SL\d{7})\b/i,
           /\b(BK\d{7})\b/i,
           /License\s*(?:Number|#|No\.?)\s*:?\s*([A-Z]{2}\d{7})/i,
           /License\s*(?:Number|#|No\.?)\s*:?\s*(\d{7})/i,
           /\b([A-Z]{2}\d{7})\b/,
+          /detail\.asp\?id=(\d{7})/i, // License detail links
         ];
         
         for (const pattern of patterns) {
           const match = html.match(pattern);
           if (match && match[1]) {
-            console.log(`Found FL license for ${name}: ${match[1]}`);
+            console.log(`Found FL license via pattern for ${name}: ${match[1]}`);
             return match[1];
           }
         }
