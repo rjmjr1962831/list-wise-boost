@@ -14,9 +14,12 @@ interface LicenseLookupRequest {
 
 // Helper to extract individual names from team names
 function extractIndividualNames(agentName: string): string[] {
-  // Remove common team/group suffixes
+  // Remove common team/group and business suffixes
   const cleanName = agentName
     .replace(/\s+(Group|Team|Associates?|Real Estate.*|Realty.*|Top.*Agents?)$/i, '')
+    .replace(/\b(P\.?A\.?|P\.?L\.?L\.?C\.?|PLLC|P\.?C\.?|LLC|L\.?L\.?C\.?|Inc\.?|Incorporated|Corp\.?|Corporation|Co\.?|LLP|L\.?L\.?P\.?)\b/gi, '')
+    .replace(/\b(Real(?:tor|ty)|Properties|Homes?)\b/gi, '')
+    .replace(/[,.]/g, '')
     .trim();
   
   // Split on "and", "&" to get multiple people
@@ -96,6 +99,53 @@ Find the license number for ${agentName}. Return ONLY the license number or "NOT
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
       console.error('OpenAI API error:', aiResponse.status, errorText);
+      if (aiResponse.status === 429) {
+        console.log('OpenAI rate limited, retrying once after 3s...');
+        await new Promise((res) => setTimeout(res, 3000));
+        const retryResp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: [
+              {
+                role: 'system',
+                content: `You are an expert at extracting real estate license numbers from state licensing board websites. 
+Given an HTML page and an agent name, find and return ONLY the license number.
+Return "NOT_FOUND" if you cannot find a license number for this person.
+Only return the license number itself, nothing else - no explanations, no additional text.`
+              },
+              {
+                role: 'user',
+                content: `State: ${state}
+Agent Name: ${agentName}
+Portal URL: ${portalUrl}
+
+HTML Content (first 8000 chars):
+${html.substring(0, 8000)}
+
+Find the license number for ${agentName}. Return ONLY the license number or "NOT_FOUND".`
+              }
+            ],
+            max_tokens: 100,
+            temperature: 0.1,
+          }),
+        });
+        if (retryResp.ok) {
+          const retryData = await retryResp.json();
+          const retryLicense = retryData.choices[0]?.message?.content?.trim();
+          console.log(`AI retry response: ${retryLicense}`);
+          if (retryLicense && retryLicense !== 'NOT_FOUND' && retryLicense !== 'null' && retryLicense.length > 0) {
+            return retryLicense;
+          }
+        } else {
+          const retryText = await retryResp.text();
+          console.error('OpenAI API retry error:', retryResp.status, retryText);
+        }
+      }
       return null;
     }
 
@@ -378,18 +428,18 @@ async function searchFlorida(agentName: string): Promise<string | null> {
         console.log(`FL response HTML length: ${html.length}`);
         
         // 1) Follow detail links from search results and parse license
-        const linkMatches = [...html.matchAll(/href=\"([^\"']*(?:LicenseDetail|licDetail)\.asp\?[^\"']*id=(\d+)[^\"']*)\"/ig)];
+        const linkMatches = [...html.matchAll(/href=[\"']([^\"' ]*(?:Lic(?:ense)?Detail|licDetail|LicDetail|license_details|detail)\.asp[^\"' ]*)[\"']/ig)];
         for (const lm of linkMatches) {
           const href = lm[1];
-          const id = lm[2];
           const detailUrl = new URL(href, 'https://www.myfloridalicense.com/').toString();
-          console.log(`FL detail URL candidate: ${detailUrl} (id=${id})`);
+          console.log(`FL detail URL candidate: ${detailUrl}`);
 
           try {
             const dres = await fetch(detailUrl, {
               headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Referer': searchUrl,
               },
             });
             if (!dres.ok) continue;
@@ -397,7 +447,10 @@ async function searchFlorida(agentName: string): Promise<string | null> {
 
             // Ensure this detail page is for the right person
             const lc = dhtml.toLowerCase();
-            if (!lc.includes(firstName.toLowerCase()) || !lc.includes(lastName.toLowerCase())) {
+            const hasLast = lc.includes(lastName.toLowerCase());
+            const hasFirst = lc.includes(firstName.toLowerCase());
+            const hasInitial = lc.includes(`${firstName[0].toLowerCase()}. ${lastName.toLowerCase()}`) || lc.includes(`${firstName[0].toLowerCase()} ${lastName.toLowerCase()}`);
+            if (!hasLast || (!hasFirst && !hasInitial)) {
               continue;
             }
 
