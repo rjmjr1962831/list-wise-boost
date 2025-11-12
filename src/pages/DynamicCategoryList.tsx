@@ -199,16 +199,29 @@ export default function DynamicCategoryList() {
         // If no professionals found, auto-generate them
         if (!professionalsData || professionalsData.length === 0) {
           console.log('No professionals found, auto-generating...');
+          
+          // Keep loading state while we generate
+          setLoading(true);
           await generateAndInsertProfessionals(cityWithCamelCase, categoryData);
           
-          // Refetch after insertion
-          const { data: newProfsData } = await supabase
-            .from('professionals')
-            .select('*')
-            .eq('city_id', cityData.id)
-            .eq('category_id', categoryData.id)
-            .eq('active', true)
-            .order('rank');
+          // Refetch after insertion with retry logic
+          let retries = 3;
+          let newProfsData = null;
+          
+          while (retries > 0 && (!newProfsData || newProfsData.length === 0)) {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between retries
+            
+            const { data } = await supabase
+              .from('professionals')
+              .select('*')
+              .eq('city_id', cityData.id)
+              .eq('category_id', categoryData.id)
+              .eq('active', true)
+              .order('rank');
+            
+            newProfsData = data;
+            retries--;
+          }
 
           if (newProfsData && newProfsData.length > 0) {
             const converted = newProfsData.map(convertToProfessional);
@@ -246,8 +259,7 @@ export default function DynamicCategoryList() {
         
         if (result.success) {
           toast.success(`Imported ${result.imported} real estate agents from Zillow! Found ${result.licensesFound} license numbers.`);
-          // Refresh the page to show the new data
-          window.location.reload();
+          // Data will be fetched by the retry logic instead of reloading
         } else {
           toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
         }
