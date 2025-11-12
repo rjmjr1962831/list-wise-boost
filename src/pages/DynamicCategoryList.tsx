@@ -427,7 +427,8 @@ export default function DynamicCategoryList() {
             Finding Your Top 10
           </h2>
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Checking more than 200,000 data points to come up with the top10 recommendations.
+            Checking more than 200,000 data points<br />
+            to come up with your top10 recommendations.
           </p>
           <div className="mt-8 flex justify-center gap-2">
             <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></div>
