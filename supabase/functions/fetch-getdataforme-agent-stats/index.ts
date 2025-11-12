@@ -30,7 +30,7 @@ serve(async (req) => {
       );
     }
 
-    const apiKey = apifyApiKey || Deno.env.get('APIFY_API_TOKEN');
+    const apiKey = apifyApiKey || Deno.env.get('APIFY_API_KEY') || Deno.env.get('APIFY_API_TOKEN');
     if (!apiKey) {
       return new Response(
         JSON.stringify({ success: false, error: 'Apify API token not configured' }),
@@ -102,10 +102,14 @@ serve(async (req) => {
 
     if (!runResponse.ok) {
       const errorText = await runResponse.text();
-      console.error('Failed to start actor:', errorText);
+      console.error('Failed to start actor:', runResponse.status, runResponse.statusText, errorText);
+      let detail: any = undefined;
+      try { detail = JSON.parse(errorText); } catch {}
+      const errMsg = detail?.error?.message || errorText || runResponse.statusText;
+      const statusCode = runResponse.status || 500;
       return new Response(
-        JSON.stringify({ success: false, error: `Failed to start scraper: ${runResponse.statusText}` }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: `Failed to start scraper: ${errMsg}`, status: statusCode }),
+        { status: statusCode, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
