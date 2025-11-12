@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Star, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
 import { useZillowReviews } from '@/hooks/useZillowReviews';
 import { Skeleton } from './ui/skeleton';
@@ -10,7 +9,6 @@ interface ZillowReviewsSectionProps {
 
 export const ZillowReviewsSection = ({ zuid }: ZillowReviewsSectionProps) => {
   const { reviews, loading, error } = useZillowReviews(zuid);
-  const [showAllReviews, setShowAllReviews] = useState(false);
 
   if (loading) {
     return (
@@ -28,7 +26,8 @@ export const ZillowReviewsSection = ({ zuid }: ZillowReviewsSectionProps) => {
     return null;
   }
 
-  const displayedReviews = showAllReviews ? reviews.reviews : reviews.reviews.slice(0, 2);
+  const displayedReviews = reviews.reviews.slice(0, 10);
+  const zillowProfileUrl = `https://www.zillow.com/profile/${zuid}`;
 
   return (
     <div className="mt-4 pt-4 border-t">
@@ -100,24 +99,22 @@ export const ZillowReviewsSection = ({ zuid }: ZillowReviewsSectionProps) => {
         ))}
       </div>
       
-      {reviews.reviews.length > 2 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowAllReviews(!showAllReviews)}
-          className="mt-2 text-primary hover:text-primary/80"
+      <Button
+        variant="outline"
+        size="sm"
+        asChild
+        className="mt-4 w-full"
+      >
+        <a
+          href={zillowProfileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2"
         >
-          {showAllReviews ? (
-            <>
-              Show Less <ChevronUp className="ml-1 h-4 w-4" />
-            </>
-          ) : (
-            <>
-              Read More Reviews ({reviews.reviews.length - 2} more) <ChevronDown className="ml-1 h-4 w-4" />
-            </>
-          )}
-        </Button>
-      )}
+          Read All Zillow Reviews
+          <ExternalLink className="h-4 w-4" />
+        </a>
+      </Button>
     </div>
   );
 };
