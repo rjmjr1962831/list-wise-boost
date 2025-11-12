@@ -22,6 +22,7 @@ const cityData = [
   { name: "Glendale", state: "Arizona", stateAbbr: "AZ" },
   { name: "Gilbert", state: "Arizona", stateAbbr: "AZ" },
   { name: "Tempe", state: "Arizona", stateAbbr: "AZ" },
+  { name: "West Valley", state: "Arizona", stateAbbr: "AZ" },
   
   // Arkansas
   { name: "Little Rock", state: "Arkansas", stateAbbr: "AR" },
