@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin } from "lucide-react";
+import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import CitiesManager from "@/components/admin/CitiesManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
@@ -13,6 +13,7 @@ import { ZillowAgentImporter } from "@/components/admin/ZillowAgentImporter";
 import { ZipCodeManager } from "@/components/admin/ZipCodeManager";
 import { BioGenerator } from "@/components/admin/BioGenerator";
 import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
+import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -88,7 +89,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="cities" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8 max-w-6xl">
+          <TabsList className="grid w-full grid-cols-9 max-w-7xl">
             <TabsTrigger value="cities">
               <Building2 className="mr-2 h-4 w-4" />
               Cities
@@ -100,6 +101,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="professionals">
               <Users className="mr-2 h-4 w-4" />
               Professionals
+            </TabsTrigger>
+            <TabsTrigger value="add-agent">
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Agent
             </TabsTrigger>
             <TabsTrigger value="marketing">
               <FileText className="mr-2 h-4 w-4" />
@@ -133,6 +138,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="professionals" className="space-y-4">
             <ProfessionalsManager />
+          </TabsContent>
+
+          <TabsContent value="add-agent" className="space-y-4">
+            <ManualAgentAdder />
           </TabsContent>
 
           <TabsContent value="marketing" className="space-y-4">

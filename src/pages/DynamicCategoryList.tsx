@@ -448,15 +448,28 @@ export default function DynamicCategoryList() {
     return <Navigate to={`/${city.state_slug}/${city.slug}`} replace />;
   }
 
+  // Split professionals into Established (6+ years) and Emerging (≤5 years)
+  const establishedProfessionals = filteredProfessionals
+    .filter(p => (p.stats.yearsExperience as number) >= 6)
+    .slice(0, 5);
+  
+  const emergingProfessionals = filteredProfessionals
+    .filter(p => (p.stats.yearsExperience as number) <= 5)
+    .slice(0, 5);
+
   const sections: ListSection[] = [
-    {
-      title: `Top ${category.plural_name}`,
-      description: quizCompleted && categorySlug === 'top10realestateagents'
-        ? `Agents matched to your preferences in ${formatCityName(city)}`
-        : `The highest-rated ${category.plural_name.toLowerCase()} in ${formatCityName(city)}`,
-      items: filteredProfessionals,
+    ...(establishedProfessionals.length > 0 ? [{
+      title: "Established Players",
+      description: `Experienced ${category.plural_name.toLowerCase()} with 6+ years in ${formatCityName(city)}`,
+      items: establishedProfessionals,
       accentColor: "primary" as const
-    }
+    }] : []),
+    ...(emergingProfessionals.length > 0 ? [{
+      title: "Emerging Talent",
+      description: `Rising stars with 5 years or less experience in ${formatCityName(city)}`,
+      items: emergingProfessionals,
+      accentColor: "sunset-orange" as const
+    }] : [])
   ];
 
   const metadata = {
