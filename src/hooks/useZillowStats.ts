@@ -24,36 +24,17 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       setLoading(true);
 
       try {
-        // 1) Try Apify-based stats (most reliable, requires APIFY_API_KEY)
+        // Fetch stats directly from Zillow profile
         let resolvedStats: Partial<ZillowStats> | null = null;
-        try {
-          const { data: apifyData } = await supabase.functions.invoke('fetch-apify-agent-stats', {
-            body: { profileUrl }
-          });
-          if (apifyData?.success && apifyData.stats) {
-            resolvedStats = {
-              currentListings: apifyData.stats.currentListings ?? 0,
-              totalSales: apifyData.stats.totalSales ?? 0,
-              yearsExperience: apifyData.stats.yearsExperience ?? 0,
-              forSale: apifyData.stats.currentListings ?? 0,
-              sold: apifyData.stats.totalSales ?? 0,
-              forRent: 0,
-              reviews: 0,
-            } as ZillowStats;
-          }
-        } catch (e) {
-          // Ignore and fallback
-        }
-
-        // 2) Fallback to Zillow profile scrape (may get 403)
-        if (!resolvedStats) {
-          const { data, error: functionError } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-            body: { profileUrl, agentName }
-          });
-          if (functionError) throw functionError;
-          if (data?.success && data.stats) {
-            resolvedStats = data.stats as ZillowStats;
-          }
+        
+        const { data, error: functionError } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+          body: { profileUrl, agentName }
+        });
+        
+        if (functionError) throw functionError;
+        
+        if (data?.success && data.stats) {
+          resolvedStats = data.stats as ZillowStats;
         }
 
         if (resolvedStats) {
