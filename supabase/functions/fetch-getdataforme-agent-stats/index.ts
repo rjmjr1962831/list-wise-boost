@@ -6,8 +6,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface GetDataForMeRequest {
-  profileUrl: string;
+interface ApifyAgentRequest {
+  profileUrl?: string;
+  zipcode?: string;
+  agentName?: string;
   apifyApiKey?: string;
 }
 
@@ -17,11 +19,12 @@ serve(async (req) => {
   }
 
   try {
-    const { profileUrl, apifyApiKey }: GetDataForMeRequest = await req.json();
+    const { profileUrl, zipcode, agentName, apifyApiKey }: ApifyAgentRequest = await req.json();
 
-    if (!profileUrl) {
+    // Need either zipcode or profileUrl
+    if (!zipcode && !profileUrl) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Profile URL is required' }),
+        JSON.stringify({ success: false, error: 'Either zipcode or profileUrl is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -34,16 +37,41 @@ serve(async (req) => {
       );
     }
 
-    console.log('Starting Apify zillow-agent-scraper for:', profileUrl);
+    // Default zipcodes for Arizona cities (Gilbert area)
+    const DEFAULT_ZIPCODES: { [key: string]: string } = {
+      'gilbert': '85295',
+      'phoenix': '85004',
+      'scottsdale': '85251',
+      'chandler': '85224',
+      'mesa': '85201',
+      'tempe': '85281',
+      'peoria': '85382',
+      'glendale': '85301',
+    };
 
-    // Extract agent name from URL for search
-    const urlParts = profileUrl.split('/');
-    const agentSlug = urlParts[urlParts.length - 1];
-    const searchName = agentSlug.replace(/-/g, ' ');
-    
-    console.log('Searching for agent:', searchName);
+    let searchZipcode = zipcode;
+    let agentSlug = '';
+    let searchName = agentName;
 
-    // Start the actor run - this scraper searches by location
+    // If profileUrl provided, extract agent info
+    if (profileUrl) {
+      const urlParts = profileUrl.split('/');
+      agentSlug = urlParts[urlParts.length - 1].toLowerCase();
+      searchName = searchName || agentSlug.replace(/-/g, ' ');
+      
+      // If no zipcode provided, use default for Gilbert
+      if (!searchZipcode) {
+        searchZipcode = DEFAULT_ZIPCODES['gilbert'];
+        console.log(`No zipcode provided, using default Gilbert zipcode: ${searchZipcode}`);
+      }
+    }
+
+    console.log('Starting Apify zillow-agent-scraper with:', { 
+      zipcode: searchZipcode, 
+      agentName: searchName 
+    });
+
+    // Start the actor run - CRITICAL: Use zipcode parameter, not location!
     const actorId = 'scraped/zillow-agent-scraper';
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`,
@@ -51,8 +79,7 @@ serve(async (req) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          location: 'Arizona', // Search broadly, then filter by URL
-          maxPages: 3 // Search more pages to find the agent
+          zipcode: searchZipcode  // MUST use zipcode, not location!
         })
       }
     );
@@ -125,16 +152,35 @@ serve(async (req) => {
       );
     }
 
-    // Find the matching agent by URL
-    const matchingAgent = rawData.find((agent: any) => {
-      const agentProfileUrl = agent['Profile Link'] || '';
-      return agentProfileUrl.toLowerCase().includes(agentSlug.toLowerCase());
-    });
+    // Find the matching agent by URL or name
+    let matchingAgent;
+    
+    if (agentSlug) {
+      // Search by profile URL slug
+      matchingAgent = rawData.find((agent: any) => {
+        const agentProfileUrl = agent['Profile Link'] || '';
+        return agentProfileUrl.toLowerCase().includes(agentSlug);
+      });
+    } else if (searchName) {
+      // Search by name
+      matchingAgent = rawData.find((agent: any) => {
+        const fullName = agent['Full Name'] || '';
+        return fullName.toLowerCase().includes(searchName.toLowerCase());
+      });
+    } else {
+      // Return all agents if no filter
+      matchingAgent = rawData[0];
+    }
 
     if (!matchingAgent) {
-      console.log('No matching agent found for URL:', profileUrl);
+      console.log('No matching agent found');
       return new Response(
-        JSON.stringify({ success: true, stats: null, message: 'Agent not found in results' }),
+        JSON.stringify({ 
+          success: true, 
+          stats: null, 
+          message: 'Agent not found in results',
+          totalAgentsFound: rawData.length 
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
