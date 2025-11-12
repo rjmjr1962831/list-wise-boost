@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ExternalLink } from "lucide-react";
+import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2 } from "lucide-react";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
 import { ZillowReviewsSection } from "./ZillowReviewsSection";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -38,6 +40,8 @@ export const ProfessionalCard = ({
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [license, setLicense] = useState<string | null>(professional.license_number || null);
+  const [verifying, setVerifying] = useState(false);
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
   
@@ -83,6 +87,53 @@ export const ProfessionalCard = ({
     });
   };
 
+  const handleVerifyLicense = async () => {
+    try {
+      setVerifying(true);
+      trackEvent('license_verify_click', {
+        agent_name: professional.name,
+        market,
+        state: stateAbbr,
+      });
+
+      const { data, error } = await supabase.functions.invoke('lookup-agent-license', {
+        body: {
+          agentName: professional.name,
+          state: stateAbbr,
+          licensePortalUrl: licenseLookupUrl || undefined,
+        },
+      });
+
+      if (error) throw error;
+      const found: string | null = data?.licenseNumber || data?.license_number || null;
+
+      if (found) {
+        if (professional.id) {
+          const { error: updateError } = await supabase
+            .from('professionals')
+            .update({ license_number: found, license_verified_at: new Date().toISOString() })
+            .eq('id', professional.id);
+          if (updateError) {
+            console.error('Failed to save license:', updateError);
+          }
+        }
+        setLicense(found);
+        toast.success(`License verified: ${found}`);
+        trackEvent('badge_hover', {
+          badge_type: 'Verified',
+          agent_name: professional.name,
+          market
+        });
+      } else {
+        toast.error('No license found.');
+      }
+    } catch (e: any) {
+      console.error('License verification failed', e);
+      toast.error('Verification failed. Please try again later.');
+    } finally {
+      setVerifying(false);
+    }
+  };
   const handleBadgeHover = () => {
     if (professional.verified) {
       trackEvent('badge_hover', {

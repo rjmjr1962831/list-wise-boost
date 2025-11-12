@@ -46,6 +46,8 @@ interface DBProfessional {
   company: string | null;
   current_listings: number | null;
   total_sales: number | null;
+  license_number: string | null;
+  license_verified_at: string | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -96,6 +98,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
   stats.totalSales = totalSales;
   
   return {
+    id: dbProf.id,
     rank: dbProf.rank,
     name: dbProf.name,
     title: dbProf.title || undefined,
@@ -109,10 +112,12 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     website: dbProf.website || 'https://example.com',
     description: dbProf.description || '',
     stats,
-    verified: true,
+    verified: !!(dbProf.license_number || dbProf.license_verified_at),
     image: dbProf.image_url || '/api/placeholder/400/400',
     testimonials: testimonialTemplates,
-    zuid: dbProf.zuid || null
+    zuid: dbProf.zuid || null,
+    license_number: dbProf.license_number || undefined,
+    license_verified_at: dbProf.license_verified_at || undefined,
   };
 }
 

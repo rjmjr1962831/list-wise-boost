@@ -20,6 +20,7 @@ export interface Testimonial {
 export interface Professional {
   rank: number;
   name: string;
+  id?: string; // DB primary key for updates
   title?: string; // e.g., "DDS", "DMD"
   company: string; // brokerage, practice, firm, etc.
   rating: number;
