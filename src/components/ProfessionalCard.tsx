@@ -11,6 +11,7 @@ import { ZillowReviewsSection } from "./ZillowReviewsSection";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useZillowStats } from "@/hooks/useZillowStats";
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -47,6 +48,13 @@ export const ProfessionalCard = ({
   const [verifying, setVerifying] = useState(false);
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
+  
+  // Auto-fetch Zillow stats if we have a profile URL but missing data
+  const { stats: zillowStats } = useZillowStats(
+    professional.id,
+    professional.website,
+    professional.name
+  );
   
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
   
@@ -274,19 +282,22 @@ export const ProfessionalCard = ({
 
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
-                {(() => {
+              {(() => {
                   const reviews = professional.reviews || 0;
-                  const hasRealStats = professional.current_listings !== undefined && professional.current_listings > 0;
                   
-                  // Use real data if available, otherwise estimate from reviews
+                  // Priority: 1. Freshly fetched stats, 2. Stored stats, 3. Estimates
+                  const currentListings = zillowStats?.currentListings 
+                    || (professional.current_listings && professional.current_listings > 0 ? professional.current_listings : null)
+                    || Math.max(1, Math.round(reviews / 20));
+                    
+                  const totalSales = zillowStats?.totalSales
+                    || (professional.total_sales && professional.total_sales > 0 ? professional.total_sales : null)
+                    || Math.max(10, Math.round(reviews * 2.5));
+                  
                   const displayStats = {
-                    currentListings: hasRealStats 
-                      ? professional.current_listings 
-                      : Math.max(1, Math.round(reviews / 20)),
-                    salesLast12Mo: hasRealStats && professional.total_sales
-                      ? Math.max(5, Math.round(professional.total_sales / 10))
-                      : Math.max(5, Math.round(reviews / 5)),
-                    totalSales: professional.total_sales || Math.max(10, Math.round(reviews * 2.5)),
+                    currentListings,
+                    salesLast12Mo: Math.max(5, Math.round(totalSales / 10)),
+                    totalSales,
                     yearsExperience: Math.max(2, Math.round(reviews / 15))
                   };
 
