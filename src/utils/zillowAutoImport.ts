@@ -41,39 +41,15 @@ export async function autoImportZillowAgents(
       body: { city: cityName, state: state }
     });
 
-    let agentList: any[] = [];
-    
-    // If Zillow API fails or returns no data, use fallback generator
-    if (zillowError || !zillowData || (Array.isArray(zillowData) && zillowData.length === 0)) {
-      console.log('Zillow API unavailable, using fallback generator...');
-      result.errors.push('Zillow API unavailable - using generated listings');
-      
-      // Import and use the professional generator as fallback
-      const { generateProfessionals } = await import('./professionalGenerator');
-      const generated = generateProfessionals(
-        cityId,
-        cityName,
-        categoryId,
-        'top10realestateagents',
-        '555' // Default area code
-      );
-      
-      // Convert generated format to match Zillow format
-      agentList = generated.map((prof: any) => ({
-        fullName: prof.name,
-        businessName: prof.company,
-        phoneNumber: prof.phone,
-        profileLink: prof.website,
-        description: prof.description,
-        profilePhotoSrc: prof.image_url,
-        zuid: null
-      }));
-    } else {
-      agentList = Array.isArray(zillowData) ? zillowData : [];
+    if (zillowError) {
+      result.errors.push(`Zillow API error: ${zillowError.message}`);
+      return result;
     }
+
+    const agentList = Array.isArray(zillowData) ? zillowData : [];
     
     if (agentList.length === 0) {
-      result.errors.push('No agents available to import');
+      result.errors.push('No agents found from Zillow');
       return result;
     }
 

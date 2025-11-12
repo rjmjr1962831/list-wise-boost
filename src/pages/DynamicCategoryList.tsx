@@ -258,10 +258,7 @@ export default function DynamicCategoryList() {
         );
         
         if (result.success) {
-          const message = result.errors.some(e => e.includes('Zillow API unavailable'))
-            ? `Created ${result.imported} real estate agent listings!`
-            : `Imported ${result.imported} real estate agents from Zillow! Found ${result.licensesFound} license numbers.`;
-          toast.success(message);
+          toast.success(`Imported ${result.imported} real estate agents from Zillow! Found ${result.licensesFound} license numbers.`);
           // Data will be fetched by the retry logic instead of reloading
         } else {
           toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
