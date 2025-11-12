@@ -24,17 +24,25 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       setLoading(true);
 
       try {
-        // Fetch stats directly from Zillow profile
+        // Fetch stats from Apify API
         let resolvedStats: Partial<ZillowStats> | null = null;
         
-        const { data, error: functionError } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-          body: { profileUrl, agentName }
+        const { data, error: functionError } = await supabase.functions.invoke('fetch-apify-agent-stats', {
+          body: { profileUrl }
         });
         
         if (functionError) throw functionError;
         
         if (data?.success && data.stats) {
-          resolvedStats = data.stats as ZillowStats;
+          resolvedStats = {
+            currentListings: data.stats.currentListings || 0,
+            totalSales: data.stats.totalSales || 0,
+            forSale: data.stats.currentListings || 0,
+            sold: data.stats.totalSales || 0,
+            forRent: 0,
+            reviews: 0,
+            yearsExperience: data.stats.yearsExperience || 0
+          };
         }
 
         if (resolvedStats) {
