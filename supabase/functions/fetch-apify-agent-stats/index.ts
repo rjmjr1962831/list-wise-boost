@@ -134,13 +134,26 @@ serve(async (req) => {
 
     // Choose the most relevant result: exact URL match, then summary with sales stats, else first
     const screenName = (profileUrl.match(/profile\/([^\/?#]+)/i)?.[1] || '').toLowerCase();
-    const byExactUrl = results.find((r: any) => typeof r.url === 'string' && r.url.toLowerCase() === profileUrl.toLowerCase());
-    const byScreenName = !byExactUrl && screenName
-      ? results.find((r: any) => typeof r.url === 'string' && r.url.toLowerCase().endsWith(`/profile/${screenName}`))
-      : null;
-    const bySalesStats = results.find((r: any) => r && (r.agentSalesStats || r.forSaleListings || r.pastSales));
 
-    const agentData = (byExactUrl || byScreenName || bySalesStats || results[0]) ?? {};
+    // Prefer items that actually contain stats; skip error-only records
+    const isStatsItem = (r: any) => r && !r.error && (
+      r.agentSalesStats || r.forSaleListings || r.pastSales ||
+      r.salesCount != null || r.totalSales != null ||
+      (Array.isArray(r.for_sale_listings) && r.for_sale_listings.length)
+    );
+
+    const byExactUrlWithStats = results.find((r: any) =>
+      typeof r.url === 'string' && r.url.toLowerCase() === profileUrl.toLowerCase() && isStatsItem(r)
+    );
+
+    const byScreenNameWithStats = !byExactUrlWithStats && screenName
+      ? results.find((r: any) => typeof r.url === 'string' && r.url.toLowerCase().endsWith(`/profile/${screenName}`) && isStatsItem(r))
+      : null;
+
+    const anyStatsItem = results.find(isStatsItem);
+    const firstNonError = results.find((r: any) => r && !r.error);
+
+    const agentData = (byExactUrlWithStats || anyStatsItem || byScreenNameWithStats || firstNonError || results[0]) ?? {};
     console.log('Selected Apify item. Keys:', Object.keys(agentData));
 
     // Helper to safely parse various date formats

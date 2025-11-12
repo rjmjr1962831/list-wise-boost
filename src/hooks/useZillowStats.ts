@@ -45,6 +45,28 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
           };
         }
 
+        // If Apify returned no meaningful stats, fall back to Outscraper
+        const isMeaningful = (s: Partial<ZillowStats> | null) => !!s && (
+          (s.currentListings ?? 0) > 0 || (s.forSale ?? 0) > 0 || (s.totalSales ?? 0) > 0 || (s.sold ?? 0) > 0
+        );
+        
+        if (!isMeaningful(resolvedStats)) {
+          const { data: fallback, error: fbErr } = await supabase.functions.invoke('fetch-outscraper-agent-stats', {
+            body: { profileUrl }
+          });
+          if (!fbErr && fallback?.success && fallback.stats) {
+            resolvedStats = {
+              forSale: fallback.stats.forSale ?? 0,
+              sold: fallback.stats.sold ?? 0,
+              forRent: fallback.stats.forRent ?? 0,
+              reviews: fallback.stats.reviews ?? 0,
+              currentListings: fallback.stats.currentListings ?? 0,
+              totalSales: fallback.stats.totalSales ?? 0,
+              yearsExperience: fallback.stats.yearsExperience ?? 0,
+            };
+          }
+        }
+
         if (resolvedStats) {
           setStats(resolvedStats as ZillowStats);
 
