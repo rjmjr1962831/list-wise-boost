@@ -31,7 +31,7 @@ export const useZillowReviews = (zuid: string | null) => {
 
       try {
         const { data, error: functionError } = await supabase.functions.invoke('fetch-zillow-reviews', {
-          body: { zuid, pageNumber: 1 }
+          body: { zuid, pageNumber: 1, pageSize: 10 }
         });
 
         if (functionError) throw functionError;
