@@ -283,11 +283,11 @@ export const ProfessionalCard = ({
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
               {(() => {
-                  const reviews = professional.reviews || 0;
+                  const reviews = (zillowStats as any)?.reviews ?? professional.reviews ?? 0;
                   
                   // Priority: 1) Freshly fetched stats (preserve 0), 2) Stored stats (preserve 0), 3) Conservative estimate
                   const currentListingsRaw = (zillowStats?.currentListings ?? professional.current_listings);
-                  const totalSalesRaw = (zillowStats?.totalSales ?? professional.total_sales);
+                  const totalSalesRaw = (zillowStats?.totalSales ?? zillowStats?.sold ?? professional.total_sales);
 
                   const currentListings = currentListingsRaw ?? Math.max(1, Math.round(reviews / 20));
                   const totalSales = totalSalesRaw ?? Math.max(10, Math.round(reviews * 2.5));

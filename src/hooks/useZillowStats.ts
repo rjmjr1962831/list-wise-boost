@@ -24,18 +24,37 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       setLoading(true);
 
       try {
-        // Fetch stats from Apify API
+        // Try direct Zillow scraper first, then fall back to Apify
         let resolvedStats: Partial<ZillowStats> | null = null;
         
-        const { data, error: functionError } = await supabase.functions.invoke('fetch-apify-agent-stats', {
-          body: { profileUrl }
+        // 1) Direct Zillow profile scraper
+        const { data: directData, error: directErr } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+          body: { profileUrl, agentName }
         });
         
-        if (functionError) throw functionError;
+        if (!directErr && directData?.success && directData.stats) {
+          resolvedStats = {
+            forSale: directData.stats.forSale ?? directData.stats.currentListings ?? 0,
+            sold: directData.stats.sold ?? directData.stats.totalSales ?? 0,
+            forRent: directData.stats.forRent ?? 0,
+            reviews: directData.stats.reviews ?? 0,
+            currentListings: directData.stats.currentListings ?? directData.stats.forSale ?? 0,
+            totalSales: directData.stats.totalSales ?? directData.stats.sold ?? 0,
+            yearsExperience: directData.stats.yearsExperience ?? 0,
+          };
+        }
         
-        if (data?.success && data.stats) {
-          // Preserve all fields from backend (e.g., salesLast12Months)
-          resolvedStats = data.stats as any;
+        // 2) Fallback to Apify actor if needed
+        if (!resolvedStats) {
+          const { data: apifyData, error: apifyErr } = await supabase.functions.invoke('fetch-apify-agent-stats', {
+            body: { profileUrl }
+          });
+          
+          if (!apifyErr && apifyData?.success && apifyData.stats) {
+            resolvedStats = apifyData.stats as any;
+          } else if (apifyErr) {
+            throw apifyErr;
+          }
         }
 
         if (resolvedStats) {
