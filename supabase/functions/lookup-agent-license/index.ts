@@ -12,6 +12,23 @@ interface LicenseLookupRequest {
   licensePortalUrl: string;
 }
 
+// Helper to extract individual names from team names
+function extractIndividualNames(agentName: string): string[] {
+  // Remove common team/group suffixes
+  const cleanName = agentName
+    .replace(/\s+(Group|Team|Associates?|Real Estate.*|Realty.*|Top.*Agents?|and\s+Associates)$/i, '')
+    .trim();
+  
+  // Split on "and" to get multiple people
+  const names = cleanName.split(/\s+and\s+/i);
+  
+  return names.map(name => name.trim()).filter(name => {
+    // Filter out very short names or obvious non-person names
+    const words = name.split(/\s+/);
+    return words.length >= 2 && words.length <= 4 && !/Group|Team|Inc|LLC/i.test(name);
+  });
+}
+
 // Use AI to intelligently parse any state license portal
 async function lookupWithAI(agentName: string, portalUrl: string, state: string): Promise<string | null> {
   const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
@@ -132,22 +149,48 @@ async function searchArizona(agentName: string): Promise<string | null> {
 
 async function searchCalifornia(agentName: string): Promise<string | null> {
   try {
-    const [lastName, firstName] = agentName.split(' ').reverse();
-    const searchUrl = `https://www2.dre.ca.gov/PublicASP/pplinfo.asp?License_id=&firstname=${encodeURIComponent(firstName || '')}&lastname=${encodeURIComponent(lastName || '')}`;
+    // Extract individual names if it's a team
+    const individualNames = extractIndividualNames(agentName);
+    console.log(`Searching CA for individuals: ${JSON.stringify(individualNames)}`);
     
-    const response = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
+    // Try each individual name
+    for (const name of individualNames) {
+      const nameParts = name.split(/\s+/);
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+      
+      if (!firstName || !lastName) continue;
+      
+      console.log(`Trying CA search: ${firstName} ${lastName}`);
+      const searchUrl = `https://www2.dre.ca.gov/PublicASP/pplinfo.asp?License_id=&firstname=${encodeURIComponent(firstName)}&lastname=${encodeURIComponent(lastName)}`;
+      
+      const response = await fetch(searchUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+      });
 
-    if (!response.ok) return null;
+      if (!response.ok) continue;
 
-    const html = await response.text();
+      const html = await response.text();
+      
+      // California license numbers are typically 8 digits, sometimes with 01 or 02 prefix
+      const licensePatterns = [
+        /License\s*#?\s*:?\s*0?([12]\d{7})/i,
+        /License\s*#?\s*:?\s*(\d{8})/i,
+        /DRE\s*#?\s*:?\s*0?([12]\d{7})/i,
+      ];
+      
+      for (const pattern of licensePatterns) {
+        const licenseMatch = html.match(pattern);
+        if (licenseMatch) {
+          console.log(`Found CA license for ${name}: ${licenseMatch[1]}`);
+          return licenseMatch[1];
+        }
+      }
+    }
     
-    // California license numbers are typically 8 digits preceded by "01" or "02"
-    const licenseMatch = html.match(/License\s*#?\s*:?\s*(\d{8})/i);
-    return licenseMatch ? licenseMatch[1] : null;
+    return null;
   } catch (error) {
     console.error('California search error:', error);
     return null;
@@ -287,9 +330,9 @@ serve(async (req) => {
       licenseNumber = await lookupWithAI(agentName, licensePortalUrl, state);
     }
 
-    // Fallback to state-specific scrapers if AI fails
+    // Try state-specific scrapers (skip AI for now as it's not working well)
     if (!licenseNumber) {
-      console.log('AI lookup failed, trying state-specific scraper...');
+      console.log('Trying state-specific scraper...');
       switch (state.toUpperCase()) {
         case 'AZ':
         case 'ARIZONA':
