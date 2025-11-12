@@ -450,11 +450,17 @@ export default function DynamicCategoryList() {
 
   // Split professionals into Established (6+ years) and Emerging (≤5 years)
   const establishedProfessionals = filteredProfessionals
-    .filter(p => (p.stats.yearsExperience as number) >= 6)
+    .filter(p => {
+      const years = p.stats.yearsExperience as number;
+      return years && years >= 6;
+    })
     .slice(0, 5);
   
   const emergingProfessionals = filteredProfessionals
-    .filter(p => (p.stats.yearsExperience as number) <= 5)
+    .filter(p => {
+      const years = p.stats.yearsExperience as number;
+      return years && years <= 5;
+    })
     .slice(0, 5);
 
   const sections: ListSection[] = [
