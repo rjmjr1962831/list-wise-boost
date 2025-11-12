@@ -1,102 +1,102 @@
-City,State,State Abbreviation
-Birmingham,Alabama,AL
-Montgomery,Alabama,AL
-Mobile,Alabama,AL
-Huntsville,Alabama,AL
-Tuscaloosa,Alabama,AL
-Fairbanks,Alaska,AK
-Juneau,Alaska,AK
-Chandler,Arizona,AZ
-Tempe,Arizona,AZ
-West Valley,Arizona,AZ
-Little Rock,Arkansas,AR
-Fort Smith,Arkansas,AR
-Fayetteville,Arkansas,AR
-Fort Collins,Colorado,CO
-Bridgeport,Connecticut,CT
-New Haven,Connecticut,CT
-Stamford,Connecticut,CT
-Hartford,Connecticut,CT
-Wilmington,Delaware,DE
-Dover,Delaware,DE
-Miami,Florida,FL
-St. Petersburg,Florida,FL
-Hialeah,Florida,FL
-Tallahassee,Florida,FL
-Fort Lauderdale,Florida,FL
-Port St. Lucie,Florida,FL
-Cape Coral,Florida,FL
-Pembroke Pines,Florida,FL
-Augusta,Georgia,GA
-Columbus,Georgia,GA
-Savannah,Georgia,GA
-Athens,Georgia,GA
-Boise,Idaho,ID
-Meridian,Idaho,ID
-Nampa,Idaho,ID
-Aurora,Illinois,IL
-Naperville,Illinois,IL
-Joliet,Illinois,IL
-Rockford,Illinois,IL
-Evansville,Indiana,IN
-South Bend,Indiana,IN
-Des Moines,Iowa,IA
-Cedar Rapids,Iowa,IA
-Davenport,Iowa,IA
-Overland Park,Kansas,KS
-Kansas City,Kansas,KS
-Baton Rouge,Louisiana,LA
-Shreveport,Louisiana,LA
-Portland,Maine,ME
-Worcester,Massachusetts,MA
-Springfield,Massachusetts,MA
-Grand Rapids,Michigan,MI
-Warren,Michigan,MI
-Sterling Heights,Michigan,MI
-Ann Arbor,Michigan,MI
-Rochester,Minnesota,MN
-Jackson,Mississippi,MS
-Gulfport,Mississippi,MS
-Springfield,Missouri,MO
-Billings,Montana,MT
-Missoula,Montana,MT
-Manchester,New Hampshire,NH
-Nashua,New Hampshire,NH
-Paterson,New Jersey,NJ
-Elizabeth,New Jersey,NJ
-Las Cruces,New Mexico,NM
-Rochester,New York,NY
-Yonkers,New York,NY
-Syracuse,New York,NY
-Greensboro,North Carolina,NC
-Fayetteville,North Carolina,NC
-Fargo,North Dakota,ND
-Bismarck,North Dakota,ND
-Cincinnati,Ohio,OH
-Akron,Ohio,OH
-Norman,Oklahoma,OK
-Eugene,Oregon,OR
-Salem,Oregon,OR
-Allentown,Pennsylvania,PA
-Providence,Rhode Island,RI
-Columbia,South Carolina,SC
-Charleston,South Carolina,SC
-North Charleston,South Carolina,SC
-Sioux Falls,South Dakota,SD
-Rapid City,South Dakota,SD
-Knoxville,Tennessee,TN
-Chattanooga,Tennessee,TN
-Irving,Texas,TX
-Salt Lake City,Utah,UT
-West Valley City,Utah,UT
-Provo,Utah,UT
-Burlington,Vermont,VT
-Norfolk,Virginia,VA
-Richmond,Virginia,VA
-Spokane,Washington,WA
-Tacoma,Washington,WA
-Charleston,West Virginia,WV
-Huntington,West Virginia,WV
-Green Bay,Wisconsin,WI
-Cheyenne,Wyoming,WY
-Casper,Wyoming,WY
+City with State,City,State,State Abbreviation
+"Birmingham, Alabama",Birmingham,Alabama,AL
+"Montgomery, Alabama",Montgomery,Alabama,AL
+"Mobile, Alabama",Mobile,Alabama,AL
+"Huntsville, Alabama",Huntsville,Alabama,AL
+"Tuscaloosa, Alabama",Tuscaloosa,Alabama,AL
+"Fairbanks, Alaska",Fairbanks,Alaska,AK
+"Juneau, Alaska",Juneau,Alaska,AK
+"Chandler, Arizona",Chandler,Arizona,AZ
+"Tempe, Arizona",Tempe,Arizona,AZ
+"West Valley, Arizona",West Valley,Arizona,AZ
+"Little Rock, Arkansas",Little Rock,Arkansas,AR
+"Fort Smith, Arkansas",Fort Smith,Arkansas,AR
+"Fayetteville, Arkansas",Fayetteville,Arkansas,AR
+"Fort Collins, Colorado",Fort Collins,Colorado,CO
+"Bridgeport, Connecticut",Bridgeport,Connecticut,CT
+"New Haven, Connecticut",New Haven,Connecticut,CT
+"Stamford, Connecticut",Stamford,Connecticut,CT
+"Hartford, Connecticut",Hartford,Connecticut,CT
+"Wilmington, Delaware",Wilmington,Delaware,DE
+"Dover, Delaware",Dover,Delaware,DE
+"Miami, Florida",Miami,Florida,FL
+"St. Petersburg, Florida",St. Petersburg,Florida,FL
+"Hialeah, Florida",Hialeah,Florida,FL
+"Tallahassee, Florida",Tallahassee,Florida,FL
+"Fort Lauderdale, Florida",Fort Lauderdale,Florida,FL
+"Port St. Lucie, Florida",Port St. Lucie,Florida,FL
+"Cape Coral, Florida",Cape Coral,Florida,FL
+"Pembroke Pines, Florida",Pembroke Pines,Florida,FL
+"Augusta, Georgia",Augusta,Georgia,GA
+"Columbus, Georgia",Columbus,Georgia,GA
+"Savannah, Georgia",Savannah,Georgia,GA
+"Athens, Georgia",Athens,Georgia,GA
+"Boise, Idaho",Boise,Idaho,ID
+"Meridian, Idaho",Meridian,Idaho,ID
+"Nampa, Idaho",Nampa,Idaho,ID
+"Aurora, Illinois",Aurora,Illinois,IL
+"Naperville, Illinois",Naperville,Illinois,IL
+"Joliet, Illinois",Joliet,Illinois,IL
+"Rockford, Illinois",Rockford,Illinois,IL
+"Evansville, Indiana",Evansville,Indiana,IN
+"South Bend, Indiana",South Bend,Indiana,IN
+"Des Moines, Iowa",Des Moines,Iowa,IA
+"Cedar Rapids, Iowa",Cedar Rapids,Iowa,IA
+"Davenport, Iowa",Davenport,Iowa,IA
+"Overland Park, Kansas",Overland Park,Kansas,KS
+"Kansas City, Kansas",Kansas City,Kansas,KS
+"Baton Rouge, Louisiana",Baton Rouge,Louisiana,LA
+"Shreveport, Louisiana",Shreveport,Louisiana,LA
+"Portland, Maine",Portland,Maine,ME
+"Worcester, Massachusetts",Worcester,Massachusetts,MA
+"Springfield, Massachusetts",Springfield,Massachusetts,MA
+"Grand Rapids, Michigan",Grand Rapids,Michigan,MI
+"Warren, Michigan",Warren,Michigan,MI
+"Sterling Heights, Michigan",Sterling Heights,Michigan,MI
+"Ann Arbor, Michigan",Ann Arbor,Michigan,MI
+"Rochester, Minnesota",Rochester,Minnesota,MN
+"Jackson, Mississippi",Jackson,Mississippi,MS
+"Gulfport, Mississippi",Gulfport,Mississippi,MS
+"Springfield, Missouri",Springfield,Missouri,MO
+"Billings, Montana",Billings,Montana,MT
+"Missoula, Montana",Missoula,Montana,MT
+"Manchester, New Hampshire",Manchester,New Hampshire,NH
+"Nashua, New Hampshire",Nashua,New Hampshire,NH
+"Paterson, New Jersey",Paterson,New Jersey,NJ
+"Elizabeth, New Jersey",Elizabeth,New Jersey,NJ
+"Las Cruces, New Mexico",Las Cruces,New Mexico,NM
+"Rochester, New York",Rochester,New York,NY
+"Yonkers, New York",Yonkers,New York,NY
+"Syracuse, New York",Syracuse,New York,NY
+"Greensboro, North Carolina",Greensboro,North Carolina,NC
+"Fayetteville, North Carolina",Fayetteville,North Carolina,NC
+"Fargo, North Dakota",Fargo,North Dakota,ND
+"Bismarck, North Dakota",Bismarck,North Dakota,ND
+"Cincinnati, Ohio",Cincinnati,Ohio,OH
+"Akron, Ohio",Akron,Ohio,OH
+"Norman, Oklahoma",Norman,Oklahoma,OK
+"Eugene, Oregon",Eugene,Oregon,OR
+"Salem, Oregon",Salem,Oregon,OR
+"Allentown, Pennsylvania",Allentown,Pennsylvania,PA
+"Providence, Rhode Island",Providence,Rhode Island,RI
+"Columbia, South Carolina",Columbia,South Carolina,SC
+"Charleston, South Carolina",Charleston,South Carolina,SC
+"North Charleston, South Carolina",North Charleston,South Carolina,SC
+"Sioux Falls, South Dakota",Sioux Falls,South Dakota,SD
+"Rapid City, South Dakota",Rapid City,South Dakota,SD
+"Knoxville, Tennessee",Knoxville,Tennessee,TN
+"Chattanooga, Tennessee",Chattanooga,Tennessee,TN
+"Irving, Texas",Irving,Texas,TX
+"Salt Lake City, Utah",Salt Lake City,Utah,UT
+"West Valley City, Utah",West Valley City,Utah,UT
+"Provo, Utah",Provo,Utah,UT
+"Burlington, Vermont",Burlington,Vermont,VT
+"Norfolk, Virginia",Norfolk,Virginia,VA
+"Richmond, Virginia",Richmond,Virginia,VA
+"Spokane, Washington",Spokane,Washington,WA
+"Tacoma, Washington",Tacoma,Washington,WA
+"Charleston, West Virginia",Charleston,West Virginia,WV
+"Huntington, West Virginia",Huntington,West Virginia,WV
+"Green Bay, Wisconsin",Green Bay,Wisconsin,WI
+"Cheyenne, Wyoming",Cheyenne,Wyoming,WY
+"Casper, Wyoming",Casper,Wyoming,WY
