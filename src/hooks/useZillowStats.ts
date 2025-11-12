@@ -48,32 +48,64 @@ export const useZillowStats = (
           return;
         }
 
-        const { data, error } = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
+        // Try direct Zillow profile scrape first for highest accuracy
+        let resolvedStats: Partial<ZillowStats> | null = null;
+        let zipCandidate: string | null = null;
+
+        const profileResp = await supabase.functions.invoke('fetch-zillow-profile-stats', {
           body: {
             profileUrl,
-            zipcode: zipCode ?? undefined,
-            location: zipCode ? undefined : locationParam,
             agentName,
           }
         });
-        
-        if (error) {
-          console.error('GetDataForMe error:', error);
-          throw error;
+
+        if (profileResp.error) {
+          console.warn('Zillow profile scrape error:', profileResp.error);
+        } else {
+          const ps = profileResp.data?.stats ?? profileResp.data;
+          if (ps) {
+            resolvedStats = {
+              forSale: ps.forSale ?? ps.currentListings ?? 0,
+              sold: ps.sold ?? ps.salesLast12Months ?? ps.salesLastYear ?? ps.totalSales ?? 0,
+              forRent: ps.forRent ?? 0,
+              reviews: ps.reviews ?? ps.totalReviews ?? 0,
+              currentListings: ps.currentListings ?? ps.forSale ?? 0,
+              totalSales: ps.totalSales ?? 0,
+              yearsExperience: ps.yearsExperience ?? 0,
+            };
+            zipCandidate = ps.zipCode ?? zipCandidate;
+          }
         }
 
-        let resolvedStats: Partial<ZillowStats> | null = null;
-        
-        if (data?.success && data.stats) {
-          resolvedStats = {
-            forSale: data.stats.currentListings ?? 0,
-            sold: (data.stats.salesLastYear ?? data.stats.totalSales ?? 0),
-            forRent: 0,
-            reviews: data.stats.totalReviews ?? 0,
-            currentListings: data.stats.currentListings ?? 0,
-            totalSales: data.stats.totalSales ?? 0,
-            yearsExperience: data.stats.yearsExperience ?? 0,
-          };
+        // Fallback: Apify-based agent stats if profile scrape didn't return
+        if (!resolvedStats) {
+          const apifyResp = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
+            body: {
+              profileUrl,
+              zipcode: zipCode ?? undefined,
+              location: zipCode ? undefined : locationParam,
+              agentName,
+            }
+          });
+
+          if (apifyResp.error) {
+            console.error('GetDataForMe error:', apifyResp.error);
+            throw apifyResp.error;
+          }
+
+          if (apifyResp.data?.success && apifyResp.data.stats) {
+            const s = apifyResp.data.stats;
+            resolvedStats = {
+              forSale: s.currentListings ?? 0,
+              sold: (s.salesLastYear ?? s.totalSales ?? 0),
+              forRent: 0,
+              reviews: s.totalReviews ?? 0,
+              currentListings: s.currentListings ?? 0,
+              totalSales: s.totalSales ?? 0,
+              yearsExperience: s.yearsExperience ?? 0,
+            };
+            zipCandidate = s.zipCode ?? zipCandidate;
+          }
         }
 
         if (resolvedStats) {
@@ -98,10 +130,10 @@ export const useZillowStats = (
           }
 
           // Backfill zip code if available and missing
-          if (data?.stats?.zipCode && !zipCode) {
+          if (zipCandidate && !zipCode) {
             const { error: zipErr } = await supabase
               .from('professionals')
-              .update({ zip_code: data.stats.zipCode })
+              .update({ zip_code: zipCandidate })
               .eq('id', professionalId);
             if (zipErr) {
               console.error('Error updating zip code:', zipErr);
