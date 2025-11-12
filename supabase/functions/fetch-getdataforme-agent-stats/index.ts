@@ -85,7 +85,7 @@ serve(async (req) => {
 
     // Start the actor run - CRITICAL: Use zipcode parameter, not location!
     // IMPORTANT: Use tilde (~) not slash (/) in API calls
-    const actorId = Deno.env.get('APIFY_ACTOR_ID') || 'scraped~zillow-agent-scraper';
+    const actorId = Deno.env.get('APIFY_ACTOR_ID') || 'getdataforme~zillow-agent-scraper';
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs`,
       {
@@ -107,9 +107,10 @@ serve(async (req) => {
       try { detail = JSON.parse(errorText); } catch {}
       const errMsg = detail?.error?.message || errorText || runResponse.statusText;
       const statusCode = runResponse.status || 500;
+      // Do not bubble up a non-2xx to the client; return 200 with success=false so UI can handle gracefully
       return new Response(
-        JSON.stringify({ success: false, error: `Failed to start scraper: ${errMsg}`, status: statusCode }),
-        { status: statusCode, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ success: false, error: `Failed to start scraper: ${errMsg}`, status: statusCode, actorId }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
