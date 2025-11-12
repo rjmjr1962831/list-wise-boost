@@ -285,35 +285,49 @@ export const ProfessionalCard = ({
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
               {(() => {
                   const reviews = (zillowStats as any)?.reviews ?? professional.reviews ?? 0;
-                  
-                  // Priority: 1) Freshly fetched stats (preserve 0), 2) Stored stats (preserve 0), 3) Conservative estimate
-                  const currentListingsRaw = (zillowStats?.currentListings ?? professional.current_listings);
-                  const totalSalesRaw = (zillowStats?.totalSales ?? zillowStats?.sold ?? professional.total_sales);
 
-                  const currentListings = currentListingsRaw ?? Math.max(1, Math.round(reviews / 20));
-                  const totalSales = totalSalesRaw ?? Math.max(10, Math.round(reviews * 2.5));
-
-                  // Try to use last-12-months when provided by backend; otherwise derive softly
-                  const salesLast12Mo = (zillowStats as any)?.salesLast12Months ?? Math.max(0, Math.round((totalSales || 0) / 10));
-                  const yearsExperience = zillowStats?.yearsExperience ?? Math.max(2, Math.round(reviews / 15));
-                  
-                  const displayStats = {
-                    currentListings,
-                    salesLast12Mo,
-                    totalSales,
-                    yearsExperience,
+                  const statFromObj = (obj: any, path: string) => {
+                    try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
                   };
 
+                  const currentListings = (
+                    (zillowStats?.currentListings && zillowStats.currentListings > 0) ? zillowStats.currentListings :
+                    (professional.current_listings && professional.current_listings > 0) ? professional.current_listings :
+                    (Number(statFromObj(professional, 'stats.currentListings')) > 0 ? Number(statFromObj(professional, 'stats.currentListings')) :
+                      Math.max(1, Math.round(reviews / 20)))
+                  );
+
+                  const totalSales = (
+                    (zillowStats?.totalSales && zillowStats.totalSales > 0) ? zillowStats.totalSales :
+                    (zillowStats as any)?.sold > 0 ? (zillowStats as any).sold :
+                    (professional.total_sales && professional.total_sales > 0) ? professional.total_sales :
+                    (Number(statFromObj(professional, 'stats.totalSales')) > 0 ? Number(statFromObj(professional, 'stats.totalSales')) :
+                      Math.max(10, Math.round(reviews * 2.5)))
+                  );
+
+                  const salesLast12Mo = (
+                    (zillowStats as any)?.salesLast12Months > 0 ? (zillowStats as any).salesLast12Months :
+                    (zillowStats as any)?.sold > 0 ? (zillowStats as any).sold :
+                    Math.max(1, Math.round((totalSales || 0) / 10))
+                  );
+
+                  const yearsExperience = (
+                    (zillowStats?.yearsExperience && zillowStats.yearsExperience > 0) ? zillowStats.yearsExperience :
+                    (Number(statFromObj(professional, 'stats.yearsExperience')) > 0 ? Number(statFromObj(professional, 'stats.yearsExperience')) :
+                      Math.max(2, Math.round(reviews / 15)))
+                  );
+
+                  const displayStats = { currentListings, salesLast12Mo, totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
-                    currentListings: "Current Listings",
-                    salesLast12Mo: "Sales (12mo)",
-                    totalSales: "Total Sales",
-                    yearsExperience: "Years Exp."
+                    currentListings: 'Current Listings',
+                    salesLast12Mo: 'Sales (12mo)',
+                    totalSales: 'Total Sales',
+                    yearsExperience: 'Years Exp.'
                   };
 
                   return Object.entries(displayStats).map(([key, value]) => (
                     <div key={key} className="text-center md:text-left">
-                      <div className="text-2xl font-bold text-primary">{(value == null || Number(value) === 0) ? 'Not available' : value}</div>
+                      <div className="text-2xl font-bold text-primary">{(value == null || Number(value) <= 0) ? 'Not available' : value}</div>
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
                     </div>
                   ));

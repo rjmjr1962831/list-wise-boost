@@ -21,7 +21,7 @@ export const useZillowStats = (
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!professionalId || !profileUrl || !profileUrl.includes('zillow.com')) {
+    if (!professionalId) {
       return;
     }
 
@@ -44,36 +44,43 @@ export const useZillowStats = (
         })();
 
         if (!locationParam) {
-          console.warn(`No location could be derived for ${agentName}.`);
-          return;
+          console.warn(`No location could be derived for ${agentName}. Proceeding without it.`);
         }
 
         // Try direct Zillow profile scrape first for highest accuracy
         let resolvedStats: Partial<ZillowStats> | null = null;
         let zipCandidate: string | null = null;
 
-        const profileResp = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-          body: {
-            profileUrl,
-            agentName,
-          }
-        });
+        if (profileUrl && profileUrl.includes('zillow.com')) {
+          const profileResp = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+            body: {
+              profileUrl,
+              agentName,
+            }
+          });
 
-        if (profileResp.error) {
-          console.warn('Zillow profile scrape error:', profileResp.error);
-        } else {
-          const ps = profileResp.data?.stats ?? profileResp.data;
-          if (ps) {
-            resolvedStats = {
-              forSale: ps.forSale ?? ps.currentListings ?? 0,
-              sold: ps.sold ?? ps.salesLast12Months ?? ps.salesLastYear ?? ps.totalSales ?? 0,
-              forRent: ps.forRent ?? 0,
-              reviews: ps.reviews ?? ps.totalReviews ?? 0,
-              currentListings: ps.currentListings ?? ps.forSale ?? 0,
-              totalSales: ps.totalSales ?? 0,
-              yearsExperience: ps.yearsExperience ?? 0,
-            };
-            zipCandidate = ps.zipCode ?? zipCandidate;
+          if (profileResp.error) {
+            console.warn('Zillow profile scrape error:', profileResp.error);
+          } else {
+            const ps = profileResp.data?.stats ?? profileResp.data;
+            if (ps) {
+              const partial: Partial<ZillowStats> = {};
+              if (ps.forSale != null || ps.currentListings != null) partial.forSale = ps.forSale ?? ps.currentListings;
+              const soldVal = ps.sold ?? ps.salesLast12Months ?? ps.salesLastYear ?? ps.totalSales;
+              if (soldVal != null) partial.sold = soldVal;
+              if (ps.forRent != null) partial.forRent = ps.forRent;
+              const rev = ps.reviews ?? ps.totalReviews;
+              if (rev != null) partial.reviews = rev;
+              const cl = ps.currentListings ?? ps.forSale;
+              if (cl != null) partial.currentListings = cl;
+              if (ps.totalSales != null) partial.totalSales = ps.totalSales;
+              if (ps.yearsExperience != null) partial.yearsExperience = ps.yearsExperience;
+
+              if (Object.keys(partial).length > 0) {
+                resolvedStats = partial;
+              }
+              zipCandidate = ps.zipCode ?? zipCandidate;
+            }
           }
         }
 
@@ -95,15 +102,20 @@ export const useZillowStats = (
 
           if (apifyResp.data?.success && apifyResp.data.stats) {
             const s = apifyResp.data.stats;
-            resolvedStats = {
-              forSale: s.currentListings ?? 0,
-              sold: (s.salesLastYear ?? s.totalSales ?? 0),
-              forRent: 0,
-              reviews: s.totalReviews ?? 0,
-              currentListings: s.currentListings ?? 0,
-              totalSales: s.totalSales ?? 0,
-              yearsExperience: s.yearsExperience ?? 0,
-            };
+            const partial: Partial<ZillowStats> = {};
+            if (s.currentListings != null) {
+              partial.currentListings = s.currentListings;
+              partial.forSale = s.currentListings;
+            }
+            const soldVal = s.salesLastYear ?? s.totalSales;
+            if (soldVal != null) partial.sold = soldVal;
+            if (s.totalSales != null) partial.totalSales = s.totalSales;
+            if (s.totalReviews != null) partial.reviews = s.totalReviews;
+            if (s.yearsExperience != null) partial.yearsExperience = s.yearsExperience;
+
+            if (Object.keys(partial).length > 0) {
+              resolvedStats = partial;
+            }
             zipCandidate = s.zipCode ?? zipCandidate;
           }
         }
