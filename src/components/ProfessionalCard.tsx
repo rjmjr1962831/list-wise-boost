@@ -53,7 +53,8 @@ export const ProfessionalCard = ({
   const { stats: zillowStats } = useZillowStats(
     professional.id,
     professional.website,
-    professional.name
+    professional.name,
+    (professional as any).zip_code || null
   );
   
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';

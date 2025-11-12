@@ -40,6 +40,7 @@ export interface Professional {
   zuid?: string | null; // Zillow unique agent ID
   current_listings?: number; // Real data from Zillow
   total_sales?: number; // Real data from Zillow
+  zip_code?: string | null; // US zip code for API lookups
 }
 
 export interface ListSection {

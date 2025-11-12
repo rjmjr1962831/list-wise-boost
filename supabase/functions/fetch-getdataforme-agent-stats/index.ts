@@ -71,6 +71,17 @@ serve(async (req) => {
       agentName: searchName 
     });
 
+    // CRITICAL: Require zipcode for accuracy
+    if (!searchZipcode) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Zip code is required. Please add zip codes in the admin panel first.' 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Start the actor run - CRITICAL: Use zipcode parameter, not location!
     const actorId = 'scraped/zillow-agent-scraper';
     const runResponse = await fetch(

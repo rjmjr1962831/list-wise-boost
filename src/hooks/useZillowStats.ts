@@ -11,7 +11,12 @@ interface ZillowStats {
   yearsExperience: number;
 }
 
-export const useZillowStats = (professionalId: string | undefined, profileUrl: string | null, agentName: string) => {
+export const useZillowStats = (
+  professionalId: string | undefined, 
+  profileUrl: string | null, 
+  agentName: string,
+  zipCode: string | null
+) => {
   const [stats, setStats] = useState<ZillowStats | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -20,13 +25,23 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       return;
     }
 
+    // Skip if no zip code - show message to admin
+    if (!zipCode) {
+      console.warn(`No zip code for professional ${agentName}. Add zip code in admin panel.`);
+      return;
+    }
+
     const fetchAndStoreStats = async () => {
       setLoading(true);
 
       try {
-        // Use GetDataForMe scraper for complete agent data
+        // Use GetDataForMe scraper with zip code
         const { data, error } = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
-          body: { profileUrl }
+          body: { 
+            profileUrl,
+            zipcode: zipCode,
+            agentName
+          }
         });
         
         if (error) {
@@ -77,7 +92,7 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
     };
 
     fetchAndStoreStats();
-  }, [professionalId, profileUrl, agentName]);
+  }, [professionalId, profileUrl, agentName, zipCode]);
 
   return { stats, loading };
 };

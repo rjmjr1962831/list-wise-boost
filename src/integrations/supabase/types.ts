@@ -338,6 +338,7 @@ export type Database = {
           verification_token_expires_at: string | null
           website: string | null
           years_experience: number | null
+          zip_code: string | null
           zuid: string | null
         }
         Insert: {
@@ -371,6 +372,7 @@ export type Database = {
           verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
+          zip_code?: string | null
           zuid?: string | null
         }
         Update: {
@@ -404,6 +406,7 @@ export type Database = {
           verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
+          zip_code?: string | null
           zuid?: string | null
         }
         Relationships: [
