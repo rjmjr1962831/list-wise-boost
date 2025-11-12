@@ -226,24 +226,6 @@ export const ProfessionalCard = ({
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                    {licenseLookupUrl && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 gap-1 text-xs px-2"
-                        onClick={() => {
-                          window.open(licenseLookupUrl, '_blank');
-                          trackEvent('license_verify_click', {
-                            professional_name: professional.name,
-                            license_number: license,
-                            state: stateAbbr
-                          });
-                        }}
-                      >
-                        Check Registry
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    )}
                   </div>
                 ) : (
                   <TooltipProvider>
