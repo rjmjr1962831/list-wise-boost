@@ -1,10 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import placeholderAgent from "@/assets/placeholder-agent.jpg";
+import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 
 export interface AutoImportResult {
   success: boolean;
   imported: number;
   errors: string[];
+  licensesFound: number;
 }
 
 export async function autoImportZillowAgents(
@@ -15,7 +17,8 @@ export async function autoImportZillowAgents(
   const result: AutoImportResult = {
     success: false,
     imported: 0,
-    errors: []
+    errors: [],
+    licensesFound: 0
   };
 
   try {
@@ -122,6 +125,48 @@ export async function autoImportZillowAgents(
           result.errors.push(`Failed to import ${professionalData.name}: ${insertError.message}`);
         } else {
           result.imported++;
+          
+          // Auto-lookup license number
+          if (insertedData) {
+            try {
+              console.log(`Looking up license for ${professionalData.name}...`);
+              const licenseLookupUrl = getLicenseLookupByStateAbbr(state);
+              
+              if (licenseLookupUrl) {
+                const { data: licenseData, error: licenseError } = await supabase.functions.invoke('lookup-agent-license', {
+                  body: {
+                    agentName: professionalData.name,
+                    state: state,
+                    licensePortalUrl: licenseLookupUrl
+                  }
+                });
+                
+                if (!licenseError && licenseData?.licenseNumber) {
+                  console.log(`License found for ${professionalData.name}: ${licenseData.licenseNumber}`);
+                  
+                  // Update the professional with the license number
+                  const { error: updateError } = await supabase
+                    .from('professionals')
+                    .update({ license_number: licenseData.licenseNumber })
+                    .eq('id', insertedData.id);
+                  
+                  if (!updateError) {
+                    result.licensesFound++;
+                  } else {
+                    console.error(`Failed to update license for ${professionalData.name}:`, updateError);
+                  }
+                } else {
+                  console.log(`No license found for ${professionalData.name}`);
+                }
+              }
+              
+              // Small delay to avoid overwhelming the license lookup API
+              await new Promise(resolve => setTimeout(resolve, 1500));
+            } catch (licenseErr) {
+              console.error(`Error looking up license for ${professionalData.name}:`, licenseErr);
+              // Don't fail the import if license lookup fails
+            }
+          }
           
           // Auto-generate bio if missing
           if (!professionalData.description && insertedData) {

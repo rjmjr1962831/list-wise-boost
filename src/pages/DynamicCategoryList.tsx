@@ -240,7 +240,7 @@ export default function DynamicCategoryList() {
         );
         
         if (result.success) {
-          toast.success(`Imported ${result.imported} real estate agents from Zillow!`);
+          toast.success(`Imported ${result.imported} real estate agents from Zillow! Found ${result.licensesFound} license numbers.`);
           // Refresh the page to show the new data
           window.location.reload();
         } else {
