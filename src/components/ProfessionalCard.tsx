@@ -17,6 +17,7 @@ interface ProfessionalCardProps {
   accentColor?: "primary" | "sunset-orange" | "terracotta" | "turquoise" | "cactus-green";
   schemaType?: string;
   market?: string;
+  stateAbbr?: string;
   agentType?: string;
   citySlug?: string;
   categorySlug?: string;
@@ -30,6 +31,7 @@ export const ProfessionalCard = ({
   accentColor = "primary",
   schemaType = "Person",
   market = "",
+  stateAbbr: propStateAbbr,
   agentType = "",
   citySlug,
   categorySlug,
@@ -48,8 +50,8 @@ export const ProfessionalCard = ({
   
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
   
-  // Extract state abbreviation from market (e.g., "Gilbert, AZ" -> "AZ")
-  const stateAbbr = market?.split(',').pop()?.trim() || '';
+  // Use prop stateAbbr if provided, otherwise extract from market
+  const stateAbbr = propStateAbbr || market?.split(',').pop()?.trim() || '';
   const licenseLookupUrl = stateAbbr ? getLicenseLookupByStateAbbr(stateAbbr) : null;
   
   // Use external control if provided, otherwise use local state

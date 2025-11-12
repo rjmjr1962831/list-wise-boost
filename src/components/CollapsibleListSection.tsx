@@ -14,6 +14,7 @@ interface CollapsibleListSectionProps {
   defaultOpen?: boolean;
   schemaType?: string;
   market?: string;
+  stateAbbr?: string;
   citySlug?: string;
   categorySlug?: string;
   onContactClick?: (professional: Professional) => void;
@@ -25,6 +26,7 @@ export const CollapsibleListSection = ({
   defaultOpen = false,
   schemaType = "Person",
   market = "",
+  stateAbbr,
   citySlug,
   categorySlug,
   onContactClick,
@@ -78,6 +80,7 @@ export const CollapsibleListSection = ({
             accentColor={section.accentColor}
             schemaType={schemaType}
             market={market}
+            stateAbbr={stateAbbr}
             agentType={section.title}
             citySlug={citySlug}
             categorySlug={categorySlug}

@@ -487,6 +487,7 @@ export default function DynamicCategoryList() {
             defaultOpen={true}
             schemaType="RealEstateAgent"
             market={formatCityName(city)}
+            stateAbbr={metadata.location.stateAbbr}
             citySlug={city.slug}
             categorySlug={categorySlug}
             onContactClick={handleContactClick}
