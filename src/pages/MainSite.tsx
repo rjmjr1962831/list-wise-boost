@@ -35,7 +35,7 @@ const Index = () => {
           <p 
             className="text-xl text-muted-foreground max-w-2xl mx-auto"
             dangerouslySetInnerHTML={{ 
-              __html: getContent('hero', 'subtitle', 'Imagine a potential client asking ChatGPT or Google AI: <span class="font-semibold text-foreground">"Who are the top dentists in Gilbert?"</span> They\'ll get a curated answer from Top10Lists.us—the authoritative directory AI engines trust.')
+              __html: getContent('hero', 'subtitle', 'Imagine a potential client asking ChatGPT or Google AI: <span class="font-semibold text-foreground">"Who are the top real estate agents in Gilbert?"</span> They\'ll get a curated answer from Top10Lists.us—the authoritative directory AI engines trust.')
             }}
           />
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -43,7 +43,7 @@ const Index = () => {
               {getContent('hero', 'cta_primary', 'Claim Your Spot')}
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-              <a href="/az/gilbert/dentists">{getContent('hero', 'cta_secondary', 'View Sample List')}</a>
+              <a href="/az/gilbert/top10realestateagents">{getContent('hero', 'cta_secondary', 'View Sample List')}</a>
             </Button>
           </div>
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground pt-8">
@@ -72,23 +72,9 @@ const Index = () => {
           <p 
             className="text-xl text-muted-foreground leading-relaxed"
             dangerouslySetInnerHTML={{ 
-              __html: getContent('what_is', 'description', 'Top10Lists.us is a <span class="font-semibold text-foreground">curated directory of the top 10 service providers</span> in every major U.S. city—starting with high-trust professions like:')
+              __html: getContent('what_is', 'description', 'Top10Lists.us is a <span class="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.')
             }}
           />
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto pt-4">
-            {[
-              "Realtors",
-              "Lawyers",
-              "Accountants",
-              "Dentists",
-              "Contractors",
-              "Therapists"
-            ].map((profession, index) => (
-              <div key={index} className="px-6 py-4 bg-primary/5 rounded-lg border border-primary/20">
-                <span className="font-semibold text-foreground">{profession}</span>
-              </div>
-            ))}
-          </div>
           <div className="pt-4">
             <p className="text-lg text-muted-foreground">
               Each list is housed at a clean, location-specific URL like:
@@ -139,7 +125,7 @@ const Index = () => {
                   </div>
                   <h3 className="text-xl font-bold">Local SEO Power</h3>
                   <p className="text-muted-foreground">
-                    Each list is geo-targeted and keyword-optimized to rank for high-intent searches like "top dentists in Gilbert" or "best lawyers near me."
+                    Each list is geo-targeted and keyword-optimized to rank for high-intent searches like "top real estate agents in Gilbert" or "best realtors near me."
                   </p>
                 </CardContent>
               </Card>
@@ -249,32 +235,30 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Industries */}
-      <section id="industries" className="container mx-auto px-4 py-20">
+      {/* Markets */}
+      <section id="markets" className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {getContent('industries', 'title', 'Industries We Serve')}
+            {getContent('markets', 'title', 'Markets We Cover')}
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {getContent('industries', 'subtitle', 'Specialized listings for service-based businesses across multiple sectors')}
+            {getContent('markets', 'subtitle', 'Connecting buyers and sellers with top real estate agents across major U.S. cities')}
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
           {[
-            { icon: "🏥", title: "Healthcare", desc: "Chiropractors, Optometrists, Dentists" },
-            { icon: "🔧", title: "Home Services", desc: "Plumbers, Electricians, HVAC" },
-            { icon: "⚖️", title: "Professional", desc: "Lawyers, Accountants, Consultants" },
-            { icon: "💼", title: "Business Services", desc: "Marketing, IT, Design" },
-            { icon: "🏠", title: "Real Estate", desc: "Agents, Property Management" },
-            { icon: "🚗", title: "Automotive", desc: "Mechanics, Detailing, Repair" },
-            { icon: "💪", title: "Wellness", desc: "Fitness, Therapy, Nutrition" },
-            { icon: "🎓", title: "Education", desc: "Tutors, Training, Coaching" },
-          ].map((industry, index) => (
+            { icon: "🏠", title: "Residential Sales", desc: "Buyer's & Seller's Agents" },
+            { icon: "🏢", title: "Commercial Real Estate", desc: "Office, Retail, Industrial" },
+            { icon: "💼", title: "Property Management", desc: "Rentals & HOA Services" },
+            { icon: "🏗️", title: "New Construction", desc: "Builder Representatives" },
+            { icon: "💰", title: "Investment Properties", desc: "Fix & Flip, Rental Analysis" },
+            { icon: "🌴", title: "Luxury Real Estate", desc: "High-End Properties" }
+          ].map((market, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardContent className="pt-6 text-center space-y-3">
-                <div className="text-4xl">{industry.icon}</div>
-                <h3 className="font-bold text-lg">{industry.title}</h3>
-                <p className="text-sm text-muted-foreground">{industry.desc}</p>
+                <div className="text-4xl">{market.icon}</div>
+                <h3 className="font-bold text-lg">{market.title}</h3>
+                <p className="text-sm text-muted-foreground">{market.desc}</p>
               </CardContent>
             </Card>
           ))}
@@ -356,7 +340,7 @@ const Index = () => {
                 {getContent('final_cta', 'cta_primary', 'Apply Now')}
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-                <a href="/az/gilbert/dentists">{getContent('final_cta', 'cta_secondary', 'View Sample Lists')}</a>
+                <a href="/az/gilbert/top10realestateagents">{getContent('final_cta', 'cta_secondary', 'View Sample Lists')}</a>
               </Button>
             </div>
           </CardContent>

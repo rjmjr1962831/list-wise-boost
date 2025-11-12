@@ -14,36 +14,10 @@ type CityDataMap = {
 
 const cityData: CityDataMap = {
   'phoenix': {
-    'top10dentists': phoenix.phoenixDentists,
-    'top10realestateagents': phoenix.phoenixRealEstateAgents,
-    'top10lawyers': phoenix.phoenixLawyers,
-    'top10personalinjurylawyers': phoenix.phoenixPersonalInjuryLawyers,
-    'top10businesslawyers': phoenix.phoenixBusinessLawyers,
-    'top10realestatellawyers': phoenix.phoenixRealEstateLawyers,
-    'top10restaurants': phoenix.phoenixRestaurants,
-    'top10chineserestaurants': phoenix.phoenixChineseRestaurants,
-    'top10pizzarestaurants': phoenix.phoenixPizzaRestaurants,
-    'top10italianrestaurants': phoenix.phoenixItalianRestaurants,
-    'top10sportsbars': phoenix.phoenixSportsBars,
-    'top10fancyrestaurants': phoenix.phoenixFancyRestaurants,
-    'top10cheapbutgood': phoenix.phoenixCheapButGood,
-    'top10neurologists': phoenix.phoenixNeurologists
+    'top10realestateagents': phoenix.phoenixRealEstateAgents
   },
   'los-angeles': {
-    'top10dentists': losAngeles.losAngelesDentists,
-    'top10realestateagents': losAngeles.losAngelesRealEstateAgents,
-    'top10lawyers': losAngeles.losAngelesLawyers,
-    'top10personalinjurylawyers': losAngeles.losAngelesPersonalInjuryLawyers,
-    'top10businesslawyers': losAngeles.losAngelesBusinessLawyers,
-    'top10realestatellawyers': losAngeles.losAngelesRealEstateLawyers,
-    'top10restaurants': losAngeles.losAngelesRestaurants,
-    'top10chineserestaurants': losAngeles.losAngelesChineseRestaurants,
-    'top10pizzarestaurants': losAngeles.losAngelesPizzaRestaurants,
-    'top10italianrestaurants': losAngeles.losAngelesItalianRestaurants,
-    'top10sportsbars': losAngeles.losAngelesSportsBars,
-    'top10fancyrestaurants': losAngeles.losAngelesFancyRestaurants,
-    'top10cheapbutgood': losAngeles.losAngelesCheapButGood,
-    'top10neurologists': []
+    'top10realestateagents': losAngeles.losAngelesRealEstateAgents
   },
   'anaheim': {
     'top10realestateagents': anaheim.anaheimRealEstateAgents
