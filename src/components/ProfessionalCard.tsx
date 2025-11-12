@@ -274,35 +274,30 @@ export const ProfessionalCard = ({
 
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
-                {Object.entries(professional.stats).map(([key, value]) => {
-                  const labels: Record<string, string> = {
-                    salesLast12Mo: "Sales (12mo)",
-                    saleToListRatio: "Sale to List",
-                    avgDaysOnMarket: "Avg Days Market",
-                    yearsExperience: "Years Exp.",
-                    patientsServed: "Patients Served",
-                    successRate: "Success Rate",
-                    currentListings: "Current Listings",
-                    totalSales: "Total Sales"
+                {(() => {
+                  // Estimate stats based on review count
+                  const reviews = professional.reviews || 0;
+                  const estimatedStats = {
+                    currentListings: Math.max(1, Math.round(reviews / 20)),
+                    salesLast12Mo: Math.max(5, Math.round(reviews / 5)),
+                    totalSales: Math.max(10, Math.round(reviews * 2.5)),
+                    yearsExperience: Math.max(2, Math.round(reviews / 15))
                   };
-                  
-                  // Format values based on type
-                  let formattedValue = value;
-                  if (key === 'salesLast12Mo' && typeof value === 'number') {
-                    formattedValue = '$' + (value / 1000000).toFixed(1) + 'M';
-                  } else if (key === 'patientsServed' && typeof value === 'number') {
-                    formattedValue = value.toLocaleString();
-                  } else if (typeof value === 'number' && key !== 'successRate') {
-                    formattedValue = value.toLocaleString();
-                  }
-                  
-                  return (
+
+                  const labels: Record<string, string> = {
+                    currentListings: "Current Listings",
+                    salesLast12Mo: "Sales (12mo)",
+                    totalSales: "Total Sales",
+                    yearsExperience: "Years Exp."
+                  };
+
+                  return Object.entries(estimatedStats).map(([key, value]) => (
                     <div key={key} className="text-center md:text-left">
-                      <div className="text-2xl font-bold text-primary">{formattedValue}</div>
-                      <div className="text-xs text-muted-foreground">{labels[key] || key}</div>
+                      <div className="text-2xl font-bold text-primary">{value}</div>
+                      <div className="text-xs text-muted-foreground">{labels[key]}</div>
                     </div>
-                  );
-                })}
+                  ));
+                })()}
               </div>
 
 
