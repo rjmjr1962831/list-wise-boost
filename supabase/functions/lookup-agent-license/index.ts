@@ -176,9 +176,8 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
       
       // California license numbers are typically 8 digits, sometimes with 01 or 02 prefix
       const licensePatterns = [
-        /License\s*#?\s*:?\s*0?([12]\d{7})/i,
-        /License\s*#?\s*:?\s*(\d{8})/i,
-        /DRE\s*#?\s*:?\s*0?([12]\d{7})/i,
+        /License\s*(?:ID|Number|#)\s*:?\s*0?(\d{8})/i,
+        /DRE\s*(?:ID|#)?\s*:?\s*0?(\d{8})/i,
       ];
       
       for (const pattern of licensePatterns) {
@@ -187,6 +186,13 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
           console.log(`Found CA license for ${name}: ${licenseMatch[1]}`);
           return licenseMatch[1];
         }
+      }
+
+      // Fallback: capture License_id links from results (detail pages)
+      const idMatch = html.match(/License_id\s*=\s*(\d{6,8})/i);
+      if (idMatch) {
+        console.log(`Found CA license_id for ${name}: ${idMatch[1]}`);
+        return idMatch[1];
       }
     }
     
@@ -324,23 +330,26 @@ serve(async (req) => {
 
     let licenseNumber: string | null = null;
 
-    // Try AI-powered lookup first for all states with a portal URL
-    if (licensePortalUrl) {
+    const upperState = state.toUpperCase();
+
+    // Prefer state-specific logic for CA first (DRE results often expose only License_id)
+    if (upperState === 'CA' || upperState === 'CALIFORNIA') {
+      licenseNumber = await searchCalifornia(agentName);
+    }
+
+    // If still not found, try AI when a portal URL is provided
+    if (!licenseNumber && licensePortalUrl) {
       console.log('Attempting AI-powered license lookup...');
       licenseNumber = await lookupWithAI(agentName, licensePortalUrl, state);
     }
 
-    // Try state-specific scrapers (skip AI for now as it's not working well)
+    // Finally, try other state-specific scrapers or generic search
     if (!licenseNumber) {
-      console.log('Trying state-specific scraper...');
-      switch (state.toUpperCase()) {
+      console.log('Trying state-specific or generic scraper...');
+      switch (upperState) {
         case 'AZ':
         case 'ARIZONA':
           licenseNumber = await searchArizona(agentName);
-          break;
-        case 'CA':
-        case 'CALIFORNIA':
-          licenseNumber = await searchCalifornia(agentName);
           break;
         case 'TX':
         case 'TEXAS':
@@ -349,6 +358,10 @@ serve(async (req) => {
         case 'FL':
         case 'FLORIDA':
           licenseNumber = await searchFlorida(agentName);
+          break;
+        case 'CA':
+        case 'CALIFORNIA':
+          // Already tried CA above
           break;
         default:
           // Try generic search for other states
