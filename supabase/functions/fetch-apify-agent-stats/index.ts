@@ -38,7 +38,14 @@ serve(async (req) => {
 
     // Call Apify actor (jupri/zillow-agents)
     const actorId = 'jupri~zillow-agents';
-    
+    // Build queries to maximize useful data (profile URL + screen name + sales)
+    const screenNameMatch = profileUrl.match(/profile\/([^\/?#]+)/i);
+    const queries = [profileUrl];
+    if (screenNameMatch && screenNameMatch[1]) {
+      const sn = screenNameMatch[1];
+      queries.push(`@${sn}`, `@${sn}/sales`);
+    }
+
     // Start the actor run
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`,
@@ -48,7 +55,8 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: [profileUrl]
+          query: queries,
+          limit: 1
         }),
       }
     );
@@ -89,34 +97,58 @@ serve(async (req) => {
       throw new Error(`Apify run did not complete successfully: ${runStatus}`);
     }
 
-    // Get the results from default dataset
-    const resultsResponse = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs/${runId}/dataset/items?token=${apiKey}`
+    // Fetch dataset ID to retrieve results reliably
+    const runDetailResp = await fetch(
+      `https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apiKey}`
     );
-
-    if (!resultsResponse.ok) {
-      throw new Error('Failed to fetch Apify results');
+    let datasetId: string | undefined;
+    if (runDetailResp.ok) {
+      const runDetail = await runDetailResp.json();
+      datasetId = runDetail?.data?.defaultDatasetId;
+      console.log(`Using dataset: ${datasetId ?? 'unknown'}`);
     }
 
-    const results = await resultsResponse.json();
-    
+    // Try dataset endpoint first, then fall back to runs dataset route
+    let results: any[] = [];
+    if (datasetId) {
+      const dsResp = await fetch(
+        `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiKey}&clean=true&limit=1`
+      );
+      if (dsResp.ok) {
+        results = await dsResp.json();
+      } else {
+        console.error('Dataset fetch failed:', await dsResp.text());
+      }
+    }
+
+    if (!results.length) {
+      const fallbackResp = await fetch(
+        `https://api.apify.com/v2/acts/${actorId}/runs/${runId}/dataset/items?token=${apiKey}&clean=true&limit=1`
+      );
+      if (!fallbackResp.ok) {
+        const errTxt = await fallbackResp.text();
+        throw new Error(`Failed to fetch Apify results: ${errTxt}`);
+      }
+      results = await fallbackResp.json();
+    }
+
     if (!results || results.length === 0) {
       throw new Error('No data returned from Apify');
     }
 
-    const agentData = results[0];
-    console.log('Successfully fetched agent data from Apify');
+    const agentData = results[0] ?? {};
+    console.log('Successfully fetched agent data from Apify. Keys:', Object.keys(agentData));
 
-    // Extract the stats we need
+    // Extract the stats we need (defensive mapping across possible shapes)
     const stats = {
-      totalSales: agentData.agentSalesStats?.countAllTime || 0,
-      salesLast12Months: agentData.agentSalesStats?.countLastYear || 0,
-      currentListings: agentData.forSaleListings?.listing_count || 0,
-      avgSalePrice: agentData.agentSalesStats?.averageValueThreeYear || 0,
-      priceRangeMin: agentData.agentSalesStats?.priceRangeThreeYearMin || 0,
-      priceRangeMax: agentData.agentSalesStats?.priceRangeThreeYearMax || 0,
-      yearsExperience: null, // Not provided by this API
-      includesTeam: agentData.agentSalesStats?.stats_include_team || false
+      totalSales: agentData.agentSalesStats?.countAllTime ?? agentData.totalSales ?? agentData.salesCount ?? 0,
+      salesLast12Months: agentData.agentSalesStats?.countLastYear ?? agentData.salesLast12Months ?? agentData.sales_last_12_months ?? 0,
+      currentListings: agentData.forSaleListings?.listing_count ?? agentData.activeListings ?? agentData.currentListings ?? 0,
+      avgSalePrice: agentData.agentSalesStats?.averageValueThreeYear ?? agentData.avgSalePrice ?? 0,
+      priceRangeMin: agentData.agentSalesStats?.priceRangeThreeYearMin ?? 0,
+      priceRangeMax: agentData.agentSalesStats?.priceRangeThreeYearMax ?? 0,
+      yearsExperience: agentData.yearsExperience ?? agentData.years_experience ?? null,
+      includesTeam: agentData.agentSalesStats?.stats_include_team ?? false,
     };
 
     return new Response(
