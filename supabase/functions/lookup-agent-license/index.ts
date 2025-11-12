@@ -19,8 +19,8 @@ function extractIndividualNames(agentName: string): string[] {
     .replace(/\s+(Group|Team|Associates?|Real Estate.*|Realty.*|Top.*Agents?|and\s+Associates)$/i, '')
     .trim();
   
-  // Split on "and" to get multiple people
-  const names = cleanName.split(/\s+and\s+/i);
+  // Split on "and", "&" to get multiple people
+  const names = cleanName.split(/\s+(?:and|\&)+\s+/i);
   
   return names.map(name => name.trim()).filter(name => {
     // Filter out very short names or obvious non-person names
@@ -153,7 +153,7 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
     const individualNames = extractIndividualNames(agentName);
     console.log(`Searching CA for individuals: ${JSON.stringify(individualNames)}`);
     
-    // Try each individual name
+    // Try each individual name with multiple strategies
     for (const name of individualNames) {
       const nameParts = name.split(/\s+/);
       const firstName = nameParts[0];
@@ -161,38 +161,48 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
       
       if (!firstName || !lastName) continue;
       
-      console.log(`Trying CA search: ${firstName} ${lastName}`);
-      const searchUrl = `https://www2.dre.ca.gov/PublicASP/pplinfo.asp?License_id=&firstname=${encodeURIComponent(firstName)}&lastname=${encodeURIComponent(lastName)}`;
-      
-      const response = await fetch(searchUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        },
-      });
-
-      if (!response.ok) continue;
-
-      const html = await response.text();
-      
-      // California license numbers are typically 8 digits, sometimes with 01 or 02 prefix
-      const licensePatterns = [
-        /License\s*(?:ID|Number|#)\s*:?\s*0?(\d{8})/i,
-        /DRE\s*(?:ID|#)?\s*:?\s*0?(\d{8})/i,
+      const attempts = [
+        { fn: firstName, ln: lastName },               // full first + last
+        { fn: '', ln: lastName },                      // last name only
+        { fn: firstName.charAt(0), ln: lastName },     // first initial + last
       ];
-      
-      for (const pattern of licensePatterns) {
-        const licenseMatch = html.match(pattern);
-        if (licenseMatch) {
-          console.log(`Found CA license for ${name}: ${licenseMatch[1]}`);
-          return licenseMatch[1];
-        }
-      }
 
-      // Fallback: capture License_id links from results (detail pages)
-      const idMatch = html.match(/License_id\s*=\s*(\d{6,8})/i);
-      if (idMatch) {
-        console.log(`Found CA license_id for ${name}: ${idMatch[1]}`);
-        return idMatch[1];
+      for (const attempt of attempts) {
+        console.log(`Trying CA search: ${attempt.fn} ${attempt.ln}`);
+        const searchUrl = `https://www2.dre.ca.gov/PublicASP/pplinfo.asp?License_id=&firstname=${encodeURIComponent(attempt.fn)}&lastname=${encodeURIComponent(attempt.ln)}`;
+        
+        const response = await fetch(searchUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          },
+        });
+
+        if (!response.ok) continue;
+
+        const html = await response.text();
+        
+        // Common CA patterns (CalDRE/DRE/BRE) and generic License labels
+        const licensePatterns = [
+          /(CalDRE|DRE|BRE)\s*(?:Lic(?:ense)?|ID|#)?\s*:?\s*#?\s*0?(\d{7,8})/i,
+          /License\s*(?:ID|Number|#)\s*:?\s*0?(\d{7,8})/i,
+        ];
+        
+        for (const pattern of licensePatterns) {
+          const match = html.match(pattern);
+          if (match) {
+            const id = match[2] || match[1];
+            const normalized = (Array.isArray(id) ? id[0] : id).replace(/^0/, '');
+            console.log(`Found CA license for ${name}: ${normalized}`);
+            return normalized;
+          }
+        }
+
+        // Fallback: capture License_id links from results pages (detail links)
+        const idLinkMatch = html.match(/pplinfo\d?\.asp\?License_id=(\d{6,8})/i) || html.match(/License_id\s*=\s*(\d{6,8})/i);
+        if (idLinkMatch) {
+          console.log(`Found CA license_id for ${name}: ${idLinkMatch[1]}`);
+          return idLinkMatch[1];
+        }
       }
     }
     
