@@ -35,13 +35,13 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
         
         if (data?.success && data.stats) {
           resolvedStats = {
-            forSale: data.stats.forSale ?? 0,
-            sold: data.stats.sold ?? 0,
-            forRent: data.stats.forRent ?? 0,
-            reviews: data.stats.reviews ?? 0,
-            currentListings: data.stats.currentListings ?? 0,
-            totalSales: data.stats.totalSales ?? 0,
-            yearsExperience: data.stats.yearsExperience ?? 0,
+            forSale: data.stats.forSale,
+            sold: data.stats.sold,
+            forRent: data.stats.forRent,
+            reviews: data.stats.reviews,
+            currentListings: data.stats.currentListings,
+            totalSales: data.stats.totalSales,
+            yearsExperience: data.stats.yearsExperience,
           };
         }
 
@@ -56,13 +56,13 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
           });
           if (!fbErr && fallback?.success && fallback.stats) {
             resolvedStats = {
-              forSale: fallback.stats.forSale ?? 0,
-              sold: fallback.stats.sold ?? 0,
-              forRent: fallback.stats.forRent ?? 0,
-              reviews: fallback.stats.reviews ?? 0,
-              currentListings: fallback.stats.currentListings ?? 0,
-              totalSales: fallback.stats.totalSales ?? 0,
-              yearsExperience: fallback.stats.yearsExperience ?? 0,
+              forSale: fallback.stats.forSale,
+              sold: fallback.stats.sold,
+              forRent: fallback.stats.forRent,
+              reviews: fallback.stats.reviews,
+              currentListings: fallback.stats.currentListings,
+              totalSales: fallback.stats.totalSales,
+              yearsExperience: fallback.stats.yearsExperience,
             };
           }
         }
