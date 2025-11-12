@@ -377,21 +377,63 @@ async function searchFlorida(agentName: string): Promise<string | null> {
         const html = await response.text();
         console.log(`FL response HTML length: ${html.length}`);
         
-        // Try AI extraction for Florida since patterns are unreliable
+        // 1) Follow detail links from search results and parse license
+        const linkMatches = [...html.matchAll(/href=\"([^\"']*(?:LicenseDetail|licDetail)\.asp\?[^\"']*id=(\d+)[^\"']*)\"/ig)];
+        for (const lm of linkMatches) {
+          const href = lm[1];
+          const id = lm[2];
+          const detailUrl = new URL(href, 'https://www.myfloridalicense.com/').toString();
+          console.log(`FL detail URL candidate: ${detailUrl} (id=${id})`);
+
+          try {
+            const dres = await fetch(detailUrl, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+              },
+            });
+            if (!dres.ok) continue;
+            const dhtml = await dres.text();
+
+            // Ensure this detail page is for the right person
+            const lc = dhtml.toLowerCase();
+            if (!lc.includes(firstName.toLowerCase()) || !lc.includes(lastName.toLowerCase())) {
+              continue;
+            }
+
+            const detailPatterns = [
+              /License\s*(?:Number|#|No\.?):?\s*<[^>]*>\s*([A-Z]{2}\d{6,8}|\d{6,8})/i,
+              /License\s*(?:Number|#|No\.?):?\s*([A-Z]{2}\d{6,8}|\d{6,8})/i,
+              /\b(SL\d{7})\b/i,
+              /\b(BK\d{7})\b/i,
+            ];
+            for (const dp of detailPatterns) {
+              const m = dhtml.match(dp);
+              if (m && m[1]) {
+                console.log(`Found FL license on detail page for ${name}: ${m[1]}`);
+                return m[1];
+              }
+            }
+          } catch (e) {
+            console.log('FL detail fetch error:', e);
+          }
+        }
+
+        // 2) Try AI extraction for Florida since patterns are unreliable
         const licenseNumber = await lookupWithAI(name, searchUrl, 'Florida');
         if (licenseNumber) {
           console.log(`Found FL license via AI for ${name}: ${licenseNumber}`);
           return licenseNumber;
         }
         
-        // Fallback to pattern matching
+        // 3) Fallback to pattern matching on search page
         const patterns = [
           /\b(SL\d{7})\b/i,
           /\b(BK\d{7})\b/i,
           /License\s*(?:Number|#|No\.?)\s*:?\s*([A-Z]{2}\d{7})/i,
           /License\s*(?:Number|#|No\.?)\s*:?\s*(\d{7})/i,
           /\b([A-Z]{2}\d{7})\b/,
-          /detail\.asp\?id=(\d{7})/i, // License detail links
+          /detail\.asp\?id=(\d{7})/i,
         ];
         
         for (const pattern of patterns) {
@@ -401,7 +443,6 @@ async function searchFlorida(agentName: string): Promise<string | null> {
             return match[1];
           }
         }
-        console.log(`No FL license found for attempt: ${attempt.fn} ${attempt.ln}`);
       }
     }
     
