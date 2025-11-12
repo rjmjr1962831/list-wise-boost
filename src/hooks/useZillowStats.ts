@@ -24,24 +24,47 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       setLoading(true);
 
       try {
-        // Fetch stats from Zillow
-        const { data, error: functionError } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-          body: { profileUrl, agentName }
-        });
+        // 1) Try Apify-based stats (most reliable, requires APIFY_API_KEY)
+        let resolvedStats: Partial<ZillowStats> | null = null;
+        try {
+          const { data: apifyData } = await supabase.functions.invoke('fetch-apify-agent-stats', {
+            body: { profileUrl }
+          });
+          if (apifyData?.success && apifyData.stats) {
+            resolvedStats = {
+              currentListings: apifyData.stats.currentListings ?? 0,
+              totalSales: apifyData.stats.totalSales ?? 0,
+              yearsExperience: apifyData.stats.yearsExperience ?? 0,
+              forSale: apifyData.stats.currentListings ?? 0,
+              sold: apifyData.stats.totalSales ?? 0,
+              forRent: 0,
+              reviews: 0,
+            } as ZillowStats;
+          }
+        } catch (e) {
+          // Ignore and fallback
+        }
 
-        if (functionError) throw functionError;
+        // 2) Fallback to Zillow profile scrape (may get 403)
+        if (!resolvedStats) {
+          const { data, error: functionError } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+            body: { profileUrl, agentName }
+          });
+          if (functionError) throw functionError;
+          if (data?.success && data.stats) {
+            resolvedStats = data.stats as ZillowStats;
+          }
+        }
 
-        if (data?.success && data.stats) {
-          const fetchedStats = data.stats;
-          setStats(fetchedStats);
+        if (resolvedStats) {
+          setStats(resolvedStats as ZillowStats);
 
           // Store the stats in the database
           const { error: updateError } = await supabase
             .from('professionals')
             .update({
-              current_listings: fetchedStats.currentListings || fetchedStats.forSale,
-              total_sales: fetchedStats.totalSales || fetchedStats.sold,
-              zuid: data.zuid
+              current_listings: (resolvedStats as ZillowStats).currentListings || (resolvedStats as ZillowStats).forSale || 0,
+              total_sales: (resolvedStats as ZillowStats).totalSales || (resolvedStats as ZillowStats).sold || 0,
             })
             .eq('id', professionalId);
 
