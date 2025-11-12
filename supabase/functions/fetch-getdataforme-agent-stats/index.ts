@@ -83,7 +83,8 @@ serve(async (req) => {
     }
 
     // Start the actor run - CRITICAL: Use zipcode parameter, not location!
-    const actorId = 'scraped/zillow-agent-scraper';
+    // IMPORTANT: Use tilde (~) not slash (/) in API calls
+    const actorId = 'scraped~zillow-agent-scraper';
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`,
       {
