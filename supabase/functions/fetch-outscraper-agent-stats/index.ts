@@ -12,8 +12,8 @@ interface OutscraperRequest {
 function toInt(value: unknown): number {
   if (typeof value === 'number') return value;
   if (!value) return 0;
-  const m = value.toString().replace(/[^0-9]/g, '');
-  return m ? parseInt(m, 10) : 0;
+  const str = String(value).replace(/[^0-9]/g, '');
+  return str ? parseInt(str, 10) : 0;
 }
 
 serve(async (req) => {
@@ -28,62 +28,89 @@ serve(async (req) => {
     const apiKey = Deno.env.get('OUTSCRAPER_API_KEY');
     if (!apiKey) throw new Error('OUTSCRAPER_API_KEY not configured');
 
-    // Direct Zillow-specific endpoint (no polling)
-    const resp = await fetch('https://api.app.outscraper.com/zillow/agents', {
-      method: 'POST',
-      headers: {
-        'X-API-KEY': apiKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        urls: [profileUrl],
-        extract_reviews: false,
-        reviews_limit: 0,
-      }),
+    console.log('Fetching Outscraper data for:', profileUrl);
+
+    // Use Zillow Search API with agent profile URL as query
+    const params = new URLSearchParams({
+      query: profileUrl,
+      limit: '1',
+      async: 'false', // Synchronous for immediate response
     });
 
+    const resp = await fetch(
+      `https://api.app.outscraper.com/zillow/search?${params.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          'X-API-KEY': apiKey,
+        },
+      }
+    );
+
     if (!resp.ok) {
-      const t = await resp.text();
-      console.error('Outscraper /zillow/agents error:', resp.status, t);
+      const errorText = await resp.text();
+      console.error('Outscraper API error:', resp.status, errorText);
       return new Response(
-        JSON.stringify({ success: false, error: `Outscraper error ${resp.status}`, details: t }),
+        JSON.stringify({
+          success: false,
+          error: `Outscraper API error ${resp.status}`,
+          details: errorText,
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const payload = await resp.json();
-    const items: any[] = Array.isArray(payload) ? payload : (payload?.data ?? []);
+    const data = await resp.json();
+    console.log('Outscraper response:', JSON.stringify(data, null, 2));
 
-    if (!items.length) {
+    // Response structure: { data: [{ query: "...", listings: [...] }] }
+    const queryResult = Array.isArray(data?.data) ? data.data[0] : null;
+    const listings = Array.isArray(queryResult?.listings) ? queryResult.listings : [];
+
+    if (listings.length === 0) {
       return new Response(
-        JSON.stringify({ success: false, error: 'No data returned from Outscraper', stats: null }),
+        JSON.stringify({
+          success: false,
+          error: 'No listings found for this agent',
+          stats: null,
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Try to pick the item that matches our URL
-    const norm = (u: string) => u?.replace(/\/$/, '').toLowerCase();
-    const target = norm(profileUrl);
-    let agent = items.find((it) => norm(it.link || it.url || it.profile_url || '') === target) || items[0];
+    // Get agent stats from the first listing's agent profile
+    const firstListing = listings[0];
+    const agent = firstListing?.agent_profile || {};
 
     const stats = {
-      forSale: toInt(agent.listings_count ?? agent.current_listings ?? agent.for_sale),
-      sold: toInt(agent.sales_count ?? agent.total_sales ?? agent.sold_total),
-      forRent: 0,
-      reviews: toInt(agent.reviews ?? agent.reviews_count ?? agent.total_reviews),
-      currentListings: toInt(agent.listings_count ?? agent.current_listings),
-      totalSales: toInt(agent.sales_count ?? agent.total_sales ?? agent.sold_total),
-      yearsExperience: toInt(agent.years_experience ?? agent.experience_years),
+      forSale: toInt(agent.for_sale ?? agent.agent_profile_for_sale),
+      sold: toInt(agent.total_sales ?? agent.agent_profile_total_sales),
+      forRent: toInt(agent.for_rent ?? agent.agent_profile_for_rent),
+      reviews: toInt(agent.reviews ?? agent.agent_profile_reviews),
+      currentListings: toInt(agent.for_sale ?? agent.agent_profile_for_sale),
+      totalSales: toInt(agent.total_sales ?? agent.agent_profile_total_sales),
+      yearsExperience: toInt(agent.years_of_experience ?? agent.agent_profile_years_of_experience),
     };
 
+    console.log('Mapped stats:', stats);
+
     return new Response(
-      JSON.stringify({ success: true, stats, source: 'outscraper', rawData: agent }),
+      JSON.stringify({
+        success: true,
+        stats,
+        source: 'outscraper',
+        rawData: agent,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error in fetch-outscraper-agent-stats:', error);
     return new Response(
-      JSON.stringify({ success: false, error: error instanceof Error ? error.message : 'Unknown error', stats: null }),
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stats: null,
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
