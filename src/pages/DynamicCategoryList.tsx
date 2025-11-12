@@ -448,32 +448,48 @@ export default function DynamicCategoryList() {
     return <Navigate to={`/${city.state_slug}/${city.slug}`} replace />;
   }
 
-  // Split professionals into Established (6+ years) and Emerging (≤5 years)
-  const establishedProfessionals = filteredProfessionals
+  // Split professionals into Individual Agents and Teams & Groups
+  const individualProfessionals = filteredProfessionals
     .filter(p => {
-      const years = p.stats.yearsExperience as number;
-      return years && years >= 6;
+      // Check database type field or detect from name/company
+      const dbType = (p as any).type;
+      if (dbType === 'individual') return true;
+      if (dbType === 'team') return false;
+      // Fallback: detect from name
+      const nameChecks = p.name.toLowerCase();
+      const isTeam = nameChecks.includes('team') || 
+                     nameChecks.includes('group') || 
+                     nameChecks.includes('& ');
+      return !isTeam;
     })
     .slice(0, 5);
   
-  const emergingProfessionals = filteredProfessionals
+  const teamProfessionals = filteredProfessionals
     .filter(p => {
-      const years = p.stats.yearsExperience as number;
-      return years && years <= 5;
+      // Check database type field or detect from name/company
+      const dbType = (p as any).type;
+      if (dbType === 'team') return true;
+      if (dbType === 'individual') return false;
+      // Fallback: detect from name
+      const nameChecks = p.name.toLowerCase();
+      const isTeam = nameChecks.includes('team') || 
+                     nameChecks.includes('group') || 
+                     nameChecks.includes('& ');
+      return isTeam;
     })
     .slice(0, 5);
 
   const sections: ListSection[] = [
-    ...(establishedProfessionals.length > 0 ? [{
-      title: "Established Players",
-      description: `Experienced ${category.plural_name.toLowerCase()} with 6+ years in ${formatCityName(city)}`,
-      items: establishedProfessionals,
+    ...(individualProfessionals.length > 0 ? [{
+      title: "Individual Agents",
+      description: `Top individual ${category.plural_name.toLowerCase()} in ${formatCityName(city)}`,
+      items: individualProfessionals,
       accentColor: "primary" as const
     }] : []),
-    ...(emergingProfessionals.length > 0 ? [{
-      title: "Emerging Talent",
-      description: `Rising stars with 5 years or less experience in ${formatCityName(city)}`,
-      items: emergingProfessionals,
+    ...(teamProfessionals.length > 0 ? [{
+      title: "Teams & Groups",
+      description: `Leading real estate teams in ${formatCityName(city)}`,
+      items: teamProfessionals,
       accentColor: "sunset-orange" as const
     }] : [])
   ];

@@ -36,7 +36,7 @@ export function ManualAgentAdder() {
     description: '',
     cityId: '',
     categoryId: '',
-    type: 'established' as 'established' | 'emerging',
+    type: 'individual' as 'individual' | 'team',
   });
 
   useEffect(() => {
@@ -94,27 +94,21 @@ export function ManualAgentAdder() {
     }
 
     const yearsExp = parseInt(formData.yearsExperience) || 0;
-    
-    // Validate years experience matches selected type
-    if (formData.type === 'emerging' && yearsExp > 5) {
-      toast.error('Emerging Talent must have 5 years or less experience');
-      return;
-    }
-    if (formData.type === 'established' && yearsExp < 6) {
-      toast.error('Established Players must have 6 or more years experience');
-      return;
-    }
 
     setIsLoading(true);
 
     try {
-      // Check if website is a team/group profile
+      // Auto-detect if it's a team based on name or website
+      const nameLower = formData.name.toLowerCase();
       const websiteLower = formData.website.toLowerCase();
-      if (websiteLower.includes('team') || websiteLower.includes('group')) {
-        toast.error('Please use individual agent profiles, not team/group profiles');
-        setIsLoading(false);
-        return;
-      }
+      const isTeam = nameLower.includes('team') || 
+                     nameLower.includes('group') || 
+                     nameLower.includes(' & ') ||
+                     websiteLower.includes('team') || 
+                     websiteLower.includes('group');
+      
+      // Override user selection if we detect team indicators
+      const finalType = isTeam ? 'team' : formData.type;
 
       // Get next rank for this city/category/type
       const { data: existingAgents } = await supabase
@@ -160,10 +154,10 @@ export function ManualAgentAdder() {
         email: formData.email || null,
         website: formData.website,
         image_url: publicUrl,
-        description: formData.description || `Professional ${formData.type === 'established' ? 'established' : 'emerging'} agent in the area.`,
+        description: formData.description || `Professional ${finalType === 'team' ? 'real estate team' : 'individual agent'} in the area.`,
         city_id: formData.cityId,
         category_id: formData.categoryId,
-        type: formData.type,
+        type: finalType,
         rank: nextRank,
         active: true,
         years_experience: yearsExp > 0 ? yearsExp : null,
@@ -191,7 +185,7 @@ export function ManualAgentAdder() {
         description: '',
         cityId: formData.cityId, // Keep city/category selected
         categoryId: formData.categoryId,
-        type: 'established',
+        type: 'individual',
       });
 
     } catch (error) {
@@ -245,15 +239,18 @@ export function ManualAgentAdder() {
 
           <div className="space-y-2">
             <Label htmlFor="type">Agent Type *</Label>
-            <Select value={formData.type} onValueChange={(value: 'established' | 'emerging') => handleInputChange('type', value)}>
+            <Select value={formData.type} onValueChange={(value: 'individual' | 'team') => handleInputChange('type', value)}>
               <SelectTrigger id="type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="established">Established Players (6+ years)</SelectItem>
-                <SelectItem value="emerging">Emerging Talent (≤5 years)</SelectItem>
+                <SelectItem value="individual">Individual Agent</SelectItem>
+                <SelectItem value="team">Team or Group</SelectItem>
               </SelectContent>
             </Select>
+            <p className="text-xs text-muted-foreground">
+              System will auto-detect teams based on name/URL
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -267,23 +264,26 @@ export function ManualAgentAdder() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="website">Profile URL * (must be individual, not team)</Label>
+            <Label htmlFor="website">Zillow Profile URL *</Label>
             <Input
               id="website"
               value={formData.website}
               onChange={(e) => handleInputChange('website', e.target.value)}
               placeholder="https://www.zillow.com/profile/..."
             />
+            <p className="text-xs text-muted-foreground">
+              Can be individual or team profile
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="yearsExperience">Years Experience *</Label>
+            <Label htmlFor="yearsExperience">Years Experience (optional)</Label>
             <Input
               id="yearsExperience"
               type="number"
               value={formData.yearsExperience}
               onChange={(e) => handleInputChange('yearsExperience', e.target.value)}
-              placeholder="Enter years (Emerging: ≤5, Established: 6+)"
+              placeholder="Enter years of experience"
             />
           </div>
 
