@@ -24,37 +24,25 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       setLoading(true);
 
       try {
-        // Try direct Zillow scraper first, then fall back to Apify
-        let resolvedStats: Partial<ZillowStats> | null = null;
-        
-        // 1) Direct Zillow profile scraper
-        const { data: directData, error: directErr } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-          body: { profileUrl, agentName }
+        // Use Outscraper API to fetch Zillow stats
+        const { data, error } = await supabase.functions.invoke('fetch-outscraper-agent-stats', {
+          body: { profileUrl }
         });
         
-        if (!directErr && directData?.success && directData.stats) {
-          resolvedStats = {
-            forSale: directData.stats.forSale ?? directData.stats.currentListings ?? 0,
-            sold: directData.stats.sold ?? directData.stats.totalSales ?? 0,
-            forRent: directData.stats.forRent ?? 0,
-            reviews: directData.stats.reviews ?? 0,
-            currentListings: directData.stats.currentListings ?? directData.stats.forSale ?? 0,
-            totalSales: directData.stats.totalSales ?? directData.stats.sold ?? 0,
-            yearsExperience: directData.stats.yearsExperience ?? 0,
-          };
-        }
+        if (error) throw error;
+
+        let resolvedStats: Partial<ZillowStats> | null = null;
         
-        // 2) Fallback to Apify actor if needed
-        if (!resolvedStats) {
-          const { data: apifyData, error: apifyErr } = await supabase.functions.invoke('fetch-apify-agent-stats', {
-            body: { profileUrl }
-          });
-          
-          if (!apifyErr && apifyData?.success && apifyData.stats) {
-            resolvedStats = apifyData.stats as any;
-          } else if (apifyErr) {
-            throw apifyErr;
-          }
+        if (data?.success && data.stats) {
+          resolvedStats = {
+            forSale: data.stats.forSale ?? 0,
+            sold: data.stats.sold ?? 0,
+            forRent: data.stats.forRent ?? 0,
+            reviews: data.stats.reviews ?? 0,
+            currentListings: data.stats.currentListings ?? 0,
+            totalSales: data.stats.totalSales ?? 0,
+            yearsExperience: data.stats.yearsExperience ?? 0,
+          };
         }
 
         if (resolvedStats) {
