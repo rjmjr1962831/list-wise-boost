@@ -281,6 +281,11 @@ export const ProfessionalCard = ({
                 <meta itemProp="bestRating" content="5" />
               </div>
 
+              {/* AI Summary */}
+              <div className="text-sm font-medium text-foreground/90">
+                Experienced {market} real estate {(professional as any).type === 'team' ? 'team' : 'agent'} with {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })} reviews
+              </div>
+
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
               {(() => {
@@ -336,42 +341,40 @@ export const ProfessionalCard = ({
               </div>
 
 
-              {/* Bio/Description with semantic structure */}
-              <div itemProp="description">
-                <h4 className="sr-only">Professional Bio</h4>
-                {(() => {
-                  const description = professional.description || '';
-                  const lines = description.split('\n').length;
-                  const wordCount = description.split(' ').length;
-                  const isLong = lines > 3 || wordCount > 60;
-                  
-                  if (!isLong) {
+              {/* Zillow Bio with collapsible "more" */}
+              {professional.description && (
+                <div itemProp="description" className="border-t pt-3">
+                  <h4 className="text-sm font-semibold mb-2">About</h4>
+                  {(() => {
+                    const description = professional.description || '';
+                    const lines = description.split('\n').filter(line => line.trim());
+                    const firstTwoLines = lines.slice(0, 2).join('\n');
+                    const hasMore = lines.length > 2;
+                    
+                    if (!hasMore) {
+                      return (
+                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {description}
+                        </p>
+                      );
+                    }
+                    
                     return (
-                      <p className="text-muted-foreground leading-relaxed">
-                        {description}
-                      </p>
+                      <div>
+                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                          {showFullDescription ? description : firstTwoLines}
+                        </p>
+                        <button
+                          onClick={() => setShowFullDescription(!showFullDescription)}
+                          className="text-sm text-primary hover:underline mt-1 font-medium"
+                        >
+                          {showFullDescription ? 'less' : 'more'}
+                        </button>
+                      </div>
                     );
-                  }
-                  
-                  return (
-                    <>
-                      <p className="text-muted-foreground leading-relaxed">
-                        {showFullDescription 
-                          ? description 
-                          : description.split(' ').slice(0, 60).join(' ') + '...'}
-                      </p>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowFullDescription(!showFullDescription)}
-                        className="mt-2 h-auto p-0 text-primary hover:text-primary/80 hover:bg-transparent"
-                      >
-                        {showFullDescription ? 'Show Less' : 'More'}
-                      </Button>
-                    </>
-                  );
-                })()}
-              </div>
+                  })()}
+                </div>
+              )}
 
               {/* Specialties Section */}
               <div>
