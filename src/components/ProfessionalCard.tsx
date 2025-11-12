@@ -285,20 +285,22 @@ export const ProfessionalCard = ({
               {(() => {
                   const reviews = professional.reviews || 0;
                   
-                  // Priority: 1. Freshly fetched stats, 2. Stored stats, 3. Estimates
-                  const currentListings = zillowStats?.currentListings 
-                    || (professional.current_listings && professional.current_listings > 0 ? professional.current_listings : null)
-                    || Math.max(1, Math.round(reviews / 20));
-                    
-                  const totalSales = zillowStats?.totalSales
-                    || (professional.total_sales && professional.total_sales > 0 ? professional.total_sales : null)
-                    || Math.max(10, Math.round(reviews * 2.5));
+                  // Priority: 1) Freshly fetched stats (preserve 0), 2) Stored stats (preserve 0), 3) Conservative estimate
+                  const currentListingsRaw = (zillowStats?.currentListings ?? professional.current_listings);
+                  const totalSalesRaw = (zillowStats?.totalSales ?? professional.total_sales);
+
+                  const currentListings = currentListingsRaw ?? Math.max(1, Math.round(reviews / 20));
+                  const totalSales = totalSalesRaw ?? Math.max(10, Math.round(reviews * 2.5));
+
+                  // Try to use last-12-months when provided by backend; otherwise derive softly
+                  const salesLast12Mo = (zillowStats as any)?.salesLast12Months ?? Math.max(0, Math.round((totalSales || 0) / 10));
+                  const yearsExperience = zillowStats?.yearsExperience ?? Math.max(2, Math.round(reviews / 15));
                   
                   const displayStats = {
                     currentListings,
-                    salesLast12Mo: Math.max(5, Math.round(totalSales / 10)),
+                    salesLast12Mo,
                     totalSales,
-                    yearsExperience: Math.max(2, Math.round(reviews / 15))
+                    yearsExperience,
                   };
 
                   const labels: Record<string, string> = {

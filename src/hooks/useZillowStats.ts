@@ -34,15 +34,8 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
         if (functionError) throw functionError;
         
         if (data?.success && data.stats) {
-          resolvedStats = {
-            currentListings: data.stats.currentListings || 0,
-            totalSales: data.stats.totalSales || 0,
-            forSale: data.stats.currentListings || 0,
-            sold: data.stats.totalSales || 0,
-            forRent: 0,
-            reviews: 0,
-            yearsExperience: data.stats.yearsExperience || 0
-          };
+          // Preserve all fields from backend (e.g., salesLast12Months)
+          resolvedStats = data.stats as any;
         }
 
         if (resolvedStats) {
