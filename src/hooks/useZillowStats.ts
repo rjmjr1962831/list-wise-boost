@@ -53,13 +53,13 @@ export const useZillowStats = (
         
         if (data?.success && data.stats) {
           resolvedStats = {
-            forSale: 0,
-            sold: data.stats.totalSales || 0,
+            forSale: data.stats.currentListings ?? 0,
+            sold: (data.stats.salesLastYear ?? data.stats.totalSales ?? 0),
             forRent: 0,
-            reviews: data.stats.totalReviews || 0,
-            currentListings: 0, // Not provided by scraped/zillow-agent-scraper
-            totalSales: data.stats.totalSales || 0,
-            yearsExperience: 0, // Not provided by scraped/zillow-agent-scraper
+            reviews: data.stats.totalReviews ?? 0,
+            currentListings: data.stats.currentListings ?? 0,
+            totalSales: data.stats.totalSales ?? 0,
+            yearsExperience: data.stats.yearsExperience ?? 0,
           };
         }
 
