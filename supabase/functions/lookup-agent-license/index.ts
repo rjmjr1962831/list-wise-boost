@@ -118,33 +118,71 @@ Find the license number for ${agentName}. Return ONLY the license number or "NOT
 // State-specific search implementations
 async function searchArizona(agentName: string): Promise<string | null> {
   try {
-    const [lastName, firstName] = agentName.split(' ').reverse();
-    const searchUrl = `https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses`;
+    const individualNames = extractIndividualNames(agentName);
+    console.log(`Searching AZ for individuals: ${JSON.stringify(individualNames)}`);
     
-    // Arizona requires a POST request with form data
-    const formData = new URLSearchParams({
-      'LastName': lastName || '',
-      'FirstName': firstName || '',
-      'LicenseNumber': '',
-      'Status': 'Active'
-    });
+    for (const name of individualNames) {
+      const nameParts = name.split(/\s+/);
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+      
+      if (!firstName || !lastName) continue;
+      
+      // Try multiple search strategies
+      const attempts = [
+        { fn: firstName, ln: lastName },
+        { fn: '', ln: lastName },
+        { fn: firstName.charAt(0), ln: lastName },
+      ];
 
-    const response = await fetch(searchUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-      body: formData.toString(),
-    });
+      for (const attempt of attempts) {
+        console.log(`Trying AZ search: ${attempt.fn} ${attempt.ln}`);
+        const searchUrl = `https://services.azre.gov/PdbWeb/IndividualLicense/SearchIndividualLicenses`;
+        
+        const formData = new URLSearchParams({
+          'LastName': attempt.ln,
+          'FirstName': attempt.fn,
+          'LicenseNumber': '',
+          'Status': 'Active'
+        });
 
-    if (!response.ok) return null;
+        const response = await fetch(searchUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          },
+          body: formData.toString(),
+        });
 
-    const html = await response.text();
+        if (!response.ok) {
+          console.log(`AZ search failed with status ${response.status}`);
+          continue;
+        }
+
+        const html = await response.text();
+        console.log(`AZ response HTML length: ${html.length}`);
+        
+        // Arizona license numbers patterns: SA########## or BR##########
+        const patterns = [
+          /\b(SA\d{9,10})\b/i,
+          /\b(BR\d{9,10})\b/i,
+          /License\s*(?:Number|#)\s*:?\s*([A-Z]{2}\d{9,10})/i,
+          /\b([A-Z]{2}\d{9,10})\b/,
+        ];
+        
+        for (const pattern of patterns) {
+          const match = html.match(pattern);
+          if (match && match[1]) {
+            console.log(`Found AZ license for ${name}: ${match[1]}`);
+            return match[1];
+          }
+        }
+        console.log(`No AZ license found for attempt: ${attempt.fn} ${attempt.ln}`);
+      }
+    }
     
-    // Arizona license numbers are typically SA followed by numbers
-    const licenseMatch = html.match(/SA\d{9}/i) || html.match(/License\s*Number[:\s]*([A-Z]{2}\d{9})/i);
-    return licenseMatch ? licenseMatch[0] : null;
+    return null;
   } catch (error) {
     console.error('Arizona search error:', error);
     return null;
@@ -240,21 +278,61 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
 
 async function searchTexas(agentName: string): Promise<string | null> {
   try {
-    const searchUrl = `https://www.trec.texas.gov/apps/license-holder-search/?name=${encodeURIComponent(agentName)}`;
+    const individualNames = extractIndividualNames(agentName);
+    console.log(`Searching TX for individuals: ${JSON.stringify(individualNames)}`);
     
-    const response = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
+    for (const name of individualNames) {
+      const variants = [
+        name,
+        name.split(/\s+/).reverse().join(', '), // "Doe, John" format
+      ];
 
-    if (!response.ok) return null;
+      for (const variant of variants) {
+        console.log(`Trying TX search: "${variant}"`);
+        const searchUrl = `https://www.trec.texas.gov/apps/license-holder-search/?name=${encodeURIComponent(variant)}`;
+        
+        const response = await fetch(searchUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          },
+        });
 
-    const html = await response.text();
+        if (!response.ok) {
+          console.log(`TX search failed with status ${response.status}`);
+          continue;
+        }
+
+        const html = await response.text();
+        console.log(`TX response HTML length: ${html.length}`);
+        
+        // Texas license number patterns
+        const patterns = [
+          /License\s*(?:Number|#|No\.?)\s*:?\s*(\d{6,7})/i,
+          /\bLic\s*#\s*:?\s*(\d{6,7})\b/i,
+          /\b(\d{6,7})\b/g, // Generic 6-7 digit numbers as fallback
+        ];
+        
+        for (const pattern of patterns) {
+          const matches = html.matchAll(new RegExp(pattern.source, pattern.flags));
+          for (const match of matches) {
+            if (match[1]) {
+              const licenseNum = match[1];
+              // Validate it's near the agent name
+              const nameIndex = html.toLowerCase().indexOf(name.toLowerCase());
+              const matchIndex = html.indexOf(match[0]);
+              if (nameIndex !== -1 && Math.abs(matchIndex - nameIndex) < 500) {
+                console.log(`Found TX license for ${name}: ${licenseNum}`);
+                return licenseNum;
+              }
+            }
+          }
+        }
+        console.log(`No TX license found for variant: ${variant}`);
+      }
+    }
     
-    // Texas license numbers are typically 6-7 digits
-    const licenseMatch = html.match(/License\s*(?:Number|#)\s*:?\s*(\d{6,7})/i);
-    return licenseMatch ? licenseMatch[1] : null;
+    return null;
   } catch (error) {
     console.error('Texas search error:', error);
     return null;
@@ -263,22 +341,63 @@ async function searchTexas(agentName: string): Promise<string | null> {
 
 async function searchFlorida(agentName: string): Promise<string | null> {
   try {
-    const [lastName, firstName] = agentName.split(' ').reverse();
-    const searchUrl = `https://www.myfloridalicense.com/wl11.asp?mode=0&SID=&brd=&typ=&lnm=${encodeURIComponent(lastName || '')}&fnm=${encodeURIComponent(firstName || '')}`;
+    const individualNames = extractIndividualNames(agentName);
+    console.log(`Searching FL for individuals: ${JSON.stringify(individualNames)}`);
     
-    const response = await fetch(searchUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      },
-    });
+    for (const name of individualNames) {
+      const nameParts = name.split(/\s+/);
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ');
+      
+      if (!firstName || !lastName) continue;
+      
+      // Try multiple search strategies
+      const attempts = [
+        { fn: firstName, ln: lastName },
+        { fn: '', ln: lastName },
+        { fn: firstName.charAt(0), ln: lastName },
+      ];
 
-    if (!response.ok) return null;
+      for (const attempt of attempts) {
+        console.log(`Trying FL search: ${attempt.fn} ${attempt.ln}`);
+        const searchUrl = `https://www.myfloridalicense.com/wl11.asp?mode=0&SID=&brd=&typ=&lnm=${encodeURIComponent(attempt.ln)}&fnm=${encodeURIComponent(attempt.fn)}`;
+        
+        const response = await fetch(searchUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          },
+        });
 
-    const html = await response.text();
+        if (!response.ok) {
+          console.log(`FL search failed with status ${response.status}`);
+          continue;
+        }
+
+        const html = await response.text();
+        console.log(`FL response HTML length: ${html.length}`);
+        
+        // Florida license number patterns: SL#######, BK#######, or just 7 digits
+        const patterns = [
+          /\b(SL\d{7})\b/i,
+          /\b(BK\d{7})\b/i,
+          /License\s*(?:Number|#|No\.?)\s*:?\s*([A-Z]{2}\d{7})/i,
+          /License\s*(?:Number|#|No\.?)\s*:?\s*(\d{7})/i,
+          /\b([A-Z]{2}\d{7})\b/,
+        ];
+        
+        for (const pattern of patterns) {
+          const match = html.match(pattern);
+          if (match && match[1]) {
+            console.log(`Found FL license for ${name}: ${match[1]}`);
+            return match[1];
+          }
+        }
+        console.log(`No FL license found for attempt: ${attempt.fn} ${attempt.ln}`);
+      }
+    }
     
-    // Florida license numbers can vary - look for common patterns
-    const licenseMatch = html.match(/License\s*(?:Number|#)\s*:?\s*([A-Z]{2}\d{7}|\d{7})/i);
-    return licenseMatch ? licenseMatch[1] : null;
+    return null;
   } catch (error) {
     console.error('Florida search error:', error);
     return null;
