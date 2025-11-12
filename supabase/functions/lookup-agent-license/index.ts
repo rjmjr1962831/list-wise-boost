@@ -360,7 +360,7 @@ async function searchFlorida(agentName: string): Promise<string | null> {
 
       for (const attempt of attempts) {
         console.log(`Trying FL search: ${attempt.fn} ${attempt.ln}`);
-        const searchUrl = `https://www.myfloridalicense.com/wl11.asp?mode=0&SID=&brd=&typ=&lnm=${encodeURIComponent(attempt.ln)}&fnm=${encodeURIComponent(attempt.fn)}`;
+        const searchUrl = `https://www.myfloridalicense.com/wl11.asp?mode=0&SID=&brd=REA&typ=&lnm=${encodeURIComponent(attempt.ln)}&fnm=${encodeURIComponent(attempt.fn)}`;
         
         const response = await fetch(searchUrl, {
           headers: {
