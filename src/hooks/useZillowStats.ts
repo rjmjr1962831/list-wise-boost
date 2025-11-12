@@ -24,47 +24,28 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       setLoading(true);
 
       try {
-        // Use Apify actor to fetch Zillow stats
-        const { data, error } = await supabase.functions.invoke('fetch-apify-agent-stats', {
+        // Use GetDataForMe scraper for complete agent data
+        const { data, error } = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
           body: { profileUrl }
         });
         
-        if (error) throw error;
+        if (error) {
+          console.error('GetDataForMe error:', error);
+          throw error;
+        }
 
         let resolvedStats: Partial<ZillowStats> | null = null;
         
         if (data?.success && data.stats) {
           resolvedStats = {
-            forSale: data.stats.forSale,
-            sold: data.stats.sold,
-            forRent: data.stats.forRent,
-            reviews: data.stats.reviews,
-            currentListings: data.stats.currentListings,
-            totalSales: data.stats.totalSales,
-            yearsExperience: data.stats.yearsExperience,
+            forSale: data.stats.forSale || 0,
+            sold: data.stats.sold || 0,
+            forRent: data.stats.forRent || 0,
+            reviews: data.stats.totalReviews || 0,
+            currentListings: data.stats.currentListings || 0,
+            totalSales: data.stats.totalSales || 0,
+            yearsExperience: data.stats.yearsExperience || 0,
           };
-        }
-
-        // If Apify returned no meaningful stats, fall back to Outscraper
-        const isMeaningful = (s: Partial<ZillowStats> | null) => !!s && (
-          (s.currentListings ?? 0) > 0 || (s.forSale ?? 0) > 0 || (s.totalSales ?? 0) > 0 || (s.sold ?? 0) > 0
-        );
-        
-        if (!isMeaningful(resolvedStats)) {
-          const { data: fallback, error: fbErr } = await supabase.functions.invoke('fetch-outscraper-agent-stats', {
-            body: { profileUrl }
-          });
-          if (!fbErr && fallback?.success && fallback.stats) {
-            resolvedStats = {
-              forSale: fallback.stats.forSale,
-              sold: fallback.stats.sold,
-              forRent: fallback.stats.forRent,
-              reviews: fallback.stats.reviews,
-              currentListings: fallback.stats.currentListings,
-              totalSales: fallback.stats.totalSales,
-              yearsExperience: fallback.stats.yearsExperience,
-            };
-          }
         }
 
         if (resolvedStats) {
