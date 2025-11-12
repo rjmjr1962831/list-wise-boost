@@ -172,49 +172,62 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
       ];
 
       for (const attempt of attempts) {
-        console.log(`Trying CA search: firstName="${attempt.fn}" lastName="${attempt.ln}"`);
-        const searchUrl = `https://www2.dre.ca.gov/PublicASP/pplinfo.asp?License_id=&firstname=${encodeURIComponent(attempt.fn)}&lastname=${encodeURIComponent(attempt.ln)}`;
-        console.log(`Search URL: ${searchUrl}`);
-        
-        const response = await fetch(searchUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          },
-        });
+        const variants = [
+          `${lastName}, ${attempt.fn || firstName}`,
+          `${lastName}`,
+        ].filter(Boolean);
 
-        console.log(`Response status: ${response.status}`);
-        if (!response.ok) {
-          console.log(`Search failed with status ${response.status}`);
-          continue;
-        }
+        for (const q of variants) {
+          console.log(`Trying CA POST search: "${q}"`);
+          const form = new URLSearchParams({
+            LICENSEE_NAME: q,
+            CITY_STATE: '',
+            LICENSE_ID: '',
+          });
+          const url = 'https://www2.dre.ca.gov/PublicASP/pplinfo.asp?start=1';
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+              'Referer': 'https://www2.dre.ca.gov/PublicASP/pplinfo.asp',
+              'Accept': 'text/html,application/xhtml+xml',
+            },
+            body: form.toString(),
+          });
 
-        const html = await response.text();
-        console.log(`HTML length: ${html.length}, contains name: ${html.toLowerCase().includes(lastName.toLowerCase())}`);
-        
-        // Common CA patterns (CalDRE/DRE/BRE) and generic License labels
-        const licensePatterns = [
-          /(CalDRE|DRE|BRE)\s*(?:Lic(?:ense)?|ID|#)?\s*:?\s*#?\s*0?(\d{7,8})/i,
-          /License\s*(?:ID|Number|#)\s*:?\s*0?(\d{7,8})/i,
-        ];
-        
-        for (const pattern of licensePatterns) {
-          const match = html.match(pattern);
-          if (match) {
-            const id = match[2] || match[1];
-            const normalized = (Array.isArray(id) ? id[0] : id).replace(/^0/, '');
-            console.log(`Found CA license for ${name}: ${normalized}`);
-            return normalized;
+          console.log(`Response status: ${response.status}`);
+          if (!response.ok) {
+            console.log(`Search failed with status ${response.status}`);
+            continue;
           }
-        }
-        console.log(`No license pattern match in HTML`);
 
-        // Fallback: capture License_id links from results pages (detail links)
-        const idLinkMatch = html.match(/pplinfo\d?\.asp\?License_id=(\d{6,8})/i) || html.match(/License_id\s*=\s*(\d{6,8})/i);
-        if (idLinkMatch) {
-          console.log(`Found CA license_id for ${name}: ${idLinkMatch[1]}`);
-          return idLinkMatch[1];
+          const html = await response.text();
+          console.log(`HTML length: ${html.length}`);
+          
+          // First, look for direct detail links (most reliable)
+          const idLinkMatch = html.match(/pplinfo\d?\.asp\?License_id=(\d{6,8})/i) || html.match(/License_id\s*=\s*(\d{6,8})/i);
+          if (idLinkMatch) {
+            console.log(`Found CA license_id for ${name}: ${idLinkMatch[1]}`);
+            return idLinkMatch[1];
+          }
+
+          // Fallback: attempt to parse visible license number patterns
+          const licensePatterns = [
+            /(CalDRE|DRE|BRE)\s*(?:Lic(?:ense)?|ID|#)?\s*:?\s*#?\s*0?(\d{7,8})/i,
+            /License\s*(?:ID|Number|#)\s*:?\s*0?(\d{7,8})/i,
+          ];
+          for (const pattern of licensePatterns) {
+            const match = html.match(pattern);
+            if (match) {
+              const id = match[2] || match[1];
+              const normalized = (Array.isArray(id) ? id[0] : id).replace(/^0/, '');
+              console.log(`Found CA license for ${name}: ${normalized}`);
+              return normalized;
+            }
+          }
+          console.log(`No license id or number found in POST search results for query "${q}"`);
         }
-        console.log(`No License_id link found in HTML`);
       }
     }
     
