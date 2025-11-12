@@ -48,17 +48,22 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
         if (resolvedStats) {
           setStats(resolvedStats as ZillowStats);
 
-          // Store the stats in the database
-          const { error: updateError } = await supabase
-            .from('professionals')
-            .update({
-              current_listings: (resolvedStats as ZillowStats).currentListings || (resolvedStats as ZillowStats).forSale || 0,
-              total_sales: (resolvedStats as ZillowStats).totalSales || (resolvedStats as ZillowStats).sold || 0,
-            })
-            .eq('id', professionalId);
+          // Store the stats in the database only if we have meaningful values (> 0)
+          const newCurrent = (resolvedStats as ZillowStats).currentListings || (resolvedStats as ZillowStats).forSale || 0;
+          const newTotal = (resolvedStats as ZillowStats).totalSales || (resolvedStats as ZillowStats).sold || 0;
 
-          if (updateError) {
-            console.error('Error updating professional stats:', updateError);
+          if (newCurrent > 0 || newTotal > 0) {
+            const { error: updateError } = await supabase
+              .from('professionals')
+              .update({
+                current_listings: newCurrent,
+                total_sales: newTotal,
+              })
+              .eq('id', professionalId);
+
+            if (updateError) {
+              console.error('Error updating professional stats:', updateError);
+            }
           }
         }
       } catch (err) {
