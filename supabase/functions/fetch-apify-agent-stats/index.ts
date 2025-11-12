@@ -138,22 +138,64 @@ serve(async (req) => {
     const byScreenName = !byExactUrl && screenName
       ? results.find((r: any) => typeof r.url === 'string' && r.url.toLowerCase().endsWith(`/profile/${screenName}`))
       : null;
-    const bySalesStats = results.find((r: any) => r && (r.agentSalesStats || r.forSaleListings));
+    const bySalesStats = results.find((r: any) => r && (r.agentSalesStats || r.forSaleListings || r.pastSales));
 
     const agentData = (byExactUrl || byScreenName || bySalesStats || results[0]) ?? {};
     console.log('Selected Apify item. Keys:', Object.keys(agentData));
 
-    // Extract the stats (defensive mapping; preserve zero values)
+    // Helper to safely parse various date formats
+    const parseDate = (val: string | undefined) => {
+      if (!val) return undefined;
+      const d = new Date(val);
+      if (!isNaN(d.getTime())) return d;
+      const m = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        const mm = parseInt(m[1], 10) - 1;
+        const dd = parseInt(m[2], 10);
+        const yyyy = parseInt(m[3], 10);
+        return new Date(yyyy, mm, dd);
+      }
+      return undefined;
+    };
+
+    // Derive fields robustly; preserve 0 values
+    const totalSales = agentData.pastSales?.total
+      ?? agentData.agentSalesStats?.countAllTime
+      ?? agentData.totalSales
+      ?? agentData.salesCount
+      ?? 0;
+
+    const currentListings = agentData.forSaleListings?.listing_count
+      ?? (Array.isArray(agentData.forSaleListings?.listings) ? agentData.forSaleListings.listings.length : undefined)
+      ?? agentData.activeListings
+      ?? agentData.currentListings
+      ?? 0;
+
+    let salesLast12Months = agentData.agentSalesStats?.countLastYear
+      ?? agentData.salesLast12Months
+      ?? agentData.sales_last_12_months;
+
+    if (salesLast12Months == null && Array.isArray(agentData.pastSales?.past_sales)) {
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      salesLast12Months = agentData.pastSales.past_sales.reduce((acc: number, s: any) => {
+        const dt = parseDate(s?.sold_date);
+        return acc + (dt && dt > oneYearAgo ? 1 : 0);
+      }, 0);
+    }
+
     const stats = {
-      totalSales: agentData.agentSalesStats?.countAllTime ?? agentData.totalSales ?? agentData.salesCount ?? 0,
-      salesLast12Months: agentData.agentSalesStats?.countLastYear ?? agentData.salesLast12Months ?? agentData.sales_last_12_months ?? 0,
-      currentListings: agentData.forSaleListings?.listing_count ?? agentData.activeListings ?? agentData.currentListings ?? 0,
+      totalSales,
+      salesLast12Months: salesLast12Months ?? 0,
+      currentListings,
       avgSalePrice: agentData.agentSalesStats?.averageValueThreeYear ?? agentData.avgSalePrice ?? 0,
       priceRangeMin: agentData.agentSalesStats?.priceRangeThreeYearMin ?? 0,
       priceRangeMax: agentData.agentSalesStats?.priceRangeThreeYearMax ?? 0,
       yearsExperience: agentData.yearsExperience ?? agentData.years_experience ?? null,
       includesTeam: agentData.agentSalesStats?.stats_include_team ?? false,
     };
+
+    console.log('Mapped stats from Apify:', stats);
 
     return new Response(
       JSON.stringify({
