@@ -132,10 +132,18 @@ serve(async (req) => {
       throw new Error('No data returned from Apify');
     }
 
-    const agentData = results[0] ?? {};
-    console.log('Successfully fetched agent data from Apify. Keys:', Object.keys(agentData));
+    // Choose the most relevant result: exact URL match, then summary with sales stats, else first
+    const screenName = (profileUrl.match(/profile\/([^\/?#]+)/i)?.[1] || '').toLowerCase();
+    const byExactUrl = results.find((r: any) => typeof r.url === 'string' && r.url.toLowerCase() === profileUrl.toLowerCase());
+    const byScreenName = !byExactUrl && screenName
+      ? results.find((r: any) => typeof r.url === 'string' && r.url.toLowerCase().endsWith(`/profile/${screenName}`))
+      : null;
+    const bySalesStats = results.find((r: any) => r && (r.agentSalesStats || r.forSaleListings));
 
-    // Extract the stats we need (defensive mapping across possible shapes)
+    const agentData = (byExactUrl || byScreenName || bySalesStats || results[0]) ?? {};
+    console.log('Selected Apify item. Keys:', Object.keys(agentData));
+
+    // Extract the stats (defensive mapping; preserve zero values)
     const stats = {
       totalSales: agentData.agentSalesStats?.countAllTime ?? agentData.totalSales ?? agentData.salesCount ?? 0,
       salesLast12Months: agentData.agentSalesStats?.countLastYear ?? agentData.salesLast12Months ?? agentData.sales_last_12_months ?? 0,
