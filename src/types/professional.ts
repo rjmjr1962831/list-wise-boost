@@ -38,6 +38,8 @@ export interface Professional {
   license_number?: string;
   license_verified_at?: string;
   zuid?: string | null; // Zillow unique agent ID
+  current_listings?: number; // Real data from Zillow
+  total_sales?: number; // Real data from Zillow
 }
 
 export interface ListSection {

@@ -40,73 +40,92 @@ serve(async (req) => {
 
     const html = await response.text();
     
-    console.log('Successfully fetched profile HTML');
+    console.log('Successfully fetched profile HTML, length:', html.length);
     
-    // Parse stats from HTML
+    // Parse stats from HTML - looking for Zillow's specific patterns
     const stats = {
-      totalSales: 0,
-      salesLast12Months: 0,
+      forSale: 0,
+      sold: 0,
+      forRent: 0,
+      reviews: 0,
       currentListings: 0,
+      totalSales: 0,
       yearsExperience: 0,
-      avgSalePrice: 0,
     };
 
-    // Look for various patterns in the HTML
+    // Extract Zillow User ID (zuid) from profile URL or HTML
+    let zuid = null;
+    const zuidMatch = profileUrl.match(/profile\/([^\/]+)/);
+    if (zuidMatch) {
+      zuid = zuidMatch[1];
+    }
     
-    // Pattern 1: Total sales / transactions
-    const salesPatterns = [
-      /(\d+)\s+(?:sales?|transactions?|deals?)\s+(?:in\s+career|total|all[\s-]?time)/gi,
-      /(?:career|total|all[\s-]?time)\s+(?:sales?|transactions?):\s*(\d+)/gi,
-      /(\d+)\s+homes?\s+sold/gi,
+    // Look for the stats tabs section - Zillow uses specific patterns
+    // Pattern: "For Sale (39)" or "For Sale 39" or "39 For Sale"
+    const forSaleMatch = html.match(/For\s+Sale[:\s]*\(?(\d+)\)?|(\d+)\s+For\s+Sale/i);
+    if (forSaleMatch) {
+      stats.forSale = parseInt(forSaleMatch[1] || forSaleMatch[2]);
+      stats.currentListings = stats.forSale; // Also update currentListings
+      console.log('Found For Sale:', stats.forSale);
+    }
+    
+    // Pattern: "Sold (2279)" or "Sold: 2279"
+    const soldMatch = html.match(/Sold[:\s]*\(?(\d+)\)?|(\d+)\s+Sold/i);
+    if (soldMatch) {
+      stats.sold = parseInt(soldMatch[1] || soldMatch[2]);
+      stats.totalSales = stats.sold; // Also update totalSales
+      console.log('Found Sold:', stats.sold);
+    }
+    
+    // Pattern: "For Rent (2)" or "For Rent: 2"
+    const forRentMatch = html.match(/For\s+Rent[:\s]*\(?(\d+)\)?|(\d+)\s+For\s+Rent/i);
+    if (forRentMatch) {
+      stats.forRent = parseInt(forRentMatch[1] || forRentMatch[2]);
+      console.log('Found For Rent:', stats.forRent);
+    }
+    
+    // Pattern: reviews count - look for various patterns
+    const reviewPatterns = [
+      /(\d+)\s+(?:reviews?|ratings?)/i,
+      /reviews?[:\s]*\(?(\d+)\)?/i,
+      /"reviewCount"[:\s]*(\d+)/i,
+      /"ratingCount"[:\s]*(\d+)/i,
     ];
     
-    for (const pattern of salesPatterns) {
+    for (const pattern of reviewPatterns) {
       const match = html.match(pattern);
       if (match) {
-        const numbers = match.map(m => {
-          const num = m.match(/\d+/);
-          return num ? parseInt(num[0]) : 0;
-        });
-        stats.totalSales = Math.max(stats.totalSales, ...numbers);
+        const reviewCount = parseInt(match[1]);
+        if (reviewCount > stats.reviews) {
+          stats.reviews = reviewCount;
+          console.log('Found reviews:', stats.reviews);
+        }
       }
     }
 
-    // Pattern 2: Sales last 12 months
-    const last12MonthsPatterns = [
-      /(\d+)\s+(?:sales?|transactions?)\s+(?:in\s+)?(?:the\s+)?(?:last|past)\s+(?:12\s+months?|year)/gi,
-      /(?:last|past)\s+(?:12\s+months?|year):\s*(\d+)\s+(?:sales?|transactions?)/gi,
-    ];
+    // Look for various patterns in the HTML for additional stats
     
-    for (const pattern of last12MonthsPatterns) {
-      const match = html.match(pattern);
-      if (match) {
-        const numbers = match.map(m => {
-          const num = m.match(/\d+/);
-          return num ? parseInt(num[0]) : 0;
-        });
-        stats.salesLast12Months = Math.max(stats.salesLast12Months, ...numbers);
+    // Pattern 1: Total sales / transactions (fallback if "Sold" not found)
+    if (stats.sold === 0) {
+      const salesPatterns = [
+        /(\d+)\s+(?:sales?|transactions?|deals?)\s+(?:in\s+career|total|all[\s-]?time)/gi,
+        /(?:career|total|all[\s-]?time)\s+(?:sales?|transactions?):\s*(\d+)/gi,
+        /(\d+)\s+homes?\s+sold/gi,
+      ];
+      
+      for (const pattern of salesPatterns) {
+        const match = html.match(pattern);
+        if (match) {
+          const numbers = match.map(m => {
+            const num = m.match(/\d+/);
+            return num ? parseInt(num[0]) : 0;
+          });
+          stats.totalSales = Math.max(stats.totalSales, ...numbers);
+        }
       }
     }
 
-    // Pattern 3: Current listings / active listings
-    const listingsPatterns = [
-      /(\d+)\s+(?:current|active)\s+listings?/gi,
-      /(?:current|active)\s+listings?:\s*(\d+)/gi,
-      /(\d+)\s+properties?\s+(?:for\s+sale|listed)/gi,
-    ];
-    
-    for (const pattern of listingsPatterns) {
-      const match = html.match(pattern);
-      if (match) {
-        const numbers = match.map(m => {
-          const num = m.match(/\d+/);
-          return num ? parseInt(num[0]) : 0;
-        });
-        stats.currentListings = Math.max(stats.currentListings, ...numbers);
-      }
-    }
-
-    // Pattern 4: Years of experience
+    // Pattern 2: Years of experience
     const experiencePatterns = [
       /(\d+)\+?\s+years?\s+(?:of\s+)?experience/gi,
       /experience:\s*(\d+)\+?\s+years?/gi,
@@ -121,27 +140,6 @@ serve(async (req) => {
           return num ? parseInt(num[0]) : 0;
         });
         stats.yearsExperience = Math.max(stats.yearsExperience, ...numbers);
-      }
-    }
-
-    // Pattern 5: Average sale price
-    const avgPricePatterns = [
-      /(?:average|avg\.?|median)\s+(?:sale|sold)\s+price:\s*\$?([\d,]+)k?/gi,
-      /\$?([\d,]+)k?\s+(?:average|avg\.?|median)\s+(?:sale|sold)\s+price/gi,
-    ];
-    
-    for (const pattern of avgPricePatterns) {
-      const match = html.match(pattern);
-      if (match) {
-        const priceStr = match[0].replace(/[^\d,]/g, '');
-        const price = parseInt(priceStr.replace(/,/g, ''));
-        if (price > 0) {
-          stats.avgSalePrice = price;
-          // If it looks like it's in thousands (e.g., "450k"), multiply
-          if (match[0].toLowerCase().includes('k') && price < 10000) {
-            stats.avgSalePrice = price * 1000;
-          }
-        }
       }
     }
 
@@ -171,9 +169,10 @@ serve(async (req) => {
         success: true,
         agentName,
         profileUrl: fullUrl,
+        zuid,
         stats,
-        message: stats.totalSales > 0 || stats.currentListings > 0 
-          ? 'Successfully extracted stats from profile' 
+        message: stats.sold > 0 || stats.forSale > 0 
+          ? `Successfully extracted stats: ${stats.forSale} for sale, ${stats.sold} sold, ${stats.forRent} for rent, ${stats.reviews} reviews` 
           : 'Profile fetched but no stats found - will use estimates',
       }),
       {

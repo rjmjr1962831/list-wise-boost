@@ -275,12 +275,18 @@ export const ProfessionalCard = ({
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
                 {(() => {
-                  // Estimate stats based on review count
                   const reviews = professional.reviews || 0;
-                  const estimatedStats = {
-                    currentListings: Math.max(1, Math.round(reviews / 20)),
-                    salesLast12Mo: Math.max(5, Math.round(reviews / 5)),
-                    totalSales: Math.max(10, Math.round(reviews * 2.5)),
+                  const hasRealStats = professional.current_listings !== undefined && professional.current_listings > 0;
+                  
+                  // Use real data if available, otherwise estimate from reviews
+                  const displayStats = {
+                    currentListings: hasRealStats 
+                      ? professional.current_listings 
+                      : Math.max(1, Math.round(reviews / 20)),
+                    salesLast12Mo: hasRealStats && professional.total_sales
+                      ? Math.max(5, Math.round(professional.total_sales / 10))
+                      : Math.max(5, Math.round(reviews / 5)),
+                    totalSales: professional.total_sales || Math.max(10, Math.round(reviews * 2.5)),
                     yearsExperience: Math.max(2, Math.round(reviews / 15))
                   };
 
@@ -291,7 +297,7 @@ export const ProfessionalCard = ({
                     yearsExperience: "Years Exp."
                   };
 
-                  return Object.entries(estimatedStats).map(([key, value]) => (
+                  return Object.entries(displayStats).map(([key, value]) => (
                     <div key={key} className="text-center md:text-left">
                       <div className="text-2xl font-bold text-primary">{value}</div>
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
