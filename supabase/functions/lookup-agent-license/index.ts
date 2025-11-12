@@ -428,10 +428,23 @@ async function searchFlorida(agentName: string): Promise<string | null> {
         console.log(`FL response HTML length: ${html.length}`);
         
         // 1) Follow detail links from search results and parse license
-        const linkMatches = [...html.matchAll(/href=[\"']([^\"' ]*(?:Lic(?:ense)?Detail|licDetail|LicDetail|license_details|detail)\.asp[^\"' ]*)[\"']/ig)];
-        for (const lm of linkMatches) {
-          const href = lm[1];
-          const detailUrl = new URL(href, 'https://www.myfloridalicense.com/').toString();
+        // Collect potential detail URLs from anchors and inline scripts
+        const urls = new Set<string>();
+        // a) Standard href links
+        for (const m of html.matchAll(/href=[\"']([^\"' ]*(?:Lic(?:ense)?Detail|licDetail|LicDetail|license_details|detail)\.asp[^\"' ]*)[\"']/ig)) {
+          urls.add(m[1]);
+        }
+        // b) JavaScript-based opens: window.open('licDetail.asp?...'), javascript:...
+        for (const m of html.matchAll(/(?:window\.open|open)\(\s*[\"']([^\"']*(?:Lic(?:ense)?Detail|licDetail|LicDetail)\.asp[^\"']*)[\"']/ig)) {
+          urls.add(m[1]);
+        }
+        // c) Bare references inside inline scripts/text
+        for (const m of html.matchAll(/\b(?:Lic(?:ense)?Detail|licDetail|LicDetail)\.asp[^\s"'<>)]*/ig)) {
+          urls.add(m[0]);
+        }
+
+        for (const raw of urls) {
+          const detailUrl = new URL(raw, 'https://www.myfloridalicense.com/').toString();
           console.log(`FL detail URL candidate: ${detailUrl}`);
 
           try {
@@ -440,6 +453,8 @@ async function searchFlorida(agentName: string): Promise<string | null> {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
                 'Referer': searchUrl,
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Upgrade-Insecure-Requests': '1',
               },
             });
             if (!dres.ok) continue;
