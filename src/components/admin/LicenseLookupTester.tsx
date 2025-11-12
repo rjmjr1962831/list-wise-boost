@@ -101,7 +101,7 @@ export function LicenseLookupTester() {
     setTestResults([]);
     
     try {
-      toast.info(`Testing ${testAgents.length} agents...`);
+      toast.info(`Testing ${testAgents.length.toLocaleString('en-US', { maximumFractionDigits: 0 })} agents...`);
       
       for (const agent of testAgents) {
         const result = await testLookup(agent.name, agent.state);

@@ -233,7 +233,7 @@ const ProfessionalsManager = () => {
 
       setLookupProgress({ current: 0, total: realEstateAgents.length, found: 0 });
 
-      toast.info(`Starting license lookup for ${realEstateAgents.length} agents...`);
+      toast.info(`Starting license lookup for ${realEstateAgents.length.toLocaleString('en-US', { maximumFractionDigits: 0 })} agents...`);
 
       // Process each agent
       for (let i = 0; i < realEstateAgents.length; i++) {
@@ -282,7 +282,7 @@ const ProfessionalsManager = () => {
         }
       }
 
-      toast.success(`Bulk lookup complete! Found ${foundCount} license numbers out of ${realEstateAgents.length} agents.`);
+      toast.success(`Bulk lookup complete! Found ${foundCount.toLocaleString('en-US', { maximumFractionDigits: 0 })} license numbers out of ${realEstateAgents.length.toLocaleString('en-US', { maximumFractionDigits: 0 })} agents.`);
       
       // Refresh the data
       fetchData();

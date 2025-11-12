@@ -88,7 +88,7 @@ const CitiesManager = () => {
           
           if (importResult.success) {
             toast.success(
-              `Successfully imported ${importResult.imported} agents from Zillow. Found ${importResult.licensesFound} license numbers.`,
+              `Successfully imported ${importResult.imported.toLocaleString('en-US', { maximumFractionDigits: 0 })} agents from Zillow. Found ${importResult.licensesFound.toLocaleString('en-US', { maximumFractionDigits: 0 })} license numbers.`,
               { id: "zillow-import" }
             );
           } else {

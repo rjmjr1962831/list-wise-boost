@@ -246,7 +246,7 @@ export const ZillowAgentImporter = () => {
       
       toast({
         title: "Success",
-        description: `Found ${agentList.length} agents${testMode ? ' (Test Mode)' : ''}`,
+        description: `Found ${agentList.length.toLocaleString('en-US', { maximumFractionDigits: 0 })} agents${testMode ? ' (Test Mode)' : ''}`,
       });
     } catch (error) {
       console.error('Error fetching agents:', error);

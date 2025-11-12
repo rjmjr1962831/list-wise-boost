@@ -38,7 +38,7 @@ export const CategoryCard = ({ category, city, professionalCount }: CategoryCard
               <IconComponent className={`h-6 w-6 text-${category.accentColor}-600 dark:text-${category.accentColor}-400`} />
             </div>
             <Badge variant="secondary" className="text-xs">
-              {professionalCount} Listed
+              {professionalCount.toLocaleString('en-US', { maximumFractionDigits: 0 })} Listed
             </Badge>
           </div>
           <h3 className="text-xl font-semibold mb-2">{category.pluralName}</h3>

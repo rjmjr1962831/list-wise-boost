@@ -34,7 +34,7 @@ export const RateLimitGuard = ({ children }: RateLimitGuardProps) => {
           <div className="mt-6 p-4 bg-muted rounded-lg">
             <div className="text-sm text-muted-foreground mb-1">Request Count</div>
             <div className="text-2xl font-bold text-foreground">
-              {rateLimitInfo.requestCount} / {rateLimitInfo.limit}
+              {rateLimitInfo.requestCount.toLocaleString('en-US', { maximumFractionDigits: 0 })} / {rateLimitInfo.limit.toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </div>
           </div>
         </div>

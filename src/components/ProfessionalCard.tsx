@@ -277,7 +277,7 @@ export const ProfessionalCard = ({
                   ))}
                 </div>
                 <span className="font-semibold" itemProp="ratingValue">{professional.rating}</span>
-                <span className="text-muted-foreground">(<span itemProp="reviewCount">{professional.reviews}</span> reviews)</span>
+                <span className="text-muted-foreground">(<span itemProp="reviewCount">{professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
                 <meta itemProp="bestRating" content="5" />
               </div>
 

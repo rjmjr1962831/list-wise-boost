@@ -118,7 +118,7 @@ export const BioGenerator = () => {
       setResults(data.results);
       
       toast.success(
-        `Generated ${data.summary.success} bios, skipped ${data.summary.skipped}, failed ${data.summary.failed}`,
+        `Generated ${data.summary.success.toLocaleString('en-US', { maximumFractionDigits: 0 })} bios, skipped ${data.summary.skipped.toLocaleString('en-US', { maximumFractionDigits: 0 })}, failed ${data.summary.failed.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
         { id: 'bio-generation' }
       );
 
