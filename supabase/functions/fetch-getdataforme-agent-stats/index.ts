@@ -91,7 +91,7 @@ serve(async (req) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          zipcode: searchZipcode  // MUST use zipcode, not location!
+          location: searchZipcode  // API expects "location" parameter
         })
       }
     );
