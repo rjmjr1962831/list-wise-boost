@@ -108,7 +108,7 @@ serve(async (req) => {
     let results: any[] = [];
     if (datasetId) {
       const dsResp = await fetch(
-        `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiKey}&clean=true&limit=1`
+        `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiKey}&clean=true&limit=200`
       );
       if (dsResp.ok) {
         results = await dsResp.json();
@@ -119,7 +119,7 @@ serve(async (req) => {
 
     if (!results.length) {
       const fallbackResp = await fetch(
-        `https://api.apify.com/v2/acts/${actorId}/runs/${runId}/dataset/items?token=${apiKey}&clean=true&limit=1`
+        `https://api.apify.com/v2/acts/${actorId}/runs/${runId}/dataset/items?token=${apiKey}&clean=true&limit=200`
       );
       if (!fallbackResp.ok) {
         const errTxt = await fallbackResp.text();
