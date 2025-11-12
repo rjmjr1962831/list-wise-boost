@@ -36,8 +36,8 @@ serve(async (req) => {
 
     console.log(`Fetching detailed stats from Apify for: ${profileUrl}`);
 
-    // Call Apify actor (laelin/zillow-agent-scraper)
-    const actorId = 'laelin/zillow-agent-scraper';
+    // Call Apify actor (jupri/zillow-agents)
+    const actorId = 'jupri/zillow-agents';
     
     // Start the actor run
     const runResponse = await fetch(
