@@ -36,17 +36,10 @@ serve(async (req) => {
 
     console.log(`Fetching detailed stats from Apify for: ${profileUrl}`);
 
-    // Call Apify actor (jupri/zillow-agents)
-    const actorId = 'jupri~zillow-agents';
-    // Build queries to maximize useful data (profile URL + screen name + sales)
-    const screenNameMatch = profileUrl.match(/profile\/([^\/?#]+)/i);
-    const queries = [profileUrl];
-    if (screenNameMatch && screenNameMatch[1]) {
-      const sn = screenNameMatch[1];
-      queries.push(`@${sn}`, `@${sn}/sales`);
-    }
-
-    // Start the actor run
+    // Call Apify actor (laelin/zillow-agent-scraper)
+    const actorId = 'laelin~zillow-agent-scraper';
+    
+    // Start the actor run with correct input format
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`,
       {
@@ -55,8 +48,11 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: queries,
-          limit: 1
+          urls: [{ url: profileUrl }],
+          proxyConfiguration: {
+            useApifyProxy: true,
+            apifyProxyGroups: ['RESIDENTIAL']
+          }
         }),
       }
     );
