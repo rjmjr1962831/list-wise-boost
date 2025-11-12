@@ -16,16 +16,20 @@ interface LicenseLookupRequest {
 function extractIndividualNames(agentName: string): string[] {
   // Remove common team/group suffixes
   const cleanName = agentName
-    .replace(/\s+(Group|Team|Associates?|Real Estate.*|Realty.*|Top.*Agents?|and\s+Associates)$/i, '')
+    .replace(/\s+(Group|Team|Associates?|Real Estate.*|Realty.*|Top.*Agents?)$/i, '')
     .trim();
   
   // Split on "and", "&" to get multiple people
-  const names = cleanName.split(/\s+(?:and|\&)+\s+/i);
+  const names = cleanName.split(/\s+(?:and|\&)\s+/i);
+  
+  console.log(`Extracted names from "${agentName}":`, names);
   
   return names.map(name => name.trim()).filter(name => {
     // Filter out very short names or obvious non-person names
     const words = name.split(/\s+/);
-    return words.length >= 2 && words.length <= 4 && !/Group|Team|Inc|LLC/i.test(name);
+    const isValid = words.length >= 2 && words.length <= 4 && !/Group|Team|Inc|LLC/i.test(name);
+    console.log(`Name "${name}" valid: ${isValid}`);
+    return isValid;
   });
 }
 
@@ -168,8 +172,9 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
       ];
 
       for (const attempt of attempts) {
-        console.log(`Trying CA search: ${attempt.fn} ${attempt.ln}`);
+        console.log(`Trying CA search: firstName="${attempt.fn}" lastName="${attempt.ln}"`);
         const searchUrl = `https://www2.dre.ca.gov/PublicASP/pplinfo.asp?License_id=&firstname=${encodeURIComponent(attempt.fn)}&lastname=${encodeURIComponent(attempt.ln)}`;
+        console.log(`Search URL: ${searchUrl}`);
         
         const response = await fetch(searchUrl, {
           headers: {
@@ -177,9 +182,14 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
           },
         });
 
-        if (!response.ok) continue;
+        console.log(`Response status: ${response.status}`);
+        if (!response.ok) {
+          console.log(`Search failed with status ${response.status}`);
+          continue;
+        }
 
         const html = await response.text();
+        console.log(`HTML length: ${html.length}, contains name: ${html.toLowerCase().includes(lastName.toLowerCase())}`);
         
         // Common CA patterns (CalDRE/DRE/BRE) and generic License labels
         const licensePatterns = [
@@ -196,6 +206,7 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
             return normalized;
           }
         }
+        console.log(`No license pattern match in HTML`);
 
         // Fallback: capture License_id links from results pages (detail links)
         const idLinkMatch = html.match(/pplinfo\d?\.asp\?License_id=(\d{6,8})/i) || html.match(/License_id\s*=\s*(\d{6,8})/i);
@@ -203,6 +214,7 @@ async function searchCalifornia(agentName: string): Promise<string | null> {
           console.log(`Found CA license_id for ${name}: ${idLinkMatch[1]}`);
           return idLinkMatch[1];
         }
+        console.log(`No License_id link found in HTML`);
       }
     }
     
