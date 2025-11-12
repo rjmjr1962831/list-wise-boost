@@ -328,7 +328,7 @@ export const ProfessionalCard = ({
 
                   return Object.entries(displayStats).map(([key, value]) => (
                     <div key={key} className="text-center md:text-left">
-                      <div className="text-2xl font-bold text-primary">{(value == null || Number(value) <= 0) ? 'Not available' : value}</div>
+                      <div className="text-2xl font-bold text-primary">{(value == null || Number(value) <= 0) ? 'Not available' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
                     </div>
                   ));
