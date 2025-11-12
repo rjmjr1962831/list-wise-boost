@@ -208,7 +208,7 @@ export const ProfessionalCard = ({
                   </div>
                 ) : license ? (
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 font-mono text-xs">
+                    <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide">
                       {license}
                     </Badge>
                     <TooltipProvider>
