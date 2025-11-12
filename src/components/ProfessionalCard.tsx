@@ -463,7 +463,7 @@ export const ProfessionalCard = ({
               </div>
 
               {/* Zillow Reviews Section */}
-              {professional.zuid && <ZillowReviewsSection zuid={professional.zuid} />}
+              {professional.zuid && <ZillowReviewsSection zuid={professional.zuid} agentName={professional.name} market={market} />}
 
               {/* Client Testimonials Section */}
               {professional.testimonials && professional.testimonials.length > 0 && (

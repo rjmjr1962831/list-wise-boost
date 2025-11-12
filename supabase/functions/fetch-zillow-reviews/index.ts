@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { zuid, pageNumber = 1 } = await req.json();
+    const { zuid, pageNumber = 1, pageSize = 10 } = await req.json();
     
     if (!zuid) {
       throw new Error('ZUID is required');
@@ -25,11 +25,11 @@ serve(async (req) => {
       throw new Error('RapidAPI credentials not configured');
     }
 
-    console.log(`Fetching reviews for ZUID: ${zuid}, page: ${pageNumber}`);
+    console.log(`Fetching reviews for ZUID: ${zuid}, page: ${pageNumber}, pageSize: ${pageSize}`);
 
     // Call RapidAPI Zillow Agent Data API - using find_reviews endpoint
     const response = await fetch(
-      `https://${RAPIDAPI_HOST}/?data_type=find_reviews&zuid=${encodeURIComponent(zuid)}&page_number=${pageNumber}`,
+      `https://${RAPIDAPI_HOST}/?data_type=find_reviews&zuid=${encodeURIComponent(zuid)}&page_number=${pageNumber}&page_size=${pageSize}`,
       {
         method: 'GET',
         headers: {

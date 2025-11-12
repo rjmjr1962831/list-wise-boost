@@ -2,13 +2,25 @@ import { Star, ExternalLink } from 'lucide-react';
 import { Button } from './ui/button';
 import { useZillowReviews } from '@/hooks/useZillowReviews';
 import { Skeleton } from './ui/skeleton';
+import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 
 interface ZillowReviewsSectionProps {
   zuid: string;
+  agentName?: string;
+  market?: string;
 }
 
-export const ZillowReviewsSection = ({ zuid }: ZillowReviewsSectionProps) => {
+export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsSectionProps) => {
   const { reviews, loading, error } = useZillowReviews(zuid);
+  const { trackEvent } = useGA4Tracking();
+
+  const handleZillowLinkClick = () => {
+    trackEvent('press_mention_click', {
+      agent_name: agentName || 'Unknown',
+      source: 'Zillow Reviews',
+      market: market || '',
+    });
+  };
 
   if (loading) {
     return (
@@ -110,6 +122,7 @@ export const ZillowReviewsSection = ({ zuid }: ZillowReviewsSectionProps) => {
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2"
+          onClick={handleZillowLinkClick}
         >
           Read All Zillow Reviews
           <ExternalLink className="h-4 w-4" />
