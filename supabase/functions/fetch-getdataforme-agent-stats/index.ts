@@ -141,6 +141,20 @@ serve(async (req) => {
 
     console.log('Found matching agent:', matchingAgent['Full Name']);
     
+    // Extract zip code from location or address fields
+    const extractZipCode = (location: string) => {
+      if (!location) return null;
+      // Match 5-digit zip code or 5+4 format
+      const zipMatch = location.match(/\b(\d{5})(?:-\d{4})?\b/);
+      return zipMatch ? zipMatch[1] : null;
+    };
+    
+    const location = matchingAgent['Location'] || matchingAgent['Address'] || null;
+    const zipCode = extractZipCode(location);
+    
+    console.log('Extracted location:', location);
+    console.log('Extracted zip code:', zipCode);
+    
     // Format the data using the scraped/zillow-agent-scraper field names
     const formattedData = {
       success: true,
@@ -159,7 +173,12 @@ serve(async (req) => {
         isTopAgent: matchingAgent['Is Top Agent'] === 'TRUE' || matchingAgent['Is Top Agent'] === true,
         isTeamLead: matchingAgent['Is Team Lead'] === 'TRUE' || matchingAgent['Is Team Lead'] === true,
         profileUrl: matchingAgent['Profile Link'] || null,
-        location: matchingAgent['Location'] || null,
+        location: location,
+        zipCode: zipCode,
+        // Include all available fields for debugging
+        city: matchingAgent['City'] || null,
+        state: matchingAgent['State'] || null,
+        address: matchingAgent['Address'] || null,
       },
       rawDataSample: matchingAgent // For debugging
     };
