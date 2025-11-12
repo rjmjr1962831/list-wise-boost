@@ -48,14 +48,16 @@ serve(async (req) => {
 
     if (!resp.ok) {
       const errorText = await resp.text();
-      console.error('Outscraper API error:', resp.status, errorText);
+      console.warn('Outscraper API error:', resp.status, errorText);
       return new Response(
         JSON.stringify({
           success: false,
           error: `Outscraper API error ${resp.status}`,
           details: errorText,
+          stats: null,
+          source: 'outscraper'
         }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
