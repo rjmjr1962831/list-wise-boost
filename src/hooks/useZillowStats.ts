@@ -24,8 +24,8 @@ export const useZillowStats = (professionalId: string | undefined, profileUrl: s
       setLoading(true);
 
       try {
-        // Use Outscraper API to fetch Zillow stats
-        const { data, error } = await supabase.functions.invoke('fetch-outscraper-agent-stats', {
+        // Use Apify actor to fetch Zillow stats
+        const { data, error } = await supabase.functions.invoke('fetch-apify-agent-stats', {
           body: { profileUrl }
         });
         
