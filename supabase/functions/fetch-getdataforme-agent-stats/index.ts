@@ -87,10 +87,13 @@ serve(async (req) => {
     // IMPORTANT: Use tilde (~) not slash (/) in API calls
     const actorId = 'scraped~zillow-agent-scraper';
     const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`,
+      `https://api.apify.com/v2/acts/${actorId}/runs`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
         body: JSON.stringify({
           location: searchZipcode  // API expects "location" parameter
         })
@@ -121,7 +124,12 @@ serve(async (req) => {
       await new Promise(resolve => setTimeout(resolve, 5000));
       
       const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apiKey}`
+        `https://api.apify.com/v2/acts/${actorId}/runs/${runId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${apiKey}`
+          }
+        }
       );
       
       if (statusResponse.ok) {
@@ -144,7 +152,12 @@ serve(async (req) => {
 
     // Get results
     const resultsResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiKey}`
+      `https://api.apify.com/v2/datasets/${datasetId}/items`,
+      {
+        headers: {
+          'Authorization': `Bearer ${apiKey}`
+        }
+      }
     );
 
     if (!resultsResponse.ok) {
