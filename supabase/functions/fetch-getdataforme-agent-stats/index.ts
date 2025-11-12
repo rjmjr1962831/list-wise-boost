@@ -98,19 +98,10 @@ serve(async (req) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        body: JSON.stringify((() => {
-          const isZillowAgentsFinder = actorId.includes('zillow-agents');
-          if (isZillowAgentsFinder) {
-            return {
-              query: [profileUrl || `${agentName || ''} ${searchZipcode || ''}`.trim()].filter(Boolean),
-              limit: 10,
-              'filters.location': `${searchZipcode}`,
-              'filters.agent_info': true,
-            };
-          }
-          // Default for other actors
-          return { location: searchZipcode };
-        })())
+        body: JSON.stringify({
+          locationText: searchZipcode || inputLocation || 'Gilbert, AZ',
+          profileUrl: profileUrl || undefined,
+        })
       }
     );
 
