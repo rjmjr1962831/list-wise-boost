@@ -103,6 +103,7 @@ export const ProfessionalListLayout = ({
           "name": professional.name,
           "description": professional.description,
           "knowsAbout": professional.specialties,
+          ...(professional.license_number && { "license": professional.license_number }),
           "address": {
             "@type": "PostalAddress",
             "streetAddress": professional.address.split(",")[0],

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info } from "lucide-react";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
@@ -191,33 +192,82 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
-              {/* License Number Badge */}
-              {professional.license_number && (
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="gap-1.5 px-3 py-1">
-                    <Shield className="h-3.5 w-3.5 text-primary" />
-                    <span className="font-mono text-xs">License: {professional.license_number}</span>
-                  </Badge>
-                  {licenseLookupUrl && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 gap-1 text-xs"
-                      onClick={() => {
-                        window.open(licenseLookupUrl, '_blank');
-                        trackEvent('license_verify_click', {
-                          professional_name: professional.name,
-                          license_number: professional.license_number || '',
-                          state: stateAbbr
-                        });
-                      }}
-                    >
-                      Verify License
-                      <ExternalLink className="h-3 w-3" />
-                    </Button>
-                  )}
+              {/* License Number Section */}
+              <div className="flex items-center gap-3 py-2">
+                <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                  <Shield className="h-4 w-4" />
+                  <span>License #:</span>
                 </div>
-              )}
+                
+                {verifying ? (
+                  <div className="flex items-center gap-2">
+                    <div className="h-6 w-32 bg-muted animate-pulse rounded" />
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                  </div>
+                ) : license ? (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 font-mono text-xs">
+                      {license}
+                    </Badge>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="secondary" className="gap-1 px-2 py-0.5 cursor-help">
+                            <ShieldCheck className="h-3 w-3 text-primary" />
+                            <span className="text-xs">Verified</span>
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs text-xs">
+                            License verified via AI-powered lookup from official state registry
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    {licenseLookupUrl && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 gap-1 text-xs px-2"
+                        onClick={() => {
+                          window.open(licenseLookupUrl, '_blank');
+                          trackEvent('license_verify_click', {
+                            professional_name: professional.name,
+                            license_number: license,
+                            state: stateAbbr
+                          });
+                        }}
+                      >
+                        Check Registry
+                        <ExternalLink className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 gap-1.5 text-xs"
+                          onClick={handleVerifyLicense}
+                          disabled={!licenseLookupUrl}
+                        >
+                          <Shield className="h-3.5 w-3.5" />
+                          Verify
+                          <Info className="h-3 w-3 text-muted-foreground" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs text-xs">
+                          Click to verify license via AI-powered lookup from the official {stateAbbr} state registry
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
 
               {/* Rating */}
               <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
