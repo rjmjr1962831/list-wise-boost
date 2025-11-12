@@ -25,22 +25,36 @@ export const useZillowStats = (
       return;
     }
 
-    // Skip if no zip code - show message to admin
-    if (!zipCode) {
-      console.warn(`No zip code for professional ${agentName}. Add zip code in admin panel.`);
-      return;
-    }
 
     const fetchAndStoreStats = async () => {
       setLoading(true);
 
       try {
-        // Use GetDataForMe scraper with zip code
+        // Prepare location: prefer zipCode; else derive from route (/state_slug/city_slug)
+        const locationParam = zipCode ?? (() => {
+          try {
+            const parts = window.location.pathname.split('/').filter(Boolean);
+            const stateSlug = parts[0]?.toUpperCase();
+            const citySlug = parts[1];
+            if (stateSlug && citySlug) {
+              const city = citySlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+              return `${city}, ${stateSlug}`;
+            }
+          } catch {}
+          return null;
+        })();
+
+        if (!locationParam) {
+          console.warn(`No location could be derived for ${agentName}.`);
+          return;
+        }
+
         const { data, error } = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
-          body: { 
+          body: {
             profileUrl,
-            zipcode: zipCode,
-            agentName
+            zipcode: zipCode ?? undefined,
+            location: zipCode ? undefined : locationParam,
+            agentName,
           }
         });
         
@@ -81,6 +95,17 @@ export const useZillowStats = (
 
             if (updateError) {
               console.error('Error updating professional stats:', updateError);
+            }
+          }
+
+          // Backfill zip code if available and missing
+          if (data?.stats?.zipCode && !zipCode) {
+            const { error: zipErr } = await supabase
+              .from('professionals')
+              .update({ zip_code: data.stats.zipCode })
+              .eq('id', professionalId);
+            if (zipErr) {
+              console.error('Error updating zip code:', zipErr);
             }
           }
         }

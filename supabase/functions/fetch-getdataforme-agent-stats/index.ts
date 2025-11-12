@@ -9,6 +9,7 @@ const corsHeaders = {
 interface ApifyAgentRequest {
   profileUrl?: string;
   zipcode?: string;
+  location?: string;
   agentName?: string;
   apifyApiKey?: string;
 }
@@ -19,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { profileUrl, zipcode, agentName, apifyApiKey }: ApifyAgentRequest = await req.json();
+    const { profileUrl, zipcode, location: inputLocation, agentName, apifyApiKey }: ApifyAgentRequest = await req.json();
 
     // Need either zipcode or profileUrl
     if (!zipcode && !profileUrl) {
@@ -49,7 +50,7 @@ serve(async (req) => {
       'glendale': '85301',
     };
 
-    let searchZipcode = zipcode;
+    let searchZipcode = zipcode || inputLocation || null;
     let agentSlug = '';
     let searchName = agentName;
 
@@ -208,7 +209,7 @@ serve(async (req) => {
     };
     
     const location = matchingAgent['Location'] || matchingAgent['Address'] || null;
-    const zipCode = extractZipCode(location);
+    const zipCode = extractZipCode(location || "");
     
     console.log('Extracted location:', location);
     console.log('Extracted zip code:', zipCode);
