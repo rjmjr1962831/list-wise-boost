@@ -347,26 +347,34 @@ export const ProfessionalCard = ({
                   <h4 className="text-sm font-semibold mb-2">About</h4>
                   {(() => {
                     const description = professional.description || '';
-                    const lines = description.split('\n').filter(line => line.trim());
-                    const firstTwoLines = lines.slice(0, 2).join('\n');
-                    const hasMore = lines.length > 2;
+                    const paragraphs = description.split('\n\n').filter(p => p.trim());
+                    const firstTwoParagraphs = paragraphs.slice(0, 2);
+                    const hasMore = paragraphs.length > 2;
                     
                     if (!hasMore) {
                       return (
-                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {description}
-                        </p>
+                        <div className="space-y-3">
+                          {paragraphs.map((para, idx) => (
+                            <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
+                              {para}
+                            </p>
+                          ))}
+                        </div>
                       );
                     }
                     
                     return (
                       <div>
-                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {showFullDescription ? description : firstTwoLines}
-                        </p>
+                        <div className="space-y-3">
+                          {(showFullDescription ? paragraphs : firstTwoParagraphs).map((para, idx) => (
+                            <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
+                              {para}
+                            </p>
+                          ))}
+                        </div>
                         <button
                           onClick={() => setShowFullDescription(!showFullDescription)}
-                          className="text-sm text-primary hover:underline mt-1 font-medium"
+                          className="text-sm text-primary hover:underline mt-2 font-medium"
                         >
                           {showFullDescription ? 'less' : 'more'}
                         </button>
