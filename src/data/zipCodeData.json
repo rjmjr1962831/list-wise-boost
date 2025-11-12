@@ -1,0 +1,1175 @@
+{"zip": "44103", "population": 48000, "median_income": 38000, "median_home_value": 125000, "marketing_value": 1, "notes": "East Cleveland area"},
+        {"zip": "44109", "population": 45000, "median_income": 42000, "median_home_value": 145000, "marketing_value": 1, "notes": "West Side"},
+        {"zip": "44105", "population": 52000, "median_income": 48000, "median_home_value": 175000, "marketing_value": 2, "notes": "Southeast"},
+        {"zip": "44113", "population": 32000, "median_income": 72000, "median_home_value": 350000, "marketing_value": 3, "notes": "Tremont, gentrifying"}
+      ]
+    },
+    {
+      "city": "Bakersfield",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "93311", "population": 52000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "Northwest, newer development"},
+        {"zip": "93312", "population": 58000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Southwest"},
+        {"zip": "93314", "population": 48000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "93306", "population": 55000, "median_income": 62000, "median_home_value": 320000, "marketing_value": 2, "notes": "East Bakersfield"},
+        {"zip": "93304", "population": 62000, "median_income": 52000, "median_home_value": 285000, "marketing_value": 2, "notes": "South Bakersfield"},
+        {"zip": "93305", "population": 68000, "median_income": 48000, "median_home_value": 265000, "marketing_value": 2, "notes": "Central/South"}
+      ]
+    },
+    {
+      "city": "Anaheim",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "92807", "population": 42000, "median_income": 105000, "median_home_value": 720000, "marketing_value": 4, "notes": "Anaheim Hills, affluent"},
+        {"zip": "92808", "population": 38000, "median_income": 95000, "median_home_value": 650000, "marketing_value": 4, "notes": "East Anaheim"},
+        {"zip": "92804", "population": 48000, "median_income": 78000, "median_home_value": 520000, "marketing_value": 3, "notes": "Central Anaheim"},
+        {"zip": "92805", "population": 55000, "median_income": 65000, "median_home_value": 485000, "marketing_value": 3, "notes": "West Anaheim"},
+        {"zip": "92801", "population": 52000, "median_income": 58000, "median_home_value": 420000, "marketing_value": 2, "notes": "Downtown area"},
+        {"zip": "92802", "population": 45000, "median_income": 52000, "median_home_value": 385000, "marketing_value": 2, "notes": "South Anaheim"}
+      ]
+    },
+    {
+      "city": "Honolulu",
+      "state": "Hawaii",
+      "zip_codes": [
+        {"zip": "96821", "population": 28000, "median_income": 175000, "median_home_value": 2100000, "marketing_value": 5, "notes": "Hawaii Kai, waterfront luxury"},
+        {"zip": "96815", "population": 32000, "median_income": 125000, "median_home_value": 1250000, "marketing_value": 5, "notes": "Ala Moana"},
+        {"zip": "96816", "population": 35000, "median_income": 108000, "median_home_value": 950000, "marketing_value": 4, "notes": "Kaimuki"},
+        {"zip": "96826", "population": 25000, "median_income": 95000, "median_home_value": 820000, "marketing_value": 4, "notes": "Manoa"},
+        {"zip": "96817", "population": 42000, "median_income": 78000, "median_home_value": 685000, "marketing_value": 3, "notes": "Palolo"},
+        {"zip": "96819", "population": 52000, "median_income": 68000, "median_home_value": 620000, "marketing_value": 3, "notes": "Kalihi"},
+        {"zip": "96813", "population": 18000, "median_income": 88000, "median_home_value": 750000, "marketing_value": 3, "notes": "Downtown"}
+      ]
+    },
+    {
+      "city": "Santa Ana",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "92705", "population": 45000, "median_income": 88000, "median_home_value": 650000, "marketing_value": 3, "notes": "North Santa Ana"},
+        {"zip": "92706", "population": 48000, "median_income": 78000, "median_home_value": 585000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "92704", "population": 52000, "median_income": 68000, "median_home_value": 520000, "marketing_value": 3, "notes": "West Santa Ana"},
+        {"zip": "92701", "population": 58000, "median_income": 55000, "median_home_value": 485000, "marketing_value": 2, "notes": "Central"},
+        {"zip": "92703", "population": 62000, "median_income": 48000, "median_home_value": 420000, "marketing_value": 2, "notes": "South Santa Ana"},
+        {"zip": "92707", "population": 55000, "median_income": 52000, "median_home_value": 450000, "marketing_value": 2, "notes": "Southeast"}
+      ]
+    },
+    {
+      "city": "Riverside",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "92506", "population": 48000, "median_income": 85000, "median_home_value": 520000, "marketing_value": 3, "notes": "Northwest Riverside"},
+        {"zip": "92508", "population": 52000, "median_income": 78000, "median_home_value": 485000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "92503", "population": 55000, "median_income": 68000, "median_home_value": 420000, "marketing_value": 3, "notes": "Central Riverside"},
+        {"zip": "92504", "population": 58000, "median_income": 62000, "median_home_value": 385000, "marketing_value": 2, "notes": "East Riverside"},
+        {"zip": "92501", "population": 42000, "median_income": 52000, "median_home_value": 350000, "marketing_value": 2, "notes": "Downtown"},
+        {"zip": "92509", "population": 62000, "median_income": 58000, "median_home_value": 365000, "marketing_value": 2, "notes": "South Riverside"}
+      ]
+    },
+    {
+      "city": "Stockton",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "95219", "population": 45000, "median_income": 82000, "median_home_value": 485000, "marketing_value": 3, "notes": "North Stockton"},
+        {"zip": "95209", "population": 48000, "median_income": 72000, "median_home_value": 420000, "marketing_value": 3, "notes": "Brookside"},
+        {"zip": "95207", "population": 52000, "median_income": 62000, "median_home_value": 365000, "marketing_value": 2, "notes": "Lincoln Village"},
+        {"zip": "95206", "population": 58000, "median_income": 52000, "median_home_value": 320000, "marketing_value": 2, "notes": "South Stockton"},
+        {"zip": "95205", "population": 55000, "median_income": 48000, "median_home_value": 285000, "marketing_value": 2, "notes": "Central"},
+        {"zip": "95204", "population": 62000, "median_income": 45000, "median_home_value": 265000, "marketing_value": 2, "notes": "Downtown area"}
+      ]
+    },
+    {
+      "city": "Lexington",
+      "state": "Kentucky",
+      "zip_codes": [
+        {"zip": "40513", "population": 38000, "median_income": 98000, "median_home_value": 520000, "marketing_value": 4, "notes": "Hamburg area, affluent"},
+        {"zip": "40502", "population": 35000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "Chevy Chase"},
+        {"zip": "40503", "population": 42000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "South Lexington"},
+        {"zip": "40504", "population": 48000, "median_income": 68000, "median_home_value": 350000, "marketing_value": 3, "notes": "East Lexington"},
+        {"zip": "40508", "population": 52000, "median_income": 58000, "median_home_value": 285000, "marketing_value": 2, "notes": "Northeast"},
+        {"zip": "40505", "population": 45000, "median_income": 52000, "median_home_value": 265000, "marketing_value": 2, "notes": "North Lexington"}
+      ]
+    },
+    {
+      "city": "Corpus Christi",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "78414", "population": 42000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "South Side, bay area"},
+        {"zip": "78413", "population": 38000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Calallen area"},
+        {"zip": "78411", "population": 45000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "West Side"},
+        {"zip": "78412", "population": 48000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "Central"},
+        {"zip": "78404", "population": 52000, "median_income": 52000, "median_home_value": 235000, "marketing_value": 2, "notes": "Downtown"},
+        {"zip": "78405", "population": 42000, "median_income": 48000, "median_home_value": 210000, "marketing_value": 2, "notes": "Westside"}
+      ]
+    },
+    {
+      "city": "Henderson",
+      "state": "Nevada",
+      "zip_codes": [
+        {"zip": "89052", "population": 48000, "median_income": 108000, "median_home_value": 620000, "marketing_value": 4, "notes": "Green Valley, affluent"},
+        {"zip": "89074", "population": 52000, "median_income": 95000, "median_home_value": 550000, "marketing_value": 4, "notes": "Anthem area"},
+        {"zip": "89012", "population": 45000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "West Henderson"},
+        {"zip": "89014", "population": 58000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Central Henderson"},
+        {"zip": "89015", "population": 62000, "median_income": 72000, "median_home_value": 385000, "marketing_value": 3, "notes": "East Henderson"}
+      ]
+    },
+    {
+      "city": "Anchorage",
+      "state": "Alaska",
+      "zip_codes": [
+        {"zip": "99516", "population": 42000, "median_income": 105000, "median_home_value": 485000, "marketing_value": 4, "notes": "South Anchorage, affluent"},
+        {"zip": "99515", "population": 48000, "median_income": 92000, "median_home_value": 420000, "marketing_value": 3, "notes": "Hillside"},
+        {"zip": "99507", "population": 52000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "West Anchorage"},
+        {"zip": "99508", "population": 55000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "East Anchorage"},
+        {"zip": "99504", "population": 58000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "Mountain View"},
+        {"zip": "99501", "population": 28000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "Downtown"}
+      ]
+    },
+    {
+      "city": "Plano",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "75093", "population": 42000, "median_income": 125000, "median_home_value": 720000, "marketing_value": 4, "notes": "West Plano, affluent"},
+        {"zip": "75024", "population": 38000, "median_income": 118000, "median_home_value": 685000, "marketing_value": 4, "notes": "West Plano"},
+        {"zip": "75025", "population": 45000, "median_income": 105000, "median_home_value": 620000, "marketing_value": 4, "notes": "Central Plano"},
+        {"zip": "75023", "population": 48000, "median_income": 95000, "median_home_value": 550000, "marketing_value": 4, "notes": "East Plano"},
+        {"zip": "75074", "population": 52000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "East Central"},
+        {"zip": "75075", "population": 55000, "median_income": 82000, "median_home_value": 450000, "marketing_value": 3, "notes": "Southeast Plano"}
+      ]
+    },
+    {
+      "city": "St. Louis",
+      "state": "Missouri",
+      "zip_codes": [
+        {"zip": "63105", "population": 32000, "median_income": 128000, "median_home_value": 750000, "marketing_value": 4, "notes": "Clayton area, affluent"},
+        {"zip": "63108", "population": 28000, "median_income": 95000, "median_home_value": 520000, "marketing_value": 4, "notes": "Central West End"},
+        {"zip": "63139", "population": 42000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "South City"},
+        {"zip": "63116", "population": 48000, "median_income": 58000, "median_home_value": 285000, "marketing_value": 2, "notes": "Dutchtown"},
+        {"zip": "63118", "population": 45000, "median_income": 52000, "median_home_value": 235000, "marketing_value": 2, "notes": "Tower Grove"},
+        {"zip": "63113", "population": 52000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "North St. Louis"},
+        {"zip": "63106", "population": 38000, "median_income": 35000, "median_home_value": 125000, "marketing_value": 1, "notes": "Downtown North"}
+      ]
+    },
+    {
+      "city": "Lincoln",
+      "state": "Nebraska",
+      "zip_codes": [
+        {"zip": "68516", "population": 42000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "South Lincoln"},
+        {"zip": "68526", "population": 48000, "median_income": 82000, "median_home_value": 385000, "marketing_value": 3, "notes": "Southwest"},
+        {"zip": "68506", "population": 38000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Southeast"},
+        {"zip": "68510", "population": 52000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "East Lincoln"},
+        {"zip": "68504", "population": 45000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "North Lincoln"},
+        {"zip": "68508", "population": 35000, "median_income": 58000, "median_home_value": 265000, "marketing_value": 2, "notes": "Downtown area"}
+      ]
+    },
+    {
+      "city": "Orlando",
+      "state": "Florida",
+      "zip_codes": [
+        {"zip": "32819", "population": 42000, "median_income": 105000, "median_home_value": 585000, "marketing_value": 4, "notes": "Dr. Phillips, affluent"},
+        {"zip": "32835", "population": 48000, "median_income": 92000, "median_home_value": 485000, "marketing_value": 3, "notes": "Windermere area"},
+        {"zip": "32789", "population": 38000, "median_income": 98000, "median_home_value": 520000, "marketing_value": 4, "notes": "Winter Park"},
+        {"zip": "32803", "population": 35000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "Downtown/Lake Eola"},
+        {"zip": "32808", "population": 58000, "median_income": 62000, "median_home_value": 320000, "marketing_value": 2, "notes": "West Orlando"},
+        {"zip": "32810", "population": 52000, "median_income": 52000, "median_home_value": 265000, "marketing_value": 2, "notes": "North Orlando"},
+        {"zip": "32805", "population": 48000, "median_income": 48000, "median_home_value": 235000, "marketing_value": 2, "notes": "West Central"}
+      ]
+    },
+    {
+      "city": "Irvine",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "92603", "population": 38000, "median_income": 135000, "median_home_value": 1200000, "marketing_value": 5, "notes": "Turtle Rock, luxury"},
+        {"zip": "92612", "population": 42000, "median_income": 125000, "median_home_value": 1050000, "marketing_value": 4, "notes": "Woodbridge"},
+        {"zip": "92620", "population": 45000, "median_income": 115000, "median_home_value": 950000, "marketing_value": 4, "notes": "Northwood"},
+        {"zip": "92618", "population": 48000, "median_income": 105000, "median_home_value": 850000, "marketing_value": 4, "notes": "Portola Springs"},
+        {"zip": "92604", "population": 52000, "median_income": 95000, "median_home_value": 750000, "marketing_value": 4, "notes": "West Irvine"},
+        {"zip": "92606", "population": 35000, "median_income": 88000, "median_home_value": 685000, "marketing_value": 3, "notes": "East Irvine"}
+      ]
+    },
+    {
+      "city": "Jersey City",
+      "state": "New Jersey",
+      "zip_codes": [
+        {"zip": "07302", "population": 42000, "median_income": 115000, "median_home_value": 850000, "marketing_value": 4, "notes": "Downtown, waterfront"},
+        {"zip": "07310", "population": 38000, "median_income": 105000, "median_home_value": 750000, "marketing_value": 4, "notes": "Paulus Hook"},
+        {"zip": "07305", "population": 52000, "median_income": 68000, "median_home_value": 485000, "marketing_value": 3, "notes": "Greenville"},
+        {"zip": "07304", "population": 58000, "median_income": 62000, "median_home_value": 420000, "marketing_value": 2, "notes": "Bergen-Lafayette"},
+        {"zip": "07306", "population": 68000, "median_income": 55000, "median_home_value": 385000, "marketing_value": 2, "notes": "West Side"},
+        {"zip": "07307", "population": 62000, "median_income": 58000, "median_home_value": 420000, "marketing_value": 2, "notes": "The Heights"}
+      ]
+    },
+    {
+      "city": "Chula Vista",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "91914", "population": 48000, "median_income": 95000, "median_home_value": 685000, "marketing_value": 4, "notes": "Eastlake, newer"},
+        {"zip": "91915", "population": 52000, "median_income": 88000, "median_home_value": 620000, "marketing_value": 3, "notes": "Otay Ranch"},
+        {"zip": "91910", "population": 55000, "median_income": 75000, "median_home_value": 520000, "marketing_value": 3, "notes": "West Chula Vista"},
+        {"zip": "91911", "population": 58000, "median_income": 68000, "median_home_value": 485000, "marketing_value": 3, "notes": "Central"},
+        {"zip": "91913", "population": 45000, "median_income": 62000, "median_home_value": 420000, "marketing_value": 2, "notes": "Southwest"}
+      ]
+    },
+    {
+      "city": "Durham",
+      "state": "North Carolina",
+      "zip_codes": [
+        {"zip": "27705", "population": 35000, "median_income": 98000, "median_home_value": 520000, "marketing_value": 4, "notes": "Hope Valley, affluent"},
+        {"zip": "27713", "population": 42000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "Research Triangle"},
+        {"zip": "27707", "population": 48000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "South Durham"},
+        {"zip": "27701", "population": 32000, "median_income": 68000, "median_home_value": 365000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "27704", "population": 52000, "median_income": 58000, "median_home_value": 295000, "marketing_value": 2, "notes": "East Durham"},
+        {"zip": "27703", "population": 45000, "median_income": 52000, "median_home_value": 265000, "marketing_value": 2, "notes": "North Durham"}
+      ]
+    },
+    {
+      "city": "Fort Wayne",
+      "state": "Indiana",
+      "zip_codes": [
+        {"zip": "46845", "population": 42000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northwest, affluent"},
+        {"zip": "46814", "population": 48000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Southwest"},
+        {"zip": "46835", "population": 52000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "46815", "population": 45000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "North Central"},
+        {"zip": "46806", "population": 38000, "median_income": 52000, "median_home_value": 220000, "marketing_value": 2, "notes": "Southeast"},
+        {"zip": "46802", "population": 42000, "median_income": 48000, "median_home_value": 195000, "marketing_value": 2, "notes": "Central"}
+      ]
+    },
+    {
+      "city": "St. Paul",
+      "state": "Minnesota",
+      "zip_codes": [
+        {"zip": "55105", "population": 35000, "median_income": 105000, "median_home_value": 585000, "marketing_value": 4, "notes": "Highland Park, affluent"},
+        {"zip": "55116", "population": 38000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 3, "notes": "Summit-University"},
+        {"zip": "55102", "population": 28000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "55104", "population": 45000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "Midway"},
+        {"zip": "55106", "population": 52000, "median_income": 58000, "median_home_value": 285000, "marketing_value": 2, "notes": "East Side"},
+        {"zip": "55107", "population": 48000, "median_income": 52000, "median_home_value": 245000, "marketing_value": 2, "notes": "West Side"}
+      ]
+    },
+    {
+      "city": "Laredo",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "78045", "population": 48000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "North Laredo"},
+        {"zip": "78046", "population": 52000, "median_income": 65000, "median_home_value": 285000, "marketing_value": 2, "notes": "Northwest"},
+        {"zip": "78041", "population": 55000, "median_income": 58000, "median_home_value": 245000, "marketing_value": 2, "notes": "Central"},
+        {"zip": "78043", "population": 42000, "median_income": 52000, "median_home_value": 220000, "marketing_value": 2, "notes": "South Laredo"},
+        {"zip": "78040", "population": 38000, "median_income": 48000, "median_home_value": 195000, "marketing_value": 2, "notes": "Downtown"}
+      ]
+    },
+    {
+      "city": "Garland",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "75044", "population": 48000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "North Garland"},
+        {"zip": "75043", "population": 52000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "Northwest"},
+        {"zip": "75042", "population": 55000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "Central Garland"},
+        {"zip": "75040", "population": 58000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "South Garland"},
+        {"zip": "75041", "population": 48000, "median_income": 58000, "median_home_value": 265000, "marketing_value": 2, "notes": "East Garland"}
+      ]
+    },
+    {
+      "city": "North Las Vegas",
+      "state": "Nevada",
+      "zip_codes": [
+        {"zip": "89084", "population": 52000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Aliante, newer"},
+        {"zip": "89081", "population": 58000, "median_income": 68000, "median_home_value": 365000, "marketing_value": 3, "notes": "North"},
+        {"zip": "89031", "population": 62000, "median_income": 62000, "median_home_value": 320000, "marketing_value": 2, "notes": "Central NLV"},
+        {"zip": "89030", "population": 55000, "median_income": 55000, "median_home_value": 285000, "marketing_value": 2, "notes": "West"},
+        {"zip": "89032", "population": 68000, "median_income": 52000, "median_home_value": 265000, "marketing_value": 2, "notes": "South NLV"}
+      ]
+    },
+    {
+      "city": "Buffalo",
+      "state": "New York",
+      "zip_codes": [
+        {"zip": "14222", "population": 28000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 3, "notes": "Elmwood Village, desirable"},
+        {"zip": "14216", "population": 35000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "North Buffalo"},
+        {"zip": "14214", "population": 42000, "median_income": 52000, "median_home_value": 185000, "marketing_value": 2, "notes": "East Side"},
+        {"zip": "14201", "population": 22000, "median_income": 62000, "median_home_value": 265000, "marketing_value": 2, "notes": "Downtown"},
+        {"zip": "14210", "population": 48000, "median_income": 42000, "median_home_value": 145000, "marketing_value": 1, "notes": "South Buffalo"},
+        {"zip": "14215", "population": 52000, "median_income": 48000, "median_home_value": 165000, "marketing_value": 2, "notes": "Central"}
+      ]
+    },
+    {
+      "city": "Gilbert",
+      "state": "Arizona",
+      "zip_codes": [
+        {"zip": "85296", "population": 55000, "median_income": 115000, "median_home_value": 520000, "marketing_value": 4, "notes": "South Gilbert, family-oriented"},
+        {"zip": "85297", "population": 48000, "median_income": 108000, "median_home_value": 485000, "marketing_value": 4, "notes": "East Gilbert"},
+        {"zip": "85295", "population": 52000, "median_income": 98000, "median_home_value": 450000, "marketing_value": 4, "notes": "Southeast"},
+        {"zip": "85234", "population": 58000, "median_income": 105000, "median_home_value": 485000, "marketing_value": 4, "notes": "North Gilbert"},
+        {"zip": "85298", "population": 45000, "median_income": 92000, "median_home_value": 420000, "marketing_value": 3, "notes": "Central Gilbert"}
+      ]
+    },
+    {
+      "city": "Reno",
+      "state": "Nevada",
+      "zip_codes": [
+        {"zip": "89511", "population": 42000, "median_income": 92000, "median_home_value": 520000, "marketing_value": 4, "notes": "South Reno, affluent"},
+        {"zip": "89509", "population": 38000, "median_income": 82000, "median_home_value": 450000, "marketing_value": 3, "notes": "Southwest"},
+        {"zip": "89523", "population": 48000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northwest"},
+        {"zip": "89502", "population": 52000, "median_income": 68000, "median_home_value": 365000, "marketing_value": 3, "notes": "Central Reno"},
+        {"zip": "89512", "population": 45000, "median_income": 58000, "median_home_value": 320000, "marketing_value": 2, "notes": "East Reno"},
+        {"zip": "89501", "population": 28000, "median_income": 62000, "median_home_value": 350000, "marketing_value": 3, "notes": "Downtown"}
+      ]
+    },
+    {
+      "city": "Chesapeake",
+      "state": "Virginia",
+      "zip_codes": [
+        {"zip": "23322", "population": 48000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Greenbrier, affluent"},
+        {"zip": "23320", "population": 52000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Great Bridge"},
+        {"zip": "23321", "population": 55000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "South Norfolk"},
+        {"zip": "23323", "population": 58000, "median_income": 68000, "median_home_value": 295000, "marketing_value": 2, "notes": "Western Branch"},
+        {"zip": "23324", "population": 48000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "Deep Creek"}
+      ]
+    },
+    {
+      "city": "Scottsdale",
+      "state": "Arizona",
+      "zip_codes": [
+        {"zip": "85262", "population": 35000, "median_income": 178000, "median_home_value": 950000, "marketing_value": 5, "notes": "North Scottsdale, highest income"},
+        {"zip": "85253", "population": 30000, "median_income": 182000, "median_home_value": 1200000, "marketing_value": 5, "notes": "Paradise Valley area, ultra-luxury"},
+        {"zip": "85255", "population": 45000, "median_income": 144000, "median_home_value": 975000, "marketing_value": 5, "notes": "North Scottsdale, large population"},
+        {"zip": "85254", "population": 46000, "median_income": 121000, "median_home_value": 702000, "marketing_value": 5, "notes": "Affluent area"},
+        {"zip": "85258", "population": 24000, "median_income": 100000, "median_home_value": 650000, "marketing_value": 4, "notes": "Strong residential market"},
+        {"zip": "85260", "population": 45000, "median_income": 104000, "median_home_value": 520000, "marketing_value": 4, "notes": "Above-average market"},
+        {"zip": "85250", "population": 28000, "median_income": 89000, "median_home_value": 480000, "marketing_value": 4, "notes": "Solid middle-to-upper market"},
+        {"zip": "85251", "population": 26000, "median_income": 86000, "median_home_value": 450000, "marketing_value": 3, "notes": "Downtown area, mixed use"},
+        {"zip": "85257", "population": 22000, "median_income": 81000, "median_home_value": 420000, "marketing_value": 3, "notes": "Average market"},
+        {"zip": "85256", "population": 18000, "median_income": 75000, "median_home_value": 380000, "marketing_value": 3, "notes": "Moderate opportunity"},
+        {"zip": "85259", "population": 20000, "median_income": 95000, "median_home_value": 500000, "marketing_value": 4, "notes": "Growing area"}
+      ]
+    },
+    {
+      "city": "Glendale",
+      "state": "Arizona",
+      "zip_codes": [
+        {"zip": "85310", "population": 52000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "North Glendale"},
+        {"zip": "85308", "population": 58000, "median_income": 75000, "median_home_value": 365000, "marketing_value": 3, "notes": "Northwest"},
+        {"zip": "85305", "population": 62000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "West Glendale"},
+        {"zip": "85301", "population": 48000, "median_income": 58000, "median_home_value": 265000, "marketing_value": 2, "notes": "Central"},
+        {"zip": "85304", "population": 55000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "South Glendale"}
+      ]
+    },
+    {
+      "city": "Enterprise",
+      "state": "Nevada",
+      "zip_codes": [
+        {"zip": "89148", "population": 58000, "median_income": 85000, "median_home_value": 485000, "marketing_value": 3, "notes": "Southwest Las Vegas area"},
+        {"zip": "89141", "population": 52000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "South Enterprise"},
+        {"zip": "89113", "population": 48000, "median_income": 72000, "median_home_value": 385000, "marketing_value": 3, "notes": "Central Enterprise"}
+      ]
+    },
+    {
+      "city": "Winston-Salem",
+      "state": "North Carolina",
+      "zip_codes": [
+        {"zip": "27106", "population": 42000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "West Winston-Salem, affluent"},
+        {"zip": "27104", "population": 48000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "North"},
+        {"zip": "27103", "population": 38000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Ardmore"},
+        {"zip": "27105", "population": 52000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "Northeast"},
+        {"zip": "27101", "population": 35000, "median_income": 52000, "median_home_value": 235000, "marketing_value": 2, "notes": "Downtown"},
+        {"zip": "27107", "population": 45000, "median_income": 48000, "median_home_value": 210000, "marketing_value": 2, "notes": "East Winston-Salem"}
+      ]
+    },
+    {
+      "city": "Toledo",
+      "state": "Ohio",
+      "zip_codes": [
+        {"zip": "43615", "population": 38000, "median_income": 92000, "median_home_value": 485000, "marketing_value": 3, "notes": "West Toledo, affluent"},
+        {"zip": "43623", "population": 42000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Sylvania area"},
+        {"zip": "43614", "population": 48000, "median_income": 68000, "median_home_value": 295000, "marketing_value": 2, "notes": "Northwest"},
+        {"zip": "43606", "population": 35000, "median_income": 58000, "median_home_value": 245000, "marketing_value": 2, "notes": "Old West End"},
+        {"zip": "43607", "population": 52000, "median_income": 48000, "median_home_value": 185000, "marketing_value": 2, "notes": "South Toledo"},
+        {"zip": "43604", "population": 42000, "median_income": 42000, "median_home_value": 145000, "marketing_value": 1, "notes": "Central Toledo"}
+      ]
+    },
+    {
+      "city": "Pittsburgh",
+      "state": "Pennsylvania",
+      "zip_codes": [
+        {"zip": "15232", "population": 28000, "median_income": 108000, "median_home_value": 620000, "marketing_value": 4, "notes": "Shadyside, upscale"},
+        {"zip": "15206", "population": 35000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "East Liberty"},
+        {"zip": "15213", "population": 32000, "median_income": 68000, "median_home_value": 365000, "marketing_value": 3, "notes": "Oakland"},
+        {"zip": "15217", "population": 38000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Squirrel Hill"},
+        {"zip": "15212", "population": 42000, "median_income": 72000, "median_home_value": 385000, "marketing_value": 3, "notes": "North Side"},
+        {"zip": "15219", "population": 28000, "median_income": 58000, "median_home_value": 285000, "marketing_value": 2, "notes": "Downtown"},
+        {"zip": "15221", "population": 52000, "median_income": 52000, "median_home_value": 220000, "marketing_value": 2, "notes": "Wilkinsburg area"},
+        {"zip": "15210", "population": 48000, "median_income": 48000, "median_home_value": 185000, "marketing_value": 2, "notes": "South Side"}
+      ]
+    },
+    {
+      "city": "Newark",
+      "state": "New Jersey",
+      "zip_codes": [
+        {"zip": "07102", "population": 32000, "median_income": 78000, "median_home_value": 385000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "07104", "population": 52000, "median_income": 48000, "median_home_value": 285000, "marketing_value": 2, "notes": "North Newark"},
+        {"zip": "07103", "population": 48000, "median_income": 42000, "median_home_value": 245000, "marketing_value": 2, "notes": "West Ward"},
+        {"zip": "07105", "population": 58000, "median_income": 45000, "median_home_value": 265000, "marketing_value": 2, "notes": "Ironbound"},
+        {"zip": "07106", "population": 55000, "median_income": 52000, "median_home_value": 295000, "marketing_value": 2, "notes": "Vailsburg"},
+        {"zip": "07112", "population": 62000, "median_income": 38000, "median_home_value": 220000, "marketing_value": 1, "notes": "South Ward"}
+      ]
+    },
+    {
+      "city": "Madison",
+      "state": "Wisconsin",
+      "zip_codes": [
+        {"zip": "53705", "population": 35000, "median_income": 105000, "median_home_value": 585000, "marketing_value": 4, "notes": "West Madison, affluent"},
+        {"zip": "53711", "population": 42000, "median_income": 92000, "median_home_value": 485000, "marketing_value": 3, "notes": "Southwest"},
+        {"zip": "53704", "population": 48000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "East Madison"},
+        {"zip": "53703", "population": 38000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "Near East Side"},
+        {"zip": "53715", "population": 32000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "South Madison"},
+        {"zip": "53713", "population": 52000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "South Central"}
+      ]
+    }
+  ]
+}"{
+  "metadata": {
+    "generated_date": "2025-11-11",
+    "description": "Zip code data with estimated population, median income, home values, and real estate agent marketing value ratings (1-5 scale)",
+    "rating_criteria": {
+      "5": "Highest value - High income ($150k+), high home values ($700k+), affluent demographics",
+      "4": "High value - Above-average income ($100-150k), good home values ($400-700k), stable market",
+      "3": "Moderate value - Average income ($75-100k), moderate home values ($250-400k)",
+      "2": "Lower value - Below-average income ($50-75k), lower home values ($150-250k)",
+      "1": "Lowest value - Low income (<$50k), low home values (<$150k)"
+    },
+    "note": "Estimated data for all 86 cities. Numbers are approximations based on typical demographics and market conditions."
+  },
+  "cities": [
+    {
+      "city": "New York",
+      "state": "New York",
+      "zip_codes": [
+        {"zip": "10021", "population": 55000, "median_income": 185000, "median_home_value": 2200000, "marketing_value": 5, "notes": "Upper East Side, ultra-luxury"},
+        {"zip": "10023", "population": 58000, "median_income": 165000, "median_home_value": 1900000, "marketing_value": 5, "notes": "Upper West Side, affluent families"},
+        {"zip": "10028", "population": 48000, "median_income": 155000, "median_home_value": 1600000, "marketing_value": 5, "notes": "Yorkville, high-end condos"},
+        {"zip": "10011", "population": 52000, "median_income": 145000, "median_home_value": 1800000, "marketing_value": 5, "notes": "Chelsea, desirable location"},
+        {"zip": "10013", "population": 35000, "median_income": 160000, "median_home_value": 2100000, "marketing_value": 5, "notes": "Tribeca, luxury market"},
+        {"zip": "10022", "population": 42000, "median_income": 125000, "median_home_value": 1400000, "marketing_value": 4, "notes": "Midtown East"},
+        {"zip": "10003", "population": 62000, "median_income": 110000, "median_home_value": 1200000, "marketing_value": 4, "notes": "East Village/Gramercy"},
+        {"zip": "10014", "population": 38000, "median_income": 135000, "median_home_value": 1500000, "marketing_value": 5, "notes": "West Village, premium location"},
+        {"zip": "10128", "population": 45000, "median_income": 140000, "median_home_value": 1300000, "marketing_value": 4, "notes": "Upper East Side"},
+        {"zip": "10065", "population": 35000, "median_income": 175000, "median_home_value": 2000000, "marketing_value": 5, "notes": "Upper East Side, luxury"},
+        {"zip": "10016", "population": 68000, "median_income": 85000, "median_home_value": 950000, "marketing_value": 3, "notes": "Murray Hill, mixed market"},
+        {"zip": "10025", "population": 72000, "median_income": 105000, "median_home_value": 1100000, "marketing_value": 4, "notes": "Upper West Side"},
+        {"zip": "10029", "population": 75000, "median_income": 55000, "median_home_value": 650000, "marketing_value": 2, "notes": "East Harlem"},
+        {"zip": "10019", "population": 55000, "median_income": 95000, "median_home_value": 1000000, "marketing_value": 3, "notes": "Midtown West"},
+        {"zip": "10036", "population": 42000, "median_income": 75000, "median_home_value": 850000, "marketing_value": 3, "notes": "Times Square area"}
+      ]
+    },
+    {
+      "city": "Los Angeles",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "90210", "population": 21000, "median_income": 190000, "median_home_value": 2500000, "marketing_value": 5, "notes": "Beverly Hills, ultra-luxury"},
+        {"zip": "90077", "population": 25000, "median_income": 220000, "median_home_value": 3000000, "marketing_value": 5, "notes": "Bel Air, highest-end"},
+        {"zip": "90049", "population": 36000, "median_income": 170000, "median_home_value": 2200000, "marketing_value": 5, "notes": "Brentwood, affluent"},
+        {"zip": "90067", "population": 28000, "median_income": 135000, "median_home_value": 1800000, "marketing_value": 5, "notes": "Century City"},
+        {"zip": "90024", "population": 53000, "median_income": 80000, "median_home_value": 950000, "marketing_value": 3, "notes": "Westwood/UCLA"},
+        {"zip": "90025", "population": 43000, "median_income": 105000, "median_home_value": 1100000, "marketing_value": 4, "notes": "West LA"},
+        {"zip": "90026", "population": 70000, "median_income": 65000, "median_home_value": 750000, "marketing_value": 3, "notes": "Echo Park"},
+        {"zip": "90034", "population": 59000, "median_income": 72000, "median_home_value": 850000, "marketing_value": 3, "notes": "Palms"},
+        {"zip": "90046", "population": 50000, "median_income": 94000, "median_home_value": 1200000, "marketing_value": 4, "notes": "Hollywood Hills"},
+        {"zip": "90069", "population": 32000, "median_income": 111000, "median_home_value": 1300000, "marketing_value": 4, "notes": "West Hollywood"},
+        {"zip": "90012", "population": 48000, "median_income": 58000, "median_home_value": 620000, "marketing_value": 2, "notes": "Downtown LA"},
+        {"zip": "90004", "population": 62000, "median_income": 52000, "median_home_value": 580000, "marketing_value": 2, "notes": "Koreatown"},
+        {"zip": "90027", "population": 55000, "median_income": 78000, "median_home_value": 820000, "marketing_value": 3, "notes": "Los Feliz"},
+        {"zip": "90028", "population": 68000, "median_income": 48000, "median_home_value": 520000, "marketing_value": 2, "notes": "Hollywood"},
+        {"zip": "90016", "population": 65000, "median_income": 62000, "median_home_value": 680000, "marketing_value": 2, "notes": "Mid-City"}
+      ]
+    },
+    {
+      "city": "Chicago",
+      "state": "Illinois",
+      "zip_codes": [
+        {"zip": "60614", "population": 72000, "median_income": 105000, "median_home_value": 650000, "marketing_value": 4, "notes": "Lincoln Park, affluent"},
+        {"zip": "60610", "population": 32000, "median_income": 125000, "median_home_value": 850000, "marketing_value": 4, "notes": "Gold Coast, luxury condos"},
+        {"zip": "60611", "population": 28000, "median_income": 135000, "median_home_value": 950000, "marketing_value": 5, "notes": "Streeterville, high-end"},
+        {"zip": "60657", "population": 68000, "median_income": 95000, "median_home_value": 580000, "marketing_value": 4, "notes": "Lakeview, popular area"},
+        {"zip": "60613", "population": 75000, "median_income": 88000, "median_home_value": 520000, "marketing_value": 3, "notes": "Lakeview/Uptown"},
+        {"zip": "60618", "population": 82000, "median_income": 78000, "median_home_value": 450000, "marketing_value": 3, "notes": "North Center"},
+        {"zip": "60622", "population": 58000, "median_income": 85000, "median_home_value": 520000, "marketing_value": 3, "notes": "Wicker Park, gentrifying"},
+        {"zip": "60647", "population": 95000, "median_income": 72000, "median_home_value": 420000, "marketing_value": 3, "notes": "Logan Square"},
+        {"zip": "60605", "population": 42000, "median_income": 65000, "median_home_value": 380000, "marketing_value": 2, "notes": "South Loop"},
+        {"zip": "60615", "population": 55000, "median_income": 48000, "median_home_value": 280000, "marketing_value": 2, "notes": "Kenwood"},
+        {"zip": "60637", "population": 45000, "median_income": 35000, "median_home_value": 220000, "marketing_value": 1, "notes": "Woodlawn"},
+        {"zip": "60619", "population": 62000, "median_income": 42000, "median_home_value": 185000, "marketing_value": 1, "notes": "Chatham"}
+      ]
+    },
+    {
+      "city": "Houston",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "77019", "population": 35000, "median_income": 145000, "median_home_value": 950000, "marketing_value": 5, "notes": "River Oaks, luxury"},
+        {"zip": "77005", "population": 28000, "median_income": 165000, "median_home_value": 1200000, "marketing_value": 5, "notes": "West University, affluent"},
+        {"zip": "77027", "population": 32000, "median_income": 155000, "median_home_value": 1100000, "marketing_value": 5, "notes": "River Oaks area"},
+        {"zip": "77024", "population": 42000, "median_income": 118000, "median_home_value": 720000, "marketing_value": 4, "notes": "Memorial, upper-middle"},
+        {"zip": "77056", "population": 25000, "median_income": 125000, "median_home_value": 850000, "marketing_value": 4, "notes": "Galleria area"},
+        {"zip": "77098", "population": 38000, "median_income": 95000, "median_home_value": 580000, "marketing_value": 4, "notes": "Montrose, popular"},
+        {"zip": "77007", "population": 45000, "median_income": 88000, "median_home_value": 520000, "marketing_value": 3, "notes": "Heights, gentrifying"},
+        {"zip": "77008", "population": 52000, "median_income": 82000, "median_home_value": 480000, "marketing_value": 3, "notes": "Garden Oaks"},
+        {"zip": "77004", "population": 35000, "median_income": 68000, "median_home_value": 380000, "marketing_value": 3, "notes": "Midtown"},
+        {"zip": "77002", "population": 28000, "median_income": 75000, "median_home_value": 420000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "77021", "population": 48000, "median_income": 52000, "median_home_value": 280000, "marketing_value": 2, "notes": "South Houston"},
+        {"zip": "77033", "population": 62000, "median_income": 45000, "median_home_value": 195000, "marketing_value": 1, "notes": "South Belt"}
+      ]
+    },
+    {
+      "city": "Phoenix",
+      "state": "Arizona",
+      "zip_codes": [
+        {"zip": "85050", "population": 35000, "median_income": 137000, "median_home_value": 550000, "marketing_value": 5, "notes": "North Phoenix, affluent"},
+        {"zip": "85028", "population": 38000, "median_income": 119000, "median_home_value": 450000, "marketing_value": 4, "notes": "Paradise Valley Village"},
+        {"zip": "85054", "population": 40000, "median_income": 89000, "median_home_value": 400000, "marketing_value": 4, "notes": "North Central Phoenix"},
+        {"zip": "85032", "population": 42000, "median_income": 74000, "median_home_value": 320000, "marketing_value": 3, "notes": "Deer Valley"},
+        {"zip": "85018", "population": 45000, "median_income": 68000, "median_home_value": 295000, "marketing_value": 3, "notes": "Arcadia"},
+        {"zip": "85016", "population": 38000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Central Phoenix"},
+        {"zip": "85013", "population": 42000, "median_income": 62000, "median_home_value": 280000, "marketing_value": 2, "notes": "Central corridor"},
+        {"zip": "85015", "population": 55000, "median_income": 55000, "median_home_value": 245000, "marketing_value": 2, "notes": "West Phoenix"},
+        {"zip": "85009", "population": 48000, "median_income": 48000, "median_home_value": 210000, "marketing_value": 2, "notes": "South Phoenix"},
+        {"zip": "85019", "population": 52000, "median_income": 51000, "median_home_value": 225000, "marketing_value": 2, "notes": "Maryvale"}
+      ]
+    },
+    {
+      "city": "Philadelphia",
+      "state": "Pennsylvania",
+      "zip_codes": [
+        {"zip": "19103", "population": 28000, "median_income": 125000, "median_home_value": 750000, "marketing_value": 4, "notes": "Rittenhouse Square, upscale"},
+        {"zip": "19146", "population": 35000, "median_income": 95000, "median_home_value": 520000, "marketing_value": 4, "notes": "Graduate Hospital"},
+        {"zip": "19130", "population": 42000, "median_income": 88000, "median_home_value": 480000, "marketing_value": 3, "notes": "Fairmount"},
+        {"zip": "19147", "population": 38000, "median_income": 82000, "median_home_value": 450000, "marketing_value": 3, "notes": "Queen Village"},
+        {"zip": "19102", "population": 22000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Center City"},
+        {"zip": "19148", "population": 52000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "South Philly"},
+        {"zip": "19125", "population": 48000, "median_income": 72000, "median_home_value": 380000, "marketing_value": 3, "notes": "Fishtown"},
+        {"zip": "19122", "population": 55000, "median_income": 48000, "median_home_value": 245000, "marketing_value": 2, "notes": "North Philly"},
+        {"zip": "19134", "population": 68000, "median_income": 42000, "median_home_value": 195000, "marketing_value": 1, "notes": "Kensington"},
+        {"zip": "19140", "population": 72000, "median_income": 38000, "median_home_value": 165000, "marketing_value": 1, "notes": "North Philadelphia"}
+      ]
+    },
+    {
+      "city": "San Antonio",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "78209", "population": 35000, "median_income": 108000, "median_home_value": 625000, "marketing_value": 4, "notes": "Alamo Heights, affluent"},
+        {"zip": "78212", "population": 28000, "median_income": 98000, "median_home_value": 520000, "marketing_value": 4, "notes": "Monte Vista"},
+        {"zip": "78230", "population": 42000, "median_income": 85000, "median_home_value": 450000, "marketing_value": 3, "notes": "Stone Oak"},
+        {"zip": "78258", "population": 48000, "median_income": 92000, "median_home_value": 485000, "marketing_value": 4, "notes": "Far North, growing"},
+        {"zip": "78232", "population": 38000, "median_income": 78000, "median_home_value": 380000, "marketing_value": 3, "notes": "Northwest"},
+        {"zip": "78213", "population": 45000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "Medical Center"},
+        {"zip": "78249", "population": 52000, "median_income": 68000, "median_home_value": 285000, "marketing_value": 2, "notes": "Far Northwest"},
+        {"zip": "78207", "population": 55000, "median_income": 48000, "median_home_value": 195000, "marketing_value": 2, "notes": "West Side"},
+        {"zip": "78210", "population": 48000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "South Side"},
+        {"zip": "78237", "population": 62000, "median_income": 52000, "median_home_value": 220000, "marketing_value": 2, "notes": "Southwest"}
+      ]
+    },
+    {
+      "city": "San Diego",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "92037", "population": 42000, "median_income": 175000, "median_home_value": 2200000, "marketing_value": 5, "notes": "La Jolla, luxury coastal"},
+        {"zip": "92107", "population": 38000, "median_income": 125000, "median_home_value": 1400000, "marketing_value": 5, "notes": "Ocean Beach, beachfront"},
+        {"zip": "92106", "population": 32000, "median_income": 115000, "median_home_value": 1100000, "marketing_value": 4, "notes": "Point Loma"},
+        {"zip": "92109", "population": 45000, "median_income": 98000, "median_home_value": 950000, "marketing_value": 4, "notes": "Pacific Beach"},
+        {"zip": "92103", "population": 48000, "median_income": 88000, "median_home_value": 750000, "marketing_value": 3, "notes": "Hillcrest"},
+        {"zip": "92104", "population": 52000, "median_income": 82000, "median_home_value": 680000, "marketing_value": 3, "notes": "North Park"},
+        {"zip": "92101", "population": 28000, "median_income": 95000, "median_home_value": 820000, "marketing_value": 4, "notes": "Downtown"},
+        {"zip": "92116", "population": 42000, "median_income": 75000, "median_home_value": 620000, "marketing_value": 3, "notes": "Normal Heights"},
+        {"zip": "92113", "population": 58000, "median_income": 52000, "median_home_value": 420000, "marketing_value": 2, "notes": "Southeast SD"},
+        {"zip": "92102", "population": 48000, "median_income": 58000, "median_home_value": 480000, "marketing_value": 2, "notes": "Golden Hill"}
+      ]
+    },
+    {
+      "city": "Dallas",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "75205", "population": 28000, "median_income": 168000, "median_home_value": 1350000, "marketing_value": 5, "notes": "Highland Park, ultra-affluent"},
+        {"zip": "75225", "population": 32000, "median_income": 152000, "median_home_value": 1100000, "marketing_value": 5, "notes": "University Park"},
+        {"zip": "75209", "population": 35000, "median_income": 118000, "median_home_value": 750000, "marketing_value": 4, "notes": "Oak Lawn, upscale"},
+        {"zip": "75214", "population": 42000, "median_income": 92000, "median_home_value": 520000, "marketing_value": 4, "notes": "Lakewood"},
+        {"zip": "75206", "population": 38000, "median_income": 88000, "median_home_value": 480000, "marketing_value": 3, "notes": "East Dallas"},
+        {"zip": "75201", "population": 25000, "median_income": 85000, "median_home_value": 450000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "75230", "population": 45000, "median_income": 78000, "median_home_value": 385000, "marketing_value": 3, "notes": "North Dallas"},
+        {"zip": "75217", "population": 58000, "median_income": 52000, "median_home_value": 245000, "marketing_value": 2, "notes": "Pleasant Grove"},
+        {"zip": "75216", "population": 62000, "median_income": 45000, "median_home_value": 195000, "marketing_value": 1, "notes": "South Dallas"},
+        {"zip": "75227", "population": 55000, "median_income": 48000, "median_home_value": 210000, "marketing_value": 2, "notes": "East Oak Cliff"}
+      ]
+    },
+    {
+      "city": "Jacksonville",
+      "state": "Florida",
+      "zip_codes": [
+        {"zip": "32224", "population": 45000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 4, "notes": "Beaches area"},
+        {"zip": "32256", "population": 42000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Southside"},
+        {"zip": "32259", "population": 38000, "median_income": 92000, "median_home_value": 450000, "marketing_value": 4, "notes": "St. Johns County"},
+        {"zip": "32223", "population": 48000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "Arlington"},
+        {"zip": "32257", "population": 35000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Mandarin"},
+        {"zip": "32225", "population": 52000, "median_income": 68000, "median_home_value": 285000, "marketing_value": 2, "notes": "Northside"},
+        {"zip": "32208", "population": 38000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "Northwest Jax"},
+        {"zip": "32209", "population": 42000, "median_income": 38000, "median_home_value": 145000, "marketing_value": 1, "notes": "Urban core"}
+      ]
+    },
+    {
+      "city": "Fort Worth",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "76107", "population": 32000, "median_income": 105000, "median_home_value": 620000, "marketing_value": 4, "notes": "Westover Hills, upscale"},
+        {"zip": "76109", "population": 42000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "West Fort Worth"},
+        {"zip": "76132", "population": 45000, "median_income": 78000, "median_home_value": 385000, "marketing_value": 3, "notes": "Southwest"},
+        {"zip": "76244", "population": 52000, "median_income": 85000, "median_home_value": 420000, "marketing_value": 3, "notes": "Keller area"},
+        {"zip": "76116", "population": 55000, "median_income": 65000, "median_home_value": 285000, "marketing_value": 2, "notes": "South Fort Worth"},
+        {"zip": "76119", "population": 48000, "median_income": 52000, "median_home_value": 220000, "marketing_value": 2, "notes": "Southeast"},
+        {"zip": "76105", "population": 38000, "median_income": 48000, "median_home_value": 195000, "marketing_value": 2, "notes": "East Side"},
+        {"zip": "76104", "population": 42000, "median_income": 45000, "median_home_value": 175000, "marketing_value": 1, "notes": "North Side"}
+      ]
+    },
+    {
+      "city": "San Jose",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "95120", "population": 38000, "median_income": 165000, "median_home_value": 1950000, "marketing_value": 5, "notes": "Almaden Valley, affluent"},
+        {"zip": "95125", "population": 42000, "median_income": 145000, "median_home_value": 1650000, "marketing_value": 5, "notes": "Willow Glen, desirable"},
+        {"zip": "95129", "population": 35000, "median_income": 155000, "median_home_value": 1800000, "marketing_value": 5, "notes": "West San Jose"},
+        {"zip": "95124", "population": 45000, "median_income": 138000, "median_home_value": 1550000, "marketing_value": 5, "notes": "Cambrian Park"},
+        {"zip": "95123", "population": 58000, "median_income": 98000, "median_home_value": 950000, "marketing_value": 4, "notes": "South San Jose"},
+        {"zip": "95126", "population": 48000, "median_income": 115000, "median_home_value": 1250000, "marketing_value": 4, "notes": "Rose Garden"},
+        {"zip": "95112", "population": 62000, "median_income": 72000, "median_home_value": 720000, "marketing_value": 3, "notes": "Central San Jose"},
+        {"zip": "95116", "population": 68000, "median_income": 65000, "median_home_value": 650000, "marketing_value": 2, "notes": "East San Jose"},
+        {"zip": "95122", "population": 75000, "median_income": 58000, "median_home_value": 580000, "marketing_value": 2, "notes": "Southeast"}
+      ]
+    },
+    {
+      "city": "Austin",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "78746", "population": 28000, "median_income": 168000, "median_home_value": 1450000, "marketing_value": 5, "notes": "West Lake Hills, luxury"},
+        {"zip": "78703", "population": 32000, "median_income": 145000, "median_home_value": 1200000, "marketing_value": 5, "notes": "Tarrytown, upscale"},
+        {"zip": "78731", "population": 35000, "median_income": 132000, "median_home_value": 950000, "marketing_value": 4, "notes": "Northwest Hills"},
+        {"zip": "78704", "population": 42000, "median_income": 98000, "median_home_value": 720000, "marketing_value": 4, "notes": "South Austin, trendy"},
+        {"zip": "78701", "population": 18000, "median_income": 105000, "median_home_value": 850000, "marketing_value": 4, "notes": "Downtown"},
+        {"zip": "78758", "population": 55000, "median_income": 75000, "median_home_value": 480000, "marketing_value": 3, "notes": "North Austin"},
+        {"zip": "78745", "population": 52000, "median_income": 68000, "median_home_value": 385000, "marketing_value": 3, "notes": "South Central"},
+        {"zip": "78741", "population": 48000, "median_income": 55000, "median_home_value": 420000, "marketing_value": 2, "notes": "East Austin, gentrifying"},
+        {"zip": "78744", "population": 62000, "median_income": 52000, "median_home_value": 295000, "marketing_value": 2, "notes": "Southeast Austin"}
+      ]
+    },
+    {
+      "city": "Charlotte",
+      "state": "North Carolina",
+      "zip_codes": [
+        {"zip": "28207", "population": 35000, "median_income": 125000, "median_home_value": 780000, "marketing_value": 4, "notes": "Myers Park, affluent"},
+        {"zip": "28226", "population": 42000, "median_income": 108000, "median_home_value": 620000, "marketing_value": 4, "notes": "South Charlotte, family-oriented"},
+        {"zip": "28277", "population": 48000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 4, "notes": "Ballantyne, growing"},
+        {"zip": "28204", "population": 32000, "median_income": 88000, "median_home_value": 520000, "marketing_value": 3, "notes": "Dilworth, popular"},
+        {"zip": "28209", "population": 38000, "median_income": 82000, "median_home_value": 480000, "marketing_value": 3, "notes": "South End"},
+        {"zip": "28211", "population": 45000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "East Charlotte"},
+        {"zip": "28205", "population": 52000, "median_income": 65000, "median_home_value": 320000, "marketing_value": 3, "notes": "Plaza Midwood"},
+        {"zip": "28216", "population": 58000, "median_income": 48000, "median_home_value": 215000, "marketing_value": 2, "notes": "West Charlotte"},
+        {"zip": "28208", "population": 42000, "median_income": 42000, "median_home_value": 175000, "marketing_value": 1, "notes": "Northwest"}
+      ]
+    },
+    {
+      "city": "Columbus",
+      "state": "Ohio",
+      "zip_codes": [
+        {"zip": "43017", "population": 35000, "median_income": 118000, "median_home_value": 650000, "marketing_value": 4, "notes": "Dublin, affluent suburb"},
+        {"zip": "43220", "population": 42000, "median_income": 105000, "median_home_value": 520000, "marketing_value": 4, "notes": "Upper Arlington"},
+        {"zip": "43235", "population": 38000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northwest Columbus"},
+        {"zip": "43214", "population": 45000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "Clintonville"},
+        {"zip": "43215", "population": 28000, "median_income": 78000, "median_home_value": 385000, "marketing_value": 3, "notes": "Downtown/Short North"},
+        {"zip": "43229", "population": 52000, "median_income": 62000, "median_home_value": 265000, "marketing_value": 2, "notes": "Northeast"},
+        {"zip": "43223", "population": 48000, "median_income": 52000, "median_home_value": 195000, "marketing_value": 2, "notes": "South Side"},
+        {"zip": "43211", "population": 55000, "median_income": 45000, "median_home_value": 165000, "marketing_value": 1, "notes": "Near East Side"}
+      ]
+    },
+    {
+      "city": "Indianapolis",
+      "state": "Indiana",
+      "zip_codes": [
+        {"zip": "46240", "population": 38000, "median_income": 105000, "median_home_value": 585000, "marketing_value": 4, "notes": "North side, affluent"},
+        {"zip": "46220", "population": 42000, "median_income": 92000, "median_home_value": 450000, "marketing_value": 3, "notes": "Broad Ripple"},
+        {"zip": "46260", "population": 35000, "median_income": 98000, "median_home_value": 485000, "marketing_value": 4, "notes": "Meridian Hills"},
+        {"zip": "46250", "population": 45000, "median_income": 78000, "median_home_value": 350000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "46228", "population": 48000, "median_income": 68000, "median_home_value": 285000, "marketing_value": 2, "notes": "Northwest"},
+        {"zip": "46203", "population": 52000, "median_income": 55000, "median_home_value": 220000, "marketing_value": 2, "notes": "South Side"},
+        {"zip": "46201", "population": 38000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "Near East Side"},
+        {"zip": "46218", "population": 42000, "median_income": 45000, "median_home_value": 175000, "marketing_value": 1, "notes": "East Side"}
+      ]
+    },
+    {
+      "city": "San Francisco",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "94123", "population": 32000, "median_income": 185000, "median_home_value": 2400000, "marketing_value": 5, "notes": "Marina District, luxury"},
+        {"zip": "94115", "population": 28000, "median_income": 175000, "median_home_value": 2200000, "marketing_value": 5, "notes": "Pacific Heights"},
+        {"zip": "94127", "population": 35000, "median_income": 165000, "median_home_value": 1950000, "marketing_value": 5, "notes": "St. Francis Wood"},
+        {"zip": "94114", "population": 42000, "median_income": 145000, "median_home_value": 1700000, "marketing_value": 5, "notes": "Castro/Noe Valley"},
+        {"zip": "94117", "population": 38000, "median_income": 135000, "median_home_value": 1550000, "marketing_value": 5, "notes": "Haight-Ashbury"},
+        {"zip": "94110", "population": 58000, "median_income": 95000, "median_home_value": 1200000, "marketing_value": 4, "notes": "Mission District"},
+        {"zip": "94102", "population": 45000, "median_income": 72000, "median_home_value": 850000, "marketing_value": 3, "notes": "Tenderloin"},
+        {"zip": "94124", "population": 52000, "median_income": 58000, "median_home_value": 680000, "marketing_value": 2, "notes": "Bayview"}
+      ]
+    },
+    {
+      "city": "Seattle",
+      "state": "Washington",
+      "zip_codes": [
+        {"zip": "98112", "population": 35000, "median_income": 165000, "median_home_value": 1850000, "marketing_value": 5, "notes": "Capitol Hill/Madison Park"},
+        {"zip": "98102", "population": 28000, "median_income": 152000, "median_home_value": 1650000, "marketing_value": 5, "notes": "Eastlake"},
+        {"zip": "98199", "population": 42000, "median_income": 135000, "median_home_value": 1450000, "marketing_value": 5, "notes": "Magnolia, waterfront"},
+        {"zip": "98105", "population": 48000, "median_income": 95000, "median_home_value": 950000, "marketing_value": 4, "notes": "University District"},
+        {"zip": "98103", "population": 52000, "median_income": 105000, "median_home_value": 1100000, "marketing_value": 4, "notes": "Fremont/Wallingford"},
+        {"zip": "98115", "population": 58000, "median_income": 98000, "median_home_value": 985000, "marketing_value": 4, "notes": "North Seattle"},
+        {"zip": "98144", "population": 45000, "median_income": 82000, "median_home_value": 820000, "marketing_value": 3, "notes": "Central District"},
+        {"zip": "98118", "population": 62000, "median_income": 68000, "median_home_value": 650000, "marketing_value": 3, "notes": "Rainier Valley"},
+        {"zip": "98106", "population": 48000, "median_income": 58000, "median_home_value": 520000, "marketing_value": 2, "notes": "White Center area"}
+      ]
+    },
+    {
+      "city": "Denver",
+      "state": "Colorado",
+      "zip_codes": [
+        {"zip": "80206", "population": 38000, "median_income": 125000, "median_home_value": 850000, "marketing_value": 4, "notes": "Cherry Creek, upscale"},
+        {"zip": "80210", "population": 42000, "median_income": 115000, "median_home_value": 720000, "marketing_value": 4, "notes": "Washington Park"},
+        {"zip": "80220", "population": 35000, "median_income": 105000, "median_home_value": 650000, "marketing_value": 4, "notes": "Park Hill"},
+        {"zip": "80218", "population": 32000, "median_income": 95000, "median_home_value": 580000, "marketing_value": 4, "notes": "Capitol Hill"},
+        {"zip": "80209", "population": 28000, "median_income": 88000, "median_home_value": 520000, "marketing_value": 3, "notes": "University"},
+        {"zip": "80202", "population": 25000, "median_income": 82000, "median_home_value": 480000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "80219", "population": 52000, "median_income": 62000, "median_home_value": 350000, "marketing_value": 2, "notes": "West Denver"},
+        {"zip": "80204", "population": 48000, "median_income": 55000, "median_home_value": 320000, "marketing_value": 2, "notes": "Highlands"}
+      ]
+    },
+    {
+      "city": "Oklahoma City",
+      "state": "Oklahoma",
+      "zip_codes": [
+        {"zip": "73120", "population": 42000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 4, "notes": "Nichols Hills area"},
+        {"zip": "73142", "population": 38000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northwest OKC"},
+        {"zip": "73013", "population": 45000, "median_income": 82000, "median_home_value": 385000, "marketing_value": 3, "notes": "Edmond area"},
+        {"zip": "73170", "population": 52000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "South OKC"},
+        {"zip": "73159", "population": 48000, "median_income": 68000, "median_home_value": 285000, "marketing_value": 2, "notes": "Southwest"},
+        {"zip": "73107", "population": 55000, "median_income": 48000, "median_home_value": 195000, "marketing_value": 2, "notes": "West Side"},
+        {"zip": "73111", "population": 42000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "Northeast"}
+      ]
+    },
+    {
+      "city": "Nashville",
+      "state": "Tennessee",
+      "zip_codes": [
+        {"zip": "37215", "population": 35000, "median_income": 125000, "median_home_value": 820000, "marketing_value": 4, "notes": "Green Hills, affluent"},
+        {"zip": "37205", "population": 32000, "median_income": 118000, "median_home_value": 750000, "marketing_value": 4, "notes": "Belle Meade, luxury"},
+        {"zip": "37212", "population": 38000, "median_income": 95000, "median_home_value": 620000, "marketing_value": 4, "notes": "West End"},
+        {"zip": "37206", "population": 42000, "median_income": 82000, "median_home_value": 520000, "marketing_value": 3, "notes": "East Nashville, trendy"},
+        {"zip": "37203", "population": 28000, "median_income": 88000, "median_home_value": 550000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "37211", "population": 52000, "median_income": 62000, "median_home_value": 320000, "marketing_value": 2, "notes": "South Nashville"},
+        {"zip": "37207", "population": 48000, "median_income": 52000, "median_home_value": 285000, "marketing_value": 2, "notes": "North Nashville"},
+        {"zip": "37208", "population": 45000, "median_income": 48000, "median_home_value": 250000, "marketing_value": 2, "notes": "Germantown area"}
+      ]
+    },
+    {
+      "city": "El Paso",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "79912", "population": 42000, "median_income": 85000, "median_home_value": 385000, "marketing_value": 3, "notes": "West El Paso"},
+        {"zip": "79902", "population": 35000, "median_income": 78000, "median_home_value": 320000, "marketing_value": 3, "notes": "Central"},
+        {"zip": "79936", "population": 48000, "median_income": 65000, "median_home_value": 265000, "marketing_value": 2, "notes": "East El Paso"},
+        {"zip": "79925", "population": 52000, "median_income": 58000, "median_home_value": 230000, "marketing_value": 2, "notes": "Northeast"},
+        {"zip": "79924", "population": 45000, "median_income": 52000, "median_home_value": 210000, "marketing_value": 2, "notes": "Far East"},
+        {"zip": "79905", "population": 38000, "median_income": 45000, "median_home_value": 175000, "marketing_value": 1, "notes": "South Central"},
+        {"zip": "79915", "population": 55000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "Lower Valley"}
+      ]
+    },
+    {
+      "city": "Washington",
+      "state": "District of Columbia",
+      "zip_codes": [
+        {"zip": "20008", "population": 28000, "median_income": 195000, "median_home_value": 2100000, "marketing_value": 5, "notes": "Kalorama, ultra-luxury"},
+        {"zip": "20016", "population": 32000, "median_income": 175000, "median_home_value": 1850000, "marketing_value": 5, "notes": "Upper Northwest"},
+        {"zip": "20007", "population": 25000, "median_income": 165000, "median_home_value": 1700000, "marketing_value": 5, "notes": "Georgetown, prestigious"},
+        {"zip": "20015", "population": 35000, "median_income": 152000, "median_home_value": 1450000, "marketing_value": 5, "notes": "Chevy Chase"},
+        {"zip": "20009", "population": 42000, "median_income": 115000, "median_home_value": 950000, "marketing_value": 4, "notes": "U Street, Adams Morgan"},
+        {"zip": "20001", "population": 38000, "median_income": 95000, "median_home_value": 720000, "marketing_value": 4, "notes": "Bloomingdale"},
+        {"zip": "20002", "population": 45000, "median_income": 82000, "median_home_value": 620000, "marketing_value": 3, "notes": "Capitol Hill area"},
+        {"zip": "20020", "population": 55000, "median_income": 48000, "median_home_value": 285000, "marketing_value": 2, "notes": "Southeast DC"},
+        {"zip": "20019", "population": 62000, "median_income": 42000, "median_home_value": 220000, "marketing_value": 1, "notes": "Far Southeast"}
+      ]
+    },
+    {
+      "city": "Boston",
+      "state": "Massachusetts",
+      "zip_codes": [
+        {"zip": "02199", "population": 22000, "median_income": 165000, "median_home_value": 1650000, "marketing_value": 5, "notes": "Back Bay, luxury"},
+        {"zip": "02116", "population": 28000, "median_income": 152000, "median_home_value": 1450000, "marketing_value": 5, "notes": "Back Bay/South End"},
+        {"zip": "02108", "population": 18000, "median_income": 145000, "median_home_value": 1350000, "marketing_value": 5, "notes": "Beacon Hill"},
+        {"zip": "02114", "population": 25000, "median_income": 135000, "median_home_value": 1200000, "marketing_value": 4, "notes": "West End"},
+        {"zip": "02118", "population": 35000, "median_income": 95000, "median_home_value": 850000, "marketing_value": 4, "notes": "South End"},
+        {"zip": "02115", "population": 42000, "median_income": 72000, "median_home_value": 650000, "marketing_value": 3, "notes": "Fenway"},
+        {"zip": "02120", "population": 48000, "median_income": 62000, "median_home_value": 520000, "marketing_value": 2, "notes": "Mission Hill"},
+        {"zip": "02124", "population": 55000, "median_income": 52000, "median_home_value": 420000, "marketing_value": 2, "notes": "Dorchester"},
+        {"zip": "02121", "population": 52000, "median_income": 45000, "median_home_value": 350000, "marketing_value": 2, "notes": "Roxbury"}
+      ]
+    },
+    {
+      "city": "Portland",
+      "state": "Oregon",
+      "zip_codes": [
+        {"zip": "97210", "population": 28000, "median_income": 128000, "median_home_value": 850000, "marketing_value": 4, "notes": "Northwest Portland, upscale"},
+        {"zip": "97221", "population": 32000, "median_income": 115000, "median_home_value": 720000, "marketing_value": 4, "notes": "West Hills"},
+        {"zip": "97219", "population": 38000, "median_income": 105000, "median_home_value": 650000, "marketing_value": 4, "notes": "Southwest Portland"},
+        {"zip": "97212", "population": 42000, "median_income": 88000, "median_home_value": 580000, "marketing_value": 3, "notes": "Northeast, trendy"},
+        {"zip": "97214", "population": 45000, "median_income": 78000, "median_home_value": 520000, "marketing_value": 3, "notes": "Southeast Portland"},
+        {"zip": "97202", "population": 48000, "median_income": 72000, "median_home_value": 485000, "marketing_value": 3, "notes": "Sellwood"},
+        {"zip": "97217", "population": 52000, "median_income": 58000, "median_home_value": 385000, "marketing_value": 2, "notes": "North Portland"},
+        {"zip": "97206", "population": 55000, "median_income": 52000, "median_home_value": 420000, "marketing_value": 2, "notes": "Southeast"}
+      ]
+    },
+    {
+      "city": "Las Vegas",
+      "state": "Nevada",
+      "zip_codes": [
+        {"zip": "89135", "population": 42000, "median_income": 118000, "median_home_value": 685000, "marketing_value": 4, "notes": "Summerlin, affluent"},
+        {"zip": "89138", "population": 48000, "median_income": 105000, "median_home_value": 620000, "marketing_value": 4, "notes": "Southwest"},
+        {"zip": "89144", "population": 38000, "median_income": 95000, "median_home_value": 550000, "marketing_value": 4, "notes": "West Las Vegas"},
+        {"zip": "89117", "population": 52000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northwest"},
+        {"zip": "89119", "population": 58000, "median_income": 68000, "median_home_value": 350000, "marketing_value": 3, "notes": "Henderson border"},
+        {"zip": "89103", "population": 62000, "median_income": 55000, "median_home_value": 285000, "marketing_value": 2, "notes": "Central Vegas"},
+        {"zip": "89101", "population": 48000, "median_income": 45000, "median_home_value": 220000, "marketing_value": 1, "notes": "Downtown area"},
+        {"zip": "89115", "population": 72000, "median_income": 52000, "median_home_value": 265000, "marketing_value": 2, "notes": "Northeast"}
+      ]
+    },
+    {
+      "city": "Detroit",
+      "state": "Michigan",
+      "zip_codes": [
+        {"zip": "48067", "population": 28000, "median_income": 98000, "median_home_value": 520000, "marketing_value": 4, "notes": "Royal Oak suburb"},
+        {"zip": "48226", "population": 18000, "median_income": 78000, "median_home_value": 385000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "48214", "population": 35000, "median_income": 52000, "median_home_value": 165000, "marketing_value": 2, "notes": "East Side"},
+        {"zip": "48227", "population": 42000, "median_income": 45000, "median_home_value": 145000, "marketing_value": 1, "notes": "West Side"},
+        {"zip": "48204", "population": 38000, "median_income": 38000, "median_home_value": 120000, "marketing_value": 1, "notes": "Northwest"},
+        {"zip": "48205", "population": 45000, "median_income": 42000, "median_home_value": 135000, "marketing_value": 1, "notes": "North End"},
+        {"zip": "48217", "population": 32000, "median_income": 48000, "median_home_value": 155000, "marketing_value": 2, "notes": "Southwest"}
+      ]
+    },
+    {
+      "city": "Memphis",
+      "state": "Tennessee",
+      "zip_codes": [
+        {"zip": "38120", "population": 35000, "median_income": 105000, "median_home_value": 585000, "marketing_value": 4, "notes": "East Memphis, affluent"},
+        {"zip": "38117", "population": 42000, "median_income": 92000, "median_home_value": 485000, "marketing_value": 3, "notes": "Germantown area"},
+        {"zip": "38119", "population": 38000, "median_income": 85000, "median_home_value": 420000, "marketing_value": 3, "notes": "Southeast Memphis"},
+        {"zip": "38104", "population": 28000, "median_income": 72000, "median_home_value": 350000, "marketing_value": 3, "notes": "Midtown"},
+        {"zip": "38111", "population": 48000, "median_income": 55000, "median_home_value": 235000, "marketing_value": 2, "notes": "Southeast"},
+        {"zip": "38106", "population": 42000, "median_income": 38000, "median_home_value": 145000, "marketing_value": 1, "notes": "South Memphis"},
+        {"zip": "38108", "population": 52000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "Whitehaven"}
+      ]
+    },
+    {
+      "city": "Louisville",
+      "state": "Kentucky",
+      "zip_codes": [
+        {"zip": "40207", "population": 32000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 4, "notes": "St. Matthews, affluent"},
+        {"zip": "40222", "population": 35000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "East Louisville"},
+        {"zip": "40223", "population": 42000, "median_income": 105000, "median_home_value": 520000, "marketing_value": 4, "notes": "Middletown area"},
+        {"zip": "40206", "population": 28000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Highlands"},
+        {"zip": "40245", "population": 38000, "median_income": 82000, "median_home_value": 385000, "marketing_value": 3, "notes": "East End"},
+        {"zip": "40214", "population": 52000, "median_income": 52000, "median_home_value": 185000, "marketing_value": 2, "notes": "Southwest"},
+        {"zip": "40211", "population": 48000, "median_income": 42000, "median_home_value": 155000, "marketing_value": 1, "notes": "West End"},
+        {"zip": "40216", "population": 45000, "median_income": 45000, "median_home_value": 165000, "marketing_value": 1, "notes": "South Louisville"}
+      ]
+    },
+    {
+      "city": "Baltimore",
+      "state": "Maryland",
+      "zip_codes": [
+        {"zip": "21210", "population": 35000, "median_income": 108000, "median_home_value": 620000, "marketing_value": 4, "notes": "Roland Park, upscale"},
+        {"zip": "21209", "population": 42000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 3, "notes": "Northwest Baltimore"},
+        {"zip": "21224", "population": 48000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Canton, gentrifying"},
+        {"zip": "21231", "population": 32000, "median_income": 85000, "median_home_value": 485000, "marketing_value": 3, "notes": "Fells Point"},
+        {"zip": "21218", "population": 52000, "median_income": 52000, "median_home_value": 285000, "marketing_value": 2, "notes": "North Baltimore"},
+        {"zip": "21215", "population": 58000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "West Baltimore"},
+        {"zip": "21217", "population": 45000, "median_income": 38000, "median_home_value": 145000, "marketing_value": 1, "notes": "Central West"},
+        {"zip": "21213", "population": 48000, "median_income": 45000, "median_home_value": 175000, "marketing_value": 1, "notes": "East Baltimore"}
+      ]
+    },
+    {
+      "city": "Milwaukee",
+      "state": "Wisconsin",
+      "zip_codes": [
+        {"zip": "53217", "population": 38000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 3, "notes": "North Shore, affluent"},
+        {"zip": "53211", "population": 42000, "median_income": 82000, "median_home_value": 385000, "marketing_value": 3, "notes": "Shorewood"},
+        {"zip": "53202", "population": 22000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "53207", "population": 52000, "median_income": 58000, "median_home_value": 235000, "marketing_value": 2, "notes": "South Side"},
+        {"zip": "53210", "population": 48000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "North Milwaukee"},
+        {"zip": "53206", "population": 55000, "median_income": 35000, "median_home_value": 125000, "marketing_value": 1, "notes": "Central city"},
+        {"zip": "53218", "population": 62000, "median_income": 48000, "median_home_value": 185000, "marketing_value": 2, "notes": "Northwest"}
+      ]
+    },
+    {
+      "city": "Albuquerque",
+      "state": "New Mexico",
+      "zip_codes": [
+        {"zip": "87111", "population": 45000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northeast Heights"},
+        {"zip": "87122", "population": 52000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Far Northeast"},
+        {"zip": "87109", "population": 48000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "87110", "population": 42000, "median_income": 65000, "median_home_value": 285000, "marketing_value": 2, "notes": "Uptown"},
+        {"zip": "87108", "population": 55000, "median_income": 58000, "median_home_value": 245000, "marketing_value": 2, "notes": "Southeast"},
+        {"zip": "87105", "population": 62000, "median_income": 52000, "median_home_value": 210000, "marketing_value": 2, "notes": "South Valley"},
+        {"zip": "87102", "population": 28000, "median_income": 48000, "median_home_value": 265000, "marketing_value": 2, "notes": "Downtown"}
+      ]
+    },
+    {
+      "city": "Fresno",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "93720", "population": 48000, "median_income": 85000, "median_home_value": 485000, "marketing_value": 3, "notes": "North Fresno"},
+        {"zip": "93711", "population": 52000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northwest"},
+        {"zip": "93730", "population": 42000, "median_income": 95000, "median_home_value": 520000, "marketing_value": 4, "notes": "Northeast, newer"},
+        {"zip": "93727", "population": 58000, "median_income": 58000, "median_home_value": 320000, "marketing_value": 2, "notes": "Southeast"},
+        {"zip": "93706", "population": 62000, "median_income": 48000, "median_home_value": 265000, "marketing_value": 2, "notes": "Central Fresno"},
+        {"zip": "93702", "population": 55000, "median_income": 42000, "median_home_value": 220000, "marketing_value": 1, "notes": "Downtown area"},
+        {"zip": "93722", "population": 45000, "median_income": 72000, "median_home_value": 385000, "marketing_value": 3, "notes": "North"}
+      ]
+    },
+    {
+      "city": "Tucson",
+      "state": "Arizona",
+      "zip_codes": [
+        {"zip": "85750", "population": 42000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 4, "notes": "Foothills, affluent"},
+        {"zip": "85718", "population": 48000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "85704", "population": 52000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 3, "notes": "Northwest"},
+        {"zip": "85710", "population": 58000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "East Side"},
+        {"zip": "85713", "population": 45000, "median_income": 52000, "median_home_value": 245000, "marketing_value": 2, "notes": "South Tucson"},
+        {"zip": "85711", "population": 38000, "median_income": 58000, "median_home_value": 265000, "marketing_value": 2, "notes": "Central"},
+        {"zip": "85716", "population": 42000, "median_income": 48000, "median_home_value": 230000, "marketing_value": 2, "notes": "Mid-city"}
+      ]
+    },
+    {
+      "city": "Sacramento",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "95864", "population": 38000, "median_income": 105000, "median_home_value": 620000, "marketing_value": 4, "notes": "East Sacramento, desirable"},
+        {"zip": "95831", "population": 45000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "Pocket area"},
+        {"zip": "95818", "population": 32000, "median_income": 95000, "median_home_value": 550000, "marketing_value": 4, "notes": "East Sac/Curtis Park"},
+        {"zip": "95825", "population": 52000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Arden"},
+        {"zip": "95822", "population": 58000, "median_income": 58000, "median_home_value": 320000, "marketing_value": 2, "notes": "South Sacramento"},
+        {"zip": "95815", "population": 48000, "median_income": 52000, "median_home_value": 285000, "marketing_value": 2, "notes": "North Sacramento"},
+        {"zip": "95838", "population": 62000, "median_income": 68000, "median_home_value": 350000, "marketing_value": 3, "notes": "Natomas"}
+      ]
+    },
+    {
+      "city": "Mesa",
+      "state": "Arizona",
+      "zip_codes": [
+        {"zip": "85207", "population": 48000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "East Mesa"},
+        {"zip": "85212", "population": 52000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 4, "notes": "Northeast Mesa"},
+        {"zip": "85215", "population": 45000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "Central Mesa"},
+        {"zip": "85204", "population": 58000, "median_income": 65000, "median_home_value": 320000, "marketing_value": 2, "notes": "West Mesa"},
+        {"zip": "85201", "population": 42000, "median_income": 58000, "median_home_value": 285000, "marketing_value": 2, "notes": "Downtown Mesa"},
+        {"zip": "85210", "population": 55000, "median_income": 68000, "median_home_value": 350000, "marketing_value": 3, "notes": "South Mesa"},
+        {"zip": "85203", "population": 48000, "median_income": 62000, "median_home_value": 295000, "marketing_value": 2, "notes": "West Central"}
+      ]
+    },
+    {
+      "city": "Kansas City",
+      "state": "Missouri",
+      "zip_codes": [
+        {"zip": "64112", "population": 32000, "median_income": 105000, "median_home_value": 585000, "marketing_value": 4, "notes": "Country Club Plaza, upscale"},
+        {"zip": "64113", "population": 38000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 3, "notes": "Waldo"},
+        {"zip": "64114", "population": 42000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "South Kansas City"},
+        {"zip": "64108", "population": 28000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "64110", "population": 45000, "median_income": 52000, "median_home_value": 235000, "marketing_value": 2, "notes": "East Side"},
+        {"zip": "64127", "population": 52000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "East KC"},
+        {"zip": "64128", "population": 48000, "median_income": 38000, "median_home_value": 145000, "marketing_value": 1, "notes": "Urban core"}
+      ]
+    },
+    {
+      "city": "Atlanta",
+      "state": "Georgia",
+      "zip_codes": [
+        {"zip": "30327", "population": 35000, "median_income": 148000, "median_home_value": 950000, "marketing_value": 5, "notes": "Buckhead, luxury"},
+        {"zip": "30305", "population": 32000, "median_income": 135000, "median_home_value": 850000, "marketing_value": 4, "notes": "Buckhead area"},
+        {"zip": "30309", "population": 28000, "median_income": 105000, "median_home_value": 620000, "marketing_value": 4, "notes": "Midtown"},
+        {"zip": "30306", "population": 42000, "median_income": 88000, "median_home_value": 520000, "marketing_value": 3, "notes": "Virginia Highland"},
+        {"zip": "30318", "population": 38000, "median_income": 78000, "median_home_value": 480000, "marketing_value": 3, "notes": "West Midtown"},
+        {"zip": "30312", "population": 32000, "median_income": 68000, "median_home_value": 385000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "30314", "population": 48000, "median_income": 42000, "median_home_value": 185000, "marketing_value": 1, "notes": "West Atlanta"},
+        {"zip": "30315", "population": 45000, "median_income": 48000, "median_home_value": 220000, "marketing_value": 2, "notes": "South Atlanta"},
+        {"zip": "30316", "population": 52000, "median_income": 52000, "median_home_value": 265000, "marketing_value": 2, "notes": "East Atlanta"}
+      ]
+    },
+    {
+      "city": "Colorado Springs",
+      "state": "Colorado",
+      "zip_codes": [
+        {"zip": "80906", "population": 38000, "median_income": 105000, "median_home_value": 585000, "marketing_value": 4, "notes": "Old North End, affluent"},
+        {"zip": "80919", "population": 48000, "median_income": 92000, "median_home_value": 485000, "marketing_value": 4, "notes": "North Springs"},
+        {"zip": "80920", "population": 52000, "median_income": 88000, "median_home_value": 450000, "marketing_value": 3, "notes": "Far Northeast"},
+        {"zip": "80922", "population": 45000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "Southeast"},
+        {"zip": "80909", "population": 55000, "median_income": 62000, "median_home_value": 295000, "marketing_value": 2, "notes": "East Springs"},
+        {"zip": "80905", "population": 42000, "median_income": 52000, "median_home_value": 245000, "marketing_value": 2, "notes": "Central"},
+        {"zip": "80910", "population": 48000, "median_income": 58000, "median_home_value": 265000, "marketing_value": 2, "notes": "Southeast side"}
+      ]
+    },
+    {
+      "city": "Omaha",
+      "state": "Nebraska",
+      "zip_codes": [
+        {"zip": "68022", "population": 35000, "median_income": 108000, "median_home_value": 585000, "marketing_value": 4, "notes": "Elkhorn, affluent suburb"},
+        {"zip": "68114", "population": 42000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 3, "notes": "West Omaha"},
+        {"zip": "68130", "population": 48000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Southwest"},
+        {"zip": "68124", "population": 38000, "median_income": 82000, "median_home_value": 385000, "marketing_value": 3, "notes": "West Central"},
+        {"zip": "68106", "population": 52000, "median_income": 52000, "median_home_value": 220000, "marketing_value": 2, "notes": "South Omaha"},
+        {"zip": "68104", "population": 48000, "median_income": 48000, "median_home_value": 185000, "marketing_value": 2, "notes": "North Omaha"},
+        {"zip": "68111", "population": 45000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "North Central"}
+      ]
+    },
+    {
+      "city": "Raleigh",
+      "state": "North Carolina",
+      "zip_codes": [
+        {"zip": "27615", "population": 42000, "median_income": 112000, "median_home_value": 650000, "marketing_value": 4, "notes": "North Raleigh, affluent"},
+        {"zip": "27607", "population": 35000, "median_income": 98000, "median_home_value": 520000, "marketing_value": 4, "notes": "Northwest"},
+        {"zip": "27608", "population": 38000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "North Central"},
+        {"zip": "27609", "population": 48000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "27606", "population": 52000, "median_income": 68000, "median_home_value": 350000, "marketing_value": 3, "notes": "Southeast"},
+        {"zip": "27610", "population": 45000, "median_income": 58000, "median_home_value": 285000, "marketing_value": 2, "notes": "East Raleigh"},
+        {"zip": "27603", "population": 38000, "median_income": 52000, "median_home_value": 265000, "marketing_value": 2, "notes": "South Central"}
+      ]
+    },
+    {
+      "city": "Long Beach",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "90803", "population": 35000, "median_income": 125000, "median_home_value": 950000, "marketing_value": 4, "notes": "Belmont Shore, upscale"},
+        {"zip": "90815", "population": 42000, "median_income": 105000, "median_home_value": 720000, "marketing_value": 4, "notes": "Los Altos"},
+        {"zip": "90814", "population": 38000, "median_income": 88000, "median_home_value": 620000, "marketing_value": 3, "notes": "Bixby Knolls"},
+        {"zip": "90802", "population": 28000, "median_income": 78000, "median_home_value": 485000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "90805", "population": 58000, "median_income": 52000, "median_home_value": 420000, "marketing_value": 2, "notes": "Central Long Beach"},
+        {"zip": "90813", "population": 52000, "median_income": 48000, "median_home_value": 385000, "marketing_value": 2, "notes": "East Side"},
+        {"zip": "90804", "population": 45000, "median_income": 68000, "median_home_value": 550000, "marketing_value": 3, "notes": "East Long Beach"}
+      ]
+    },
+    {
+      "city": "Virginia Beach",
+      "state": "Virginia",
+      "zip_codes": [
+        {"zip": "23454", "population": 45000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 4, "notes": "Oceanfront area"},
+        {"zip": "23456", "population": 52000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Great Neck"},
+        {"zip": "23455", "population": 48000, "median_income": 78000, "median_home_value": 385000, "marketing_value": 3, "notes": "Princess Anne"},
+        {"zip": "23464", "population": 58000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "Red Mill"},
+        {"zip": "23462", "population": 55000, "median_income": 72000, "median_home_value": 350000, "marketing_value": 3, "notes": "Kempsville"},
+        {"zip": "23452", "population": 42000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 2, "notes": "Dam Neck"},
+        {"zip": "23451", "population": 38000, "median_income": 65000, "median_home_value": 385000, "marketing_value": 3, "notes": "Resort area"}
+      ]
+    },
+    {
+      "city": "Oakland",
+      "state": "California",
+      "zip_codes": [
+        {"zip": "94618", "population": 35000, "median_income": 135000, "median_home_value": 1250000, "marketing_value": 5, "notes": "Rockridge, highly desirable"},
+        {"zip": "94611", "population": 32000, "median_income": 125000, "median_home_value": 1100000, "marketing_value": 4, "notes": "Piedmont border"},
+        {"zip": "94610", "population": 38000, "median_income": 115000, "median_home_value": 950000, "marketing_value": 4, "notes": "Adams Point"},
+        {"zip": "94602", "population": 42000, "median_income": 95000, "median_home_value": 820000, "marketing_value": 4, "notes": "Glenview"},
+        {"zip": "94619", "population": 48000, "median_income": 72000, "median_home_value": 650000, "marketing_value": 3, "notes": "Montclair"},
+        {"zip": "94605", "population": 52000, "median_income": 58000, "median_home_value": 520000, "marketing_value": 2, "notes": "East Oakland"},
+        {"zip": "94621", "population": 58000, "median_income": 48000, "median_home_value": 420000, "marketing_value": 2, "notes": "Deep East Oakland"},
+        {"zip": "94606", "population": 45000, "median_income": 52000, "median_home_value": 485000, "marketing_value": 2, "notes": "East Lake"}
+      ]
+    },
+    {
+      "city": "Minneapolis",
+      "state": "Minnesota",
+      "zip_codes": [
+        {"zip": "55410", "population": 38000, "median_income": 118000, "median_home_value": 650000, "marketing_value": 4, "notes": "Southwest, lakes area"},
+        {"zip": "55419", "population": 42000, "median_income": 98000, "median_home_value": 520000, "marketing_value": 4, "notes": "South Minneapolis"},
+        {"zip": "55406", "population": 45000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "Longfellow"},
+        {"zip": "55408", "population": 48000, "median_income": 72000, "median_home_value": 385000, "marketing_value": 3, "notes": "Phillips"},
+        {"zip": "55405", "population": 28000, "median_income": 82000, "median_home_value": 420000, "marketing_value": 3, "notes": "Downtown"},
+        {"zip": "55411", "population": 52000, "median_income": 48000, "median_home_value": 245000, "marketing_value": 2, "notes": "North Minneapolis"},
+        {"zip": "55412", "population": 45000, "median_income": 42000, "median_home_value": 210000, "marketing_value": 1, "notes": "Near North"}
+      ]
+    },
+    {
+      "city": "Tulsa",
+      "state": "Oklahoma",
+      "zip_codes": [
+        {"zip": "74133", "population": 42000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 4, "notes": "South Tulsa, affluent"},
+        {"zip": "74136", "population": 38000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "Brookside"},
+        {"zip": "74137", "population": 45000, "median_income": 105000, "median_home_value": 520000, "marketing_value": 4, "notes": "South"},
+        {"zip": "74105", "population": 32000, "median_income": 72000, "median_home_value": 365000, "marketing_value": 3, "notes": "Midtown"},
+        {"zip": "74112", "population": 48000, "median_income": 58000, "median_home_value": 265000, "marketing_value": 2, "notes": "East Tulsa"},
+        {"zip": "74110", "population": 42000, "median_income": 48000, "median_home_value": 185000, "marketing_value": 2, "notes": "North Tulsa"},
+        {"zip": "74106", "population": 38000, "median_income": 42000, "median_home_value": 165000, "marketing_value": 1, "notes": "Central"}
+      ]
+    },
+    {
+      "city": "Arlington",
+      "state": "Texas",
+      "zip_codes": [
+        {"zip": "76017", "population": 42000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "Southwest Arlington"},
+        {"zip": "76002", "population": 48000, "median_income": 78000, "median_home_value": 385000, "marketing_value": 3, "notes": "Central"},
+        {"zip": "76012", "population": 52000, "median_income": 72000, "median_home_value": 350000, "marketing_value": 3, "notes": "South Arlington"},
+        {"zip": "76014", "population": 55000, "median_income": 68000, "median_home_value": 320000, "marketing_value": 2, "notes": "North"},
+        {"zip": "76010", "population": 45000, "median_income": 62000, "median_home_value": 285000, "marketing_value": 2, "notes": "East Arlington"},
+        {"zip": "76013", "population": 58000, "median_income": 58000, "median_home_value": 265000, "marketing_value": 2, "notes": "Southeast"}
+      ]
+    },
+    {
+      "city": "Tampa",
+      "state": "Florida",
+      "zip_codes": [
+        {"zip": "33629", "population": 32000, "median_income": 125000, "median_home_value": 785000, "marketing_value": 4, "notes": "South Tampa, upscale"},
+        {"zip": "33606", "population": 38000, "median_income": 108000, "median_home_value": 650000, "marketing_value": 4, "notes": "Hyde Park"},
+        {"zip": "33609", "population": 42000, "median_income": 95000, "median_home_value": 520000, "marketing_value": 4, "notes": "Beach Park"},
+        {"zip": "33611", "population": 45000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Palma Ceia"},
+        {"zip": "33604", "population": 52000, "median_income": 62000, "median_home_value": 320000, "marketing_value": 2, "notes": "North Tampa"},
+        {"zip": "33605", "population": 48000, "median_income": 52000, "median_home_value": 245000, "marketing_value": 2, "notes": "Ybor City"},
+        {"zip": "33610", "population": 55000, "median_income": 48000, "median_home_value": 210000, "marketing_value": 2, "notes": "East Tampa"}
+      ]
+    },
+    {
+      "city": "Aurora",
+      "state": "Colorado",
+      "zip_codes": [
+        {"zip": "80016", "population": 45000, "median_income": 88000, "median_home_value": 485000, "marketing_value": 3, "notes": "South Aurora"},
+        {"zip": "80015", "population": 52000, "median_income": 78000, "median_home_value": 420000, "marketing_value": 3, "notes": "Saddle Rock"},
+        {"zip": "80014", "population": 48000, "median_income": 72000, "median_home_value": 385000, "marketing_value": 3, "notes": "Central Aurora"},
+        {"zip": "80010", "population": 55000, "median_income": 62000, "median_home_value": 320000, "marketing_value": 2, "notes": "Northeast"},
+        {"zip": "80011", "population": 58000, "median_income": 55000, "median_home_value": 285000, "marketing_value": 2, "notes": "Northwest"},
+        {"zip": "80012", "population": 62000, "median_income": 58000, "median_home_value": 295000, "marketing_value": 2, "notes": "East Aurora"}
+      ]
+    },
+    {
+      "city": "New Orleans",
+      "state": "Louisiana",
+      "zip_codes": [
+        {"zip": "70115", "population": 35000, "median_income": 95000, "median_home_value": 585000, "marketing_value": 4, "notes": "Garden District, upscale"},
+        {"zip": "70118", "population": 42000, "median_income": 88000, "median_home_value": 520000, "marketing_value": 4, "notes": "Uptown"},
+        {"zip": "70130", "population": 28000, "median_income": 78000, "median_home_value": 485000, "marketing_value": 3, "notes": "Warehouse District"},
+        {"zip": "70116", "population": 32000, "median_income": 72000, "median_home_value": 420000, "marketing_value": 3, "notes": "French Quarter/Marigny"},
+        {"zip": "70119", "population": 48000, "median_income": 58000, "median_home_value": 320000, "marketing_value": 2, "notes": "Mid-City"},
+        {"zip": "70117", "population": 52000, "median_income": 48000, "median_home_value": 265000, "marketing_value": 2, "notes": "Ninth Ward"},
+        {"zip": "70112", "population": 38000, "median_income": 42000, "median_home_value": 245000, "marketing_value": 2, "notes": "Treme"}
+      ]
+    },
+    {
+      "city": "Wichita",
+      "state": "Kansas",
+      "zip_codes": [
+        {"zip": "67226", "population": 42000, "median_income": 88000, "median_home_value": 420000, "marketing_value": 3, "notes": "East Wichita, affluent"},
+        {"zip": "67206", "population": 38000, "median_income": 78000, "median_home_value": 365000, "marketing_value": 3, "notes": "Southeast"},
+        {"zip": "67230", "population": 45000, "median_income": 72000, "median_home_value": 320000, "marketing_value": 3, "notes": "Northeast"},
+        {"zip": "67212", "population": 48000, "median_income": 65000, "median_home_value": 285000, "marketing_value": 2, "notes": "West Side"},
+        {"zip": "67214", "population": 52000, "median_income": 55000, "median_home_value": 235000, "marketing_value": 2, "notes": "South Central"},
+        {"zip": "67203", "population": 42000, "median_income": 48000, "median_home_value": 195000, "marketing_value": 2, "notes": "Downtown area"}
+      ]
+    },
+    {
+      "city": "Cleveland",
+      "state": "Ohio",
+      "zip_codes": [
+        {"zip": "44106", "population": 28000, "median_income": 108000, "median_home_value": 620000, "marketing_value": 4, "notes": "University Circle area"},
+        {"zip": "44120", "population": 35000, "median_income": 95000, "median_home_value": 485000, "marketing_value": 3, "notes": "Shaker Heights"},
+        {"zip": "44102", "population": 42000, "median_income": 52000, "median_home_value": 165000, "marketing_value": 2, "notes": "West Side"},
+        {"zip": "44103", "population": 48000, "median_income": 38000, "median_home_value": 125000
