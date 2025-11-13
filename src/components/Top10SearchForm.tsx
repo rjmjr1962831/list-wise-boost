@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { LoadingSearch } from '@/components/LoadingSearch';
+import { findCityByZip } from '@/data/zipCodeLookup';
 
 interface Category {
   id: string;
@@ -84,13 +85,16 @@ const ALL_STATES = [
 export const Top10SearchForm = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedState, setSelectedState] = useState('');
   const [stateInput, setStateInput] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
+  const [cityInput, setCityInput] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
+  const [cityOpen, setCityOpen] = useState(false);
   const [stateOpen, setStateOpen] = useState(false);
   const [filteredStates, setFilteredStates] = useState<string[]>(ALL_STATES);
   const [isSearching, setIsSearching] = useState(false);
@@ -150,13 +154,16 @@ export const Top10SearchForm = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setStateOpen(false);
       }
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setCityOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!selectedState || !selectedCity || !selectedCategory) {
       toast.error('Please select state, city, and category');
       return;
@@ -178,10 +185,83 @@ export const Top10SearchForm = () => {
     // Show loading animation
     setIsSearching(true);
 
+    // Check if city has professionals data
+    const { data: professionalsData, error: profsError } = await supabase
+      .from('professionals')
+      .select('id, total_sales, current_listings')
+      .eq('city_id', city.id)
+      .eq('category_id', category.id)
+      .limit(1);
+
+    if (!profsError && professionalsData && professionalsData.length === 0) {
+      // No data exists, trigger bulk import
+      toast.info('Importing agents for this city...', {
+        description: 'This will take about 10 seconds'
+      });
+      
+      supabase.functions.invoke('fetch-zillow-agents-bulk', {
+        body: {
+          city: city.name,
+          state: city.state,
+          maxPages: 3,
+          categoryId: category.id,
+          cityId: city.id
+        }
+      }).then(({ data, error }) => {
+        if (error) {
+          console.error('Bulk import error:', error);
+        } else if (data?.success) {
+          console.log('Bulk import triggered:', data.summary);
+        }
+      });
+    }
+
     // Navigate to the list page
     const url = `/${city.state_slug}/${city.slug}/${category.slug}`;
     console.log('Navigating to:', url);
     navigate(url);
+  };
+
+  const handleCityInputChange = async (value: string) => {
+    setCityInput(value);
+    setCityOpen(true);
+    
+    // Filter cities by name as user types
+    if (selectedState && value) {
+      const filtered = cities.filter(c => 
+        c.state === selectedState && 
+        c.name.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCities(filtered);
+    }
+    
+    // Check if input looks like a zip code (5 digits)
+    if (/^\d{5}$/.test(value)) {
+      const zipResult = findCityByZip(value);
+      
+      if (zipResult) {
+        toast.success(`Found ${zipResult.city}, ${zipResult.state} for zip ${value}`);
+        
+        // Auto-select the state
+        setSelectedState(zipResult.state);
+        setStateInput(zipResult.state);
+        
+        // Find and auto-select the city
+        const cityMatch = cities.find(c => 
+          c.name === zipResult.city && c.state === zipResult.state
+        );
+        
+        if (cityMatch) {
+          setSelectedCity(cityMatch.id);
+          setCityInput(cityMatch.name);
+          setCityOpen(false);
+        } else {
+          toast.info(`${zipResult.city} not yet in our database`);
+        }
+      } else {
+        toast.error(`Zip code ${value} not found in our database`);
+      }
+    }
   };
 
   if (isSearching) {
@@ -244,23 +324,46 @@ export const Top10SearchForm = () => {
           )}
         </div>
 
-        <Select 
-          key={selectedState} 
-          value={selectedCity} 
-          onValueChange={setSelectedCity}
-          disabled={!selectedState}
-        >
-          <SelectTrigger className="bg-background">
-            <SelectValue placeholder="Select City" />
-          </SelectTrigger>
-          <SelectContent className="bg-popover border-2 shadow-xl z-[100]">
-            {filteredCities.map(city => (
-              <SelectItem key={city.id} value={city.id}>
-                {city.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="relative" ref={cityDropdownRef}>
+          <Input
+            placeholder="Select City or Type Zip Code"
+            value={cityInput}
+            onChange={(e) => handleCityInputChange(e.target.value)}
+            onFocus={() => setCityOpen(true)}
+            disabled={!selectedState}
+            className="bg-background"
+          />
+          {cityOpen && filteredCities.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-[100] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
+              <Command>
+                <CommandList>
+                  <CommandEmpty>No city found.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredCities.map((city) => (
+                      <CommandItem
+                        key={city.id}
+                        value={city.name}
+                        onSelect={() => {
+                          setSelectedCity(city.id);
+                          setCityInput(city.name);
+                          setCityOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedCity === city.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {city.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </div>
+          )}
+        </div>
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="bg-background">
