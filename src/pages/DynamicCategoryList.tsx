@@ -132,6 +132,7 @@ export default function DynamicCategoryList() {
   const [loading, setLoading] = useState(true);
   const [isGeneratingData, setIsGeneratingData] = useState(false);
   const [minLoadingComplete, setMinLoadingComplete] = useState(false);
+  const [reviewsReady, setReviewsReady] = useState(false);
   const [city, setCity] = useState<City | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [allProfessionals, setAllProfessionals] = useState<Professional[]>([]);
@@ -173,6 +174,7 @@ export default function DynamicCategoryList() {
         if (cityError || !cityData) {
           console.error('City not found:', cityError);
           setLoading(false);
+          setReviewsReady(true);
           return;
         }
 
@@ -195,6 +197,7 @@ export default function DynamicCategoryList() {
         if (categoryError || !categoryData) {
           console.error('Category not found:', categoryError);
           setLoading(false);
+          setReviewsReady(true);
           return;
         }
 
@@ -245,11 +248,31 @@ export default function DynamicCategoryList() {
             const converted = newProfsData.map(convertToProfessional);
             setAllProfessionals(converted);
             setFilteredProfessionals(converted);
+            setReviewsReady(true);
+          } else {
+            // No data after retries
+            setReviewsReady(true);
           }
         } else {
           const converted = professionalsData.map(convertToProfessional);
           setAllProfessionals(converted);
           setFilteredProfessionals(converted);
+          
+          // Prefetch reviews for first professional to ensure content is ready
+          if (converted.length > 0) {
+            const firstProf = professionalsData[0];
+            if (firstProf.zuid || (firstProf.name && cityWithCamelCase)) {
+              try {
+                const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
+                await supabase.functions.invoke('fetch-apify-zillow-reviews', {
+                  body: { zuid: firstProf.zuid, agentName: firstProf.name, location: market }
+                });
+              } catch (e) {
+                console.log('Reviews prefetch attempt completed');
+              }
+            }
+          }
+          setReviewsReady(true);
           
           // Auto-import Zillow stats if missing
           const needsZillowData = professionalsData.some(p => 
@@ -293,6 +316,7 @@ export default function DynamicCategoryList() {
       } catch (error) {
         console.error('Error in fetchData:', error);
         setLoading(false);
+        setReviewsReady(true);
       }
     };
 
@@ -468,7 +492,7 @@ export default function DynamicCategoryList() {
     }
   }, [city, category]);
 
-  if (loading || (isGeneratingData && !minLoadingComplete)) {
+  if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <LoadingSearch />
