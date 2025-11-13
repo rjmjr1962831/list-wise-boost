@@ -470,7 +470,10 @@ export const ProfessionalCard = ({
                 <div className="mt-4 pt-4 border-t">
                   <h4 className="text-lg font-semibold mb-3">Client Reviews</h4>
                   <div className="space-y-3">
-                    {professional.testimonials.map((testimonial, idx) => (
+                    {(showAllReviews
+                      ? professional.testimonials
+                      : professional.testimonials.slice(0, Math.min(3, professional.testimonials.length))
+                    ).map((testimonial, idx) => (
                       <div key={idx} className="bg-muted/30 rounded-lg p-4 border border-border/50" itemProp="review" itemScope itemType="https://schema.org/Review">
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
@@ -494,6 +497,26 @@ export const ProfessionalCard = ({
                       </div>
                     ))}
                   </div>
+                  {professional.testimonials.length > 3 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 w-full"
+                      onClick={() => setShowAllReviews(!showAllReviews)}
+                    >
+                      <span className="flex items-center justify-center gap-2">
+                        {showAllReviews ? (
+                          <>
+                            Show fewer <ChevronUp className="h-4 w-4" />
+                          </>
+                        ) : (
+                          <>
+                            Show more reviews ({professional.testimonials.length - 3}) <ChevronDown className="h-4 w-4" />
+                          </>
+                        )}
+                      </span>
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
