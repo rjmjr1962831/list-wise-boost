@@ -23,6 +23,7 @@ import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import MigrateData from "./pages/MigrateData";
 import VerifyAgentListing from "./pages/VerifyAgentListing";
+import AgentOnboarding from "./pages/AgentOnboarding";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 
@@ -57,6 +58,8 @@ const App = () => (
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<TermsOfService />} />
                   <Route path="/book-appointment-robert" element={<BookAppointment />} />
+                  {/* Agent Onboarding */}
+                  <Route path="/agent-onboarding" element={<AgentOnboarding />} />
                   {/* Verification funnel */}
                   <Route path="/verify/:token" element={<VerifyListing />} />
                   <Route path="/verify/:token/details" element={<VerifyDetails />} />

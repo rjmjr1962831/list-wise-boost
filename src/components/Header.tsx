@@ -21,7 +21,7 @@ export const Header = () => {
           <Link to="/book-appointment-robert" className="text-muted-foreground hover:text-foreground transition-colors">Let's Talk</Link>
         </nav>
         <Button asChild>
-          <Link to="/main">Apply Now</Link>
+          <Link to="/agent-onboarding">Apply Now</Link>
         </Button>
       </div>
     </header>
