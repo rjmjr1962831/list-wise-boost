@@ -224,18 +224,8 @@ export const Top10SearchForm = () => {
 
   const handleCityInputChange = async (value: string) => {
     setCityInput(value);
-    setCityOpen(true);
     
-    // Filter cities by name as user types
-    if (selectedState && value) {
-      const filtered = cities.filter(c => 
-        c.state === selectedState && 
-        c.name.toLowerCase().includes(value.toLowerCase())
-      );
-      setFilteredCities(filtered);
-    }
-    
-    // Check if input looks like a zip code (5 digits)
+    // Check if input looks like a zip code (5 digits) - do this first
     if (/^\d{5}$/.test(value)) {
       const zipResult = findCityByZip(value);
       
@@ -260,6 +250,20 @@ export const Top10SearchForm = () => {
         }
       } else {
         toast.error(`Zip code ${value} not found in our database`);
+      }
+    } else {
+      // Not a complete zip code - show dropdown and filter cities by name
+      setCityOpen(true);
+      
+      if (selectedState && value) {
+        const filtered = cities.filter(c => 
+          c.state === selectedState && 
+          c.name.toLowerCase().includes(value.toLowerCase())
+        );
+        setFilteredCities(filtered);
+      } else if (!selectedState && value) {
+        // If no state selected but typing, show message
+        toast.info('Select a state first or enter a 5-digit ZIP code');
       }
     }
   };
@@ -330,7 +334,6 @@ export const Top10SearchForm = () => {
             value={cityInput}
             onChange={(e) => handleCityInputChange(e.target.value)}
             onFocus={() => setCityOpen(true)}
-            disabled={!selectedState}
             className="bg-background"
           />
           {cityOpen && filteredCities.length > 0 && (

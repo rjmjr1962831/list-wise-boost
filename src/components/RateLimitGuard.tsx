@@ -1,5 +1,5 @@
 import { useRateLimitCheck } from '@/hooks/useRateLimitCheck';
-import { LoadingSearch } from '@/components/LoadingSearch';
+import { Loader2 } from 'lucide-react';
 
 interface RateLimitGuardProps {
   children: React.ReactNode;
@@ -8,11 +8,11 @@ interface RateLimitGuardProps {
 export const RateLimitGuard = ({ children }: RateLimitGuardProps) => {
   const { isBlocked, rateLimitInfo, isChecking } = useRateLimitCheck();
 
-  // Show branded searching/analysis loader while checking
+  // Show simple spinner while checking
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        <LoadingSearch />
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
