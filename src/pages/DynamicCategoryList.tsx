@@ -244,6 +244,43 @@ export default function DynamicCategoryList() {
           const converted = professionalsData.map(convertToProfessional);
           setAllProfessionals(converted);
           setFilteredProfessionals(converted);
+          
+          // Auto-import Zillow stats if missing
+          const needsZillowData = professionalsData.some(p => 
+            (p.total_sales === null || p.total_sales === 0) && 
+            (p.current_listings === null || p.current_listings === 0)
+          );
+
+          if (needsZillowData) {
+            console.log('Detected missing Zillow stats, triggering background import...');
+            
+            toast.info('Fetching latest Zillow stats...', {
+              description: 'This will complete in the background'
+            });
+            
+            // Trigger background import without awaiting
+            supabase.functions.invoke('fetch-zillow-agents-bulk', {
+              body: {
+                city: cityWithCamelCase.name,
+                state: cityWithCamelCase.state,
+                maxPages: 3,
+                categoryId: categoryData.id,
+                cityId: cityWithCamelCase.id
+              }
+            }).then(({ data, error }) => {
+              if (error) {
+                console.error('Background Zillow import error:', error);
+              } else if (data?.success) {
+                console.log('Background import complete:', data.summary);
+                toast.success(`Updated ${data.summary.updated} agents with latest Zillow stats`, {
+                  description: 'Refresh the page to see updated numbers',
+                  duration: 5000
+                });
+              }
+            }).catch(err => {
+              console.error('Background import failed:', err);
+            });
+          }
         }
 
         setLoading(false);
