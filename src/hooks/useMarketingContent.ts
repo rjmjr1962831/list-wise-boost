@@ -28,6 +28,8 @@ export const useMarketingContent = (page: string = 'main') => {
       if (error) throw error;
       return data as MarketingContent[];
     },
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
   });
 };
 

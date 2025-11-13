@@ -20,6 +20,11 @@ export const LoadingSearch = ({ className = '' }: LoadingSearchProps) => {
   useEffect(() => {
     // Mark that we've shown the loading once so consecutive mounts don't restart from the very beginning
     (window as any).__top10_loading_shown = true;
+    
+    // Clear on unmount to reset for next navigation
+    return () => {
+      (window as any).__top10_loading_shown = false;
+    };
   }, []);
 
   useEffect(() => {
