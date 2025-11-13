@@ -89,16 +89,19 @@ Deno.serve(async (req) => {
           const experience = prof.years_experience || null;
 
           // Create prompt for bio generation
-          const prompt = `Write a professional, neutral bio (2-3 sentences, max 150 words) for ${prof.name}, a ${category.toLowerCase().replace('top10', '').trim()} ${prof.company ? `with ${prof.company}` : ''} serving ${city}, ${state}.
+          const prompt = `Write an original, professional bio (2-3 sentences, max 150 words) for ${prof.name}, a ${category.toLowerCase().replace('top10', '').trim()} ${prof.company ? `with ${prof.company}` : ''} serving ${city}, ${state}.
 ${specialties ? `Specialties: ${specialties}.` : ''}
 ${experience ? `Experience: ${experience} years.` : ''}
 
-Bio should:
+IMPORTANT: Create completely original content. Do NOT copy or paraphrase from Zillow or any other source verbatim.
+
+Bio guidelines:
+- Write in your own words using unique phrasing
 - Be professional and factual
-- Highlight expertise and service area
-- Avoid marketing hyperbole
-- Not make claims about being "#1" or "best"
-- Focus on what they do, not awards
+- Highlight their expertise and service area
+- Avoid marketing hyperbole or superlatives
+- Do not make claims about being "#1" or "best"
+- Focus on their professional approach and what they offer clients
 
 Write only the bio, no preamble.`;
 
