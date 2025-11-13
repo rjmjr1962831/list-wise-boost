@@ -79,7 +79,7 @@ export const LoadingSearch = ({ className = '' }: LoadingSearchProps) => {
       {phase === 'building' && (
         <div className="text-xl font-semibold text-foreground flex items-center gap-3">
           <Brain className="w-8 h-8 text-primary animate-pulse" />
-          Building Recommendations
+          Building Top10list
           <span className="inline-flex gap-0.5">
             <span className="animate-[bounce_1s_ease-in-out_infinite]">.</span>
             <span className="animate-[bounce_1s_ease-in-out_0.2s_infinite]">.</span>
