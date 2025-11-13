@@ -89,6 +89,15 @@ const AdminDashboard = () => {
           </Button>
         </div>
 
+        <div className="mb-6 p-4 bg-card rounded-lg border">
+          <h2 className="text-lg font-semibold mb-2">Download Files</h2>
+          <Button asChild variant="outline">
+            <a href="/newly-added-cities-enriched.csv" download="newly-added-cities-enriched.csv">
+              Download Cities CSV
+            </a>
+          </Button>
+        </div>
+
         <Tabs defaultValue="cities" className="space-y-6">
           <TabsList className="grid w-full grid-cols-10 max-w-7xl">
             <TabsTrigger value="cities">
