@@ -283,9 +283,18 @@ export const ProfessionalCard = ({
                 <meta itemProp="bestRating" content="5" />
               </div>
 
-              {/* AI Summary */}
-              <div className="text-sm font-medium text-foreground/90">
-                Experienced {market} real estate {(professional as any).type === 'team' ? 'team' : 'agent'} with {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })} reviews
+              {/* Specialties Section - Areas of Expertise */}
+              <div>
+                <h4 className="sr-only">Areas of Expertise</h4>
+                <div className="flex flex-wrap gap-2">
+                  {professional.specialties.map((specialty, idx) => (
+                    <span key={idx} itemProp="knowsAbout">
+                      <Badge variant="outline">
+                        {specialty}
+                      </Badge>
+                    </span>
+                  ))}
+                </div>
               </div>
 
               {/* Statistics */}
@@ -385,20 +394,6 @@ export const ProfessionalCard = ({
                   })()}
                 </div>
               )}
-
-              {/* Specialties Section */}
-              <div>
-                <h4 className="sr-only">Areas of Expertise</h4>
-                <div className="flex flex-wrap gap-2">
-                  {professional.specialties.map((specialty, idx) => (
-                    <span key={idx} itemProp="knowsAbout">
-                      <Badge variant="outline">
-                        {specialty}
-                      </Badge>
-                    </span>
-                  ))}
-                </div>
-              </div>
 
               {/* Contact Information Section */}
               <div>
