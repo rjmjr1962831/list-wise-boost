@@ -39,11 +39,11 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
     return null;
   }
 
-  const [expanded] = useState(true);
-  const initialCount = reviews.reviews.length;
+  const [expanded, setExpanded] = useState(false);
+  const initialCount = Math.min(3, reviews.reviews.length);
   const expandedCount = reviews.reviews.length;
-  const displayedReviews = reviews.reviews;
-  const moreCount = 0;
+  const displayedReviews = expanded ? reviews.reviews : reviews.reviews.slice(0, initialCount);
+  const moreCount = Math.max(0, expandedCount - initialCount);
   const remaining = Math.max(0, (reviews.totalReviews || 0) - reviews.reviews.length);
   const zillowProfileUrl = reviews.profileUrl || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined);
   const googleZillowSearchUrl = agentName
@@ -121,6 +121,34 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
           </div>
         ))}
       </div>
+      {moreCount > 0 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-2 w-full"
+          onClick={() => {
+            if (!expanded) {
+              trackEvent('reviews_expand', {
+                agent_name: agentName || 'Unknown',
+                market: market || '',
+              });
+            }
+            setExpanded(!expanded);
+          }}
+        >
+          <span className="flex items-center justify-center gap-2">
+            {expanded ? (
+              <>
+                Show fewer <ChevronUp className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Show more reviews ({moreCount}) <ChevronDown className="h-4 w-4" />
+              </>
+            )}
+          </span>
+        </Button>
+      )}
       {linkUrl && (
         <Button
           variant="outline"
