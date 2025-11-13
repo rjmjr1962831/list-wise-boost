@@ -6,6 +6,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function mapReview(item: any) {
+  return {
+    reviewerName: item.reviewerName || item.name || item.reviewer || 'Anonymous',
+    reviewText: item.reviewText || item.text || item.body || item.review || '',
+    rating: Number(item.rating ?? item.stars ?? item.score ?? 0),
+    reviewDate: item.reviewDate || item.date || item.publishedAt || item.time || ''
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -26,7 +35,7 @@ serve(async (req) => {
 
     console.log(`Fetching reviews for ZUID: ${zuid} using Apify`);
 
-    // Start the Apify actor run
+    // Start the Apify actor run (request ample reviews)
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/getdataforme~zillow-agents-reviews-scraper/runs?token=${APIFY_API_TOKEN}`,
       {
@@ -34,6 +43,8 @@ serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           agentProfileUrl: `https://www.zillow.com/profile/${zuid}`,
+          maxReviews: 50,
+          maxItems: 50,
           proxy: {
             useApifyProxy: true,
             apifyProxyGroups: ['RESIDENTIAL']
@@ -58,7 +69,7 @@ serve(async (req) => {
     let runStatus = 'RUNNING';
 
     while (runStatus === 'RUNNING' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       attempts++;
 
       const statusResponse = await fetch(
@@ -76,10 +87,10 @@ serve(async (req) => {
       throw new Error(`Actor run did not complete successfully: ${runStatus}`);
     }
 
-    // Fetch results from dataset
+    // Fetch results from dataset, request plenty of items just in case actor outputs one item per review
     const datasetId = runData.data.defaultDatasetId;
     const datasetResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}`
+      `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true&format=json&limit=200&token=${APIFY_API_TOKEN}`
     );
 
     if (!datasetResponse.ok) {
@@ -87,30 +98,47 @@ serve(async (req) => {
     }
 
     const data = await datasetResponse.json();
-    console.log(`Retrieved ${data.length} items from dataset`);
+    console.log(`Retrieved ${Array.isArray(data) ? data.length : 0} items from dataset`);
 
-    if (!data || data.length === 0) {
+    if (!Array.isArray(data) || data.length === 0) {
       return new Response(
         JSON.stringify({ reviews: [], totalReviews: 0, averageRating: 0 }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const agentData = data[0];
-    const reviews = (agentData.reviews || []).map((review: any) => ({
-      reviewerName: review.reviewerName || 'Anonymous',
-      reviewText: review.reviewText || '',
-      rating: review.rating || 0,
-      reviewDate: review.reviewDate || ''
-    }));
+    // Some actors return a single item with nested `reviews` array; others return items per review.
+    const nestedReviews = Array.isArray(data[0]?.reviews) ? data[0].reviews : [];
+    const itemLevelReviews = data.filter((it: any) => 
+      it.reviewText || it.text || it.body || it.review
+    );
+
+    let combined = [
+      ...nestedReviews.map(mapReview),
+      ...itemLevelReviews.map(mapReview)
+    ];
+
+    // Deduplicate by text+date to avoid duplicates between nested and item-level
+    const seen = new Set<string>();
+    combined = combined.filter((r) => {
+      const key = `${r.reviewText}__${r.reviewDate}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Compute average rating if missing
+    const avg = combined.length
+      ? combined.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / combined.length
+      : 0;
 
     const result = {
-      reviews: reviews.slice(0, 10),
-      totalReviews: agentData.totalReviews || reviews.length,
-      averageRating: agentData.averageRating || 0
+      reviews: combined.slice(0, 10),
+      totalReviews: data[0]?.totalReviews || combined.length,
+      averageRating: data[0]?.averageRating || Number(avg.toFixed(2))
     };
 
-    console.log(`Returning ${result.reviews.length} reviews, total: ${result.totalReviews}`);
+    console.log(`Returning ${result.reviews.length} reviews (combined=${combined.length}), total: ${result.totalReviews}`);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
