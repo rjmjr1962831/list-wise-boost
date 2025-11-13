@@ -464,66 +464,6 @@ export const ProfessionalCard = ({
                 </Button>
               </div>
 
-              {/* Client Testimonials Section */}
-              {professional.testimonials && professional.testimonials.length > 0 && (
-                <div className="mt-4 pt-4 border-t">
-                  <h4 className="text-lg font-semibold mb-3">Client Reviews</h4>
-                  <div className="space-y-3">
-                    {(showAllReviews
-                      ? professional.testimonials
-                      : professional.testimonials.slice(0, Math.min(3, professional.testimonials.length))
-                    ).map((testimonial, idx) => (
-                      <div key={idx} className="bg-muted/30 rounded-lg p-4 border border-border/50" itemProp="review" itemScope itemType="https://schema.org/Review">
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div>
-                            <p className="font-semibold text-sm" itemProp="author">{testimonial.author}</p>
-                            {testimonial.source && testimonial.date && (
-                              <p className="text-xs text-muted-foreground">
-                                {testimonial.source} • {testimonial.date}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex gap-0.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="h-3 w-3 fill-primary text-primary" />
-                            ))}
-                          </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground leading-relaxed" itemProp="reviewBody">
-                          {testimonial.text}
-                        </p>
-                        <meta itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" content="5" />
-                      </div>
-                    ))}
-
-                    {/* Insert Zillow reviews right after the third testimonial when collapsed */}
-                    {!showAllReviews && professional.testimonials.length >= 3 && professional.zuid && (
-                      <ZillowReviewsSection zuid={professional.zuid} agentName={professional.name} market={market} />
-                    )}
-                  </div>
-                  {professional.testimonials.length > 3 && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-2 w-full"
-                      onClick={() => setShowAllReviews(!showAllReviews)}
-                    >
-                      <span className="flex items-center justify-center gap-2">
-                        {showAllReviews ? (
-                          <>
-                            Show fewer <ChevronUp className="h-4 w-4" />
-                          </>
-                        ) : (
-                          <>
-                            Show more reviews ({professional.testimonials.length - 3}) <ChevronDown className="h-4 w-4" />
-                          </>
-                        )}
-                      </span>
-                    </Button>
-                  )}
-                </div>
-              )}
-
               {/* External reviews preview (Google/Yelp/Facebook) */}
               <ExternalReviewsPreview agentName={professional.name} company={professional.company} market={market} />
 
