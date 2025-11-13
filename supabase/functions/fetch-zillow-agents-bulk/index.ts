@@ -36,75 +36,126 @@ serve(async (req) => {
     
     const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY')?.trim();
     const RAPIDAPI_HOST = Deno.env.get('RAPIDAPI_HOST')?.trim();
-    
-    if (!RAPIDAPI_KEY || !RAPIDAPI_HOST) {
-      throw new Error('RapidAPI key or host not configured');
-    }
+    const OUTSCRAPER_API_KEY = Deno.env.get('OUTSCRAPER_API_KEY')?.trim();
 
     const query = `real estate agent in ${city}, ${state}`;
-    console.log(`Searching Google Places via RapidAPI for: ${query}`);
+    console.log(`Agent discovery query: ${query}`);
 
-    // Use RapidAPI Google Maps API to search for real estate agents
-    const searchUrl = new URL('https://google-maps-scraper.p.rapidapi.com/maps/search');
-    searchUrl.searchParams.append('query', query);
-    searchUrl.searchParams.append('limit', '15');
+    async function tryRapidAPI() {
+      if (!RAPIDAPI_KEY || !RAPIDAPI_HOST) {
+        console.warn('RapidAPI not configured');
+        return [] as any[];
+      }
 
-    const searchResponse = await fetch(searchUrl.toString(), {
-      method: 'GET',
-      headers: {
-        'X-RapidAPI-Key': RAPIDAPI_KEY,
-        'X-RapidAPI-Host': RAPIDAPI_HOST,
-      },
-    });
+      const baseUrl = `https://${RAPIDAPI_HOST}`;
+      const paths = RAPIDAPI_HOST.includes('local-business-data')
+        ? ['/search']
+        : ['/maps/search', '/search', '/places', '/textsearch'];
 
-    if (!searchResponse.ok) {
-      const errorText = await searchResponse.text();
-      console.error('RapidAPI search error:', searchResponse.status, errorText);
-      throw new Error(`Failed to search Google Places: ${searchResponse.status} - ${errorText}`);
+      for (const path of paths) {
+        try {
+          const url = new URL(path, baseUrl);
+          url.searchParams.set('query', query);
+          url.searchParams.set('limit', '15');
+          const resp = await fetch(url.toString(), {
+            method: 'GET',
+            headers: {
+              'X-RapidAPI-Key': RAPIDAPI_KEY,
+              'X-RapidAPI-Host': RAPIDAPI_HOST,
+            },
+          });
+          if (!resp.ok) {
+            const t = await resp.text();
+            console.warn(`RapidAPI ${path} error:`, resp.status, t);
+            if (resp.status === 404) continue;
+            // For non-404, try next provider
+            continue;
+          }
+          const json = await resp.json();
+          const data = Array.isArray(json) ? json : (json.data || json.results || json.items || []);
+          if (Array.isArray(data) && data.length > 0) {
+            console.log(`RapidAPI ${path} returned ${data.length} results`);
+            return data;
+          }
+        } catch (e) {
+          console.warn(`RapidAPI ${path} exception:`, e);
+          continue;
+        }
+      }
+      return [] as any[];
     }
 
-    const searchData = await searchResponse.json();
-    console.log(`RapidAPI returned ${searchData.data?.length || 0} results`);
-
-    // Transform RapidAPI data to our format
-    const agents = searchData.data || [];
-
-    // Transform RapidAPI data to our format
-    const transformedAgents = agents
-      .filter((agent: any) => {
-        // Filter for real estate agents with contact info
-        const categoryText = (agent.categories || []).join(' ').toLowerCase();
-        const isRealEstateAgent = categoryText.includes('real estate') || 
-                                   categoryText.includes('realtor');
-        return agent.name && agent.phone && isRealEstateAgent;
-      })
-      .slice(0, 10) // Take top 10
-      .map((agent: any, index: number) => {
-        // Extract email from website or generate placeholder
-        const email = agent.website 
-          ? `info@${agent.website.replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` 
-          : null;
-
-        return {
-          fullName: agent.name,
-          name: agent.name,
-          email,
-          phone: agent.phone || null,
-          website: agent.website || null,
-          profilePhotoSrc: agent.thumbnail || null,
-          profileLink: agent.website || null,
-          company: agent.name.includes(',') ? agent.name.split(',')[1].trim() : 'Independent Agent',
-          rating: agent.rating || 4.5,
-          reviewCount: agent.reviews || 0,
-          numTotalReviews: agent.reviews || 0,
-          specialties: extractSpecialtiesFromCategories(agent.categories || []),
-          address: agent.address || '',
-          reviews: [],
-          // Estimate stats based on review count
-          totalSales: Math.floor((agent.reviews || 0) / 8),
-          currentListings: Math.max(1, Math.floor((agent.reviews || 0) / 100)),
-        };
+    async function tryOutscraper() {
+      if (!OUTSCRAPER_API_KEY) {
+        console.warn('Outscraper not configured');
+        return [] as any[];
+      }
+      const searchUrl = new URL('https://api.app.outscraper.com/maps/search-v3');
+      searchUrl.searchParams.append('query', query);
+      searchUrl.searchParams.append('limit', '15');
+      searchUrl.searchParams.append('language', 'en');
+      searchUrl.searchParams.append('region', 'us');
+      const resp = await fetch(searchUrl.toString(), {
+        method: 'GET',
+        headers: { 'X-API-KEY': OUTSCRAPER_API_KEY },
       });
+      if (!resp.ok) {
+        const t = await resp.text();
+        console.warn('Outscraper search error:', resp.status, t);
+        return [] as any[];
+      }
+      const json = await resp.json();
+      const data = json.data?.[0] || [];
+      console.log(`Outscraper returned ${data.length} results`);
+      return data;
+    }
+
+    function mapAgent(agent: any) {
+      const name = agent.name || agent.title || '';
+      const phone = agent.phone || agent.phoneNumber || agent.call_number || null;
+      const website = agent.website || agent.site || agent.domain || null;
+      const thumbnail = agent.thumbnail || agent.logo || agent.photo || null;
+      const address = agent.address || agent.full_address || agent.location || '';
+      const rating = agent.rating || agent.stars || agent.score || 4.5;
+      const reviews = agent.reviews || agent.review_count || agent.reviews_count || 0;
+      const categories = Array.isArray(agent.categories)
+        ? agent.categories
+        : (agent.subtypes ? String(agent.subtypes).split(',') : (agent.category ? [agent.category] : []));
+
+      const categoryText = categories.join(' ').toLowerCase();
+      const isRealEstateAgent = categoryText.includes('real estate') || categoryText.includes('realtor');
+
+      return {
+        isRealEstateAgent,
+        fullName: name,
+        name,
+        email: website ? `info@${String(website).replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : null,
+        phone,
+        website,
+        profilePhotoSrc: thumbnail,
+        profileLink: website,
+        company: name.includes(',') ? name.split(',')[1].trim() : 'Independent Agent',
+        rating,
+        reviewCount: reviews,
+        numTotalReviews: reviews,
+        specialties: extractSpecialtiesFromCategories(categories),
+        address,
+        reviews: [],
+        totalSales: Math.floor(reviews / 8),
+        currentListings: Math.max(1, Math.floor(reviews / 100)),
+      };
+    }
+
+    // Try RapidAPI first, then Outscraper
+    let rawAgents: any[] = await tryRapidAPI();
+    if (!rawAgents || rawAgents.length === 0) {
+      rawAgents = await tryOutscraper();
+    }
+
+    const transformedAgents = (rawAgents || [])
+      .map(mapAgent)
+      .filter((a) => a.isRealEstateAgent && a.name && a.phone)
+      .slice(0, 10);
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
 
