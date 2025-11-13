@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Check, Search, TrendingUp, Zap } from "lucide-react";
 import { useMarketingContent } from "@/hooks/useMarketingContent";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
-
+import { Link } from "react-router-dom";
 const Index = () => {
   const { data: content, isLoading } = useMarketingContent('main');
   
@@ -43,7 +43,7 @@ const Index = () => {
               {getContent('hero', 'cta_primary', 'Claim Your Spot')}
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-              <a href="/az/gilbert/top10realestateagents">{getContent('hero', 'cta_secondary', 'View Sample List')}</a>
+              <Link to="/az/gilbert/top10realestateagents">{getContent('hero', 'cta_secondary', 'View Sample List')}</Link>
             </Button>
           </div>
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground pt-8">
@@ -340,7 +340,7 @@ const Index = () => {
                 {getContent('final_cta', 'cta_primary', 'Apply Now')}
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-                <a href="/az/gilbert/top10realestateagents">{getContent('final_cta', 'cta_secondary', 'View Sample Lists')}</a>
+                <Link to="/az/gilbert/top10realestateagents">{getContent('final_cta', 'cta_secondary', 'View Sample Lists')}</Link>
               </Button>
             </div>
           </CardContent>
