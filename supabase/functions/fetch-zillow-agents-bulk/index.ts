@@ -122,7 +122,6 @@ serve(async (req) => {
 
       const apifyInput = {
         location: location,
-        maxItems: 15,
       };
 
       const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`, {
@@ -165,18 +164,19 @@ serve(async (req) => {
       }
 
       const items = await dataResp.json();
-      console.log(`Apify Zillow returned ${items.length} results`);
-      return items;
+      console.log(`Apify Zillow returned ${items.length} results, limiting to 15`);
+      return items.slice(0, 15); // Only return top 15
     }
 
     function mapAgent(agent: any, source: string) {
-      const name = agent.name || agent.title || agent.fullName || '';
-      const phone = agent.phone || agent.phoneNumber || agent.call_number || null;
-      const website = agent.website || agent.site || agent.domain || agent.profileLink || null;
-      const thumbnail = agent.thumbnail || agent.logo || agent.photo || agent.profilePhotoSrc || null;
-      const address = agent.address || agent.full_address || agent.location || '';
-      const rating = agent.rating || agent.stars || agent.score || 4.5;
-      const reviews = agent.reviews || agent.review_count || agent.reviews_count || agent.reviewCount || 0;
+      // Handle Apify Zillow scraper format (capital case column names)
+      const name = agent['Business Name'] || agent.name || agent.title || agent.fullName || '';
+      const phone = agent['Phone Number'] || agent.phone || agent.phoneNumber || agent.call_number || null;
+      const website = agent['Website'] || agent.website || agent.site || agent.domain || agent.profileLink || null;
+      const thumbnail = agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.photo || agent.profilePhotoSrc || null;
+      const address = agent['Address'] || agent.address || agent.full_address || agent.location || '';
+      const rating = agent['Rating'] || agent.rating || agent.stars || agent.score || 4.5;
+      const reviews = agent['Review Count'] || agent.reviews || agent.review_count || agent.reviews_count || agent.reviewCount || 0;
       
       let categories: string[] = [];
       if (Array.isArray(agent.categories)) {
