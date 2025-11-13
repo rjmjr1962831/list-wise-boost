@@ -465,7 +465,12 @@ export const ProfessionalCard = ({
               </div>
 
               {/* External reviews preview (Google/Yelp/Facebook) */}
-              <ExternalReviewsPreview agentName={professional.name} company={professional.company} market={market} />
+              <ExternalReviewsPreview 
+                agentName={professional.name} 
+                company={professional.company} 
+                market={market}
+                zillowProfileUrl={professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null}
+              />
 
               {/* Zillow profile CTA */}
               <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} professionalId={professional.id} />

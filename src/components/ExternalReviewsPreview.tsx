@@ -7,10 +7,12 @@ export function ExternalReviewsPreview({
   agentName,
   company,
   market,
+  zillowProfileUrl,
 }: {
   agentName: string;
   company?: string | null;
   market?: string | null;
+  zillowProfileUrl?: string | null;
 }) {
   const { data, loading } = useExternalReviews({ agentName, company, market });
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
@@ -90,9 +92,9 @@ export function ExternalReviewsPreview({
                     {isOpen ? 'Show less' : 'More'}
                   </button>
                 )}
-                {r.url && (
+                {(zillowProfileUrl || r.url) && (
                   <a
-                    href={r.url}
+                    href={zillowProfileUrl || r.url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-auto inline-flex items-center gap-1 text-sm text-primary hover:underline"
