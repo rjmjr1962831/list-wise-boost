@@ -54,7 +54,15 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
       if (error) throw error;
 
       const citiesWithZipsData: CityWithZips[] = (citiesData || []).map((city) => {
-        const zipInfo = zipCodeData[city.slug as keyof typeof zipCodeData] || [];
+        const citySlug = city.slug as keyof typeof zipCodeData;
+        const zipData = zipCodeData[citySlug];
+        
+        // Handle different possible data structures
+        let zipInfo: Array<{ zipCode: string; tier?: number }> = [];
+        if (Array.isArray(zipData)) {
+          zipInfo = zipData as Array<{ zipCode: string; tier?: number }>;
+        }
+        
         return {
           id: city.id,
           name: city.name,
