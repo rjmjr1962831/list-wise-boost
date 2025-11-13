@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { LoadingSearch } from '@/components/LoadingSearch';
 
 interface Category {
   id: string;
@@ -92,6 +93,7 @@ export const Top10SearchForm = () => {
   const [filteredCities, setFilteredCities] = useState<City[]>([]);
   const [stateOpen, setStateOpen] = useState(false);
   const [filteredStates, setFilteredStates] = useState<string[]>(ALL_STATES);
+  const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -173,11 +175,22 @@ export const Top10SearchForm = () => {
       return;
     }
 
+    // Show loading animation
+    setIsSearching(true);
+
     // Navigate to the list page
     const url = `/${city.state_slug}/${city.slug}/${category.slug}`;
     console.log('Navigating to:', url);
     navigate(url);
   };
+
+  if (isSearching) {
+    return (
+      <div className="w-full">
+        <LoadingSearch />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl p-6 shadow-lg">
