@@ -166,17 +166,14 @@ export const ProfessionalCard = ({
     >
       <CardContent className="pt-6">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Photo and Rank */}
-          <div className="flex md:flex-col gap-4 md:gap-2 items-center md:items-start flex-shrink-0">
+          {/* Photo */}
+          <div className="flex-shrink-0">
             <img 
               src={professional.image} 
-              alt={`${professional.name} - Top Ranked #${professional.rank} specializing in ${professional.specialties.slice(0, 3).join(', ')}`}
+              alt={`${professional.name} - Top professional specializing in ${professional.specialties.slice(0, 3).join(', ')}`}
               className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
               itemProp="image"
             />
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary">
-              <span className="text-2xl font-bold text-primary">#{professional.rank}</span>
-            </div>
           </div>
 
           {/* Content */}
@@ -184,9 +181,9 @@ export const ProfessionalCard = ({
             <div className="space-y-2">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  {/* Semantic heading with rank for SEO */}
+                  {/* Semantic heading for SEO */}
                   <h3 className="text-2xl font-bold" itemProp="name">
-                    Top Professional #{professional.rank}: {professional.name}
+                    {professional.name}
                     {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
                   </h3>
                   <p className="text-lg text-muted-foreground" itemProp="affiliation">
