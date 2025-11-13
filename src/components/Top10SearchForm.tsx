@@ -270,8 +270,11 @@ export const Top10SearchForm = () => {
 
   if (isSearching) {
     return (
-      <div className="w-full">
-        <LoadingSearch />
+      <div className="w-full flex items-center justify-center py-8">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+          <span>Searching…</span>
+        </div>
       </div>
     );
   }

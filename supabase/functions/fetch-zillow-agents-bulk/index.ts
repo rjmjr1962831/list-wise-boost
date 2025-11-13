@@ -236,7 +236,7 @@ serve(async (req) => {
 
     const transformedAgents = (rawAgents || [])
       .map(a => mapAgent(a, source))
-      .filter((a) => a.isRealEstateAgent && a.name && a.phone)
+      .filter((a) => a && a.isRealEstateAgent && a.name)
       .slice(0, 10);
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
