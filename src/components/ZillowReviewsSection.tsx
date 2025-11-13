@@ -56,25 +56,40 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
     <div className="mt-4 pt-4 border-t">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-lg font-semibold">Zillow Reviews</h4>
-        {reviews.averageRating > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-4 w-4 ${
-                    i < Math.round(reviews.averageRating)
-                      ? 'fill-primary text-primary'
-                      : 'text-muted-foreground'
-                  }`}
-                />
-              ))}
+        <div className="flex items-center gap-3">
+          {reviews.averageRating > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="flex gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i < Math.round(reviews.averageRating)
+                        ? 'fill-primary text-primary'
+                        : 'text-muted-foreground'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-muted-foreground">
+                ({reviews.totalReviews} reviews)
+              </span>
             </div>
-            <span className="text-sm text-muted-foreground">
-              ({reviews.totalReviews} reviews)
-            </span>
-          </div>
-        )}
+          )}
+          {linkUrl && (
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleZillowLinkClick}
+              className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+              aria-label="View all reviews on Zillow"
+            >
+              View all
+              <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
+        </div>
       </div>
       
       <div className="space-y-3">
