@@ -493,6 +493,11 @@ export const ProfessionalCard = ({
                         <meta itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" content="5" />
                       </div>
                     ))}
+
+                    {/* Insert Zillow reviews right after the third testimonial when collapsed */}
+                    {!showAllReviews && professional.testimonials.length >= 3 && (
+                      <ZillowReviewsSection zuid={professional.zuid || undefined} agentName={professional.name} market={market} />
+                    )}
                   </div>
                   {professional.testimonials.length > 3 && (
                     <Button
