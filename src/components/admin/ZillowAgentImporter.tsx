@@ -580,23 +580,42 @@ export const ZillowAgentImporter = () => {
         </div>
 
 
-        <Button 
-          onClick={fetchAgents} 
-          disabled={isLoading}
-          className="w-full"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Fetching Agents...
-            </>
-          ) : (
-            <>
-              <Download className="mr-2 h-4 w-4" />
-              Fetch Agents from Zillow
-            </>
-          )}
-        </Button>
+        <div className="grid grid-cols-2 gap-4">
+          <Button 
+            onClick={fetchAgents} 
+            disabled={isLoading}
+            variant="outline"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Fetching...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Fetch Agents (Manual Import)
+              </>
+            )}
+          </Button>
+
+          <Button 
+            onClick={bulkImportAgents} 
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Bulk Importing...
+              </>
+            ) : (
+              <>
+                <Download className="mr-2 h-4 w-4" />
+                Bulk Import (Auto-create All)
+              </>
+            )}
+          </Button>
+        </div>
 
         {agents.length > 0 && (
           <div className="space-y-4">
