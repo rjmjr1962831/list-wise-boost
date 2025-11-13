@@ -55,10 +55,17 @@ export default function CityLanding() {
               Discover the best dentists, real estate agents, lawyers, and restaurants in {formatCityName(city)}. 
               All professionals are expert-vetted with verified reviews.
             </p>
+            <div className="mt-6 flex justify-center">
+              <Button asChild size="lg">
+                <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`}>
+                  See Top Real Estate Agents in {city.name}
+                </Link>
+              </Button>
+            </div>
             {!hasData && (
-              <div className="inline-block px-6 py-3 bg-amber-100 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg">
+              <div className="inline-block px-6 py-3 bg-amber-100 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg mt-6">
                 <p className="text-amber-800 dark:text-amber-200 font-medium">
-                  Content coming soon for {city.name}! Check out our available cities below.
+                  Content coming soon for {city.name}! In the meantime, explore the Top Real Estate Agents above.
                 </p>
               </div>
             )}
