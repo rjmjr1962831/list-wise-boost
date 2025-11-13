@@ -46,6 +46,11 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   const moreCount = 0;
   const remaining = Math.max(0, (reviews.totalReviews || 0) - reviews.reviews.length);
   const zillowProfileUrl = reviews.profileUrl || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined);
+  const googleZillowSearchUrl = agentName
+    ? `https://www.google.com/search?q=${encodeURIComponent(`${agentName} ${market ?? ''} Zillow reviews`)}`
+    : undefined;
+  const linkUrl = zillowProfileUrl ?? googleZillowSearchUrl;
+  const linkLabel = zillowProfileUrl ? `Read All Zillow Reviews${remaining > 0 ? ` (${remaining} more)` : ''}` : 'Find more reviews';
 
   return (
     <div className="mt-4 pt-4 border-t">
@@ -116,7 +121,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
           </div>
         ))}
       </div>
-      {zillowProfileUrl && (
+      {linkUrl && (
         <Button
           variant="outline"
           size="sm"
@@ -124,13 +129,13 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
           className="mt-4 w-full"
         >
           <a
-            href={zillowProfileUrl}
+            href={linkUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2"
             onClick={handleZillowLinkClick}
           >
-            Read All Zillow Reviews{remaining > 0 ? ` (${remaining} more)` : ''}
+            {linkLabel}
             <ExternalLink className="h-4 w-4" />
           </a>
         </Button>
