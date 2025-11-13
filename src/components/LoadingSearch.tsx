@@ -15,7 +15,7 @@ export const LoadingSearch = ({ className = '' }: LoadingSearchProps) => {
   const [phase, setPhase] = useState<'searching' | 'analyzing' | 'building'>(initialPhase);
   const [sourcesShown, setSourcesShown] = useState<number>(initialPhase === 'searching' ? 0 : 4);
 
-  const sources = ['Google', 'Agent websites', 'Yelp', 'Zillow'];
+  const sources = ['Google', 'Agent websites', 'Yelp', 'Zillow', 'X', 'Instagram', 'Facebook'];
 
   useEffect(() => {
     // Mark that we've shown the loading once so consecutive mounts don't restart from the very beginning

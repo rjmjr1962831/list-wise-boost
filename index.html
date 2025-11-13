@@ -44,7 +44,72 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-    <div id="root"></div>
+    <div id="root">
+      <!-- Initial loading state shown before React loads -->
+      <style>
+        #initial-loader {
+          position: fixed;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--background)), hsl(var(--primary) / 0.05));
+          min-height: 100vh;
+        }
+        #initial-loader .content {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.5rem;
+          min-height: 400px;
+          justify-content: center;
+        }
+        #initial-loader .title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: hsl(var(--foreground));
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        #initial-loader .dots span {
+          animation: bounce 1s ease-in-out infinite;
+        }
+        #initial-loader .dots span:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+        #initial-loader .dots span:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        :root {
+          --background: 0 0% 100%;
+          --foreground: 0 0% 3.9%;
+          --primary: 24 95% 53%;
+        }
+        @media (prefers-color-scheme: dark) {
+          :root {
+            --background: 0 0% 3.9%;
+            --foreground: 0 0% 98%;
+          }
+        }
+      </style>
+      <div id="initial-loader">
+        <div class="content">
+          <div class="title">
+            Searching more than 500,000 data points
+            <span class="dots">
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
