@@ -248,7 +248,29 @@ export default function DynamicCategoryList() {
             const converted = newProfsData.map(convertToProfessional);
             setAllProfessionals(converted);
             setFilteredProfessionals(converted);
-            setReviewsReady(true);
+            
+            // Prefetch reviews for top professionals to ensure text is available before render
+            try {
+              const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
+              let hasReviews = false;
+              for (const p of newProfsData.slice(0, 5)) {
+                const [extRes, apifyRes] = await Promise.allSettled([
+                  supabase.functions.invoke('fetch-external-reviews', {
+                    body: { agentName: p.name, company: p.company ?? undefined, location: market },
+                  }),
+                  supabase.functions.invoke('fetch-apify-zillow-reviews', {
+                    body: { zuid: p.zuid, agentName: p.name, location: market },
+                  }),
+                ]);
+                const extOk = extRes.status === 'fulfilled' && !!extRes.value?.data && Array.isArray(extRes.value.data.reviews) && extRes.value.data.reviews.some((r: any) => (r?.reviewText || '').trim().length > 0);
+                const apifyOk = apifyRes.status === 'fulfilled' && !!apifyRes.value?.data && Array.isArray(apifyRes.value.data.reviews) && apifyRes.value.data.reviews.length > 0;
+                if (extOk || apifyOk) { hasReviews = true; break; }
+              }
+              setReviewsReady(true);
+            } catch (e) {
+              console.warn('Review prefetch failed, proceeding to render:', e);
+              setReviewsReady(true);
+            }
           } else {
             // No data after retries
             setReviewsReady(true);
@@ -258,21 +280,28 @@ export default function DynamicCategoryList() {
           setAllProfessionals(converted);
           setFilteredProfessionals(converted);
           
-          // Prefetch reviews for first professional to ensure content is ready
-          if (converted.length > 0) {
-            const firstProf = professionalsData[0];
-            if (firstProf.zuid || (firstProf.name && cityWithCamelCase)) {
-              try {
-                const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
-                await supabase.functions.invoke('fetch-apify-zillow-reviews', {
-                  body: { zuid: firstProf.zuid, agentName: firstProf.name, location: market }
-                });
-              } catch (e) {
-                console.log('Reviews prefetch attempt completed');
-              }
+          // Prefetch reviews for top professionals to ensure text is available before render
+          try {
+            const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
+            let hasReviews = false;
+            for (const p of professionalsData.slice(0, 5)) {
+              const [extRes, apifyRes] = await Promise.allSettled([
+                supabase.functions.invoke('fetch-external-reviews', {
+                  body: { agentName: p.name, company: p.company ?? undefined, location: market },
+                }),
+                supabase.functions.invoke('fetch-apify-zillow-reviews', {
+                  body: { zuid: p.zuid, agentName: p.name, location: market },
+                }),
+              ]);
+              const extOk = extRes.status === 'fulfilled' && !!extRes.value?.data && Array.isArray(extRes.value.data.reviews) && extRes.value.data.reviews.some((r: any) => (r?.reviewText || '').trim().length > 0);
+              const apifyOk = apifyRes.status === 'fulfilled' && !!apifyRes.value?.data && Array.isArray(apifyRes.value.data.reviews) && apifyRes.value.data.reviews.length > 0;
+              if (extOk || apifyOk) { hasReviews = true; break; }
             }
+            setReviewsReady(true);
+          } catch (e) {
+            console.warn('Review prefetch failed, proceeding to render:', e);
+            setReviewsReady(true);
           }
-          setReviewsReady(true);
           
           // Auto-import Zillow stats if missing
           const needsZillowData = professionalsData.some(p => 
