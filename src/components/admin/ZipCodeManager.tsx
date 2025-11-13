@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { MapPin, Save, Search } from 'lucide-react';
+import { getDefaultZipForCity, getZipCodesByCity } from '@/data/zipCodeLookup';
 
 interface Professional {
   id: string;
@@ -27,18 +28,6 @@ export const ZipCodeManager = () => {
   const [selectedCity, setSelectedCity] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [zipCodes, setZipCodes] = useState<{ [key: string]: string }>({});
-
-  // Arizona city default zip codes
-  const DEFAULT_ZIPCODES: { [key: string]: string } = {
-    'gilbert': '85295',
-    'phoenix': '85004',
-    'scottsdale': '85251',
-    'chandler': '85224',
-    'mesa': '85201',
-    'tempe': '85281',
-    'peoria': '85382',
-    'glendale': '85301',
-  };
 
   useEffect(() => {
     loadCities();
@@ -107,18 +96,17 @@ export const ZipCodeManager = () => {
   };
 
   const extractZipFromWebsite = (website: string): string | null => {
-    // Try to extract from common Zillow URL patterns
-    // This is a simple heuristic - you may need to call an API to get accurate zip codes
-    const cityName = cities.find(c => c.id === selectedCity)?.name.toLowerCase();
-    if (cityName && DEFAULT_ZIPCODES[cityName]) {
-      return DEFAULT_ZIPCODES[cityName];
+    // Use the new zip code lookup to get default zip for this city
+    const city = cities.find(c => c.id === selectedCity);
+    if (city) {
+      return getDefaultZipForCity(city.name, city.state);
     }
     return null;
   };
 
   const autoFillZipCodes = () => {
-    const cityName = cities.find(c => c.id === selectedCity)?.name.toLowerCase();
-    const defaultZip = cityName ? DEFAULT_ZIPCODES[cityName] : null;
+    const city = cities.find(c => c.id === selectedCity);
+    const defaultZip = city ? getDefaultZipForCity(city.name, city.state) : null;
 
     if (!defaultZip) {
       toast.error('No default zip code found for this city');
@@ -268,13 +256,22 @@ export const ZipCodeManager = () => {
         </div>
 
         <div className="mt-6 p-4 bg-muted rounded-lg">
-          <h4 className="font-semibold mb-2">Default Zip Codes by City:</h4>
+          <h4 className="font-semibold mb-2">Available Zip Codes for Selected City:</h4>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-            {Object.entries(DEFAULT_ZIPCODES).map(([city, zip]) => (
-              <div key={city}>
-                <span className="font-medium capitalize">{city}:</span> {zip}
-              </div>
-            ))}
+            {selectedCity && cities.find(c => c.id === selectedCity) && (() => {
+              const city = cities.find(c => c.id === selectedCity)!;
+              const cityZips = getZipCodesByCity(city.name, city.state);
+              return cityZips.map((record) => (
+                <div key={record.zipCode} className="flex flex-col">
+                  <span className="font-medium">{record.zipCode}</span>
+                  <span className="text-xs text-muted-foreground">Value: {record.agentValue}/5</span>
+                  <span className="text-xs text-muted-foreground">${(record.medianIncome / 1000).toFixed(0)}k income</span>
+                </div>
+              ));
+            })()}
+            {!selectedCity && (
+              <p className="text-muted-foreground col-span-full">Select a city to see available zip codes</p>
+            )}
           </div>
         </div>
       </CardContent>
