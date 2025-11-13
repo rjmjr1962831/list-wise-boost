@@ -1,4 +1,5 @@
-import { Star, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
+import { Star, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from './ui/button';
 import { useZillowReviews } from '@/hooks/useZillowReviews';
 import { Skeleton } from './ui/skeleton';
@@ -38,8 +39,12 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
     return null;
   }
 
-  const displayedReviews = reviews.reviews.slice(0, 10);
-  const remaining = Math.max(0, (reviews.totalReviews || 0) - displayedReviews.length);
+  const [expanded, setExpanded] = useState(false);
+  const initialCount = 1;
+  const expandedCount = Math.min(10, reviews.reviews.length);
+  const displayedReviews = expanded ? reviews.reviews.slice(0, expandedCount) : reviews.reviews.slice(0, initialCount);
+  const moreCount = Math.max(0, expandedCount - initialCount);
+  const remaining = Math.max(0, (reviews.totalReviews || 0) - expandedCount);
   const zillowProfileUrl = `https://www.zillow.com/profile/${zuid}`;
 
   return (
@@ -111,6 +116,16 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
           </div>
         ))}
       </div>
+      {(!expanded && moreCount > 0) && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mt-3 w-full"
+          onClick={() => setExpanded(true)}
+        >
+          Read {moreCount} more reviews <ChevronDown className="ml-1 h-4 w-4" />
+        </Button>
+      )}
       
       <Button
         variant="outline"
