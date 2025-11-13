@@ -33,108 +33,142 @@ serve(async (req) => {
       throw new Error('Apify API token not configured');
     }
 
-    console.log(`Fetching reviews for ZUID: ${zuid} using Apify (zillow-real-state-agents-scraper)`);
-
-    // Start the Apify actor run using the real estate agents scraper
-    const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs?token=${APIFY_API_TOKEN}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          agentProfileUrl: `https://www.zillow.com/profile/${zuid}`,
-          maxReviews: 50,
-          proxy: {
-            useApifyProxy: true,
-            apifyProxyGroups: ['RESIDENTIAL']
-          }
-        })
-      }
-    );
-
-    if (!runResponse.ok) {
-      const errorText = await runResponse.text();
-      console.error('Failed to start Apify run:', runResponse.status, errorText);
-      throw new Error(`Failed to start Apify actor: ${runResponse.status}`);
-    }
-
-    const runData = await runResponse.json();
-    const runId = runData.data.id;
-    console.log(`Apify run started: ${runId}`);
-
-    // Poll for completion
-    let attempts = 0;
-    const maxAttempts = 60;
-    let runStatus = 'RUNNING';
-
-    while (runStatus === 'RUNNING' && attempts < maxAttempts) {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      attempts++;
-
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs/${runId}?token=${APIFY_API_TOKEN}`
-      );
-
-      if (statusResponse.ok) {
-        const statusData = await statusResponse.json();
-        runStatus = statusData.data.status;
-        console.log(`Status: ${runStatus} (attempt ${attempts}/${maxAttempts})`);
-      }
-    }
-
-    if (runStatus !== 'SUCCEEDED') {
-      throw new Error(`Actor run did not complete successfully: ${runStatus}`);
-    }
-
-    // Fetch results from dataset, request plenty of items just in case actor outputs one item per review
-    const datasetId = runData.data.defaultDatasetId;
-    const datasetResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true&format=json&limit=200&token=${APIFY_API_TOKEN}`
-    );
-
-    if (!datasetResponse.ok) {
-      throw new Error('Failed to fetch dataset');
-    }
-
-    const data = await datasetResponse.json();
-    console.log(`Retrieved ${Array.isArray(data) ? data.length : 0} items from dataset`);
-
-    if (!Array.isArray(data) || data.length === 0) {
-      return new Response(
-        JSON.stringify({ reviews: [], totalReviews: 0, averageRating: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Some actors return a single item with nested `reviews` array; others return items per review.
-    const nestedReviews = Array.isArray(data[0]?.reviews) ? data[0].reviews : [];
-    const itemLevelReviews = data.filter((it: any) => 
-      it.reviewText || it.text || it.body || it.review
-    );
-
-    let combined = [
-      ...nestedReviews.map(mapReview),
-      ...itemLevelReviews.map(mapReview)
+    // Try multiple Apify actors to maximize review coverage
+    const profileUrl = `https://www.zillow.com/profile/${zuid}`;
+    const ACTORS = [
+      'getdataforme~zillow-real-state-agents-scraper',
+      'getdataforme~zillow-agents-reviews-scraper',
     ];
 
-    // Deduplicate by text+date to avoid duplicates between nested and item-level
-    const seen = new Set<string>();
-    combined = combined.filter((r) => {
+    async function runActorAndCollect(actorSlug: string) {
+      console.log(`Starting Apify actor: ${actorSlug} for ${profileUrl}`);
+      const startRes = await fetch(
+        `https://api.apify.com/v2/acts/${actorSlug}/runs?token=${APIFY_API_TOKEN}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agentProfileUrl: profileUrl,
+            profileUrl,
+            maxReviews: 100,
+            maxItems: 200,
+            proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+          }),
+        }
+      );
+
+      if (!startRes.ok) {
+        const t = await startRes.text();
+        console.warn(`Actor ${actorSlug} failed to start:`, startRes.status, t);
+        return { reviews: [], totalReviews: 0, averageRating: 0 };
+      }
+
+      const startData = await startRes.json();
+      const runId = startData.data.id as string;
+      console.log(`Apify run started (${actorSlug}): ${runId}`);
+
+      // Poll for completion
+      let attempts = 0;
+      let runStatus = 'RUNNING';
+      while (runStatus === 'RUNNING' && attempts < 60) {
+        await new Promise((r) => setTimeout(r, 2000));
+        attempts++;
+        const statusRes = await fetch(
+          `https://api.apify.com/v2/acts/${actorSlug}/runs/${runId}?token=${APIFY_API_TOKEN}`
+        );
+        if (statusRes.ok) {
+          const status = await statusRes.json();
+          runStatus = status.data.status;
+          console.log(`Status (${actorSlug}): ${runStatus} (attempt ${attempts}/60)`);
+        }
+      }
+
+      if (runStatus !== 'SUCCEEDED') {
+        console.warn(`Actor ${actorSlug} did not succeed: ${runStatus}`);
+        return { reviews: [], totalReviews: 0, averageRating: 0 };
+      }
+
+      // Fetch dataset items
+      const datasetId = startData.data.defaultDatasetId as string;
+      const itemsRes = await fetch(
+        `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true&format=json&limit=500&token=${APIFY_API_TOKEN}`
+      );
+      if (!itemsRes.ok) {
+        console.warn(`Actor ${actorSlug} dataset fetch failed`);
+        return { reviews: [], totalReviews: 0, averageRating: 0 };
+      }
+      const items = await itemsRes.json();
+      const itemsArr = Array.isArray(items) ? items : [];
+      console.log(`Retrieved ${itemsArr.length} items from ${actorSlug}`);
+
+      // Extract nested reviews from common keys
+      const first = itemsArr[0] || {};
+      const nested = Array.isArray(first?.reviews)
+        ? first.reviews
+        : Array.isArray(first?.agentReviews)
+        ? first.agentReviews
+        : Array.isArray(first?.reviewsList)
+        ? first.reviewsList
+        : [];
+
+      const itemLevel = itemsArr.filter((it: any) =>
+        it.reviewText || it.text || it.body || it.review
+      );
+
+      let combined = [
+        ...nested.map(mapReview),
+        ...itemLevel.map(mapReview),
+      ];
+
+      // Deduplicate by text+date
+      const seen = new Set<string>();
+      combined = combined.filter((r) => {
+        const key = `${r.reviewText}__${r.reviewDate}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+
+      const total = first?.totalReviews || first?.reviewsCount || combined.length;
+      const avg = first?.averageRating || first?.rating || (combined.length
+        ? Number((combined.reduce((s, r) => s + (Number(r.rating) || 0), 0) / combined.length).toFixed(2))
+        : 0);
+
+      return { reviews: combined, totalReviews: Number(total) || 0, averageRating: Number(avg) || 0 };
+    }
+
+    // Aggregate across actors
+    let aggregated: any[] = [];
+    let totalFromActor = 0;
+    let avgFromActor = 0;
+
+    for (const actor of ACTORS) {
+      const { reviews: r, totalReviews: tr, averageRating: ar } = await runActorAndCollect(actor);
+      aggregated = [...aggregated, ...r];
+      totalFromActor = Math.max(totalFromActor, tr);
+      avgFromActor = ar || avgFromActor;
+
+      // Early exit if we have plenty
+      if (aggregated.length >= 20) break;
+    }
+
+    // Final de-dup across actors
+    const seenFinal = new Set<string>();
+    const combined = aggregated.filter((r) => {
       const key = `${r.reviewText}__${r.reviewDate}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
+      if (seenFinal.has(key)) return false;
+      seenFinal.add(key);
       return true;
     });
 
-    // Compute average rating if missing
-    const avg = combined.length
-      ? combined.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / combined.length
+    const avgFinal = combined.length
+      ? Number((combined.reduce((s, r) => s + (Number(r.rating) || 0), 0) / combined.length).toFixed(2))
       : 0;
 
     const result = {
-      reviews: combined.slice(0, 10),
-      totalReviews: data[0]?.totalReviews || combined.length,
-      averageRating: data[0]?.averageRating || Number(avg.toFixed(2))
+      reviews: combined.slice(0, 30),
+      totalReviews: totalFromActor || combined.length,
+      averageRating: avgFromActor || avgFinal,
     };
 
     console.log(`Returning ${result.reviews.length} reviews (combined=${combined.length}), total: ${result.totalReviews}`);
