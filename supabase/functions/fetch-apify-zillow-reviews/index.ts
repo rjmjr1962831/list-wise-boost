@@ -33,18 +33,17 @@ serve(async (req) => {
       throw new Error('Apify API token not configured');
     }
 
-    console.log(`Fetching reviews for ZUID: ${zuid} using Apify`);
+    console.log(`Fetching reviews for ZUID: ${zuid} using Apify (zillow-real-state-agents-scraper)`);
 
-    // Start the Apify actor run (request ample reviews)
+    // Start the Apify actor run using the real estate agents scraper
     const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/getdataforme~zillow-agents-reviews-scraper/runs?token=${APIFY_API_TOKEN}`,
+      `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs?token=${APIFY_API_TOKEN}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           agentProfileUrl: `https://www.zillow.com/profile/${zuid}`,
           maxReviews: 50,
-          maxItems: 50,
           proxy: {
             useApifyProxy: true,
             apifyProxyGroups: ['RESIDENTIAL']
@@ -73,7 +72,7 @@ serve(async (req) => {
       attempts++;
 
       const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/getdataforme~zillow-agents-reviews-scraper/runs/${runId}?token=${APIFY_API_TOKEN}`
+        `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs/${runId}?token=${APIFY_API_TOKEN}`
       );
 
       if (statusResponse.ok) {
