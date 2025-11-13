@@ -284,7 +284,7 @@ export const Top10SearchForm = () => {
       </div>
       
       <div className="grid md:grid-cols-4 gap-4">
-        <div className="relative" ref={dropdownRef}>
+        <div className={cn("relative", stateOpen && "mb-64 md:mb-0")} ref={dropdownRef}>
           <Input
             placeholder="Enter State"
             value={stateInput}
@@ -311,7 +311,7 @@ export const Top10SearchForm = () => {
                         setSelectedCity(''); // Reset city when state changes
                         setStateOpen(false);
                       }}
-                      >
+                    >
                         <Check
                           className={cn(
                             "mr-2 h-4 w-4",
@@ -328,7 +328,7 @@ export const Top10SearchForm = () => {
           )}
         </div>
 
-        <div className="relative" ref={cityDropdownRef}>
+        <div className={cn("relative", cityOpen && "mb-64 md:mb-0")} ref={cityDropdownRef}>
           <Input
             placeholder="Select City or Type Zip Code"
             value={cityInput}
