@@ -8,7 +8,16 @@ const corsHeaders = {
 interface ReqBody {
   agentName: string;
   company?: string;
-  location?: string; // e.g., "Gilbert, Arizona"
+  location?: string;
+}
+
+interface ExternalReview {
+  source: 'google' | 'yelp' | 'facebook' | 'other';
+  reviewerName: string;
+  reviewText: string;
+  rating?: number;
+  reviewDate?: string;
+  url?: string;
 }
 
 serve(async (req) => {
@@ -20,9 +29,62 @@ serve(async (req) => {
     const { agentName, company, location }: ReqBody = await req.json();
     if (!agentName) throw new Error('agentName is required');
 
-    // TODO: Integrate Google/Yelp/Facebook providers (Outscraper/Apify). For now, return empty set gracefully.
+    const OUTSCRAPER_API_KEY = Deno.env.get('OUTSCRAPER_API_KEY');
+    const reviews: ExternalReview[] = [];
+    const sources: string[] = [];
+
+    // Try Google Business reviews via Outscraper
+    if (OUTSCRAPER_API_KEY) {
+      try {
+        const query = company ? `${company} ${location || ''}` : `${agentName} ${location || ''}`;
+        console.log('Fetching Google reviews for:', query.trim());
+
+        const resp = await fetch(
+          'https://api.app.outscraper.com/maps/reviews-v3',
+          {
+            method: 'POST',
+            headers: {
+              'X-API-KEY': OUTSCRAPER_API_KEY,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              query: [query.trim()],
+              reviewsLimit: 5,
+              language: 'en',
+              async: false,
+            }),
+          }
+        );
+
+        if (resp.ok) {
+          const data = await resp.json();
+          console.log('Outscraper Google response:', JSON.stringify(data, null, 2));
+          
+          const places = Array.isArray(data?.data) ? data.data : [];
+          for (const place of places) {
+            const placeReviews = Array.isArray(place.reviews_data) ? place.reviews_data : [];
+            for (const r of placeReviews.slice(0, 3)) {
+              reviews.push({
+                source: 'google',
+                reviewerName: r.author_title || r.author || 'Reviewer',
+                reviewText: r.review_text || r.text || '',
+                rating: Number(r.review_rating ?? r.rating ?? 0),
+                reviewDate: r.review_datetime_utc || r.review_timestamp || '',
+                url: r.review_link || place.link || undefined,
+              });
+            }
+          }
+          if (reviews.length > 0) sources.push('Google');
+        } else {
+          console.warn('Outscraper Google API error:', resp.status, await resp.text());
+        }
+      } catch (e) {
+        console.error('Error fetching Google reviews:', e);
+      }
+    }
+
     return new Response(
-      JSON.stringify({ reviews: [], sources: [] }),
+      JSON.stringify({ reviews, sources }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
