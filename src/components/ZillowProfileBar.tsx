@@ -49,7 +49,7 @@ export function ZillowProfileBar({
       <Button
         asChild
         variant="secondary"
-        className="w-full justify-between"
+        className="w-full justify-center"
         onClick={() =>
           trackEvent('press_mention_click', {
             agent_name: agentName,
@@ -58,9 +58,9 @@ export function ZillowProfileBar({
           })
         }
       >
-        <a href={profileUrl} target="_blank" rel="noopener noreferrer">
+        <a href={profileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
           <span>Zillow Profile and Reviews</span>
-          <ExternalLink className="h-4 w-4 ml-2" />
+          <ExternalLink className="h-4 w-4" />
         </a>
       </Button>
     </div>
