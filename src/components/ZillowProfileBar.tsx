@@ -21,16 +21,12 @@ export function ZillowProfileBar({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // If we have ZUID, use it directly
+    // Only show if we have ZUID
     if (zuid) {
       setProfileUrl(`https://www.zillow.com/profile/${zuid}`);
-      setLoading(false);
-      return;
+    } else {
+      setProfileUrl(null);
     }
-    
-    // Construct a fallback URL (no API calls to avoid rate limits)
-    const searchName = agentName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-    setProfileUrl(`https://www.zillow.com/professionals/real-estate-agent-reviews/${searchName}/`);
     setLoading(false);
   }, [agentName, market, zuid, professionalId]);
 
