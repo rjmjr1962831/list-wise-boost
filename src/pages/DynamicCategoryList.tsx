@@ -141,11 +141,11 @@ export default function DynamicCategoryList() {
   const [showContactModal, setShowContactModal] = useState(false);
 
   // Ensure minimum loading time to show the search animation
-  // Sources: 7 × 500ms = 3.5s, transition: 800ms, Analyzing: 3s, Building: 2s = 9.3s total
+  // Reduced to 6.5s to better match actual data load times
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinLoadingComplete(true);
-    }, 9300);
+    }, 6500);
     
     return () => clearTimeout(timer);
   }, []);
