@@ -78,6 +78,7 @@ export function ManualAgentAdder() {
           currentListings: data.stats.currentListings || 0,
           totalSales: data.stats.totalSales || 0,
           yearsExperience: data.stats.yearsExperience || 0,
+          specialties: data.stats.specialties || [],
           zuid: data.zuid || null
         };
       }
@@ -163,6 +164,7 @@ export function ManualAgentAdder() {
         years_experience: yearsExp > 0 ? yearsExp : null,
         current_listings: zillowData?.currentListings || 0,
         total_sales: zillowData?.totalSales || 0,
+        specialty: zillowData?.specialties && zillowData.specialties.length > 0 ? zillowData.specialties : null,
         zuid: zillowData?.zuid || null,
       };
 
