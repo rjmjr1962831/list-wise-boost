@@ -39,20 +39,20 @@ serve(async (req) => {
         const query = company ? `${company} ${location || ''}` : `${agentName} ${location || ''}`;
         console.log('Fetching Google reviews for:', query.trim());
 
+        const params = new URLSearchParams({
+          query: query.trim(),
+          reviewsLimit: '5',
+          language: 'en',
+          async: 'false',
+        });
+
         const resp = await fetch(
-          'https://api.app.outscraper.com/maps/reviews-v3',
+          `https://api.app.outscraper.com/maps/reviews-v3?${params}`,
           {
-            method: 'POST',
+            method: 'GET',
             headers: {
               'X-API-KEY': OUTSCRAPER_API_KEY,
-              'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              query: [query.trim()],
-              reviewsLimit: 5,
-              language: 'en',
-              async: false,
-            }),
           }
         );
 
