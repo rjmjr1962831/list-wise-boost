@@ -92,9 +92,9 @@ export function ExternalReviewsPreview({
                     {isOpen ? 'Show less' : 'More'}
                   </button>
                 )}
-                {(zillowProfileUrl || r.url) && (
+                {(r.url || zillowProfileUrl) && (
                   <a
-                    href={zillowProfileUrl || r.url}
+                    href={r.url || zillowProfileUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-auto inline-flex items-center gap-1 text-sm text-primary hover:underline"
