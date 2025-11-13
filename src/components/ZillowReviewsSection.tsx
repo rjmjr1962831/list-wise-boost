@@ -40,11 +40,11 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   }
 
   const [expanded, setExpanded] = useState(false);
-  const initialCount = 1;
-  const expandedCount = Math.min(10, reviews.reviews.length);
-  const displayedReviews = expanded ? reviews.reviews.slice(0, expandedCount) : reviews.reviews.slice(0, initialCount);
-  const moreCount = Math.max(0, expandedCount - initialCount);
-  const remaining = Math.max(0, (reviews.totalReviews || 0) - expandedCount);
+  const initialCount = 3;
+  const expandedCount = reviews.reviews.length; // show all fetched when expanded
+  const displayedReviews = expanded ? reviews.reviews : reviews.reviews.slice(0, initialCount);
+  const moreCount = Math.max(0, reviews.reviews.length - initialCount);
+  const remaining = Math.max(0, (reviews.totalReviews || 0) - reviews.reviews.length);
   const zillowProfileUrl = `https://www.zillow.com/profile/${zuid}`;
 
   return (
