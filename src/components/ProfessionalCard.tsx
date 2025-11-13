@@ -8,6 +8,8 @@ import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
 import { ZillowReviewsSection } from "./ZillowReviewsSection";
+import { ExternalReviewsPreview } from "./ExternalReviewsPreview";
+import { ZillowProfileBar } from "./ZillowProfileBar";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -520,9 +522,13 @@ export const ProfessionalCard = ({
                     </Button>
                   )}
                 </div>
-              )}
 
-            </div>
+                {/* External reviews preview (Google/Yelp/Facebook) */}
+                <ExternalReviewsPreview agentName={professional.name} company={professional.company} market={market} />
+
+                {/* Zillow profile CTA */}
+                <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} />
+              </div>
           </div>
         </div>
       </CardContent>
