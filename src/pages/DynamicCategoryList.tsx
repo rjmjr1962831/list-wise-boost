@@ -140,11 +140,11 @@ export default function DynamicCategoryList() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
 
-  // Ensure minimum loading time to show the search animation (4 seconds total for all phases)
+  // Ensure minimum loading time to show the search animation (8 seconds total for all phases)
   useEffect(() => {
     const timer = setTimeout(() => {
       setMinLoadingComplete(true);
-    }, 4000);
+    }, 8000);
     
     return () => clearTimeout(timer);
   }, []);
