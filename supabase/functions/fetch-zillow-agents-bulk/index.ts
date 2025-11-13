@@ -40,7 +40,7 @@ serve(async (req) => {
       throw new Error('Outscraper API key not configured');
     }
 
-    const query = `real estate agent ${city}, ${state}`;
+    const query = `real estate agent in ${city}, ${state}`;
     console.log(`Searching Google Places for: ${query}`);
 
     // Use Outscraper Google Maps API to search for real estate agents
