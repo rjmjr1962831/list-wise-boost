@@ -21,10 +21,10 @@ serve(async (req) => {
   }
 
   try {
-    const { zuid } = await req.json();
+    const { zuid, agentName, location, profileUrl: inputProfileUrl } = await req.json();
     
-    if (!zuid) {
-      throw new Error('ZUID is required');
+    if (!zuid && !agentName && !inputProfileUrl) {
+      throw new Error('Provide either ZUID, agentName+location, or profileUrl');
     }
 
     const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN')?.trim();
@@ -33,8 +33,101 @@ serve(async (req) => {
       throw new Error('Apify API token not configured');
     }
 
+    // Resolve profileUrl from inputs or discover by name+location
+    let profileUrl: string | undefined = inputProfileUrl || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined);
+
+    // If we don't have a direct profile URL, try to discover it via search actors
+    if (!profileUrl && agentName) {
+      const DISCOVERY_ACTORS = [
+        'laelin~zillow-agent-scraper',
+        'getdataforme~zillow-agent-scraper',
+      ];
+
+      async function discoverProfileUrl(actorSlug: string): Promise<string | undefined> {
+        console.log(`Discovering profile with ${actorSlug} for`, { agentName, location });
+        const startRes = await fetch(
+          `https://api.apify.com/v2/acts/${actorSlug}/runs?token=${APIFY_API_TOKEN}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              agentName,
+              zipcode: location,
+              location,
+              query: `${agentName} ${location ?? ''}`.trim(),
+              proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+            }),
+          }
+        );
+        if (!startRes.ok) {
+          const t = await startRes.text();
+          console.warn(`Discovery actor ${actorSlug} failed to start:`, startRes.status, t);
+          return undefined;
+        }
+        const startData = await startRes.json();
+        const runId = startData.data.id as string;
+
+        let attempts = 0;
+        let runStatus = 'RUNNING';
+        while (runStatus === 'RUNNING' && attempts < 45) {
+          await new Promise((r) => setTimeout(r, 1500));
+          attempts++;
+          const statusRes = await fetch(
+            `https://api.apify.com/v2/acts/${actorSlug}/runs/${runId}?token=${APIFY_API_TOKEN}`
+          );
+          if (statusRes.ok) {
+            const status = await statusRes.json();
+            runStatus = status.data.status;
+          }
+        }
+        if (runStatus !== 'SUCCEEDED') return undefined;
+
+        const datasetId = startData.data.defaultDatasetId as string;
+        const itemsRes = await fetch(
+          `https://api.apify.com/v2/datasets/${datasetId}/items?clean=true&format=json&limit=100&token=${APIFY_API_TOKEN}`
+        );
+        if (!itemsRes.ok) return undefined;
+        const items = await itemsRes.json();
+        const arr: any[] = Array.isArray(items) ? items : [];
+
+        const normName = (agentName || '').toLowerCase();
+        for (const it of arr) {
+          const candidates = [
+            it?.profileUrl,
+            it?.agentProfileUrl,
+            it?.zillowUrl,
+            it?.detailUrl,
+            it?.url,
+            it?.profile,
+            it?.agent?.profileUrl,
+          ].filter(Boolean) as string[];
+
+          const displayName = (it?.name || it?.agentName || it?.agent?.name || '').toLowerCase();
+          const nameMatches = normName && displayName.includes(normName);
+
+          const found = candidates.find((u) => typeof u === 'string' && u.includes('zillow.com/profile/'));
+          if (found && (nameMatches || candidates.length > 0)) {
+            console.log('Discovered Zillow profile:', found);
+            return found.split('?')[0];
+          }
+        }
+        return undefined;
+      }
+
+      for (const a of DISCOVERY_ACTORS) {
+        profileUrl = await discoverProfileUrl(a);
+        if (profileUrl) break;
+      }
+    }
+
+    if (!profileUrl) {
+      console.warn('Could not resolve Zillow profile URL');
+      return new Response(JSON.stringify({ reviews: [], totalReviews: 0, averageRating: 0 }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Try multiple Apify actors to maximize review coverage
-    const profileUrl = `https://www.zillow.com/profile/${zuid}`;
     const ACTORS = [
       'getdataforme~zillow-real-state-agents-scraper',
       'getdataforme~zillow-agents-reviews-scraper',
@@ -146,10 +239,10 @@ serve(async (req) => {
       const { reviews: r, totalReviews: tr, averageRating: ar } = await runActorAndCollect(actor);
       aggregated = [...aggregated, ...r];
       totalFromActor = Math.max(totalFromActor, tr);
-      avgFromActor = ar || avgFromActor;
+      if (ar) avgFromActor = ar;
 
       // Early exit if we have plenty
-      if (aggregated.length >= 20) break;
+      if (aggregated.length >= 30) break;
     }
 
     // Final de-dup across actors

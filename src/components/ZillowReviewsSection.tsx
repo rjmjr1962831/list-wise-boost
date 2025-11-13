@@ -6,13 +6,13 @@ import { Skeleton } from './ui/skeleton';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 
 interface ZillowReviewsSectionProps {
-  zuid: string;
+  zuid?: string;
   agentName?: string;
   market?: string;
 }
 
 export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsSectionProps) => {
-  const { reviews, loading, error } = useZillowReviews(zuid);
+  const { reviews, loading, error } = useZillowReviews(zuid ?? null, agentName ?? null, market ?? null);
   const { trackEvent } = useGA4Tracking();
 
   const handleZillowLinkClick = () => {
@@ -45,7 +45,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   const displayedReviews = expanded ? reviews.reviews : reviews.reviews.slice(0, initialCount);
   const moreCount = Math.max(0, reviews.reviews.length - initialCount);
   const remaining = Math.max(0, (reviews.totalReviews || 0) - reviews.reviews.length);
-  const zillowProfileUrl = `https://www.zillow.com/profile/${zuid}`;
+  const zillowProfileUrl = zuid ? `https://www.zillow.com/profile/${zuid}` : undefined;
 
   return (
     <div className="mt-4 pt-4 border-t">
@@ -126,24 +126,25 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
           Read {moreCount} more reviews <ChevronDown className="ml-1 h-4 w-4" />
         </Button>
       )}
-      
-      <Button
-        variant="outline"
-        size="sm"
-        asChild
-        className="mt-4 w-full"
-      >
-        <a
-          href={zillowProfileUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2"
-          onClick={handleZillowLinkClick}
+      {zillowProfileUrl && (
+        <Button
+          variant="outline"
+          size="sm"
+          asChild
+          className="mt-4 w-full"
         >
-          Read All Zillow Reviews{remaining > 0 ? ` (${remaining} more)` : ''}
-          <ExternalLink className="h-4 w-4" />
-        </a>
-      </Button>
+          <a
+            href={zillowProfileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2"
+            onClick={handleZillowLinkClick}
+          >
+            Read All Zillow Reviews{remaining > 0 ? ` (${remaining} more)` : ''}
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        </Button>
+      )}
     </div>
   );
 };
