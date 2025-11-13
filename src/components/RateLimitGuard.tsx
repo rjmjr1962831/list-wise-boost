@@ -1,4 +1,5 @@
 import { useRateLimitCheck } from '@/hooks/useRateLimitCheck';
+import { LoadingSearch } from '@/components/LoadingSearch';
 
 interface RateLimitGuardProps {
   children: React.ReactNode;
@@ -7,11 +8,11 @@ interface RateLimitGuardProps {
 export const RateLimitGuard = ({ children }: RateLimitGuardProps) => {
   const { isBlocked, rateLimitInfo, isChecking } = useRateLimitCheck();
 
-  // Show nothing while checking (or a loading spinner if desired)
+  // Show branded searching/analysis loader while checking
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <LoadingSearch />
       </div>
     );
   }
