@@ -369,26 +369,35 @@ export default function DynamicCategoryList() {
   const generateAndInsertProfessionals = async (cityData: City, categoryData: Category) => {
     // For real estate agents, use Zillow auto-import
     if (categoryData.slug === 'top10realestateagents') {
-      toast.info(`Importing ${categoryData.plural_name} from Zillow for ${cityData.name}...`);
+      toast.info(`Importing ${categoryData.plural_name} from ${cityData.name}...`);
       
       try {
         const { autoImportZillowAgents } = await import('@/utils/zillowAutoImport');
-        const result = await autoImportZillowAgents(
-          cityData.id,
-          cityData.name,
-          cityData.state_slug.toUpperCase() // Use state_slug (AZ) instead of state (Arizona)
+        
+        // Add timeout to prevent hanging
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Import timed out after 60 seconds')), 60000)
         );
         
+        const result = await Promise.race([
+          autoImportZillowAgents(
+            cityData.id,
+            cityData.name,
+            cityData.state // Use full state name (Arizona) for better Google Places results
+          ),
+          timeoutPromise
+        ]) as any;
+        
         if (result.success) {
-          toast.success(`Imported ${result.imported} real estate agents from Zillow! Found ${result.licensesFound} license numbers.`);
+          toast.success(`Imported ${result.imported} real estate agents! Found ${result.licensesFound} license numbers.`);
           // Data will be fetched by the retry logic instead of reloading
         } else {
           toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
         }
         return;
       } catch (error: any) {
-        console.error('Error importing from Zillow:', error);
-        toast.error(`Zillow import failed: ${error.message}`);
+        console.error('Error importing agents:', error);
+        toast.error(`Import failed: ${error.message}`);
         return;
       }
     }
