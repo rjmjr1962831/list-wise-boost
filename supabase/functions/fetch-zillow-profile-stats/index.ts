@@ -51,6 +51,7 @@ serve(async (req) => {
       currentListings: 0,
       totalSales: 0,
       yearsExperience: 0,
+      specialties: [] as string[],
     };
 
     // Extract Zillow User ID (zuid) from profile URL or HTML
@@ -143,6 +144,42 @@ serve(async (req) => {
       }
     }
 
+    // Extract specialties/areas of focus
+    const specialties = new Set<string>();
+    
+    // Look for common specialty patterns in Zillow profiles
+    const specialtyPatterns = [
+      // Areas of Focus section
+      /<h\d[^>]*>(?:Areas of Focus|Specialties|Expertise)<\/h\d>(.*?)<\/(?:div|section|ul)>/is,
+      // List items that might contain specialties
+      /<li[^>]*class="[^"]*specialty[^"]*"[^>]*>([^<]+)<\/li>/gi,
+      /<span[^>]*class="[^"]*specialty[^"]*"[^>]*>([^<]+)<\/span>/gi,
+    ];
+
+    for (const pattern of specialtyPatterns) {
+      const matches = html.matchAll(pattern);
+      for (const match of matches) {
+        const content = match[1];
+        if (content) {
+          // Extract text from HTML
+          const tempDiv = content.replace(/<[^>]+>/g, '|').split('|')
+            .map(s => s.trim())
+            .filter(s => s && s.length > 2 && s.length < 50);
+          
+          tempDiv.forEach(specialty => {
+            // Common real estate specialties
+            const normalized = specialty.toLowerCase();
+            if (normalized.match(/buyer|seller|luxury|first.?time|investment|commercial|residential|relocation|foreclosure|short.?sale|veteran|military|senior|new.?construction|condo|rental/)) {
+              specialties.add(specialty);
+            }
+          });
+        }
+      }
+    }
+
+    stats.specialties = Array.from(specialties);
+    console.log('Found specialties:', stats.specialties);
+
     // If we didn't find explicit sales numbers, try to find structured data
     const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/is);
     if (jsonLdMatch) {
@@ -156,6 +193,12 @@ serve(async (req) => {
         }
         if (jsonData.numberOfSales) {
           stats.totalSales = Math.max(stats.totalSales, jsonData.numberOfSales);
+        }
+        // Extract specialties from structured data
+        if (jsonData.knowsAbout) {
+          const knowsAbout = Array.isArray(jsonData.knowsAbout) ? jsonData.knowsAbout : [jsonData.knowsAbout];
+          knowsAbout.forEach((item: string) => specialties.add(item));
+          stats.specialties = Array.from(specialties);
         }
       } catch (e) {
         console.log('Could not parse structured data');

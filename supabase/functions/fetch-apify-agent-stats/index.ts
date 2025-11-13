@@ -197,6 +197,19 @@ serve(async (req) => {
       }, 0);
     }
 
+    // Extract specialties if available
+    const specialties: string[] = [];
+    if (agentData.specialties && Array.isArray(agentData.specialties)) {
+      specialties.push(...agentData.specialties);
+    } else if (agentData.areasOfFocus && Array.isArray(agentData.areasOfFocus)) {
+      specialties.push(...agentData.areasOfFocus);
+    } else if (agentData.areas_of_focus && Array.isArray(agentData.areas_of_focus)) {
+      specialties.push(...agentData.areas_of_focus);
+    } else if (typeof agentData.specialties === 'string') {
+      // Sometimes specialties come as comma-separated string
+      specialties.push(...agentData.specialties.split(',').map((s: string) => s.trim()).filter(Boolean));
+    }
+
     const stats = {
       totalSales,
       salesLast12Months: salesLast12Months ?? 0,
@@ -206,6 +219,7 @@ serve(async (req) => {
       priceRangeMax: agentData.agentSalesStats?.priceRangeThreeYearMax ?? 0,
       yearsExperience: agentData.yearsExperience ?? agentData.years_experience ?? null,
       includesTeam: agentData.agentSalesStats?.stats_include_team ?? false,
+      specialties: specialties.length > 0 ? specialties : undefined,
     };
 
     console.log('Mapped stats from Apify:', stats);
