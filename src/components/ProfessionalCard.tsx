@@ -506,9 +506,9 @@ export const ProfessionalCard = ({
                           Show Less <ChevronUp className="ml-1 h-4 w-4" />
                         </>
                       ) : (
-                        <>
-                          Read More Reviews ({professional.testimonials.length - 1} more) <ChevronDown className="ml-1 h-4 w-4" />
-                        </>
+                          <>
+                            Read More Client Reviews ({professional.testimonials.length - 1} more) <ChevronDown className="ml-1 h-4 w-4" />
+                          </>
                       )}
                     </Button>
                   )}

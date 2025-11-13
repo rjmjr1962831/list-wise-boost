@@ -39,11 +39,11 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
     return null;
   }
 
-  const [expanded, setExpanded] = useState(false);
-  const initialCount = 3;
-  const expandedCount = reviews.reviews.length; // show all fetched when expanded
-  const displayedReviews = expanded ? reviews.reviews : reviews.reviews.slice(0, initialCount);
-  const moreCount = Math.max(0, reviews.reviews.length - initialCount);
+  const [expanded] = useState(true);
+  const initialCount = reviews.reviews.length;
+  const expandedCount = reviews.reviews.length;
+  const displayedReviews = reviews.reviews;
+  const moreCount = 0;
   const remaining = Math.max(0, (reviews.totalReviews || 0) - reviews.reviews.length);
   const zillowProfileUrl = zuid ? `https://www.zillow.com/profile/${zuid}` : undefined;
 
@@ -116,16 +116,6 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
           </div>
         ))}
       </div>
-      {(!expanded && moreCount > 0) && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-3 w-full"
-          onClick={() => setExpanded(true)}
-        >
-          Read {moreCount} more reviews <ChevronDown className="ml-1 h-4 w-4" />
-        </Button>
-      )}
       {zillowProfileUrl && (
         <Button
           variant="outline"
