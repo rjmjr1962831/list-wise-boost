@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { LoadingSearch } from "@/components/LoadingSearch";
+import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
 import Index from "./pages/Index";
 import MainSite from "./pages/MainSite";
@@ -39,8 +39,8 @@ const App = () => (
             <Header />
             <main className="flex-1">
               <Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-                  <LoadingSearch />
+                <div className="min-h-screen flex items-center justify-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
               }>
                 <Routes>
