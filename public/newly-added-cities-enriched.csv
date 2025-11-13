@@ -1,0 +1,297 @@
+City,State,State Abbreviation,ZIP Code,Population,Median Income,Agent Value,Notes
+Birmingham,Alabama,AL,35203,12000,42000,2,Downtown mixed use
+Birmingham,Alabama,AL,35213,25000,85000,5,Mountain Brook area luxury homes
+Birmingham,Alabama,AL,35223,18000,65000,4,Homewood strong market
+Birmingham,Alabama,AL,35242,15000,52000,3,Growing suburban
+Montgomery,Alabama,AL,36104,8000,35000,2,Downtown area
+Montgomery,Alabama,AL,36117,22000,72000,5,East Montgomery high demand
+Montgomery,Alabama,AL,36116,16000,48000,3,West side residential
+Mobile,Alabama,AL,36608,14000,58000,4,West Mobile family area
+Mobile,Alabama,AL,36695,18000,68000,4,Spring Hill upscale
+Mobile,Alabama,AL,36606,12000,38000,2,Lower demand area
+Huntsville,Alabama,AL,35801,10000,45000,3,Downtown revitalization
+Huntsville,Alabama,AL,35806,28000,82000,5,Jones Valley tech workers
+Huntsville,Alabama,AL,35824,24000,78000,5,Research Park area
+Tuscaloosa,Alabama,AL,35401,15000,42000,3,Near University of Alabama
+Tuscaloosa,Alabama,AL,35406,20000,58000,4,Northport area
+Fairbanks,Alaska,AK,99701,15000,68000,3,Downtown Fairbanks
+Fairbanks,Alaska,AK,99709,18000,82000,4,Military Eielson area
+Juneau,Alaska,AK,99801,22000,88000,4,Capital city government workers
+Juneau,Alaska,AK,99803,8000,72000,3,Douglas Island
+Chandler,Arizona,AZ,85224,35000,85000,5,Ocotillo new developments
+Chandler,Arizona,AZ,85225,42000,98000,5,High-end tech sector
+Chandler,Arizona,AZ,85226,28000,72000,4,Established neighborhoods
+Tempe,Arizona,AZ,85281,25000,52000,3,Near ASU rentals
+Tempe,Arizona,AZ,85284,32000,92000,5,South Tempe premium
+Tempe,Arizona,AZ,85282,28000,68000,4,Central Tempe
+West Valley,Arizona,AZ,85383,38000,65000,4,Peoria area growing
+West Valley,Arizona,AZ,85345,32000,58000,3,Glendale west
+Little Rock,Arkansas,AR,72202,8000,42000,2,Downtown
+Little Rock,Arkansas,AR,72211,22000,78000,5,West Little Rock upscale
+Little Rock,Arkansas,AR,72223,18000,72000,4,Maumelle area
+Fort Smith,Arkansas,AR,72901,12000,38000,2,Central city
+Fort Smith,Arkansas,AR,72903,16000,52000,3,East side residential
+Fayetteville,Arkansas,AR,72701,18000,58000,4,Near University of Arkansas
+Fayetteville,Arkansas,AR,72704,24000,68000,4,Northwest growth area
+Fort Collins,Colorado,CO,80521,32000,78000,5,South Fort Collins
+Fort Collins,Colorado,CO,80526,28000,88000,5,Southwest CSU area
+Fort Collins,Colorado,CO,80528,22000,72000,4,East side
+Bridgeport,Connecticut,CT,06604,18000,45000,3,North end
+Bridgeport,Connecticut,CT,06606,15000,42000,2,East side
+New Haven,Connecticut,CT,06510,12000,48000,3,East Rock area
+New Haven,Connecticut,CT,06511,22000,72000,4,Westville near Yale
+New Haven,Connecticut,CT,06515,16000,55000,3,Amity area
+Stamford,Connecticut,CT,06902,25000,95000,5,Downtown commuters
+Stamford,Connecticut,CT,06903,18000,88000,5,Waterside
+Stamford,Connecticut,CT,06905,20000,82000,4,North Stamford
+Hartford,Connecticut,CT,06106,14000,38000,2,Central city
+Hartford,Connecticut,CT,06107,18000,52000,3,West Hartford border
+Wilmington,Delaware,DE,19801,15000,48000,3,Downtown
+Wilmington,Delaware,DE,19803,20000,82000,5,Greenville area upscale
+Wilmington,Delaware,DE,19805,12000,58000,3,Northeast
+Dover,Delaware,DE,19901,18000,52000,3,Central Dover
+Dover,Delaware,DE,19904,14000,58000,3,South Dover
+Miami,Florida,FL,33133,28000,125000,5,Coral Gables luxury
+Miami,Florida,FL,33139,35000,72000,4,Miami Beach
+Miami,Florida,FL,33176,42000,62000,4,West Kendall families
+Miami,Florida,FL,33145,32000,58000,3,Little Havana area
+Miami,Florida,FL,33186,38000,68000,4,South Miami
+St. Petersburg,Florida,FL,33701,18000,55000,3,Downtown
+St. Petersburg,Florida,FL,33706,25000,78000,5,Northeast waterfront
+St. Petersburg,Florida,FL,33710,22000,65000,4,Central
+Hialeah,Florida,FL,33010,35000,42000,3,Central Hialeah
+Hialeah,Florida,FL,33016,32000,48000,3,Northwest
+Tallahassee,Florida,FL,32301,12000,38000,2,Downtown
+Tallahassee,Florida,FL,32312,28000,72000,5,Northeast upscale
+Tallahassee,Florida,FL,32308,24000,58000,4,Near FSU
+Fort Lauderdale,Florida,FL,33301,15000,62000,4,Downtown
+Fort Lauderdale,Florida,FL,33304,22000,88000,5,Victoria Park
+Fort Lauderdale,Florida,FL,33315,28000,52000,3,West Fort Lauderdale
+Port St. Lucie,Florida,FL,34952,32000,58000,4,Central area
+Port St. Lucie,Florida,FL,34986,28000,62000,4,Southwest growth
+Cape Coral,Florida,FL,33904,35000,55000,4,Southwest
+Cape Coral,Florida,FL,33909,38000,62000,4,Southeast waterfront
+Cape Coral,Florida,FL,33914,32000,58000,3,Northwest
+Pembroke Pines,Florida,FL,33024,35000,68000,4,East side families
+Pembroke Pines,Florida,FL,33029,32000,65000,4,West side
+Augusta,Georgia,GA,30901,10000,35000,2,Downtown
+Augusta,Georgia,GA,30909,25000,72000,5,West Augusta upscale
+Augusta,Georgia,GA,30906,22000,58000,4,South Augusta
+Columbus,Georgia,GA,31901,12000,38000,2,Downtown
+Columbus,Georgia,GA,31904,20000,62000,4,North Columbus
+Columbus,Georgia,GA,31907,18000,52000,3,East side
+Savannah,Georgia,GA,31401,8000,58000,4,Historic district
+Savannah,Georgia,GA,31405,22000,78000,5,Southside upscale
+Savannah,Georgia,GA,31419,25000,68000,4,West Chatham
+Athens,Georgia,GA,30601,15000,42000,3,Near UGA
+Athens,Georgia,GA,30605,22000,68000,4,Five Points area
+Athens,Georgia,GA,30606,18000,58000,3,East Athens
+Boise,Idaho,ID,83702,18000,65000,4,North End
+Boise,Idaho,ID,83704,28000,82000,5,West Boise growth
+Boise,Idaho,ID,83706,22000,72000,4,Bench area
+Meridian,Idaho,ID,83642,45000,78000,5,Fast-growing families
+Meridian,Idaho,ID,83646,35000,72000,4,South Meridian
+Nampa,Idaho,ID,83651,28000,55000,3,Central Nampa
+Nampa,Idaho,ID,83686,32000,58000,3,South Nampa
+Aurora,Illinois,IL,60502,22000,65000,4,East side
+Aurora,Illinois,IL,60504,28000,72000,4,West Aurora
+Aurora,Illinois,IL,60506,25000,58000,3,Far West side
+Naperville,Illinois,IL,60540,35000,115000,5,Central top schools
+Naperville,Illinois,IL,60564,38000,125000,5,South Naperville
+Naperville,Illinois,IL,60565,32000,108000,5,Far south
+Joliet,Illinois,IL,60431,22000,58000,3,East side
+Joliet,Illinois,IL,60435,25000,62000,4,West side
+Joliet,Illinois,IL,60586,20000,55000,3,South
+Rockford,Illinois,IL,61101,12000,38000,2,Downtown
+Rockford,Illinois,IL,61108,24000,62000,4,East side
+Rockford,Illinois,IL,61114,22000,58000,3,North side
+Evansville,Indiana,IN,47708,18000,65000,4,East side
+Evansville,Indiana,IN,47710,20000,58000,3,North side
+Evansville,Indiana,IN,47714,16000,52000,3,West side
+South Bend,Indiana,IN,46601,10000,35000,2,Downtown
+South Bend,Indiana,IN,46614,18000,58000,3,Northeast
+South Bend,Indiana,IN,46628,22000,68000,4,Granger area
+Des Moines,Iowa,IA,50309,12000,58000,3,Downtown
+Des Moines,Iowa,IA,50311,25000,78000,5,West Des Moines
+Des Moines,Iowa,IA,50320,22000,65000,4,South side
+Cedar Rapids,Iowa,IA,52402,18000,52000,3,Southwest
+Cedar Rapids,Iowa,IA,52403,22000,62000,4,Northeast
+Cedar Rapids,Iowa,IA,52404,20000,58000,3,Southeast
+Davenport,Iowa,IA,52801,12000,42000,2,Downtown
+Davenport,Iowa,IA,52803,20000,58000,3,Northwest
+Davenport,Iowa,IA,52807,18000,65000,4,West side
+Overland Park,Kansas,KS,66062,28000,95000,5,South OP upscale
+Overland Park,Kansas,KS,66085,32000,88000,5,Central OP
+Overland Park,Kansas,KS,66212,25000,82000,4,North OP
+Kansas City,Kansas,KS,66101,15000,38000,2,Downtown
+Kansas City,Kansas,KS,66109,18000,48000,3,Argentine
+Kansas City,Kansas,KS,66112,20000,52000,3,Central
+Baton Rouge,Louisiana,LA,70806,25000,78000,5,Southeast upscale
+Baton Rouge,Louisiana,LA,70810,22000,68000,4,South Baton Rouge
+Baton Rouge,Louisiana,LA,70820,18000,52000,3,North side
+Shreveport,Louisiana,LA,71101,12000,38000,2,Downtown
+Shreveport,Louisiana,LA,71106,22000,62000,4,South Shreveport
+Shreveport,Louisiana,LA,71118,20000,68000,4,South Highlands
+Portland,Maine,ME,04101,15000,62000,4,Downtown
+Portland,Maine,ME,04102,18000,78000,5,West End upscale
+Portland,Maine,ME,04103,20000,72000,4,Deering
+Worcester,Massachusetts,MA,01602,18000,48000,3,West side
+Worcester,Massachusetts,MA,01604,22000,65000,4,Shrewsbury St area
+Worcester,Massachusetts,MA,01609,20000,52000,3,East side
+Springfield,Massachusetts,MA,01108,15000,42000,2,North end
+Springfield,Massachusetts,MA,01118,18000,58000,3,East Forest Park
+Springfield,Massachusetts,MA,01128,20000,62000,4,East Longmeadow border
+Grand Rapids,Michigan,MI,49503,12000,45000,3,Downtown
+Grand Rapids,Michigan,MI,49506,25000,72000,5,East Grand Rapids
+Grand Rapids,Michigan,MI,49508,22000,58000,3,Southeast
+Warren,Michigan,MI,48088,28000,52000,3,West Warren
+Warren,Michigan,MI,48091,32000,58000,3,East Warren
+Warren,Michigan,MI,48093,30000,55000,3,South Warren
+Sterling Heights,Michigan,MI,48310,32000,62000,4,Central
+Sterling Heights,Michigan,MI,48312,35000,68000,4,North
+Sterling Heights,Michigan,MI,48314,28000,65000,4,Southwest
+Ann Arbor,Michigan,MI,48103,18000,58000,4,Near U of M
+Ann Arbor,Michigan,MI,48104,22000,88000,5,Downtown upscale
+Ann Arbor,Michigan,MI,48105,20000,72000,4,West side
+Rochester,Minnesota,MN,55901,25000,78000,5,Central Mayo Clinic
+Rochester,Minnesota,MN,55902,22000,72000,4,Northwest
+Rochester,Minnesota,MN,55904,28000,82000,5,Southwest medical
+Jackson,Mississippi,MS,39202,8000,32000,2,Downtown
+Jackson,Mississippi,MS,39211,20000,68000,4,Northeast
+Jackson,Mississippi,MS,39216,18000,58000,3,Fondren area
+Gulfport,Mississippi,MS,39501,22000,48000,3,Central Gulfport
+Gulfport,Mississippi,MS,39503,18000,52000,3,North Gulfport
+Gulfport,Mississippi,MS,39507,16000,45000,3,West side
+Springfield,Missouri,MO,65804,20000,48000,3,Central
+Springfield,Missouri,MO,65809,28000,68000,4,South Springfield
+Springfield,Missouri,MO,65810,25000,62000,4,East side
+Billings,Montana,MT,59101,18000,52000,3,Downtown
+Billings,Montana,MT,59102,25000,68000,4,West end
+Billings,Montana,MT,59106,22000,62000,4,Heights area
+Missoula,Montana,MT,59801,15000,48000,3,Central
+Missoula,Montana,MT,59802,20000,62000,4,South Hills
+Missoula,Montana,MT,59808,18000,58000,3,Mullan area
+Manchester,New Hampshire,NH,03102,20000,52000,3,West Manchester
+Manchester,New Hampshire,NH,03103,22000,68000,4,South Manchester
+Manchester,New Hampshire,NH,03104,25000,72000,4,Bedford border
+Nashua,New Hampshire,NH,03060,25000,75000,5,North Nashua
+Nashua,New Hampshire,NH,03062,22000,72000,4,South Nashua
+Nashua,New Hampshire,NH,03063,20000,68000,4,East Nashua
+Paterson,New Jersey,NJ,07501,18000,38000,2,Central
+Paterson,New Jersey,NJ,07502,22000,42000,3,Eastside
+Paterson,New Jersey,NJ,07504,20000,45000,3,Hillcrest
+Elizabeth,New Jersey,NJ,07201,25000,52000,3,North Elizabeth
+Elizabeth,New Jersey,NJ,07202,22000,48000,3,Elizabethport
+Elizabeth,New Jersey,NJ,07208,28000,58000,3,West End
+Las Cruces,New Mexico,NM,88001,18000,42000,3,Central
+Las Cruces,New Mexico,NM,88005,22000,52000,3,East side
+Las Cruces,New Mexico,NM,88011,20000,58000,3,Northeast growth
+Rochester,New York,NY,14604,8000,35000,2,Downtown
+Rochester,New York,NY,14618,22000,78000,5,Brighton area
+Rochester,New York,NY,14620,20000,58000,3,South Wedge
+Yonkers,New York,NY,10701,25000,62000,4,Southwest
+Yonkers,New York,NY,10703,28000,58000,3,Central
+Yonkers,New York,NY,10710,22000,82000,5,North Yonkers
+Syracuse,New York,NY,13210,15000,42000,3,Near Syracuse U
+Syracuse,New York,NY,13214,22000,62000,4,Eastwood
+Syracuse,New York,NY,13224,20000,58000,3,South side
+Greensboro,North Carolina,NC,27403,18000,52000,3,Central
+Greensboro,North Carolina,NC,27406,28000,72000,5,Northwest upscale
+Greensboro,North Carolina,NC,27410,25000,65000,4,Northeast
+Fayetteville,North Carolina,NC,28301,15000,42000,3,Central
+Fayetteville,North Carolina,NC,28303,25000,58000,3,Fort Bragg area
+Fayetteville,North Carolina,NC,28306,22000,52000,3,North side
+Fargo,North Dakota,ND,58102,22000,62000,4,South Fargo
+Fargo,North Dakota,ND,58103,25000,68000,4,West Fargo
+Fargo,North Dakota,ND,58104,20000,58000,3,North side
+Bismarck,North Dakota,ND,58501,18000,62000,4,Central
+Bismarck,North Dakota,ND,58503,22000,72000,4,South Bismarck
+Cincinnati,Ohio,OH,45202,8000,45000,3,Downtown
+Cincinnati,Ohio,OH,45209,20000,88000,5,Hyde Park upscale
+Cincinnati,Ohio,OH,45226,18000,78000,5,Columbia-Tusculum
+Cincinnati,Ohio,OH,45230,22000,72000,4,Anderson Township
+Akron,Ohio,OH,44301,12000,38000,2,Downtown
+Akron,Ohio,OH,44313,25000,68000,4,West Akron
+Akron,Ohio,OH,44333,22000,72000,4,Fairlawn area
+Norman,Oklahoma,OK,73069,28000,62000,4,Central near OU
+Norman,Oklahoma,OK,73071,32000,72000,4,East Norman
+Norman,Oklahoma,OK,73072,25000,68000,4,West side
+Eugene,Oregon,OR,97401,15000,48000,3,Downtown
+Eugene,Oregon,OR,97403,28000,68000,4,South Eugene
+Eugene,Oregon,OR,97405,25000,58000,3,Near U of Oregon
+Salem,Oregon,OR,97301,18000,48000,3,Central
+Salem,Oregon,OR,97302,22000,58000,3,West Salem
+Salem,Oregon,OR,97306,28000,65000,4,South Salem
+Allentown,Pennsylvania,PA,18102,20000,42000,3,Central
+Allentown,Pennsylvania,PA,18103,25000,58000,3,West End
+Allentown,Pennsylvania,PA,18104,22000,52000,3,East side
+Providence,Rhode Island,RI,02903,12000,38000,2,Downtown
+Providence,Rhode Island,RI,02906,18000,78000,5,East Side upscale
+Providence,Rhode Island,RI,02908,20000,52000,3,North end
+Columbia,South Carolina,SC,29201,10000,35000,2,Downtown
+Columbia,South Carolina,SC,29206,25000,78000,5,Forest Acres
+Columbia,South Carolina,SC,29209,22000,68000,4,Northeast
+Charleston,South Carolina,SC,29401,8000,85000,5,Historic downtown
+Charleston,South Carolina,SC,29407,28000,72000,4,West Ashley
+Charleston,South Carolina,SC,29414,32000,88000,5,Daniel Island
+Charleston,South Carolina,SC,29492,25000,95000,5,Mount Pleasant
+North Charleston,South Carolina,SC,29405,22000,45000,3,Central
+North Charleston,South Carolina,SC,29418,28000,58000,3,North area
+North Charleston,South Carolina,SC,29420,25000,52000,3,Park Circle
+Sioux Falls,South Dakota,SD,57103,25000,62000,4,East side
+Sioux Falls,South Dakota,SD,57104,28000,68000,4,Southwest
+Sioux Falls,South Dakota,SD,57106,32000,72000,5,South Sioux Falls
+Rapid City,South Dakota,SD,57701,22000,58000,3,Central
+Rapid City,South Dakota,SD,57702,18000,62000,4,West side
+Rapid City,South Dakota,SD,57703,20000,52000,3,North side
+Knoxville,Tennessee,TN,37902,8000,42000,3,Downtown
+Knoxville,Tennessee,TN,37919,25000,78000,5,West Knoxville
+Knoxville,Tennessee,TN,37922,28000,72000,4,Farragut area
+Chattanooga,Tennessee,TN,37402,10000,48000,3,Downtown
+Chattanooga,Tennessee,TN,37411,22000,72000,4,East Brainerd
+Chattanooga,Tennessee,TN,37421,25000,68000,4,Hixson
+Irving,Texas,TX,75038,32000,78000,5,Las Colinas corporate
+Irving,Texas,TX,75062,28000,68000,4,Central Irving
+Irving,Texas,TX,75063,35000,72000,4,North Irving
+Salt Lake City,Utah,UT,84102,15000,62000,4,Downtown
+Salt Lake City,Utah,UT,84103,20000,88000,5,Avenues upscale
+Salt Lake City,Utah,UT,84106,22000,78000,5,East bench
+Salt Lake City,Utah,UT,84108,18000,95000,5,Foothill area
+West Valley City,Utah,UT,84119,35000,52000,3,Central
+West Valley City,Utah,UT,84120,32000,58000,3,South Valley
+West Valley City,Utah,UT,84128,28000,55000,3,West side
+Provo,Utah,UT,84601,18000,45000,3,Near BYU
+Provo,Utah,UT,84604,25000,68000,4,North Provo
+Provo,Utah,UT,84606,22000,58000,3,East bay
+Burlington,Vermont,VT,05401,12000,52000,3,Downtown
+Burlington,Vermont,VT,05403,15000,78000,5,South End
+Burlington,Vermont,VT,05408,18000,72000,4,New North End
+Norfolk,Virginia,VA,23502,18000,48000,3,Central
+Norfolk,Virginia,VA,23503,22000,52000,3,Ocean View
+Norfolk,Virginia,VA,23518,25000,68000,4,Ghent area
+Richmond,Virginia,VA,23220,12000,48000,3,Fan District
+Richmond,Virginia,VA,23221,15000,58000,3,Museum District
+Richmond,Virginia,VA,23226,25000,88000,5,West End upscale
+Richmond,Virginia,VA,23233,28000,82000,5,Far West End
+Spokane,Washington,WA,99201,10000,42000,3,Downtown
+Spokane,Washington,WA,99202,18000,78000,5,South Hill
+Spokane,Washington,WA,99208,25000,72000,4,Northwest
+Tacoma,Washington,WA,98402,12000,52000,3,Downtown
+Tacoma,Washington,WA,98405,20000,68000,4,North End
+Tacoma,Washington,WA,98407,22000,58000,3,West End
+Tacoma,Washington,WA,98465,28000,78000,5,University Place
+Charleston,West Virginia,WV,25301,10000,38000,2,Downtown
+Charleston,West Virginia,WV,25304,18000,58000,3,South Hills
+Charleston,West Virginia,WV,25314,20000,62000,4,Kanawha City
+Huntington,West Virginia,WV,25701,15000,35000,2,Downtown
+Huntington,West Virginia,WV,25704,18000,52000,3,East end
+Huntington,West Virginia,WV,25705,16000,48000,3,West side
+Green Bay,Wisconsin,WI,54301,18000,52000,3,Central
+Green Bay,Wisconsin,WI,54303,25000,68000,4,West side
+Green Bay,Wisconsin,WI,54313,28000,72000,4,Ashwaubenon
+Cheyenne,Wyoming,WY,82001,20000,58000,3,Central
+Cheyenne,Wyoming,WY,82007,22000,68000,4,South Cheyenne
+Cheyenne,Wyoming,WY,82009,18000,62000,3,North side
+Casper,Wyoming,WY,82601,18000,55000,3,Central Casper
+Casper,Wyoming,WY,82604,16000,58000,3,East side
+Casper,Wyoming,WY,82609,15000,52000,3,West Casper
