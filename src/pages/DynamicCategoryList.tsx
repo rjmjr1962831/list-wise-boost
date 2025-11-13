@@ -130,6 +130,7 @@ export default function DynamicCategoryList() {
   }>();
   
   const [loading, setLoading] = useState(true);
+  const [isGeneratingData, setIsGeneratingData] = useState(false);
   const [minLoadingComplete, setMinLoadingComplete] = useState(false);
   const [city, setCity] = useState<City | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
@@ -140,15 +141,19 @@ export default function DynamicCategoryList() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
 
-  // Ensure minimum loading time to show the search animation
-  // Reduced to 6.5s to better match actual data load times
+  // Ensure minimum loading time to show the search animation ONLY when generating data
   useEffect(() => {
+    if (!isGeneratingData) {
+      setMinLoadingComplete(true);
+      return;
+    }
+    
     const timer = setTimeout(() => {
       setMinLoadingComplete(true);
     }, 6500);
     
     return () => clearTimeout(timer);
-  }, []);
+  }, [isGeneratingData]);
 
   // Fetch city and category data
   useEffect(() => {
@@ -212,7 +217,8 @@ export default function DynamicCategoryList() {
         if (!professionalsData || professionalsData.length === 0) {
           console.log('No professionals found, auto-generating...');
           
-          // Keep loading state while we generate
+          // Set flag to show loading animation
+          setIsGeneratingData(true);
           setLoading(true);
           await generateAndInsertProfessionals(cityWithCamelCase, categoryData);
           
@@ -462,7 +468,7 @@ export default function DynamicCategoryList() {
     }
   }, [city, category]);
 
-  if (loading || !minLoadingComplete) {
+  if (loading || (isGeneratingData && !minLoadingComplete)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <LoadingSearch />
