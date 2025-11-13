@@ -522,8 +522,6 @@ export const ProfessionalCard = ({
                 </div>
               )}
 
-              {/* Zillow Reviews Section */}
-              <ZillowReviewsSection zuid={professional.zuid || undefined} agentName={professional.name} market={market} />
             </div>
           </div>
         </div>

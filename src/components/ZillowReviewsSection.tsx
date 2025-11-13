@@ -37,46 +37,34 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   }
 
   if (error || !reviews || reviews.reviews.length === 0) {
+    // Only show if we have a valid Zillow profile URL
     const zillowProfileUrl = zuid ? `https://www.zillow.com/profile/${zuid}` : undefined;
-    // Fallback to Zillow agent directory for the current market (no Google links)
-    let zillowDirectoryUrl: string | undefined;
-    if (market) {
-      const parts = market.split(',');
-      const city = parts[0]?.trim().toLowerCase().replace(/\s+/g, '-');
-      let state = parts[1]?.trim().toLowerCase();
-      if (state === 'arizona') state = 'az';
-      if (state === 'az') state = 'az';
-      const slug = state ? `${city}-${state}` : city;
-      if (slug) zillowDirectoryUrl = `https://www.zillow.com/real-estate-agents/${slug}/`;
-    }
-
-    const link = zillowProfileUrl ?? zillowDirectoryUrl;
-    if (!link) return null;
+    if (!zillowProfileUrl) return null;
 
     return (
       <div className="mt-4 pt-4 border-t">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-lg font-semibold">Zillow Reviews</h4>
           <a
-            href={link}
+            href={zillowProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleZillowLinkClick}
             className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-            aria-label="View on Zillow"
+            aria-label="View agent profile on Zillow"
           >
-            View on Zillow <ExternalLink className="h-4 w-4" />
+            View Profile <ExternalLink className="h-4 w-4" />
           </a>
         </div>
         <Button variant="outline" size="sm" asChild className="w-full">
           <a
-            href={link}
+            href={zillowProfileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2"
             onClick={handleZillowLinkClick}
           >
-            View on Zillow
+            View Zillow Profile
             <ExternalLink className="h-4 w-4" />
           </a>
         </Button>
