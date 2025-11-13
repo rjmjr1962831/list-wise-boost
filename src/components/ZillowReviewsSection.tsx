@@ -39,6 +39,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   }
 
   const displayedReviews = reviews.reviews.slice(0, 10);
+  const remaining = Math.max(0, (reviews.totalReviews || 0) - displayedReviews.length);
   const zillowProfileUrl = `https://www.zillow.com/profile/${zuid}`;
 
   return (
@@ -124,7 +125,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
           className="flex items-center justify-center gap-2"
           onClick={handleZillowLinkClick}
         >
-          Read All Zillow Reviews
+          Read All Zillow Reviews{remaining > 0 ? ` (${remaining} more)` : ''}
           <ExternalLink className="h-4 w-4" />
         </a>
       </Button>

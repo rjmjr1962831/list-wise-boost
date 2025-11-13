@@ -33,8 +33,8 @@ serve(async (req) => {
     let totalReviews = 0;
     let averageRating = 0;
 
-    // Fetch up to 3 pages to get at least 10 reviews
-    while (allReviews.length < pageSize && currentPage < pageNumber + 3) {
+    // Fetch up to 10 pages to get at least 10 reviews
+    while (allReviews.length < pageSize && currentPage < pageNumber + 10) {
       console.log(`Fetching page ${currentPage}`);
       
       const response = await fetch(
