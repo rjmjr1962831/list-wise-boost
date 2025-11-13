@@ -391,14 +391,15 @@ export default function DynamicCategoryList() {
         if (result.success) {
           toast.success(`Imported ${result.imported} real estate agents! Found ${result.licensesFound} license numbers.`);
           // Data will be fetched by the retry logic instead of reloading
+          return;
         } else {
           toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
+          // Fall through to local generation
         }
-        return;
       } catch (error: any) {
         console.error('Error importing agents:', error);
         toast.error(`Import failed: ${error.message}`);
-        return;
+        // Fall through to local generation
       }
     }
     
