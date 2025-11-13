@@ -36,8 +36,9 @@ export async function autoImportZillowAgents(
 
     const categoryId = categoryData.id;
 
-    // Fetch agents from Zillow
-    const { data: zillowData, error: zillowError } = await supabase.functions.invoke('fetch-zillow-agents', {
+    // Fetch agents from Zillow using the bulk comprehensive scraper
+    console.log('Fetching agents from Zillow bulk scraper...');
+    const { data: zillowData, error: zillowError } = await supabase.functions.invoke('fetch-zillow-agents-bulk', {
       body: { city: cityName, state: state }
     });
 
