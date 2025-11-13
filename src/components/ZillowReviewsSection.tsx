@@ -40,7 +40,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   }
 
   const [expanded, setExpanded] = useState(false);
-  const initialCount = Math.min(3, reviews.reviews.length);
+  const initialCount = Math.min(2, reviews.reviews.length);
   const expandedCount = reviews.reviews.length;
   const displayedReviews = expanded ? reviews.reviews : reviews.reviews.slice(0, initialCount);
   const moreCount = Math.max(0, expandedCount - initialCount);
