@@ -376,7 +376,7 @@ export default function DynamicCategoryList() {
         const result = await autoImportZillowAgents(
           cityData.id,
           cityData.name,
-          cityData.state
+          cityData.state_slug.toUpperCase() // Use state_slug (AZ) instead of state (Arizona)
         );
         
         if (result.success) {
