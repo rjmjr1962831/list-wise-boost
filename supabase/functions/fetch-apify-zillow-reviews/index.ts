@@ -39,7 +39,6 @@ serve(async (req) => {
     // If we don't have a direct profile URL, try to discover it via search actors
     if (!profileUrl && agentName) {
       const DISCOVERY_ACTORS = [
-        'laelin~zillow-agent-scraper',
         'getdataforme~zillow-agent-scraper',
       ];
 
