@@ -15,9 +15,9 @@ export const Header = () => {
           </span>
         </Link>
         <nav className="hidden md:flex gap-6">
-          <a href="/main#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
-          <a href="/main#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
-          <a href="/main#industries" className="text-muted-foreground hover:text-foreground transition-colors">Industries</a>
+          <Link to="/main#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">How It Works</Link>
+          <Link to="/main#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</Link>
+          <Link to="/main#industries" className="text-muted-foreground hover:text-foreground transition-colors">Industries</Link>
           <Link to="/book-appointment-robert" className="text-muted-foreground hover:text-foreground transition-colors">Let's Talk</Link>
         </nav>
         <Button asChild>
