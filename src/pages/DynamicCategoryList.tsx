@@ -546,8 +546,11 @@ export default function DynamicCategoryList() {
 
   if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        <LoadingSearch />
+      <div className="min-h-[40vh] flex items-center justify-center">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+          <span>Loading agents…</span>
+        </div>
       </div>
     );
   }
