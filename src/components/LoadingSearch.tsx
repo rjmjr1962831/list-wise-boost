@@ -1,0 +1,92 @@
+import { useEffect, useState } from 'react';
+import { Brain } from 'lucide-react';
+
+interface LoadingSearchProps {
+  className?: string;
+}
+
+export const LoadingSearch = ({ className = '' }: LoadingSearchProps) => {
+  const [phase, setPhase] = useState<'searching' | 'analyzing' | 'building'>('searching');
+  const [sourcesShown, setSourcesShown] = useState<number>(0);
+
+  const sources = ['Google', 'Agent websites', 'Yelp', 'Zillow'];
+
+  useEffect(() => {
+    // Show sources one by one
+    if (phase === 'searching' && sourcesShown < sources.length) {
+      const timer = setTimeout(() => {
+        setSourcesShown(prev => prev + 1);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+
+    // Move to analyzing phase
+    if (phase === 'searching' && sourcesShown === sources.length) {
+      const timer = setTimeout(() => {
+        setPhase('analyzing');
+      }, 600);
+      return () => clearTimeout(timer);
+    }
+
+    // Move to building phase
+    if (phase === 'analyzing') {
+      const timer = setTimeout(() => {
+        setPhase('building');
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, sourcesShown, sources.length]);
+
+  return (
+    <div className={`flex flex-col items-center justify-center min-h-[400px] space-y-6 ${className}`}>
+      {phase === 'searching' && (
+        <>
+          <div className="text-xl font-semibold text-foreground flex items-center gap-2">
+            Searching more than 500,000 data points
+            <span className="inline-flex gap-0.5">
+              <span className="animate-[bounce_1s_ease-in-out_infinite]">.</span>
+              <span className="animate-[bounce_1s_ease-in-out_0.2s_infinite]">.</span>
+              <span className="animate-[bounce_1s_ease-in-out_0.4s_infinite]">.</span>
+            </span>
+          </div>
+          
+          <div className="flex flex-col items-center gap-3 text-lg text-muted-foreground">
+            {sources.slice(0, sourcesShown).map((source, idx) => (
+              <div 
+                key={source} 
+                className="animate-fade-in"
+                style={{ animationDelay: `${idx * 0.1}s` }}
+              >
+                {source}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {phase === 'analyzing' && (
+        <div className="text-xl font-semibold text-foreground flex items-center gap-3">
+          <Brain className="w-8 h-8 text-primary animate-pulse" />
+          Analyzing
+          <span className="inline-flex gap-0.5">
+            <span className="animate-[bounce_1s_ease-in-out_infinite]">.</span>
+            <span className="animate-[bounce_1s_ease-in-out_0.2s_infinite]">.</span>
+            <span className="animate-[bounce_1s_ease-in-out_0.4s_infinite]">.</span>
+          </span>
+        </div>
+      )}
+
+      {phase === 'building' && (
+        <div className="text-xl font-semibold text-foreground flex items-center gap-3">
+          <Brain className="w-8 h-8 text-primary animate-pulse" />
+          Building Recommendations
+          <span className="inline-flex gap-0.5">
+            <span className="animate-[bounce_1s_ease-in-out_infinite]">.</span>
+            <span className="animate-[bounce_1s_ease-in-out_0.2s_infinite]">.</span>
+            <span className="animate-[bounce_1s_ease-in-out_0.4s_infinite]">.</span>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};

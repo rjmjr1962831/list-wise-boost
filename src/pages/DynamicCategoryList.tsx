@@ -9,6 +9,7 @@ import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal'
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
 import { generateProfessionals } from '@/utils/professionalGenerator';
 import { toast } from 'sonner';
+import { LoadingSearch } from '@/components/LoadingSearch';
 
 interface City {
   id: string;
@@ -416,26 +417,7 @@ export default function DynamicCategoryList() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="text-center max-w-2xl mx-auto px-4">
-          <div className="relative mb-8">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary/20 border-t-primary mx-auto"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-8 w-8 rounded-full bg-primary/10 animate-pulse"></div>
-            </div>
-          </div>
-          <h2 className="text-2xl md:text-3xl font-bold mb-4 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            Finding Your Top 10
-          </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            I'm checking more than 500,000 data points<br />
-            to determine the top ten just for you.
-          </p>
-          <div className="mt-8 flex justify-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="h-2 w-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }}></div>
-          </div>
-        </div>
+        <LoadingSearch />
       </div>
     );
   }
