@@ -15,6 +15,14 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   const { reviews, loading, error } = useZillowReviews(zuid ?? null, agentName ?? null, market ?? null);
   const { trackEvent } = useGA4Tracking();
   const [expanded, setExpanded] = useState(false);
+  const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({});
+
+  const truncateWords = (text: string, limit = 60) => {
+    const words = (text || '').trim().split(/\s+/);
+    const shouldTruncate = words.length > limit;
+    const preview = shouldTruncate ? words.slice(0, limit).join(' ') + '…' : text;
+    return { preview, shouldTruncate };
+  };
 
   const handleZillowLinkClick = () => {
     trackEvent('press_mention_click', {
@@ -121,48 +129,62 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
       </div>
       
       <div className="space-y-3">
-        {displayedReviews.map((review, idx) => (
-          <div
-            key={idx}
-            className="bg-muted/30 rounded-lg p-4 border border-border/50"
-            itemProp="review"
-            itemScope
-            itemType="https://schema.org/Review"
-          >
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div>
-                <p className="font-semibold text-sm" itemProp="author">
-                  {review.reviewerName}
-                </p>
-                {review.reviewDate && (
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(review.reviewDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+        {displayedReviews.map((review, idx) => {
+          const isOpen = !!expandedMap[idx];
+          const { preview, shouldTruncate } = truncateWords(review.reviewText || '', 60);
+          return (
+            <div
+              key={idx}
+              className="bg-muted/30 rounded-lg p-4 border border-border/50"
+              itemProp="review"
+              itemScope
+              itemType="https://schema.org/Review"
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div>
+                  <p className="font-semibold text-sm" itemProp="author">
+                    {review.reviewerName}
                   </p>
-                )}
+                  {review.reviewDate && (
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(review.reviewDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-3 w-3 ${
+                        i < review.rating
+                          ? 'fill-primary text-primary'
+                          : 'text-muted-foreground'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-0.5">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-3 w-3 ${
-                      i < review.rating
-                        ? 'fill-primary text-primary'
-                        : 'text-muted-foreground'
-                    }`}
-                  />
-                ))}
-              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed" itemProp="reviewBody">
+                {isOpen ? review.reviewText : preview}
+              </p>
+              {shouldTruncate && (
+                <button
+                  type="button"
+                  className="mt-1 text-sm text-primary hover:underline"
+                  onClick={() => setExpandedMap((prev) => ({ ...prev, [idx]: !isOpen }))}
+                  aria-expanded={isOpen}
+                >
+                  {isOpen ? 'Show less' : 'More'}
+                </button>
+              )}
+              <meta itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" content={review.rating.toString()} />
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed" itemProp="reviewBody">
-              {review.reviewText}
-            </p>
-            <meta itemProp="reviewRating" itemScope itemType="https://schema.org/Rating" content={review.rating.toString()} />
-          </div>
-        ))}
+          );
+        })}
       </div>
       {moreCount > 0 && (
         <Button
