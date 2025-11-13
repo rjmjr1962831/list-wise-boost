@@ -15,6 +15,7 @@ import { BioGenerator } from "@/components/admin/BioGenerator";
 import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
 import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
 import { ZuidExtractor } from "@/components/admin/ZuidExtractor";
+import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsManager";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -99,7 +100,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="cities" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-10 max-w-7xl">
+          <TabsList className="grid w-full grid-cols-11 max-w-7xl">
             <TabsTrigger value="cities">
               <Building2 className="mr-2 h-4 w-4" />
               Cities
@@ -111,6 +112,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="professionals">
               <Users className="mr-2 h-4 w-4" />
               Professionals
+            </TabsTrigger>
+            <TabsTrigger value="applications">
+              <UserPlus className="mr-2 h-4 w-4" />
+              Applications
             </TabsTrigger>
             <TabsTrigger value="add-agent">
               <UserPlus className="mr-2 h-4 w-4" />
@@ -152,6 +157,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="professionals" className="space-y-4">
             <ProfessionalsManager />
+          </TabsContent>
+
+          <TabsContent value="applications" className="space-y-4">
+            <AgentApplicationsManager />
           </TabsContent>
 
           <TabsContent value="add-agent" className="space-y-4">
