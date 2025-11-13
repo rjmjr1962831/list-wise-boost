@@ -522,13 +522,14 @@ export const ProfessionalCard = ({
                     </Button>
                   )}
                 </div>
+              )}
 
-                {/* External reviews preview (Google/Yelp/Facebook) */}
-                <ExternalReviewsPreview agentName={professional.name} company={professional.company} market={market} />
+              {/* External reviews preview (Google/Yelp/Facebook) */}
+              <ExternalReviewsPreview agentName={professional.name} company={professional.company} market={market} />
 
-                {/* Zillow profile CTA */}
-                <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} />
-              </div>
+              {/* Zillow profile CTA */}
+              <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} />
+            </div>
           </div>
         </div>
       </CardContent>
