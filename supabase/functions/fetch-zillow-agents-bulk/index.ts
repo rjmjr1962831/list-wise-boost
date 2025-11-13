@@ -34,131 +34,82 @@ serve(async (req) => {
   try {
     const { city, state } = await req.json();
     
-    const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN')?.trim();
+    const OUTSCRAPER_API_KEY = Deno.env.get('OUTSCRAPER_API_KEY')?.trim();
     
-    if (!APIFY_API_TOKEN) {
-      throw new Error('Apify API token not configured');
+    if (!OUTSCRAPER_API_KEY) {
+      throw new Error('Outscraper API key not configured');
     }
 
-    const location = `${city}, ${state}`;
-    console.log(`Starting Zillow agent search for ${location}`);
+    const query = `real estate agent ${city}, ${state}`;
+    console.log(`Searching Google Places for: ${query}`);
 
-    // Use simple search approach - construct Zillow search URL
-    // Since Apify actors require credits/subscription, we'll try a simpler approach
-    // that works with basic Apify free tier
-    
-    console.log(`Using search query: ${location}`);
+    // Use Outscraper Google Maps API to search for real estate agents
+    const searchUrl = new URL('https://api.app.outscraper.com/maps/search-v3');
+    searchUrl.searchParams.append('query', query);
+    searchUrl.searchParams.append('limit', '15'); // Get 15 results to filter down to 10
+    searchUrl.searchParams.append('language', 'en');
+    searchUrl.searchParams.append('region', 'us');
 
-    // Start the Apify actor run with getdataforme (simpler, widely used)
-    const actorRunResponse = await fetch(
-      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${APIFY_API_TOKEN}`,
-        },
-        body: JSON.stringify({
-          query: location,
-          maxItems: 50, // Reduced from 165 to stay in free tier
-          proxyConfiguration: {
-            useApifyProxy: true,
-          },
-        }),
-      }
-    );
+    const searchResponse = await fetch(searchUrl.toString(), {
+      method: 'GET',
+      headers: {
+        'X-API-KEY': OUTSCRAPER_API_KEY,
+      },
+    });
 
-    if (!actorRunResponse.ok) {
-      const errorText = await actorRunResponse.text();
-      console.error('Apify actor start error:', actorRunResponse.status, errorText);
-      throw new Error(`Failed to start Apify actor: ${actorRunResponse.status}`);
+    if (!searchResponse.ok) {
+      const errorText = await searchResponse.text();
+      console.error('Outscraper search error:', searchResponse.status, errorText);
+      throw new Error(`Failed to search Google Places: ${searchResponse.status} - ${errorText}`);
     }
 
-    const runData = await actorRunResponse.json();
-    const runId = runData.data.id;
-    const defaultDatasetId = runData.data.defaultDatasetId;
-    
-    console.log(`Actor run started: ${runId}`);
+    const searchData = await searchResponse.json();
+    console.log(`Outscraper returned ${searchData.data?.[0]?.length || 0} results`);
 
-    // Poll for completion (max 60 attempts, 2 second intervals = 2 minutes max)
-    let completed = false;
-    let attempts = 0;
-    const maxAttempts = 60;
-
-    while (!completed && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      attempts++;
-
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs/${runId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${APIFY_API_TOKEN}`,
-          },
-        }
-      );
-
-      const statusData = await statusResponse.json();
-      const status = statusData.data.status;
-      
-      console.log(`Status check ${attempts}: ${status}`);
-
-      if (status === 'SUCCEEDED') {
-        completed = true;
-      } else if (status === 'FAILED' || status === 'ABORTED' || status === 'TIMED-OUT') {
-        throw new Error(`Actor run ${status.toLowerCase()}`);
-      }
-    }
-
-    if (!completed) {
-      throw new Error('Actor run timed out');
-    }
-
-    // Fetch the results from the dataset
-    const datasetResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${defaultDatasetId}/items`,
-      {
-        headers: {
-          'Authorization': `Bearer ${APIFY_API_TOKEN}`,
-        },
-      }
-    );
-
-    if (!datasetResponse.ok) {
-      throw new Error(`Failed to fetch dataset: ${datasetResponse.status}`);
-    }
-
-    const agents: ApifyAgentData[] = await datasetResponse.json();
-    console.log(`Successfully scraped ${agents.length} agents`);
+    // Transform Outscraper data to our format
+    const agents = searchData.data?.[0] || [];
 
     // Transform Apify data to our format
     const transformedAgents = agents
-      .filter(agent => agent.name && agent.phone) // Only agents with name and phone
+      .filter((agent: any) => {
+        // Filter for real estate agents with contact info
+        const isRealEstateAgent = (agent.category || '').toLowerCase().includes('real estate') ||
+                                   (agent.type || '').toLowerCase().includes('real estate') ||
+                                   (agent.subtypes || '').toLowerCase().includes('real estate');
+        return agent.name && agent.phone && isRealEstateAgent;
+      })
       .slice(0, 10) // Take top 10
-      .map((agent, index) => ({
-        fullName: agent.name,
-        name: agent.name,
-        email: agent.name_for_emails ? `${agent.name_for_emails.toLowerCase().replace(/\s+/g, '')}@example.com` : null,
-        phone: agent.phone || null,
-        website: agent.site || null,
-        profilePhotoSrc: agent.logo || null,
-        profileLink: agent.site || null,
-        company: extractCompanyName(agent.subtypes || agent.category || ''),
-        rating: agent.rating || 4.5,
-        reviewCount: agent.reviews || 0,
-        numTotalReviews: agent.reviews || 0,
-        specialties: extractSpecialties(agent.subtypes || ''),
-        address: agent.full_address || '',
-        reviews: agent.reviews_data?.slice(0, 3).map(review => ({
-          text: review.review_text,
-          rating: review.review_rating,
-          author: review.author_title,
-          date: review.review_datetime_utc,
-        })) || [],
-        // Estimate stats based on review count
-        totalSales: Math.floor((agent.reviews || 0) / 8),
-        currentListings: Math.max(1, Math.floor((agent.reviews || 0) / 100)),
-      }));
+      .map((agent: any, index: number) => {
+        // Extract email from name_for_emails if available
+        const email = agent.name_for_emails 
+          ? `${agent.name_for_emails.toLowerCase().replace(/\s+/g, '')}@example.com` 
+          : null;
+
+        return {
+          fullName: agent.name,
+          name: agent.name,
+          email,
+          phone: agent.phone || null,
+          website: agent.site || null,
+          profilePhotoSrc: agent.logo || null,
+          profileLink: agent.site || null,
+          company: extractCompanyName(agent.subtypes || agent.category || agent.type || ''),
+          rating: agent.rating || 4.5,
+          reviewCount: agent.reviews || 0,
+          numTotalReviews: agent.reviews || 0,
+          specialties: extractSpecialties(agent.subtypes || ''),
+          address: agent.full_address || '',
+          reviews: agent.reviews_data?.slice(0, 3).map((review: any) => ({
+            text: review.review_text,
+            rating: review.review_rating,
+            author: review.author_title,
+            date: review.review_datetime_utc,
+          })) || [],
+          // Estimate stats based on review count
+          totalSales: Math.floor((agent.reviews || 0) / 8),
+          currentListings: Math.max(1, Math.floor((agent.reviews || 0) / 100)),
+        };
+      });
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
 
@@ -183,7 +134,9 @@ function extractCompanyName(subtypes: string): string {
   for (const type of types) {
     if (type.toLowerCase().includes('agency') || 
         type.toLowerCase().includes('group') || 
-        type.toLowerCase().includes('team')) {
+        type.toLowerCase().includes('team') ||
+        type.toLowerCase().includes('realty') ||
+        type.toLowerCase().includes('properties')) {
       return type;
     }
   }
@@ -194,9 +147,12 @@ function extractSpecialties(subtypes: string): string[] {
   const specialtyMap: { [key: string]: string } = {
     'buyer': "Buyer's Agent",
     'seller': "Listing Agent",
+    'listing': "Listing Agent",
     'consultant': 'Real Estate Consultant',
     'relocation': 'Relocation Specialist',
     'investment': 'Investment Properties',
+    'commercial': 'Commercial Real Estate',
+    'residential': 'Residential Real Estate',
   };
 
   const specialties: string[] = [];
