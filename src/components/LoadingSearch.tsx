@@ -6,10 +6,21 @@ interface LoadingSearchProps {
 }
 
 export const LoadingSearch = ({ className = '' }: LoadingSearchProps) => {
-  const [phase, setPhase] = useState<'searching' | 'analyzing' | 'building'>('searching');
-  const [sourcesShown, setSourcesShown] = useState<number>(0);
+  // Avoid repeating the full "Searching" phase twice on initial mount transitions
+  const initialPhase: 'searching' | 'analyzing' | 'building' =
+    (typeof window !== 'undefined' && (window as any).__top10_loading_shown)
+      ? 'analyzing'
+      : 'searching';
+
+  const [phase, setPhase] = useState<'searching' | 'analyzing' | 'building'>(initialPhase);
+  const [sourcesShown, setSourcesShown] = useState<number>(initialPhase === 'searching' ? 0 : 4);
 
   const sources = ['Google', 'Agent websites', 'Yelp', 'Zillow'];
+
+  useEffect(() => {
+    // Mark that we've shown the loading once so consecutive mounts don't restart from the very beginning
+    (window as any).__top10_loading_shown = true;
+  }, []);
 
   useEffect(() => {
     // Show sources one by one
