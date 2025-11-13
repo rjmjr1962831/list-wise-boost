@@ -199,7 +199,7 @@ export const Top10SearchForm = () => {
             className="bg-background"
           />
           {stateOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-md border bg-background shadow-md max-h-60 overflow-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 z-[100] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
               <Command>
                 <CommandList>
                   <CommandEmpty>No state found.</CommandEmpty>
@@ -240,7 +240,7 @@ export const Top10SearchForm = () => {
           <SelectTrigger className="bg-background">
             <SelectValue placeholder="Select City" />
           </SelectTrigger>
-          <SelectContent className="bg-background z-50">
+          <SelectContent className="bg-popover border-2 shadow-xl z-[100]">
             {filteredCities.map(city => (
               <SelectItem key={city.id} value={city.id}>
                 {city.name}
@@ -253,7 +253,7 @@ export const Top10SearchForm = () => {
           <SelectTrigger className="bg-background">
             <SelectValue placeholder="Select Category" />
           </SelectTrigger>
-          <SelectContent className="bg-background z-50">
+          <SelectContent className="bg-popover border-2 shadow-xl z-[100]">
             {categories.map(category => (
               <SelectItem key={category.id} value={category.id}>
                 {category.plural_name}
