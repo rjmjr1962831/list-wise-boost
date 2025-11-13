@@ -43,9 +43,9 @@ serve(async (req) => {
     const location = `${city}, ${state}`;
     console.log(`Starting bulk Zillow scrape for ${location}`);
 
-    // Start the Apify actor run with the new comprehensive scraper
+    // Start the Apify actor run with the comprehensive scraper
     const actorRunResponse = await fetch(
-      'https://api.apify.com/v2/acts/compass~zillow-real-estate-scraper/runs',
+      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
       {
         method: 'POST',
         headers: {
@@ -84,7 +84,7 @@ serve(async (req) => {
       attempts++;
 
       const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/compass~zillow-real-estate-scraper/runs/${runId}`,
+        `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs/${runId}`,
         {
           headers: {
             'Authorization': `Bearer ${APIFY_API_TOKEN}`,
