@@ -528,7 +528,7 @@ export const ProfessionalCard = ({
               <ExternalReviewsPreview agentName={professional.name} company={professional.company} market={market} />
 
               {/* Zillow profile CTA */}
-              <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} />
+              <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} professionalId={professional.id} />
             </div>
           </div>
         </div>
