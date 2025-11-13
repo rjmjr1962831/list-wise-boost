@@ -422,7 +422,7 @@ export const ProfessionalCard = ({
                       itemProp="url"
                       onClick={handleWebsiteClick}
                     >
-                      Visit Website
+                      Visit {professional.name.split(' ')[0]}'s Website
                     </a>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
