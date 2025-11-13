@@ -19,64 +19,17 @@ export function ZillowProfileBar({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
-    const run = async () => {
-      setLoading(true);
-      try {
-        // If we already have ZUID, use it directly
-        if (zuid) {
-          setProfileUrl(`https://www.zillow.com/profile/${zuid}`);
-          return;
-        }
-        // Try Zillow agent search first (more reliable for direct profile link)
-        if (agentName && market) {
-          const parts = (market || '').split(',');
-          const city = parts[0]?.trim() || '';
-          const state = parts[1]?.trim() || '';
-          const { data: agentList, error } = await supabase.functions.invoke('fetch-zillow-agents', {
-            body: { city, state },
-          });
-          if (!error && Array.isArray(agentList) && agentList.length) {
-            const lower = agentName.toLowerCase();
-            const match = agentList.find((a: any) => (a.fullName || a.name || '').toLowerCase().includes(lower)) || agentList[0];
-            if (match?.profileLink) {
-              const url = match.profileLink.startsWith('http') ? match.profileLink : `https://www.zillow.com${match.profileLink}`;
-              if (!cancelled) setProfileUrl(url);
-              return;
-            }
-            if (match?.zuid && !cancelled) {
-              setProfileUrl(`https://www.zillow.com/profile/${match.zuid}`);
-              return;
-            }
-          }
-        }
-        // Fallback to Apify discovery
-        const { data } = await supabase.functions.invoke('fetch-apify-zillow-reviews', {
-          body: { agentName, location: market },
-        });
-        let url: string | null = data?.profileUrl || null;
-        if (!cancelled) {
-          if (!url) {
-            const searchName = agentName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-            url = `https://www.zillow.com/professionals/real-estate-agent-reviews/${searchName}/`;
-          }
-          setProfileUrl(url);
-        }
-      } catch (e) {
-        console.error('Error fetching Zillow profile:', e);
-        // Fallback to generic Zillow search URL on error
-        if (!cancelled && !profileUrl) {
-          const searchName = agentName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-          setProfileUrl(`https://www.zillow.com/professionals/real-estate-agent-reviews/${searchName}/`);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
-    run();
-    return () => {
-      cancelled = true;
-    };
+    // If we have ZUID, use it directly
+    if (zuid) {
+      setProfileUrl(`https://www.zillow.com/profile/${zuid}`);
+      setLoading(false);
+      return;
+    }
+    
+    // Otherwise, construct a fallback URL immediately (no API calls to avoid rate limits)
+    const searchName = agentName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+    setProfileUrl(`https://www.zillow.com/professionals/real-estate-agent-reviews/${searchName}/`);
+    setLoading(false);
   }, [agentName, market, zuid]);
 
   if (loading) {
