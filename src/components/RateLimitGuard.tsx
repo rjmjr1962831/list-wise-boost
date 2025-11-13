@@ -8,13 +8,9 @@ interface RateLimitGuardProps {
 export const RateLimitGuard = ({ children }: RateLimitGuardProps) => {
   const { isBlocked, rateLimitInfo, isChecking } = useRateLimitCheck();
 
-  // Show simple spinner while checking
+  // Render optimistically while checking to avoid blocking page loads
   if (isChecking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <>{children}</>;
   }
 
   // Show blocked message if rate limit exceeded
