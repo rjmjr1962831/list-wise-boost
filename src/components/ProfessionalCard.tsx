@@ -462,9 +462,6 @@ export const ProfessionalCard = ({
                 </Button>
               </div>
 
-              {/* Zillow Reviews Section */}
-              <ZillowReviewsSection zuid={professional.zuid || undefined} agentName={professional.name} market={market} />
-
               {/* Client Testimonials Section */}
               {professional.testimonials && professional.testimonials.length > 0 && (
                 <div className="mt-4 pt-4 border-t">
@@ -519,6 +516,9 @@ export const ProfessionalCard = ({
                   )}
                 </div>
               )}
+
+              {/* Zillow Reviews Section */}
+              <ZillowReviewsSection zuid={professional.zuid || undefined} agentName={professional.name} market={market} />
             </div>
           </div>
         </div>
