@@ -260,6 +260,65 @@ export const ZillowAgentImporter = () => {
     }
   };
 
+  const bulkImportAgents = async () => {
+    if (!city.trim() || !state.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both city and state",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedCityId || !selectedCategoryId) {
+      toast({
+        title: "Missing Mapping",
+        description: "Please select both city and category",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      toast({
+        title: "Starting Bulk Import",
+        description: "Using Apify scraper to bypass 403 errors. Takes ~10 seconds...",
+      });
+
+      const { data, error } = await supabase.functions.invoke('fetch-zillow-agents-bulk', {
+        body: { 
+          city: city.trim(), 
+          state: state.trim(), 
+          maxPages: 3,
+          categoryId: selectedCategoryId,
+          cityId: selectedCityId
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "✅ Complete",
+          description: `${data.summary.total} agents processed. ${data.summary.created} created, ${data.summary.updated} updated.`,
+        });
+        setAgents([]);
+      } else {
+        throw new Error(data.error || 'Bulk import failed');
+      }
+    } catch (error) {
+      console.error('Bulk import error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to bulk import",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const importAgent = async (agent: any, index: number) => {
     setImportingIds(prev => new Set(prev).add(index));
     
