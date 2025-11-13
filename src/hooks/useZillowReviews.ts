@@ -12,6 +12,7 @@ interface ZillowReviewsData {
   reviews: ZillowReview[];
   totalReviews: number;
   averageRating: number;
+  profileUrl?: string;
 }
 
 export const useZillowReviews = (zuid: string | null, agentName?: string | null, market?: string | null) => {
@@ -41,7 +42,8 @@ export const useZillowReviews = (zuid: string | null, agentName?: string | null,
           setReviews({
             reviews: apifyData.reviews || [],
             totalReviews: apifyData.totalReviews || 0,
-            averageRating: apifyData.averageRating || 0
+            averageRating: apifyData.averageRating || 0,
+            profileUrl: apifyData.profileUrl || undefined,
           });
           return;
         }

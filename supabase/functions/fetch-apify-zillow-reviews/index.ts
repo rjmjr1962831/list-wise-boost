@@ -262,9 +262,10 @@ serve(async (req) => {
       reviews: combined.slice(0, 30),
       totalReviews: totalFromActor || combined.length,
       averageRating: avgFromActor || avgFinal,
+      profileUrl: profileUrl,
     };
 
-    console.log(`Returning ${result.reviews.length} reviews (combined=${combined.length}), total: ${result.totalReviews}`);
+    console.log(`Returning ${result.reviews.length} reviews (combined=${combined.length}), total: ${result.totalReviews}, profileUrl=${result.profileUrl}`);
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -45,7 +45,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   const displayedReviews = reviews.reviews;
   const moreCount = 0;
   const remaining = Math.max(0, (reviews.totalReviews || 0) - reviews.reviews.length);
-  const zillowProfileUrl = zuid ? `https://www.zillow.com/profile/${zuid}` : undefined;
+  const zillowProfileUrl = reviews.profileUrl || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined);
 
   return (
     <div className="mt-4 pt-4 border-t">
