@@ -37,8 +37,9 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   }
 
   if (error || !reviews || reviews.reviews.length === 0) {
-    // Only show if we have a valid Zillow profile URL
     const zillowProfileUrl = zuid ? `https://www.zillow.com/profile/${zuid}` : undefined;
+    
+    // If no zuid and no profile URL, don't show the section
     if (!zillowProfileUrl) return null;
 
     return (

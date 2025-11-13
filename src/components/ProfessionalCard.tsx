@@ -495,8 +495,8 @@ export const ProfessionalCard = ({
                     ))}
 
                     {/* Insert Zillow reviews right after the third testimonial when collapsed */}
-                    {!showAllReviews && professional.testimonials.length >= 3 && (
-                      <ZillowReviewsSection zuid={professional.zuid || undefined} agentName={professional.name} market={market} />
+                    {!showAllReviews && professional.testimonials.length >= 3 && professional.zuid && (
+                      <ZillowReviewsSection zuid={professional.zuid} agentName={professional.name} market={market} />
                     )}
                   </div>
                   {professional.testimonials.length > 3 && (
