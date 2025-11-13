@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useParams, Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { getCityBySlug } from '@/data/cities';
-import { hasDataForCity } from '@/data/professionalData';
+
 import { formatCityName } from '@/utils/routeHelpers';
 import { MapPin } from 'lucide-react';
 
@@ -10,7 +10,7 @@ export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
   
   const city = getCityBySlug(citySlug || '', stateSlug);
-  const hasData = hasDataForCity(citySlug || '');
+  
   
   useEffect(() => {
     if (!city) return;
@@ -62,13 +62,6 @@ export default function CityLanding() {
                 </Link>
               </Button>
             </div>
-            {!hasData && (
-              <div className="inline-block px-6 py-3 bg-amber-100 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg mt-6">
-                <p className="text-amber-800 dark:text-amber-200 font-medium">
-                  Content coming soon for {city.name}! In the meantime, explore the Top Real Estate Agents above.
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </section>
