@@ -84,18 +84,35 @@ export default function CityLanding() {
           return;
         }
 
-        setEnsureMsg('Fetching latest agents…');
-        const res = await autoImportZillowAgents(cityRow.id, cityRow.name, cityRow.state);
-        if (!res.success) {
-          // Continue to list even if import partially failed; UI will handle empty state
-          console.warn('Auto import did not succeed:', res.errors);
+        // Only try importing if we have less than 10 or stale data
+        if (!hasEnough || !fresh) {
+          setEnsureMsg('Fetching latest agents…');
+          const res = await autoImportZillowAgents(cityRow.id, cityRow.name, cityRow.state);
+          
+          // Check if we now have agents after import
+          const { data: updatedPros } = await supabase
+            .from('professionals')
+            .select('id')
+            .eq('city_id', cityRow.id)
+            .eq('category_id', categoryRow.id)
+            .eq('active', true)
+            .limit(1);
+          
+          if ((updatedPros?.length || 0) > 0) {
+            // Success - redirect to list
+            navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
+          } else {
+            // Failed to get any agents - show error, don't loop
+            setEnsureMsg('Unable to load agents at this time. API providers are unavailable.');
+            setIsEnsuring(false);
+          }
+        } else {
+          // Have enough fresh agents, go to list
+          navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
         }
-        navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
       } catch (e) {
         console.error('ensure agents error', e);
-        // Fallback: go to the list page
-        navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
-      } finally {
+        setEnsureMsg('Error loading agents. Please try again later.');
         setIsEnsuring(false);
       }
     })();
