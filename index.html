@@ -72,6 +72,18 @@
           align-items: center;
           gap: 0.5rem;
         }
+        #initial-loader .sources {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.75rem;
+          font-size: 1.125rem;
+          color: hsl(var(--muted-foreground));
+        }
+        #initial-loader .source {
+          opacity: 0;
+          animation: fadeInSource 0.3s ease-out forwards;
+        }
         #initial-loader .dots span {
           animation: bounce 1s ease-in-out infinite;
         }
@@ -85,15 +97,27 @@
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-5px); }
         }
+        @keyframes fadeInSource {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
         :root {
           --background: 0 0% 100%;
           --foreground: 0 0% 3.9%;
           --primary: 24 95% 53%;
+          --muted-foreground: 0 0% 45%;
         }
         @media (prefers-color-scheme: dark) {
           :root {
             --background: 0 0% 3.9%;
             --foreground: 0 0% 98%;
+            --muted-foreground: 0 0% 63.9%;
           }
         }
       </style>
@@ -106,6 +130,15 @@
               <span>.</span>
               <span>.</span>
             </span>
+          </div>
+          <div class="sources">
+            <div class="source" style="animation-delay: 0s;">Google</div>
+            <div class="source" style="animation-delay: 0.5s;">Agent websites</div>
+            <div class="source" style="animation-delay: 1s;">Yelp</div>
+            <div class="source" style="animation-delay: 1.5s;">Zillow</div>
+            <div class="source" style="animation-delay: 2s;">X</div>
+            <div class="source" style="animation-delay: 2.5s;">Instagram</div>
+            <div class="source" style="animation-delay: 3s;">Facebook</div>
           </div>
         </div>
       </div>
