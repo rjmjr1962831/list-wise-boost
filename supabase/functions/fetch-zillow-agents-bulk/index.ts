@@ -8,22 +8,46 @@ const corsHeaders = {
 };
 
 interface ApifyAgentData {
-  name: string;
-  name_for_emails?: string;
-  phone?: string;
-  site?: string;
-  rating?: number;
-  reviews?: number;
-  reviews_data?: Array<{
-    review_text: string;
-    review_rating: number;
-    author_title: string;
-    review_datetime_utc: string;
-  }>;
-  subtypes?: string;
-  full_address?: string;
-  logo?: string;
-  category?: string;
+  encodedZuid?: string;
+  screenName?: string;
+  name?: string;
+  businessName?: string;
+  profilePhotoSrc?: string;
+  phoneNumbers?: {
+    cell?: string;
+    business?: string;
+    brokerage?: string;
+  };
+  email?: string;
+  url?: string;
+  businessAddress?: {
+    address1?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+  };
+  ratings?: {
+    count?: number;
+    average?: number;
+  };
+  agentSalesStats?: {
+    countAllTime?: number;
+    countLastYear?: number;
+    priceRangeThreeYearMin?: number;
+    priceRangeThreeYearMax?: number;
+  };
+  forSaleListings?: {
+    listing_count?: number;
+  };
+  reviewsData?: {
+    reviews?: Array<{
+      reviewComment?: string;
+      reviewRating?: number;
+      reviewee?: {
+        screenName?: string;
+      };
+    }>;
+  };
 }
 
 serve(async (req) => {
@@ -41,11 +65,17 @@ serve(async (req) => {
     }
 
     const location = `${city}, ${state}`;
-    console.log(`Starting bulk Zillow scrape for ${location}`);
+    console.log(`Starting bulk Zillow scrape for ${location} using memo23 actor`);
 
-    // Start the Apify actor run with the comprehensive scraper
+    // Get zip code for the city (we'll need to enhance this later)
+    // For now, we'll use a search URL format that works with the actor
+    const searchUrl = `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase().replace(/\s+/g, '-')}-${state.toLowerCase()}/`;
+    
+    console.log(`Search URL: ${searchUrl}`);
+
+    // Start the Apify actor run with memo23/apify-zillow-agents-cheerio
     const actorRunResponse = await fetch(
-      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
+      'https://api.apify.com/v2/acts/memo23~apify-zillow-agents-cheerio/runs',
       {
         method: 'POST',
         headers: {
@@ -53,10 +83,13 @@ serve(async (req) => {
           'Authorization': `Bearer ${APIFY_API_TOKEN}`,
         },
         body: JSON.stringify({
-          query: location,
-          maxItems: 165, // Get comprehensive results
+          startUrls: [
+            { url: searchUrl }
+          ],
+          maxConcurrency: 50,
           proxyConfiguration: {
             useApifyProxy: true,
+            apifyProxyGroups: ['RESIDENTIAL']
           },
         }),
       }
@@ -84,7 +117,7 @@ serve(async (req) => {
       attempts++;
 
       const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs/${runId}`,
+        `https://api.apify.com/v2/acts/memo23~apify-zillow-agents-cheerio/runs/${runId}`,
         {
           headers: {
             'Authorization': `Bearer ${APIFY_API_TOKEN}`,
@@ -127,32 +160,47 @@ serve(async (req) => {
 
     // Transform Apify data to our format
     const transformedAgents = agents
-      .filter(agent => agent.name && agent.phone) // Only agents with name and phone
+      .filter(agent => {
+        const name = agent.screenName || agent.name;
+        const phone = agent.phoneNumbers?.cell || agent.phoneNumbers?.business;
+        return name && phone; // Only agents with name and phone
+      })
       .slice(0, 10) // Take top 10
-      .map((agent, index) => ({
-        fullName: agent.name,
-        name: agent.name,
-        email: agent.name_for_emails ? `${agent.name_for_emails.toLowerCase().replace(/\s+/g, '')}@example.com` : null,
-        phone: agent.phone || null,
-        website: agent.site || null,
-        profilePhotoSrc: agent.logo || null,
-        profileLink: agent.site || null,
-        company: extractCompanyName(agent.subtypes || agent.category || ''),
-        rating: agent.rating || 4.5,
-        reviewCount: agent.reviews || 0,
-        numTotalReviews: agent.reviews || 0,
-        specialties: extractSpecialties(agent.subtypes || ''),
-        address: agent.full_address || '',
-        reviews: agent.reviews_data?.slice(0, 3).map(review => ({
-          text: review.review_text,
-          rating: review.review_rating,
-          author: review.author_title,
-          date: review.review_datetime_utc,
-        })) || [],
-        // Estimate stats based on review count
-        totalSales: Math.floor((agent.reviews || 0) / 8),
-        currentListings: Math.max(1, Math.floor((agent.reviews || 0) / 100)),
-      }));
+      .map((agent, index) => {
+        const fullName = agent.screenName || agent.name || "Unknown Agent";
+        const phone = agent.phoneNumbers?.cell || agent.phoneNumbers?.business || agent.phoneNumbers?.brokerage || null;
+        const address = agent.businessAddress 
+          ? `${agent.businessAddress.address1 || ''}, ${agent.businessAddress.city || ''}, ${agent.businessAddress.state || ''} ${agent.businessAddress.postalCode || ''}`.trim()
+          : '';
+        
+        return {
+          fullName,
+          name: fullName,
+          email: agent.email || null,
+          phone,
+          website: agent.url || null,
+          profilePhotoSrc: agent.profilePhotoSrc || null,
+          profileLink: agent.url || null,
+          company: agent.businessName || 'Independent Agent',
+          rating: agent.ratings?.average || 4.5,
+          reviewCount: agent.ratings?.count || 0,
+          numTotalReviews: agent.ratings?.count || 0,
+          specialties: ["Buyer's Agent", "Listing Agent"], // Default specialties
+          address,
+          reviews: agent.reviewsData?.reviews?.slice(0, 3).map(review => ({
+            text: review.reviewComment || '',
+            rating: review.reviewRating || 5,
+            author: review.reviewee?.screenName || 'Client',
+            date: new Date().toISOString(),
+          })) || [],
+          totalSales: agent.agentSalesStats?.countAllTime || 0,
+          salesLast12Mo: agent.agentSalesStats?.countLastYear || 0,
+          currentListings: agent.forSaleListings?.listing_count || 0,
+          zuid: agent.encodedZuid || null,
+          priceRangeMin: agent.agentSalesStats?.priceRangeThreeYearMin || null,
+          priceRangeMax: agent.agentSalesStats?.priceRangeThreeYearMax || null,
+        };
+      });
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
 
@@ -171,36 +219,3 @@ serve(async (req) => {
   }
 });
 
-function extractCompanyName(subtypes: string): string {
-  // Extract company name from subtypes string
-  const types = subtypes.split(',').map(s => s.trim());
-  for (const type of types) {
-    if (type.toLowerCase().includes('agency') || 
-        type.toLowerCase().includes('group') || 
-        type.toLowerCase().includes('team')) {
-      return type;
-    }
-  }
-  return types[0] || 'Independent Agent';
-}
-
-function extractSpecialties(subtypes: string): string[] {
-  const specialtyMap: { [key: string]: string } = {
-    'buyer': "Buyer's Agent",
-    'seller': "Listing Agent",
-    'consultant': 'Real Estate Consultant',
-    'relocation': 'Relocation Specialist',
-    'investment': 'Investment Properties',
-  };
-
-  const specialties: string[] = [];
-  const lowercaseSubtypes = subtypes.toLowerCase();
-
-  for (const [key, value] of Object.entries(specialtyMap)) {
-    if (lowercaseSubtypes.includes(key)) {
-      specialties.push(value);
-    }
-  }
-
-  return specialties.length > 0 ? specialties : ["Buyer's Agent", "Listing Agent"];
-}

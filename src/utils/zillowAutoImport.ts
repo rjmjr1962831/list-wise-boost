@@ -98,22 +98,24 @@ export async function autoImportZillowAgents(
         }
 
         const professionalData = {
-          name: agent.fullName || "Unknown Agent",
-          company: agent.businessName || null,
-          phone: agent.phoneNumber || null,
-          email: null,
+          name: agent.fullName || agent.name || "Unknown Agent",
+          company: agent.company || null,
+          phone: agent.phone || null,
+          email: agent.email || null,
           website: websiteUrl,
           image_url: imageUrl,
-          specialty: [],
+          specialty: agent.specialties || [],
           years_experience: null,
           license_number: null,
-          description: agent.description || agent.bio || agent.about || null,
+          description: null, // Let bio generation handle this
           city_id: cityId,
           category_id: categoryId,
-          type: i < 5 ? 'established' : 'emerging', // First 5 as established, rest as emerging
+          type: i < 5 ? 'established' : 'emerging',
           rank: i + 1,
           active: true,
           zuid: agent.zuid || null,
+          total_sales: agent.totalSales || null,
+          current_listings: agent.currentListings || null,
         };
 
         const { data: insertedData, error: insertError } = await supabase
