@@ -39,7 +39,7 @@ export function AgentApplicationsManager() {
   const { data: applications, isLoading } = useQuery({
     queryKey: ["agent-applications"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("agent_applications")
         .select("*")
         .order("created_at", { ascending: false });
@@ -51,7 +51,7 @@ export function AgentApplicationsManager() {
 
   const updateApplicationMutation = useMutation({
     mutationFn: async ({ id, status, notes }: { id: string; status: string; notes: string }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("agent_applications")
         .update({ status })
         .eq("id", id);

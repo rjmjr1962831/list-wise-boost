@@ -80,7 +80,7 @@ export default function AgentOnboarding() {
   const handleSubmit = async () => {
     try {
       // Save to database
-      const { error } = await supabase.from('agent_applications').insert({
+      const { error } = await (supabase as any).from('agent_applications').insert({
         full_name: onboardingData.fullName,
         brokerage_name: onboardingData.brokerageName,
         is_team_member: onboardingData.isTeamMember,
