@@ -30,21 +30,40 @@ export const useZillowReviews = (zuid: string | null) => {
       setError(null);
 
       try {
-        const { data, error: functionError } = await supabase.functions.invoke('fetch-zillow-reviews', {
+        // Try Apify first
+        console.log('Attempting to fetch reviews from Apify...');
+        const { data: apifyData, error: apifyError } = await supabase.functions.invoke('fetch-apify-zillow-reviews', {
+          body: { zuid }
+        });
+
+        if (!apifyError && apifyData && apifyData.reviews && apifyData.reviews.length > 0) {
+          console.log('Successfully fetched reviews from Apify');
+          setReviews({
+            reviews: apifyData.reviews || [],
+            totalReviews: apifyData.totalReviews || 0,
+            averageRating: apifyData.averageRating || 0
+          });
+          return;
+        }
+
+        // Fallback to RapidAPI
+        console.log('Apify failed, falling back to RapidAPI...');
+        const { data: rapidData, error: rapidError } = await supabase.functions.invoke('fetch-zillow-reviews', {
           body: { zuid, pageNumber: 1, pageSize: 10 }
         });
 
-        if (functionError) throw functionError;
+        if (rapidError) throw rapidError;
 
-        if (data) {
+        if (rapidData) {
+          console.log('Successfully fetched reviews from RapidAPI');
           setReviews({
-            reviews: data.reviews || [],
-            totalReviews: data.totalReviews || 0,
-            averageRating: data.averageRating || 0
+            reviews: rapidData.reviews || [],
+            totalReviews: rapidData.totalReviews || 0,
+            averageRating: rapidData.averageRating || 0
           });
         }
       } catch (err) {
-        console.error('Error fetching Zillow reviews:', err);
+        console.error('Error fetching Zillow reviews from both sources:', err);
         setError(err instanceof Error ? err.message : 'Failed to load reviews');
       } finally {
         setLoading(false);
