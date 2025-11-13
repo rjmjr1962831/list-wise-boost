@@ -27,23 +27,23 @@ export const LoadingSearch = ({ className = '' }: LoadingSearchProps) => {
     if (phase === 'searching' && sourcesShown < sources.length) {
       const timer = setTimeout(() => {
         setSourcesShown(prev => prev + 1);
-      }, 400);
+      }, 500);
       return () => clearTimeout(timer);
     }
 
-    // Move to analyzing phase
+    // Move to analyzing phase (after sources shown)
     if (phase === 'searching' && sourcesShown === sources.length) {
       const timer = setTimeout(() => {
         setPhase('analyzing');
-      }, 600);
+      }, 800);
       return () => clearTimeout(timer);
     }
 
-    // Move to building phase
+    // Move to building phase (analyzing for 3 seconds)
     if (phase === 'analyzing') {
       const timer = setTimeout(() => {
         setPhase('building');
-      }, 1500);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [phase, sourcesShown, sources.length]);
