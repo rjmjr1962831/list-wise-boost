@@ -58,7 +58,7 @@ export const LoadingSearch = ({ className = '' }: LoadingSearchProps) => {
       {phase === 'searching' && (
         <>
           <div className="text-xl font-semibold text-foreground flex items-center gap-2">
-            Searching more than 500,000 data points
+            Searching Millions of data points
             <span className="inline-flex gap-0.5">
               <span className="animate-[bounce_1s_ease-in-out_infinite]">.</span>
               <span className="animate-[bounce_1s_ease-in-out_0.2s_infinite]">.</span>
