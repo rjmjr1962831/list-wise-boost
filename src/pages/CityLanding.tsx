@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { getCityBySlug } from '@/data/cities';
-
+import { supabase } from '@/integrations/supabase/client';
+import { autoImportZillowAgents } from '@/utils/zillowAutoImport';
 import { formatCityName } from '@/utils/routeHelpers';
 import { MapPin } from 'lucide-react';
 
@@ -10,10 +11,14 @@ export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
   
   const city = getCityBySlug(citySlug || '', stateSlug);
-  
+  const navigate = useNavigate();
+  const [isEnsuring, setIsEnsuring] = useState(false);
+  const [ensureMsg, setEnsureMsg] = useState<string>('');
+  const didStart = useRef(false);
   
   useEffect(() => {
-    if (!city) return;
+    if (!city || didStart.current) return;
+    didStart.current = true;
 
     document.title = `Top Professionals in ${formatCityName(city)} | Top10Lists`;
     
@@ -32,7 +37,69 @@ export default function CityLanding() {
         page_path: window.location.pathname
       });
     }
-  }, [city]);
+
+    // Ensure agents exist then redirect to the list page
+    (async () => {
+      try {
+        setIsEnsuring(true);
+        setEnsureMsg('Checking latest agents…');
+
+        const { data: cityRow } = await supabase
+          .from('cities')
+          .select('*')
+          .eq('slug', city.slug)
+          .eq('state_slug', city.stateSlug)
+          .eq('active', true)
+          .single();
+
+        const { data: categoryRow } = await supabase
+          .from('categories')
+          .select('id')
+          .eq('slug', 'top10realestateagents')
+          .single();
+
+        if (!cityRow || !categoryRow) {
+          setIsEnsuring(false);
+          return;
+        }
+
+        const { data: pros } = await supabase
+          .from('professionals')
+          .select('id, created_at, updated_at')
+          .eq('city_id', cityRow.id)
+          .eq('category_id', categoryRow.id)
+          .eq('active', true)
+          .order('rank', { ascending: true });
+
+        const hasEnough = (pros?.length || 0) >= 10;
+        const newestTs = Math.max(
+          ...((pros || []).map(p => new Date(p.updated_at || p.created_at).getTime())),
+          0
+        );
+        const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+        const fresh = newestTs > 0 && (Date.now() - newestTs) < THIRTY_DAYS;
+
+        if (hasEnough && fresh) {
+          navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
+          return;
+        }
+
+        setEnsureMsg('Fetching latest agents…');
+        const res = await autoImportZillowAgents(cityRow.id, cityRow.name, cityRow.state);
+        if (!res.success) {
+          // Continue to list even if import partially failed; UI will handle empty state
+          console.warn('Auto import did not succeed:', res.errors);
+        }
+        navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
+      } catch (e) {
+        console.error('ensure agents error', e);
+        // Fallback: go to the list page
+        navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
+      } finally {
+        setIsEnsuring(false);
+      }
+    })();
+  }, [city, navigate]);
 
   if (!city) {
     return <Navigate to="/404" replace />;
@@ -56,11 +123,18 @@ export default function CityLanding() {
               All professionals are expert-vetted with verified reviews.
             </p>
             <div className="mt-6 flex justify-center">
-              <Button asChild size="lg">
-                <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`}>
-                  See Top Real Estate Agents in {city.name}
-                </Link>
-              </Button>
+              {isEnsuring ? (
+                <div className="flex items-center gap-3 text-muted-foreground">
+                  <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+                  <span>{ensureMsg || 'Preparing list…'}</span>
+                </div>
+              ) : (
+                <Button asChild size="lg">
+                  <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`}>
+                    See Top Real Estate Agents in {city.name}
+                  </Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>
