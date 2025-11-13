@@ -57,7 +57,12 @@ export function ZillowProfileBar({
         const url = data?.profileUrl || null;
         if (!cancelled) setProfileUrl(url);
       } catch (e) {
-        // Silent fail
+        console.error('Error fetching Zillow profile:', e);
+        // Fallback to generic Zillow search URL on error
+        if (!cancelled && !profileUrl) {
+          const searchName = agentName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          setProfileUrl(`https://www.zillow.com/professionals/real-estate-agent-reviews/${searchName}/`);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
