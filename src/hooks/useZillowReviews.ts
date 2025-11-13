@@ -80,16 +80,28 @@ export const useZillowReviews = (zuid: string | null, agentName?: string | null,
             reviews: apifyData.reviews || [],
             totalReviews: apifyData.totalReviews || 0,
             averageRating: apifyData.averageRating || 0,
-            profileUrl: apifyData.profileUrl || undefined,
+            profileUrl: apifyData.profileUrl || discoveredProfileUrl || (targetZuid ? `https://www.zillow.com/profile/${targetZuid}` : undefined),
           });
           return;
         }
 
-        // Fallback to RapidAPI only if we have a ZUID
-        if (zuid) {
-          console.log('Apify failed, falling back to RapidAPI...');
+        // If Apify returned no reviews but we discovered a profile, keep the link
+        if (!apifyError && (apifyData?.profileUrl || discoveredProfileUrl || targetZuid)) {
+          setReviews({
+            reviews: [],
+            totalReviews: apifyData?.totalReviews || 0,
+            averageRating: apifyData?.averageRating || 0,
+            profileUrl: apifyData?.profileUrl || discoveredProfileUrl || (targetZuid ? `https://www.zillow.com/profile/${targetZuid}` : undefined),
+          });
+          // Do not return yet; still try Rapid below with ZUID if available
+        }
+
+        // Fallback to RapidAPI only if we have an effective ZUID
+        const effectiveZuid = targetZuid || zuid;
+        if (effectiveZuid) {
+          console.log('Apify failed, falling back to RapidAPI with effective ZUID...');
           const { data: rapidData, error: rapidError } = await supabase.functions.invoke('fetch-zillow-reviews', {
-            body: { zuid, pageNumber: 1, pageSize: 10 }
+            body: { zuid: effectiveZuid, pageNumber: 1, pageSize: 10 }
           });
 
           if (rapidError) throw rapidError;
@@ -99,9 +111,21 @@ export const useZillowReviews = (zuid: string | null, agentName?: string | null,
             setReviews({
               reviews: rapidData.reviews || [],
               totalReviews: rapidData.totalReviews || 0,
-              averageRating: rapidData.averageRating || 0
+              averageRating: rapidData.averageRating || 0,
+              profileUrl: discoveredProfileUrl || (effectiveZuid ? `https://www.zillow.com/profile/${effectiveZuid}` : undefined),
             });
+            return;
           }
+        }
+
+        // If nothing returned but we discovered a profile, at least expose the link
+        if (discoveredProfileUrl || effectiveZuid) {
+          setReviews({
+            reviews: [],
+            totalReviews: 0,
+            averageRating: 0,
+            profileUrl: discoveredProfileUrl || (effectiveZuid ? `https://www.zillow.com/profile/${effectiveZuid}` : undefined),
+          });
         }
       } catch (err) {
         console.error('Error fetching Zillow reviews from both sources:', err);

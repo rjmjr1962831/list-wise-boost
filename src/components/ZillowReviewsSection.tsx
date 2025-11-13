@@ -37,17 +37,15 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
   }
 
   if (error || !reviews || reviews.reviews.length === 0) {
-    const zillowProfileUrl = zuid ? `https://www.zillow.com/profile/${zuid}` : undefined;
-    
-    // If no zuid and no profile URL, don't show the section
-    if (!zillowProfileUrl) return null;
+    const link = reviews?.profileUrl || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined);
+    if (!link) return null;
 
     return (
       <div className="mt-4 pt-4 border-t">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-lg font-semibold">Zillow Reviews</h4>
           <a
-            href={zillowProfileUrl}
+            href={link}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handleZillowLinkClick}
@@ -59,7 +57,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
         </div>
         <Button variant="outline" size="sm" asChild className="w-full">
           <a
-            href={zillowProfileUrl}
+            href={link}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-2"
