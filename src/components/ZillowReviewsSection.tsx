@@ -14,6 +14,7 @@ interface ZillowReviewsSectionProps {
 export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsSectionProps) => {
   const { reviews, loading, error } = useZillowReviews(zuid ?? null, agentName ?? null, market ?? null);
   const { trackEvent } = useGA4Tracking();
+  const [expanded, setExpanded] = useState(false);
 
   const handleZillowLinkClick = () => {
     trackEvent('press_mention_click', {
@@ -39,7 +40,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
     return null;
   }
 
-  const [expanded, setExpanded] = useState(false);
+  
   const initialCount = Math.min(2, reviews.reviews.length);
   const expandedCount = reviews.reviews.length;
   const displayedReviews = expanded ? reviews.reviews : reviews.reviews.slice(0, initialCount);
