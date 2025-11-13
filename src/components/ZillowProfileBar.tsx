@@ -54,8 +54,14 @@ export function ZillowProfileBar({
         const { data } = await supabase.functions.invoke('fetch-apify-zillow-reviews', {
           body: { agentName, location: market },
         });
-        const url = data?.profileUrl || null;
-        if (!cancelled) setProfileUrl(url);
+        let url: string | null = data?.profileUrl || null;
+        if (!cancelled) {
+          if (!url) {
+            const searchName = agentName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            url = `https://www.zillow.com/professionals/real-estate-agent-reviews/${searchName}/`;
+          }
+          setProfileUrl(url);
+        }
       } catch (e) {
         console.error('Error fetching Zillow profile:', e);
         // Fallback to generic Zillow search URL on error
