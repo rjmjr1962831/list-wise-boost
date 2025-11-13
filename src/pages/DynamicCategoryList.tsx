@@ -130,6 +130,7 @@ export default function DynamicCategoryList() {
   }>();
   
   const [loading, setLoading] = useState(true);
+  const [minLoadingComplete, setMinLoadingComplete] = useState(false);
   const [city, setCity] = useState<City | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [allProfessionals, setAllProfessionals] = useState<Professional[]>([]);
@@ -138,6 +139,15 @@ export default function DynamicCategoryList() {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
+
+  // Ensure minimum loading time to show the search animation (4 seconds total for all phases)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setMinLoadingComplete(true);
+    }, 4000);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fetch city and category data
   useEffect(() => {
@@ -414,7 +424,7 @@ export default function DynamicCategoryList() {
     }
   }, [city, category]);
 
-  if (loading) {
+  if (loading || !minLoadingComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <LoadingSearch />
