@@ -249,11 +249,50 @@ export default function DynamicCategoryList() {
             setAllProfessionals(converted);
             setFilteredProfessionals(converted);
             
-            // Prefetch reviews for top professionals to ensure text is available before render
+            // Prefetch reviews with timeout to ensure page renders
+            const reviewPrefetchPromise = (async () => {
+              try {
+                const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
+                let hasReviews = false;
+                for (const p of newProfsData.slice(0, 5)) {
+                  const [extRes, apifyRes] = await Promise.allSettled([
+                    supabase.functions.invoke('fetch-external-reviews', {
+                      body: { agentName: p.name, company: p.company ?? undefined, location: market },
+                    }),
+                    supabase.functions.invoke('fetch-apify-zillow-reviews', {
+                      body: { zuid: p.zuid, agentName: p.name, location: market },
+                    }),
+                  ]);
+                  const extOk = extRes.status === 'fulfilled' && !!extRes.value?.data && Array.isArray(extRes.value.data.reviews) && extRes.value.data.reviews.some((r: any) => (r?.reviewText || '').trim().length > 0);
+                  const apifyOk = apifyRes.status === 'fulfilled' && !!apifyRes.value?.data && Array.isArray(apifyRes.value.data.reviews) && apifyRes.value.data.reviews.length > 0;
+                  if (extOk || apifyOk) { hasReviews = true; break; }
+                }
+              } catch (e) {
+                console.warn('Review prefetch failed:', e);
+              }
+            })();
+            
+            // Set timeout to ensure page renders within 8 seconds max
+            const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 8000));
+            
+            // Wait for either prefetch completion or timeout
+            await Promise.race([reviewPrefetchPromise, timeoutPromise]);
+            setReviewsReady(true);
+          } else {
+            // No data after retries
+            setReviewsReady(true);
+          }
+        } else {
+          const converted = professionalsData.map(convertToProfessional);
+          setAllProfessionals(converted);
+          setFilteredProfessionals(converted);
+          
+          // Prefetch reviews with timeout to ensure page renders
+          const reviewPrefetchPromise = (async () => {
             try {
               const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
               let hasReviews = false;
-              for (const p of newProfsData.slice(0, 5)) {
+              for (const p of professionalsData.slice(0, 5)) {
                 const [extRes, apifyRes] = await Promise.allSettled([
                   supabase.functions.invoke('fetch-external-reviews', {
                     body: { agentName: p.name, company: p.company ?? undefined, location: market },
@@ -266,42 +305,17 @@ export default function DynamicCategoryList() {
                 const apifyOk = apifyRes.status === 'fulfilled' && !!apifyRes.value?.data && Array.isArray(apifyRes.value.data.reviews) && apifyRes.value.data.reviews.length > 0;
                 if (extOk || apifyOk) { hasReviews = true; break; }
               }
-              setReviewsReady(true);
             } catch (e) {
-              console.warn('Review prefetch failed, proceeding to render:', e);
-              setReviewsReady(true);
+              console.warn('Review prefetch failed:', e);
             }
-          } else {
-            // No data after retries
-            setReviewsReady(true);
-          }
-        } else {
-          const converted = professionalsData.map(convertToProfessional);
-          setAllProfessionals(converted);
-          setFilteredProfessionals(converted);
+          })();
           
-          // Prefetch reviews for top professionals to ensure text is available before render
-          try {
-            const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
-            let hasReviews = false;
-            for (const p of professionalsData.slice(0, 5)) {
-              const [extRes, apifyRes] = await Promise.allSettled([
-                supabase.functions.invoke('fetch-external-reviews', {
-                  body: { agentName: p.name, company: p.company ?? undefined, location: market },
-                }),
-                supabase.functions.invoke('fetch-apify-zillow-reviews', {
-                  body: { zuid: p.zuid, agentName: p.name, location: market },
-                }),
-              ]);
-              const extOk = extRes.status === 'fulfilled' && !!extRes.value?.data && Array.isArray(extRes.value.data.reviews) && extRes.value.data.reviews.some((r: any) => (r?.reviewText || '').trim().length > 0);
-              const apifyOk = apifyRes.status === 'fulfilled' && !!apifyRes.value?.data && Array.isArray(apifyRes.value.data.reviews) && apifyRes.value.data.reviews.length > 0;
-              if (extOk || apifyOk) { hasReviews = true; break; }
-            }
-            setReviewsReady(true);
-          } catch (e) {
-            console.warn('Review prefetch failed, proceeding to render:', e);
-            setReviewsReady(true);
-          }
+          // Set timeout to ensure page renders within 8 seconds max
+          const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 8000));
+          
+          // Wait for either prefetch completion or timeout
+          await Promise.race([reviewPrefetchPromise, timeoutPromise]);
+          setReviewsReady(true);
           
           // Auto-import Zillow stats if missing
           const needsZillowData = professionalsData.some(p => 
