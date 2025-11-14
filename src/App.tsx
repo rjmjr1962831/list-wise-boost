@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -47,8 +47,9 @@ const App = () => (
                 </div>
               }>
                 <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/main" element={<MainSite />} />
+                  <Route path="/" element={<MainSite />} />
+                  <Route path="/main" element={<Navigate to="/" replace />} />
+                  <Route path="/old-home" element={<Index />} />
                   {/* Dynamic city and category routes */}
                   <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                   <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
