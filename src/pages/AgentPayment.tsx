@@ -53,6 +53,7 @@ export default function AgentPayment() {
       // Calculate pricing for selected zip codes
       const items: ZipCodeItem[] = [];
       let total = 0;
+      let isFirstZip = true;
 
       // Process each city's zip codes
       const zipCodesData = data.zip_codes as any;
@@ -62,7 +63,11 @@ export default function AgentPayment() {
           // Find the zip code in our data
           const zipData = zipCodeData.find((z: any) => z.zipCode === zipCode);
           if (zipData) {
-            const price = getPriceFromTier(zipData.agentValue);
+            const tierPrice = getPriceFromTier(zipData.agentValue);
+            // First zip is free, subsequent zips are priced by tier
+            const price = isFirstZip ? 0 : tierPrice;
+            if (isFirstZip) isFirstZip = false;
+            
             items.push({
               zipCode,
               city: zipData.city,
@@ -87,11 +92,13 @@ export default function AgentPayment() {
   // Convert tier to price
   const getPriceFromTier = (tier: number): number => {
     const tierPrices: Record<number, number> = {
-      1: 300,  // Tier 1 = $300/mo
-      2: 200,  // Tier 2 = $200/mo
-      3: 100,  // Tier 3 = $100/mo
+      1: 15,   // Tier 1 = $15/mo
+      2: 30,   // Tier 2 = $30/mo
+      3: 40,   // Tier 3 = $40/mo
+      4: 75,   // Tier 4 = $75/mo
+      5: 100,  // Tier 5 = $100/mo
     };
-    return tierPrices[tier] || 100;
+    return tierPrices[tier] || 15;
   };
 
   const handleCheckout = async () => {
