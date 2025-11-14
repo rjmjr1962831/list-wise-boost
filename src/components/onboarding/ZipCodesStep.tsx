@@ -24,11 +24,11 @@ interface CityWithZips {
 }
 
 const ZIP_PRICING: Record<number, number> = {
-  1: 10,
-  2: 20,
-  3: 30,
-  4: 50,
-  5: 75,
+  1: 15,
+  2: 30,
+  3: 40,
+  4: 75,
+  5: 100,
 };
 
 export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepProps) {
@@ -80,13 +80,20 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
 
   const calculateEstimatedCost = () => {
     let total = 0;
+    let isFirstZip = true;
+    
     Object.entries(data.zipCodes || {}).forEach(([cityId, zips]) => {
       const city = citiesWithZips.find((c) => c.id === cityId);
       if (city) {
         zips.forEach((zipCode) => {
           const zipInfo = city.zipCodes.find((z) => z.code === zipCode);
           if (zipInfo) {
-            total += ZIP_PRICING[zipInfo.tier] || 10;
+            // First zip is free, subsequent zips are priced by tier
+            if (isFirstZip) {
+              isFirstZip = false;
+            } else {
+              total += ZIP_PRICING[zipInfo.tier] || 15;
+            }
           }
         });
       }
