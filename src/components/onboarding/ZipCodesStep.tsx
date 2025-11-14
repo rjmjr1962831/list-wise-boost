@@ -54,21 +54,17 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
       if (error) throw error;
 
       const citiesWithZipsData: CityWithZips[] = (citiesData || []).map((city) => {
-        const citySlug = city.slug as keyof typeof zipCodeData;
-        const zipData = zipCodeData[citySlug];
-        
-        // Handle different possible data structures
-        let zipInfo: Array<{ zipCode: string; tier?: number }> = [];
-        if (Array.isArray(zipData)) {
-          zipInfo = zipData as Array<{ zipCode: string; tier?: number }>;
-        }
+        // Filter the zip code array by matching city name
+        const cityZips = (zipCodeData as any[]).filter(
+          (zipEntry: any) => zipEntry.city.toLowerCase() === city.name.toLowerCase()
+        );
         
         return {
           id: city.id,
           name: city.name,
-          zipCodes: zipInfo.map((zip) => ({
+          zipCodes: cityZips.map((zip: any) => ({
             code: zip.zipCode,
-            tier: zip.tier || 1,
+            tier: zip.agentValue || 1, // Map agentValue (1-5) to tier
           })),
         };
       });
