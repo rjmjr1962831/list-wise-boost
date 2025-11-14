@@ -536,17 +536,63 @@ export default function DynamicCategoryList() {
 
   if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
     return (
-      <div className="min-h-[40vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-center max-w-md">
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <span className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
-            <span className="text-lg font-medium">
-              {isGeneratingData ? 'Analyzing agents…' : 'Loading agents…'}
-            </span>
-          </div>
-          {isGeneratingData && (
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>Checking more than 2,000,000 data points to find the best agents in {city?.name}</p>
+      <div className="min-h-[70vh] flex items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
+        <div className="flex flex-col items-center gap-8 text-center max-w-2xl">
+          {isGeneratingData ? (
+            <>
+              {/* Prominent Header */}
+              <div className="space-y-4">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 animate-pulse">
+                  <span className="h-12 w-12 rounded-full border-4 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                  Analyzing Agent Data
+                </h2>
+              </div>
+
+              {/* Data Points Counter - Prominent */}
+              <div className="bg-card border-2 border-primary/20 rounded-2xl p-8 shadow-xl animate-scale-in">
+                <div className="space-y-2">
+                  <p className="text-sm uppercase tracking-wide text-muted-foreground font-semibold">
+                    Processing
+                  </p>
+                  <p className="text-5xl md:text-6xl font-bold text-primary animate-pulse">
+                    2,000,000+
+                  </p>
+                  <p className="text-lg text-muted-foreground">
+                    data points across multiple sources
+                  </p>
+                </div>
+              </div>
+
+              {/* What We're Checking */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                <div className="bg-card/50 border border-border rounded-lg p-4 animate-fade-in">
+                  <div className="text-2xl mb-2">📊</div>
+                  <p className="text-sm font-medium text-foreground">Sales History</p>
+                  <p className="text-xs text-muted-foreground">Transaction records</p>
+                </div>
+                <div className="bg-card/50 border border-border rounded-lg p-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+                  <div className="text-2xl mb-2">⭐</div>
+                  <p className="text-sm font-medium text-foreground">Reviews & Ratings</p>
+                  <p className="text-xs text-muted-foreground">Client feedback</p>
+                </div>
+                <div className="bg-card/50 border border-border rounded-lg p-4 animate-fade-in" style={{ animationDelay: '0.2s' }}>
+                  <div className="text-2xl mb-2">🏆</div>
+                  <p className="text-sm font-medium text-foreground">Market Performance</p>
+                  <p className="text-xs text-muted-foreground">Recent activity</p>
+                </div>
+              </div>
+
+              {/* City Context */}
+              <p className="text-lg text-muted-foreground max-w-xl">
+                Finding the top real estate agents in <span className="font-semibold text-foreground">{city?.name}</span> based on comprehensive market data
+              </p>
+            </>
+          ) : (
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <span className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+              <span className="text-lg font-medium">Loading agents…</span>
             </div>
           )}
         </div>
