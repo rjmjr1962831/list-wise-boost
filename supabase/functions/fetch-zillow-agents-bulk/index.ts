@@ -51,7 +51,7 @@ serve(async (req) => {
     const query = `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'scraped~zillow-agent-scraper';
     const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
     const location = `${city}, ${state}`;
     console.log(`Fetching agents from Apify for: ${location} (actor: ${actorId})`);
@@ -123,14 +123,14 @@ serve(async (req) => {
         console.log('First agent sample:', JSON.stringify(agent).substring(0, 500));
       }
       
-      // Handle multiple possible field names from different Apify actors
-      const name = agent.name || agent.agentName || agent['Business Name'] || agent.title || agent.fullName || '';
-      const phone = agent.phone || agent.phoneNumber || agent['Phone Number'] || agent.call_number || null;
-      const website = agent.url || agent.profileUrl || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || null;
-      const thumbnail = agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || null;
-      const address = agent.address || agent.location || agent['Address'] || agent.full_address || agent.city || '';
-      const rating = agent.rating || agent['Rating'] || agent.stars || agent.score || 4.5;
-      const reviews = agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.reviewCount || 0;
+      // Handle multiple possible field names from different Apify actors (scraped/zillow-agent-scraper format)
+      const name = agent.name || agent.agentName || agent['Business Name'] || agent.title || agent.fullName || agent.agent_name || '';
+      const phone = agent.phone || agent.phoneNumber || agent['Phone Number'] || agent.call_number || agent.contact_phone || null;
+      const website = agent.url || agent.profileUrl || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || agent.profile_url || null;
+      const thumbnail = agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || agent.photo_url || agent.image_url || null;
+      const address = agent.address || agent.location || agent['Address'] || agent.full_address || agent.city || agent.office_address || '';
+      const rating = agent.rating || agent['Rating'] || agent.stars || agent.score || agent.review_rating || 4.5;
+      const reviews = agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.reviewCount || agent.total_reviews || 0;
       
       let categories: string[] = [];
       if (Array.isArray(agent.categories)) {

@@ -37,7 +37,7 @@ serve(async (req) => {
     console.log(`Fetching detailed stats from Apify for: ${profileUrl}`);
 
     // Call Apify actor - configurable via secret
-    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'scraped~zillow-agent-scraper';
     const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
     
     // Start the actor run with correct input format

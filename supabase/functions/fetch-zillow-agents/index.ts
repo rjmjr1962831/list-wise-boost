@@ -50,9 +50,9 @@ serve(async (req) => {
     const location = `${city}, ${state}`;
     console.log(`Fetching agents for ${location} using Apify`);
 
-    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'scraped~zillow-agent-scraper';
     
-    // Normalize actor ID to support both "jupri/zillow-agents" and "jupri~zillow-agents"
+    // Normalize actor ID to support both "/" and "~" formats
     const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
     
     // jupri/zillow-agents expects different input format

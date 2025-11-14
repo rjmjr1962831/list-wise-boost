@@ -34,7 +34,7 @@ serve(async (req) => {
     }
 
     // Configurable actor via secret
-    const ACTOR_SLUG = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const ACTOR_SLUG = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'scraped~zillow-agent-scraper';
 
     // Resolve profileUrl from inputs or discover by name+location
     let profileUrl: string | undefined = inputProfileUrl || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined);
