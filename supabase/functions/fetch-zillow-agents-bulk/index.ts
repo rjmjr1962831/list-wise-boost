@@ -48,20 +48,45 @@ serve(async (req) => {
       throw new Error(error);
     }
 
-    const query = `real estate agent in ${city}, ${state}`;
+    // Load zip code data and find one for this city
+    let zipCode: string | null = null;
+    try {
+      const zipDataResp = await fetch('https://raw.githubusercontent.com/lovable-dev/lovable-agent-importer/main/src/data/zipCodeData.json');
+      if (zipDataResp.ok) {
+        const zipData = await zipDataResp.json();
+        const cityZips = zipData.filter((z: any) => 
+          z.city.toLowerCase() === city.toLowerCase() && 
+          (z.state.toLowerCase() === state.toLowerCase() || z.stateAbbreviation.toLowerCase() === state.toLowerCase())
+        );
+        if (cityZips.length > 0) {
+          // Pick the zip with highest agent value
+          const bestZip = cityZips.sort((a: any, b: any) => b.agentValue - a.agentValue)[0];
+          zipCode = bestZip.zipCode;
+          console.log(`Found zip code ${zipCode} for ${city}, ${state}`);
+        }
+      }
+    } catch (e) {
+      console.warn('Could not load zip code data, using city/state format:', e);
+    }
+
+    const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
     const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'scraped~zillow-agent-scraper';
     const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
-    const location = `${city}, ${state}`;
-    console.log(`Fetching agents from Apify for: ${location} (actor: ${actorId})`);
+    console.log(`Fetching agents from Apify (actor: ${actorId})`);
 
-    // jupri/zillow-agents expects different input format
-    const apifyInput = {
-      query: [],
-      limit: 15,
-      filters: { location }
-    };
+    // scraped/zillow-agent-scraper expects zip code
+    const apifyInput = zipCode 
+      ? {
+          zipCode: zipCode,
+          maxItems: 15
+        }
+      : {
+          query: [],
+          limit: 15,
+          filters: { location: `${city}, ${state}` }
+        };
 
     const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${apiToken}`, {
       method: 'POST',
