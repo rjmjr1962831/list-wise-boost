@@ -25,13 +25,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
   const [bioSource, setBioSource] = useState<'zillow' | 'redfin' | 'new'>('new');
   const [isFetchingBio, setIsFetchingBio] = useState(false);
 
-  const validateWebsite = (url: string): string => {
-    if (!url) return url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      return 'https://' + url;
-    }
-    return url;
-  };
+  // validateWebsite function removed - users can input URLs with or without protocol
 
   const validatePhone = (phone: string): boolean => {
     const phoneRegex = /^\+?1?\s*\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})$/;
@@ -150,7 +144,6 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
 
   const handleNext = () => {
     if (validate()) {
-      updateData({ website: validateWebsite(data.website) });
       onNext();
     } else {
       const errorFields = Object.keys(errors).join(', ');
@@ -266,10 +259,9 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
               id="website"
               value={data.website}
               onChange={(e) => updateData({ website: e.target.value })}
-              placeholder="yourwebsite.com"
+              placeholder="https://yourwebsite.com"
               className={errors.website ? 'border-destructive' : ''}
             />
-            <p className="text-xs text-muted-foreground">https:// will be added automatically</p>
             {errors.website && (
               <p className="text-sm text-destructive">{errors.website}</p>
             )}
