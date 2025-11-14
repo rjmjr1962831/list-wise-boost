@@ -50,7 +50,7 @@ serve(async (req) => {
     const location = `${city}, ${state}`;
     console.log(`Fetching agents for ${location} using Apify`);
 
-    const actorId = 'jupri~zillow-agents';
+    const actorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
     
     // jupri/zillow-agents expects different input format
     const apifyInput = {

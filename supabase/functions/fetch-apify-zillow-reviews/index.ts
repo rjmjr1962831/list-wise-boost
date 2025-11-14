@@ -33,20 +33,15 @@ serve(async (req) => {
       throw new Error('Apify API token not configured');
     }
 
+    // Configurable actor via secret
+    const ACTOR_SLUG = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+
     // Resolve profileUrl from inputs or discover by name+location
     let profileUrl: string | undefined = inputProfileUrl || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined);
 
     // If we don't have a direct profile URL, try to discover it via search actors
     if (!profileUrl && agentName) {
-      // COMMENTED OUT: Using jupri/zillow-agents instead
-      /*
-      const DISCOVERY_ACTORS = [
-        'getdataforme~zillow-agent-scraper',
-      ];
-      */
-      const DISCOVERY_ACTORS = [
-        'jupri~zillow-agents',
-      ];
+      const DISCOVERY_ACTORS = [ACTOR_SLUG];
 
       async function discoverProfileUrl(actorSlug: string): Promise<string | undefined> {
         console.log(`Discovering profile with ${actorSlug} for`, { agentName, location });
