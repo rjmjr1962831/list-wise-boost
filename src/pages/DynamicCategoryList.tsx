@@ -141,19 +141,10 @@ export default function DynamicCategoryList() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
 
-  // Ensure minimum loading time to show the search animation ONLY when generating data
+  // Immediately mark loading as complete - no artificial delay
   useEffect(() => {
-    if (!isGeneratingData) {
-      setMinLoadingComplete(true);
-      return;
-    }
-    
-    const timer = setTimeout(() => {
-      setMinLoadingComplete(true);
-    }, 6500);
-    
-    return () => clearTimeout(timer);
-  }, [isGeneratingData]);
+    setMinLoadingComplete(true);
+  }, []);
 
   // Fetch city and category data
   useEffect(() => {
@@ -271,11 +262,7 @@ export default function DynamicCategoryList() {
               }
             })();
             
-            // Set timeout to ensure page renders within 8 seconds max
-            const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 8000));
-            
-            // Wait for either prefetch completion or timeout
-            await Promise.race([reviewPrefetchPromise, timeoutPromise]);
+            // Don't wait for reviews - render immediately
             setReviewsReady(true);
           } else {
             // No data after retries
@@ -309,11 +296,7 @@ export default function DynamicCategoryList() {
             }
           })();
           
-          // Set timeout to ensure page renders within 8 seconds max
-          const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 8000));
-          
-          // Wait for either prefetch completion or timeout
-          await Promise.race([reviewPrefetchPromise, timeoutPromise]);
+          // Don't wait for reviews - render immediately
           setReviewsReady(true);
           
           // Auto-import Zillow stats if missing
