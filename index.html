@@ -11,11 +11,17 @@
     
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Cache Control: Force fresh loads, prevent stale content -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-    <title>Top10Lists.us - Be the Answer, Not a Link</title>
-    <meta name="description" content="Top10Lists.us helps professionals become the answer—not just a link. Powered by AI-native visibility and structured authority. Cited by ChatGPT, Perplexity, and Gemini." />
+    <title>Top10Lists.us - Find Top Local Service Providers by City</title>
+    <meta name="description" content="Search and find top-rated local service providers by city. Curated lists of the best professionals verified and trusted by AI search engines like ChatGPT and Google AI." />
     <meta name="author" content="Top10Lists.us" />
     <meta name="keywords" content="AI search optimization, LLM citations, business authority, structured data, ChatGPT visibility, AI-native listings" />
 
@@ -45,6 +51,10 @@
     <!-- End Google Tag Manager (noscript) -->
     
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="/src/main.tsx?v=20251114-01"></script>
+    <script>
+      // Cache-busting: Log app version for debugging
+      console.info('[Top10Lists] App version: 20251114-01 | Index with Top10SearchForm');
+    </script>
   </body>
 </html>
