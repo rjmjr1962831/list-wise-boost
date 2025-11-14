@@ -24,6 +24,7 @@ export interface OnboardingData {
   email: string;
   publishEmail: boolean;
   phone: string;
+  smsConsent: boolean;
   hasZillowHomeLinks: boolean;
   zillowUrl?: string;
   redfinUrl?: string;
@@ -52,6 +53,7 @@ export default function AgentOnboarding() {
     email: '',
     publishEmail: false,
     phone: '',
+    smsConsent: false,
     hasZillowHomeLinks: false,
     specialties: [],
     state: '',
