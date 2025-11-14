@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { toast } from 'sonner';
-import { MapPin, DollarSign } from 'lucide-react';
+import { MapPin, DollarSign, Info } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { OnboardingData } from '@/pages/AgentOnboarding';
 import { supabase } from '@/integrations/supabase/client';
 import zipCodeData from '@/data/zipCodeData.json';
@@ -168,6 +169,43 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Pricing Information */}
+          <Alert className="bg-primary/5 border-primary/20">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertTitle className="text-primary font-semibold">Pricing Structure</AlertTitle>
+            <AlertDescription className="space-y-2 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-green-100 text-green-700 border-green-200">FREE</Badge>
+                  <span>First zip code</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Tier 1</Badge>
+                  <span>$15/month per zip</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Tier 2</Badge>
+                  <span>$30/month per zip</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Tier 3</Badge>
+                  <span>$40/month per zip</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Tier 4</Badge>
+                  <span>$75/month per zip</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">Tier 5</Badge>
+                  <span>$100/month per zip</span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-3 pt-3 border-t">
+                Higher tiers represent zip codes with greater market value and agent competition.
+              </p>
+            </AlertDescription>
+          </Alert>
+
           {/* Cities with Zip Codes */}
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -211,7 +249,7 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {city.zipCodes.map((zip) => {
                             const isSelected = data.zipCodes?.[city.id]?.includes(zip.code);
-                            const price = ZIP_PRICING[zip.tier] || 10;
+                            const price = ZIP_PRICING[zip.tier] || 15;
                             return (
                               <div
                                 key={zip.code}
@@ -225,13 +263,19 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
                                   }
                                 `}
                               >
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-1">
                                   <Checkbox
                                     checked={isSelected}
                                     onCheckedChange={() => toggleZipCode(city.id, zip.code)}
                                     className="pointer-events-none"
                                   />
                                   <span className="font-mono text-sm">{zip.code}</span>
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs"
+                                  >
+                                    Tier {zip.tier}
+                                  </Badge>
                                 </div>
                                 <span className="text-sm font-semibold text-primary">
                                   ${price}/mo
