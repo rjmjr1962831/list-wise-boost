@@ -12,13 +12,6 @@ const Index = () => {
     const item = content?.find(c => c.section === section && c.key === key);
     return item?.value || fallback;
   };
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
