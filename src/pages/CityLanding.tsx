@@ -146,20 +146,32 @@ export default function CityLanding() {
                   <span>{ensureMsg || 'Preparing list…'}</span>
                 </div>
               ) : (
-              <Button asChild size="lg">
-                <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`} target="_blank" rel="noopener noreferrer">
-                  See Top Real Estate Agents in {city.name}
-                </Link>
-              </Button>
-...
+                <Button asChild size="lg">
+                  <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`}>
+                    See Top Real Estate Agents in {city.name}
+                  </Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <footer className="py-12 bg-muted/50">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold mb-4">Ready to Get Listed?</h2>
+          <p className="text-muted-foreground mb-6">
+            Join hundreds of top professionals already featured on Top10Lists.us
+          </p>
           <Button asChild size="lg">
-            <Link to="/agent-onboarding" target="_blank" rel="noopener noreferrer">Apply Now</Link>
+            <Link to="/agent-onboarding">Apply Now</Link>
           </Button>
-...
+          
           <div className="mt-4 flex justify-center gap-6">
-            <Link to="/privacy" className="hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Terms of Service</Link>
-            <Link to="/" className="hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Home</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+            <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
           </div>
         </div>
       </footer>
