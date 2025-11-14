@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.prerender-proxy]
+verify_jwt = false
+
 [functions.send-api-failure-alert]
 verify_jwt = false
 
