@@ -9,7 +9,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { LoadingSearch } from '@/components/LoadingSearch';
 import { findCityByZip } from '@/data/zipCodeLookup';
 
 interface Category {

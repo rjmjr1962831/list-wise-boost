@@ -9,7 +9,6 @@ import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal'
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
 import { generateProfessionals } from '@/utils/professionalGenerator';
 import { toast } from 'sonner';
-import { LoadingSearch } from '@/components/LoadingSearch';
 
 interface City {
   id: string;
