@@ -32,11 +32,11 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <RateLimitGuard>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+    <RateLimitGuard>
+      <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1">
@@ -77,9 +77,9 @@ const App = () => (
             </main>
             <Footer />
           </div>
-        </BrowserRouter>
-      </RateLimitGuard>
-    </TooltipProvider>
+        </TooltipProvider>
+      </BrowserRouter>
+    </RateLimitGuard>
   </QueryClientProvider>
 );
 
