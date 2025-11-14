@@ -375,11 +375,19 @@ export default function DynamicCategoryList() {
           // Data will be fetched by the retry logic instead of reloading
         } else {
           toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
+          // Clear loading state on failure
+          setIsGeneratingData(false);
+          setLoading(false);
+          setReviewsReady(true);
         }
         return;
       } catch (error: any) {
         console.error('Error importing agents:', error);
         toast.error(`Import failed: ${error.message}`);
+        // Clear loading state on error
+        setIsGeneratingData(false);
+        setLoading(false);
+        setReviewsReady(true);
         return;
       }
     }
@@ -529,9 +537,20 @@ export default function DynamicCategoryList() {
   if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
     return (
       <div className="min-h-[40vh] flex items-center justify-center">
-        <div className="flex items-center gap-3 text-muted-foreground">
-          <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
-          <span>Loading agents…</span>
+        <div className="flex flex-col items-center gap-4 text-center max-w-md">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <span className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+            <span className="text-lg font-medium">
+              {isGeneratingData ? 'Checking latest agents…' : 'Loading agents…'}
+            </span>
+          </div>
+          {isGeneratingData && (
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>🔍 Searching Zillow for agents in {city?.name}</p>
+              <p>📊 Verifying licenses and credentials</p>
+              <p>✨ Building your personalized list</p>
+            </div>
+          )}
         </div>
       </div>
     );
