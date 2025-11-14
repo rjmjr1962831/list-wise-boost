@@ -47,9 +47,9 @@ const App = () => (
                 </div>
               }>
                 <Routes>
-                  <Route path="/" element={<MainSite />} />
-                  <Route path="/main" element={<Navigate to="/" replace />} />
-                  <Route path="/old-home" element={<Index />} />
+                  <Route path="/" element={<Index />} />
+                  <Route path="/about" element={<MainSite />} />
+                  <Route path="/main" element={<Navigate to="/about" replace />} />
                   {/* Dynamic city and category routes */}
                   <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                   <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
