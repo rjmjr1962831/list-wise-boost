@@ -50,7 +50,7 @@ serve(async (req) => {
     const location = `${city}, ${state}`;
     console.log(`Fetching agents for ${location} using Apify`);
 
-    const actorId = 'getdataforme~zillow-real-state-agents-scraper';
+    const actorId = 'jupri/zillow-agents';
     const apifyInput = {
       zipcode: "", // Leave empty to search by location
       location: location,
