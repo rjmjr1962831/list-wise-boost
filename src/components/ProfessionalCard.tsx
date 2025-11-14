@@ -464,6 +464,14 @@ export const ProfessionalCard = ({
                 zillowProfileUrl={professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null}
               />
 
+              {/* Zillow Reviews Section */}
+              <ZillowReviewsSection 
+                zuid={(professional as any).zuid || undefined}
+                agentName={professional.name}
+                market={market}
+                lazyLoad={true}
+              />
+
               {/* Zillow profile CTA */}
               <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} professionalId={professional.id} />
             </div>

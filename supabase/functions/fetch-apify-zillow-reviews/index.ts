@@ -67,8 +67,8 @@ serve(async (req) => {
 
         let attempts = 0;
         let runStatus = 'RUNNING';
-        while (runStatus === 'RUNNING' && attempts < 45) {
-          await new Promise((r) => setTimeout(r, 1500));
+        while (runStatus === 'RUNNING' && attempts < 12) {
+          await new Promise((r) => setTimeout(r, 1000));
           attempts++;
           const statusRes = await fetch(
             `https://api.apify.com/v2/acts/${actorSlug}/runs/${runId}?token=${APIFY_API_TOKEN}`
@@ -168,11 +168,11 @@ serve(async (req) => {
       const runId = startData.data.id as string;
       console.log(`Apify run started (${actorSlug}): ${runId}`);
 
-      // Poll for completion
+      // Poll for completion (max ~15s)
       let attempts = 0;
       let runStatus = 'RUNNING';
-      while (runStatus === 'RUNNING' && attempts < 60) {
-        await new Promise((r) => setTimeout(r, 2000));
+      while (runStatus === 'RUNNING' && attempts < 15) {
+        await new Promise((r) => setTimeout(r, 1000));
         attempts++;
         const statusRes = await fetch(
           `https://api.apify.com/v2/acts/${actorSlug}/runs/${runId}?token=${APIFY_API_TOKEN}`
@@ -180,7 +180,7 @@ serve(async (req) => {
         if (statusRes.ok) {
           const status = await statusRes.json();
           runStatus = status.data.status;
-          console.log(`Status (${actorSlug}): ${runStatus} (attempt ${attempts}/60)`);
+          console.log(`Status (${actorSlug}): ${runStatus} (attempt ${attempts}/15)`);
         }
       }
 
