@@ -51,15 +51,15 @@ serve(async (req) => {
     const query = `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    const actorId = 'jupri/zillow-agents';
+    const actorId = 'jupri~zillow-agents';
     const location = `${city}, ${state}`;
     console.log(`Fetching agents from Apify for: ${location}`);
 
     // jupri/zillow-agents expects different input format
     const apifyInput = {
-      query: [], // Empty query for location-based search
+      query: [],
       limit: 15,
-      "filters.location": location
+      filters: { location }
     };
 
     const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`, {

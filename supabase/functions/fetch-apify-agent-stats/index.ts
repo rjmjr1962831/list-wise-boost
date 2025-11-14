@@ -37,7 +37,7 @@ serve(async (req) => {
     console.log(`Fetching detailed stats from Apify for: ${profileUrl}`);
 
     // Call Apify actor - UPDATED to jupri/zillow-agents
-    const actorId = 'jupri/zillow-agents';
+    const actorId = 'jupri~zillow-agents';
     
     // Start the actor run with correct input format
     const runResponse = await fetch(
@@ -48,12 +48,8 @@ serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          urls: [{ url: profileUrl }],
-          proxyConfiguration: {
-            useApifyProxy: true,
-            apifyProxyGroups: ['RESIDENTIAL'],
-            apifyProxyCountry: 'US'
-          }
+          query: [profileUrl],
+          limit: 1,
         }),
       }
     );
