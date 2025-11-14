@@ -13,7 +13,7 @@ import { ZillowProfileBar } from "./ZillowProfileBar";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useZillowStats } from "@/hooks/useZillowStats";
+
 
 interface ProfessionalCardProps {
   professional: Professional;
@@ -51,13 +51,8 @@ export const ProfessionalCard = ({
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
   
-  // Auto-fetch Zillow stats if we have a profile URL but missing data
-  const { stats: zillowStats } = useZillowStats(
-    professional.id,
-    professional.website,
-    professional.name,
-    (professional as any).zip_code || null
-  );
+// Zillow stats fetching disabled to improve performance; showing stored values only
+
   
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
   
@@ -297,39 +292,19 @@ export const ProfessionalCard = ({
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
               {(() => {
-                  const reviews = (zillowStats as any)?.reviews ?? professional.reviews ?? 0;
-
                   const statFromObj = (obj: any, path: string) => {
                     try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
                   };
 
-                  const currentListings = (
-                    (zillowStats?.currentListings && zillowStats.currentListings > 0) ? zillowStats.currentListings :
-                    (professional.current_listings && professional.current_listings > 0) ? professional.current_listings :
-                    (Number(statFromObj(professional, 'stats.currentListings')) > 0 ? Number(statFromObj(professional, 'stats.currentListings')) :
-                      Math.max(1, Math.round(reviews / 20)))
-                  );
+                  const toNum = (v: any) => {
+                    const n = Number(v);
+                    return Number.isFinite(n) ? n : null;
+                  };
 
-                  const totalSales = (
-                    (zillowStats?.totalSales && zillowStats.totalSales > 0) ? zillowStats.totalSales :
-                    (zillowStats as any)?.sold > 0 ? (zillowStats as any).sold :
-                    (professional.total_sales && professional.total_sales > 0) ? professional.total_sales :
-                    (Number(statFromObj(professional, 'stats.totalSales')) > 0 ? Number(statFromObj(professional, 'stats.totalSales')) :
-                      Math.max(10, Math.round(reviews * 2.5)))
-                  );
-
-                  const salesLast12Mo = (
-                    (zillowStats as any)?.salesLast12Months > 0 ? (zillowStats as any).salesLast12Months :
-                    (zillowStats as any)?.sold > 0 ? (zillowStats as any).sold :
-                    Math.max(1, Math.round((totalSales || 0) / 10))
-                  );
-
-                  const yearsExperience = (
-                    (professional.years_experience && professional.years_experience > 0) ? professional.years_experience :
-                    (zillowStats?.yearsExperience && zillowStats.yearsExperience > 0) ? zillowStats.yearsExperience :
-                    (Number(statFromObj(professional, 'stats.yearsExperience')) > 0 ? Number(statFromObj(professional, 'stats.yearsExperience')) :
-                      Math.max(2, Math.round(reviews / 15)))
-                  );
+                  const currentListings = toNum(professional.current_listings) ?? toNum(statFromObj(professional, 'stats.currentListings'));
+                  const totalSales = toNum(professional.total_sales) ?? toNum(statFromObj(professional, 'stats.totalSales')) ?? toNum(statFromObj(professional, 'stats.sold'));
+                  const yearsExperience = toNum(professional.years_experience) ?? toNum(statFromObj(professional, 'stats.yearsExperience'));
+                  const salesLast12Mo = toNum(statFromObj(professional, 'stats.salesLast12Months'));
 
                   const displayStats = { currentListings, salesLast12Mo, totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
