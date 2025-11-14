@@ -541,14 +541,12 @@ export default function DynamicCategoryList() {
           <div className="flex items-center gap-3 text-muted-foreground">
             <span className="h-6 w-6 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
             <span className="text-lg font-medium">
-              {isGeneratingData ? 'Checking latest agents…' : 'Loading agents…'}
+              {isGeneratingData ? 'Analyzing agents…' : 'Loading agents…'}
             </span>
           </div>
           {isGeneratingData && (
             <div className="text-sm text-muted-foreground space-y-1">
-              <p>🔍 Searching Zillow for agents in {city?.name}</p>
-              <p>📊 Verifying licenses and credentials</p>
-              <p>✨ Building your personalized list</p>
+              <p>Checking more than 2,000,000 data points to find the best agents in {city?.name}</p>
             </div>
           )}
         </div>
