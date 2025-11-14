@@ -512,7 +512,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
                 className="mt-1"
               />
               <Label htmlFor="smsConsent" className="font-normal cursor-pointer text-xs leading-relaxed">
-                By providing your mobile number, you agree to receive recurring text messages from Aryah, Inc, dba Top10lists.us. Message & data rates may apply. Reply STOP to unsubscribe or HELP for help
+                By providing your mobile number, you agree to receive recurring text messages from Aryah, Inc, dba Top10lists.us. These texts will be limited to account issues, contact information from an interested buyer and links to your profile. Message & data rates may apply. Reply STOP to unsubscribe or HELP for help
               </Label>
             </div>
             {errors.smsConsent && (
