@@ -106,12 +106,41 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
       updateData({ website: validateWebsite(data.website) });
       onNext();
     } else {
-      toast.error('Please fill in all required fields correctly');
+      const errorFields = Object.keys(errors).join(', ');
+      toast.error('Please fix the errors before continuing', {
+        description: `Issues with: ${errorFields}`,
+        duration: 6000,
+      });
+      // Scroll to first error
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+      {/* Validation Error Summary */}
+      {Object.keys(errors).length > 0 && (
+        <Card className="border-destructive/50 bg-destructive/5">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="font-semibold text-destructive mb-2">
+                  Please fix the following issues:
+                </h4>
+                <ul className="text-sm space-y-1 text-muted-foreground list-disc list-inside">
+                  {Object.entries(errors).map(([field, error]) => (
+                    <li key={field}>
+                      <span className="font-medium capitalize">{field.replace(/([A-Z])/g, ' $1').trim()}:</span> {error}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Basic Information</CardTitle>
