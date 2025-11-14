@@ -101,6 +101,11 @@ serve(async (req) => {
         body: JSON.stringify({
           locationText: searchZipcode || inputLocation || 'Gilbert, AZ',
           profileUrl: profileUrl || undefined,
+          proxy: {
+            useApifyProxy: true,
+            apifyProxyGroups: ["RESIDENTIAL"],
+            apifyProxyCountry: "US"
+          }
         })
       }
     );
