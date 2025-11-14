@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { OnboardingData } from '@/pages/AgentOnboarding';
@@ -90,7 +91,9 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
     if (data.isTeamMember && !data.teamName?.trim()) newErrors.teamName = 'Team name is required';
     if (!data.bio.trim()) newErrors.bio = 'Bio is required';
     if (data.bio.length < 50) newErrors.bio = 'Bio must be at least 50 characters';
+    if (!data.state) newErrors.state = 'State is required';
     if (!data.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
+    if (!data.yearsExperience || data.yearsExperience < 0) newErrors.yearsExperience = 'Years of experience is required';
     if (!data.website.trim()) newErrors.website = 'Website is required';
     if (!data.email.trim()) newErrors.email = 'Email is required';
     else if (!validateEmail(data.email)) newErrors.email = 'Invalid email format';
@@ -233,6 +236,34 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
             )}
           </div>
 
+          {/* State */}
+          <div className="space-y-2">
+            <Label htmlFor="state">State *</Label>
+            <Select
+              value={data.state}
+              onValueChange={(value) => {
+                const stateAbbr = value.split('|')[1];
+                updateData({ state: value.split('|')[0], stateSlug: stateAbbr });
+              }}
+            >
+              <SelectTrigger className={errors.state ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Select your state" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Arizona|AZ">Arizona</SelectItem>
+                <SelectItem value="California|CA">California</SelectItem>
+                <SelectItem value="Texas|TX">Texas</SelectItem>
+                <SelectItem value="Florida|FL">Florida</SelectItem>
+                <SelectItem value="New York|NY">New York</SelectItem>
+                <SelectItem value="Nevada|NV">Nevada</SelectItem>
+                <SelectItem value="Colorado|CO">Colorado</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.state && (
+              <p className="text-sm text-destructive">{errors.state}</p>
+            )}
+          </div>
+
           {/* License Number */}
           <div className="space-y-2">
             <Label htmlFor="licenseNumber">License Number *</Label>
@@ -247,7 +278,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
               <Button
                 type="button"
                 onClick={verifyLicense}
-                disabled={isVerifying || !data.licenseNumber}
+                disabled={isVerifying || !data.licenseNumber || !data.state}
                 variant="outline"
                 className="min-w-[120px]"
               >
@@ -275,6 +306,24 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
                 License verified with state database
               </p>
             )}
+          </div>
+
+          {/* Years of Experience */}
+          <div className="space-y-2">
+            <Label htmlFor="yearsExperience">How long have you been in the business? *</Label>
+            <Input
+              id="yearsExperience"
+              type="number"
+              min="0"
+              value={data.yearsExperience || ''}
+              onChange={(e) => updateData({ yearsExperience: parseInt(e.target.value) || 0 })}
+              placeholder="5"
+              className={errors.yearsExperience ? 'border-destructive' : ''}
+            />
+            {errors.yearsExperience && (
+              <p className="text-sm text-destructive">{errors.yearsExperience}</p>
+            )}
+            <p className="text-xs text-muted-foreground">Enter the number of years you've been a licensed agent</p>
           </div>
 
           {/* Website */}

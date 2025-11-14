@@ -33,6 +33,7 @@ export interface OnboardingData {
   stateSlug: string;
   cities: string[];
   zipCodes: { [cityId: string]: string[] };
+  yearsExperience: number;
 }
 
 const TOTAL_STEPS = 6;
@@ -57,6 +58,7 @@ export default function AgentOnboarding() {
     stateSlug: '',
     cities: [],
     zipCodes: {},
+    yearsExperience: 0,
   });
 
   const updateData = (newData: Partial<OnboardingData>) => {
