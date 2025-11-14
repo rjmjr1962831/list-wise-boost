@@ -73,7 +73,10 @@ export function LocationsStep({ data, updateData, onNext, onBack }: LocationsSte
 
   const handleNext = () => {
     if ((data.cities?.length || 0) === 0) {
-      toast.error('Please select at least one city');
+      toast.error('Required: Please select at least one city', {
+        description: 'Choose the cities where you provide services',
+        duration: 5000,
+      });
       return;
     }
     onNext();

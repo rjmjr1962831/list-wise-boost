@@ -86,7 +86,10 @@ export function SpecialtiesStep({ data, updateData, onNext, onBack }: Specialtie
 
   const handleNext = () => {
     if ((data.specialties?.length || 0) === 0) {
-      toast.error('Please select at least one specialty');
+      toast.error('Required: Please select at least one specialty', {
+        description: 'Choose from the list or add your own custom specialty',
+        duration: 5000,
+      });
       return;
     }
     onNext();
