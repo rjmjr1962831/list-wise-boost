@@ -40,10 +40,10 @@ serve(async (req) => {
   try {
     const { city, state } = await req.json();
     
-    const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN')?.trim();
+    const apiToken = Deno.env.get('APIFY_API_KEY')?.trim() || Deno.env.get('APIFY_API_TOKEN')?.trim();
 
-    if (!APIFY_API_TOKEN) {
-      const error = 'Apify API token not configured';
+    if (!apiToken) {
+      const error = 'Apify API key/token not configured';
       await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state });
       throw new Error(error);
     }
@@ -51,9 +51,10 @@ serve(async (req) => {
     const query = `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    const actorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
     const location = `${city}, ${state}`;
-    console.log(`Fetching agents from Apify for: ${location}`);
+    console.log(`Fetching agents from Apify for: ${location} (actor: ${actorId})`);
 
     // jupri/zillow-agents expects different input format
     const apifyInput = {
@@ -62,7 +63,7 @@ serve(async (req) => {
       filters: { location }
     };
 
-    const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`, {
+    const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${apiToken}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(apifyInput),
@@ -88,7 +89,7 @@ serve(async (req) => {
     let attempts = 0;
     while (status !== 'SUCCEEDED' && status !== 'FAILED' && attempts < 30) {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      const statusResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${APIFY_API_TOKEN}`);
+      const statusResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apiToken}`);
       if (!statusResp.ok) break;
       const statusData = await statusResp.json();
       status = statusData.data.status;
@@ -104,7 +105,7 @@ serve(async (req) => {
     }
 
     const datasetId = run.data.defaultDatasetId;
-    const dataResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}`);
+    const dataResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`);
     if (!dataResp.ok) {
       const error = 'Failed to fetch Apify dataset';
       await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, datasetId });

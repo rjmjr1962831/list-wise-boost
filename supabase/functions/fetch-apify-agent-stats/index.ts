@@ -19,13 +19,13 @@ serve(async (req) => {
     const { profileUrl, apifyApiKey }: ApifyAgentRequest = await req.json();
     
     // Use provided key or fall back to stored secret
-    const apiKey = apifyApiKey || Deno.env.get('APIFY_API_KEY');
+    const apiKey = (apifyApiKey || Deno.env.get('APIFY_API_KEY') || Deno.env.get('APIFY_API_TOKEN'))?.trim();
     
     if (!apiKey) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: 'Apify API key not configured. Please add it in Settings or provide it in the request.' 
+          error: 'Apify API key/token not configured. Please add it in Settings or provide it in the request.' 
         }),
         {
           status: 400,
@@ -37,7 +37,8 @@ serve(async (req) => {
     console.log(`Fetching detailed stats from Apify for: ${profileUrl}`);
 
     // Call Apify actor - configurable via secret
-    const actorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
+    const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
     
     // Start the actor run with correct input format
     const runResponse = await fetch(
