@@ -36,7 +36,7 @@ const Index = () => {
               {getContent('hero', 'cta_primary', 'Claim Your Spot')}
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8" asChild>
-              <Link to="/az/gilbert/top10realestateagents">{getContent('hero', 'cta_secondary', 'View Sample List')}</Link>
+              <Link to="/az/gilbert/top10realestateagents" target="_blank" rel="noopener noreferrer">{getContent('hero', 'cta_secondary', 'View Sample List')}</Link>
             </Button>
           </div>
           <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground pt-8">
@@ -333,7 +333,7 @@ const Index = () => {
                 {getContent('final_cta', 'cta_primary', 'Apply Now')}
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-                <Link to="/az/gilbert/top10realestateagents">{getContent('final_cta', 'cta_secondary', 'View Sample Lists')}</Link>
+                <Link to="/az/gilbert/top10realestateagents" target="_blank" rel="noopener noreferrer">{getContent('final_cta', 'cta_secondary', 'View Sample Lists')}</Link>
               </Button>
             </div>
           </CardContent>
