@@ -45,7 +45,7 @@ serve(async (req) => {
       ];
       */
       const DISCOVERY_ACTORS = [
-        'jupri/zillow-agents',
+        'jupri~zillow-agents',
       ];
 
       async function discoverProfileUrl(actorSlug: string): Promise<string | undefined> {
@@ -56,15 +56,9 @@ serve(async (req) => {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              agentName,
-              zipcode: location,
-              location,
-              query: `${agentName} ${location ?? ''}`.trim(),
-              proxy: { 
-                useApifyProxy: true, 
-                apifyProxyGroups: ['RESIDENTIAL'],
-                apifyProxyCountry: 'US'
-              },
+              query: [agentName, `${agentName} ${location ?? ''}`.trim()],
+              limit: 10,
+              ...(location ? { filters: { location } } : {}),
             }),
           }
         );
@@ -145,26 +139,26 @@ serve(async (req) => {
     ];
     */
     const ACTORS = [
-      'jupri/zillow-agents',
+      'jupri~zillow-agents',
     ];
 
     async function runActorAndCollect(actorSlug: string) {
       console.log(`Starting Apify actor: ${actorSlug} for ${profileUrl}`);
+      const screenName = profileUrl && profileUrl.includes('/profile/')
+        ? profileUrl.split('/profile/')[1]?.split(/[\/?#]/)[0]
+        : undefined;
+      const queries = [
+        profileUrl,
+        ...(screenName ? [`@${screenName}/reviews`] : []),
+      ].filter(Boolean);
       const startRes = await fetch(
         `https://api.apify.com/v2/acts/${actorSlug}/runs?token=${APIFY_API_TOKEN}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            agentProfileUrl: profileUrl,
-            profileUrl,
-            maxReviews: 100,
-            maxItems: 200,
-            proxy: { 
-              useApifyProxy: true, 
-              apifyProxyGroups: ['RESIDENTIAL'],
-              apifyProxyCountry: 'US'
-            },
+            query: queries,
+            limit: 100,
           }),
         }
       );
