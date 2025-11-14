@@ -133,7 +133,7 @@ export default function CityLanding() {
               <span className="text-sm font-medium">{formatCityName(city)}</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Find Top-Rated Professionals in {city.name}
+              Finding Top-Rated Real Estate Agents in {city.name}
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
               Discover the best dentists, real estate agents, lawyers, and restaurants in {formatCityName(city)}. 
