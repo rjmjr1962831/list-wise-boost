@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -20,219 +21,117 @@ serve(async (req) => {
     
     console.log(`Fetching detailed stats for ${agentName} from ${profileUrl}`);
 
+    const apiToken = Deno.env.get('APIFY_API_KEY')?.trim() || Deno.env.get('APIFY_API_TOKEN')?.trim();
+    
+    if (!apiToken) {
+      throw new Error('Apify API key not configured');
+    }
+
     // Construct full Zillow URL if relative
     const fullUrl = profileUrl.startsWith('http') 
       ? profileUrl 
       : `https://www.zillow.com${profileUrl}`;
 
-    // Fetch the profile page
-    const response = await fetch(fullUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-      },
-    });
+    console.log(`Using Apify to fetch profile: ${fullUrl}`);
 
-    if (!response.ok) {
-      throw new Error(`Failed to fetch profile: ${response.status}`);
-    }
-
-    const html = await response.text();
+    // Use zillowscraper/zillow-agent-details-scraper
+    const detailsActorId = 'zillowscraper~zillow-agent-details-scraper';
     
-    console.log('Successfully fetched profile HTML, length:', html.length);
-    
-    // Parse stats from HTML - looking for Zillow's specific patterns
-    const stats = {
-      forSale: 0,
-      sold: 0,
-      forRent: 0,
-      reviews: 0,
-      currentListings: 0,
-      totalSales: 0,
-      yearsExperience: 0,
-      specialties: [] as string[],
+    const detailsInput = {
+      agent_url: fullUrl,
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"]
+      }
     };
 
-    // Extract Zillow User ID (zuid) from profile URL or HTML
-    let zuid = null;
-    const zuidMatch = profileUrl.match(/profile\/([^\/]+)/);
-    if (zuidMatch) {
-      zuid = zuidMatch[1];
-    }
-    
-    // Look for the stats tabs section - Zillow uses specific patterns
-    // Pattern: "For Sale (39)" or "For Sale 39" or "39 For Sale"
-    const forSaleMatch = html.match(/For\s+Sale[:\s]*\(?(\d+)\)?|(\d+)\s+For\s+Sale/i);
-    if (forSaleMatch) {
-      stats.forSale = parseInt(forSaleMatch[1] || forSaleMatch[2]);
-      stats.currentListings = stats.forSale; // Also update currentListings
-      console.log('Found For Sale:', stats.forSale);
-    }
-    
-    // Pattern: "Sold (2279)" or "Sold: 2279"
-    const soldMatch = html.match(/Sold[:\s]*\(?(\d+)\)?|(\d+)\s+Sold/i);
-    if (soldMatch) {
-      stats.sold = parseInt(soldMatch[1] || soldMatch[2]);
-      stats.totalSales = stats.sold; // Also update totalSales
-      console.log('Found Sold:', stats.sold);
-    }
-    
-    // Pattern: "For Rent (2)" or "For Rent: 2"
-    const forRentMatch = html.match(/For\s+Rent[:\s]*\(?(\d+)\)?|(\d+)\s+For\s+Rent/i);
-    if (forRentMatch) {
-      stats.forRent = parseInt(forRentMatch[1] || forRentMatch[2]);
-      console.log('Found For Rent:', stats.forRent);
-    }
-    
-    // Pattern: reviews count - look for various patterns
-    const reviewPatterns = [
-      /(\d+)\s+(?:reviews?|ratings?)/i,
-      /reviews?[:\s]*\(?(\d+)\)?/i,
-      /"reviewCount"[:\s]*(\d+)/i,
-      /"ratingCount"[:\s]*(\d+)/i,
-    ];
-    
-    for (const pattern of reviewPatterns) {
-      const match = html.match(pattern);
-      if (match) {
-        const reviewCount = parseInt(match[1]);
-        if (reviewCount > stats.reviews) {
-          stats.reviews = reviewCount;
-          console.log('Found reviews:', stats.reviews);
-        }
-      }
+    const detailsStartResp = await fetch(`https://api.apify.com/v2/acts/${detailsActorId}/runs?token=${apiToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(detailsInput),
+    });
+
+    if (!detailsStartResp.ok) {
+      const errorText = await detailsStartResp.text();
+      console.error('Apify start error:', detailsStartResp.status, errorText);
+      throw new Error(`Apify API request failed: ${detailsStartResp.status}`);
     }
 
-    // Look for various patterns in the HTML for additional stats
-    
-    // Pattern 1: Total sales / transactions (fallback if "Sold" not found)
-    if (stats.sold === 0) {
-      const salesPatterns = [
-        /(\d+)\s+(?:sales?|transactions?|deals?)\s+(?:in\s+career|total|all[\s-]?time)/gi,
-        /(?:career|total|all[\s-]?time)\s+(?:sales?|transactions?):\s*(\d+)/gi,
-        /(\d+)\s+homes?\s+sold/gi,
-      ];
+    const detailsRun = await detailsStartResp.json();
+    const detailsRunId = detailsRun.data.id;
+    console.log('Apify run started:', detailsRunId);
+
+    // Poll for completion (max 60s)
+    let detailsStatus = detailsRun.data.status;
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    while (detailsStatus !== 'SUCCEEDED' && detailsStatus !== 'FAILED' && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      attempts++;
       
-      for (const pattern of salesPatterns) {
-        const match = html.match(pattern);
-        if (match) {
-          const numbers = match.map(m => {
-            const num = m.match(/\d+/);
-            return num ? parseInt(num[0]) : 0;
-          });
-          stats.totalSales = Math.max(stats.totalSales, ...numbers);
-        }
-      }
+      const statusResp = await fetch(`https://api.apify.com/v2/acts/${detailsActorId}/runs/${detailsRunId}?token=${apiToken}`);
+      const statusData = await statusResp.json();
+      detailsStatus = statusData.data.status;
+      console.log(`Run status: ${detailsStatus} (attempt ${attempts})`);
     }
 
-    // Pattern 2: Years of experience
-    const experiencePatterns = [
-      /(\d+)\+?\s+years?\s+(?:of\s+)?experience/gi,
-      /experience:\s*(\d+)\+?\s+years?/gi,
-      /licensed\s+(?:for|since)\s+(\d+)\s+years?/gi,
-    ];
-    
-    for (const pattern of experiencePatterns) {
-      const match = html.match(pattern);
-      if (match) {
-        const numbers = match.map(m => {
-          const num = m.match(/\d+/);
-          return num ? parseInt(num[0]) : 0;
-        });
-        stats.yearsExperience = Math.max(stats.yearsExperience, ...numbers);
-      }
+    if (detailsStatus !== 'SUCCEEDED') {
+      throw new Error(`Apify run did not succeed: ${detailsStatus}`);
     }
 
-    // Extract specialties/areas of focus
-    const specialties = new Set<string>();
-    
-    // Look for common specialty patterns in Zillow profiles
-    const specialtyPatterns = [
-      // Areas of Focus section
-      /<h\d[^>]*>(?:Areas of Focus|Specialties|Expertise)<\/h\d>(.*?)<\/(?:div|section|ul)>/is,
-      // List items that might contain specialties
-      /<li[^>]*class="[^"]*specialty[^"]*"[^>]*>([^<]+)<\/li>/gi,
-      /<span[^>]*class="[^"]*specialty[^"]*"[^>]*>([^<]+)<\/span>/gi,
-    ];
+    // Get results
+    const datasetId = detailsRun.data.defaultDatasetId;
+    const itemsResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`);
+    const items = await itemsResp.json();
 
-    for (const pattern of specialtyPatterns) {
-      const matches = html.matchAll(pattern);
-      for (const match of matches) {
-        const content = match[1];
-        if (content) {
-          // Extract text from HTML
-          const tempDiv = content.replace(/<[^>]+>/g, '|').split('|')
-            .map(s => s.trim())
-            .filter(s => s && s.length > 2 && s.length < 50);
-          
-          tempDiv.forEach(specialty => {
-            // Common real estate specialties
-            const normalized = specialty.toLowerCase();
-            if (normalized.match(/buyer|seller|luxury|first.?time|investment|commercial|residential|relocation|foreclosure|short.?sale|veteran|military|senior|new.?construction|condo|rental/)) {
-              specialties.add(specialty);
-            }
-          });
-        }
-      }
+    console.log('Apify results:', items.length, 'items');
+
+    if (items.length === 0) {
+      throw new Error('No results from Apify scraper');
     }
 
-    stats.specialties = Array.from(specialties);
-    console.log('Found specialties:', stats.specialties);
+    const profileData = items[0];
+    console.log('Profile data received:', JSON.stringify(profileData, null, 2));
 
-    // If we didn't find explicit sales numbers, try to find structured data
-    const jsonLdMatch = html.match(/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/is);
-    if (jsonLdMatch) {
-      try {
-        const jsonData = JSON.parse(jsonLdMatch[1]);
-        console.log('Found structured data:', JSON.stringify(jsonData).substring(0, 200));
-        
-        // Look for relevant properties in structured data
-        if (jsonData.numberOfListings) {
-          stats.currentListings = Math.max(stats.currentListings, jsonData.numberOfListings);
-        }
-        if (jsonData.numberOfSales) {
-          stats.totalSales = Math.max(stats.totalSales, jsonData.numberOfSales);
-        }
-        // Extract specialties from structured data
-        if (jsonData.knowsAbout) {
-          const knowsAbout = Array.isArray(jsonData.knowsAbout) ? jsonData.knowsAbout : [jsonData.knowsAbout];
-          knowsAbout.forEach((item: string) => specialties.add(item));
-          stats.specialties = Array.from(specialties);
-        }
-      } catch (e) {
-        console.log('Could not parse structured data');
-      }
-    }
+    // Extract stats
+    const stats = {
+      forSale: profileData.active_listings || 0,
+      sold: profileData.sold_listings || 0,
+      forRent: 0,
+      reviews: profileData.reviews_count || 0,
+      currentListings: profileData.active_listings || 0,
+      totalSales: profileData.sold_listings || 0,
+      yearsExperience: profileData.experience_years || 0,
+      specialties: profileData.specialties || [],
+      phone: profileData.phone || null,
+      email: profileData.email || null,
+      brokerage: profileData.brokerage || null,
+    };
 
-    console.log('Extracted stats:', stats);
+    console.log('Final stats:', JSON.stringify(stats, null, 2));
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        agentName,
-        profileUrl: fullUrl,
-        zuid,
-        stats,
-        message: stats.sold > 0 || stats.forSale > 0 
-          ? `Successfully extracted stats: ${stats.forSale} for sale, ${stats.sold} sold, ${stats.forRent} for rent, ${stats.reviews} reviews` 
-          : 'Profile fetched but no stats found - will use estimates',
-      }),
-      {
+      JSON.stringify({ success: true, stats }),
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 
       }
     );
+
   } catch (error) {
     console.error('Error in fetch-zillow-profile-stats:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-        stats: null,
+      JSON.stringify({ 
+        success: false, 
+        error: errorMessage,
+        stats: null
       }),
-      {
-        status: 200, // Return 200 to not break import flow
+      { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
       }
     );
   }
