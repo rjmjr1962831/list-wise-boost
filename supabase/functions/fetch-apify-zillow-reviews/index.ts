@@ -38,8 +38,14 @@ serve(async (req) => {
 
     // If we don't have a direct profile URL, try to discover it via search actors
     if (!profileUrl && agentName) {
+      // COMMENTED OUT: Using jupri/zillow-agents instead
+      /*
       const DISCOVERY_ACTORS = [
         'getdataforme~zillow-agent-scraper',
+      ];
+      */
+      const DISCOVERY_ACTORS = [
+        'jupri/zillow-agents',
       ];
 
       async function discoverProfileUrl(actorSlug: string): Promise<string | undefined> {
@@ -131,9 +137,15 @@ serve(async (req) => {
     }
 
     // Try multiple Apify actors to maximize review coverage
+    // COMMENTED OUT: Using jupri/zillow-agents instead
+    /*
     const ACTORS = [
       'getdataforme~zillow-real-state-agents-scraper',
       'getdataforme~zillow-agents-reviews-scraper',
+    ];
+    */
+    const ACTORS = [
+      'jupri/zillow-agents',
     ];
 
     async function runActorAndCollect(actorSlug: string) {

@@ -36,8 +36,8 @@ serve(async (req) => {
 
     console.log(`Fetching detailed stats from Apify for: ${profileUrl}`);
 
-    // Call Apify actor
-    const actorId = 'getdataforme~zillow-real-state-agents-scraper';
+    // Call Apify actor - UPDATED to jupri/zillow-agents
+    const actorId = 'jupri/zillow-agents';
     
     // Start the actor run with correct input format
     const runResponse = await fetch(
