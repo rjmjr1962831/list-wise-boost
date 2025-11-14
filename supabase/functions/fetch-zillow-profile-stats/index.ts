@@ -92,24 +92,35 @@ serve(async (req) => {
     }
 
     const profileData = items[0];
-    console.log('Profile data received:', JSON.stringify(profileData, null, 2));
+    console.log('Profile data keys:', Object.keys(profileData));
 
-    // Extract stats
+    // Extract stats from the actual Apify response structure
+    const pastSalesTotal = profileData.pastSales?.total || 0;
+    const currentListingsCount = profileData.currentListings?.total || 0;
+    
+    // Extract years of experience - check multiple possible locations
+    let yearsExperience = 0;
+    if (profileData.displayUser?.businessCard?.yearsOfExperience) {
+      const yearsText = profileData.displayUser.businessCard.yearsOfExperience;
+      const match = yearsText.match(/(\d+)/);
+      yearsExperience = match ? parseInt(match[1]) : 0;
+    }
+    
     const stats = {
-      forSale: profileData.active_listings || 0,
-      sold: profileData.sold_listings || 0,
+      forSale: currentListingsCount,
+      sold: pastSalesTotal,
       forRent: 0,
-      reviews: profileData.reviews_count || 0,
-      currentListings: profileData.active_listings || 0,
-      totalSales: profileData.sold_listings || 0,
-      yearsExperience: profileData.experience_years || 0,
-      specialties: profileData.specialties || [],
-      phone: profileData.phone || null,
-      email: profileData.email || null,
-      brokerage: profileData.brokerage || null,
+      reviews: profileData.reviewCount || 0,
+      currentListings: currentListingsCount,
+      totalSales: pastSalesTotal,
+      yearsExperience: yearsExperience,
+      specialties: profileData.getToKnowMe?.specialties || [],
+      phone: profileData.displayUser?.businessCard?.phone || null,
+      email: profileData.displayUser?.businessCard?.email || null,
+      brokerage: profileData.displayUser?.businessCard?.brokerageName || null,
     };
 
-    console.log('Final stats:', JSON.stringify(stats, null, 2));
+    console.log('Extracted stats:', JSON.stringify(stats, null, 2));
 
     return new Response(
       JSON.stringify({ success: true, stats }),
