@@ -96,39 +96,21 @@ export const useZillowReviews = (zuid: string | null, agentName?: string | null,
           // Do not return yet; still try Rapid below with ZUID if available
         }
 
-        // Fallback to RapidAPI only if we have an effective ZUID
+        // Only use Apify - no more RapidAPI fallback
         const effectiveZuid = targetZuid || zuid;
-        if (effectiveZuid) {
-          console.log('Apify failed, falling back to RapidAPI with effective ZUID...');
-          const { data: rapidData, error: rapidError } = await supabase.functions.invoke('fetch-zillow-reviews', {
-            body: { zuid: effectiveZuid, pageNumber: 1, pageSize: 10 }
-          });
-
-          if (rapidError) throw rapidError;
-
-          if (rapidData) {
-            console.log('Successfully fetched reviews from RapidAPI');
+        if (!effectiveZuid && !(apifyData && apifyData.reviews && apifyData.reviews.length > 0)) {
+          // If we discovered a profile URL but no reviews, still show the profile link
+          if (discoveredProfileUrl || targetZuid) {
             setReviews({
-              reviews: rapidData.reviews || [],
-              totalReviews: rapidData.totalReviews || 0,
-              averageRating: rapidData.averageRating || 0,
-              profileUrl: discoveredProfileUrl || (effectiveZuid ? `https://www.zillow.com/profile/${effectiveZuid}` : undefined),
+              reviews: [],
+              totalReviews: 0,
+              averageRating: 0,
+              profileUrl: discoveredProfileUrl || (targetZuid ? `https://www.zillow.com/profile/${targetZuid}` : undefined),
             });
-            return;
           }
         }
-
-        // If nothing returned but we discovered a profile, at least expose the link
-        if (discoveredProfileUrl || effectiveZuid) {
-          setReviews({
-            reviews: [],
-            totalReviews: 0,
-            averageRating: 0,
-            profileUrl: discoveredProfileUrl || (effectiveZuid ? `https://www.zillow.com/profile/${effectiveZuid}` : undefined),
-          });
-        }
       } catch (err) {
-        console.error('Error fetching Zillow reviews from both sources:', err);
+        console.error('Error fetching Zillow reviews from Apify:', err);
         setError(err instanceof Error ? err.message : 'Failed to load reviews');
       } finally {
         setLoading(false);
