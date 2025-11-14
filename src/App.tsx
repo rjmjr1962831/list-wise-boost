@@ -47,7 +47,7 @@ const App = () => (
                 </div>
               }>
                 <Routes>
-                  <Route path="/" element={<Index />} />
+                  <Route path="/" element={<Navigate to="/about" replace />} />
                   <Route path="/about" element={<MainSite />} />
                   <Route path="/main" element={<Navigate to="/about" replace />} />
                   {/* Dynamic city and category routes */}
