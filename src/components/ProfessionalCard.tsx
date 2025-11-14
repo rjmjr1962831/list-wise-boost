@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,7 +53,29 @@ export const ProfessionalCard = ({
   
 // Zillow stats fetching disabled to improve performance; showing stored values only
 
-  
+  // Background: fetch accurate Zillow stats only if DB values are missing
+  const [liveStats, setLiveStats] = useState<any | null>(null);
+  const profileUrl = (professional as any).zillow_profile_url || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
+  const needsStats = !!profileUrl && (!professional.current_listings || !professional.total_sales || !professional.years_experience);
+
+  useEffect(() => {
+    if (!needsStats) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+          body: { profileUrl, agentName: professional.name }
+        });
+        if (!error && (data as any)?.success && !cancelled) {
+          setLiveStats((data as any).stats);
+        }
+      } catch (e) {
+        console.error('fetch-zillow-profile-stats failed', e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [needsStats, profileUrl, professional.name]);
+
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
   
   // Use prop stateAbbr if provided, otherwise extract from market
@@ -301,9 +323,23 @@ export const ProfessionalCard = ({
                     return Number.isFinite(n) ? n : null;
                   };
 
-                  const currentListings = toNum(professional.current_listings) ?? toNum(statFromObj(professional, 'stats.currentListings'));
-                  const totalSales = toNum(professional.total_sales) ?? toNum(statFromObj(professional, 'stats.totalSales')) ?? toNum(statFromObj(professional, 'stats.sold'));
-                  const yearsExperience = toNum(professional.years_experience) ?? toNum(statFromObj(professional, 'stats.yearsExperience'));
+                  const currentListings =
+                    toNum(professional.current_listings) ??
+                    toNum(statFromObj(professional, 'stats.currentListings')) ??
+                    toNum((liveStats as any)?.currentListings) ??
+                    toNum((liveStats as any)?.forSale);
+
+                  const totalSales =
+                    toNum(professional.total_sales) ??
+                    toNum(statFromObj(professional, 'stats.totalSales')) ??
+                    toNum(statFromObj(professional, 'stats.sold')) ??
+                    toNum((liveStats as any)?.totalSales) ??
+                    toNum((liveStats as any)?.sold);
+
+                  const yearsExperience =
+                    toNum(professional.years_experience) ??
+                    toNum(statFromObj(professional, 'stats.yearsExperience')) ??
+                    toNum((liveStats as any)?.yearsExperience);
                   const salesLast12Mo = toNum(statFromObj(professional, 'stats.salesLast12Months'));
 
                   const displayStats = { currentListings, salesLast12Mo, totalSales, yearsExperience } as const;
