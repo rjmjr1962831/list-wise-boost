@@ -259,6 +259,70 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
             </div>
           )}
 
+          {/* Website URL */}
+          <div className="space-y-2">
+            <Label htmlFor="website">Website URL *</Label>
+            <Input
+              id="website"
+              value={data.website}
+              onChange={(e) => updateData({ website: e.target.value })}
+              placeholder="yourwebsite.com"
+              className={errors.website ? 'border-destructive' : ''}
+            />
+            <p className="text-xs text-muted-foreground">https:// will be added automatically</p>
+            {errors.website && (
+              <p className="text-sm text-destructive">{errors.website}</p>
+            )}
+          </div>
+
+          {/* Zillow/Redfin/Home.com Links */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="hasZillowHomeLinks"
+                checked={data.hasZillowHomeLinks}
+                onCheckedChange={(checked) => updateData({ hasZillowHomeLinks: checked })}
+              />
+              <Label htmlFor="hasZillowHomeLinks" className="font-normal cursor-pointer">
+                I want to add links to my Zillow, Redfin, or Home.com profiles
+              </Label>
+            </div>
+
+            {data.hasZillowHomeLinks && (
+              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
+                <div className="space-y-2">
+                  <Label htmlFor="zillowUrl">Zillow Profile URL</Label>
+                  <Input
+                    id="zillowUrl"
+                    value={data.zillowUrl || ''}
+                    onChange={(e) => updateData({ zillowUrl: e.target.value })}
+                    placeholder="https://www.zillow.com/profile/YourName"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="redfinUrl">Redfin Profile URL</Label>
+                  <Input
+                    id="redfinUrl"
+                    value={data.redfinUrl || ''}
+                    onChange={(e) => updateData({ redfinUrl: e.target.value })}
+                    placeholder="https://www.redfin.com/real-estate-agents/your-name"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="homeUrl">Home.com Profile URL</Label>
+                  <Input
+                    id="homeUrl"
+                    value={data.homeUrl || ''}
+                    onChange={(e) => updateData({ homeUrl: e.target.value })}
+                    placeholder="https://www.home.com/real-estate-agents/YourName"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Bio */}
           <div className="space-y-2">
             <Label htmlFor="bio">
@@ -404,22 +468,6 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
             <p className="text-xs text-muted-foreground">Enter the number of years you've been a licensed agent</p>
           </div>
 
-          {/* Website */}
-          <div className="space-y-2">
-            <Label htmlFor="website">Website URL *</Label>
-            <Input
-              id="website"
-              value={data.website}
-              onChange={(e) => updateData({ website: e.target.value })}
-              placeholder="yourwebsite.com"
-              className={errors.website ? 'border-destructive' : ''}
-            />
-            <p className="text-xs text-muted-foreground">https:// will be added automatically</p>
-            {errors.website && (
-              <p className="text-sm text-destructive">{errors.website}</p>
-            )}
-          </div>
-
           {/* Email */}
           <div className="space-y-2">
             <Label htmlFor="email">Email Address *</Label>
@@ -463,43 +511,6 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
             </p>
             {errors.phone && (
               <p className="text-sm text-destructive">{errors.phone}</p>
-            )}
-          </div>
-
-          {/* Zillow/Home.com Links */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="hasZillowHomeLinks"
-                checked={data.hasZillowHomeLinks}
-                onCheckedChange={(checked) => updateData({ hasZillowHomeLinks: checked })}
-              />
-              <Label htmlFor="hasZillowHomeLinks" className="font-normal cursor-pointer">
-                I want to add links to my Zillow or Home.com profiles
-              </Label>
-            </div>
-
-            {data.hasZillowHomeLinks && (
-              <div className="space-y-4 pl-6 border-l-2 border-primary/20">
-                <div className="space-y-2">
-                  <Label htmlFor="zillowUrl">Zillow Profile URL</Label>
-                  <Input
-                    id="zillowUrl"
-                    value={data.zillowUrl || ''}
-                    onChange={(e) => updateData({ zillowUrl: e.target.value })}
-                    placeholder="https://www.zillow.com/profile/..."
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="homeUrl">Home.com Profile URL</Label>
-                  <Input
-                    id="homeUrl"
-                    value={data.homeUrl || ''}
-                    onChange={(e) => updateData({ homeUrl: e.target.value })}
-                    placeholder="https://www.home.com/agent/..."
-                  />
-                </div>
-              </div>
             )}
           </div>
         </CardContent>

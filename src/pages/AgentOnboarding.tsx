@@ -26,6 +26,7 @@ export interface OnboardingData {
   phone: string;
   hasZillowHomeLinks: boolean;
   zillowUrl?: string;
+  redfinUrl?: string;
   homeUrl?: string;
   specialties: string[];
   state: string;
@@ -94,6 +95,7 @@ export default function AgentOnboarding() {
         publish_email: onboardingData.publishEmail,
         phone: onboardingData.phone,
         zillow_url: onboardingData.zillowUrl,
+        redfin_url: onboardingData.redfinUrl,
         home_url: onboardingData.homeUrl,
         specialties: onboardingData.specialties,
         state: onboardingData.state,
