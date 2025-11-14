@@ -70,17 +70,16 @@ serve(async (req) => {
     const location = zipCode || `${city}, ${state}`;
     console.log(`Fetching agents for ${location} using Apify`);
 
-    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'hello.datawizards/Real-Estate-Agents-Scraper';
+    // Use getdataforme/zillow-real-state-agents-scraper - more reliable
+    const actorId = 'getdataforme~zillow-real-state-agents-scraper';
     
-    // Normalize actor ID to support both "/" and "~" formats
-    const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
-    
-    // hello.datawizards/Real-Estate-Agents-Scraper expects specific format
+    // This actor expects a simple search_query format
     const apifyInput = {
-      zipCode: zipCode || '93720', // Default Fresno zip if none found
-      maxItems: 15,
-      scrapeReviews: true,
-      scrapePhotos: true
+      search_query: `${city}, ${state}`,
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"]
+      }
     };
 
     console.log('Starting Apify run with input:', JSON.stringify(apifyInput));
