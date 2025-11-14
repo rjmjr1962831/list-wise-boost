@@ -51,7 +51,7 @@ serve(async (req) => {
     const query = `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    const actorId = 'jupri~zillow-agents';
+    const actorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
     const location = `${city}, ${state}`;
     console.log(`Fetching agents from Apify for: ${location}`);
 

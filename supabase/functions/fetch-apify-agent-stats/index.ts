@@ -36,8 +36,8 @@ serve(async (req) => {
 
     console.log(`Fetching detailed stats from Apify for: ${profileUrl}`);
 
-    // Call Apify actor - UPDATED to jupri/zillow-agents
-    const actorId = 'jupri~zillow-agents';
+    // Call Apify actor - configurable via secret
+    const actorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'jupri~zillow-agents';
     
     // Start the actor run with correct input format
     const runResponse = await fetch(
