@@ -138,7 +138,10 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
     );
 
     if (totalZips === 0) {
-      toast.error('Please select at least one zip code');
+      toast.error('Required: Please select at least one zip code to continue', {
+        description: 'Expand a city below and check at least one zip code',
+        duration: 5000,
+      });
       return;
     }
 
@@ -149,9 +152,10 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
       <Card>
         <CardHeader>
-          <CardTitle>Select Your Target Zip Codes</CardTitle>
+          <CardTitle>Select Your Target Zip Codes *</CardTitle>
           <CardDescription>
-            Choose specific zip codes within your service cities for targeted visibility
+            Choose specific zip codes within your service cities for targeted visibility.
+            <span className="font-semibold text-foreground"> You must select at least one zip code to continue.</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -190,6 +194,13 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">
               Loading zip codes...
+            </div>
+          ) : citiesWithZips.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">No cities selected in the previous step.</p>
+              <Button variant="outline" onClick={onBack}>
+                Go Back to Select Cities
+              </Button>
             </div>
           ) : (
             <Accordion type="multiple" className="space-y-2">
@@ -259,6 +270,27 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
           )}
         </CardContent>
       </Card>
+
+      {/* Warning if no zip codes selected */}
+      {Object.values(data.zipCodes || {}).reduce((sum, zips) => sum + zips.length, 0) === 0 && (
+        <Card className="border-amber-500/50 bg-amber-500/5">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <div className="h-5 w-5 rounded-full bg-amber-500 text-primary-foreground flex items-center justify-center flex-shrink-0 mt-0.5">
+                <span className="text-xs font-bold">!</span>
+              </div>
+              <div>
+                <h4 className="font-semibold text-amber-700 dark:text-amber-400 mb-1">
+                  Zip Code Selection Required
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Please expand a city above and select at least one zip code to continue to the next step.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="flex justify-between">
         <Button onClick={onBack} variant="outline">
