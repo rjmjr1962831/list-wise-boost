@@ -5,13 +5,13 @@ import { useMarketingContent } from "@/hooks/useMarketingContent";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { Link } from "react-router-dom";
 const Index = () => {
+  if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
   const { data: content, isLoading } = useMarketingContent('main');
   
   const getContent = (section: string, key: string, fallback: string = '') => {
     const item = content?.find(c => c.section === section && c.key === key);
     return item?.value || fallback;
   };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
