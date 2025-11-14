@@ -59,12 +59,6 @@ serve(async (req) => {
       const urlParts = profileUrl.split('/');
       agentSlug = urlParts[urlParts.length - 1].toLowerCase();
       searchName = searchName || agentSlug.replace(/-/g, ' ');
-      
-      // If no zipcode provided, use default for Gilbert
-      if (!searchZipcode) {
-        searchZipcode = DEFAULT_ZIPCODES['gilbert'];
-        console.log(`No zipcode provided, using default Gilbert zipcode: ${searchZipcode}`);
-      }
     }
 
     console.log('Starting Apify zillow-agent-scraper with:', { 
@@ -99,7 +93,7 @@ serve(async (req) => {
           'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          locationText: searchZipcode || inputLocation || 'Gilbert, AZ',
+          locationText: searchZipcode || inputLocation,
           profileUrl: profileUrl || undefined,
           proxy: {
             useApifyProxy: true,
