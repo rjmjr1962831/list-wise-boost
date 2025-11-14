@@ -131,6 +131,12 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
     }
   };
 
+  const calculateCityTotalCost = (cityId: string): number => {
+    const city = citiesWithZips.find((c) => c.id === cityId);
+    if (!city) return 0;
+    return city.zipCodes.reduce((sum, zip) => sum + (ZIP_PRICING[zip.tier] || 10), 0);
+  };
+
   const handleNext = () => {
     const totalZips = Object.values(data.zipCodes || {}).reduce(
       (sum, zips) => sum + zips.length,
@@ -159,37 +165,6 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Cost Estimate */}
-          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-primary/10 to-sunset-orange/10 rounded-lg border border-primary/20">
-            <div className="flex items-center gap-3">
-              <DollarSign className="h-5 w-5 text-primary" />
-              <div>
-                <p className="text-sm text-muted-foreground">Estimated Monthly Cost</p>
-                <p className="text-2xl font-bold text-foreground">
-                  ${estimatedCost}
-                </p>
-              </div>
-            </div>
-            <Badge variant="secondary" className="text-xs">
-              {Object.values(data.zipCodes || {}).reduce((sum, zips) => sum + zips.length, 0)} zip codes selected
-            </Badge>
-          </div>
-
-          {/* Pricing Info */}
-          <div className="bg-muted/30 rounded-lg p-4 border border-border/50">
-            <p className="text-sm font-medium mb-2">Pricing Tiers (per zip code/month):</p>
-            <div className="grid grid-cols-5 gap-2 text-xs">
-              {Object.entries(ZIP_PRICING).map(([tier, price]) => (
-                <div key={tier} className="flex items-center gap-1">
-                  <Badge variant="outline" className="w-6 h-6 p-0 flex items-center justify-center">
-                    {tier}
-                  </Badge>
-                  <span className="text-muted-foreground">${price}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Cities with Zip Codes */}
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -228,11 +203,12 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
                           onClick={() => selectAllForCity(city.id)}
                           className="w-full"
                         >
-                          Select All Zip Codes
+                          All zip codes in this city will cost: ${calculateCityTotalCost(city.id)}/month
                         </Button>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {city.zipCodes.map((zip) => {
                             const isSelected = data.zipCodes?.[city.id]?.includes(zip.code);
+                            const price = ZIP_PRICING[zip.tier] || 10;
                             return (
                               <div
                                 key={zip.code}
@@ -254,9 +230,9 @@ export function ZipCodesStep({ data, updateData, onNext, onBack }: ZipCodesStepP
                                   />
                                   <span className="font-mono text-sm">{zip.code}</span>
                                 </div>
-                                <Badge variant="outline" className="text-xs">
-                                  T{zip.tier}
-                                </Badge>
+                                <span className="text-sm font-semibold text-primary">
+                                  ${price}/mo
+                                </span>
                               </div>
                             );
                           })}
