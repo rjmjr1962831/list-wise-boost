@@ -9,7 +9,6 @@ import { Footer } from "@/components/Footer";
 import { Loader2 } from "lucide-react";
 import { Suspense, lazy } from "react";
 import Index from "./pages/Index";
-import MainSite from "./pages/MainSite";
 import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
 import TermsOfService from "./pages/TermsOfService";
@@ -47,9 +46,9 @@ const App = () => (
                 </div>
               }>
                 <Routes>
-                  <Route path="/" element={<Navigate to="/about" replace />} />
-                  <Route path="/about" element={<MainSite />} />
-                  <Route path="/main" element={<Navigate to="/about" replace />} />
+                  <Route path="/" element={<Index />} />
+                  {/* /about will be built later */}
+                  <Route path="/main" element={<Navigate to="/" replace />} />
                   {/* Dynamic city and category routes */}
                   <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                   <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
