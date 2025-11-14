@@ -146,38 +146,20 @@ export default function CityLanding() {
                   <span>{ensureMsg || 'Preparing list…'}</span>
                 </div>
               ) : (
-                <Button asChild size="lg">
-                  <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`}>
-                    See Top Real Estate Agents in {city.name}
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-primary/10 to-primary/5">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Are You a Professional?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Get listed on Top10Lists and connect with potential clients in {city.name}.
-          </p>
+              <Button asChild size="lg">
+                <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`} target="_blank" rel="noopener noreferrer">
+                  See Top Real Estate Agents in {city.name}
+                </Link>
+              </Button>
+...
           <Button asChild size="lg">
-            <Link to="/agent-onboarding">Apply Now</Link>
+            <Link to="/agent-onboarding" target="_blank" rel="noopener noreferrer">Apply Now</Link>
           </Button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t py-8">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>&copy; 2025 Top10Lists. All rights reserved.</p>
+...
           <div className="mt-4 flex justify-center gap-6">
-            <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
-            <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
+            <Link to="/privacy" className="hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Terms of Service</Link>
+            <Link to="/" className="hover:text-foreground transition-colors" target="_blank" rel="noopener noreferrer">Home</Link>
           </div>
         </div>
       </footer>

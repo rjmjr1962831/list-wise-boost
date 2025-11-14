@@ -28,7 +28,7 @@ const Privacy = () => {
       <div className="min-h-screen bg-background">
         <div className="max-w-4xl mx-auto px-4 py-12">
           <div className="mb-6">
-            <Link to="/" className="text-primary hover:underline">← Back to Home</Link>
+            <Link to="/" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">← Back to Home</Link>
           </div>
 
           <style dangerouslySetInnerHTML={{__html: `
