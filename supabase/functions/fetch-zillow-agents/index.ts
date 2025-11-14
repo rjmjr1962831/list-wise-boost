@@ -51,14 +51,12 @@ serve(async (req) => {
     console.log(`Fetching agents for ${location} using Apify`);
 
     const actorId = 'jupri/zillow-agents';
+    
+    // jupri/zillow-agents expects different input format
     const apifyInput = {
-      zipcode: "", // Leave empty to search by location
-      location: location,
-      proxy: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"],
-        apifyProxyCountry: "US"
-      }
+      query: [], // Empty query for location-based search
+      limit: 15,
+      "filters.location": location
     };
 
     console.log('Starting Apify run with input:', JSON.stringify(apifyInput));

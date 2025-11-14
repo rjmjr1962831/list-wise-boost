@@ -55,13 +55,11 @@ serve(async (req) => {
     const location = `${city}, ${state}`;
     console.log(`Fetching agents from Apify for: ${location}`);
 
+    // jupri/zillow-agents expects different input format
     const apifyInput = {
-      location: location,
-      proxy: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"],
-        apifyProxyCountry: "US"
-      }
+      query: [], // Empty query for location-based search
+      limit: 15,
+      "filters.location": location
     };
 
     const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`, {
@@ -118,24 +116,30 @@ serve(async (req) => {
     const items = rawAgents.slice(0, 15); // Only return top 15
 
     function mapAgent(agent: any) {
-      // Handle Apify Zillow scraper format (capital case column names)
-      const name = agent['Business Name'] || agent.name || agent.title || agent.fullName || '';
-      const phone = agent['Phone Number'] || agent.phone || agent.phoneNumber || agent.call_number || null;
-      const website = agent['Website'] || agent.website || agent.site || agent.domain || agent.profileLink || null;
-      const thumbnail = agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.photo || agent.profilePhotoSrc || null;
-      const address = agent['Address'] || agent.address || agent.full_address || agent.location || '';
-      const rating = agent['Rating'] || agent.rating || agent.stars || agent.score || 4.5;
-      const reviews = agent['Review Count'] || agent.reviews || agent.review_count || agent.reviews_count || agent.reviewCount || 0;
+      // Log first agent to help debug field mappings
+      if (items.indexOf(agent) === 0) {
+        console.log('First agent fields:', Object.keys(agent));
+        console.log('First agent sample:', JSON.stringify(agent).substring(0, 500));
+      }
+      
+      // Handle multiple possible field names from different Apify actors
+      const name = agent.name || agent.agentName || agent['Business Name'] || agent.title || agent.fullName || '';
+      const phone = agent.phone || agent.phoneNumber || agent['Phone Number'] || agent.call_number || null;
+      const website = agent.url || agent.profileUrl || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || null;
+      const thumbnail = agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || null;
+      const address = agent.address || agent.location || agent['Address'] || agent.full_address || agent.city || '';
+      const rating = agent.rating || agent['Rating'] || agent.stars || agent.score || 4.5;
+      const reviews = agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.reviewCount || 0;
       
       let categories: string[] = [];
       if (Array.isArray(agent.categories)) {
         categories = agent.categories;
+      } else if (Array.isArray(agent.specialties)) {
+        categories = agent.specialties;
       } else if (agent.subtypes) {
         categories = String(agent.subtypes).split(',');
       } else if (agent.category) {
         categories = [agent.category];
-      } else if (agent.specialties && Array.isArray(agent.specialties)) {
-        categories = agent.specialties;
       }
 
       const categoryText = categories.join(' ').toLowerCase();
