@@ -24,6 +24,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import MigrateData from "./pages/MigrateData";
 import VerifyAgentListing from "./pages/VerifyAgentListing";
 import AgentOnboarding from "./pages/AgentOnboarding";
+import AgentPayment from "./pages/AgentPayment";
+import AgentPaymentSuccess from "./pages/AgentPaymentSuccess";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 
@@ -60,6 +62,8 @@ const App = () => (
                   <Route path="/book-appointment-robert" element={<BookAppointment />} />
                   {/* Agent Onboarding */}
                   <Route path="/agent-onboarding" element={<AgentOnboarding />} />
+                  <Route path="/agent-onboarding/payment" element={<AgentPayment />} />
+                  <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
                   {/* Verification funnel */}
                   <Route path="/verify/:token" element={<VerifyListing />} />
                   <Route path="/verify/:token/details" element={<VerifyDetails />} />
