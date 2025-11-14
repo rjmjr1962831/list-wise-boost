@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
-import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Progress } from '@/components/ui/progress';
 import { OnboardingIntro } from '@/components/onboarding/OnboardingIntro';
@@ -180,8 +179,6 @@ export default function AgentOnboarding() {
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
-        <Header />
-        
         <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
           {currentStep > 0 && (
             <div className="mb-8">
