@@ -82,8 +82,7 @@ const TermsOfService = () => {
             <div style={{ lineHeight: '1.5', marginTop: '20px' }}>
               <span style={{ fontSize: '15px' }}>
                 <span data-custom-class="body_text">
-                  Welcome to Top10Lists.us ("Company," "we," "our," "us"). These Terms of Service ("Terms") govern your use of our website located at <Link to="/" data-custom-class="link" target="_blank" rel="noopener noreferrer">https://top10lists.us</Link> and any related services provided by Top10Lists.us.
-                </span>
+                  Welcome to Top10Lists.us ("Company," "we," "our," "us"). These Terms of Service ("Terms") govern your use of our website located at <Link to="/" data-custom-class="link">https://top10lists.us</Link> and any related services provided by Top10Lists.us.
                 </span>
               </span>
             </div>
@@ -324,11 +323,11 @@ const TermsOfService = () => {
 
             <div style={{ lineHeight: '1.5', marginTop: '30px', paddingTop: '20px', borderTop: '1px solid #ddd' }}>
               <span style={{ fontSize: '14px', color: '#595959' }}>
-                <Link to="/" style={{ color: '#3030F1', textDecoration: 'none' }} target="_blank" rel="noopener noreferrer">
+                <Link to="/" style={{ color: '#3030F1', textDecoration: 'none' }}>
                   ← Back to Home
                 </Link>
                 {' | '}
-                <Link to="/privacy" style={{ color: '#3030F1', textDecoration: 'none' }} target="_blank" rel="noopener noreferrer">
+                <Link to="/privacy" style={{ color: '#3030F1', textDecoration: 'none' }}>
                   Privacy Policy
                 </Link>
               </span>
