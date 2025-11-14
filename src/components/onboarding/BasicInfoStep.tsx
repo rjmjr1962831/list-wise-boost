@@ -22,6 +22,8 @@ interface BasicInfoStepProps {
 export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoStepProps) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [bioSource, setBioSource] = useState<'zillow' | 'redfin' | 'new'>('new');
+  const [isFetchingBio, setIsFetchingBio] = useState(false);
 
   const validateWebsite = (url: string): string => {
     if (!url) return url;
@@ -83,6 +85,47 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
     }
   };
 
+  const fetchBioFromSource = async (source: 'zillow' | 'redfin') => {
+    if (!data.zillowUrl && source === 'zillow') {
+      toast.error('Please provide your Zillow URL first');
+      return;
+    }
+
+    setIsFetchingBio(true);
+    try {
+      if (source === 'zillow') {
+        // Fetch from Zillow profile
+        const { data: result, error } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+          body: { profileUrl: data.zillowUrl },
+        });
+
+        if (error) throw error;
+        if (result?.bio) {
+          updateData({ bio: result.bio.slice(0, 5000) });
+          toast.success('Bio imported from Zillow!');
+        } else {
+          toast.warning('No bio found on Zillow profile');
+        }
+      } else if (source === 'redfin') {
+        toast.info('Redfin bio import coming soon. Please use manual entry.');
+      }
+    } catch (error) {
+      console.error('Bio fetch error:', error);
+      toast.error(`Failed to fetch bio from ${source}. Please enter manually.`);
+    } finally {
+      setIsFetchingBio(false);
+    }
+  };
+
+  const handleBioSourceChange = (source: 'zillow' | 'redfin' | 'new') => {
+    setBioSource(source);
+    if (source === 'new') {
+      updateData({ bio: '' });
+    } else {
+      fetchBioFromSource(source);
+    }
+  };
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -91,6 +134,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
     if (data.isTeamMember && !data.teamName?.trim()) newErrors.teamName = 'Team name is required';
     if (!data.bio.trim()) newErrors.bio = 'Bio is required';
     if (data.bio.length < 50) newErrors.bio = 'Bio must be at least 50 characters';
+    if (data.bio.length > 5000) newErrors.bio = 'Bio must not exceed 5000 characters';
     if (!data.state) newErrors.state = 'State is required';
     if (!data.licenseNumber.trim()) newErrors.licenseNumber = 'License number is required';
     if (!data.yearsExperience || data.yearsExperience < 0) newErrors.yearsExperience = 'Years of experience is required';
@@ -220,17 +264,51 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
             <Label htmlFor="bio">
               Professional Bio * 
               <span className="text-xs text-muted-foreground ml-2">
-                ({data.bio.length}/500 characters, minimum 50)
+                ({data.bio.length}/5000 characters, minimum 50)
               </span>
             </Label>
+            
+            {/* Bio Source Radio Group */}
+            <RadioGroup
+              value={bioSource}
+              onValueChange={(value) => handleBioSourceChange(value as 'zillow' | 'redfin' | 'new')}
+              className="flex gap-4 mb-2"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="zillow" id="bio-zillow" />
+                <Label htmlFor="bio-zillow" className="cursor-pointer font-normal">
+                  Import from Zillow
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="redfin" id="bio-redfin" />
+                <Label htmlFor="bio-redfin" className="cursor-pointer font-normal">
+                  Import from Redfin
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="new" id="bio-new" />
+                <Label htmlFor="bio-new" className="cursor-pointer font-normal">
+                  Write New Bio
+                </Label>
+              </div>
+            </RadioGroup>
+
             <Textarea
               id="bio"
               value={data.bio}
-              onChange={(e) => updateData({ bio: e.target.value.slice(0, 500) })}
+              onChange={(e) => updateData({ bio: e.target.value.slice(0, 5000) })}
               placeholder="Describe your services, experience, and what makes you unique..."
-              rows={5}
+              rows={8}
+              disabled={isFetchingBio}
               className={errors.bio ? 'border-destructive' : ''}
             />
+            {isFetchingBio && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Fetching bio from {bioSource}...
+              </div>
+            )}
             {errors.bio && (
               <p className="text-sm text-destructive">{errors.bio}</p>
             )}
