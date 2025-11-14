@@ -54,7 +54,11 @@ serve(async (req) => {
               zipcode: location,
               location,
               query: `${agentName} ${location ?? ''}`.trim(),
-              proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+              proxy: { 
+                useApifyProxy: true, 
+                apifyProxyGroups: ['RESIDENTIAL'],
+                apifyProxyCountry: 'US'
+              },
             }),
           }
         );
@@ -144,7 +148,11 @@ serve(async (req) => {
             profileUrl,
             maxReviews: 100,
             maxItems: 200,
-            proxy: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] },
+            proxy: { 
+              useApifyProxy: true, 
+              apifyProxyGroups: ['RESIDENTIAL'],
+              apifyProxyCountry: 'US'
+            },
           }),
         }
       );

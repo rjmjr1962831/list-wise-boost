@@ -51,7 +51,8 @@ serve(async (req) => {
           urls: [{ url: profileUrl }],
           proxyConfiguration: {
             useApifyProxy: true,
-            apifyProxyGroups: ['RESIDENTIAL']
+            apifyProxyGroups: ['RESIDENTIAL'],
+            apifyProxyCountry: 'US'
           }
         }),
       }
