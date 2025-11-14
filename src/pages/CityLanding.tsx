@@ -141,9 +141,21 @@ export default function CityLanding() {
             </p>
             <div className="mt-6 flex justify-center">
               {isEnsuring ? (
-                <div className="flex items-center gap-3 text-muted-foreground">
-                  <span className="h-5 w-5 rounded-full border-2 border-primary border-t-transparent animate-spin" aria-hidden="true" />
-                  <span>{ensureMsg || 'Preparing list…'}</span>
+                <div className="flex flex-col items-center gap-6 text-center max-w-xl p-8 bg-card/50 border border-primary/20 rounded-2xl animate-scale-in">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 animate-pulse">
+                    <span className="h-10 w-10 rounded-full border-4 border-primary border-t-transparent animate-spin" aria-hidden="true" />
+                  </div>
+                  <div className="space-y-3">
+                    <p className="text-xl font-semibold text-foreground">{ensureMsg || 'Preparing list…'}</p>
+                    {ensureMsg.includes('Fetching') && (
+                      <div className="space-y-2">
+                        <p className="text-3xl font-bold text-primary animate-pulse">2,000,000+</p>
+                        <p className="text-sm text-muted-foreground">
+                          data points being analyzed to find top agents
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <Button asChild size="lg">
