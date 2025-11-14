@@ -122,6 +122,11 @@ serve(async (req) => {
 
       const apifyInput = {
         location: location,
+        proxy: {
+          useApifyProxy: true,
+          apifyProxyGroups: ["RESIDENTIAL"],
+          apifyProxyCountry: "US"
+        }
       };
 
       const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`, {
