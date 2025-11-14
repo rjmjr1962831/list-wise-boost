@@ -85,6 +85,8 @@ export const useZillowStats = (
         }
 
         // Fallback: Apify-based agent stats if profile scrape didn't return
+        // COMMENTED OUT: Using jupri/zillow-agents instead of getdataforme
+        /*
         if (!resolvedStats) {
           const apifyResp = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
             body: {
@@ -119,6 +121,7 @@ export const useZillowStats = (
             zipCandidate = s.zipCode ?? zipCandidate;
           }
         }
+        */
 
         if (resolvedStats) {
           setStats(resolvedStats as ZillowStats);
