@@ -15,13 +15,14 @@ interface ZillowReviewsData {
   profileUrl?: string;
 }
 
-export const useZillowReviews = (zuid: string | null, agentName?: string | null, market?: string | null) => {
+export const useZillowReviews = (zuid: string | null, agentName?: string | null, market?: string | null, lazyLoad: boolean = false) => {
   const [reviews, setReviews] = useState<ZillowReviewsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [shouldFetch, setShouldFetch] = useState(!lazyLoad);
 
   useEffect(() => {
-    if (!zuid && !(agentName && market)) {
+    if (!shouldFetch || (!zuid && !(agentName && market))) {
       setReviews(null);
       return;
     }
@@ -118,7 +119,7 @@ export const useZillowReviews = (zuid: string | null, agentName?: string | null,
     };
 
     fetchReviews();
-  }, [zuid, agentName, market]);
+  }, [shouldFetch, zuid, agentName, market]);
 
-  return { reviews, loading, error };
+  return { reviews, loading, error, triggerFetch: () => setShouldFetch(true) };
 };

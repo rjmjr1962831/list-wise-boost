@@ -9,13 +9,23 @@ interface ZillowReviewsSectionProps {
   zuid?: string;
   agentName?: string;
   market?: string;
+  lazyLoad?: boolean;
 }
 
-export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsSectionProps) => {
-  const { reviews, loading, error } = useZillowReviews(zuid ?? null, agentName ?? null, market ?? null);
+export const ZillowReviewsSection = ({ zuid, agentName, market, lazyLoad = false }: ZillowReviewsSectionProps) => {
+  const { reviews, loading, error, triggerFetch } = useZillowReviews(zuid ?? null, agentName ?? null, market ?? null, lazyLoad);
   const { trackEvent } = useGA4Tracking();
   const [expanded, setExpanded] = useState(false);
   const [expandedMap, setExpandedMap] = useState<Record<number, boolean>>({});
+  const [hasTriggered, setHasTriggered] = useState(false);
+
+  const handleExpand = () => {
+    if (lazyLoad && !hasTriggered && !reviews) {
+      triggerFetch();
+      setHasTriggered(true);
+    }
+    setExpanded(!expanded);
+  };
 
   const truncateWords = (text: string, limit = 60) => {
     const words = (text || '').trim().split(/\s+/);
@@ -31,6 +41,41 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
       market: market || '',
     });
   };
+
+  if (lazyLoad && !hasTriggered) {
+    const link = zuid ? `https://www.zillow.com/profile/${zuid}` : undefined;
+    return (
+      <div className="mt-4 pt-4 border-t">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-lg font-semibold">Zillow Reviews</h4>
+          {link && (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => trackEvent('press_mention_click', {
+                agent_name: agentName || 'Unknown',
+                source: 'Zillow Reviews',
+                market: market || '',
+              })}
+              className="text-sm text-primary hover:underline inline-flex items-center gap-1"
+              aria-label="View agent profile on Zillow"
+            >
+              View Profile <ExternalLink className="h-4 w-4" />
+            </a>
+          )}
+        </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full"
+          onClick={handleExpand}
+        >
+          Load Reviews
+        </Button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -198,7 +243,7 @@ export const ZillowReviewsSection = ({ zuid, agentName, market }: ZillowReviewsS
                 market: market || '',
               });
             }
-            setExpanded(!expanded);
+            handleExpand();
           }}
         >
           <span className="flex items-center justify-center gap-2">
