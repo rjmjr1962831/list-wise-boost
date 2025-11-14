@@ -162,45 +162,38 @@ export async function autoImportZillowAgents(
             }
           }
           
-          // Auto-lookup license number
+          // Auto-lookup license number (non-blocking)
           if (insertedData) {
-            try {
-              console.log(`Looking up license for ${professionalData.name}...`);
-              const licenseLookupUrl = getLicenseLookupByStateAbbr(state);
-              
-              if (licenseLookupUrl) {
-                const { data: licenseData, error: licenseError } = await supabase.functions.invoke('lookup-agent-license', {
-                  body: {
-                    agentName: professionalData.name,
-                    state: state,
-                    licensePortalUrl: licenseLookupUrl
-                  }
-                });
-                
-                if (!licenseError && licenseData?.licenseNumber) {
-                  console.log(`License found for ${professionalData.name}: ${licenseData.licenseNumber}`);
+            console.log(`Looking up license for ${professionalData.name}...`);
+            const licenseLookupUrl = getLicenseLookupByStateAbbr(state);
+            if (licenseLookupUrl) {
+              (async () => {
+                try {
+                  const { data: licenseData, error: licenseError } = await supabase.functions.invoke('lookup-agent-license', {
+                    body: {
+                      agentName: professionalData.name,
+                      state: state,
+                      licensePortalUrl: licenseLookupUrl
+                    }
+                  });
                   
-                  // Update the professional with the license number
-                  const { error: updateError } = await supabase
-                    .from('professionals')
-                    .update({ license_number: licenseData.licenseNumber })
-                    .eq('id', insertedData.id);
-                  
-                  if (!updateError) {
-                    result.licensesFound++;
-                  } else {
-                    console.error(`Failed to update license for ${professionalData.name}:`, updateError);
+                  if (!licenseError && licenseData?.licenseNumber) {
+                    console.log(`License found for ${professionalData.name}: ${licenseData.licenseNumber}`);
+                    const { error: updateError } = await supabase
+                      .from('professionals')
+                      .update({ license_number: licenseData.licenseNumber })
+                      .eq('id', insertedData.id);
+                    
+                    if (!updateError) {
+                      result.licensesFound++;
+                    } else {
+                      console.error(`Failed to update license for ${professionalData.name}:`, updateError);
+                    }
                   }
-                } else {
-                  console.log(`No license found for ${professionalData.name}`);
+                } catch (licenseErr) {
+                  console.error(`Error looking up license for ${professionalData.name}:`, licenseErr);
                 }
-              }
-              
-              // Small delay to avoid overwhelming the license lookup API
-              await new Promise(resolve => setTimeout(resolve, 1500));
-            } catch (licenseErr) {
-              console.error(`Error looking up license for ${professionalData.name}:`, licenseErr);
-              // Don't fail the import if license lookup fails
+              })();
             }
           }
           
