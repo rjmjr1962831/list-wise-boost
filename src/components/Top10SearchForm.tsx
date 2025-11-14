@@ -110,6 +110,10 @@ export const Top10SearchForm = () => {
       
       if (!categoriesError && categoriesData) {
         setCategories(categoriesData);
+        // Auto-select the category if there's only one
+        if (categoriesData.length === 1) {
+          setSelectedCategory(categoriesData[0].id);
+        }
       }
 
       // Fetch cities
