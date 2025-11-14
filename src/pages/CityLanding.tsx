@@ -136,8 +136,7 @@ export default function CityLanding() {
               Finding Top-Rated Real Estate Agents in {city.name}
             </h1>
             <p className="text-xl text-muted-foreground mb-8">
-              Discover the best dentists, real estate agents, lawyers, and restaurants in {formatCityName(city)}. 
-              All professionals are expert-vetted with verified reviews.
+              Finding the Best Real Estate Agents in {city.name}
             </p>
             <div className="mt-6 flex justify-center">
               {isEnsuring ? (
