@@ -72,21 +72,17 @@ serve(async (req) => {
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'scraped~zillow-agent-scraper';
+    const rawActorId = Deno.env.get('APIFY_ACTOR_ID')?.trim() || 'hello.datawizards/Real-Estate-Agents-Scraper';
     const actorId = rawActorId.includes('/') ? rawActorId.replace('/', '~') : rawActorId;
     console.log(`Fetching agents from Apify (actor: ${actorId})`);
 
-    // scraped/zillow-agent-scraper expects zip code
-    const apifyInput = zipCode 
-      ? {
-          zipCode: zipCode,
-          maxItems: 15
-        }
-      : {
-          query: [],
-          limit: 15,
-          filters: { location: `${city}, ${state}` }
-        };
+    // hello.datawizards/Real-Estate-Agents-Scraper expects specific format
+    const apifyInput = {
+      zipCode: zipCode || '93720', // Default Fresno zip if none found
+      maxItems: 15,
+      scrapeReviews: true,
+      scrapePhotos: true
+    };
 
     const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${apiToken}`, {
       method: 'POST',
@@ -148,20 +144,25 @@ serve(async (req) => {
         console.log('First agent sample:', JSON.stringify(agent).substring(0, 500));
       }
       
-      // Handle multiple possible field names from different Apify actors (scraped/zillow-agent-scraper format)
-      const name = agent.name || agent.agentName || agent['Business Name'] || agent.title || agent.fullName || agent.agent_name || '';
-      const phone = agent.phone || agent.phoneNumber || agent['Phone Number'] || agent.call_number || agent.contact_phone || null;
-      const website = agent.url || agent.profileUrl || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || agent.profile_url || null;
-      const thumbnail = agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || agent.photo_url || agent.image_url || null;
+      // Handle hello.datawizards/Real-Estate-Agents-Scraper format (prioritized)
+      const name = agent.agentName || agent.name || agent['Business Name'] || agent.title || agent.fullName || agent.agent_name || '';
+      const phone = agent.phoneNumber || agent.phone || agent['Phone Number'] || agent.call_number || agent.contact_phone || null;
+      const website = agent.profileUrl || agent.url || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || agent.profile_url || null;
+      const thumbnail = agent.photoUrl || agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || agent.photo_url || agent.image_url || null;
       const address = agent.address || agent.location || agent['Address'] || agent.full_address || agent.city || agent.office_address || '';
-      const rating = agent.rating || agent['Rating'] || agent.stars || agent.score || agent.review_rating || 4.5;
-      const reviews = agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.reviewCount || agent.total_reviews || 0;
+      const rating = agent.rating || agent.reviewRating || agent['Rating'] || agent.stars || agent.score || agent.review_rating || 4.5;
+      const reviews = agent.reviewCount || agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.total_reviews || 0;
+      const company = agent.brokerageName || agent.brokerage || agent.company || agent.businessName || agent['Business Name'] || 'Independent';
+      const zuid = agent.zuid || agent.zillowId || null;
+      const totalSales = agent.salesLast12Months || agent.totalSales || agent.recentSales || null;
+      const currentListings = agent.activeListings || agent.currentListings || null;
+      const yearsExperience = agent.yearsOfExperience || agent.yearsExperience || agent.experience || null;
       
       let categories: string[] = [];
-      if (Array.isArray(agent.categories)) {
-        categories = agent.categories;
-      } else if (Array.isArray(agent.specialties)) {
+      if (Array.isArray(agent.specialties)) {
         categories = agent.specialties;
+      } else if (Array.isArray(agent.categories)) {
+        categories = agent.categories;
       } else if (agent.subtypes) {
         categories = String(agent.subtypes).split(',');
       } else if (agent.category) {
@@ -180,7 +181,7 @@ serve(async (req) => {
         email: website ? `info@${String(website).replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : null,
         phoneNumber: phone,
         phone,
-        businessName: name,
+        businessName: company,
         profileLink: website,
         website,
         reviewStarsRating: Number(rating) || 4.5,
@@ -194,6 +195,10 @@ serve(async (req) => {
         location: address,
         address,
         full_address: address,
+        zuid,
+        totalSales: totalSales ? Number(totalSales) : null,
+        currentListings: currentListings ? Number(currentListings) : null,
+        yearsExperience: yearsExperience ? Number(yearsExperience) : null,
       };
     }
 
