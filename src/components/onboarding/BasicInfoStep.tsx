@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -137,6 +138,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
     else if (!validateEmail(data.email)) newErrors.email = 'Invalid email format';
     if (!data.phone.trim()) newErrors.phone = 'Phone number is required';
     else if (!validatePhone(data.phone)) newErrors.phone = 'Invalid phone number format';
+    if (!data.smsConsent) newErrors.smsConsent = 'You must agree to receive SMS notifications';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -498,11 +500,23 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
               placeholder="(555) 123-4567"
               className={errors.phone ? 'border-destructive' : ''}
             />
-            <p className="text-xs text-muted-foreground">
-              Required for SMS notifications when you receive inquiries
-            </p>
             {errors.phone && (
               <p className="text-sm text-destructive">{errors.phone}</p>
+            )}
+            
+            <div className="flex items-start space-x-2 mt-3">
+              <Checkbox
+                id="smsConsent"
+                checked={data.smsConsent}
+                onCheckedChange={(checked) => updateData({ smsConsent: checked as boolean })}
+                className="mt-1"
+              />
+              <Label htmlFor="smsConsent" className="font-normal cursor-pointer text-xs leading-relaxed">
+                By providing your mobile number, you agree to receive recurring text messages from Aryah, Inc, dba Top10lists.us. Message & data rates may apply. Reply STOP to unsubscribe or HELP for help
+              </Label>
+            </div>
+            {errors.smsConsent && (
+              <p className="text-sm text-destructive">{errors.smsConsent}</p>
             )}
           </div>
         </CardContent>
