@@ -1,9 +1,15 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.send-api-failure-alert]
+verify_jwt = false
+
 [functions.check-rate-limit]
 verify_jwt = false
 
 [functions.fetch-zillow-agents]
+verify_jwt = false
+
+[functions.fetch-zillow-agents-bulk]
 verify_jwt = false
 
 [functions.fetch-zillow-reviews]
@@ -24,7 +30,5 @@ verify_jwt = false
 [functions.send-contact-email]
 verify_jwt = false
 
-
 [functions.fetch-getdataforme-agent-stats]
 verify_jwt = false
-

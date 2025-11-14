@@ -7,23 +7,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface ApifyAgentData {
-  name: string;
-  name_for_emails?: string;
-  phone?: string;
-  site?: string;
-  rating?: number;
-  reviews?: number;
-  reviews_data?: Array<{
-    review_text: string;
-    review_rating: number;
-    author_title: string;
-    review_datetime_utc: string;
-  }>;
-  subtypes?: string;
-  full_address?: string;
-  logo?: string;
-  category?: string;
+async function sendFailureAlert(functionName: string, error: string, context?: any) {
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Cannot send alert: Supabase credentials missing');
+      return;
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    await supabase.functions.invoke('send-api-failure-alert', {
+      body: {
+        functionName,
+        error,
+        context,
+        timestamp: new Date().toISOString()
+      }
+    });
+  } catch (e) {
+    console.error('Failed to send alert email:', e);
+  }
 }
 
 serve(async (req) => {
@@ -34,146 +40,84 @@ serve(async (req) => {
   try {
     const { city, state } = await req.json();
     
-    const RAPIDAPI_KEY = Deno.env.get('RAPIDAPI_KEY')?.trim();
-    const RAPIDAPI_HOST = Deno.env.get('RAPIDAPI_HOST')?.trim();
-    const OUTSCRAPER_API_KEY = Deno.env.get('OUTSCRAPER_API_KEY')?.trim();
     const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN')?.trim();
+
+    if (!APIFY_API_TOKEN) {
+      const error = 'Apify API token not configured';
+      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state });
+      throw new Error(error);
+    }
 
     const query = `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    async function tryRapidAPI() {
-      if (!RAPIDAPI_KEY || !RAPIDAPI_HOST) {
-        console.warn('RapidAPI not configured');
-        return [] as any[];
-      }
+    const actorId = 'getdataforme~zillow-real-state-agents-scraper';
+    const location = `${city}, ${state}`;
+    console.log(`Fetching agents from Apify for: ${location}`);
 
-      const baseUrl = `https://${RAPIDAPI_HOST}`;
-      const paths = RAPIDAPI_HOST.includes('local-business-data')
-        ? ['/search']
-        : ['/maps/search', '/search', '/places', '/textsearch'];
-
-      for (const path of paths) {
-        try {
-          const url = new URL(path, baseUrl);
-          url.searchParams.set('query', query);
-          url.searchParams.set('limit', '15');
-          const resp = await fetch(url.toString(), {
-            method: 'GET',
-            headers: {
-              'X-RapidAPI-Key': RAPIDAPI_KEY,
-              'X-RapidAPI-Host': RAPIDAPI_HOST,
-            },
-          });
-          if (!resp.ok) {
-            const t = await resp.text();
-            console.warn(`RapidAPI ${path} error:`, resp.status, t);
-            if (resp.status === 404) continue;
-            continue;
-          }
-          const json = await resp.json();
-          const data = Array.isArray(json) ? json : (json.data || json.results || json.items || []);
-          if (Array.isArray(data) && data.length > 0) {
-            console.log(`RapidAPI ${path} returned ${data.length} results`);
-            return data;
-          }
-        } catch (e) {
-          console.warn(`RapidAPI ${path} exception:`, e);
-          continue;
-        }
+    const apifyInput = {
+      location: location,
+      proxy: {
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"],
+        apifyProxyCountry: "US"
       }
-      return [] as any[];
-    }
+    };
 
-    async function tryOutscraper() {
-      if (!OUTSCRAPER_API_KEY) {
-        console.warn('Outscraper not configured');
-        return [] as any[];
-      }
-      const searchUrl = new URL('https://api.app.outscraper.com/maps/search-v3');
-      searchUrl.searchParams.append('query', query);
-      searchUrl.searchParams.append('limit', '15');
-      searchUrl.searchParams.append('language', 'en');
-      searchUrl.searchParams.append('region', 'us');
-      const resp = await fetch(searchUrl.toString(), {
-        method: 'GET',
-        headers: { 'X-API-KEY': OUTSCRAPER_API_KEY },
+    const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(apifyInput),
+    });
+
+    if (!startResp.ok) {
+      const errorText = await startResp.text();
+      console.error('Apify start error:', startResp.status, errorText);
+      await sendFailureAlert('fetch-zillow-agents-bulk', `Apify API start failed: ${startResp.status}`, {
+        city,
+        state,
+        error: errorText
       });
-      if (!resp.ok) {
-        const t = await resp.text();
-        console.warn('Outscraper search error:', resp.status, t);
-        return [] as any[];
-      }
-      const json = await resp.json();
-      const data = json.data?.[0] || [];
-      console.log(`Outscraper returned ${data.length} results`);
-      return data;
+      throw new Error(`Apify API request failed: ${startResp.status}`);
     }
 
-    async function tryApifyZillow() {
-      if (!APIFY_API_TOKEN) {
-        console.warn('Apify not configured');
-        return [] as any[];
-      }
-      
-      const actorId = 'getdataforme~zillow-real-state-agents-scraper';
-      const location = `${city}, ${state}`;
-      console.log(`Trying Apify Zillow scraper for: ${location}`);
+    const run = await startResp.json();
+    const runId = run.data.id;
+    console.log('Apify run started:', runId);
 
-      const apifyInput = {
-        location: location,
-        proxy: {
-          useApifyProxy: true,
-          apifyProxyGroups: ["RESIDENTIAL"],
-          apifyProxyCountry: "US"
-        }
-      };
-
-      const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(apifyInput),
-      });
-
-      if (!startResp.ok) {
-        const t = await startResp.text();
-        console.warn('Apify start error:', startResp.status, t);
-        return [] as any[];
-      }
-
-      const run = await startResp.json();
-      const runId = run.data.id;
-
-      // Poll for completion (max 60s)
-      let status = run.data.status;
-      let attempts = 0;
-      while (status !== 'SUCCEEDED' && status !== 'FAILED' && attempts < 30) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        const statusResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${APIFY_API_TOKEN}`);
-        if (!statusResp.ok) break;
-        const statusData = await statusResp.json();
-        status = statusData.data.status;
-        attempts++;
-      }
-
-      if (status !== 'SUCCEEDED') {
-        console.warn('Apify run did not succeed:', status);
-        return [] as any[];
-      }
-
-      const datasetId = run.data.defaultDatasetId;
-      const dataResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}`);
-      if (!dataResp.ok) {
-        console.warn('Apify dataset fetch failed');
-        return [] as any[];
-      }
-
-      const items = await dataResp.json();
-      console.log(`Apify Zillow returned ${items.length} results, limiting to 15`);
-      return items.slice(0, 15); // Only return top 15
+    // Poll for completion (max 60s)
+    let status = run.data.status;
+    let attempts = 0;
+    while (status !== 'SUCCEEDED' && status !== 'FAILED' && attempts < 30) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const statusResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${APIFY_API_TOKEN}`);
+      if (!statusResp.ok) break;
+      const statusData = await statusResp.json();
+      status = statusData.data.status;
+      console.log(`Apify run status: ${status} (attempt ${attempts + 1})`);
+      attempts++;
     }
 
-    function mapAgent(agent: any, source: string) {
+    if (status !== 'SUCCEEDED') {
+      const error = `Apify run did not succeed: ${status}`;
+      console.error(error);
+      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
+      throw new Error(error);
+    }
+
+    const datasetId = run.data.defaultDatasetId;
+    const dataResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}`);
+    if (!dataResp.ok) {
+      const error = 'Failed to fetch Apify dataset';
+      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, datasetId });
+      throw new Error(error);
+    }
+
+    const rawAgents = await dataResp.json();
+    console.log(`Apify returned ${rawAgents.length} results, limiting to 15`);
+    const items = rawAgents.slice(0, 15); // Only return top 15
+
+    function mapAgent(agent: any) {
       // Handle Apify Zillow scraper format (capital case column names)
       const name = agent['Business Name'] || agent.name || agent.title || agent.fullName || '';
       const phone = agent['Phone Number'] || agent.phone || agent.phoneNumber || agent.call_number || null;
@@ -197,51 +141,37 @@ serve(async (req) => {
       const categoryText = categories.join(' ').toLowerCase();
       const isRealEstateAgent = categoryText.includes('real estate') || 
                                  categoryText.includes('realtor') ||
-                                 source === 'apify-zillow'; // Zillow scraper only returns agents
+                                 true; // Zillow scraper only returns agents
 
       return {
         isRealEstateAgent,
         fullName: name,
         name,
         email: website ? `info@${String(website).replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : null,
+        phoneNumber: phone,
         phone,
-        website,
-        profilePhotoSrc: thumbnail,
+        businessName: name,
         profileLink: website,
-        company: name.includes(',') ? name.split(',')[1].trim() : 'Independent Agent',
+        website,
+        reviewStarsRating: Number(rating) || 4.5,
         rating,
-        reviewCount: reviews,
-        numTotalReviews: reviews,
+        numTotalReviews: Number(reviews) || 0,
+        reviews,
+        reviewCount: Number(reviews) || 0,
         specialties: extractSpecialtiesFromCategories(categories),
+        thumbnail,
+        profilePhotoSrc: thumbnail,
+        location: address,
         address,
-        reviews: [],
-        totalSales: Math.floor(reviews / 8),
-        currentListings: Math.max(1, Math.floor(reviews / 100)),
+        full_address: address,
       };
     }
 
-    // Try providers in order: RapidAPI -> Outscraper -> Apify Zillow
-    let rawAgents: any[] = [];
-    let source = '';
-    
-    rawAgents = await tryRapidAPI();
-    if (rawAgents && rawAgents.length > 0) {
-      source = 'rapidapi';
-    } else {
-      rawAgents = await tryOutscraper();
-      if (rawAgents && rawAgents.length > 0) {
-        source = 'outscraper';
-      } else {
-        rawAgents = await tryApifyZillow();
-        source = 'apify-zillow';
-      }
-    }
+    console.log(`Using Apify source, raw count: ${items.length}`);
 
-    console.log(`Using source: ${source}, raw count: ${rawAgents.length}`);
-
-    const transformedAgents = (rawAgents || [])
-      .map(a => mapAgent(a, source))
-      .filter((a) => a && a.isRealEstateAgent && a.name)
+    const transformedAgents = (items || [])
+      .map((a: any) => mapAgent(a))
+      .filter((a: any) => a && a.isRealEstateAgent && a.name)
       .slice(0, 10);
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
@@ -284,4 +214,3 @@ function extractSpecialtiesFromCategories(categories: string[]): string[] {
 
   return specialties.length > 0 ? specialties : ["Buyer's Agent", "Listing Agent"];
 }
-
