@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_applications: {
+        Row: {
+          bio: string
+          brokerage_name: string
+          cities: string[]
+          created_at: string
+          email: string
+          full_name: string
+          home_url: string | null
+          id: string
+          is_team_member: boolean
+          license_number: string
+          license_verified: boolean
+          phone: string
+          publish_email: boolean
+          redfin_url: string | null
+          specialties: string[]
+          state: string
+          status: string
+          team_name: string | null
+          updated_at: string
+          website: string
+          zillow_url: string | null
+          zip_codes: Json
+        }
+        Insert: {
+          bio: string
+          brokerage_name: string
+          cities?: string[]
+          created_at?: string
+          email: string
+          full_name: string
+          home_url?: string | null
+          id?: string
+          is_team_member?: boolean
+          license_number: string
+          license_verified?: boolean
+          phone: string
+          publish_email?: boolean
+          redfin_url?: string | null
+          specialties?: string[]
+          state: string
+          status?: string
+          team_name?: string | null
+          updated_at?: string
+          website: string
+          zillow_url?: string | null
+          zip_codes?: Json
+        }
+        Update: {
+          bio?: string
+          brokerage_name?: string
+          cities?: string[]
+          created_at?: string
+          email?: string
+          full_name?: string
+          home_url?: string | null
+          id?: string
+          is_team_member?: boolean
+          license_number?: string
+          license_verified?: boolean
+          phone?: string
+          publish_email?: boolean
+          redfin_url?: string | null
+          specialties?: string[]
+          state?: string
+          status?: string
+          team_name?: string | null
+          updated_at?: string
+          website?: string
+          zillow_url?: string | null
+          zip_codes?: Json
+        }
+        Relationships: []
+      }
       appointment_types: {
         Row: {
           active: boolean | null
@@ -338,6 +413,8 @@ export type Database = {
           verification_token_expires_at: string | null
           website: string | null
           years_experience: number | null
+          zillow_data_fetched_at: string | null
+          zillow_profile_url: string | null
           zip_code: string | null
           zuid: string | null
         }
@@ -372,6 +449,8 @@ export type Database = {
           verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
+          zillow_data_fetched_at?: string | null
+          zillow_profile_url?: string | null
           zip_code?: string | null
           zuid?: string | null
         }
@@ -406,6 +485,8 @@ export type Database = {
           verification_token_expires_at?: string | null
           website?: string | null
           years_experience?: number | null
+          zillow_data_fetched_at?: string | null
+          zillow_profile_url?: string | null
           zip_code?: string | null
           zuid?: string | null
         }
