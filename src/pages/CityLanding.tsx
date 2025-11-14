@@ -165,7 +165,7 @@ export default function CityLanding() {
             Get listed on Top10Lists and connect with potential clients in {city.name}.
           </p>
           <Button asChild size="lg">
-            <Link to="/main">Apply Now</Link>
+            <Link to="/agent-onboarding">Apply Now</Link>
           </Button>
         </div>
       </section>
