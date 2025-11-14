@@ -61,13 +61,14 @@ serve(async (req) => {
     const detailsRunId = detailsRun.data.id;
     console.log('Apify run started:', detailsRunId);
 
-    // Poll for completion (max 60s)
+    // Poll for completion (max ~10s)
     let detailsStatus = detailsRun.data.status;
     let attempts = 0;
-    const maxAttempts = 30;
+    const maxAttempts = 10;
 
     while (detailsStatus !== 'SUCCEEDED' && detailsStatus !== 'FAILED' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      attempts++;
       attempts++;
       
       const statusResp = await fetch(`https://api.apify.com/v2/acts/${detailsActorId}/runs/${detailsRunId}?token=${apiToken}`);

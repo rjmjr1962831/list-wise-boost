@@ -356,9 +356,9 @@ export default function DynamicCategoryList() {
       try {
         const { autoImportZillowAgents } = await import('@/utils/zillowAutoImport');
         
-        // Add timeout to prevent hanging
+        // Add timeout to prevent hanging (extended to 180s to allow background fetches)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Import timed out after 60 seconds')), 60000)
+          setTimeout(() => reject(new Error('Import timed out after 180 seconds')), 180000)
         );
         
         const result = await Promise.race([
