@@ -51,7 +51,7 @@ serve(async (req) => {
     const query = `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    const actorId = 'getdataforme~zillow-real-state-agents-scraper';
+    const actorId = 'jupri/zillow-agents';
     const location = `${city}, ${state}`;
     console.log(`Fetching agents from Apify for: ${location}`);
 
