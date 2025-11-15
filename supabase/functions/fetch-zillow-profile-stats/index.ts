@@ -34,11 +34,11 @@ serve(async (req) => {
 
     console.log(`Using Apify to fetch profile: ${fullUrl}`);
 
-    // Use zillowscraper/zillow-agent-details-scraper
-    const detailsActorId = 'zillowscraper~zillow-agent-details-scraper';
+    // Use scrapestorm/zillow-find-a-real-estate-agent
+    const detailsActorId = 'scrapestorm~zillow-find-a-real-estate-agent';
     
     const detailsInput = {
-      agent_url: fullUrl,
+      startUrls: [{ url: fullUrl }],
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
@@ -61,10 +61,10 @@ serve(async (req) => {
     const detailsRunId = detailsRun.data.id;
     console.log('Apify run started:', detailsRunId);
 
-    // Poll for completion (max ~10s)
+    // Poll for completion (max ~60s)
     let detailsStatus = detailsRun.data.status;
     let attempts = 0;
-    const maxAttempts = 10;
+    const maxAttempts = 60;
 
     while (detailsStatus !== 'SUCCEEDED' && detailsStatus !== 'FAILED' && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -95,14 +95,14 @@ serve(async (req) => {
     const profileData = items[0];
     console.log('Profile data keys:', Object.keys(profileData));
 
-    // Extract stats from the actual Apify response structure
-    const pastSalesTotal = profileData.pastSales?.total || 0;
-    const currentListingsCount = profileData.currentListings?.total || 0;
+    // Extract stats from the scrapestorm actor response structure
+    const pastSalesTotal = profileData.sales_last_year || profileData.total_sales || 0;
+    const currentListingsCount = profileData.for_sale_listings || profileData.current_listings || 0;
     
-    // Extract years of experience - check multiple possible locations
+    // Extract years of experience
     let yearsExperience = 0;
-    if (profileData.displayUser?.businessCard?.yearsOfExperience) {
-      const yearsText = profileData.displayUser.businessCard.yearsOfExperience;
+    if (profileData.years_of_experience) {
+      const yearsText = String(profileData.years_of_experience);
       const match = yearsText.match(/(\d+)/);
       yearsExperience = match ? parseInt(match[1]) : 0;
     }
@@ -111,14 +111,14 @@ serve(async (req) => {
       forSale: currentListingsCount,
       sold: pastSalesTotal,
       forRent: 0,
-      reviews: profileData.reviewCount || 0,
+      reviews: profileData.review_count || profileData.reviews || 0,
       currentListings: currentListingsCount,
       totalSales: pastSalesTotal,
       yearsExperience: yearsExperience,
-      specialties: profileData.getToKnowMe?.specialties || [],
-      phone: profileData.displayUser?.businessCard?.phone || null,
-      email: profileData.displayUser?.businessCard?.email || null,
-      brokerage: profileData.displayUser?.businessCard?.brokerageName || null,
+      specialties: profileData.specialties || [],
+      phone: profileData.phone || null,
+      email: profileData.email || null,
+      brokerage: profileData.brokerage || profileData.company || null,
     };
 
     console.log('Extracted stats:', JSON.stringify(stats, null, 2));
