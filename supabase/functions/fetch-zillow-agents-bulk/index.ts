@@ -38,7 +38,7 @@ serve(async (req) => {
   }
 
   try {
-    const { city, state } = await req.json();
+    const { city, state, categoryId, cityId } = await req.json();
     
     const apiToken = Deno.env.get('APIFY_API_KEY')?.trim() || Deno.env.get('APIFY_API_TOKEN')?.trim();
 
@@ -211,10 +211,6 @@ serve(async (req) => {
       .slice(0, 10);
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
-
-    // Get request parameters for database operations
-    const requestBody = await req.clone().json();
-    const { categoryId, cityId } = requestBody;
 
     if (!categoryId || !cityId) {
       console.warn('Missing categoryId or cityId - returning agents without saving');
