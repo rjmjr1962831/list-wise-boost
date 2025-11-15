@@ -132,6 +132,7 @@ serve(async (req) => {
     const run = await startResp.json();
     const runId = run.data.id;
     console.log('Apify run started:', runId);
+    const datasetId = run.data.defaultDatasetId;
 
     // Poll for completion (max 180s)
     let status = run.data.status;
@@ -147,13 +148,40 @@ serve(async (req) => {
     }
 
     if (status !== 'SUCCEEDED') {
-      const error = `Apify run did not succeed: ${status}`;
-      console.error(error);
-      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
-      throw new Error(error);
+      // Fallback: proceed if dataset already has items even if run still RUNNING
+      if (datasetId) {
+        try {
+          const probeResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}&limit=1`);
+          if (probeResp.ok) {
+            const probeItems = await probeResp.json();
+            if (Array.isArray(probeItems) && probeItems.length > 0) {
+              console.warn('Apify run still running but dataset has items; proceeding');
+            } else {
+              const error = `Apify run did not succeed: ${status}`;
+              console.error(error);
+              await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
+              throw new Error(error);
+            }
+          } else {
+            const error = `Apify dataset probe failed while status ${status}`;
+            console.error(error);
+            await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
+            throw new Error(error);
+          }
+        } catch (e) {
+          const error = `Apify run did not succeed and dataset unavailable: ${status}`;
+          console.error(error, e);
+          await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
+          throw new Error(error);
+        }
+      } else {
+        const error = `Apify run did not succeed and no datasetId: ${status}`;
+        console.error(error);
+        await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
+        throw new Error(error);
+      }
     }
 
-    const datasetId = run.data.defaultDatasetId;
     const dataResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`);
     if (!dataResp.ok) {
       const error = 'Failed to fetch Apify dataset';
