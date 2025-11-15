@@ -125,16 +125,9 @@ serve(async (req) => {
       });
     }
 
-    // Try multiple Apify actors to maximize review coverage
-    // COMMENTED OUT: Using jupri/zillow-agents instead
-    /*
+    // Using getdataforme actor - more reliable
     const ACTORS = [
       'getdataforme~zillow-real-state-agents-scraper',
-      'getdataforme~zillow-agents-reviews-scraper',
-    ];
-    */
-    const ACTORS = [
-      'jupri~zillow-agents',
     ];
 
     async function runActorAndCollect(actorSlug: string) {
