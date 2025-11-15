@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useUpdateAgentStats } from "@/hooks/useUpdateAgentStats";
+import { Button } from "@/components/ui/button";
 import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info } from "lucide-react";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
@@ -357,6 +360,43 @@ export const ProfessionalCard = ({
                     </div>
                   ));
                 })()}
+              </div>
+
+              {/* Data Source Indicator */}
+              <div className="flex items-center justify-end gap-2 -mt-2">
+                {(professional as any).stats?.dataSource === 'zillow' ? (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+                          <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
+                          Verified Stats
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs text-xs">
+                          Statistics verified from Zillow within the last 7 days
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="outline" className="gap-1.5 text-xs bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
+                          <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                          Estimated Stats
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs text-xs">
+                          Statistics are estimated based on market data. Click the refresh button below to fetch live data.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
 
 
