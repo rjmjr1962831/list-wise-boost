@@ -51,6 +51,10 @@ serve(async (req) => {
         body: JSON.stringify({
           query: [profileUrl],
           limit: 1,
+          proxyConfiguration: {
+            useApifyProxy: true,
+            apifyProxyGroups: ["RESIDENTIAL"]
+          }
         }),
       }
     );

@@ -54,6 +54,10 @@ serve(async (req) => {
               query: [agentName, `${agentName} ${location ?? ''}`.trim()],
               limit: 10,
               ...(location ? { filters: { location } } : {}),
+              proxyConfiguration: {
+                useApifyProxy: true,
+                apifyProxyGroups: ["RESIDENTIAL"]
+              }
             }),
           }
         );
@@ -147,6 +151,10 @@ serve(async (req) => {
           body: JSON.stringify({
             query: queries,
             limit: 100,
+            proxyConfiguration: {
+              useApifyProxy: true,
+              apifyProxyGroups: ["RESIDENTIAL"]
+            }
           }),
         }
       );
