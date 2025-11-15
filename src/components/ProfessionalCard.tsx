@@ -60,7 +60,7 @@ export const ProfessionalCard = ({
   // Background: fetch accurate Zillow stats only if DB values are missing
   const [liveStats, setLiveStats] = useState<any | null>(null);
   const profileUrl = (professional as any).zillow_profile_url || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
-  const needsStats = !!profileUrl && (!professional.current_listings || !professional.total_sales || !professional.years_experience);
+  const needsStats = (!professional.current_listings || !professional.total_sales || !professional.years_experience) && !!(market && market.includes(','));
 
   useEffect(() => {
     if (!needsStats) return;
@@ -208,7 +208,7 @@ export const ProfessionalCard = ({
             {/* Data Last Refreshed */}
             {(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at) && (
               <div className="mt-2 text-xs text-center text-muted-foreground">
-                Updated {format(new Date(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at), 'MMMM d, yyyy')}
+                Updated {format(new Date(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at), 'MMMM dd, yyyy')}
               </div>
             )}
           </div>
