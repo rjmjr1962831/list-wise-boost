@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUpdateAgentStats } from "@/hooks/useUpdateAgentStats";
@@ -271,45 +271,41 @@ export const ProfessionalCard = ({
                     <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide">
                       {license}
                     </Badge>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="secondary" className="gap-1 px-2 py-0.5 cursor-help">
-                            <ShieldCheck className="h-3 w-3 text-primary" />
-                            <span className="text-xs">Verified</span>
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            License verified via AI-powered lookup from official state registry
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                ) : (
-                  <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-7 gap-1.5 text-xs"
-                          onClick={handleVerifyLicense}
-                          disabled={!licenseLookupUrl}
-                        >
-                          <Shield className="h-3.5 w-3.5" />
-                          Verify
-                          <Info className="h-3 w-3 text-muted-foreground" />
-                        </Button>
+                        <Badge variant="secondary" className="gap-1 px-2 py-0.5 cursor-help">
+                          <ShieldCheck className="h-3 w-3 text-primary" />
+                          <span className="text-xs">Verified</span>
+                        </Badge>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs text-xs">
-                          Click to verify license via AI-powered lookup from the official {stateAbbr} state registry
+                          License verified via AI-powered lookup from official state registry
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
+                  </div>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 gap-1.5 text-xs"
+                        onClick={handleVerifyLicense}
+                        disabled={!licenseLookupUrl}
+                      >
+                        <Shield className="h-3.5 w-3.5" />
+                        Verify
+                        <Info className="h-3 w-3 text-muted-foreground" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">
+                        Click to verify license via AI-powered lookup from the official {stateAbbr} state registry
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
                 )}
               </div>
 
@@ -399,7 +395,21 @@ export const ProfessionalCard = ({
               {/* Data Source Indicator */}
               <div className="flex items-center justify-end gap-2 -mt-2">
                 {liveStats ? (
-                  <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+                        <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
+                        Verified Stats
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="max-w-xs text-xs">
+                        Statistics verified from Zillow (live)
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                ) : (
+                  (professional as any).stats?.dataSource === 'zillow' ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
@@ -409,44 +419,24 @@ export const ProfessionalCard = ({
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs text-xs">
-                          Statistics verified from Zillow (live)
+                          Statistics verified from Zillow within the last 7 days
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
-                ) : (
-                  (professional as any).stats?.dataSource === 'zillow' ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-                            <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
-                            Verified Stats
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            Statistics verified from Zillow within the last 7 days
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
                   ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="outline" className="gap-1.5 text-xs bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
-                            <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                            Estimated Stats
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            Statistics are estimated based on market data. Click the refresh button below to fetch live data.
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Badge variant="outline" className="gap-1.5 text-xs bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
+                          <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                          Estimated Stats
+                        </Badge>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p className="max-w-xs text-xs">
+                          Statistics are estimated based on market data. Click the refresh button below to fetch live data.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   )
                 )}
               </div>
