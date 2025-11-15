@@ -16,6 +16,7 @@ export const AnimatedCounter = ({
   const [count, setCount] = useState(0);
   const startTimeRef = useRef<number | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const MAX_VALUE = 9_999_999;
 
   useEffect(() => {
     // Reset when component mounts
@@ -35,17 +36,17 @@ export const AnimatedCounter = ({
         const progress = elapsed / duration;
         const easeProgress = 1 - Math.pow(1 - progress, 3);
         const newCount = Math.floor(target * easeProgress);
-        setCount(newCount);
+        setCount(Math.min(newCount, MAX_VALUE));
         animationFrameRef.current = requestAnimationFrame(animate);
       } else if (isLoading) {
         // After 8 seconds, if still loading, keep incrementing
         const extraTime = elapsed - duration;
         const extraCount = Math.floor(extraTime * 50000); // Add 50k per second after target
-        setCount(target + extraCount);
+        setCount(Math.min(target + extraCount, MAX_VALUE));
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
         // Finished loading and reached target
-        setCount(target);
+        setCount(Math.min(target, MAX_VALUE));
       }
     };
 
