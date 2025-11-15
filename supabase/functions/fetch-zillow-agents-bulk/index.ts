@@ -133,10 +133,10 @@ serve(async (req) => {
     const runId = run.data.id;
     console.log('Apify run started:', runId);
 
-    // Poll for completion (max 60s)
+    // Poll for completion (max 180s)
     let status = run.data.status;
     let attempts = 0;
-    while (status !== 'SUCCEEDED' && status !== 'FAILED' && attempts < 30) {
+    while (status !== 'SUCCEEDED' && status !== 'FAILED' && attempts < 90) {
       await new Promise(resolve => setTimeout(resolve, 2000));
       const statusResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apiToken}`);
       if (!statusResp.ok) break;
