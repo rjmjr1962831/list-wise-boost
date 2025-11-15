@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { getCityBySlug } from '@/data/cities';
 import { supabase } from '@/integrations/supabase/client';
 import { autoImportZillowAgents } from '@/utils/zillowAutoImport';
@@ -148,7 +149,12 @@ export default function CityLanding() {
                     <p className="text-xl font-semibold text-foreground">{ensureMsg || 'Preparing list…'}</p>
                     {ensureMsg.includes('Fetching') && (
                       <div className="space-y-2">
-                        <p className="text-3xl font-bold text-primary animate-pulse">2,000,000+</p>
+                        <AnimatedCounter 
+                          target={2000000}
+                          duration={8}
+                          isLoading={isEnsuring}
+                          className="text-3xl font-bold text-primary"
+                        />
                         <p className="text-sm text-muted-foreground">
                           data points being analyzed to find top agents
                         </p>
