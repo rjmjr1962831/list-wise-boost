@@ -1,3 +1,5 @@
+import React from 'react';
+
 interface RateLimitGuardProps {
   children: React.ReactNode;
 }
