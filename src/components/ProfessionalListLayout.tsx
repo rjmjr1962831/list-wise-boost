@@ -206,11 +206,11 @@ export const ProfessionalListLayout = ({
               <Badge variant="outline" className="px-3 py-1">2025</Badge>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold">
-              {metadata.title.split('\n').map((line, i) => (
-                <React.Fragment key={i}>
-                  {i > 0 && <br />}
+              {metadata.title.split('\n').map((line, i, arr) => (
+                <>
                   {line}
-                </React.Fragment>
+                  {i < arr.length - 1 && <br />}
+                </>
               ))}
             </h1>
             <p className="text-lg text-muted-foreground">
