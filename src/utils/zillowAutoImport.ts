@@ -129,21 +129,38 @@ export async function autoImportZillowAgents(
         } else {
           result.imported++;
           
-          // DISABLED: Zillow profile stats fetch causing 403 errors with scrapestorm actor
-          // if (insertedData && websiteUrl && websiteUrl.includes('zillow.com')) {
-          //   console.log(`Fetching profile stats for ${professionalData.name}...`);
-          //   try {
-          //     const { data: statsData, error: statsError } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-          //       body: {
-          //         profileUrl: websiteUrl,
-          //         agentName: professionalData.name,
-          //       }
-          //     });
-          //     // ... stats processing commented out
-          //   } catch (statsErr) {
-          //     console.error(`Stats fetch failed for ${professionalData.name}:`, statsErr);
-          //   }
-          // }
+          // Fetch detailed profile stats from Zillow using scrapestorm actor
+          if (insertedData && websiteUrl && websiteUrl.includes('zillow.com')) {
+            console.log(`Fetching profile stats for ${professionalData.name}...`);
+            try {
+              const { data: statsData, error: statsError } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+                body: {
+                  profileUrl: websiteUrl,
+                  agentName: professionalData.name,
+                }
+              });
+
+              if (!statsError && statsData?.success && statsData.stats) {
+                const stats = statsData.stats;
+                const { error: updateError } = await supabase
+                  .from('professionals')
+                  .update({
+                    current_listings: stats.currentListings || stats.forSale || null,
+                    total_sales: stats.totalSales || stats.sold || null,
+                    years_experience: stats.yearsExperience || null,
+                    zillow_profile_url: websiteUrl,
+                    zillow_data_fetched_at: new Date().toISOString(),
+                  })
+                  .eq('id', insertedData.id);
+                
+                if (!updateError) {
+                  console.log(`✓ Updated ${professionalData.name}: ${stats.totalSales || 0} sales, ${stats.yearsExperience || 0} yrs exp`);
+                }
+              }
+            } catch (statsErr) {
+              console.error(`Stats fetch failed for ${professionalData.name}:`, statsErr);
+            }
+          }
           
           // Auto-lookup license number (non-blocking)
           if (insertedData) {
