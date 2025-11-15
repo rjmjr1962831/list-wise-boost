@@ -3,6 +3,7 @@ import { useParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalListLayout } from '@/components/ProfessionalListLayout';
 import { CollapsibleListSection } from '@/components/CollapsibleListSection';
+import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { generatePageTitle, generateMetaDescription, formatCityName } from '@/utils/routeHelpers';
 import { ListSection, Professional } from '@/types/professional';
 import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
@@ -569,9 +570,12 @@ export default function DynamicCategoryList() {
                   <p className="text-sm uppercase tracking-wide text-muted-foreground font-semibold">
                     Processing
                   </p>
-                  <p className="text-5xl md:text-6xl font-bold text-primary animate-pulse">
-                    2,000,000+
-                  </p>
+                  <AnimatedCounter 
+                    target={2000000}
+                    duration={8}
+                    isLoading={isGeneratingData}
+                    className="text-5xl md:text-6xl font-bold text-primary"
+                  />
                   <p className="text-lg text-muted-foreground">
                     data points across multiple sources
                   </p>
