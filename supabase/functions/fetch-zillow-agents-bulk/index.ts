@@ -103,8 +103,12 @@ serve(async (req) => {
     const discoveryActorId = 'agenscrape~zillow-agents-finder';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
+    // Convert state to 2-letter abbreviation if needed
+    const stateAbbrev = state.length > 2 ? state.slice(0, 2).toUpperCase() : state.toUpperCase();
+    const locationFormat = `${city.toUpperCase()} ${stateAbbrev}`;
+    
     const discoveryInput = {
-      locationText: zipCode || `${city}, ${state}`,
+      locationText: zipCode || locationFormat,
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
