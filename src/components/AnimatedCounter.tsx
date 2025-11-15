@@ -64,7 +64,7 @@ export const AnimatedCounter = ({
 
   return (
     <span className={className}>
-      {formatNumber(count)}+
+      {formatNumber(count)}
     </span>
   );
 };
