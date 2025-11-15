@@ -99,12 +99,75 @@ serve(async (req) => {
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    // Use getdataforme/zillow-real-state-agents-scraper - more reliable
-    const actorId = 'getdataforme~zillow-real-state-agents-scraper';
-    console.log(`Fetching agents from Apify (actor: ${actorId})`);
+    // STEP 1: Use agenscrape to find agent profile links
+    const discoveryActorId = 'agenscrape~zillow-agents-finder';
+    console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
-    // This actor expects a simple search_query format
-    const apifyInput = {
+    const discoveryInput = {
+      locationText: zipCode || `${city}, ${state}`,
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"]
+      }
+    };
+
+    const discoveryResp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs?token=${apiToken}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(discoveryInput),
+    });
+
+    if (!discoveryResp.ok) {
+      const errorText = await discoveryResp.text();
+      console.error('Discovery actor start error:', discoveryResp.status, errorText);
+      await sendFailureAlert('fetch-zillow-agents-bulk', `Discovery actor failed: ${discoveryResp.status}`, {
+        city, state, error: errorText
+      });
+      throw new Error(`Discovery actor failed: ${discoveryResp.status}`);
+    }
+
+    const discoveryRun = await discoveryResp.json();
+    const discoveryRunId = discoveryRun.data.id;
+    console.log('Discovery run started:', discoveryRunId);
+
+    // Poll for discovery completion
+    let discoveryStatus = discoveryRun.data.status;
+    let discoveryAttempts = 0;
+    while (discoveryStatus !== 'SUCCEEDED' && discoveryStatus !== 'FAILED' && discoveryAttempts < 60) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      const statusResp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs/${discoveryRunId}?token=${apiToken}`);
+      if (!statusResp.ok) break;
+      const statusData = await statusResp.json();
+      discoveryStatus = statusData.data.status;
+      console.log(`Discovery status: ${discoveryStatus} (attempt ${discoveryAttempts + 1})`);
+      discoveryAttempts++;
+    }
+
+    if (discoveryStatus !== 'SUCCEEDED') {
+      throw new Error(`Discovery run did not complete: ${discoveryStatus}`);
+    }
+
+    // Get discovered agent profiles
+    const discoveryDatasetId = discoveryRun.data.defaultDatasetId;
+    const discoveryDataResp = await fetch(`https://api.apify.com/v2/datasets/${discoveryDatasetId}/items?token=${apiToken}`);
+    if (!discoveryDataResp.ok) {
+      throw new Error('Failed to fetch discovery dataset');
+    }
+    
+    const discoveredAgents = await discoveryDataResp.json();
+    console.log(`Discovered ${discoveredAgents.length} agent profiles`);
+
+    if (!Array.isArray(discoveredAgents) || discoveredAgents.length === 0) {
+      return new Response(JSON.stringify([]), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // STEP 2: Use getdataforme to fetch detailed stats for each profile
+    const statsActorId = 'getdataforme~zillow-real-state-agents-scraper';
+    console.log(`Step 2: Fetching stats with ${statsActorId}`);
+
+    const statsInput = {
       search_query: `${city}, ${state}`,
       proxyConfiguration: {
         useApifyProxy: true,
@@ -112,38 +175,36 @@ serve(async (req) => {
       }
     };
 
-    const startResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs?token=${apiToken}`, {
+    const startResp = await fetch(`https://api.apify.com/v2/acts/${statsActorId}/runs?token=${apiToken}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(apifyInput),
+      body: JSON.stringify(statsInput),
     });
 
     if (!startResp.ok) {
       const errorText = await startResp.text();
-      console.error('Apify start error:', startResp.status, errorText);
-      await sendFailureAlert('fetch-zillow-agents-bulk', `Apify API start failed: ${startResp.status}`, {
-        city,
-        state,
-        error: errorText
+      console.error('Stats actor start error:', startResp.status, errorText);
+      await sendFailureAlert('fetch-zillow-agents-bulk', `Stats actor failed: ${startResp.status}`, {
+        city, state, error: errorText
       });
-      throw new Error(`Apify API request failed: ${startResp.status}`);
+      throw new Error(`Stats actor failed: ${startResp.status}`);
     }
 
     const run = await startResp.json();
     const runId = run.data.id;
-    console.log('Apify run started:', runId);
+    console.log('Stats run started:', runId);
     const datasetId = run.data.defaultDatasetId;
 
-    // Poll for completion (max 180s)
+    // Poll for stats completion (max 180s)
     let status = run.data.status;
     let attempts = 0;
     while (status !== 'SUCCEEDED' && status !== 'FAILED' && attempts < 90) {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      const statusResp = await fetch(`https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apiToken}`);
+      const statusResp = await fetch(`https://api.apify.com/v2/acts/${statsActorId}/runs/${runId}?token=${apiToken}`);
       if (!statusResp.ok) break;
       const statusData = await statusResp.json();
       status = statusData.data.status;
-      console.log(`Apify run status: ${status} (attempt ${attempts + 1})`);
+      console.log(`Stats run status: ${status} (attempt ${attempts + 1})`);
       attempts++;
     }
 
