@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,7 +8,16 @@ const corsHeaders = {
 
 interface ScrapeRequest {
   url: string;
-  waitForSelector?: string;
+  selectors?: {
+    [key: string]: string; // CSS selectors to extract specific data
+  };
+  extractLinks?: boolean;
+  extractImages?: boolean;
+  extractText?: boolean;
+}
+
+interface ParsedData {
+  [key: string]: any;
 }
 
 serve(async (req) => {
@@ -16,7 +26,7 @@ serve(async (req) => {
   }
 
   try {
-    const { url }: ScrapeRequest = await req.json();
+    const { url, selectors, extractLinks, extractImages, extractText }: ScrapeRequest = await req.json();
     
     console.log(`Scraping URL: ${url}`);
 
@@ -34,13 +44,66 @@ serve(async (req) => {
     }
 
     const html = await response.text();
-    
     console.log(`Successfully scraped ${html.length} characters`);
+
+    // Parse HTML with Cheerio
+    const $ = cheerio.load(html);
+    const parsedData: ParsedData = {};
+
+    // Extract data using custom selectors
+    if (selectors) {
+      for (const [key, selector] of Object.entries(selectors)) {
+        const elements = $(selector);
+        
+        if (elements.length === 1) {
+          // Single element - return as object
+          parsedData[key] = {
+            text: elements.text().trim(),
+            html: elements.html(),
+            attributes: elements.attr(),
+          };
+        } else if (elements.length > 1) {
+          // Multiple elements - return as array
+          parsedData[key] = elements.map((i, el) => ({
+            text: $(el).text().trim(),
+            html: $(el).html(),
+            attributes: $(el).attr(),
+          })).get();
+        } else {
+          parsedData[key] = null;
+        }
+      }
+    }
+
+    // Extract all links if requested
+    if (extractLinks) {
+      parsedData.links = $('a').map((i, el) => ({
+        href: $(el).attr('href'),
+        text: $(el).text().trim(),
+      })).get();
+    }
+
+    // Extract all images if requested
+    if (extractImages) {
+      parsedData.images = $('img').map((i, el) => ({
+        src: $(el).attr('src'),
+        alt: $(el).attr('alt'),
+      })).get();
+    }
+
+    // Extract main text content if requested
+    if (extractText) {
+      parsedData.bodyText = $('body').text().trim();
+      parsedData.title = $('title').text().trim();
+      parsedData.metaDescription = $('meta[name="description"]').attr('content');
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        html,
+        url,
+        parsedData,
+        rawHtml: html,
         contentLength: html.length 
       }),
       { 
