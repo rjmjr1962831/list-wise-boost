@@ -64,21 +64,31 @@ export const ProfessionalCard = ({
 
   useEffect(() => {
     if (!needsStats) return;
+    // Avoid repeated updates per session
+    const key = `upd_${professional.id}`;
+    if (typeof window !== 'undefined' && sessionStorage.getItem(key)) return;
+
     let cancelled = false;
     (async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-          body: { profileUrl, agentName: professional.name }
+        const parts = (market || '').split(',');
+        const cityName = parts[0]?.trim();
+        const stateName = parts[1]?.trim();
+        if (!cityName || !stateName) return;
+
+        const { data, error } = await supabase.functions.invoke('update-agent-zillow-stats', {
+          body: { professionalId: professional.id, city: cityName, state: stateName }
         });
         if (!error && (data as any)?.success && !cancelled) {
-          setLiveStats((data as any).stats);
+          setLiveStats((data as any).updates || null);
+          if (typeof window !== 'undefined') sessionStorage.setItem(key, '1');
         }
       } catch (e) {
-        console.error('fetch-zillow-profile-stats failed', e);
+        console.error('update-agent-zillow-stats failed', e);
       }
     })();
     return () => { cancelled = true; };
-  }, [needsStats, profileUrl, professional.name]);
+  }, [needsStats, professional.id, market]);
 
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
   
@@ -196,9 +206,9 @@ export const ProfessionalCard = ({
               itemProp="image"
             />
             {/* Data Last Refreshed */}
-            {(professional as any).zillow_data_fetched_at && (
+            {(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at) && (
               <div className="mt-2 text-xs text-center text-muted-foreground">
-                Updated {format(new Date((professional as any).zillow_data_fetched_at), 'MMMM d, yyyy')}
+                Updated {format(new Date(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at), 'MMMM d, yyyy')}
               </div>
             )}
           </div>
@@ -337,6 +347,7 @@ export const ProfessionalCard = ({
                     toNum(professional.current_listings) ??
                     toNum(statFromObj(professional, 'stats.currentListings')) ??
                     toNum((liveStats as any)?.currentListings) ??
+                    toNum((liveStats as any)?.current_listings) ??
                     toNum((liveStats as any)?.forSale);
 
                   const totalSales =
@@ -344,6 +355,7 @@ export const ProfessionalCard = ({
                     toNum(statFromObj(professional, 'stats.totalSales')) ??
                     toNum(statFromObj(professional, 'stats.sold')) ??
                     toNum((liveStats as any)?.totalSales) ??
+                    toNum((liveStats as any)?.total_sales) ??
                     toNum((liveStats as any)?.sold);
 
                   const yearsExperience =
