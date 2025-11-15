@@ -212,7 +212,115 @@ serve(async (req) => {
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
 
-    return new Response(JSON.stringify(transformedAgents), {
+    // Get request parameters for database operations
+    const requestBody = await req.clone().json();
+    const { categoryId, cityId } = requestBody;
+
+    if (!categoryId || !cityId) {
+      console.warn('Missing categoryId or cityId - returning agents without saving');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Missing categoryId or cityId',
+        agents: transformedAgents
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase credentials not configured');
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Save agents to database
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+
+    for (let i = 0; i < transformedAgents.length; i++) {
+      const agent = transformedAgents[i];
+      
+      try {
+        // Check if agent already exists
+        const { data: existing } = await supabase
+          .from('professionals')
+          .select('id')
+          .eq('name', agent.name)
+          .eq('city_id', cityId)
+          .eq('category_id', categoryId)
+          .maybeSingle();
+
+        const professionalData = {
+          name: agent.name,
+          company: agent.company,
+          phone: agent.phone,
+          email: 'info@zillow.com',
+          website: agent.website,
+          image_url: agent.profilePhotoSrc,
+          specialty: agent.specialties || ["Buyer's Agent", "Listing Agent"],
+          city_id: cityId,
+          category_id: categoryId,
+          type: i < 5 ? 'established' : 'emerging',
+          rank: i + 1,
+          active: true,
+          zuid: agent.zuid,
+          total_sales: agent.totalSales,
+          current_listings: agent.currentListings,
+        };
+
+        if (existing) {
+          // Update existing agent
+          const { error: updateError } = await supabase
+            .from('professionals')
+            .update(professionalData)
+            .eq('id', existing.id);
+
+          if (updateError) {
+            console.error(`Failed to update ${agent.name}:`, updateError);
+            skipped++;
+          } else {
+            updated++;
+            console.log(`Updated ${agent.name}`);
+          }
+        } else {
+          // Insert new agent
+          const { error: insertError } = await supabase
+            .from('professionals')
+            .insert([professionalData]);
+
+          if (insertError) {
+            console.error(`Failed to insert ${agent.name}:`, insertError);
+            skipped++;
+          } else {
+            created++;
+            console.log(`Created ${agent.name}`);
+          }
+        }
+      } catch (err) {
+        console.error(`Error processing ${agent.name}:`, err);
+        skipped++;
+      }
+    }
+
+    const summary = {
+      total: transformedAgents.length,
+      created,
+      updated,
+      skipped
+    };
+
+    console.log('Import summary:', summary);
+
+    return new Response(JSON.stringify({
+      success: true,
+      summary,
+      agents: transformedAgents
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
