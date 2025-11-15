@@ -38,7 +38,34 @@ serve(async (req) => {
   }
 
   try {
-    const { city, state, categoryId, cityId } = await req.json();
+    const bodyText = await req.text().catch(() => '');
+    let city = '' as string;
+    let state = '' as string;
+    let categoryId: string | undefined;
+    let cityId: string | undefined;
+
+    if (bodyText) {
+      try {
+        const parsed = JSON.parse(bodyText);
+        city = parsed.city;
+        state = parsed.state;
+        categoryId = parsed.categoryId;
+        cityId = parsed.cityId;
+      } catch (_e) {
+        console.warn('Invalid JSON body; falling back to empty payload. Body preview:', bodyText.slice(0, 200));
+      }
+    }
+
+    if (!city || !state) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Missing city or state in request body',
+          hint: 'Send JSON: { "city": "Anchorage", "state": "Alaska", "cityId": "...", "categoryId": "..." }'
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     const apiToken = Deno.env.get('APIFY_API_KEY')?.trim() || Deno.env.get('APIFY_API_TOKEN')?.trim();
 
