@@ -40,8 +40,7 @@ serve(async (req) => {
     const detailsInput = {
       startUrls: [{ url: fullUrl }],
       proxyConfiguration: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"]
+        useApifyProxy: true
       }
     };
 

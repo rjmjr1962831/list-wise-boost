@@ -47,19 +47,42 @@ export const useZillowStats = (
           console.warn(`No location could be derived for ${agentName}. Proceeding without it.`);
         }
 
-        // DISABLED: Zillow profile scrape causing 403 errors with scrapestorm actor
+        // Try direct Zillow profile scrape using scrapestorm actor
         let resolvedStats: Partial<ZillowStats> | null = null;
         let zipCandidate: string | null = null;
 
-        // if (profileUrl && profileUrl.includes('zillow.com')) {
-        //   const profileResp = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-        //     body: {
-        //       profileUrl,
-        //       agentName,
-        //     }
-        //   });
-        //   // ... processing code commented out
-        // }
+        if (profileUrl && profileUrl.includes('zillow.com')) {
+          const profileResp = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+            body: {
+              profileUrl,
+              agentName,
+            }
+          });
+
+          if (profileResp.error) {
+            console.warn('Zillow profile scrape error:', profileResp.error);
+          } else {
+            const ps = profileResp.data?.stats ?? profileResp.data;
+            if (ps) {
+              const partial: Partial<ZillowStats> = {};
+              if (ps.forSale != null || ps.currentListings != null) partial.forSale = ps.forSale ?? ps.currentListings;
+              const soldVal = ps.sold ?? ps.salesLast12Months ?? ps.salesLastYear ?? ps.totalSales;
+              if (soldVal != null) partial.sold = soldVal;
+              if (ps.forRent != null) partial.forRent = ps.forRent;
+              const rev = ps.reviews ?? ps.totalReviews;
+              if (rev != null) partial.reviews = rev;
+              const cl = ps.currentListings ?? ps.forSale;
+              if (cl != null) partial.currentListings = cl;
+              if (ps.totalSales != null) partial.totalSales = ps.totalSales;
+              if (ps.yearsExperience != null) partial.yearsExperience = ps.yearsExperience;
+
+              if (Object.keys(partial).length > 0) {
+                resolvedStats = partial;
+              }
+              zipCandidate = ps.zipCode ?? zipCandidate;
+            }
+          }
+        }
 
         // Fallback: Apify-based agent stats if profile scrape didn't return
         // COMMENTED OUT: Using jupri/zillow-agents instead of getdataforme
