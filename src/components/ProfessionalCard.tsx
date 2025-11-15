@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useUpdateAgentStats } from "@/hooks/useUpdateAgentStats";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info } from "lucide-react";
+import { format } from "date-fns";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
@@ -194,6 +195,12 @@ export const ProfessionalCard = ({
               className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
               itemProp="image"
             />
+            {/* Data Last Refreshed */}
+            {(professional as any).zillow_data_fetched_at && (
+              <div className="mt-2 text-xs text-center text-muted-foreground">
+                Updated {format(new Date((professional as any).zillow_data_fetched_at), 'MMMM d, yyyy')}
+              </div>
+            )}
           </div>
 
           {/* Content */}
