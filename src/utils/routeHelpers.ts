@@ -13,7 +13,7 @@ export function formatCityName(city: City): string {
 }
 
 export function generatePageTitle(city: City, categoryName: string): string {
-  return `Top ${categoryName} in ${city.name}, ${city.state} | Top10Lists`;
+  return `Top ${categoryName} in:\n${city.name}, ${city.state}`;
 }
 
 export function generateMetaDescription(city: City, categoryName: string): string {
