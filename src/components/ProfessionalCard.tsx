@@ -60,7 +60,7 @@ export const ProfessionalCard = ({
   // Background: fetch accurate Zillow stats only if DB values are missing
   const [liveStats, setLiveStats] = useState<any | null>(null);
   const profileUrl = (professional as any).zillow_profile_url || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
-  const needsStats = (!professional.current_listings || !professional.total_sales || !professional.years_experience) && !!(market && market.includes(','));
+  const needsStats = true;
 
   useEffect(() => {
     if (!needsStats) return;
@@ -80,7 +80,7 @@ export const ProfessionalCard = ({
           body: { professionalId: professional.id, city: cityName, state: stateName }
         });
         if (!error && (data as any)?.success && !cancelled) {
-          setLiveStats((data as any).updates || null);
+          setLiveStats({ ...((data as any).updates || {}), zillow_data_fetched_at: ((data as any).updates && (data as any).updates.zillow_data_fetched_at) || new Date().toISOString() });
           if (typeof window !== 'undefined') sessionStorage.setItem(key, '1');
         }
       } catch (e) {
