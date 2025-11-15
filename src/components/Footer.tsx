@@ -49,14 +49,12 @@ export const Footer = () => {
               <Link 
                 to="/privacy" 
                 className="block text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank" rel="noopener noreferrer"
               >
                 Privacy Policy
               </Link>
               <Link 
                 to="/terms" 
                 className="block text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank" rel="noopener noreferrer"
               >
                 Terms of Service
               </Link>
