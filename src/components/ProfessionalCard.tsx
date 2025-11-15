@@ -76,6 +76,21 @@ export const ProfessionalCard = ({
         const stateName = parts[1]?.trim();
         if (!cityName || !stateName) return;
 
+        // Prefer profile-specific stats when we have a Zillow profile URL or ZUID; otherwise fall back to city-wide search
+        const profile = profileUrl || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
+
+        if (profile) {
+          const { data, error } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
+            body: { profileUrl: profile, agentName: professional.name }
+          });
+          if (!error && (data as any)?.success && (data as any)?.stats && !cancelled) {
+            setLiveStats({ ...((data as any).stats || {}), zillow_data_fetched_at: new Date().toISOString() });
+            if (typeof window !== 'undefined') sessionStorage.setItem(key, '1');
+            return;
+          }
+        }
+
+        // Fallback: try updating via city/state search and DB update
         const { data, error } = await supabase.functions.invoke('update-agent-zillow-stats', {
           body: { professionalId: professional.id, city: cityName, state: stateName }
         });
@@ -383,7 +398,7 @@ export const ProfessionalCard = ({
 
               {/* Data Source Indicator */}
               <div className="flex items-center justify-end gap-2 -mt-2">
-                {(professional as any).stats?.dataSource === 'zillow' ? (
+                {liveStats ? (
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -394,27 +409,45 @@ export const ProfessionalCard = ({
                       </TooltipTrigger>
                       <TooltipContent>
                         <p className="max-w-xs text-xs">
-                          Statistics verified from Zillow within the last 7 days
+                          Statistics verified from Zillow (live)
                         </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 ) : (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className="gap-1.5 text-xs bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
-                          <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                          Estimated Stats
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs text-xs">
-                          Statistics are estimated based on market data. Click the refresh button below to fetch live data.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  (professional as any).stats?.dataSource === 'zillow' ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
+                            <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
+                            Verified Stats
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs text-xs">
+                            Statistics verified from Zillow within the last 7 days
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline" className="gap-1.5 text-xs bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
+                            <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                            Estimated Stats
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs text-xs">
+                            Statistics are estimated based on market data. Click the refresh button below to fetch live data.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )
                 )}
               </div>
 
