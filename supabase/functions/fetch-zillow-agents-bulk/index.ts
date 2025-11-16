@@ -197,16 +197,20 @@ serve(async (req) => {
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    // STEP 1: Use getdataforme agent scraper for real estate agents
-    const discoveryActorId = 'getdataforme~zillow-real-state-agents-scraper';
+    // STEP 1: Use memo23 agent scraper - specialized for Zillow agent profiles
+    const discoveryActorId = 'memo23~apify-zillow-agents-cheerio';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
     // Convert state to 2-letter abbreviation if needed
     const stateAbbrev = state.length > 2 ? state.slice(0, 2).toUpperCase() : state.toUpperCase();
     
+    // Build Zillow agent search URL
+    const searchUrl = `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}/`;
+    
     const discoveryInput = {
-      search_query: `${city}, ${stateAbbrev}`,
-      proxyConfiguration: {
+      startUrls: [{ url: searchUrl }],
+      maxItems: 50,
+      proxy: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
       }
