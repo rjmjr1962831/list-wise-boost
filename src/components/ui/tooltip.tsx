@@ -3,7 +3,10 @@ import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 
 import { cn } from "@/lib/utils";
 
-const TooltipProvider = TooltipPrimitive.Provider;
+// Safe no-op provider wrapper to avoid runtime issues in certain environments
+const TooltipProvider: React.FC<React.PropsWithChildren<{ delayDuration?: number; skipDelayDuration?: number }>> = ({ children }) => {
+  return <>{children}</>;
+};
 
 const Tooltip = TooltipPrimitive.Root;
 
