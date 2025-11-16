@@ -7,7 +7,96 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function sendFailureAlert(functionName: string, error: string, context?: any) {
+interface RetryOptions {
+  maxRetries: number;
+  initialDelayMs: number;
+  maxDelayMs: number;
+  backoffMultiplier: number;
+}
+
+function isRetryableError(error: any): boolean {
+  // Check for network errors
+  if (error.name === 'TypeError' && error.message?.includes('fetch')) {
+    return true;
+  }
+  
+  // Check for HTTP status codes
+  if (error.status) {
+    // Retry on rate limits (429) and server errors (5xx)
+    if (error.status === 429 || (error.status >= 500 && error.status < 600)) {
+      return true;
+    }
+    // Don't retry on client errors (4xx) except 429
+    if (error.status >= 400 && error.status < 500) {
+      return false;
+    }
+  }
+  
+  // Check for specific Apify errors that are retryable
+  if (error.message) {
+    const retryablePatterns = [
+      'timeout',
+      'network',
+      'ECONNREFUSED',
+      'ENOTFOUND',
+      'ETIMEDOUT',
+      'rate limit'
+    ];
+    
+    const message = error.message.toLowerCase();
+    return retryablePatterns.some(pattern => message.includes(pattern));
+  }
+  
+  return false;
+}
+
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  options: RetryOptions,
+  operationName: string
+): Promise<T> {
+  const { maxRetries, initialDelayMs, maxDelayMs, backoffMultiplier } = options;
+  let lastError: Error;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      
+      // Check if error is retryable
+      const isRetryable = isRetryableError(error);
+      
+      if (!isRetryable || attempt === maxRetries) {
+        console.error(`${operationName} failed after ${attempt + 1} attempts:`, lastError);
+        throw lastError;
+      }
+      
+      // Calculate delay with exponential backoff
+      const delay = Math.min(
+        initialDelayMs * Math.pow(backoffMultiplier, attempt),
+        maxDelayMs
+      );
+      
+      console.log(`${operationName} attempt ${attempt + 1} failed, retrying in ${delay}ms...`, {
+        error: lastError.message,
+        attempt: attempt + 1,
+        maxRetries: maxRetries + 1
+      });
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError!;
+}
+
+async function sendFailureAlert(functionName: string, error: string, context?: any, retriesExhausted: boolean = true) {
+  if (!retriesExhausted) {
+    console.log('Skipping alert - will retry operation');
+    return;
+  }
+  
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -96,6 +185,15 @@ serve(async (req) => {
       console.warn('Could not load zip code data, using city/state format:', e);
     }
 
+    const startTime = Date.now();
+    console.log('Import started:', {
+      city,
+      state,
+      cityId,
+      categoryId,
+      timestamp: new Date().toISOString()
+    });
+
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
@@ -115,48 +213,106 @@ serve(async (req) => {
       }
     };
 
-    const discoveryResp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs?token=${apiToken}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(discoveryInput),
-    });
-
-    if (!discoveryResp.ok) {
-      const errorText = await discoveryResp.text();
-      console.error('Discovery actor start error:', discoveryResp.status, errorText);
-      await sendFailureAlert('fetch-zillow-agents-bulk', `Discovery actor failed: ${discoveryResp.status}`, {
-        city, state, error: errorText
-      });
-      throw new Error(`Discovery actor failed: ${discoveryResp.status}`);
-    }
+    // Start discovery actor run with retry logic
+    const discoveryResp = await retryWithBackoff(
+      async () => {
+        const resp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs?token=${apiToken}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(discoveryInput),
+        });
+        
+        if (!resp.ok) {
+          const errorText = await resp.text();
+          console.error(`Discovery actor start error: ${resp.status}`, errorText);
+          const error: any = new Error(`Discovery actor failed: ${resp.status}`);
+          error.status = resp.status;
+          error.responseText = errorText;
+          throw error;
+        }
+        
+        return resp;
+      },
+      {
+        maxRetries: 5,
+        initialDelayMs: 1000,
+        maxDelayMs: 30000,
+        backoffMultiplier: 2
+      },
+      'Start Discovery Actor'
+    );
 
     const discoveryRun = await discoveryResp.json();
     const discoveryRunId = discoveryRun.data.id;
     console.log('Discovery run started:', discoveryRunId);
 
-    // Poll for discovery completion
+    // Poll for discovery completion with retry logic
     let discoveryStatus = discoveryRun.data.status;
     let discoveryAttempts = 0;
     while (discoveryStatus !== 'SUCCEEDED' && discoveryStatus !== 'FAILED' && discoveryAttempts < 60) {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      const statusResp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs/${discoveryRunId}?token=${apiToken}`);
-      if (!statusResp.ok) break;
-      const statusData = await statusResp.json();
-      discoveryStatus = statusData.data.status;
-      console.log(`Discovery status: ${discoveryStatus} (attempt ${discoveryAttempts + 1})`);
+      
+      try {
+        const statusResp = await retryWithBackoff(
+          async () => {
+            const resp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs/${discoveryRunId}?token=${apiToken}`);
+            
+            if (!resp.ok) {
+              const error: any = new Error(`Status check failed: ${resp.status}`);
+              error.status = resp.status;
+              throw error;
+            }
+            
+            return resp;
+          },
+          {
+            maxRetries: 3,
+            initialDelayMs: 500,
+            maxDelayMs: 5000,
+            backoffMultiplier: 2
+          },
+          'Poll Actor Status'
+        );
+        
+        const statusData = await statusResp.json();
+        discoveryStatus = statusData.data.status;
+        console.log(`Discovery status: ${discoveryStatus} (attempt ${discoveryAttempts + 1})`);
+      } catch (error) {
+        console.error('Status polling error (will retry):', error);
+        // Continue polling even if status check fails
+      }
+      
       discoveryAttempts++;
     }
 
     if (discoveryStatus !== 'SUCCEEDED') {
-      throw new Error(`Discovery run did not complete: ${discoveryStatus}`);
+      const error = `Discovery run did not complete: ${discoveryStatus}`;
+      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, discoveryRunId }, true);
+      throw new Error(error);
     }
 
     // Get discovered agent profiles with comprehensive data from scrapestorm
     const discoveryDatasetId = discoveryRun.data.defaultDatasetId;
-    const discoveryDataResp = await fetch(`https://api.apify.com/v2/datasets/${discoveryDatasetId}/items?token=${apiToken}`);
-    if (!discoveryDataResp.ok) {
-      throw new Error('Failed to fetch discovery dataset');
-    }
+    const discoveryDataResp = await retryWithBackoff(
+      async () => {
+        const resp = await fetch(`https://api.apify.com/v2/datasets/${discoveryDatasetId}/items?token=${apiToken}`);
+        
+        if (!resp.ok) {
+          const error: any = new Error(`Dataset fetch failed: ${resp.status}`);
+          error.status = resp.status;
+          throw error;
+        }
+        
+        return resp;
+      },
+      {
+        maxRetries: 5,
+        initialDelayMs: 1000,
+        maxDelayMs: 30000,
+        backoffMultiplier: 2
+      },
+      'Fetch Discovery Dataset'
+    );
     
     const rawAgents = await discoveryDataResp.json();
     console.log(`Scrapestorm returned ${rawAgents.length} agent profiles with full data`);
@@ -278,66 +434,81 @@ serve(async (req) => {
       const agent = transformedAgents[i];
       
       try {
-        // Check if agent already exists
-        const { data: existing } = await supabase
-          .from('professionals')
-          .select('id')
-          .eq('name', agent.name)
-          .eq('city_id', cityId)
-          .eq('category_id', categoryId)
-          .maybeSingle();
+        await retryWithBackoff(
+          async () => {
+            // Check if agent already exists
+            const { data: existing, error: checkError } = await supabase
+              .from('professionals')
+              .select('id')
+              .eq('name', agent.name)
+              .eq('city_id', cityId)
+              .eq('category_id', categoryId)
+              .maybeSingle();
 
-        const professionalData = {
-          name: agent.name,
-          company: agent.businessName,
-          phone: agent.phone,
-          email: 'info@zillow.com',
-          website: agent.website,
-          image_url: agent.profilePhotoSrc,
-          specialty: agent.specialties || ["Buyer's Agent", "Listing Agent"],
-          city_id: cityId,
-          category_id: categoryId,
-          type: i < 5 ? 'established' : 'emerging',
-          rank: i + 1,
-          active: true,
-          zuid: agent.zuid,
-          total_sales: agent.totalSales,
-          current_listings: agent.currentListings,
-        };
+            if (checkError) throw checkError;
 
-        if (existing) {
-          // Update existing agent
-          const { error: updateError } = await supabase
-            .from('professionals')
-            .update(professionalData)
-            .eq('id', existing.id);
+            const professionalData = {
+              name: agent.name,
+              company: agent.businessName,
+              phone: agent.phone,
+              email: 'info@zillow.com',
+              website: agent.website,
+              image_url: agent.profilePhotoSrc,
+              specialty: agent.specialties || ["Buyer's Agent", "Listing Agent"],
+              city_id: cityId,
+              category_id: categoryId,
+              type: i < 5 ? 'established' : 'emerging',
+              rank: i + 1,
+              active: true,
+              zuid: agent.zuid,
+              total_sales: agent.totalSales,
+              current_listings: agent.currentListings,
+            };
 
-          if (updateError) {
-            console.error(`Failed to update ${agent.name}:`, updateError);
-            skipped++;
-          } else {
-            updated++;
-            console.log(`Updated ${agent.name}`);
-          }
-        } else {
-          // Insert new agent
-          const { error: insertError } = await supabase
-            .from('professionals')
-            .insert([professionalData]);
+            if (existing) {
+              // Update existing agent
+              const { error: updateError } = await supabase
+                .from('professionals')
+                .update(professionalData)
+                .eq('id', existing.id);
 
-          if (insertError) {
-            console.error(`Failed to insert ${agent.name}:`, insertError);
-            skipped++;
-          } else {
-            created++;
-            console.log(`Created ${agent.name}`);
-          }
-        }
+              if (updateError) throw updateError;
+              updated++;
+              console.log(`Updated ${agent.name}`);
+            } else {
+              // Insert new agent
+              const { error: insertError } = await supabase
+                .from('professionals')
+                .insert([professionalData]);
+
+              if (insertError) throw insertError;
+              created++;
+              console.log(`Created ${agent.name}`);
+            }
+          },
+          {
+            maxRetries: 3,
+            initialDelayMs: 500,
+            maxDelayMs: 5000,
+            backoffMultiplier: 2
+          },
+          `Save Agent: ${agent.name}`
+        );
       } catch (err) {
         console.error(`Error processing ${agent.name}:`, err);
         skipped++;
       }
     }
+
+    console.log('Import completed:', {
+      city,
+      state,
+      totalAgents: transformedAgents.length,
+      created,
+      updated,
+      skipped,
+      duration: `${Date.now() - startTime}ms`
+    });
 
     const summary = {
       total: transformedAgents.length,
