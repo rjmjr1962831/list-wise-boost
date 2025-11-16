@@ -22,7 +22,7 @@ const Index = () => {
       </section>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12">
+      <section className="container mx-auto px-4 pt-4 pb-12">
         <div className="max-w-4xl mx-auto space-y-8">
           <Top10SearchForm />
           <ApplySearchForm />
