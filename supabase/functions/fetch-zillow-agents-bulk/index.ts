@@ -197,16 +197,15 @@ serve(async (req) => {
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    // STEP 1: Use scrapestorm all-in-one scraper for agent discovery
-    const discoveryActorId = 'scrapestorm~zillow-search-scraper-all-in-one';
+    // STEP 1: Use getdataforme agent scraper for real estate agents
+    const discoveryActorId = 'getdataforme~zillow-real-state-agents-scraper';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
     // Convert state to 2-letter abbreviation if needed
     const stateAbbrev = state.length > 2 ? state.slice(0, 2).toUpperCase() : state.toUpperCase();
     
     const discoveryInput = {
-      locations: [`${city}, ${stateAbbrev}`],
-      maxItems: 50,
+      search_query: `${city}, ${stateAbbrev}`,
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
