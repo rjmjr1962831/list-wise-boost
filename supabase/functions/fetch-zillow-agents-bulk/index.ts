@@ -198,7 +198,7 @@ serve(async (req) => {
     console.log(`Agent discovery query: ${query}`);
 
     // STEP 1: Use scrapestorm all-in-one scraper for agent discovery
-    const discoveryActorId = 'scrapestorm/zillow-search-scraper-all-in-one';
+    const discoveryActorId = 'scrapestorm~zillow-search-scraper-all-in-one';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
     // Convert state to 2-letter abbreviation if needed
