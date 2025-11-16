@@ -331,13 +331,13 @@ serve(async (req) => {
         console.log('Primary actor returned property listings; falling back to hello.datawizards~real-estate-agents-scraper');
       }
       const fallbackActorId = 'hello.datawizards~real-estate-agents-scraper';
-        const fallbackInput = {
-          locations: [`${city}, ${stateAbbrev}`],
-          proxyConfiguration: {
-            useApifyProxy: true,
-            apifyProxyGroups: ['RESIDENTIAL']
-          }
-        };
+      const fallbackInput = {
+        search_query: `${city}, ${stateAbbrev}`,
+        proxyConfiguration: {
+          useApifyProxy: true,
+          apifyProxyGroups: ['RESIDENTIAL']
+        }
+      };
 
         // Start fallback actor
         const fbStart = await retryWithBackoff(
