@@ -19,9 +19,10 @@ export const AnimatedCounter = ({
   const MAX_VALUE = 9_999_999;
 
   useEffect(() => {
-    // Reset when component mounts
+    // Only animate once - check if already animated
+    if (startTimeRef.current !== null) return;
+    
     setCount(0);
-    startTimeRef.current = null;
     
     const animate = (currentTime: number) => {
       if (!startTimeRef.current) {
