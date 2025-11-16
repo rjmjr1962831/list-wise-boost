@@ -99,16 +99,16 @@ serve(async (req) => {
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    // STEP 1: Use agenscrape to find agent profile links
-    const discoveryActorId = 'agenscrape~zillow-agents-finder';
+    // STEP 1: Use scrapestorm for more reliable agent discovery
+    const discoveryActorId = 'scrapestorm~zillow-find-a-real-estate-agent';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
     // Convert state to 2-letter abbreviation if needed
     const stateAbbrev = state.length > 2 ? state.slice(0, 2).toUpperCase() : state.toUpperCase();
-    const locationFormat = `${city.toUpperCase()} ${stateAbbrev}`;
     
     const discoveryInput = {
-      locationText: zipCode || locationFormat,
+      locations: [`${city}, ${stateAbbrev}`],
+      maxItems: 50,
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
@@ -151,112 +151,28 @@ serve(async (req) => {
       throw new Error(`Discovery run did not complete: ${discoveryStatus}`);
     }
 
-    // Get discovered agent profiles
+    // Get discovered agent profiles with comprehensive data from scrapestorm
     const discoveryDatasetId = discoveryRun.data.defaultDatasetId;
     const discoveryDataResp = await fetch(`https://api.apify.com/v2/datasets/${discoveryDatasetId}/items?token=${apiToken}`);
     if (!discoveryDataResp.ok) {
       throw new Error('Failed to fetch discovery dataset');
     }
     
-    const discoveredAgents = await discoveryDataResp.json();
-    console.log(`Discovered ${discoveredAgents.length} agent profiles`);
+    const rawAgents = await discoveryDataResp.json();
+    console.log(`Scrapestorm returned ${rawAgents.length} agent profiles with full data`);
 
-    if (!Array.isArray(discoveredAgents) || discoveredAgents.length === 0) {
-      return new Response(JSON.stringify([]), {
+    if (!Array.isArray(rawAgents) || rawAgents.length === 0) {
+      return new Response(JSON.stringify({
+        success: true,
+        summary: { created: 0, updated: 0, skipped: 0, total: 0 },
+        agents: []
+      }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // STEP 2: Use getdataforme to fetch detailed stats for each profile
-    const statsActorId = 'getdataforme~zillow-real-state-agents-scraper';
-    console.log(`Step 2: Fetching stats with ${statsActorId}`);
-
-    const statsInput = {
-      search_query: `${city}, ${state}`,
-      proxyConfiguration: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"]
-      }
-    };
-
-    const startResp = await fetch(`https://api.apify.com/v2/acts/${statsActorId}/runs?token=${apiToken}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(statsInput),
-    });
-
-    if (!startResp.ok) {
-      const errorText = await startResp.text();
-      console.error('Stats actor start error:', startResp.status, errorText);
-      await sendFailureAlert('fetch-zillow-agents-bulk', `Stats actor failed: ${startResp.status}`, {
-        city, state, error: errorText
-      });
-      throw new Error(`Stats actor failed: ${startResp.status}`);
-    }
-
-    const run = await startResp.json();
-    const runId = run.data.id;
-    console.log('Stats run started:', runId);
-    const datasetId = run.data.defaultDatasetId;
-
-    // Poll for stats completion (max 180s)
-    let status = run.data.status;
-    let attempts = 0;
-    while (status !== 'SUCCEEDED' && status !== 'FAILED' && attempts < 90) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      const statusResp = await fetch(`https://api.apify.com/v2/acts/${statsActorId}/runs/${runId}?token=${apiToken}`);
-      if (!statusResp.ok) break;
-      const statusData = await statusResp.json();
-      status = statusData.data.status;
-      console.log(`Stats run status: ${status} (attempt ${attempts + 1})`);
-      attempts++;
-    }
-
-    if (status !== 'SUCCEEDED') {
-      // Fallback: proceed if dataset already has items even if run still RUNNING
-      if (datasetId) {
-        try {
-          const probeResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}&limit=1`);
-          if (probeResp.ok) {
-            const probeItems = await probeResp.json();
-            if (Array.isArray(probeItems) && probeItems.length > 0) {
-              console.warn('Apify run still running but dataset has items; proceeding');
-            } else {
-              const error = `Apify run did not succeed: ${status}`;
-              console.error(error);
-              await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
-              throw new Error(error);
-            }
-          } else {
-            const error = `Apify dataset probe failed while status ${status}`;
-            console.error(error);
-            await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
-            throw new Error(error);
-          }
-        } catch (e) {
-          const error = `Apify run did not succeed and dataset unavailable: ${status}`;
-          console.error(error, e);
-          await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
-          throw new Error(error);
-        }
-      } else {
-        const error = `Apify run did not succeed and no datasetId: ${status}`;
-        console.error(error);
-        await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, runId, attempts });
-        throw new Error(error);
-      }
-    }
-
-    const dataResp = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`);
-    if (!dataResp.ok) {
-      const error = 'Failed to fetch Apify dataset';
-      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, datasetId });
-      throw new Error(error);
-    }
-
-    const rawAgents = await dataResp.json();
-    console.log(`Apify returned ${rawAgents.length} results, limiting to 15`);
-    const items = rawAgents.slice(0, 15); // Only return top 15
+    // Limit to top 15 agents
+    const items = rawAgents.slice(0, 15);
 
     function mapAgent(agent: any) {
       // Log first agent to help debug field mappings
@@ -373,7 +289,7 @@ serve(async (req) => {
 
         const professionalData = {
           name: agent.name,
-          company: agent.company,
+          company: agent.businessName,
           phone: agent.phone,
           email: 'info@zillow.com',
           website: agent.website,
