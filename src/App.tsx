@@ -27,6 +27,7 @@ import VerifyAgentListing from "./pages/VerifyAgentListing";
 import AgentOnboarding from "./pages/AgentOnboarding";
 import AgentPayment from "./pages/AgentPayment";
 import AgentPaymentSuccess from "./pages/AgentPaymentSuccess";
+import AgentInfo from "./pages/AgentInfo";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 
@@ -61,6 +62,7 @@ const App = () => (
                   {/* Static pages */}
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/agent-info" element={<AgentInfo />} />
                   <Route path="/apply-listing" element={<ApplyListing />} />
                   <Route path="/book-appointment-robert" element={<BookAppointment />} />
                   {/* Agent Onboarding */}
