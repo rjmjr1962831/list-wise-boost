@@ -119,30 +119,16 @@ export const ApplySearchForm = () => {
   }, []);
 
   const handleApply = () => {
-    if (!selectedState && !selectedCity) {
-      toast.error('Please select a state or city');
-      return;
-    }
-
     const city = cities.find(c => c.id === selectedCity);
     
     // Track apply form submission
     trackEvent('apply_form_submit', {
       state: city ? city.state : selectedState,
       city: city ? city.name : undefined,
-      search_type: 'apply_listing'
+      search_type: 'agent_info'
     });
 
-    const params = new URLSearchParams();
-    if (selectedCity && city) {
-      params.set('city', city.slug);
-      params.set('state', city.state_slug);
-    } else if (selectedState) {
-      const stateSlug = selectedState.toLowerCase().replace(/\s+/g, '-');
-      params.set('state', stateSlug);
-    }
-    
-    navigate(`/apply-listing?${params.toString()}`);
+    navigate('/agent-info');
   };
 
   return (
