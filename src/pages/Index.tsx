@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Search, TrendingUp, Zap } from "lucide-react";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
+import { ApplySearchForm } from "@/components/ApplySearchForm";
 import { Link } from "react-router-dom";
 const Index = () => {
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
@@ -25,6 +26,7 @@ rather tan a GOogle search, we employthe power of AI search so that you get the 
       <section className="container mx-auto px-4 py-12">
         <div className="max-w-4xl mx-auto space-y-8">
           <Top10SearchForm />
+          <ApplySearchForm />
         </div>
       </section>
 
