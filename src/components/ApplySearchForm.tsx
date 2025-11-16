@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { UserPlus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +10,13 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { findCityByZip } from '@/data/zipCodeLookup';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+
+interface Category {
+  id: string;
+  name: string;
+  plural_name: string;
+  slug: string;
+}
 
 interface City {
   id: string;
@@ -35,6 +43,8 @@ export const ApplySearchForm = () => {
   const { trackEvent } = useGA4Tracking();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [cities, setCities] = useState<City[]>([]);
   const [selectedState, setSelectedState] = useState('');
   const [stateInput, setStateInput] = useState('');
@@ -46,19 +56,36 @@ export const ApplySearchForm = () => {
   const [filteredStates, setFilteredStates] = useState<string[]>(ALL_STATES);
 
   useEffect(() => {
-    const fetchCities = async () => {
+    const fetchData = async () => {
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('active', true)
+        .order('name');
+      
       const { data: citiesData, error: citiesError } = await supabase
         .from('cities')
         .select('*')
         .eq('active', true)
         .order('state, name');
       
+      if (!categoriesError && categoriesData) {
+        setCategories(categoriesData);
+        // Pre-select Real Estate Agents
+        const realEstateCategory = categoriesData.find(c => 
+          c.slug === 'top10realestateagents' || c.name.toLowerCase().includes('real estate')
+        );
+        if (realEstateCategory) {
+          setSelectedCategory(realEstateCategory.id);
+        }
+      }
+      
       if (!citiesError && citiesData) {
         setCities(citiesData);
       }
     };
 
-    fetchCities();
+    fetchData();
   }, []);
 
   useEffect(() => {
@@ -125,7 +152,21 @@ export const ApplySearchForm = () => {
         <h3 className="text-lg font-semibold">Want to be considered for Top10 status?</h3>
       </div>
       
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid md:grid-cols-4 gap-4">
+        {/* Category Selection */}
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="bg-background">
+            <SelectValue placeholder="Select profession" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.plural_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
         {/* State Input */}
         <div className={cn("relative", stateOpen && "mb-64 md:mb-0")} ref={dropdownRef}>
           <Input
@@ -268,7 +309,7 @@ export const ApplySearchForm = () => {
         {/* Apply Button */}
         <Button 
           onClick={handleApply} 
-          className="w-full md:w-auto bg-primary hover:bg-primary/90"
+          className="w-full"
           disabled={!selectedState && !selectedCity}
         >
           <UserPlus className="mr-2 h-4 w-4" />
