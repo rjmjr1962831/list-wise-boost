@@ -313,8 +313,72 @@ serve(async (req) => {
       'Fetch Discovery Dataset'
     );
     
-    const rawAgents = await discoveryDataResp.json();
-    console.log(`Scrapestorm returned ${rawAgents.length} agent profiles with full data`);
+    let rawAgents = await discoveryDataResp.json();
+    console.log(`Primary actor (${discoveryActorId}) returned ${rawAgents.length} items`);
+
+    // Detect property-listing dataset (wrong actor output) and fallback to a dedicated agents actor
+    if (Array.isArray(rawAgents) && rawAgents.length > 0) {
+      const firstItem = rawAgents[0] || {};
+      if ('zpid' in firstItem || 'statusType' in firstItem || 'addressCity' in firstItem) {
+        console.log('Primary actor returned property listings; falling back to hello.datawizards~real-estate-agents-scraper');
+        const fallbackActorId = 'hello.datawizards~real-estate-agents-scraper';
+        const fallbackInput = {
+          locations: [`${city}, ${stateAbbrev}`],
+          proxyConfiguration: {
+            useApifyProxy: true,
+            apifyProxyGroups: ['RESIDENTIAL']
+          }
+        };
+
+        // Start fallback actor
+        const fbStart = await retryWithBackoff(
+          async () => {
+            const resp = await fetch(`https://api.apify.com/v2/acts/${fallbackActorId}/runs?token=${apiToken}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(fallbackInput),
+            });
+            if (!resp.ok) {
+              const errTxt = await resp.text();
+              const err: any = new Error(`Fallback actor failed: ${resp.status}`);
+              err.status = resp.status; err.responseText = errTxt; throw err;
+            }
+            return resp;
+          },
+          { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 10000, backoffMultiplier: 2 },
+          'Start Fallback Actor'
+        );
+        const fbRun = await fbStart.json();
+        const fbRunId = fbRun.data.id;
+
+        // Poll fallback
+        let fbStatus = fbRun.data.status; let fbAttempts = 0;
+        while (fbStatus !== 'SUCCEEDED' && fbStatus !== 'FAILED' && fbAttempts < 60) {
+          await new Promise(r => setTimeout(r, 2000));
+          try {
+            const st = await fetch(`https://api.apify.com/v2/acts/${fallbackActorId}/runs/${fbRunId}?token=${apiToken}`);
+            if (!st.ok) break;
+            const js = await st.json();
+            fbStatus = js.data.status;
+            console.log(`Fallback status: ${fbStatus} (attempt ${fbAttempts + 1})`);
+          } catch (_) {}
+          fbAttempts++;
+        }
+
+        if (fbStatus === 'SUCCEEDED') {
+          const fbDatasetId = fbRun.data.defaultDatasetId;
+          const fbDataResp = await fetch(`https://api.apify.com/v2/datasets/${fbDatasetId}/items?token=${apiToken}`);
+          if (fbDataResp.ok) {
+            rawAgents = await fbDataResp.json();
+            console.log(`Fallback actor (${fallbackActorId}) returned ${rawAgents.length} items`);
+          } else {
+            console.warn('Fallback dataset fetch failed');
+          }
+        } else {
+          console.warn(`Fallback actor did not succeed: ${fbStatus}`);
+        }
+      }
+    }
 
     if (!Array.isArray(rawAgents) || rawAgents.length === 0) {
       return new Response(JSON.stringify({
