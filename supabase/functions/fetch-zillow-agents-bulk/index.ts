@@ -208,9 +208,12 @@ serve(async (req) => {
     const searchUrl = `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}/`;
     
     const discoveryInput = {
-      startUrls: [{ url: searchUrl }],
+      startUrls: [
+        { url: searchUrl },
+        { url: `https://www.zillow.com/directory/real-estate-agents/${city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}/` }
+      ],
       maxItems: 50,
-      proxy: {
+      proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
       }
