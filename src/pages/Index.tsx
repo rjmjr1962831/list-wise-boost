@@ -27,14 +27,6 @@ const Index = () => {
               __html: getContent('what_is', 'description', 'Top10Lists.us is a <span class="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.')
             }}
           />
-          <div className="pt-4">
-            <p className="text-lg text-muted-foreground">
-              Each list is housed at a clean, location-specific URL like:
-            </p>
-            <div className="mt-3 inline-block px-6 py-3 bg-card rounded-lg border-2 border-primary/30">
-              <code className="text-primary font-mono font-semibold">top10lists.us/az/gilbert/realtors</code>
-            </div>
-          </div>
         </div>
       </section>
 
