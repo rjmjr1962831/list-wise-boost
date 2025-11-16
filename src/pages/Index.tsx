@@ -3,12 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Check, Search, TrendingUp, Zap } from "lucide-react";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { Link } from "react-router-dom";
-
 const Index = () => {
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
+  return <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       {/* What Is Top10Lists.us */}
       <section className="container mx-auto px-4 py-20 md:py-32 text-center">
         <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -16,7 +13,10 @@ const Index = () => {
             What Is Top10Lists.us?
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Top10Lists.us is a <span className="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.
+            Top10Lists.us is a curated directory of the top 10 real estate agents in every major U.S. city.
+rather tan a GOogle search, we employthe power of AI search so that you get the best information possible instead of a bunch of links and adds.                            
+
+ <span className="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.
           </p>
         </div>
       </section>
@@ -188,22 +188,37 @@ const Index = () => {
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {[
-            { icon: "🏠", title: "Residential Sales", desc: "Buyer's & Seller's Agents" },
-            { icon: "🏢", title: "Commercial Real Estate", desc: "Office, Retail, Industrial" },
-            { icon: "💼", title: "Property Management", desc: "Rentals & HOA Services" },
-            { icon: "🏗️", title: "New Construction", desc: "Builder Representatives" },
-            { icon: "💰", title: "Investment Properties", desc: "Fix & Flip, Rental Analysis" },
-            { icon: "🌴", title: "Luxury Real Estate", desc: "High-End Properties" }
-          ].map((market, index) => (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
+          {[{
+          icon: "🏠",
+          title: "Residential Sales",
+          desc: "Buyer's & Seller's Agents"
+        }, {
+          icon: "🏢",
+          title: "Commercial Real Estate",
+          desc: "Office, Retail, Industrial"
+        }, {
+          icon: "💼",
+          title: "Property Management",
+          desc: "Rentals & HOA Services"
+        }, {
+          icon: "🏗️",
+          title: "New Construction",
+          desc: "Builder Representatives"
+        }, {
+          icon: "💰",
+          title: "Investment Properties",
+          desc: "Fix & Flip, Rental Analysis"
+        }, {
+          icon: "🌴",
+          title: "Luxury Real Estate",
+          desc: "High-End Properties"
+        }].map((market, index) => <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardContent className="pt-6 text-center space-y-3">
                 <div className="text-4xl">{market.icon}</div>
                 <h3 className="font-bold text-lg">{market.title}</h3>
                 <p className="text-sm text-muted-foreground">{market.desc}</p>
               </CardContent>
-            </Card>
-          ))}
+            </Card>)}
         </div>
       </section>
 
@@ -232,19 +247,10 @@ const Index = () => {
                 </div>
               </div>
               <ul className="space-y-4">
-                {[
-                  "Featured in Top 10 list for your city and category",
-                  "Cited by ChatGPT, Google AI, and Perplexity",
-                  "Profile at top10lists.us/[state]/[city]/[category]",
-                  "Visible to thousands of high-intent searchers",
-                  "Monthly verification & updates",
-                  "No need to change your website or learn SEO",
-                ].map((feature, index) => (
-                  <li key={index} className="flex items-start gap-3">
+                {["Featured in Top 10 list for your city and category", "Cited by ChatGPT, Google AI, and Perplexity", "Profile at top10lists.us/[state]/[city]/[category]", "Visible to thousands of high-intent searchers", "Monthly verification & updates", "No need to change your website or learn SEO"].map((feature, index) => <li key={index} className="flex items-start gap-3">
                     <Check className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <span>{feature}</span>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
               <div className="pt-4 border-t">
                 <p className="text-center text-sm text-muted-foreground mb-4">
@@ -334,8 +340,6 @@ const Index = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
