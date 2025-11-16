@@ -198,7 +198,7 @@ serve(async (req) => {
     console.log(`Agent discovery query: ${query}`);
 
     // STEP 1: Use memo23 Zillow scraper
-    const discoveryActorId = 'memo23/apify-zillow-agents-cheerio';
+    const discoveryActorId = 'memo23~apify-zillow-agents-cheerio';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
     // Convert state to 2-letter abbreviation if needed
