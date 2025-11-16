@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Award, Star, TrendingUp, MapPin, Users, Home } from "lucide-react";
 import { Link } from "react-router-dom";
-import React, { useEffect, ReactNode } from "react";
+import { useEffect, ReactNode } from "react";
 import { PageMetadata, Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
@@ -174,9 +174,9 @@ export const ProfessionalListLayout = ({
               <meta itemProp="position" content="1" />
             </li>
             {metadata.breadcrumbs.map((crumb, index) => (
-              <React.Fragment key={index}>
-                <span>/</span>
-                <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
+              <>
+                <span key={`sep-${index}`}>/</span>
+                <li key={`crumb-${index}`} itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
                   {crumb.path ? (
                     <Link to={crumb.path} className="hover:text-foreground transition-colors" itemProp="item">
                       <span itemProp="name">{crumb.name}</span>
@@ -186,7 +186,7 @@ export const ProfessionalListLayout = ({
                   )}
                   <meta itemProp="position" content={(index + 2).toString()} />
                 </li>
-              </React.Fragment>
+              </>
             ))}
           </ol>
         </div>
