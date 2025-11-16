@@ -3,7 +3,6 @@ import { UserPlus, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -32,8 +31,8 @@ const ALL_STATES = [
 
 export const ApplySearchForm = () => {
   const navigate = useNavigate();
-  const dropdownRef = useRef<HTMLButtonElement>(null);
-  const cityDropdownRef = useRef<HTMLButtonElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const cityDropdownRef = useRef<HTMLDivElement>(null);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedState, setSelectedState] = useState('');
   const [stateInput, setStateInput] = useState('');
@@ -76,13 +75,26 @@ export const ApplySearchForm = () => {
     setFilteredStates(filtered);
   }, [stateInput]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setStateOpen(false);
+      }
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+        setCityOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleApply = () => {
     if (!selectedState && !selectedCity) {
       toast.error('Please select a state or city');
       return;
     }
 
-    // Navigate to apply page with location info
     const params = new URLSearchParams();
     if (selectedCity) {
       const city = cities.find(c => c.id === selectedCity);
@@ -98,69 +110,29 @@ export const ApplySearchForm = () => {
     navigate(`/apply-listing?${params.toString()}`);
   };
 
-  const handleZipCodeSearch = () => {
-    const zipMatch = cityInput.match(/\b\d{5}\b/);
-    if (zipMatch) {
-      const zipCode = zipMatch[0];
-      const cityData = findCityByZip(zipCode);
-      
-      if (cityData) {
-        const matchingCity = cities.find(
-          c => c.name.toLowerCase() === cityData.city.toLowerCase() && 
-               c.state === cityData.state
-        );
-        
-        if (matchingCity) {
-          setSelectedCity(matchingCity.id);
-          setCityInput(`${matchingCity.name}, ${matchingCity.state}`);
-          setSelectedState(matchingCity.state);
-          setStateInput(matchingCity.state);
-          setCityOpen(false);
-          toast.success(`Found ${matchingCity.name}, ${matchingCity.state}`);
-        }
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (cityInput.match(/\b\d{5}\b/)) {
-      handleZipCodeSearch();
-    }
-  }, [cityInput]);
-
   return (
-    <div className="bg-card rounded-lg shadow-lg p-8 border border-border">
-      <h2 className="text-2xl font-bold text-center mb-2 text-foreground">
-        Want to be considered for Top10 status?
-      </h2>
-      <p className="text-center text-muted-foreground mb-6">
-        Apply to be featured in your area
-      </p>
+    <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl p-6 shadow-lg">
+      <div className="flex items-center gap-2 mb-4">
+        <UserPlus className="h-5 w-5 text-primary" />
+        <h3 className="text-lg font-semibold">Want to be considered for Top10 status?</h3>
+      </div>
       
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* State Selector */}
-          <Popover open={stateOpen} onOpenChange={setStateOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                ref={dropdownRef}
-                variant="outline"
-                role="combobox"
-                aria-expanded={stateOpen}
-                className="w-full justify-between bg-background"
-              >
-                {selectedState || "Select State"}
-                <Check className={cn("ml-2 h-4 w-4", selectedState ? "opacity-100" : "opacity-0")} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0" align="start">
+      <div className="grid md:grid-cols-3 gap-4">
+        {/* State Input */}
+        <div className={cn("relative", stateOpen && "mb-64 md:mb-0")} ref={dropdownRef}>
+          <Input
+            placeholder="Enter State"
+            value={stateInput}
+            onChange={(e) => {
+              setStateInput(e.target.value);
+              setStateOpen(true);
+            }}
+            onFocus={() => setStateOpen(true)}
+            className="bg-background"
+          />
+          {stateOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-[100] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
               <Command>
-                <Input
-                  placeholder="Search state..."
-                  value={stateInput}
-                  onChange={(e) => setStateInput(e.target.value)}
-                  className="border-0 focus-visible:ring-0"
-                />
                 <CommandList>
                   <CommandEmpty>No state found.</CommandEmpty>
                   <CommandGroup>
@@ -171,83 +143,114 @@ export const ApplySearchForm = () => {
                         onSelect={() => {
                           setSelectedState(state);
                           setStateInput(state);
-                          setStateOpen(false);
                           setSelectedCity('');
                           setCityInput('');
+                          setStateOpen(false);
                         }}
                       >
-                        <Check className={cn("mr-2 h-4 w-4", selectedState === state ? "opacity-100" : "opacity-0")} />
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedState === state ? "opacity-100" : "opacity-0"
+                          )}
+                        />
                         {state}
                       </CommandItem>
                     ))}
                   </CommandGroup>
                 </CommandList>
               </Command>
-            </PopoverContent>
-          </Popover>
+            </div>
+          )}
+        </div>
 
-          {/* City Selector */}
-          <Popover open={cityOpen} onOpenChange={setCityOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                ref={cityDropdownRef}
-                variant="outline"
-                role="combobox"
-                aria-expanded={cityOpen}
-                className="w-full justify-between bg-background"
-              >
-                {selectedCity
-                  ? `${cities.find(c => c.id === selectedCity)?.name}, ${cities.find(c => c.id === selectedCity)?.state}`
-                  : "Select City or Enter ZIP"}
-                <Check className={cn("ml-2 h-4 w-4", selectedCity ? "opacity-100" : "opacity-0")} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0" align="start">
+        {/* City Input */}
+        <div className={cn("relative", cityOpen && "mb-64 md:mb-0")} ref={cityDropdownRef}>
+          <Input
+            placeholder="Enter City or ZIP"
+            value={cityInput}
+            onChange={(e) => {
+              const value = e.target.value;
+              setCityInput(value);
+              
+              if (/^\d{5}$/.test(value)) {
+                const zipResult = findCityByZip(value);
+                
+                if (zipResult) {
+                  toast.success(`Found ${zipResult.city}, ${zipResult.state} for zip ${value}`);
+                  setSelectedState(zipResult.state);
+                  setStateInput(zipResult.state);
+                  
+                  const cityMatch = cities.find(c => 
+                    c.name === zipResult.city && c.state === zipResult.state
+                  );
+                  
+                  if (cityMatch) {
+                    setSelectedCity(cityMatch.id);
+                    setCityInput(cityMatch.name);
+                    setCityOpen(false);
+                  } else {
+                    toast.info(`${zipResult.city} not yet in our database`);
+                  }
+                } else {
+                  toast.error(`Zip code ${value} not found in our database`);
+                }
+              } else {
+                setCityOpen(true);
+                
+                if (selectedState && value) {
+                  const filtered = cities.filter(c => 
+                    c.state === selectedState && 
+                    c.name.toLowerCase().includes(value.toLowerCase())
+                  );
+                  setFilteredCities(filtered);
+                } else if (!selectedState && value) {
+                  toast.info('Select a state first or enter a 5-digit ZIP code');
+                }
+              }
+            }}
+            onFocus={() => setCityOpen(true)}
+            className="bg-background"
+          />
+          {cityOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-[100] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
               <Command>
-                <Input
-                  placeholder="Search city or ZIP code..."
-                  value={cityInput}
-                  onChange={(e) => setCityInput(e.target.value)}
-                  className="border-0 focus-visible:ring-0"
-                />
                 <CommandList>
                   <CommandEmpty>No city found.</CommandEmpty>
                   <CommandGroup>
-                    {filteredCities
-                      .filter(city => 
-                        city.name.toLowerCase().includes(cityInput.toLowerCase()) ||
-                        city.state.toLowerCase().includes(cityInput.toLowerCase())
-                      )
-                      .slice(0, 50)
-                      .map((city) => (
-                        <CommandItem
-                          key={city.id}
-                          value={`${city.name}, ${city.state}`}
-                          onSelect={() => {
-                            setSelectedCity(city.id);
-                            setCityInput(`${city.name}, ${city.state}`);
-                            setSelectedState(city.state);
-                            setStateInput(city.state);
-                            setCityOpen(false);
-                          }}
-                        >
-                          <Check className={cn("mr-2 h-4 w-4", selectedCity === city.id ? "opacity-100" : "opacity-0")} />
-                          {city.name}, {city.state}
-                        </CommandItem>
-                      ))}
+                    {filteredCities.slice(0, 10).map((city) => (
+                      <CommandItem
+                        key={city.id}
+                        value={city.id}
+                        onSelect={() => {
+                          setSelectedCity(city.id);
+                          setCityInput(city.name);
+                          setCityOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedCity === city.id ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {city.name}, {city.state}
+                      </CommandItem>
+                    ))}
                   </CommandGroup>
                 </CommandList>
               </Command>
-            </PopoverContent>
-          </Popover>
+            </div>
+          )}
         </div>
 
+        {/* Apply Button */}
         <Button 
-          onClick={handleApply}
-          className="w-full"
-          size="lg"
+          onClick={handleApply} 
+          className="w-full md:w-auto bg-primary hover:bg-primary/90"
+          disabled={!selectedState && !selectedCity}
         >
-          <UserPlus className="mr-2 h-5 w-5" />
+          <UserPlus className="mr-2 h-4 w-4" />
           Apply to be Listed
         </Button>
       </div>
