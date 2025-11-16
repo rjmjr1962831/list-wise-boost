@@ -13,6 +13,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Privacy from "./pages/Privacy";
 import TermsOfService from "./pages/TermsOfService";
+import ApplyListing from "./pages/ApplyListing";
 import VerifyListing from "./pages/VerifyListing";
 import VerifyDetails from "./pages/VerifyDetails";
 import VerifySpecialties from "./pages/VerifySpecialties";
@@ -60,6 +61,7 @@ const App = () => (
                   {/* Static pages */}
                   <Route path="/privacy" element={<Privacy />} />
                   <Route path="/terms" element={<TermsOfService />} />
+                  <Route path="/apply-listing" element={<ApplyListing />} />
                   <Route path="/book-appointment-robert" element={<BookAppointment />} />
                   {/* Agent Onboarding */}
                   <Route path="/agent-onboarding" element={<AgentOnboarding />} />
