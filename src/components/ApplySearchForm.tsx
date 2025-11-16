@@ -153,20 +153,6 @@ export const ApplySearchForm = () => {
       </div>
       
       <div className="grid md:grid-cols-4 gap-4">
-        {/* Category Selection */}
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="bg-background">
-            <SelectValue placeholder="Select profession" />
-          </SelectTrigger>
-          <SelectContent>
-            {categories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {category.plural_name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
         {/* State Input */}
         <div className={cn("relative", stateOpen && "mb-64 md:mb-0")} ref={dropdownRef}>
           <Input
@@ -305,6 +291,20 @@ export const ApplySearchForm = () => {
             </div>
           )}
         </div>
+
+        {/* Category Selection */}
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+          <SelectTrigger className="bg-background">
+            <SelectValue placeholder="Select profession" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                {category.plural_name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
         {/* Apply Button */}
         <Button 
