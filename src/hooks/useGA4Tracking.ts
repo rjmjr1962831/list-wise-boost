@@ -24,6 +24,10 @@ export interface GA4EventParams {
   professional_id?: string;
   license_number?: string;
   state?: string;
+  city?: string;
+  category?: string;
+  search_type?: string;
+  zip_code?: string;
 }
 
 export const useGA4Tracking = () => {

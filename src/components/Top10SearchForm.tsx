@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { findCityByZip } from '@/data/zipCodeLookup';
+import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 
 interface Category {
   id: string;
@@ -83,6 +84,7 @@ const ALL_STATES = [
 
 export const Top10SearchForm = () => {
   const navigate = useNavigate();
+  const { trackEvent } = useGA4Tracking();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -184,6 +186,14 @@ export const Top10SearchForm = () => {
       toast.error('Category not found. Please try selecting again.');
       return;
     }
+
+    // Track search form submission
+    trackEvent('search_form_submit', {
+      state: city.state,
+      city: city.name,
+      category: category.name,
+      search_type: 'top10_search'
+    });
 
     // Show loading animation
     setIsSearching(true);
@@ -316,6 +326,12 @@ export const Top10SearchForm = () => {
                         setStateInput(state);
                         setSelectedCity(''); // Reset city when state changes
                         setStateOpen(false);
+                        
+                        // Track state selection
+                        trackEvent('search_state_select', {
+                          state: state,
+                          search_type: 'top10_search'
+                        });
                       }}
                     >
                         <Check
@@ -356,6 +372,13 @@ export const Top10SearchForm = () => {
                           setSelectedCity(city.id);
                           setCityInput(city.name);
                           setCityOpen(false);
+                          
+                          // Track city selection
+                          trackEvent('search_city_select', {
+                            state: city.state,
+                            city: city.name,
+                            search_type: 'top10_search'
+                          });
                         }}
                       >
                         <Check
