@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { findCityByZip } from '@/data/zipCodeLookup';
+import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 
 interface City {
   id: string;
@@ -31,6 +32,7 @@ const ALL_STATES = [
 
 export const ApplySearchForm = () => {
   const navigate = useNavigate();
+  const { trackEvent } = useGA4Tracking();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
   const [cities, setCities] = useState<City[]>([]);
@@ -95,13 +97,19 @@ export const ApplySearchForm = () => {
       return;
     }
 
+    const city = cities.find(c => c.id === selectedCity);
+    
+    // Track apply form submission
+    trackEvent('apply_form_submit', {
+      state: city ? city.state : selectedState,
+      city: city ? city.name : undefined,
+      search_type: 'apply_listing'
+    });
+
     const params = new URLSearchParams();
-    if (selectedCity) {
-      const city = cities.find(c => c.id === selectedCity);
-      if (city) {
-        params.set('city', city.slug);
-        params.set('state', city.state_slug);
-      }
+    if (selectedCity && city) {
+      params.set('city', city.slug);
+      params.set('state', city.state_slug);
     } else if (selectedState) {
       const stateSlug = selectedState.toLowerCase().replace(/\s+/g, '-');
       params.set('state', stateSlug);
@@ -146,6 +154,12 @@ export const ApplySearchForm = () => {
                           setSelectedCity('');
                           setCityInput('');
                           setStateOpen(false);
+                          
+                          // Track state selection
+                          trackEvent('apply_state_select', {
+                            state: state,
+                            search_type: 'apply_listing'
+                          });
                         }}
                       >
                         <Check
@@ -226,6 +240,13 @@ export const ApplySearchForm = () => {
                           setSelectedCity(city.id);
                           setCityInput(city.name);
                           setCityOpen(false);
+                          
+                          // Track city selection
+                          trackEvent('apply_city_select', {
+                            state: city.state,
+                            city: city.name,
+                            search_type: 'apply_listing'
+                          });
                         }}
                       >
                         <Check
