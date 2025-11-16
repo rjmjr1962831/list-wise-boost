@@ -388,6 +388,7 @@ serve(async (req) => {
       }
     }
 
+
     if (!Array.isArray(rawAgents) || rawAgents.length === 0) {
       return new Response(JSON.stringify({
         success: true,
@@ -398,8 +399,88 @@ serve(async (req) => {
       });
     }
 
-    // Limit to top 15 agents
+    // Step 2: Enrich agents with Redfin reviews (nested API call)
+    console.log(`Step 2: Enriching ${rawAgents.length} agents with Redfin reviews`);
+    
+    for (let i = 0; i < Math.min(rawAgents.length, 15); i++) {
+      const agent = rawAgents[i];
+      const profileUrl = agent.url || agent.profileUrl || agent.zillowUrl || agent.website;
+      
+      if (!profileUrl) {
+        console.log(`No profile URL for agent #${i+1}, skipping Redfin enrichment`);
+        continue;
+      }
+
+      try {
+        console.log(`Fetching Redfin reviews for agent #${i+1}: ${agent.name || agent.agentName}`);
+        
+        const reviewActorId = 'scrapingxpert/redfin-agent-reviews-scraper';
+        const reviewInput = {
+          zillowUrl: profileUrl,
+          proxyConfiguration: {
+            useApifyProxy: true,
+            apifyProxyGroups: ['RESIDENTIAL']
+          }
+        };
+
+        const reviewRunResp = await fetch(
+          `https://api.apify.com/v2/acts/${reviewActorId}/runs?token=${apiToken}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reviewInput),
+          }
+        );
+
+        if (reviewRunResp.ok) {
+          const reviewRun = await reviewRunResp.json();
+          const reviewRunId = reviewRun.data.id;
+          
+          // Poll for completion (max 30 seconds)
+          let reviewStatus = reviewRun.data.status;
+          let attempts = 0;
+          while (reviewStatus !== 'SUCCEEDED' && reviewStatus !== 'FAILED' && attempts < 15) {
+            await new Promise(r => setTimeout(r, 2000));
+            const statusResp = await fetch(
+              `https://api.apify.com/v2/acts/${reviewActorId}/runs/${reviewRunId}?token=${apiToken}`
+            );
+            if (statusResp.ok) {
+              const statusData = await statusResp.json();
+              reviewStatus = statusData.data.status;
+            }
+            attempts++;
+          }
+
+          if (reviewStatus === 'SUCCEEDED') {
+            const datasetId = reviewRun.data.defaultDatasetId;
+            const dataResp = await fetch(
+              `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
+            );
+            if (dataResp.ok) {
+              const reviews = await dataResp.json();
+              rawAgents[i].redfinReviews = reviews;
+              rawAgents[i].redfinReviewCount = reviews.length;
+              console.log(`✓ Fetched ${reviews.length} Redfin reviews for agent #${i+1}`);
+            }
+          } else {
+            console.log(`Redfin review fetch did not complete for agent #${i+1}: ${reviewStatus}`);
+          }
+        }
+      } catch (reviewError) {
+        console.error(`Error fetching Redfin reviews for agent #${i+1}:`, reviewError);
+      }
+      
+      // Delay between enrichment calls to avoid rate limits
+      if (i < Math.min(rawAgents.length, 15) - 1) {
+        await new Promise(r => setTimeout(r, 1500));
+      }
+    }
+
+    console.log(`Completed enrichment phase`);
+
+    // Limit to top 15 agents (post-enrichment)
     const items = rawAgents.slice(0, 15);
+
 
     function mapAgent(agent: any) {
       // Log first agent to help debug field mappings
