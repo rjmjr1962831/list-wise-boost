@@ -15,15 +15,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 md:py-32 text-center">
-        <div className="max-w-4xl mx-auto space-y-8">
-          <Top10SearchForm />
-        </div>
-      </section>
-
       {/* What Is Top10Lists.us */}
-      <section className="container mx-auto px-4 py-20">
+      <section className="container mx-auto px-4 py-20 md:py-32 text-center">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold">
             {getContent('what_is', 'title', 'What Is Top10Lists.us?')}
@@ -42,6 +35,13 @@ const Index = () => {
               <code className="text-primary font-mono font-semibold">top10lists.us/az/gilbert/realtors</code>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 py-20">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <Top10SearchForm />
         </div>
       </section>
 
