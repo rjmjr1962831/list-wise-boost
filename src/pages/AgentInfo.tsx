@@ -1,8 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Check, Search, TrendingUp, Zap, ArrowRight, Star, Award } from "lucide-react";
+import { Check, Search, TrendingUp, Zap, ArrowRight, Star, Award, Home, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 const AgentInfo = () => {
   useEffect(() => {
@@ -17,6 +25,50 @@ const AgentInfo = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
+      {/* Breadcrumb Navigation */}
+      <div className="container mx-auto px-4 pt-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="flex items-center gap-1 hover:text-foreground">
+                  <Home className="h-4 w-4" />
+                  <span>Home</span>
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight className="h-4 w-4" />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbPage>Agent Information</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+
+      {/* Schema.org Breadcrumb Markup */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": typeof window !== 'undefined' ? window.location.origin : "https://top10lists.us"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Agent Information",
+              "item": typeof window !== 'undefined' ? window.location.href : "https://top10lists.us/agent-info"
+            }
+          ]
+        })}
+      </script>
+
       {/* Why You Should Be on the List */}
       <section className="bg-card py-20">
         <div className="container mx-auto px-4">
