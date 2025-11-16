@@ -1,17 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Check, Search, TrendingUp, Zap } from "lucide-react";
-import { useMarketingContent } from "@/hooks/useMarketingContent";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { Link } from "react-router-dom";
+
 const Index = () => {
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
-  const { data: content, isLoading } = useMarketingContent('main');
-  
-  const getContent = (section: string, key: string, fallback: string = '') => {
-    const item = content?.find(c => c.section === section && c.key === key);
-    return item?.value || fallback;
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
@@ -19,14 +13,11 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20 md:py-32 text-center">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold">
-            {getContent('what_is', 'title', 'What Is Top10Lists.us?')}
+            What Is Top10Lists.us?
           </h2>
-          <p 
-            className="text-xl text-muted-foreground leading-relaxed"
-            dangerouslySetInnerHTML={{ 
-              __html: getContent('what_is', 'description', 'Top10Lists.us is a <span class="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.')
-            }}
-          />
+          <p className="text-xl text-muted-foreground leading-relaxed">
+            Top10Lists.us is a <span className="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.
+          </p>
         </div>
       </section>
 
@@ -43,7 +34,7 @@ const Index = () => {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                {getContent('why_join', 'title', 'Why You Should Be on the List')}
+                Why You Should Be on the List
               </h2>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
@@ -100,10 +91,10 @@ const Index = () => {
       <section className="container mx-auto px-4 py-20">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            {getContent('who_for', 'title', 'Who This Is For')}
+            Who This Is For
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            {getContent('who_for', 'subtitle', 'Top-tier service professionals who apply. Once past our screening and invited to be on the list, you choose your investment per month based on your business needs.')}
+            Top-tier service professionals who apply. Once past our screening and invited to be on the list, you choose your investment per month based on your business needs.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -142,10 +133,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {getContent('how_it_works', 'title', 'How to Get Listed')}
+              How to Get Listed
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              {getContent('how_it_works', 'subtitle', 'Join the curated directory that AI engines trust for local service recommendations')}
+              Join the curated directory that AI engines trust for local service recommendations
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -190,10 +181,10 @@ const Index = () => {
       <section id="markets" className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            {getContent('markets', 'title', 'Markets We Cover')}
+            Markets We Cover
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            {getContent('markets', 'subtitle', 'Connecting buyers and sellers with top real estate agents across major U.S. cities')}
+            Connecting buyers and sellers with top real estate agents across major U.S. cities
           </p>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -221,26 +212,22 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {getContent('pricing', 'title', 'Cost & Value')}
+              Cost & Value
             </h2>
             <p className="text-muted-foreground text-lg">
-              {getContent('pricing', 'subtitle', 'Authority without the ad spend. One new client covers the cost.')}
+              Authority without the ad spend. One new client covers the cost.
             </p>
           </div>
           <Card className="max-w-lg mx-auto border-2 border-primary">
             <CardContent className="pt-8 space-y-6">
               <div className="text-center">
                 <div className="inline-flex items-baseline gap-2">
-                  <span className="text-5xl font-bold">
-                    {getContent('pricing', 'price', '$300')}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {getContent('pricing', 'period', '/month')}
-                  </span>
+                  <span className="text-5xl font-bold">$300</span>
+                  <span className="text-muted-foreground">/month</span>
                 </div>
                 <div className="mt-4 px-6 py-3 bg-primary/10 rounded-lg inline-block">
                   <p className="text-sm font-medium text-primary">
-                    {getContent('pricing', 'roi_text', 'Most professionals see 3–6x ROI within 12 months')}
+                    Most professionals see 3–6x ROI within 12 months
                   </p>
                 </div>
               </div>
@@ -281,17 +268,17 @@ const Index = () => {
           <CardContent className="py-16 text-center space-y-6">
             <Search className="h-16 w-16 mx-auto opacity-90" />
             <h2 className="text-3xl md:text-4xl font-bold">
-              {getContent('final_cta', 'title', 'Claim Your Spot in the Top 10')}
+              Claim Your Spot in the Top 10
             </h2>
             <p className="text-lg opacity-90 max-w-2xl mx-auto">
-              {getContent('final_cta', 'description', 'Limited to just 10 providers per category per city. When customers ask AI for recommendations, make sure you\'re on the list they see. Apply today.')}
+              Limited to just 10 providers per category per city. When customers ask AI for recommendations, make sure you're on the list they see. Apply today.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button size="lg" variant="secondary" className="text-lg px-8">
-                {getContent('final_cta', 'cta_primary', 'Apply Now')}
+                Apply Now
               </Button>
               <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary" asChild>
-                <Link to="/az/gilbert/top10realestateagents" target="_blank" rel="noopener noreferrer">{getContent('final_cta', 'cta_secondary', 'View Sample Lists')}</Link>
+                <Link to="/az/gilbert/top10realestateagents" target="_blank" rel="noopener noreferrer">View Sample Lists</Link>
               </Button>
             </div>
           </CardContent>
