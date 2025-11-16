@@ -320,12 +320,17 @@ serve(async (req) => {
     let rawAgents = await discoveryDataResp.json();
     console.log(`Primary actor (${discoveryActorId}) returned ${rawAgents.length} items`);
 
-    // Detect property-listing dataset (wrong actor output) and fallback to a dedicated agents actor
-    if (Array.isArray(rawAgents) && rawAgents.length > 0) {
-      const firstItem = rawAgents[0] || {};
-      if ('zpid' in firstItem || 'statusType' in firstItem || 'addressCity' in firstItem) {
+    // Detect property-listing dataset (wrong actor output) OR empty results and fallback to a dedicated agents actor
+    const needsFallback = !Array.isArray(rawAgents) || rawAgents.length === 0 || 
+      (rawAgents.length > 0 && ('zpid' in rawAgents[0] || 'statusType' in rawAgents[0] || 'addressCity' in rawAgents[0]));
+    
+    if (needsFallback) {
+      if (rawAgents.length === 0) {
+        console.log('Primary actor returned 0 items; falling back to hello.datawizards~real-estate-agents-scraper');
+      } else {
         console.log('Primary actor returned property listings; falling back to hello.datawizards~real-estate-agents-scraper');
-        const fallbackActorId = 'hello.datawizards~real-estate-agents-scraper';
+      }
+      const fallbackActorId = 'hello.datawizards~real-estate-agents-scraper';
         const fallbackInput = {
           locations: [`${city}, ${stateAbbrev}`],
           proxyConfiguration: {
@@ -378,9 +383,8 @@ serve(async (req) => {
           } else {
             console.warn('Fallback dataset fetch failed');
           }
-        } else {
-          console.warn(`Fallback actor did not succeed: ${fbStatus}`);
-        }
+      } else {
+        console.warn(`Fallback actor did not succeed: ${fbStatus}`);
       }
     }
 
