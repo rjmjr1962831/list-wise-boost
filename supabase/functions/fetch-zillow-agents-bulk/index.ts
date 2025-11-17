@@ -198,7 +198,7 @@ serve(async (req) => {
     console.log(`Agent discovery query: ${query}`);
 
     // STEP 1: Use getdataforme scraper to find Zillow URLs
-    const discoveryActorId = 'piotrturski~zillow-agents-finder';
+    const discoveryActorId = 'getdataforme/zillow-real-state-agents-scraper';
     console.log(`Step 1: Finding agents with ${discoveryActorId} (getdataforme)`);
 
     // Convert state to 2-letter abbreviation if needed (used later for Redfin)
