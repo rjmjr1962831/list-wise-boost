@@ -380,45 +380,56 @@ export default function DynamicCategoryList() {
   const generateAndInsertProfessionals = async (cityData: City, categoryData: Category) => {
     // For real estate agents, use Zillow auto-import
     if (categoryData.slug === 'top10realestateagents') {
-      toast.info(`Importing ${categoryData.plural_name} from ${cityData.name}...`);
+      toast.info(`Importing ${categoryData.plural_name} from ${cityData.name}...`, {
+        description: 'This will complete in the background'
+      });
       
       try {
         const { autoImportZillowAgents } = await import('@/utils/zillowAutoImport');
         
-        // Add timeout to prevent hanging (extended to 180s to allow background fetches)
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Import timed out after 180 seconds')), 180000)
+        // Fire off the import in the background - don't block the UI
+        const importPromise = autoImportZillowAgents(
+          cityData.id,
+          cityData.name,
+          cityData.state
         );
         
-        const result = await Promise.race([
-          autoImportZillowAgents(
-            cityData.id,
-            cityData.name,
-            cityData.state // Use full state name (Arizona) for better Google Places results
-          ),
-          timeoutPromise
-        ]) as any;
+        // Give it 8 seconds to complete, then render the page anyway
+        const shortTimeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Initial import timeout - continuing in background')), 8000)
+        );
         
+        try {
+          const result = await Promise.race([importPromise, shortTimeout]) as any;
+          
           if (result.success) {
-            toast.success(`Imported ${result.imported} real estate agents! Found ${result.licensesFound} license numbers.`);
-            // Data will be fetched by the retry logic instead of reloading
-            return; // success: stop here, no fallback
-          } else {
-            toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
-            // Clear loading state on failure then fall back to generator below
-            setIsGeneratingData(false);
-            setLoading(false);
-            setReviewsReady(true);
-            // continue to fallback generation below
+            toast.success(`Imported ${result.imported} real estate agents!`);
+            return; // success: stop here, data will be fetched by retry logic
           }
+        } catch (timeoutError) {
+          // Timeout hit - let import continue in background
+          console.log('Import continuing in background...');
+          
+          // Continue monitoring the import without blocking
+          importPromise.then((result: any) => {
+            if (result.success) {
+              toast.success(`Background import completed: ${result.imported} agents imported!`, {
+                description: 'Refresh to see the latest data',
+                duration: 5000
+              });
+            } else {
+              console.error('Background import failed:', result.errors);
+            }
+          }).catch(err => {
+            console.error('Background import error:', err);
+          });
+          
+          // Let the page render with whatever we have
+          return;
+        }
       } catch (error: any) {
-          console.error('Error importing agents:', error);
-          toast.error(`Import failed: ${error.message}`);
-          // Clear loading state on error then fall back to generator below
-          setIsGeneratingData(false);
-          setLoading(false);
-          setReviewsReady(true);
-          // continue to fallback generation below
+        console.error('Error starting import:', error);
+        toast.error(`Import failed: ${error.message}`);
       }
     }
     
