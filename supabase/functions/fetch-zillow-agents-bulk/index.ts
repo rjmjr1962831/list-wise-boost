@@ -208,10 +208,7 @@ serve(async (req) => {
     const searchUrl = `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}/`;
     
     const discoveryInput = {
-      startUrls: [
-        { url: searchUrl },
-        { url: `https://www.zillow.com/directory/real-estate-agents/${city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}/` }
-      ],
+      query: `real estate agent in ${city}, ${state}`,
       maxItems: 50,
       proxyConfiguration: {
         useApifyProxy: true,
@@ -324,10 +321,28 @@ serve(async (req) => {
       'Fetch Discovery Dataset'
     );
     
-    let rawAgents = await discoveryDataResp.json();
-    console.log(`Primary dataset raw response type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
-    console.log(`Primary dataset response sample:`, JSON.stringify(rawAgents).slice(0, 500));
-    console.log(`Primary actor (${discoveryActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 'non-array'} items`);
+    console.log(`Primary dataset response status: ${discoveryDataResp.status}`);
+    console.log(`Primary dataset response headers:`, Object.fromEntries(discoveryDataResp.headers.entries()));
+    
+    const rawText = await discoveryDataResp.text();
+    console.log(`Primary dataset raw text (first 1000 chars):`, rawText.slice(0, 1000));
+    
+    let rawAgents;
+    try {
+      rawAgents = JSON.parse(rawText);
+      console.log(`Primary dataset parsed type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
+      if (!Array.isArray(rawAgents) && rawAgents && typeof rawAgents === 'object') {
+        console.log(`Primary dataset keys:`, Object.keys(rawAgents).slice(0, 10));
+        // If response is wrapped in an object, extract the items array
+        rawAgents = rawAgents.items || rawAgents.data || rawAgents.results || [];
+        console.log(`Extracted items from wrapper object, count: ${Array.isArray(rawAgents) ? rawAgents.length : 0}`);
+      }
+    } catch (e) {
+      console.error('Failed to parse primary dataset response:', e);
+      rawAgents = [];
+    }
+    
+    console.log(`Primary actor (${discoveryActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 0} items`);
 
     // Detect property-listing dataset (wrong actor output) OR empty results and fallback to a dedicated agents actor
     const needsFallback = !Array.isArray(rawAgents) || rawAgents.length === 0 || 
@@ -340,13 +355,14 @@ serve(async (req) => {
         console.log('Primary actor returned property listings; falling back to hello.datawizards~real-estate-agents-scraper');
       }
       const fallbackActorId = 'hello.datawizards~real-estate-agents-scraper';
-      const fallbackInput = {
-        search_query: `${city}, ${stateAbbrev}`,
-        proxyConfiguration: {
-          useApifyProxy: true,
-          apifyProxyGroups: ['RESIDENTIAL']
-        }
-      };
+    const fallbackInput = {
+      query: `real estate agent in ${city}, ${state}`,
+      maxItems: 50,
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyGroups: ['RESIDENTIAL']
+      }
+    };
 
         // Start fallback actor
         const fbStart = await retryWithBackoff(
@@ -391,12 +407,31 @@ serve(async (req) => {
             const fbDatasetId = finalRun.data.defaultDatasetId;
             console.log(`Fetching fallback dataset: ${fbDatasetId}`);
             
+            console.log(`Fetching fallback dataset: ${fbDatasetId}`);
             const fbDataResp = await fetch(`https://api.apify.com/v2/datasets/${fbDatasetId}/items?token=${apiToken}`);
+            
+            console.log(`Fallback dataset response status: ${fbDataResp.status}`);
+            
             if (fbDataResp.ok) {
-              rawAgents = await fbDataResp.json();
-              console.log(`Fallback dataset raw response type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
-              console.log(`Fallback dataset response sample:`, JSON.stringify(rawAgents).slice(0, 500));
-              console.log(`Fallback actor (${fallbackActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 'non-array'} items`);
+              const fbRawText = await fbDataResp.text();
+              console.log(`Fallback dataset raw text (first 1000 chars):`, fbRawText.slice(0, 1000));
+              
+              try {
+                rawAgents = JSON.parse(fbRawText);
+                console.log(`Fallback dataset parsed type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
+                console.log(`Fallback dataset keys:`, Object.keys(rawAgents || {}).slice(0, 10));
+                
+                // If response is wrapped in an object, extract the items array
+                if (!Array.isArray(rawAgents) && rawAgents && typeof rawAgents === 'object') {
+                  rawAgents = rawAgents.items || rawAgents.data || rawAgents.results || [];
+                  console.log(`Extracted items from wrapper object, count: ${Array.isArray(rawAgents) ? rawAgents.length : 0}`);
+                }
+              } catch (e) {
+                console.error('Failed to parse fallback dataset response:', e);
+                rawAgents = [];
+              }
+              
+              console.log(`Fallback actor (${fallbackActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 0} items`);
             } else {
               console.warn('Fallback dataset fetch failed:', fbDataResp.status);
             }
