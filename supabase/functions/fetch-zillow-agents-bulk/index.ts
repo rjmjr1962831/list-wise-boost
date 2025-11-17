@@ -169,21 +169,43 @@ serve(async (req) => {
       console.error('Error loading license CSV:', error);
     }
 
-    // STEP 2: Use Google Maps scraper
-    const scraperActorId = 'musical_jackrabbit/google-maps-email-scraper';
-    console.log(`Finding agents with ${scraperActorId}`);
+    // STEP 2: Load zip codes for the city
+    console.log('Loading zip code data');
+    let zipCodes: string[] = [];
+    
+    try {
+      const zipResp = await fetch('https://raw.githubusercontent.com/lovable-dev/lovable-agent-importer/main/src/data/zipCodeData.json');
+      if (zipResp.ok) {
+        const zipData = await zipResp.json();
+        const cityKey = city.toLowerCase().replace(/\s+/g, '-');
+        
+        for (const [key, cityData] of Object.entries(zipData)) {
+          if (key.toLowerCase().includes(cityKey)) {
+            const suburbs = (cityData as any).suburbs || {};
+            for (const suburb of Object.values(suburbs)) {
+              const suburbData = suburb as any;
+              if (suburbData.zip_codes) {
+                zipCodes.push(...suburbData.zip_codes.map((zc: any) => zc.zip));
+              }
+            }
+          }
+        }
+        
+        zipCodes = [...new Set(zipCodes)].slice(0, 5);
+        console.log(`✅ Found ${zipCodes.length} zip codes for ${city}`);
+      }
+    } catch (error) {
+      console.error('Error loading zip codes:', error);
+    }
+
+    // STEP 3: Use rigelbytes/zillow-agents scraper
+    const scraperActorId = 'rigelbytes/zillow-agents';
+    console.log(`Starting ${scraperActorId} for ${city}, ${state}`);
     
     const scraperInput = {
-      location: `${city}, ${state}`,
-      business: "real estate agent or broker",
-      count,
-      enableEmailValidation: true,
-      includeInvalidEmails: false,
-      onlyWithEmails: true,
-      maxPagesPerWebsite: 2,
-      smartDelayMin: 50,
-      smartDelayMax: 120,
-      scraperTimeoutMs: 8000
+      search_keywords: zipCodes.length > 0 ? zipCodes[0] : `${city}, ${state}`,
+      detailed_profiles: true,
+      max_items: count
     };
 
     console.log('Scraper input:', scraperInput);
@@ -283,7 +305,7 @@ serve(async (req) => {
 
     for (const agent of agents) {
       try {
-        const name = agent['Business Name'] || agent.title || agent.name || '';
+        const name = agent.name || '';
         if (!name) {
           skipped++;
           continue;
@@ -292,14 +314,32 @@ serve(async (req) => {
         const normalizedName = normalizeName(name);
         const licenseData = licenseMap.get(normalizedName);
 
-        const email = agent['Email Address'] || agent.email || null;
-        const phone = licenseData?.phone || agent['Phone Number'] || agent.phone || null;
-        const website = agent['Website'] || agent.website || null;
-        const address = licenseData?.address || agent['Address'] || agent.address || null;
-        const company = licenseData?.company || agent['Business Name'] || 'Independent';
+        // Prioritize license file data for phone, license, years
+        const phone = licenseData?.phone || agent.phone || null;
         const yearsExperience = licenseData?.yearsExperience || null;
         const licenseNumber = licenseData?.licenseNumber || null;
         const licenseVerifiedAt = licenseData?.licenseVerifiedAt || null;
+        
+        // Get data from rigelbytes scraper
+        const email = agent.email || null;
+        const website = agent.website || null; // Agent's actual website, not zillow
+        const address = agent.address || null;
+        const company = agent.company || 'Independent';
+        const imageUrl = agent.image || agent.profile_picture || null;
+        const description = agent.description || agent.bio || null;
+        const specialty = agent.specialties || agent.specialty_tags || [];
+        const totalSales = agent.total_sales || agent.total_transactions || 0;
+        const currentListings = agent.current_listings || agent.active_listings || 0;
+        const zillowProfileUrl = agent.zillow_profile_url || agent.profile_url || null;
+        const zuid = agent.zuid || agent.zillow_id || null;
+        const rating = agent.rating || 0;
+        const reviewCount = agent.review_count || 0;
+        
+        // Store reviews and sales_last_12_months in badges field temporarily
+        const badges = JSON.stringify({
+          reviews: agent.reviews || [],
+          sales_last_12_months: agent.sales_last_12_months || agent.recent_sales || 0
+        });
 
         const { data: existing } = await supabase
           .from('professionals')
@@ -318,12 +358,24 @@ serve(async (req) => {
           website,
           address,
           company,
+          description,
+          image_url: imageUrl,
+          specialty,
+          total_sales: totalSales,
+          current_listings: currentListings,
           years_experience: yearsExperience,
           license_number: licenseNumber,
           license_verified_at: licenseVerifiedAt,
-          type: (yearsExperience && yearsExperience >= 5) ? 'established' : 'emerging',
+          zip_code: zipCodes[0] || null,
+          zillow_profile_url: zillowProfileUrl,
+          zuid,
+          zillow_data_fetched_at: new Date().toISOString(),
+          type: (yearsExperience && yearsExperience >= 5) ? 'Established' : 'Emerging',
           rank: created + updated + 1,
           active: true,
+          badges,
+          rating,
+          reviews: reviewCount
         };
 
         if (existing) {
