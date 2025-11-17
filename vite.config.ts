@@ -18,4 +18,11 @@ export default defineConfig(({ mode }) => ({
     },
     dedupe: ["react", "react-dom"],
   },
+  optimizeDeps: {
+    include: ["react", "react-dom", "react-router", "react-router-dom"],
+    esbuildOptions: {
+      // Ensure consistent React instance during pre-bundling
+      define: { "process.env.NODE_ENV": JSON.stringify(mode) },
+    },
+  },
 }));
