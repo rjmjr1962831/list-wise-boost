@@ -297,8 +297,12 @@ serve(async (req) => {
       throw new Error(error);
     }
 
-    // Get discovered agent profiles with comprehensive data from scrapestorm
-    const discoveryDatasetId = discoveryRun.data.defaultDatasetId;
+    // Fetch final run details to get correct defaultDatasetId after completion
+    const finalDiscoveryResp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs/${discoveryRunId}?token=${apiToken}`);
+    const finalDiscoveryRun = await finalDiscoveryResp.json();
+    const discoveryDatasetId = finalDiscoveryRun.data.defaultDatasetId;
+    console.log(`Fetching primary dataset: ${discoveryDatasetId}`);
+    
     const discoveryDataResp = await retryWithBackoff(
       async () => {
         const resp = await fetch(`https://api.apify.com/v2/datasets/${discoveryDatasetId}/items?token=${apiToken}`);
@@ -378,13 +382,22 @@ serve(async (req) => {
         }
 
         if (fbStatus === 'SUCCEEDED') {
-          const fbDatasetId = fbRun.data.defaultDatasetId;
-          const fbDataResp = await fetch(`https://api.apify.com/v2/datasets/${fbDatasetId}/items?token=${apiToken}`);
-          if (fbDataResp.ok) {
-            rawAgents = await fbDataResp.json();
-            console.log(`Fallback actor (${fallbackActorId}) returned ${rawAgents.length} items`);
+          // Fetch final run details to get correct defaultDatasetId
+          const finalRunResp = await fetch(`https://api.apify.com/v2/acts/${fallbackActorId}/runs/${fbRunId}?token=${apiToken}`);
+          if (finalRunResp.ok) {
+            const finalRun = await finalRunResp.json();
+            const fbDatasetId = finalRun.data.defaultDatasetId;
+            console.log(`Fetching fallback dataset: ${fbDatasetId}`);
+            
+            const fbDataResp = await fetch(`https://api.apify.com/v2/datasets/${fbDatasetId}/items?token=${apiToken}`);
+            if (fbDataResp.ok) {
+              rawAgents = await fbDataResp.json();
+              console.log(`Fallback actor (${fallbackActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 0} items`);
+            } else {
+              console.warn('Fallback dataset fetch failed:', fbDataResp.status);
+            }
           } else {
-            console.warn('Fallback dataset fetch failed');
+            console.warn('Could not fetch final run details');
           }
       } else {
         console.warn(`Fallback actor did not succeed: ${fbStatus}`);
