@@ -385,7 +385,7 @@ serve(async (req) => {
     
     if (zillowUrls.length > 0) {
       try {
-        const memo23ActorId = 'tomas.novak~memo23';
+        const memo23ActorId = 'memo23~apify-zillow-agents-cheerio';
         const memo23Input = {
           startUrls: zillowUrls.map((url: string) => ({ url })),
           proxyConfiguration: {
