@@ -15,38 +15,16 @@ interface RetryOptions {
 }
 
 function isRetryableError(error: any): boolean {
-  // Check for network errors
-  if (error.name === 'TypeError' && error.message?.includes('fetch')) {
-    return true;
-  }
-  
-  // Check for HTTP status codes
+  if (error.name === 'TypeError' && error.message?.includes('fetch')) return true;
   if (error.status) {
-    // Retry on rate limits (429) and server errors (5xx)
-    if (error.status === 429 || (error.status >= 500 && error.status < 600)) {
-      return true;
-    }
-    // Don't retry on client errors (4xx) except 429
-    if (error.status >= 400 && error.status < 500) {
-      return false;
-    }
+    if (error.status === 429 || (error.status >= 500 && error.status < 600)) return true;
+    if (error.status >= 400 && error.status < 500) return false;
   }
-  
-  // Check for specific Apify errors that are retryable
   if (error.message) {
-    const retryablePatterns = [
-      'timeout',
-      'network',
-      'ECONNREFUSED',
-      'ENOTFOUND',
-      'ETIMEDOUT',
-      'rate limit'
-    ];
-    
+    const retryablePatterns = ['timeout', 'network', 'ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'rate limit'];
     const message = error.message.toLowerCase();
     return retryablePatterns.some(pattern => message.includes(pattern));
   }
-  
   return false;
 }
 
@@ -63,8 +41,6 @@ async function retryWithBackoff<T>(
       return await operation();
     } catch (error) {
       lastError = error as Error;
-      
-      // Check if error is retryable
       const isRetryable = isRetryableError(error);
       
       if (!isRetryable || attempt === maxRetries) {
@@ -72,52 +48,38 @@ async function retryWithBackoff<T>(
         throw lastError;
       }
       
-      // Calculate delay with exponential backoff
-      const delay = Math.min(
-        initialDelayMs * Math.pow(backoffMultiplier, attempt),
-        maxDelayMs
-      );
-      
-      console.log(`${operationName} attempt ${attempt + 1} failed, retrying in ${delay}ms...`, {
-        error: lastError.message,
-        attempt: attempt + 1,
-        maxRetries: maxRetries + 1
-      });
-      
+      const delay = Math.min(initialDelayMs * Math.pow(backoffMultiplier, attempt), maxDelayMs);
+      console.log(`${operationName} attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
-  
   throw lastError!;
 }
 
-async function sendFailureAlert(functionName: string, error: string, context?: any, retriesExhausted: boolean = true) {
-  if (!retriesExhausted) {
-    console.log('Skipping alert - will retry operation');
-    return;
-  }
-  
+function normalizeName(name: string): string {
+  return name.toLowerCase().trim().replace(/[^a-z\s]/g, '');
+}
+
+function calculateYearsExperience(issueDate: string): number {
+  const date = new Date(issueDate);
+  const today = new Date();
+  const years = (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+  return Math.round(years);
+}
+
+async function sendFailureAlert(functionName: string, error: string, context?: any) {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    if (!supabaseUrl || !supabaseKey) {
-      console.error('Cannot send alert: Supabase credentials missing');
-      return;
-    }
-
+    if (!supabaseUrl || !supabaseKey) return;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     await supabase.functions.invoke('send-api-failure-alert', {
-      body: {
-        functionName,
-        error,
-        context,
-        timestamp: new Date().toISOString()
-      }
+      body: { functionName, error, context, timestamp: new Date().toISOString() }
     });
   } catch (e) {
-    console.error('Failed to send alert email:', e);
+    console.error('Failed to send alert:', e);
   }
 }
 
@@ -128,12 +90,11 @@ serve(async (req) => {
 
   try {
     const bodyText = await req.text().catch(() => '');
-    let city = '' as string;
-    let state = '' as string;
+    let city = '';
+    let state = '';
     let categoryId: string | undefined;
     let cityId: string | undefined;
-    let maxPages = 3;
-    let maxProfiles = 50; // Maximum profiles to enrich with memo23
+    let count = 30;
 
     if (bodyText) {
       try {
@@ -142,693 +103,261 @@ serve(async (req) => {
         state = parsed.state;
         categoryId = parsed.categoryId;
         cityId = parsed.cityId;
-        if (parsed.maxPages !== undefined) maxPages = parsed.maxPages;
-        if (parsed.maxProfiles !== undefined) maxProfiles = Math.min(parsed.maxProfiles, 100); // Cap at 100 for safety
+        if (parsed.count !== undefined) count = Math.min(parsed.count, 50);
       } catch (_e) {
-        console.warn('Invalid JSON body; falling back to empty payload. Body preview:', bodyText.slice(0, 200));
+        console.warn('Invalid JSON body');
       }
     }
 
     if (!city || !state) {
       return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'Missing city or state in request body',
-          hint: 'Send JSON: { "city": "Anchorage", "state": "Alaska", "cityId": "...", "categoryId": "..." }'
-        }),
+        JSON.stringify({ success: false, error: 'Missing city or state' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
     
     const apiToken = Deno.env.get('APIFY_API_KEY')?.trim() || Deno.env.get('APIFY_API_TOKEN')?.trim();
-
     if (!apiToken) {
-      const error = 'Apify API key/token not configured';
+      const error = 'Apify API key not configured';
       await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state });
       throw new Error(error);
     }
 
-    // Load zip code data and find one for this city
-    let zipCode: string | null = null;
+    const startTime = Date.now();
+    console.log('Import started:', { city, state, cityId, categoryId });
+
+    // STEP 1: Load license data
+    console.log('Loading license data from CSV');
+    const licenseMap = new Map();
     try {
-      const zipDataResp = await fetch('https://raw.githubusercontent.com/lovable-dev/lovable-agent-importer/main/src/data/zipCodeData.json');
-      if (zipDataResp.ok) {
-        const zipData = await zipDataResp.json();
-        const cityZips = zipData.filter((z: any) => 
-          z.city.toLowerCase() === city.toLowerCase() && 
-          (z.state.toLowerCase() === state.toLowerCase() || z.stateAbbreviation.toLowerCase() === state.toLowerCase())
-        );
-        if (cityZips.length > 0) {
-          // Pick the zip with highest agent value
-          const bestZip = cityZips.sort((a: any, b: any) => b.agentValue - a.agentValue)[0];
-          zipCode = bestZip.zipCode;
-          console.log(`Found zip code ${zipCode} for ${city}, ${state}`);
-        } else {
-          console.log(`No zip code found in data for ${city}, ${state}`);
+      const csvResp = await fetch('https://raw.githubusercontent.com/lovable-dev/lovable-agent-importer/main/public/arizona-licenses.csv');
+      if (csvResp.ok) {
+        const csvText = await csvResp.text();
+        const lines = csvText.split('\n');
+        
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          
+          const values = line.split(',');
+          if (values.length < 13) continue;
+          
+          const lastName = values[0]?.replace(/"/g, '').trim();
+          const firstName = values[1]?.replace(/"/g, '').trim();
+          const middleName = values[2]?.replace(/"/g, '').trim();
+          const fullName = `${firstName} ${middleName} ${lastName}`.replace(/\s+/g, ' ').trim();
+          const normalizedName = normalizeName(fullName);
+          
+          const issueDate = values[3]?.replace(/"/g, '').trim();
+          const licNumber = values[4]?.replace(/"/g, '').trim();
+          const phone = values[7]?.replace(/"/g, '').trim();
+          const companyName = values[8]?.replace(/"/g, '').trim();
+          const address = values[9]?.replace(/"/g, '').trim();
+          
+          licenseMap.set(normalizedName, {
+            licenseNumber: licNumber,
+            phone,
+            company: companyName,
+            address,
+            yearsExperience: calculateYearsExperience(issueDate),
+            licenseVerifiedAt: new Date().toISOString()
+          });
         }
+        console.log(`✅ Loaded ${licenseMap.size} licenses`);
       }
-    } catch (e) {
-      console.warn('Could not load zip code data:', e);
+    } catch (error) {
+      console.error('Error loading license CSV:', error);
     }
 
-    // Use zip code if available, otherwise use city/state format
-    const locationText = zipCode || `${city}, ${state}`;
-    console.log(`Using location text for agenscrape: ${locationText}`);
-
-    const startTime = Date.now();
-    console.log('Import started:', {
-      city,
-      state,
-      locationText,
-      cityId,
-      categoryId,
-      timestamp: new Date().toISOString()
-    });
-
-    // STEP 1: Use getdataforme scraper to find Zillow agents
-    const discoveryActorId = 'getdataforme~zillow-real-state-agents-scraper';
-    console.log(`Step 1: Finding agents with ${discoveryActorId}`);
+    // STEP 2: Use Google Maps scraper
+    const scraperActorId = 'musical_jackrabbit/google-maps-email-scraper';
+    console.log(`Finding agents with ${scraperActorId}`);
     
-    const discoveryInput = {
-      search_query: locationText,
-      proxyConfiguration: {
-        useApifyProxy: true,
-        apifyProxyGroups: ['RESIDENTIAL']
-      }
+    const scraperInput = {
+      location: `${city}, ${state}`,
+      business: "real estate agent or broker",
+      count,
+      enableEmailValidation: true,
+      includeInvalidEmails: false,
+      onlyWithEmails: true,
+      maxPagesPerWebsite: 2,
+      smartDelayMin: 50,
+      smartDelayMax: 120,
+      scraperTimeoutMs: 8000
     };
 
-    console.log('getdataforme scraper input:', discoveryInput);
+    console.log('Scraper input:', scraperInput);
 
-    // Start discovery actor run with retry logic
-    const discoveryResp = await retryWithBackoff(
+    const scraperResp = await retryWithBackoff(
       async () => {
-        const resp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs?token=${apiToken}`, {
+        const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(discoveryInput),
+          body: JSON.stringify(scraperInput),
         });
         
         if (!resp.ok) {
-          const errorText = await resp.text();
-          console.error(`Discovery actor start error: ${resp.status}`, errorText);
-          const error: any = new Error(`Discovery actor failed: ${resp.status}`);
+          const error: any = new Error(`Scraper failed: ${resp.status}`);
           error.status = resp.status;
-          error.responseText = errorText;
           throw error;
         }
-        
         return resp;
       },
-      {
-        maxRetries: 5,
-        initialDelayMs: 1000,
-        maxDelayMs: 30000,
-        backoffMultiplier: 2
-      },
-      'Start Discovery Actor'
+      { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 10000, backoffMultiplier: 2 },
+      'Start Scraper'
     );
 
-    const discoveryRun = await discoveryResp.json();
-    const discoveryRunId = discoveryRun.data.id;
-    console.log('Discovery run started:', discoveryRunId);
+    const scraperRun = await scraperResp.json();
+    const scraperRunId = scraperRun.data.id;
+    console.log(`Scraper run started: ${scraperRunId}`);
 
-    // Poll for discovery completion with retry logic
-    let discoveryStatus = discoveryRun.data.status;
-    let discoveryAttempts = 0;
-    while (discoveryStatus !== 'SUCCEEDED' && discoveryStatus !== 'FAILED' && discoveryAttempts < 60) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    // Poll for completion
+    let scraperStatus = scraperRun.data.status;
+    let scraperAttempts = 0;
+    
+    while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperAttempts < 150) {
+      await new Promise(r => setTimeout(r, 2000));
       
-      try {
-        const statusResp = await retryWithBackoff(
-          async () => {
-            const resp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs/${discoveryRunId}?token=${apiToken}`);
-            
-            if (!resp.ok) {
-              const error: any = new Error(`Status check failed: ${resp.status}`);
-              error.status = resp.status;
-              throw error;
-            }
-            
-            return resp;
-          },
-          {
-            maxRetries: 3,
-            initialDelayMs: 500,
-            maxDelayMs: 5000,
-            backoffMultiplier: 2
-          },
-          'Poll Actor Status'
-        );
-        
+      const statusResp = await fetch(
+        `https://api.apify.com/v2/acts/${scraperActorId}/runs/${scraperRunId}?token=${apiToken}`
+      );
+      
+      if (statusResp.ok) {
         const statusData = await statusResp.json();
-        discoveryStatus = statusData.data.status;
-        console.log(`Discovery status: ${discoveryStatus} (attempt ${discoveryAttempts + 1})`);
-      } catch (error) {
-        console.error('Status polling error (will retry):', error);
-        // Continue polling even if status check fails
+        scraperStatus = statusData.data.status;
+        console.log(`Status: ${scraperStatus} (attempt ${scraperAttempts + 1})`);
       }
-      
-      discoveryAttempts++;
+      scraperAttempts++;
     }
 
-    if (discoveryStatus !== 'SUCCEEDED') {
-      const error = `Discovery run did not complete: ${discoveryStatus}`;
-      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, discoveryRunId }, true);
-      throw new Error(error);
+    if (scraperStatus !== 'SUCCEEDED') {
+      const error = `Scraper did not complete: ${scraperStatus}`;
+      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state });
+      return new Response(
+        JSON.stringify({ error }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Fetch final run details to get correct defaultDatasetId after completion
-    const finalDiscoveryResp = await fetch(`https://api.apify.com/v2/acts/${discoveryActorId}/runs/${discoveryRunId}?token=${apiToken}`);
-    const finalDiscoveryRun = await finalDiscoveryResp.json();
-    const discoveryDatasetId = finalDiscoveryRun.data.defaultDatasetId;
-    console.log(`Fetching primary dataset: ${discoveryDatasetId}`);
-    
-    const discoveryDataResp = await retryWithBackoff(
-      async () => {
-        const resp = await fetch(`https://api.apify.com/v2/datasets/${discoveryDatasetId}/items?token=${apiToken}`);
-        
-        if (!resp.ok) {
-          const error: any = new Error(`Dataset fetch failed: ${resp.status}`);
-          error.status = resp.status;
-          throw error;
-        }
-        
-        return resp;
-      },
-      {
-        maxRetries: 5,
-        initialDelayMs: 1000,
-        maxDelayMs: 30000,
-        backoffMultiplier: 2
-      },
-      'Fetch Discovery Dataset'
+    // Fetch results
+    const datasetId = scraperRun.data.defaultDatasetId;
+    const dataResp = await fetch(
+      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
     );
     
-    console.log(`Primary dataset response status: ${discoveryDataResp.status}`);
-    console.log(`Primary dataset response headers:`, Object.fromEntries(discoveryDataResp.headers.entries()));
-    
-    const rawText = await discoveryDataResp.text();
-    console.log(`Primary dataset raw text (first 1000 chars):`, rawText.slice(0, 1000));
-    
-    let rawAgents;
-    try {
-      rawAgents = JSON.parse(rawText);
-      console.log(`Primary dataset parsed type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
-      
-      // Log first item structure if array
-      if (Array.isArray(rawAgents) && rawAgents.length > 0) {
-        console.log(`First agent structure - keys:`, Object.keys(rawAgents[0]));
-        console.log(`First agent sample data:`, JSON.stringify(rawAgents[0], null, 2));
-      }
-      
-      if (!Array.isArray(rawAgents) && rawAgents && typeof rawAgents === 'object') {
-        console.log(`Primary dataset keys:`, Object.keys(rawAgents).slice(0, 10));
-        // If response is wrapped in an object, extract the items array
-        rawAgents = rawAgents.items || rawAgents.data || rawAgents.results || [];
-        console.log(`Extracted items from wrapper object, count: ${Array.isArray(rawAgents) ? rawAgents.length : 0}`);
-      }
-    } catch (e) {
-      console.error('Failed to parse primary dataset response:', e);
-      rawAgents = [];
-    }
-    
-    console.log(`getdataforme scraper (${discoveryActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 0} items`);
+    if (!dataResp.ok) throw new Error('Failed to fetch results');
+    const agents = await dataResp.json();
+    console.log(`✅ Found ${agents.length} agents`);
 
-    if (!Array.isArray(rawAgents) || rawAgents.length === 0) {
-      console.log('getdataforme scraper returned no results');
-      return new Response(JSON.stringify({
-        success: true,
-        summary: { created: 0, updated: 0, skipped: 0, total: 0 },
-        agents: []
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    // STEP 3: Insert/update in Supabase
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    if (!categoryId) {
+      const { data: catData } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('slug', 'top10realestateagents')
+        .single();
+      categoryId = catData?.id;
     }
 
-    // Step 2: Redfin enrichment removed - proceeding directly to memo23
-
-    // Step 3: Scrape detailed profile data with memo23
-    console.log(`Step 3: Scraping detailed Zillow profiles with memo23 actor (max: ${maxProfiles})`);
-    
-    // Extract Zillow profile URLs from the agents
-    const zillowUrls = rawAgents
-      .slice(0, maxProfiles)
-      .map((agent: any) => {
-        const profileUrl = agent.profile_url || agent.profileUrl || agent.url || agent.website;
-        if (profileUrl && profileUrl.includes('zillow.com')) {
-          return profileUrl;
-        }
-        return null;
-      })
-      .filter((url: string | null) => url !== null);
-
-    console.log(`Extracted ${zillowUrls.length} Zillow profile URLs from ${rawAgents.length} total agents`);
-    console.log('Sample URLs:', zillowUrls.slice(0, 3));
-    console.log(`Will enrich up to ${zillowUrls.length} profiles with detailed stats`);
-
-    let memo23Data: any[] = [];
-    
-    if (zillowUrls.length > 0) {
-      try {
-        const memo23ActorId = 'memo23~apify-zillow-agents-cheerio';
-        const memo23Input = {
-          startUrls: zillowUrls.map((url: string) => ({ url })),
-          proxyConfiguration: {
-            useApifyProxy: true,
-            apifyProxyGroups: ['RESIDENTIAL']
-          }
-        };
-
-        console.log('Calling memo23 with input:', JSON.stringify({ 
-          urlCount: zillowUrls.length, 
-          firstUrl: zillowUrls[0],
-          lastUrl: zillowUrls[zillowUrls.length - 1],
-          sampleUrls: zillowUrls.slice(0, 5)
-        }));
-
-        const memo23RunResp = await retryWithBackoff(
-          async () => {
-            const resp = await fetch(`https://api.apify.com/v2/acts/${memo23ActorId}/runs?token=${apiToken}`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(memo23Input),
-            });
-            
-            if (!resp.ok) {
-              const errTxt = await resp.text();
-              const err: any = new Error(`memo23 actor failed: ${resp.status}`);
-              err.status = resp.status;
-              err.responseText = errTxt;
-              throw err;
-            }
-            
-            return resp;
-          },
-          { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 10000, backoffMultiplier: 2 },
-          'Start memo23 Actor'
-        );
-
-        const memo23Run = await memo23RunResp.json();
-        const memo23RunId = memo23Run.data.id;
-        console.log(`memo23 run started: ${memo23RunId}`);
-
-        // Poll for completion (max 2 minutes for profile scraping)
-        let memo23Status = memo23Run.data.status;
-        let memo23Attempts = 0;
-        
-        while (memo23Status !== 'SUCCEEDED' && memo23Status !== 'FAILED' && memo23Attempts < 60) {
-          await new Promise(r => setTimeout(r, 2000));
-          
-          const statusResp = await fetch(
-            `https://api.apify.com/v2/acts/${memo23ActorId}/runs/${memo23RunId}?token=${apiToken}`
-          );
-          
-          if (statusResp.ok) {
-            const statusData = await statusResp.json();
-            memo23Status = statusData.data.status;
-            console.log(`memo23 status: ${memo23Status} (attempt ${memo23Attempts + 1})`);
-          }
-          
-          memo23Attempts++;
-        }
-
-        if (memo23Status === 'SUCCEEDED') {
-          // Fetch final run details to get correct defaultDatasetId after completion
-          const finalMemo23Resp = await fetch(
-            `https://api.apify.com/v2/acts/${memo23ActorId}/runs/${memo23RunId}?token=${apiToken}`
-          );
-          const finalMemo23Run = await finalMemo23Resp.json();
-          const datasetId = finalMemo23Run.data.defaultDatasetId;
-          console.log(`Fetching memo23 dataset: ${datasetId}`);
-          
-          const dataResp = await fetch(
-            `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
-          );
-          
-          if (dataResp.ok) {
-            memo23Data = await dataResp.json();
-            console.log(`✅ memo23 enrichment complete: ${memo23Data.length} of ${zillowUrls.length} profiles returned`);
-            
-            if (memo23Data.length > 0) {
-              console.log('Sample memo23 agent fields:', Object.keys(memo23Data[0]));
-              console.log('Sample memo23 data:', JSON.stringify(memo23Data[0], null, 2));
-              
-              // Log enrichment success rate
-              const withSales = memo23Data.filter((a: any) => a.agentSalesStats?.countAllTime).length;
-              const withListings = memo23Data.filter((a: any) => a.forSaleListings?.listing_count).length;
-              const withPhone = memo23Data.filter((a: any) => a.phoneNumbers?.cell || a.phoneNumbers?.business).length;
-              console.log(`Enrichment quality: ${withSales} with sales, ${withListings} with listings, ${withPhone} with phone`);
-            }
-          } else {
-            console.warn('Failed to fetch memo23 dataset:', dataResp.status);
-          }
-        } else {
-          console.warn(`❌ memo23 actor did not succeed: ${memo23Status}`);
-        }
-      } catch (error) {
-        console.error('Error in memo23 scraping:', error);
-      }
-    }
-
-    // Merge memo23 data into rawAgents by matching profile URLs
-    if (memo23Data.length > 0) {
-      console.log(`🔄 Merging ${memo23Data.length} memo23 profiles into ${rawAgents.length} agent records`);
-      console.log('Sample memo23 structure:', JSON.stringify(memo23Data[0], null, 2));
-      
-      for (const memo23Agent of memo23Data) {
-        // memo23 returns 'url' field at top level
-        const memo23Url = memo23Agent.url || memo23Agent.profileUrl || memo23Agent.zillow_url;
-        
-        if (memo23Url) {
-          const matchingAgent = rawAgents.find((agent: any) => {
-            const agentUrl = agent.profile_url || agent.profileUrl || agent.url || agent.website;
-            return agentUrl && (agentUrl.includes(memo23Url) || memo23Url.includes(agentUrl));
-          });
-          
-          if (matchingAgent) {
-            // Extract nested fields from memo23 output structure
-            const agentSalesStats = memo23Agent.agentSalesStats || {};
-            const forSaleListings = memo23Agent.forSaleListings || {};
-            const ratings = memo23Agent.ratings || {};
-            const pastSales = memo23Agent.pastSales || {};
-            
-            // Map memo23 fields to our agent fields
-            matchingAgent.memo23_total_sales = agentSalesStats.countAllTime || 
-                                                 agentSalesStats.countLastYear || 
-                                                 pastSales.total || null;
-            matchingAgent.memo23_current_listings = forSaleListings.listing_count || 
-                                                      (Array.isArray(forSaleListings.listings) ? forSaleListings.listings.length : null);
-            matchingAgent.memo23_reviews = ratings.count || 0;
-            matchingAgent.memo23_rating = ratings.average || null;
-            matchingAgent.memo23_years_experience = null; // Not in memo23 output
-            
-            // Also grab phone and email if available
-            const phoneNumbers = memo23Agent.phoneNumbers || {};
-            matchingAgent.memo23_phone = phoneNumbers.cell || phoneNumbers.business || phoneNumbers.brokerage || null;
-            matchingAgent.memo23_email = memo23Agent.email || null;
-            
-            console.log(`Merged memo23 data for ${matchingAgent.name || matchingAgent.agentName}:`, {
-              totalSales: matchingAgent.memo23_total_sales,
-              currentListings: matchingAgent.memo23_current_listings,
-              reviews: matchingAgent.memo23_reviews,
-              phone: matchingAgent.memo23_phone
-            });
-          }
-        }
-      }
-    }
-
-    // Use all enriched agents up to maxProfiles (post-enrichment)
-    const items = rawAgents.slice(0, maxProfiles);
-    console.log(`Processing ${items.length} agents (enrichment target: ${maxProfiles})`);
-
-
-    function mapAgent(agent: any) {
-      // Log all agent data to debug field mappings
-      if (items.indexOf(agent) === 0) {
-        console.log('First agent ALL fields:', JSON.stringify(agent, null, 2));
-      }
-      
-      // Extract all possible field variations
-      const name = agent.agentName || agent.name || agent['Business Name'] || agent.title || agent.fullName || agent.agent_name || '';
-      
-      // PHONE: Try all possible phone field variations (prioritize memo23 enriched data)
-      const phone = agent.memo23_phone || // memo23 enriched data
-                    agent.phoneNumber || 
-                    agent.phone || 
-                    agent['Phone Number'] || 
-                    agent.call_number || 
-                    agent.contact_phone || 
-                    agent.phoneDisplay ||
-                    agent.phone_number ||
-                    agent.contactPhone ||
-                    null;
-      
-      const website = agent.profileUrl || agent.url || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || agent.profile_url || null;
-      const thumbnail = agent.photoUrl || agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || agent.photo_url || agent.image_url || null;
-      const address = agent.address || agent.location || agent['Address'] || agent.full_address || agent.city || agent.office_address || '';
-      const rating = agent.memo23_rating || agent.rating || agent.reviewRating || agent['Rating'] || agent.stars || agent.score || agent.review_rating || 4.5;
-      const reviews = agent.memo23_reviews || agent.reviewCount || agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.total_reviews || 0;
-      const email = agent.memo23_email || agent.email || (website ? `info@${String(website).replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : null);
-      const company = agent.brokerageName || agent.brokerage || agent.company || agent.businessName || agent['Business Name'] || 'Independent';
-      const zuid = agent.zuid || agent.zillowId || agent.screenname || null;
-      
-      // TRANSACTION DATA: Try all possible field variations (prioritize memo23 data)
-      const totalSalesRaw = agent.memo23_total_sales || // memo23 enriched data
-                        agent.team_sales_last_12_months || // GetDataForMe field
-                        agent.salesLast12Months || 
-                        agent.totalSales || 
-                        agent.recentSales || 
-                        agent.sales_last_12_months ||
-                        agent.soldCount ||
-                        agent.sold_count ||
-                        agent.numRecentSales ||
-                        null;
-      const totalSales = totalSalesRaw ? parseInt(String(totalSalesRaw), 10) || null : null;
-                        
-      const currentListingsRaw = agent.memo23_current_listings || // memo23 enriched data
-                             agent.team_current_listings || // GetDataForMe field
-                             agent.activeListings || 
-                             agent.currentListings || 
-                             agent.current_listings ||
-                             agent.forSaleCount ||
-                             agent.for_sale_count ||
-                             agent.numCurrentListings ||
-                             null;
-      const currentListings = currentListingsRaw ? parseInt(String(currentListingsRaw), 10) || null : null;
-                             
-      const yearsExperience = agent.yearsOfExperience || 
-                             agent.yearsExperience || 
-                             agent.experience || 
-                             agent.years_experience ||
-                             agent.experienceYears ||
-                             null;
-      
-      let categories: string[] = [];
-      if (Array.isArray(agent.specialties)) {
-        categories = agent.specialties;
-      } else if (Array.isArray(agent.categories)) {
-        categories = agent.categories;
-      } else if (agent.subtypes) {
-        categories = String(agent.subtypes).split(',');
-      } else if (agent.category) {
-        categories = [agent.category];
-      }
-
-      const categoryText = categories.join(' ').toLowerCase();
-      const isRealEstateAgent = categoryText.includes('real estate') || 
-                                 categoryText.includes('realtor') ||
-                                 true; // Zillow scraper only returns agents
-
-      return {
-        isRealEstateAgent,
-        fullName: name,
-        name,
-        email,
-        phoneNumber: phone,
-        phone,
-        businessName: company,
-        profileLink: website,
-        website,
-        reviewStarsRating: Number(rating) || 4.5,
-        rating,
-        numTotalReviews: Number(reviews) || 0,
-        reviews,
-        reviewCount: Number(reviews) || 0,
-        specialties: extractSpecialtiesFromCategories(categories),
-        thumbnail,
-        profilePhotoSrc: thumbnail,
-        location: address,
-        address,
-        full_address: address,
-        zuid,
-        totalSales: totalSales ? Number(totalSales) : null,
-        currentListings: currentListings ? Number(currentListings) : null,
-        yearsExperience: yearsExperience ? Number(yearsExperience) : null,
-      };
-    }
-
-    console.log(`Using Apify source, raw count: ${items.length}`);
-
-    const transformedAgents = (items || [])
-      .map((a: any) => mapAgent(a))
-      .filter((a: any) => a && a.isRealEstateAgent && a.name)
-      .slice(0, 10);
-
-    console.log(`Transformed ${transformedAgents.length} agents with complete data`);
-    
-    // Log data quality
-    const withPhone = transformedAgents.filter(a => a.phone).length;
-    const withSales = transformedAgents.filter(a => a.totalSales).length;
-    const withListings = transformedAgents.filter(a => a.currentListings).length;
-    console.log(`Data quality: ${withPhone} with phone, ${withSales} with sales data, ${withListings} with listings`);
-    
-    if (transformedAgents.length > 0) {
-      console.log('Sample agent data:', JSON.stringify({
-        name: transformedAgents[0].name,
-        phone: transformedAgents[0].phone,
-        totalSales: transformedAgents[0].totalSales,
-        currentListings: transformedAgents[0].currentListings,
-        website: transformedAgents[0].website
-      }, null, 2));
+    if (!cityId) {
+      const { data: cityData } = await supabase
+        .from('cities')
+        .select('id')
+        .ilike('name', city)
+        .ilike('state', state)
+        .single();
+      cityId = cityData?.id;
     }
 
     if (!categoryId || !cityId) {
-      console.warn('Missing categoryId or cityId - returning agents without saving');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'Missing categoryId or cityId',
-        agents: transformedAgents
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      throw new Error('Could not find category or city ID');
     }
 
-    // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Supabase credentials not configured');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Save agents to database
     let created = 0;
     let updated = 0;
     let skipped = 0;
 
-    for (let i = 0; i < transformedAgents.length; i++) {
-      const agent = transformedAgents[i];
-      
+    for (const agent of agents) {
       try {
-        await retryWithBackoff(
-          async () => {
-            // Check if agent already exists
-            const { data: existing, error: checkError } = await supabase
-              .from('professionals')
-              .select('id')
-              .eq('name', agent.name)
-              .eq('city_id', cityId)
-              .eq('category_id', categoryId)
-              .maybeSingle();
+        const name = agent['Business Name'] || agent.title || agent.name || '';
+        if (!name) {
+          skipped++;
+          continue;
+        }
 
-            if (checkError) throw checkError;
+        const normalizedName = normalizeName(name);
+        const licenseData = licenseMap.get(normalizedName);
 
-            const professionalData = {
-              name: agent.name,
-              company: agent.businessName,
-              phone: agent.phone || null, // Use actual phone from scraper
-              email: agent.email || null, // Use actual email if available
-              website: agent.website,
-              image_url: agent.profilePhotoSrc,
-              specialty: agent.specialties || ["Buyer's Agent", "Listing Agent"],
-              city_id: cityId,
-              category_id: categoryId,
-              type: i < 5 ? 'established' : 'emerging',
-              rank: i + 1,
-              active: true,
-              zuid: agent.zuid,
-              total_sales: agent.totalSales,
-              current_listings: agent.currentListings,
-              years_experience: agent.yearsExperience,
-              zillow_profile_url: agent.website,
-            };
+        const email = agent['Email Address'] || agent.email || null;
+        const phone = licenseData?.phone || agent['Phone Number'] || agent.phone || null;
+        const website = agent['Website'] || agent.website || null;
+        const address = licenseData?.address || agent['Address'] || agent.address || null;
+        const company = licenseData?.company || agent['Business Name'] || 'Independent';
+        const yearsExperience = licenseData?.yearsExperience || null;
+        const licenseNumber = licenseData?.licenseNumber || null;
+        const licenseVerifiedAt = licenseData?.licenseVerifiedAt || null;
 
-            if (existing) {
-              // Update existing agent
-              const { error: updateError } = await supabase
-                .from('professionals')
-                .update(professionalData)
-                .eq('id', existing.id);
+        const { data: existing } = await supabase
+          .from('professionals')
+          .select('id')
+          .eq('name', name)
+          .eq('city_id', cityId)
+          .eq('category_id', categoryId)
+          .maybeSingle();
 
-              if (updateError) throw updateError;
-              updated++;
-              console.log(`Updated ${agent.name}`);
-            } else {
-              // Insert new agent
-              const { error: insertError } = await supabase
-                .from('professionals')
-                .insert([professionalData]);
+        const agentData = {
+          name,
+          city_id: cityId,
+          category_id: categoryId,
+          email,
+          phone,
+          website,
+          address,
+          company,
+          years_experience: yearsExperience,
+          license_number: licenseNumber,
+          license_verified_at: licenseVerifiedAt,
+          type: (yearsExperience && yearsExperience >= 5) ? 'established' : 'emerging',
+          rank: created + updated + 1,
+          active: true,
+        };
 
-              if (insertError) throw insertError;
-              created++;
-              console.log(`Created ${agent.name}`);
-            }
-          },
-          {
-            maxRetries: 3,
-            initialDelayMs: 500,
-            maxDelayMs: 5000,
-            backoffMultiplier: 2
-          },
-          `Save Agent: ${agent.name}`
-        );
-      } catch (err) {
-        console.error(`Error processing ${agent.name}:`, err);
+        if (existing) {
+          await supabase.from('professionals').update(agentData).eq('id', existing.id);
+          updated++;
+        } else {
+          await supabase.from('professionals').insert(agentData);
+          created++;
+        }
+      } catch (error) {
+        console.error('Error processing agent:', error);
         skipped++;
       }
     }
 
-    console.log('Import completed:', {
-      city,
-      state,
-      totalAgents: transformedAgents.length,
-      created,
-      updated,
-      skipped,
-      duration: `${Date.now() - startTime}ms`
-    });
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`✅ Complete in ${duration}s: ${created} created, ${updated} updated, ${skipped} skipped`);
 
-    const summary = {
-      total: transformedAgents.length,
-      created,
-      updated,
-      skipped
-    };
-
-    console.log('Import summary:', summary);
-
-    return new Response(JSON.stringify({
-      success: true,
-      summary,
-      agents: transformedAgents
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  } catch (error) {
-    console.error('Error in fetch-zillow-agents-bulk function:', error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      JSON.stringify({
+        success: true,
+        summary: { total: agents.length, created, updated, skipped },
+        agents: agents.slice(0, 10)
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error: any) {
+    console.error('Fatal error:', error);
+    await sendFailureAlert('fetch-zillow-agents-bulk', error.message, { error: error.stack });
+    
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
-
-function extractSpecialtiesFromCategories(categories: string[]): string[] {
-  const specialtyMap: { [key: string]: string } = {
-    'buyer': "Buyer's Agent",
-    'seller': "Listing Agent",
-    'listing': "Listing Agent",
-    'consultant': 'Real Estate Consultant',
-    'relocation': 'Relocation Specialist',
-    'investment': 'Investment Properties',
-    'commercial': 'Commercial Real Estate',
-    'residential': 'Residential Real Estate',
-  };
-
-  const specialties: string[] = [];
-  const lowercaseCategories = categories.join(' ').toLowerCase();
-
-  for (const [key, value] of Object.entries(specialtyMap)) {
-    if (lowercaseCategories.includes(key)) {
-      specialties.push(value);
-    }
-  }
-
-  return specialties.length > 0 ? specialties : ["Buyer's Agent", "Listing Agent"];
-}
