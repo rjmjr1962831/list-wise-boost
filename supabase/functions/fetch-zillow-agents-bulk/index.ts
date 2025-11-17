@@ -453,7 +453,14 @@ serve(async (req) => {
         }
 
         if (memo23Status === 'SUCCEEDED') {
-          const datasetId = memo23Run.data.defaultDatasetId;
+          // Fetch final run details to get correct defaultDatasetId after completion
+          const finalMemo23Resp = await fetch(
+            `https://api.apify.com/v2/acts/${memo23ActorId}/runs/${memo23RunId}?token=${apiToken}`
+          );
+          const finalMemo23Run = await finalMemo23Resp.json();
+          const datasetId = finalMemo23Run.data.defaultDatasetId;
+          console.log(`Fetching memo23 dataset: ${datasetId}`);
+          
           const dataResp = await fetch(
             `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
           );
