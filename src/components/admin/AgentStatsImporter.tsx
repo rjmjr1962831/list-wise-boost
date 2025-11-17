@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Upload, FileText, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, FileText, CheckCircle, AlertCircle, Download } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ImportPreview {
@@ -100,6 +100,50 @@ export function AgentStatsImporter() {
     setPreview(errors.length === 0 ? parsed : []);
   };
 
+  const handleExport = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('id, name, zuid, zillow_profile_url, current_listings, total_sales, years_experience, zip_code')
+        .order('name');
+
+      if (error) throw error;
+
+      const headers = ['id', 'name', 'zuid', 'zillow_profile_url', 'current_listings', 'total_sales', 'years_experience', 'zip_code'];
+      const csvRows = [headers.join(',')];
+
+      data?.forEach(row => {
+        const values = [
+          row.id,
+          row.name,
+          row.zuid || '',
+          row.zillow_profile_url || '',
+          row.current_listings ?? '',
+          row.total_sales ?? '',
+          row.years_experience ?? '',
+          row.zip_code || ''
+        ];
+        csvRows.push(values.join(','));
+      });
+
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `agent-stats-template-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast.success(`Exported ${data?.length || 0} records`);
+    } catch (error) {
+      console.error("Export error:", error);
+      toast.error("Export failed");
+    }
+  };
+
   const handleImport = async () => {
     if (preview.length === 0) return;
     
@@ -152,13 +196,21 @@ export function AgentStatsImporter() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Upload className="h-5 w-5" />
-          Import Agent Stats
-        </CardTitle>
-        <CardDescription>
-          Bulk update agent statistics from CSV or JSON data. Required fields: id, name. Optional: zuid, zillow_profile_url, current_listings, total_sales, years_experience, zip_code.
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Import Agent Stats
+            </CardTitle>
+            <CardDescription>
+              Bulk update agent statistics from CSV or JSON data. Required fields: id, name. Optional: zuid, zillow_profile_url, current_listings, total_sales, years_experience, zip_code.
+            </CardDescription>
+          </div>
+          <Button onClick={handleExport} variant="outline" size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export Template
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <Tabs defaultValue="csv">
