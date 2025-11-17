@@ -330,6 +330,13 @@ serve(async (req) => {
     try {
       rawAgents = JSON.parse(rawText);
       console.log(`Primary dataset parsed type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
+      
+      // Log first item structure if array
+      if (Array.isArray(rawAgents) && rawAgents.length > 0) {
+        console.log(`First agent structure - keys:`, Object.keys(rawAgents[0]));
+        console.log(`First agent sample data:`, JSON.stringify(rawAgents[0], null, 2));
+      }
+      
       if (!Array.isArray(rawAgents) && rawAgents && typeof rawAgents === 'object') {
         console.log(`Primary dataset keys:`, Object.keys(rawAgents).slice(0, 10));
         // If response is wrapped in an object, extract the items array
