@@ -36,7 +36,8 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <RateLimitGuard>
         <TooltipProvider>
-          <Sonner />
+          {/* Temporarily disable Toaster while resolving duplicate React issue */}
+          {/* <Sonner /> */}
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1">
