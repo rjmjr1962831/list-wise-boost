@@ -233,11 +233,12 @@ serve(async (req) => {
     const scraperRunId = scraperRun.data.id;
     console.log(`Scraper run started: ${scraperRunId}`);
 
-    // Poll for completion
+    // Poll for completion with reduced timeout
     let scraperStatus = scraperRun.data.status;
     let scraperAttempts = 0;
+    const maxAttempts = 45; // 90 seconds max
     
-    while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperAttempts < 150) {
+    while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperAttempts < maxAttempts) {
       await new Promise(r => setTimeout(r, 2000));
       
       const statusResp = await fetch(
@@ -335,9 +336,17 @@ serve(async (req) => {
         const rating = agent.rating || 0;
         const reviewCount = agent.review_count || 0;
         
-        // Store reviews and sales_last_12_months in badges field temporarily
+        // Capture full reviews with all details
+        const fullReviews = (agent.reviews || []).map((review: any) => ({
+          text: review.text || review.review || review.content || '',
+          rating: review.rating || 0,
+          date: review.date || review.created_at || null,
+          author: review.author || review.reviewer_name || null
+        }));
+        
+        // Store full reviews and sales data in badges field
         const badges = JSON.stringify({
-          reviews: agent.reviews || [],
+          reviews: fullReviews,
           sales_last_12_months: agent.sales_last_12_months || agent.recent_sales || 0
         });
 
