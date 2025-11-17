@@ -1,5 +1,4 @@
 export interface ProfessionalStats {
-  salesLast12Mo?: number;
   saleToListRatio?: string;
   avgDaysOnMarket?: number;
   yearsExperience?: number;
