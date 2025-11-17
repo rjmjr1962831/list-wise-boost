@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2 } from "lucide-react";
+import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database } from "lucide-react";
 import { toast } from "sonner";
 import CitiesManager from "@/components/admin/CitiesManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
@@ -16,6 +16,7 @@ import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
 import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
 import { ZuidExtractor } from "@/components/admin/ZuidExtractor";
 import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsManager";
+import { AgentStatsImporter } from "@/components/admin/AgentStatsImporter";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -100,7 +101,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="cities" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-11 max-w-7xl">
+          <TabsList className="grid w-full grid-cols-12 max-w-7xl">
             <TabsTrigger value="cities">
               <Building2 className="mr-2 h-4 w-4" />
               Cities
@@ -144,6 +145,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="license-tester">
               <FlaskConical className="mr-2 h-4 w-4" />
               Test License
+            </TabsTrigger>
+            <TabsTrigger value="import-stats">
+              <Database className="mr-2 h-4 w-4" />
+              Import Stats
             </TabsTrigger>
           </TabsList>
 
@@ -189,6 +194,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="license-tester" className="space-y-4">
             <LicenseLookupTester />
+          </TabsContent>
+
+          <TabsContent value="import-stats" className="space-y-4">
+            <AgentStatsImporter />
           </TabsContent>
         </Tabs>
       </div>
