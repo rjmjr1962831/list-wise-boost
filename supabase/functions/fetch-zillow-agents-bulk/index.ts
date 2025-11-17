@@ -94,7 +94,7 @@ serve(async (req) => {
     let state = '';
     let categoryId: string | undefined;
     let cityId: string | undefined;
-    let count = 30;
+    let count = 12;
     let runId: string | undefined;
 
     if (bodyText) {
@@ -218,7 +218,7 @@ serve(async (req) => {
     if (!runId) {
       console.log(`Starting ${scraperActorId} for ${city}, ${state}`);
       const scraperInput = {
-        search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, Math.min(5, zipCodes.length)) : [`${city}, ${state}`],
+        search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, Math.min(3, zipCodes.length)) : [`${city}, ${state}`],
         detailed_profiles: true,
         max_agents: count,
         max_items: count
@@ -265,7 +265,7 @@ serve(async (req) => {
 
     // Poll for completion with soft timeout; return 202 when still RUNNING
     let scraperAttempts = 0;
-    const maxAttempts = 60; // ~120 seconds
+    const maxAttempts = 120; // ~240 seconds
     
     while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperStatus !== 'ABORTED' && scraperAttempts < maxAttempts) {
       await new Promise(r => setTimeout(r, 2000));
