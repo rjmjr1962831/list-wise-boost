@@ -208,11 +208,11 @@ serve(async (req) => {
       console.error('Error loading zip codes:', error);
     }
 
-    // STEP 3A: First use getdataforme scraper to get basic agent list with Zillow URLs
-    const basicScraperActorId = 'getdataforme~zillow-real-state-agents-scraper';
-    console.log(`Step 1: Getting agent list with ${basicScraperActorId} for ${city}, ${state}`);
+    // STEP 3: Use getdataforme scraper to get agent data
+    const scraperActorId = 'getdataforme~zillow-real-state-agents-scraper';
+    console.log(`Fetching agents using ${scraperActorId} for ${city}, ${state}`);
     
-    const basicInput = {
+    const scraperInput = {
       search_query: `${city}, ${state}`,
       proxyConfiguration: {
         useApifyProxy: true,
@@ -220,74 +220,30 @@ serve(async (req) => {
       }
     };
 
-    const basicResp = await retryWithBackoff(
+    const scraperResp = await retryWithBackoff(
       async () => {
-        const resp = await fetch(`https://api.apify.com/v2/acts/${basicScraperActorId}/runs?token=${apiToken}&waitForFinish=120`, {
+        const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}&waitForFinish=120`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(basicInput),
+          body: JSON.stringify(scraperInput),
         });
         if (!resp.ok) {
           const body = await resp.text().catch(() => '');
-          throw new Error(`Basic scraper failed: ${resp.status} - ${body.slice(0, 200)}`);
+          throw new Error(`Scraper failed: ${resp.status} - ${body.slice(0, 200)}`);
         }
         return resp;
       },
       { maxRetries: 2, initialDelayMs: 1000, maxDelayMs: 5000, backoffMultiplier: 2 },
-      'Basic Agent List'
+      'Agent Scraping'
     );
 
-    const basicRun = await basicResp.json();
-    const basicDatasetId = basicRun.data.defaultDatasetId;
-    const basicDataResp = await fetch(`https://api.apify.com/v2/datasets/${basicDatasetId}/items?token=${apiToken}`);
-    if (!basicDataResp.ok) throw new Error('Failed to fetch basic agent list');
-    
-    const basicAgents = await basicDataResp.json();
-    console.log(`✅ Step 1 complete: Found ${basicAgents.length} agents`);
+    const scraperRun = await scraperResp.json();
+    const scraperRunId = scraperRun.data.id;
+    const scraperStatus = scraperRun.data.status;
 
-    // Extract Zillow URLs
-    const zillowUrls = basicAgents
-      .filter((a: any) => a.profile_url || a.url)
-      .map((a: any) => a.profile_url || a.url)
-      .slice(0, count);
-
-    if (zillowUrls.length === 0) {
-      throw new Error('No Zillow URLs found from basic scraper');
-    }
-
-    console.log(`Step 2: Fetching detailed data for ${zillowUrls.length} agents using rigelbytes`);
-
-    // STEP 3B: Use rigelbytes scraper to get detailed data for specific URLs
-    const detailedScraperActorId = 'rigelbytes~zillow-agents';
-    const detailedInput = {
-      urls: zillowUrls,
-      detailed_profiles: true
-    };
-
-    const detailedResp = await retryWithBackoff(
-      async () => {
-        const resp = await fetch(`https://api.apify.com/v2/acts/${detailedScraperActorId}/runs?token=${apiToken}&waitForFinish=180`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(detailedInput),
-        });
-        if (!resp.ok) {
-          const body = await resp.text().catch(() => '');
-          throw new Error(`Detailed scraper failed: ${resp.status} - ${body.slice(0, 200)}`);
-        }
-        return resp;
-      },
-      { maxRetries: 2, initialDelayMs: 2000, maxDelayMs: 10000, backoffMultiplier: 2 },
-      'Detailed Agent Data'
-    );
-
-    const detailedRun = await detailedResp.json();
-    const scraperRunId = detailedRun.data.id;
-    const scraperStatus = detailedRun.data.status;
-
-    // Check if detailed scraper succeeded
+    // Check if scraper succeeded
     if (scraperStatus !== 'SUCCEEDED') {
-      const error = `Detailed scraper failed with status: ${scraperStatus}`;
+      const error = `Scraper failed with status: ${scraperStatus}`;
       await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, scraperRunId });
       return new Response(
         JSON.stringify({ success: false, error }),
@@ -295,8 +251,8 @@ serve(async (req) => {
       );
     }
 
-    // Fetch detailed results
-    const datasetId = detailedRun.data.defaultDatasetId;
+    // Fetch results
+    const datasetId = scraperRun.data.defaultDatasetId;
     const dataResp = await fetch(
       `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
     );
@@ -354,33 +310,29 @@ serve(async (req) => {
         const licenseNumber = licenseData?.licenseNumber || null;
         const licenseVerifiedAt = licenseData?.licenseVerifiedAt || null;
         
-        // Get data from rigelbytes scraper
+        // Get data from getdataforme scraper
         const email = agent.email || null;
-        const website = agent.website || null; // Agent's actual website, not zillow
-        const address = agent.address || null;
-        const company = agent.company || 'Independent';
-        const imageUrl = agent.image || agent.profile_picture || null;
-        const description = agent.description || agent.bio || null;
-        const specialty = agent.specialties || agent.specialty_tags || [];
-        const totalSales = agent.total_sales || agent.total_transactions || 0;
-        const currentListings = agent.current_listings || agent.active_listings || 0;
-        const zillowProfileUrl = agent.zillow_profile_url || agent.profile_url || null;
-        const zuid = agent.zuid || agent.zillow_id || null;
-        const rating = agent.rating || 0;
-        const reviewCount = agent.review_count || 0;
+        const website = agent.website || agent.website_url || null;
+        const address = licenseData?.address || agent.address || null;
+        const company = licenseData?.company || agent.brokerage || agent.company || 'Independent';
+        const imageUrl = agent.profile_picture || agent.image_url || agent.photo || null;
+        const description = agent.bio || agent.description || agent.about || null;
+        const specialty = agent.specialties || [];
+        const totalSales = agent.total_sales || agent.sales_last_year || 0;
+        const currentListings = agent.active_listings || agent.current_listings || 0;
+        const zillowProfileUrl = agent.profile_url || agent.zillow_url || null;
+        const zuid = agent.zuid || (zillowProfileUrl ? zillowProfileUrl.split('/').pop() : null);
+        const rating = agent.rating || agent.zillow_rating || 0;
+        const reviewCount = agent.review_count || agent.reviews_count || 0;
         
-        // Capture full reviews with all details
-        const fullReviews = (agent.reviews || []).map((review: any) => ({
-          text: review.text || review.review || review.content || '',
-          rating: review.rating || 0,
-          date: review.date || review.created_at || null,
-          author: review.author || review.reviewer_name || null
-        }));
+        // Extract zip code from agent data or use first city zip
+        const zipCode = agent.zip || agent.zip_code || (zipCodes.length > 0 ? zipCodes[0] : null);
         
-        // Store full reviews and sales data in badges field
+        // Store minimal reviews data in badges field
         const badges = JSON.stringify({
-          reviews: fullReviews,
-          sales_last_12_months: agent.sales_last_12_months || agent.recent_sales || 0
+          rating,
+          review_count: reviewCount,
+          sales_last_12_months: agent.sales_last_12_months || 0
         });
 
         const { data: existing } = await supabase
@@ -408,16 +360,14 @@ serve(async (req) => {
           years_experience: yearsExperience,
           license_number: licenseNumber,
           license_verified_at: licenseVerifiedAt,
-          zip_code: zipCodes[0] || null,
+          zip_code: zipCode,
           zillow_profile_url: zillowProfileUrl,
           zuid,
           zillow_data_fetched_at: new Date().toISOString(),
           type: (yearsExperience && yearsExperience >= 5) ? 'Established' : 'Emerging',
           rank: created + updated + 1,
           active: true,
-          badges,
-          rating,
-          reviews: reviewCount
+          badges
         };
 
         if (existing) {
