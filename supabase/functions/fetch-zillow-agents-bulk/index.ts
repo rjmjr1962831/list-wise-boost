@@ -214,46 +214,83 @@ serve(async (req) => {
     
     const scraperInput = {
       detailed_profiles: true,
+      // Provide both formats to maximize compatibility
       search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, 5) : [`${city} ${state}`],
+      search_query: `${city}, ${state}`,
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
       }
     };
 
-    const scraperResp = await retryWithBackoff(
+    // Start the actor run (do not wait here) and then poll until it finishes
+    const startResp = await retryWithBackoff(
       async () => {
-        const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}&waitForFinish=180`, {
+        const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(scraperInput),
         });
         if (!resp.ok) {
           const body = await resp.text().catch(() => '');
-          throw new Error(`Scraper failed: ${resp.status} - ${body.slice(0, 200)}`);
+          throw new Error(`Scraper failed to start: ${resp.status} - ${body.slice(0, 400)}`);
         }
         return resp;
       },
       { maxRetries: 2, initialDelayMs: 1000, maxDelayMs: 5000, backoffMultiplier: 2 },
-      'Agent Scraping'
+      'Agent Scraping Start'
     );
 
-    const scraperRun = await scraperResp.json();
-    const scraperRunId = scraperRun.data.id;
-    const scraperStatus = scraperRun.data.status;
+    const startRun = await startResp.json();
+    let scraperRunId = startRun.data.id;
+    let scraperStatus = startRun.data.status as string;
 
-    // Check if scraper succeeded
+    // Poll for completion up to 8 minutes
+    const pollStart = Date.now();
+    const maxWaitMs = 8 * 60 * 1000;
+    const pollIntervalMs = 5000;
+
+    async function fetchRunStatus(runId: string) {
+      const resp = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${apiToken}`);
+      if (!resp.ok) {
+        const body = await resp.text().catch(() => '');
+        throw new Error(`Failed to get run status: ${resp.status} - ${body.slice(0, 400)}`);
+      }
+      return await resp.json();
+    }
+
+    while (scraperStatus === 'READY' || scraperStatus === 'RUNNING') {
+      if (Date.now() - pollStart > maxWaitMs) {
+        const error = `Scraper timed out after ${(maxWaitMs / 60000).toFixed(1)} minutes (last status: ${scraperStatus})`;
+        await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, scraperRunId });
+        return new Response(
+          JSON.stringify({ success: false, error }),
+          { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      await new Promise(r => setTimeout(r, pollIntervalMs));
+      const statusJson = await fetchRunStatus(scraperRunId);
+      scraperStatus = statusJson.data.status;
+    }
+
     if (scraperStatus !== 'SUCCEEDED') {
+      // Try to fetch logs for better diagnostics
+      let runLogs = '';
+      try {
+        const logResp = await fetch(`https://api.apify.com/v2/actor-runs/${scraperRunId}/log?token=${apiToken}`);
+        if (logResp.ok) runLogs = await logResp.text();
+      } catch (_e) {}
+
       const error = `Scraper failed with status: ${scraperStatus}`;
-      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, scraperRunId });
+      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, scraperRunId, runLogs: runLogs?.slice(0, 2000) });
       return new Response(
-        JSON.stringify({ success: false, error }),
+        JSON.stringify({ success: false, error, details: runLogs?.slice(0, 1000) || undefined }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Fetch results
-    const datasetId = scraperRun.data.defaultDatasetId;
+    const datasetId = startRun.data.defaultDatasetId;
     const dataResp = await fetch(
       `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
     );
