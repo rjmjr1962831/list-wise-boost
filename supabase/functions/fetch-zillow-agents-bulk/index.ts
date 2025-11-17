@@ -95,6 +95,7 @@ serve(async (req) => {
     let categoryId: string | undefined;
     let cityId: string | undefined;
     let count = 30;
+    let runId: string | undefined;
 
     if (bodyText) {
       try {
@@ -104,6 +105,7 @@ serve(async (req) => {
         categoryId = parsed.categoryId;
         cityId = parsed.cityId;
         if (parsed.count !== undefined) count = Math.min(parsed.count, 100);
+        if (parsed.runId) runId = parsed.runId;
       } catch (_e) {
         console.warn('Invalid JSON body');
       }
@@ -206,55 +208,70 @@ serve(async (req) => {
       console.error('Error loading zip codes:', error);
     }
 
-    // STEP 3: Use rigelbytes/zillow-agents scraper
+    // STEP 3: Use rigelbytes/zillow-agents scraper with resumable polling
     const scraperActorId = 'rigelbytes~zillow-agents';
-    console.log(`Starting ${scraperActorId} for ${city}, ${state}`);
-    
-    const scraperInput = {
-      search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, Math.min(5, zipCodes.length)) : [`${city}, ${state}`],
-      detailed_profiles: true,
-      max_agents: count,
-      max_items: count
-    };
 
-    console.log('Scraper input:', scraperInput);
+    // If a runId is provided, resume that run instead of starting a new one
+    let scraperRunId: string = '';
+    let scraperStatus: string = 'READY';
 
-    const scraperResp = await retryWithBackoff(
-      async () => {
-        const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(scraperInput),
-        });
-        
-        if (!resp.ok) {
-          const body = await resp.text().catch(() => '');
-          const error: any = new Error(`Scraper failed: ${resp.status}${body ? ` - ${body.slice(0, 200)}` : ''}`);
-          error.status = resp.status;
-          throw error;
-        }
-        return resp;
-      },
-      { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 10000, backoffMultiplier: 2 },
-      'Start Scraper'
-    );
+    if (!runId) {
+      console.log(`Starting ${scraperActorId} for ${city}, ${state}`);
+      const scraperInput = {
+        search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, Math.min(5, zipCodes.length)) : [`${city}, ${state}`],
+        detailed_profiles: true,
+        max_agents: count,
+        max_items: count
+      };
 
-    const scraperRun = await scraperResp.json();
-    const scraperRunId = scraperRun.data.id;
-    console.log(`Scraper run started: ${scraperRunId}`);
+      console.log('Scraper input:', scraperInput);
 
-    // Poll for completion with reduced timeout
-    let scraperStatus = scraperRun.data.status;
-    let scraperAttempts = 0;
-    const maxAttempts = 45; // 90 seconds max
-    
-    while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperAttempts < maxAttempts) {
-      await new Promise(r => setTimeout(r, 2000));
-      
+      const scraperResp = await retryWithBackoff(
+        async () => {
+          const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(scraperInput),
+          });
+          
+          if (!resp.ok) {
+            const body = await resp.text().catch(() => '');
+            const error: any = new Error(`Scraper failed: ${resp.status}${body ? ` - ${body.slice(0, 200)}` : ''}`);
+            error.status = resp.status;
+            throw error;
+          }
+          return resp;
+        },
+        { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 10000, backoffMultiplier: 2 },
+        'Start Scraper'
+      );
+
+      const scraperRun = await scraperResp.json();
+      scraperRunId = scraperRun.data.id;
+      scraperStatus = scraperRun.data.status;
+      console.log(`Scraper run started: ${scraperRunId}`);
+    } else {
+      scraperRunId = runId;
+      console.log(`Continuing existing run: ${scraperRunId}`);
       const statusResp = await fetch(
         `https://api.apify.com/v2/acts/${scraperActorId}/runs/${scraperRunId}?token=${apiToken}`
       );
-      
+      if (statusResp.ok) {
+        const statusData = await statusResp.json();
+        scraperStatus = statusData.data.status;
+        console.log(`Initial status for ${scraperRunId}: ${scraperStatus}`);
+      }
+    }
+
+    // Poll for completion with soft timeout; return 202 when still RUNNING
+    let scraperAttempts = 0;
+    const maxAttempts = 60; // ~120 seconds
+    
+    while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperAttempts < maxAttempts) {
+      await new Promise(r => setTimeout(r, 2000));
+      const statusResp = await fetch(
+        `https://api.apify.com/v2/acts/${scraperActorId}/runs/${scraperRunId}?token=${apiToken}`
+      );
       if (statusResp.ok) {
         const statusData = await statusResp.json();
         scraperStatus = statusData.data.status;
@@ -263,17 +280,30 @@ serve(async (req) => {
       scraperAttempts++;
     }
 
-    if (scraperStatus !== 'SUCCEEDED') {
-      const error = `Scraper did not complete: ${scraperStatus}`;
-      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state });
+    if (scraperStatus === 'FAILED') {
+      const error = `Scraper failed for run ${scraperRunId}`;
+      await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state, scraperRunId });
       return new Response(
         JSON.stringify({ error }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    if (scraperStatus !== 'SUCCEEDED') {
+      // Still running – return 202 so caller can poll with runId
+      return new Response(
+        JSON.stringify({ pending: true, runId: scraperRunId, status: scraperStatus, message: 'Scraper still running – call again with this runId' }),
+        { status: 202, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Fetch results
-    const datasetId = scraperRun.data.defaultDatasetId;
+    const runInfoResp = await fetch(
+      `https://api.apify.com/v2/acts/${scraperActorId}/runs/${scraperRunId}?token=${apiToken}`
+    );
+    if (!runInfoResp.ok) throw new Error('Failed to confirm run info');
+    const runInfo = await runInfoResp.json();
+    const datasetId = runInfo.data.defaultDatasetId;
     const dataResp = await fetch(
       `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
     );
