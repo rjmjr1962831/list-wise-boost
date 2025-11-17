@@ -202,12 +202,15 @@ serve(async (req) => {
     });
 
     // STEP 1: Use getdataforme scraper to find Zillow agents
-    const discoveryActorId = 'getdataforme/zillow-real-state-agents-scraper';
+    const discoveryActorId = 'getdataforme~zillow-real-state-agents-scraper';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
     
     const discoveryInput = {
-      location: locationText,
-      max_items: 50
+      search_query: locationText,
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyGroups: ['RESIDENTIAL']
+      }
     };
 
     console.log('getdataforme scraper input:', discoveryInput);
