@@ -384,25 +384,26 @@ export default function DynamicCategoryList() {
           timeoutPromise
         ]) as any;
         
-        if (result.success) {
-          toast.success(`Imported ${result.imported} real estate agents! Found ${result.licensesFound} license numbers.`);
-          // Data will be fetched by the retry logic instead of reloading
-        } else {
-          toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
-          // Clear loading state on failure
+          if (result.success) {
+            toast.success(`Imported ${result.imported} real estate agents! Found ${result.licensesFound} license numbers.`);
+            // Data will be fetched by the retry logic instead of reloading
+            return; // success: stop here, no fallback
+          } else {
+            toast.error(`Failed to import agents: ${result.errors.join(', ')}`);
+            // Clear loading state on failure then fall back to generator below
+            setIsGeneratingData(false);
+            setLoading(false);
+            setReviewsReady(true);
+            // continue to fallback generation below
+          }
+      } catch (error: any) {
+          console.error('Error importing agents:', error);
+          toast.error(`Import failed: ${error.message}`);
+          // Clear loading state on error then fall back to generator below
           setIsGeneratingData(false);
           setLoading(false);
           setReviewsReady(true);
-        }
-        return;
-      } catch (error: any) {
-        console.error('Error importing agents:', error);
-        toast.error(`Import failed: ${error.message}`);
-        // Clear loading state on error
-        setIsGeneratingData(false);
-        setLoading(false);
-        setReviewsReady(true);
-        return;
+          // continue to fallback generation below
       }
     }
     
