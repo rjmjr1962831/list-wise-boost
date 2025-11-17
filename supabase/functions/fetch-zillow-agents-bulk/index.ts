@@ -554,6 +554,137 @@ serve(async (req) => {
 
     console.log(`Completed Redfin enrichment phase`);
 
+    // Step 3: Scrape detailed profile data with memo23
+    console.log(`Step 3: Scraping detailed Zillow profiles with memo23 actor`);
+    
+    // Extract Zillow profile URLs from the agents
+    const zillowUrls = rawAgents
+      .slice(0, 15)
+      .map((agent: any) => {
+        const profileUrl = agent.profile_url || agent.profileUrl || agent.url || agent.website;
+        if (profileUrl && profileUrl.includes('zillow.com')) {
+          return profileUrl;
+        }
+        return null;
+      })
+      .filter((url: string | null) => url !== null);
+
+    console.log(`Extracted ${zillowUrls.length} Zillow profile URLs`);
+    console.log('Sample URLs:', zillowUrls.slice(0, 3));
+
+    let memo23Data: any[] = [];
+    
+    if (zillowUrls.length > 0) {
+      try {
+        const memo23ActorId = 'tomas.novak~memo23';
+        const memo23Input = {
+          startUrls: zillowUrls.map((url: string) => ({ url })),
+          proxyConfiguration: {
+            useApifyProxy: true,
+            apifyProxyGroups: ['RESIDENTIAL']
+          }
+        };
+
+        console.log('Calling memo23 with input:', JSON.stringify({ urlCount: zillowUrls.length, firstUrl: zillowUrls[0] }));
+
+        const memo23RunResp = await retryWithBackoff(
+          async () => {
+            const resp = await fetch(`https://api.apify.com/v2/acts/${memo23ActorId}/runs?token=${apiToken}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(memo23Input),
+            });
+            
+            if (!resp.ok) {
+              const errTxt = await resp.text();
+              const err: any = new Error(`memo23 actor failed: ${resp.status}`);
+              err.status = resp.status;
+              err.responseText = errTxt;
+              throw err;
+            }
+            
+            return resp;
+          },
+          { maxRetries: 3, initialDelayMs: 1000, maxDelayMs: 10000, backoffMultiplier: 2 },
+          'Start memo23 Actor'
+        );
+
+        const memo23Run = await memo23RunResp.json();
+        const memo23RunId = memo23Run.data.id;
+        console.log(`memo23 run started: ${memo23RunId}`);
+
+        // Poll for completion (max 2 minutes for profile scraping)
+        let memo23Status = memo23Run.data.status;
+        let memo23Attempts = 0;
+        
+        while (memo23Status !== 'SUCCEEDED' && memo23Status !== 'FAILED' && memo23Attempts < 60) {
+          await new Promise(r => setTimeout(r, 2000));
+          
+          const statusResp = await fetch(
+            `https://api.apify.com/v2/acts/${memo23ActorId}/runs/${memo23RunId}?token=${apiToken}`
+          );
+          
+          if (statusResp.ok) {
+            const statusData = await statusResp.json();
+            memo23Status = statusData.data.status;
+            console.log(`memo23 status: ${memo23Status} (attempt ${memo23Attempts + 1})`);
+          }
+          
+          memo23Attempts++;
+        }
+
+        if (memo23Status === 'SUCCEEDED') {
+          const datasetId = memo23Run.data.defaultDatasetId;
+          const dataResp = await fetch(
+            `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
+          );
+          
+          if (dataResp.ok) {
+            memo23Data = await dataResp.json();
+            console.log(`memo23 returned ${memo23Data.length} agent profiles`);
+            
+            if (memo23Data.length > 0) {
+              console.log('Sample memo23 agent fields:', Object.keys(memo23Data[0]));
+              console.log('Sample memo23 data:', JSON.stringify(memo23Data[0], null, 2));
+            }
+          } else {
+            console.warn('Failed to fetch memo23 dataset:', dataResp.status);
+          }
+        } else {
+          console.warn(`memo23 actor did not succeed: ${memo23Status}`);
+        }
+      } catch (error) {
+        console.error('Error in memo23 scraping:', error);
+      }
+    }
+
+    // Merge memo23 data into rawAgents by matching profile URLs
+    if (memo23Data.length > 0) {
+      console.log('Merging memo23 data into agent profiles');
+      
+      for (const memo23Agent of memo23Data) {
+        const memo23Url = memo23Agent.profileUrl || memo23Agent.url || memo23Agent.zillow_url;
+        
+        if (memo23Url) {
+          const matchingAgent = rawAgents.find((agent: any) => {
+            const agentUrl = agent.profile_url || agent.profileUrl || agent.url || agent.website;
+            return agentUrl && (agentUrl.includes(memo23Url) || memo23Url.includes(agentUrl));
+          });
+          
+          if (matchingAgent) {
+            // Merge transaction data from memo23
+            matchingAgent.memo23_total_sales = memo23Agent.totalSales || memo23Agent.sold || memo23Agent.salesCount;
+            matchingAgent.memo23_current_listings = memo23Agent.forSale || memo23Agent.activeListings;
+            matchingAgent.memo23_years_experience = memo23Agent.yearsExperience;
+            matchingAgent.memo23_reviews = memo23Agent.reviews;
+            matchingAgent.memo23_rating = memo23Agent.rating;
+            
+            console.log(`Merged memo23 data for ${matchingAgent.name || matchingAgent.agentName}`);
+          }
+        }
+      }
+    }
+
     // Limit to top 15 agents (post-enrichment)
     const items = rawAgents.slice(0, 15);
 
@@ -586,8 +717,9 @@ serve(async (req) => {
       const company = agent.brokerageName || agent.brokerage || agent.company || agent.businessName || agent['Business Name'] || 'Independent';
       const zuid = agent.zuid || agent.zillowId || agent.screenname || null;
       
-      // TRANSACTION DATA: Try all possible field variations
-      const totalSalesRaw = agent.team_sales_last_12_months || // GetDataForMe field
+      // TRANSACTION DATA: Try all possible field variations (prioritize memo23 data)
+      const totalSalesRaw = agent.memo23_total_sales || // memo23 enriched data
+                        agent.team_sales_last_12_months || // GetDataForMe field
                         agent.salesLast12Months || 
                         agent.totalSales || 
                         agent.recentSales || 
@@ -598,7 +730,8 @@ serve(async (req) => {
                         null;
       const totalSales = totalSalesRaw ? parseInt(String(totalSalesRaw), 10) || null : null;
                         
-      const currentListingsRaw = agent.team_current_listings || // GetDataForMe field
+      const currentListingsRaw = agent.memo23_current_listings || // memo23 enriched data
+                             agent.team_current_listings || // GetDataForMe field
                              agent.activeListings || 
                              agent.currentListings || 
                              agent.current_listings ||
