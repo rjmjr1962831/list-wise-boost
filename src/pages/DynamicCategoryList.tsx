@@ -111,7 +111,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
   stats.totalSales = totalSales;
   stats.dataSource = hasRecentZillowData ? 'zillow' : 'estimated'; // Track data source
   
-  return {
+  const base: Professional = {
     id: dbProf.id,
     rank: dbProf.rank,
     name: dbProf.name,
@@ -133,6 +133,16 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     license_number: dbProf.license_number || undefined,
     license_verified_at: dbProf.license_verified_at || undefined,
   };
+
+  const enriched: any = {
+    ...base,
+    total_sales: (typeof dbProf.total_sales === 'number' ? dbProf.total_sales : undefined),
+    current_listings: (typeof dbProf.current_listings === 'number' ? dbProf.current_listings : undefined),
+    zillow_data_fetched_at: dbProf.zillow_data_fetched_at || undefined,
+    zillow_profile_url: dbProf.zillow_profile_url || undefined,
+  };
+
+  return enriched;
 }
 
 export default function DynamicCategoryList() {
