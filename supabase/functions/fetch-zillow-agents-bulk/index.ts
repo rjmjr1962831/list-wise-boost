@@ -325,7 +325,9 @@ serve(async (req) => {
     );
     
     let rawAgents = await discoveryDataResp.json();
-    console.log(`Primary actor (${discoveryActorId}) returned ${rawAgents.length} items`);
+    console.log(`Primary dataset raw response type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
+    console.log(`Primary dataset response sample:`, JSON.stringify(rawAgents).slice(0, 500));
+    console.log(`Primary actor (${discoveryActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 'non-array'} items`);
 
     // Detect property-listing dataset (wrong actor output) OR empty results and fallback to a dedicated agents actor
     const needsFallback = !Array.isArray(rawAgents) || rawAgents.length === 0 || 
@@ -392,7 +394,9 @@ serve(async (req) => {
             const fbDataResp = await fetch(`https://api.apify.com/v2/datasets/${fbDatasetId}/items?token=${apiToken}`);
             if (fbDataResp.ok) {
               rawAgents = await fbDataResp.json();
-              console.log(`Fallback actor (${fallbackActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 0} items`);
+              console.log(`Fallback dataset raw response type: ${typeof rawAgents}, isArray: ${Array.isArray(rawAgents)}`);
+              console.log(`Fallback dataset response sample:`, JSON.stringify(rawAgents).slice(0, 500));
+              console.log(`Fallback actor (${fallbackActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 'non-array'} items`);
             } else {
               console.warn('Fallback dataset fetch failed:', fbDataResp.status);
             }
