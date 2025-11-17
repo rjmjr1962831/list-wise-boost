@@ -132,6 +132,8 @@ serve(async (req) => {
     let state = '' as string;
     let categoryId: string | undefined;
     let cityId: string | undefined;
+    let maxPages = 3;
+    let maxProfiles = 50; // Maximum profiles to enrich with memo23
 
     if (bodyText) {
       try {
@@ -140,6 +142,8 @@ serve(async (req) => {
         state = parsed.state;
         categoryId = parsed.categoryId;
         cityId = parsed.cityId;
+        if (parsed.maxPages !== undefined) maxPages = parsed.maxPages;
+        if (parsed.maxProfiles !== undefined) maxProfiles = Math.min(parsed.maxProfiles, 100); // Cap at 100 for safety
       } catch (_e) {
         console.warn('Invalid JSON body; falling back to empty payload. Body preview:', bodyText.slice(0, 200));
       }
@@ -364,11 +368,11 @@ serve(async (req) => {
     // Step 2: Redfin enrichment removed - proceeding directly to memo23
 
     // Step 3: Scrape detailed profile data with memo23
-    console.log(`Step 3: Scraping detailed Zillow profiles with memo23 actor`);
+    console.log(`Step 3: Scraping detailed Zillow profiles with memo23 actor (max: ${maxProfiles})`);
     
     // Extract Zillow profile URLs from the agents
     const zillowUrls = rawAgents
-      .slice(0, 15)
+      .slice(0, maxProfiles)
       .map((agent: any) => {
         const profileUrl = agent.profile_url || agent.profileUrl || agent.url || agent.website;
         if (profileUrl && profileUrl.includes('zillow.com')) {
@@ -378,8 +382,9 @@ serve(async (req) => {
       })
       .filter((url: string | null) => url !== null);
 
-    console.log(`Extracted ${zillowUrls.length} Zillow profile URLs`);
+    console.log(`Extracted ${zillowUrls.length} Zillow profile URLs from ${rawAgents.length} total agents`);
     console.log('Sample URLs:', zillowUrls.slice(0, 3));
+    console.log(`Will enrich up to ${zillowUrls.length} profiles with detailed stats`);
 
     let memo23Data: any[] = [];
     
@@ -394,7 +399,12 @@ serve(async (req) => {
           }
         };
 
-        console.log('Calling memo23 with input:', JSON.stringify({ urlCount: zillowUrls.length, firstUrl: zillowUrls[0] }));
+        console.log('Calling memo23 with input:', JSON.stringify({ 
+          urlCount: zillowUrls.length, 
+          firstUrl: zillowUrls[0],
+          lastUrl: zillowUrls[zillowUrls.length - 1],
+          sampleUrls: zillowUrls.slice(0, 5)
+        }));
 
         const memo23RunResp = await retryWithBackoff(
           async () => {
@@ -450,17 +460,23 @@ serve(async (req) => {
           
           if (dataResp.ok) {
             memo23Data = await dataResp.json();
-            console.log(`memo23 returned ${memo23Data.length} agent profiles`);
+            console.log(`✅ memo23 enrichment complete: ${memo23Data.length} of ${zillowUrls.length} profiles returned`);
             
             if (memo23Data.length > 0) {
               console.log('Sample memo23 agent fields:', Object.keys(memo23Data[0]));
               console.log('Sample memo23 data:', JSON.stringify(memo23Data[0], null, 2));
+              
+              // Log enrichment success rate
+              const withSales = memo23Data.filter((a: any) => a.agentSalesStats?.countAllTime).length;
+              const withListings = memo23Data.filter((a: any) => a.forSaleListings?.listing_count).length;
+              const withPhone = memo23Data.filter((a: any) => a.phoneNumbers?.cell || a.phoneNumbers?.business).length;
+              console.log(`Enrichment quality: ${withSales} with sales, ${withListings} with listings, ${withPhone} with phone`);
             }
           } else {
             console.warn('Failed to fetch memo23 dataset:', dataResp.status);
           }
         } else {
-          console.warn(`memo23 actor did not succeed: ${memo23Status}`);
+          console.warn(`❌ memo23 actor did not succeed: ${memo23Status}`);
         }
       } catch (error) {
         console.error('Error in memo23 scraping:', error);
@@ -469,7 +485,7 @@ serve(async (req) => {
 
     // Merge memo23 data into rawAgents by matching profile URLs
     if (memo23Data.length > 0) {
-      console.log('Merging memo23 data into agent profiles');
+      console.log(`🔄 Merging ${memo23Data.length} memo23 profiles into ${rawAgents.length} agent records`);
       console.log('Sample memo23 structure:', JSON.stringify(memo23Data[0], null, 2));
       
       for (const memo23Agent of memo23Data) {
@@ -515,8 +531,9 @@ serve(async (req) => {
       }
     }
 
-    // Limit to top 15 agents (post-enrichment)
-    const items = rawAgents.slice(0, 15);
+    // Use all enriched agents up to maxProfiles (post-enrichment)
+    const items = rawAgents.slice(0, maxProfiles);
+    console.log(`Processing ${items.length} agents (enrichment target: ${maxProfiles})`);
 
 
     function mapAgent(agent: any) {
