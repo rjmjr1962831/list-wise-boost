@@ -103,7 +103,7 @@ serve(async (req) => {
         state = parsed.state;
         categoryId = parsed.categoryId;
         cityId = parsed.cityId;
-        if (parsed.count !== undefined) count = Math.min(parsed.count, 50);
+        if (parsed.count !== undefined) count = Math.min(parsed.count, 100);
       } catch (_e) {
         console.warn('Invalid JSON body');
       }
@@ -116,12 +116,20 @@ serve(async (req) => {
       );
     }
     
-    const apiToken = Deno.env.get('APIFY_API_KEY')?.trim() || Deno.env.get('APIFY_API_TOKEN')?.trim();
+    const tokenFrom = Deno.env.get('APIFY_API_TOKEN')?.trim() ? 'APIFY_API_TOKEN' : (Deno.env.get('APIFY_API_KEY')?.trim() ? 'APIFY_API_KEY' : null);
+    const apiToken = tokenFrom === 'APIFY_API_TOKEN'
+      ? Deno.env.get('APIFY_API_TOKEN')!.trim()
+      : tokenFrom === 'APIFY_API_KEY'
+      ? Deno.env.get('APIFY_API_KEY')!.trim()
+      : null;
+
     if (!apiToken) {
-      const error = 'Apify API key not configured';
+      const error = 'Apify API token not configured';
       await sendFailureAlert('fetch-zillow-agents-bulk', error, { city, state });
       throw new Error(error);
     }
+
+    console.log(`Using Apify token from ${tokenFrom}`);
 
     const startTime = Date.now();
     console.log('Import started:', { city, state, cityId, categoryId });
@@ -205,7 +213,8 @@ serve(async (req) => {
     const scraperInput = {
       search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, Math.min(5, zipCodes.length)) : [`${city}, ${state}`],
       detailed_profiles: true,
-      max_agents: count
+      max_agents: count,
+      max_items: count
     };
 
     console.log('Scraper input:', scraperInput);
@@ -219,7 +228,8 @@ serve(async (req) => {
         });
         
         if (!resp.ok) {
-          const error: any = new Error(`Scraper failed: ${resp.status}`);
+          const body = await resp.text().catch(() => '');
+          const error: any = new Error(`Scraper failed: ${resp.status}${body ? ` - ${body.slice(0, 200)}` : ''}`);
           error.status = resp.status;
           throw error;
         }
