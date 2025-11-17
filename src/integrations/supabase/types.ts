@@ -384,6 +384,7 @@ export type Database = {
       professionals: {
         Row: {
           active: boolean
+          address: string | null
           badges: string[] | null
           category_id: string
           city_id: string
@@ -420,6 +421,7 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          address?: string | null
           badges?: string[] | null
           category_id: string
           city_id: string
@@ -456,6 +458,7 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          address?: string | null
           badges?: string[] | null
           category_id?: string
           city_id?: string
