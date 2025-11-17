@@ -1,18 +1,30 @@
 import zipCodeData from './zipCodeData.json';
 
 export interface ZipCodeRecord {
-  city: string;
-  state: string;
-  stateAbbreviation: string;
-  zipCode: string;
-  population: number;
-  medianIncome: number;
-  agentValue: number;
+  zipcode: string;
+  population: string;
+  median_income: string;
+  agent_value: string;
   notes: string;
 }
 
+export interface Suburb {
+  suburb_name: string;
+  zipcode_count: number;
+  zipcodes: ZipCodeRecord[];
+}
+
+export interface CityData {
+  city: string;
+  state: string;
+  state_abbreviation: string;
+  total_zipcodes: number;
+  suburb_count: number;
+  suburbs: Suburb[];
+}
+
 // Type the imported data
-const typedZipCodeData: ZipCodeRecord[] = zipCodeData as ZipCodeRecord[];
+const typedZipCodeData: CityData[] = zipCodeData as CityData[];
 
 /**
  * Find city and state information by zip code
@@ -20,9 +32,13 @@ const typedZipCodeData: ZipCodeRecord[] = zipCodeData as ZipCodeRecord[];
  * @returns City and state information or null if not found
  */
 export function findCityByZip(zipCode: string): { city: string; state: string } | null {
-  const found = typedZipCodeData.find(record => record.zipCode === zipCode);
-  if (found) {
-    return { city: found.city, state: found.state };
+  for (const cityData of typedZipCodeData) {
+    for (const suburb of cityData.suburbs) {
+      const found = suburb.zipcodes.find(z => z.zipcode === zipCode);
+      if (found) {
+        return { city: cityData.city, state: cityData.state };
+      }
+    }
   }
   return null;
 }
@@ -32,8 +48,21 @@ export function findCityByZip(zipCode: string): { city: string; state: string } 
  * @param zipCode - The 5-digit zip code to search for
  * @returns Complete zip code record or null if not found
  */
-export function getZipCodeDetails(zipCode: string): ZipCodeRecord | null {
-  return typedZipCodeData.find(record => record.zipCode === zipCode) || null;
+export function getZipCodeDetails(zipCode: string): (ZipCodeRecord & { city: string; state: string; suburb: string }) | null {
+  for (const cityData of typedZipCodeData) {
+    for (const suburb of cityData.suburbs) {
+      const found = suburb.zipcodes.find(z => z.zipcode === zipCode);
+      if (found) {
+        return {
+          ...found,
+          city: cityData.city,
+          state: cityData.state,
+          suburb: suburb.suburb_name
+        };
+      }
+    }
+  }
+  return null;
 }
 
 /**
@@ -42,17 +71,30 @@ export function getZipCodeDetails(zipCode: string): ZipCodeRecord | null {
  * @param state - The state name (optional, for disambiguation)
  * @returns Array of zip code records for the city
  */
-export function getZipCodesByCity(city: string, state?: string): ZipCodeRecord[] {
-  return typedZipCodeData.filter(record => {
-    const cityMatch = record.city.toLowerCase() === city.toLowerCase();
+export function getZipCodesByCity(city: string, state?: string): (ZipCodeRecord & { suburb: string })[] {
+  const cityData = typedZipCodeData.find(c => {
+    const cityMatch = c.city.toLowerCase() === city.toLowerCase();
     if (state) {
       return cityMatch && (
-        record.state.toLowerCase() === state.toLowerCase() ||
-        record.stateAbbreviation.toLowerCase() === state.toLowerCase()
+        c.state.toLowerCase() === state.toLowerCase() ||
+        c.state_abbreviation.toLowerCase() === state.toLowerCase()
       );
     }
     return cityMatch;
   });
+
+  if (!cityData) return [];
+
+  const allZips: (ZipCodeRecord & { suburb: string })[] = [];
+  for (const suburb of cityData.suburbs) {
+    for (const zipcode of suburb.zipcodes) {
+      allZips.push({
+        ...zipcode,
+        suburb: suburb.suburb_name
+      });
+    }
+  }
+  return allZips;
 }
 
 /**
@@ -60,8 +102,25 @@ export function getZipCodesByCity(city: string, state?: string): ZipCodeRecord[]
  * @param minAgentValue - Minimum agent value threshold (1-5)
  * @returns Array of high-value zip code records
  */
-export function getHighValueZipCodes(minAgentValue: number = 4): ZipCodeRecord[] {
-  return typedZipCodeData.filter(record => record.agentValue >= minAgentValue);
+export function getHighValueZipCodes(minAgentValue: number = 4): (ZipCodeRecord & { city: string; state: string; suburb: string })[] {
+  const highValue: (ZipCodeRecord & { city: string; state: string; suburb: string })[] = [];
+  
+  for (const cityData of typedZipCodeData) {
+    for (const suburb of cityData.suburbs) {
+      for (const zipcode of suburb.zipcodes) {
+        if (parseInt(zipcode.agent_value) >= minAgentValue) {
+          highValue.push({
+            ...zipcode,
+            city: cityData.city,
+            state: cityData.state,
+            suburb: suburb.suburb_name
+          });
+        }
+      }
+    }
+  }
+  
+  return highValue;
 }
 
 /**
@@ -77,19 +136,39 @@ export function searchZipCodes(filters: {
   minAgentValue?: number;
   state?: string;
   city?: string;
-}): ZipCodeRecord[] {
-  return typedZipCodeData.filter(record => {
-    if (filters.minPopulation && record.population < filters.minPopulation) return false;
-    if (filters.maxPopulation && record.population > filters.maxPopulation) return false;
-    if (filters.minIncome && record.medianIncome < filters.minIncome) return false;
-    if (filters.maxIncome && record.medianIncome > filters.maxIncome) return false;
-    if (filters.minAgentValue && record.agentValue < filters.minAgentValue) return false;
+}): (ZipCodeRecord & { city: string; state: string; suburb: string })[] {
+  const results: (ZipCodeRecord & { city: string; state: string; suburb: string })[] = [];
+  
+  for (const cityData of typedZipCodeData) {
+    // Filter by state/city at city level
     if (filters.state && 
-        record.state.toLowerCase() !== filters.state.toLowerCase() &&
-        record.stateAbbreviation.toLowerCase() !== filters.state.toLowerCase()) return false;
-    if (filters.city && record.city.toLowerCase() !== filters.city.toLowerCase()) return false;
-    return true;
-  });
+        cityData.state.toLowerCase() !== filters.state.toLowerCase() &&
+        cityData.state_abbreviation.toLowerCase() !== filters.state.toLowerCase()) continue;
+    if (filters.city && cityData.city.toLowerCase() !== filters.city.toLowerCase()) continue;
+    
+    for (const suburb of cityData.suburbs) {
+      for (const zipcode of suburb.zipcodes) {
+        const population = parseInt(zipcode.population);
+        const income = parseInt(zipcode.median_income);
+        const agentValue = parseInt(zipcode.agent_value);
+        
+        if (filters.minPopulation && population < filters.minPopulation) continue;
+        if (filters.maxPopulation && population > filters.maxPopulation) continue;
+        if (filters.minIncome && income < filters.minIncome) continue;
+        if (filters.maxIncome && income > filters.maxIncome) continue;
+        if (filters.minAgentValue && agentValue < filters.minAgentValue) continue;
+        
+        results.push({
+          ...zipcode,
+          city: cityData.city,
+          state: cityData.state,
+          suburb: suburb.suburb_name
+        });
+      }
+    }
+  }
+  
+  return results;
 }
 
 /**
@@ -104,13 +183,34 @@ export function getDefaultZipForCity(city: string, state?: string): string | nul
   
   // Return the zip code with highest agent value, then highest median income
   const best = cityZips.sort((a, b) => {
-    if (b.agentValue !== a.agentValue) {
-      return b.agentValue - a.agentValue;
+    const aValue = parseInt(a.agent_value);
+    const bValue = parseInt(b.agent_value);
+    if (bValue !== aValue) {
+      return bValue - aValue;
     }
-    return b.medianIncome - a.medianIncome;
+    return parseInt(b.median_income) - parseInt(a.median_income);
   })[0];
   
-  return best.zipCode;
+  return best.zipcode;
+}
+
+/**
+ * Get city data by name
+ * @param city - The city name
+ * @param state - The state name (optional)
+ * @returns Complete city data or null if not found
+ */
+export function getCityData(city: string, state?: string): CityData | null {
+  return typedZipCodeData.find(c => {
+    const cityMatch = c.city.toLowerCase() === city.toLowerCase();
+    if (state) {
+      return cityMatch && (
+        c.state.toLowerCase() === state.toLowerCase() ||
+        c.state_abbreviation.toLowerCase() === state.toLowerCase()
+      );
+    }
+    return cityMatch;
+  }) || null;
 }
 
 export { typedZipCodeData as zipCodeData };

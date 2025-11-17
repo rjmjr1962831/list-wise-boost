@@ -262,10 +262,10 @@ export const ZipCodeManager = () => {
               const city = cities.find(c => c.id === selectedCity)!;
               const cityZips = getZipCodesByCity(city.name, city.state);
               return cityZips.map((record) => (
-                <div key={record.zipCode} className="flex flex-col">
-                  <span className="font-medium">{record.zipCode}</span>
-                  <span className="text-xs text-muted-foreground">Value: {record.agentValue}/5</span>
-                  <span className="text-xs text-muted-foreground">${(record.medianIncome / 1000).toFixed(0)}k income</span>
+                <div key={record.zipcode} className="flex flex-col">
+                  <span className="font-medium">{record.zipcode}</span>
+                  <span className="text-xs text-muted-foreground">Value: {record.agent_value}/5</span>
+                  <span className="text-xs text-muted-foreground">${(parseInt(record.median_income) / 1000).toFixed(0)}k income</span>
                 </div>
               ));
             })()}
