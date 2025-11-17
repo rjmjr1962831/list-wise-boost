@@ -88,28 +88,29 @@ export default function CityLanding() {
         // Only try importing if we have less than 10 or stale data
         if (!hasEnough || !fresh) {
           setEnsureMsg('Fetching latest agents…');
-          const res = await autoImportZillowAgents(cityRow.id, cityRow.name, cityRow.state);
-          
-          // Check if we now have agents after import
-          const { data: updatedPros } = await supabase
-            .from('professionals')
-            .select('id')
-            .eq('city_id', cityRow.id)
-            .eq('category_id', categoryRow.id)
-            .eq('active', true)
-            .limit(1);
-          
-          if ((updatedPros?.length || 0) > 0) {
-            // Success - redirect to list
-            navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
-          } else {
-            // Failed to get any agents - show error, don't loop
-            setEnsureMsg('Unable to load agents at this time. API providers are unavailable.');
-            setIsEnsuring(false);
+
+          try {
+            // Kick off import in background, but don't block the UI
+            const importPromise = autoImportZillowAgents(cityRow.id, cityRow.name, cityRow.state);
+            const shortTimeout = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Continuing in background')), 8000)
+            );
+
+            // Give it a brief window to complete; otherwise continue
+            await Promise.race([importPromise, shortTimeout]).catch(() => {
+              console.log('CityLanding import continuing in background');
+            });
+          } catch (e) {
+            console.warn('CityLanding import start failed (continuing):', e);
           }
+
+          // Navigate to the list page regardless; it will render immediately and update as data arrives
+          navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
+          return;
         } else {
           // Have enough fresh agents, go to list
           navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
+          return;
         }
       } catch (e) {
         console.error('ensure agents error', e);
