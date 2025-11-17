@@ -13,10 +13,36 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId, city, state } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError);
+      return new Response(
+        JSON.stringify({ success: false, error: 'Invalid JSON in request body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { professionalId, city, state } = body || {};
+    
+    console.log('Received parameters:', { professionalId, city, state });
     
     if (!professionalId || !city || !state) {
-      throw new Error('Missing required parameters: professionalId, city, state');
+      const missing = [];
+      if (!professionalId) missing.push('professionalId');
+      if (!city) missing.push('city');
+      if (!state) missing.push('state');
+      
+      console.error('Missing parameters:', missing.join(', '));
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Missing required parameters: ${missing.join(', ')}`,
+          received: body 
+        }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
