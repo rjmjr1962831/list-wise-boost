@@ -52,6 +52,7 @@ export const ProfessionalCard = ({
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [license, setLicense] = useState<string | null>(professional.license_number || null);
   const [verifying, setVerifying] = useState(false);
+  const isLicenseVerified = !!(professional as any).license_verified_at;
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
   
@@ -265,19 +266,21 @@ export const ProfessionalCard = ({
                     <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide">
                       {license}
                     </Badge>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="secondary" className="gap-1 px-2 py-0.5 cursor-help">
-                          <ShieldCheck className="h-3 w-3 text-primary" />
-                          <span className="text-xs">Verified</span>
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs text-xs">
-                          License verified via AI-powered lookup from official state registry
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
+                    {isLicenseVerified && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="default" className="gap-1 px-2 py-0.5 cursor-help bg-green-500 hover:bg-green-600">
+                            <ShieldCheck className="h-3 w-3" />
+                            <span className="text-xs">Verified</span>
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="max-w-xs text-xs">
+                            License verified from official state registry
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    )}
                   </div>
                 ) : (
                   <Tooltip>
