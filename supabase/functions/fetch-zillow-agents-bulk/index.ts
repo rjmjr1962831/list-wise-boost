@@ -198,7 +198,7 @@ serve(async (req) => {
     console.log(`Agent discovery query: ${query}`);
 
     // STEP 1: Use getdataforme scraper to find Zillow URLs
-    const discoveryActorId = 'getdataforme/zillow-real-state-agents-scraper';
+    const discoveryActorId = 'getdataforme~zillow-real-state-agents-scraper';
     console.log(`Step 1: Finding agents with ${discoveryActorId} (getdataforme)`);
 
     // Convert state to 2-letter abbreviation if needed (used later for Redfin)
@@ -208,8 +208,11 @@ serve(async (req) => {
     console.log(`Agent discovery location: ${location}`);
     
     const discoveryInput = {
-      location: location,
-      maxItems: 50
+      search_query: location,
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"]
+      }
     };
 
     // Start discovery actor run with retry logic
