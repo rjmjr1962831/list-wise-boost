@@ -209,11 +209,15 @@ serve(async (req) => {
     }
 
     // STEP 3: Use getdataforme scraper to get agent data
-    const scraperActorId = 'getdataforme~zillow-real-state-agents-scraper';
+    const scraperActorId = 'rigelbytes~zillow-agents';
     console.log(`Fetching agents using ${scraperActorId} for ${city}, ${state}`);
     
     const scraperInput = {
-      search_query: `${city}, ${state}`,
+      search_keywords: [
+        `${city}, ${state} real estate agents`,
+        `${city}, ${state} realtor`,
+        `${city} ${state} realtors`
+      ],
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
