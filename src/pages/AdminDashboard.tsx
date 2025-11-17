@@ -18,6 +18,7 @@ import { ZuidExtractor } from "@/components/admin/ZuidExtractor";
 import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsManager";
 import { AgentStatsImporter } from "@/components/admin/AgentStatsImporter";
 import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporter";
+import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -203,6 +204,7 @@ const AdminDashboard = () => {
 
           <TabsContent value="az-licenses" className="space-y-4">
             <ArizonaLicenseImporter />
+            <BulkStatsFetcher />
           </TabsContent>
 
           <TabsContent value="import-stats" className="space-y-4">
