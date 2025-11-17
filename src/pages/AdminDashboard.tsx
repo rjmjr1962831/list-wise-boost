@@ -17,6 +17,7 @@ import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
 import { ZuidExtractor } from "@/components/admin/ZuidExtractor";
 import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsManager";
 import { AgentStatsImporter } from "@/components/admin/AgentStatsImporter";
+import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporter";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -146,6 +147,10 @@ const AdminDashboard = () => {
               <FlaskConical className="mr-2 h-4 w-4" />
               Test License
             </TabsTrigger>
+            <TabsTrigger value="az-licenses">
+              <FlaskConical className="mr-2 h-4 w-4" />
+              AZ Licenses
+            </TabsTrigger>
             <TabsTrigger value="import-stats">
               <Database className="mr-2 h-4 w-4" />
               Import Stats
@@ -194,6 +199,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="license-tester" className="space-y-4">
             <LicenseLookupTester />
+          </TabsContent>
+
+          <TabsContent value="az-licenses" className="space-y-4">
+            <ArizonaLicenseImporter />
           </TabsContent>
 
           <TabsContent value="import-stats" className="space-y-4">
