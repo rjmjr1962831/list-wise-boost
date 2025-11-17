@@ -179,51 +179,43 @@ serve(async (req) => {
           const bestZip = cityZips.sort((a: any, b: any) => b.agentValue - a.agentValue)[0];
           zipCode = bestZip.zipCode;
           console.log(`Found zip code ${zipCode} for ${city}, ${state}`);
+        } else {
+          console.log(`No zip code found in data for ${city}, ${state}`);
         }
       }
     } catch (e) {
-      console.warn('Could not load zip code data, using city/state format:', e);
+      console.warn('Could not load zip code data:', e);
     }
+
+    // Use zip code if available, otherwise use city/state format
+    const locationText = zipCode || `${city}, ${state}`;
+    console.log(`Using location text for agenscrape: ${locationText}`);
 
     const startTime = Date.now();
     console.log('Import started:', {
       city,
       state,
+      locationText,
       cityId,
       categoryId,
       timestamp: new Date().toISOString()
     });
 
-    const query = zipCode || `real estate agent in ${city}, ${state}`;
-    console.log(`Agent discovery query: ${query}`);
-
     // STEP 1: Use agenscrape to find Zillow agents
     const discoveryActorId = 'agenscrape';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
-
-    if (!zipCode) {
-      console.warn('No zip code found, agenscrape requires locationText (zip code)');
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'No zip code found for this city. agenscrape requires a zip code.',
-        hint: 'Add zip code mapping for this city'
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    console.log(`Using zip code: ${zipCode} for agenscrape`);
     
     const discoveryInput = {
       category: "real-estate-agents",
-      locationText: zipCode,
+      locationText: locationText,
       name: "",  // Empty for bulk import
       language: "English",
       specialty: "",
       maxResults: 50,
       startPage: 1
     };
+
+    console.log('agenscrape input:', discoveryInput);
 
     // Start discovery actor run with retry logic
     const discoveryResp = await retryWithBackoff(
