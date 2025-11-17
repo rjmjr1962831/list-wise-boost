@@ -470,9 +470,11 @@ serve(async (req) => {
     // Merge memo23 data into rawAgents by matching profile URLs
     if (memo23Data.length > 0) {
       console.log('Merging memo23 data into agent profiles');
+      console.log('Sample memo23 structure:', JSON.stringify(memo23Data[0], null, 2));
       
       for (const memo23Agent of memo23Data) {
-        const memo23Url = memo23Agent.profileUrl || memo23Agent.url || memo23Agent.zillow_url;
+        // memo23 returns 'url' field at top level
+        const memo23Url = memo23Agent.url || memo23Agent.profileUrl || memo23Agent.zillow_url;
         
         if (memo23Url) {
           const matchingAgent = rawAgents.find((agent: any) => {
@@ -481,14 +483,33 @@ serve(async (req) => {
           });
           
           if (matchingAgent) {
-            // Merge transaction data from memo23
-            matchingAgent.memo23_total_sales = memo23Agent.totalSales || memo23Agent.sold || memo23Agent.salesCount;
-            matchingAgent.memo23_current_listings = memo23Agent.forSale || memo23Agent.activeListings;
-            matchingAgent.memo23_years_experience = memo23Agent.yearsExperience;
-            matchingAgent.memo23_reviews = memo23Agent.reviews;
-            matchingAgent.memo23_rating = memo23Agent.rating;
+            // Extract nested fields from memo23 output structure
+            const agentSalesStats = memo23Agent.agentSalesStats || {};
+            const forSaleListings = memo23Agent.forSaleListings || {};
+            const ratings = memo23Agent.ratings || {};
+            const pastSales = memo23Agent.pastSales || {};
             
-            console.log(`Merged memo23 data for ${matchingAgent.name || matchingAgent.agentName}`);
+            // Map memo23 fields to our agent fields
+            matchingAgent.memo23_total_sales = agentSalesStats.countAllTime || 
+                                                 agentSalesStats.countLastYear || 
+                                                 pastSales.total || null;
+            matchingAgent.memo23_current_listings = forSaleListings.listing_count || 
+                                                      (Array.isArray(forSaleListings.listings) ? forSaleListings.listings.length : null);
+            matchingAgent.memo23_reviews = ratings.count || 0;
+            matchingAgent.memo23_rating = ratings.average || null;
+            matchingAgent.memo23_years_experience = null; // Not in memo23 output
+            
+            // Also grab phone and email if available
+            const phoneNumbers = memo23Agent.phoneNumbers || {};
+            matchingAgent.memo23_phone = phoneNumbers.cell || phoneNumbers.business || phoneNumbers.brokerage || null;
+            matchingAgent.memo23_email = memo23Agent.email || null;
+            
+            console.log(`Merged memo23 data for ${matchingAgent.name || matchingAgent.agentName}:`, {
+              totalSales: matchingAgent.memo23_total_sales,
+              currentListings: matchingAgent.memo23_current_listings,
+              reviews: matchingAgent.memo23_reviews,
+              phone: matchingAgent.memo23_phone
+            });
           }
         }
       }
@@ -507,8 +528,9 @@ serve(async (req) => {
       // Extract all possible field variations
       const name = agent.agentName || agent.name || agent['Business Name'] || agent.title || agent.fullName || agent.agent_name || '';
       
-      // PHONE: Try all possible phone field variations
-      const phone = agent.phoneNumber || 
+      // PHONE: Try all possible phone field variations (prioritize memo23 enriched data)
+      const phone = agent.memo23_phone || // memo23 enriched data
+                    agent.phoneNumber || 
                     agent.phone || 
                     agent['Phone Number'] || 
                     agent.call_number || 
@@ -521,8 +543,9 @@ serve(async (req) => {
       const website = agent.profileUrl || agent.url || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || agent.profile_url || null;
       const thumbnail = agent.photoUrl || agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || agent.photo_url || agent.image_url || null;
       const address = agent.address || agent.location || agent['Address'] || agent.full_address || agent.city || agent.office_address || '';
-      const rating = agent.rating || agent.reviewRating || agent['Rating'] || agent.stars || agent.score || agent.review_rating || 4.5;
-      const reviews = agent.reviewCount || agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.total_reviews || 0;
+      const rating = agent.memo23_rating || agent.rating || agent.reviewRating || agent['Rating'] || agent.stars || agent.score || agent.review_rating || 4.5;
+      const reviews = agent.memo23_reviews || agent.reviewCount || agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.total_reviews || 0;
+      const email = agent.memo23_email || agent.email || (website ? `info@${String(website).replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : null);
       const company = agent.brokerageName || agent.brokerage || agent.company || agent.businessName || agent['Business Name'] || 'Independent';
       const zuid = agent.zuid || agent.zillowId || agent.screenname || null;
       
@@ -577,7 +600,7 @@ serve(async (req) => {
         isRealEstateAgent,
         fullName: name,
         name,
-        email: website ? `info@${String(website).replace(/https?:\/\/(www\.)?/, '').split('/')[0]}` : null,
+        email,
         phoneNumber: phone,
         phone,
         businessName: company,
