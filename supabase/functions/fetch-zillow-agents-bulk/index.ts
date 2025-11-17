@@ -197,22 +197,32 @@ serve(async (req) => {
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    // STEP 1: Use getdataforme scraper to find Zillow URLs
-    const discoveryActorId = 'getdataforme~zillow-real-state-agents-scraper';
-    console.log(`Step 1: Finding agents with ${discoveryActorId} (getdataforme)`);
+    // STEP 1: Use agenscrape to find Zillow agents
+    const discoveryActorId = 'agenscrape';
+    console.log(`Step 1: Finding agents with ${discoveryActorId}`);
 
-    // Convert state to 2-letter abbreviation if needed
-    const stateAbbrev = state.length > 2 ? state.slice(0, 2).toUpperCase() : state.toUpperCase();
+    if (!zipCode) {
+      console.warn('No zip code found, agenscrape requires locationText (zip code)');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'No zip code found for this city. agenscrape requires a zip code.',
+        hint: 'Add zip code mapping for this city'
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
-    const location = `${city}, ${state}`;
-    console.log(`Agent discovery location: ${location}`);
+    console.log(`Using zip code: ${zipCode} for agenscrape`);
     
     const discoveryInput = {
-      search_query: location,
-      proxyConfiguration: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"]
-      }
+      category: "real-estate-agents",
+      locationText: zipCode,
+      name: "",  // Empty for bulk import
+      language: "English",
+      specialty: "",
+      maxResults: 50,
+      startPage: 1
     };
 
     // Start discovery actor run with retry logic
