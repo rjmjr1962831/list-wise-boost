@@ -26,6 +26,7 @@ import AgentOnboarding from "./pages/AgentOnboarding";
 import AgentPayment from "./pages/AgentPayment";
 import AgentPaymentSuccess from "./pages/AgentPaymentSuccess";
 import AgentInfo from "./pages/AgentInfo";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 
@@ -36,47 +37,48 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <RateLimitGuard>
         <TooltipProvider>
-          {/* Temporarily disable Toaster while resolving duplicate React issue */}
-          {/* <Sonner /> */}
+          <Sonner />
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1">
-              <Suspense fallback={
-                <div className="min-h-screen flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                </div>
-              }>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  {/* /about will be built later */}
-                  <Route path="/main" element={<Navigate to="/" replace />} />
-                  {/* Dynamic city and category routes */}
-                  <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
-                  <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
-                  {/* Admin routes */}
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin" element={<AdminDashboard />} />
-                  <Route path="/migrate-data" element={<MigrateData />} />
-                  {/* Static pages */}
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<TermsOfService />} />
-                  <Route path="/agent-info" element={<AgentInfo />} />
-                  <Route path="/apply-listing" element={<ApplyListing />} />
-                  <Route path="/book-appointment-robert" element={<BookAppointment />} />
-                  {/* Agent Onboarding */}
-                  <Route path="/agent-onboarding" element={<AgentOnboarding />} />
-                  <Route path="/agent-onboarding/payment" element={<AgentPayment />} />
-                  <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
-                  {/* Verification funnel */}
-                  <Route path="/verify/:token" element={<VerifyListing />} />
-                  <Route path="/verify/:token/details" element={<VerifyDetails />} />
-                  <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
-                  <Route path="/verify/:token/cities" element={<VerifyCities />} />
-                  <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
-                  {/* Catch-all 404 route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={
+                  <div className="min-h-screen flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
+                }>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    {/* /about will be built later */}
+                    <Route path="/main" element={<Navigate to="/" replace />} />
+                    {/* Dynamic city and category routes */}
+                    <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
+                    <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
+                    {/* Admin routes */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/migrate-data" element={<MigrateData />} />
+                    {/* Static pages */}
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/agent-info" element={<AgentInfo />} />
+                    <Route path="/apply-listing" element={<ApplyListing />} />
+                    <Route path="/book-appointment-robert" element={<BookAppointment />} />
+                    {/* Agent Onboarding */}
+                    <Route path="/agent-onboarding" element={<AgentOnboarding />} />
+                    <Route path="/agent-onboarding/payment" element={<AgentPayment />} />
+                    <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
+                    {/* Verification funnel */}
+                    <Route path="/verify/:token" element={<VerifyListing />} />
+                    <Route path="/verify/:token/details" element={<VerifyDetails />} />
+                    <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
+                    <Route path="/verify/:token/cities" element={<VerifyCities />} />
+                    <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
+                    {/* Catch-all 404 route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </main>
             <Footer />
           </div>
