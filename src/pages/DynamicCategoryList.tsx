@@ -8,7 +8,7 @@ import { generatePageTitle, generateMetaDescription, formatCityName } from '@/ut
 import { ListSection, Professional } from '@/types/professional';
 import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
-import { generateProfessionals } from '@/utils/professionalGenerator';
+import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
 interface City {
@@ -606,7 +606,23 @@ export default function DynamicCategoryList() {
   }
 
   if (allProfessionals.length === 0) {
-    return <Navigate to={`/${city.state_slug}/${city.slug}`} replace />;
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <h2 className="text-2xl font-bold mb-4">No Listings Yet</h2>
+          <p className="text-muted-foreground mb-6">
+            We're importing real agents for {city.name}. This takes a moment—no placeholders will be shown.
+          </p>
+          <Button
+            onClick={() => window.location.reload()}
+            variant="default"
+            size="lg"
+          >
+            Refresh Page
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   // Split professionals into Individual Agents and Teams & Groups
