@@ -197,23 +197,19 @@ serve(async (req) => {
     const query = zipCode || `real estate agent in ${city}, ${state}`;
     console.log(`Agent discovery query: ${query}`);
 
-    // STEP 1: Use memo23 Zillow scraper
-    const discoveryActorId = 'memo23~apify-zillow-agents-cheerio';
-    console.log(`Step 1: Finding agents with ${discoveryActorId}`);
+    // STEP 1: Use getdataforme scraper to find Zillow URLs
+    const discoveryActorId = 'piotrturski~zillow-agents-finder';
+    console.log(`Step 1: Finding agents with ${discoveryActorId} (getdataforme)`);
 
-    // Convert state to 2-letter abbreviation if needed
+    // Convert state to 2-letter abbreviation if needed (used later for Redfin)
     const stateAbbrev = state.length > 2 ? state.slice(0, 2).toUpperCase() : state.toUpperCase();
-    
-    // Build Zillow agent search URL
-    const searchUrl = `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}/`;
+
+    const location = `${city}, ${state}`;
+    console.log(`Agent discovery location: ${location}`);
     
     const discoveryInput = {
-      query: `real estate agent in ${city}, ${state}`,
-      maxItems: 50,
-      proxyConfiguration: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"]
-      }
+      location: location,
+      maxItems: 50
     };
 
     // Start discovery actor run with retry logic
