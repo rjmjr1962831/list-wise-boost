@@ -587,7 +587,8 @@ serve(async (req) => {
       const zuid = agent.zuid || agent.zillowId || agent.screenname || null;
       
       // TRANSACTION DATA: Try all possible field variations
-      const totalSales = agent.salesLast12Months || 
+      const totalSalesRaw = agent.team_sales_last_12_months || // GetDataForMe field
+                        agent.salesLast12Months || 
                         agent.totalSales || 
                         agent.recentSales || 
                         agent.sales_last_12_months ||
@@ -595,14 +596,17 @@ serve(async (req) => {
                         agent.sold_count ||
                         agent.numRecentSales ||
                         null;
+      const totalSales = totalSalesRaw ? parseInt(String(totalSalesRaw), 10) || null : null;
                         
-      const currentListings = agent.activeListings || 
+      const currentListingsRaw = agent.team_current_listings || // GetDataForMe field
+                             agent.activeListings || 
                              agent.currentListings || 
                              agent.current_listings ||
                              agent.forSaleCount ||
                              agent.for_sale_count ||
                              agent.numCurrentListings ||
                              null;
+      const currentListings = currentListingsRaw ? parseInt(String(currentListingsRaw), 10) || null : null;
                              
       const yearsExperience = agent.yearsOfExperience || 
                              agent.yearsExperience || 
