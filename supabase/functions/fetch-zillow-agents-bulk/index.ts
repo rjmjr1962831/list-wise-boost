@@ -199,13 +199,13 @@ serve(async (req) => {
     }
 
     // STEP 3: Use rigelbytes/zillow-agents scraper
-    const scraperActorId = 'rigelbytes/zillow-agents';
+    const scraperActorId = 'rigelbytes~zillow-agents';
     console.log(`Starting ${scraperActorId} for ${city}, ${state}`);
     
     const scraperInput = {
-      search_keywords: zipCodes.length > 0 ? zipCodes[0] : `${city}, ${state}`,
+      search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, Math.min(5, zipCodes.length)) : [`${city}, ${state}`],
       detailed_profiles: true,
-      max_items: count
+      max_agents: count
     };
 
     console.log('Scraper input:', scraperInput);
