@@ -241,11 +241,11 @@ export default function DynamicCategoryList() {
           await generateAndInsertProfessionals(cityWithCamelCase, categoryData);
           
           // Refetch after insertion with retry logic
-          let retries = 3;
+          let retries = 40;
           let newProfsData = null;
           
           while (retries > 0 && (!newProfsData || newProfsData.length === 0)) {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between retries
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between retries (up to ~80s)
             
             const { data } = await supabase
               .from('professionals')
@@ -531,6 +531,48 @@ export default function DynamicCategoryList() {
       });
     }
   }, [city, category]);
+
+  // Background polling to auto-populate when import finishes
+  useEffect(() => {
+    if (!city || !category) return;
+    if (category.slug !== 'top10realestateagents') return;
+    if (allProfessionals.length > 0) return;
+
+    let attempts = 0;
+    const maxAttempts = 60; // ~5 minutes at 5s interval
+
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const { data } = await supabase
+          .from('professionals')
+          .select('*')
+          .eq('city_id', city.id)
+          .eq('category_id', category.id)
+          .eq('active', true)
+          .order('rank');
+
+        if (data && data.length > 0) {
+          const converted = data.map(convertToProfessional);
+          setAllProfessionals(converted);
+          setFilteredProfessionals(converted);
+          setLoading(false);
+          setIsGeneratingData(false);
+          setReviewsReady(true);
+          clearInterval(interval);
+        }
+      } catch (e) {
+        console.warn('Polling professionals failed:', e);
+      } finally {
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [city, category, allProfessionals.length]);
+
 
   if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
     return (
