@@ -252,6 +252,8 @@ export default function DynamicCategoryList() {
             const converted = newProfsData.map(convertToProfessional);
             setAllProfessionals(converted);
             setFilteredProfessionals(converted);
+            setLoading(false);
+            setIsGeneratingData(false);
             
             // Prefetch reviews with timeout to ensure page renders
             const reviewPrefetchPromise = (async () => {
@@ -280,6 +282,8 @@ export default function DynamicCategoryList() {
             setReviewsReady(true);
           } else {
             // No data after retries
+            setLoading(false);
+            setIsGeneratingData(false);
             setReviewsReady(true);
           }
         } else {
