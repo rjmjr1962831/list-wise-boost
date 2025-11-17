@@ -559,25 +559,57 @@ serve(async (req) => {
 
 
     function mapAgent(agent: any) {
-      // Log first agent to help debug field mappings
+      // Log all agent data to debug field mappings
       if (items.indexOf(agent) === 0) {
-        console.log('First agent fields:', Object.keys(agent));
-        console.log('First agent sample:', JSON.stringify(agent).substring(0, 500));
+        console.log('First agent ALL fields:', JSON.stringify(agent, null, 2));
       }
       
-      // Handle hello.datawizards/Real-Estate-Agents-Scraper format (prioritized)
+      // Extract all possible field variations
       const name = agent.agentName || agent.name || agent['Business Name'] || agent.title || agent.fullName || agent.agent_name || '';
-      const phone = agent.phoneNumber || agent.phone || agent['Phone Number'] || agent.call_number || agent.contact_phone || null;
+      
+      // PHONE: Try all possible phone field variations
+      const phone = agent.phoneNumber || 
+                    agent.phone || 
+                    agent['Phone Number'] || 
+                    agent.call_number || 
+                    agent.contact_phone || 
+                    agent.phoneDisplay ||
+                    agent.phone_number ||
+                    agent.contactPhone ||
+                    null;
+      
       const website = agent.profileUrl || agent.url || agent.website || agent['Website'] || agent.site || agent.domain || agent.profileLink || agent.profile_url || null;
       const thumbnail = agent.photoUrl || agent.photo || agent.image || agent.profilePhoto || agent['Profile Photo'] || agent.thumbnail || agent.logo || agent.profilePhotoSrc || agent.photo_url || agent.image_url || null;
       const address = agent.address || agent.location || agent['Address'] || agent.full_address || agent.city || agent.office_address || '';
       const rating = agent.rating || agent.reviewRating || agent['Rating'] || agent.stars || agent.score || agent.review_rating || 4.5;
       const reviews = agent.reviewCount || agent.reviewsCount || agent.reviews || agent['Review Count'] || agent.review_count || agent.reviews_count || agent.total_reviews || 0;
       const company = agent.brokerageName || agent.brokerage || agent.company || agent.businessName || agent['Business Name'] || 'Independent';
-      const zuid = agent.zuid || agent.zillowId || null;
-      const totalSales = agent.salesLast12Months || agent.totalSales || agent.recentSales || null;
-      const currentListings = agent.activeListings || agent.currentListings || null;
-      const yearsExperience = agent.yearsOfExperience || agent.yearsExperience || agent.experience || null;
+      const zuid = agent.zuid || agent.zillowId || agent.screenname || null;
+      
+      // TRANSACTION DATA: Try all possible field variations
+      const totalSales = agent.salesLast12Months || 
+                        agent.totalSales || 
+                        agent.recentSales || 
+                        agent.sales_last_12_months ||
+                        agent.soldCount ||
+                        agent.sold_count ||
+                        agent.numRecentSales ||
+                        null;
+                        
+      const currentListings = agent.activeListings || 
+                             agent.currentListings || 
+                             agent.current_listings ||
+                             agent.forSaleCount ||
+                             agent.for_sale_count ||
+                             agent.numCurrentListings ||
+                             null;
+                             
+      const yearsExperience = agent.yearsOfExperience || 
+                             agent.yearsExperience || 
+                             agent.experience || 
+                             agent.years_experience ||
+                             agent.experienceYears ||
+                             null;
       
       let categories: string[] = [];
       if (Array.isArray(agent.specialties)) {
@@ -631,6 +663,22 @@ serve(async (req) => {
       .slice(0, 10);
 
     console.log(`Transformed ${transformedAgents.length} agents with complete data`);
+    
+    // Log data quality
+    const withPhone = transformedAgents.filter(a => a.phone).length;
+    const withSales = transformedAgents.filter(a => a.totalSales).length;
+    const withListings = transformedAgents.filter(a => a.currentListings).length;
+    console.log(`Data quality: ${withPhone} with phone, ${withSales} with sales data, ${withListings} with listings`);
+    
+    if (transformedAgents.length > 0) {
+      console.log('Sample agent data:', JSON.stringify({
+        name: transformedAgents[0].name,
+        phone: transformedAgents[0].phone,
+        totalSales: transformedAgents[0].totalSales,
+        currentListings: transformedAgents[0].currentListings,
+        website: transformedAgents[0].website
+      }, null, 2));
+    }
 
     if (!categoryId || !cityId) {
       console.warn('Missing categoryId or cityId - returning agents without saving');
@@ -678,8 +726,8 @@ serve(async (req) => {
             const professionalData = {
               name: agent.name,
               company: agent.businessName,
-              phone: agent.phone,
-              email: 'info@zillow.com',
+              phone: agent.phone || null, // Use actual phone from scraper
+              email: agent.email || null, // Use actual email if available
               website: agent.website,
               image_url: agent.profilePhotoSrc,
               specialty: agent.specialties || ["Buyer's Agent", "Listing Agent"],
@@ -691,6 +739,8 @@ serve(async (req) => {
               zuid: agent.zuid,
               total_sales: agent.totalSales,
               current_listings: agent.currentListings,
+              years_experience: agent.yearsExperience,
+              zillow_profile_url: agent.website,
             };
 
             if (existing) {
