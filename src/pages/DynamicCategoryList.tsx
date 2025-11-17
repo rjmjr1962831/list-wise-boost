@@ -300,7 +300,8 @@ export default function DynamicCategoryList() {
               categoryData.slug,
               '555'
             );
-            const preview = previewRaw.map((p) => ({
+            const preview = previewRaw.map((p, idx) => ({
+              id: `preview-${cityData.id}-${idx}`, // Add temporary ID for preview
               rank: p.rank,
               name: p.name,
               company: 'Independent Realty',

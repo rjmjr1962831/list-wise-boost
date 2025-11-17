@@ -64,7 +64,7 @@ export const ProfessionalCard = ({
   const needsStats = true;
 
   useEffect(() => {
-    if (!needsStats) return;
+    if (!needsStats || !professional.id) return; // Skip if no ID (preview data)
     // Avoid repeated updates per session
     const key = `upd_${professional.id}`;
     if (typeof window !== 'undefined' && sessionStorage.getItem(key)) return;
