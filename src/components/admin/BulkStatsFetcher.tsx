@@ -9,6 +9,17 @@ export const BulkStatsFetcher = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, success: 0, failed: 0 });
 
+  const normalizeName = (name: string) => {
+    return name.toLowerCase().trim().replace(/[^a-z\s]/g, '');
+  };
+
+  const calculateYearsExperience = (issueDate: string): number => {
+    const date = new Date(issueDate);
+    const today = new Date();
+    const years = (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
+    return Math.round(years);
+  };
+
   const fetchStatsForCity = async (cityName: string) => {
     setIsProcessing(true);
     setProgress({ current: 0, total: 0, success: 0, failed: 0 });
@@ -39,6 +50,43 @@ export const BulkStatsFetcher = () => {
 
       setProgress(prev => ({ ...prev, total: professionals.length }));
       toast.info(`Starting stats fetch for ${professionals.length} agents in ${cityName}`);
+
+      // Load and parse Arizona license CSV
+      const licenseMap = new Map();
+      try {
+        const response = await fetch('/arizona-licenses.csv');
+        const csvText = await response.text();
+        const lines = csvText.split('\n');
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const values = line.split(',');
+          if (values.length < 13) continue;
+
+          const lastName = values[0]?.replace(/"/g, '').trim();
+          const firstName = values[1]?.replace(/"/g, '').trim();
+          const middleName = values[2]?.replace(/"/g, '').trim();
+          const fullName = `${firstName} ${middleName} ${lastName}`.replace(/\s+/g, ' ').trim();
+          const normalizedName = normalizeName(fullName);
+
+          const issueDate = values[3]?.replace(/"/g, '').trim();
+          const licNumber = values[4]?.replace(/"/g, '').trim();
+          const phone = values[7]?.replace(/"/g, '').trim();
+
+          licenseMap.set(normalizedName, {
+            licenseNumber: licNumber,
+            phone,
+            yearsExperience: calculateYearsExperience(issueDate),
+            licenseVerifiedAt: new Date().toISOString()
+          });
+        }
+        console.log(`Loaded ${licenseMap.size} licenses from CSV`);
+      } catch (error) {
+        console.error('Error loading license CSV:', error);
+        toast.warning('Could not load license data, will only fetch Zillow stats');
+      }
 
       let success = 0;
       let failed = 0;
@@ -93,17 +141,30 @@ export const BulkStatsFetcher = () => {
           }
 
           if (stats) {
+            // Get license data from CSV
+            const normalizedProfName = normalizeName(prof.name);
+            const licenseData = licenseMap.get(normalizedProfName);
             
-            // Update professional with stats
+            // Prepare update with stats and license data
+            const updateData: any = {
+              current_listings: stats.currentListings || 0,
+              total_sales: stats.totalSales || 0,
+              years_experience: stats.yearsExperience || licenseData?.yearsExperience,
+              zip_code: stats.zipCode || prof.zip_code,
+              zillow_data_fetched_at: new Date().toISOString()
+            };
+
+            // Add license data if available
+            if (licenseData) {
+              updateData.license_number = licenseData.licenseNumber;
+              updateData.phone = licenseData.phone;
+              updateData.license_verified_at = licenseData.licenseVerifiedAt;
+            }
+            
+            // Update professional with combined data
             const { error: updateError } = await supabase
               .from('professionals')
-              .update({
-                current_listings: stats.currentListings || 0,
-                total_sales: stats.totalSales || 0,
-                years_experience: stats.yearsExperience,
-                zip_code: stats.zipCode || prof.zip_code,
-                zillow_data_fetched_at: new Date().toISOString()
-              })
+              .update(updateData)
               .eq('id', prof.id);
 
             if (updateError) {
@@ -111,7 +172,9 @@ export const BulkStatsFetcher = () => {
               failed++;
             } else {
               success++;
-              console.log(`✓ Updated ${prof.name}: ${stats.currentListings} current, ${stats.totalSales} total`);
+              const licenseData = licenseMap.get(normalizeName(prof.name));
+              const licenseInfo = licenseData ? ` + license ${licenseData.licenseNumber}` : '';
+              console.log(`✓ Updated ${prof.name}: ${stats.currentListings} current, ${stats.totalSales} total${licenseInfo}`);
             }
           } else {
             console.log(`No stats found for ${prof.name} from either API`);
@@ -147,7 +210,8 @@ export const BulkStatsFetcher = () => {
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Fetch Zillow stats for all agents in a city using GetDataForMe API (primary) and Memo23 API (fallback).
-          This will update current_listings, total_sales, and years_experience.
+          Also populates license_number, phone, and years_experience from the Arizona license CSV file.
+          Updates: current_listings, total_sales, years_experience, license_number, phone, zip_code.
         </p>
 
         {isProcessing && (
@@ -196,6 +260,8 @@ export const BulkStatsFetcher = () => {
         </div>
 
         <div className="text-xs text-muted-foreground mt-4">
+          <strong>Data Sources:</strong> Zillow stats from GetDataForMe/Memo23 APIs + License data from arizona-licenses.csv
+          <br />
           <strong>API Strategy:</strong> Tries GetDataForMe first, falls back to Memo23 if needed.
           <br />
           <strong>Rate Limiting:</strong> 2 seconds between requests to avoid API throttling.
