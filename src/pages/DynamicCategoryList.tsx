@@ -292,10 +292,39 @@ export default function DynamicCategoryList() {
             // Don't wait for reviews - render immediately
             setReviewsReady(true);
           } else {
-            // No data after retries
+            // No data after retries - render preview data to avoid hanging
+            const previewRaw = generateProfessionals(
+              cityData.id,
+              cityWithCamelCase.name,
+              categoryData.id,
+              categoryData.slug,
+              '555'
+            );
+            const preview = previewRaw.map((p) => ({
+              rank: p.rank,
+              name: p.name,
+              company: 'Independent Realty',
+              rating: 4.6,
+              reviews: 48,
+              specialties: p.specialty,
+              address: `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`,
+              phone: p.phone,
+              email: p.email,
+              website: p.website,
+              description: p.description,
+              stats: { yearsExperience: p.years_experience },
+              verified: false,
+              image: p.image_url,
+              years_experience: p.years_experience,
+            }));
+            setAllProfessionals(preview);
+            setFilteredProfessionals(preview);
             setLoading(false);
             setIsGeneratingData(false);
             setReviewsReady(true);
+            toast.info('Showing preview while we import live data', {
+              description: 'This will update automatically when ready'
+            });
           }
         } else {
           const converted = professionalsData.map(convertToProfessional);
