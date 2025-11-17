@@ -213,11 +213,8 @@ serve(async (req) => {
     console.log(`Fetching agents using ${scraperActorId} for ${city}, ${state}`);
     
     const scraperInput = {
-      search_keywords: [
-        `${city}, ${state} real estate agents`,
-        `${city}, ${state} realtor`,
-        `${city} ${state} realtors`
-      ],
+      detailed_profiles: true,
+      search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, 5) : [`${city} ${state}`],
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
@@ -226,7 +223,7 @@ serve(async (req) => {
 
     const scraperResp = await retryWithBackoff(
       async () => {
-        const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}&waitForFinish=120`, {
+        const resp = await fetch(`https://api.apify.com/v2/acts/${scraperActorId}/runs?token=${apiToken}&waitForFinish=180`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(scraperInput),
