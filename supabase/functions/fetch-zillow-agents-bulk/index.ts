@@ -202,7 +202,7 @@ serve(async (req) => {
     });
 
     // STEP 1: Use agenscrape to find Zillow agents
-    const discoveryActorId = 'agenscrape/zillow-agents-finder';
+    const discoveryActorId = 'agenscrape~zillow-agents-finder';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
     
     const discoveryInput = {
