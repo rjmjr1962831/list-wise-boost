@@ -293,7 +293,7 @@ export const Top10SearchForm = () => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl p-6 shadow-lg">
+    <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl p-6 shadow-lg relative z-10">
       <div className="flex items-center gap-2 mb-4">
         <Search className="h-5 w-5 text-primary" />
         <h3 className="text-lg font-semibold">Want to find a top10?</h3>
@@ -312,7 +312,7 @@ export const Top10SearchForm = () => {
             className="bg-background"
           />
           {stateOpen && (
-            <div className="absolute top-full left-0 right-0 mt-1 z-[100] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 z-[200] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
               <Command>
                 <CommandList>
                   <CommandEmpty>No state found.</CommandEmpty>
@@ -359,7 +359,7 @@ export const Top10SearchForm = () => {
             className="bg-background"
           />
           {cityOpen && filteredCities.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 z-[100] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
+            <div className="absolute top-full left-0 right-0 mt-1 z-[200] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
               <Command>
                 <CommandList>
                   <CommandEmpty>No city found.</CommandEmpty>
@@ -401,7 +401,7 @@ export const Top10SearchForm = () => {
           <SelectTrigger className="bg-background">
             <SelectValue placeholder="Select Category" />
           </SelectTrigger>
-          <SelectContent className="bg-popover border-2 shadow-xl z-[100]">
+          <SelectContent className="bg-popover border-2 shadow-xl z-[200]">
             {categories.map(category => (
               <SelectItem key={category.id} value={category.id}>
                 {category.plural_name}
