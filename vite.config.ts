@@ -13,6 +13,8 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Route all `import { toast } from "sonner"` to our local wrapper
+      sonner: path.resolve(__dirname, "./src/components/ui/sonner.tsx"),
     },
     dedupe: ["react", "react-dom"],
   },
