@@ -141,6 +141,14 @@ export const BulkStatsFetcher = () => {
           }
 
           if (stats) {
+            // Check rating threshold
+            const rating = stats.rating || 0;
+            if (rating < 4.85) {
+              console.log(`Skipping ${prof.name}: rating ${rating} below 4.85 threshold`);
+              failed++;
+              continue;
+            }
+
             // Get license data from CSV
             const normalizedProfName = normalizeName(prof.name);
             const licenseData = licenseMap.get(normalizedProfName);
@@ -149,7 +157,7 @@ export const BulkStatsFetcher = () => {
             const updateData: any = {
               current_listings: stats.currentListings || 0,
               total_sales: stats.totalSales || 0,
-              years_experience: stats.yearsExperience || licenseData?.yearsExperience,
+              years_experience: licenseData?.yearsExperience, // Only from license
               zip_code: stats.zipCode || prof.zip_code,
               zillow_data_fetched_at: new Date().toISOString()
             };
@@ -172,9 +180,7 @@ export const BulkStatsFetcher = () => {
               failed++;
             } else {
               success++;
-              const licenseData = licenseMap.get(normalizeName(prof.name));
-              const licenseInfo = licenseData ? ` + license ${licenseData.licenseNumber}` : '';
-              console.log(`✓ Updated ${prof.name}: ${stats.currentListings} current, ${stats.totalSales} total${licenseInfo}`);
+              console.log(`✓ Updated ${prof.name} (rating: ${rating}): ${stats.currentListings} current, ${stats.totalSales} total, ${updateData.years_experience} years exp`);
             }
           } else {
             console.log(`No stats found for ${prof.name} from either API`);
@@ -210,8 +216,8 @@ export const BulkStatsFetcher = () => {
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
           Fetch Zillow stats for all agents in a city using GetDataForMe API (primary) and Memo23 API (fallback).
-          Also populates license_number, phone, and years_experience from the Arizona license CSV file.
-          Updates: current_listings, total_sales, years_experience, license_number, phone, zip_code.
+          Only processes agents with 4.85+ Zillow rating. Years of experience calculated from license issue date.
+          Updates: current_listings, total_sales, years_experience (from license), license_number, phone, zip_code.
         </p>
 
         {isProcessing && (
