@@ -201,7 +201,7 @@ serve(async (req) => {
     const discoveryActorId = 'getdataforme~zillow-real-state-agents-scraper';
     console.log(`Step 1: Finding agents with ${discoveryActorId} (getdataforme)`);
 
-    // Convert state to 2-letter abbreviation if needed (used later for Redfin)
+    // Convert state to 2-letter abbreviation if needed
     const stateAbbrev = state.length > 2 ? state.slice(0, 2).toUpperCase() : state.toUpperCase();
 
     const location = `${city}, ${state}`;
@@ -453,106 +453,7 @@ serve(async (req) => {
       });
     }
 
-    // Step 2: Enrich agents with Redfin data (nested API calls)
-    console.log(`Step 2: Enriching ${rawAgents.length} agents with Redfin profiles and reviews`);
-    
-    for (let i = 0; i < Math.min(rawAgents.length, 15); i++) {
-      const agent = rawAgents[i];
-      const agentName = agent.name || agent.agentName || agent.fullName;
-      
-      if (!agentName) {
-        console.log(`No name for agent #${i+1}, skipping Redfin enrichment`);
-        continue;
-      }
-
-      try {
-        console.log(`Finding Redfin profile for agent #${i+1}: ${agentName}`);
-        
-        // Step 2a: Search for agent on Redfin to get their Redfin URL
-        const searchQuery = `${agentName} ${city} ${state} real estate agent`;
-        const redfinSearchUrl = `https://www.redfin.com/real-estate-agents/${city.toLowerCase().replace(/\s+/g, '-')}-${stateAbbrev.toLowerCase()}`;
-        
-        // Use a Redfin agent search/scraper to find the agent's Redfin profile
-        // For now, we'll construct a likely Redfin URL pattern and try the review scraper
-        // Redfin URLs are typically: https://www.redfin.com/real-estate-agents/[agent-name-slug]
-        const nameslug = agentName.toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-')
-          .replace(/-+/g, '-');
-        
-        const possibleRedfinUrl = `https://www.redfin.com/real-estate-agents/${nameslug}`;
-        
-        console.log(`Attempting Redfin URL: ${possibleRedfinUrl}`);
-        
-        // Step 2b: Fetch Redfin reviews using the constructed URL
-        const reviewActorId = 'scrapingxpert/redfin-agent-reviews-scraper';
-        const reviewInput = {
-          zillowUrl: possibleRedfinUrl, // Despite the param name, this should be a Redfin URL
-          proxyConfiguration: {
-            useApifyProxy: true,
-            apifyProxyGroups: ['RESIDENTIAL']
-          }
-        };
-
-        const reviewRunResp = await fetch(
-          `https://api.apify.com/v2/acts/${reviewActorId}/runs?token=${apiToken}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(reviewInput),
-          }
-        );
-
-        if (reviewRunResp.ok) {
-          const reviewRun = await reviewRunResp.json();
-          const reviewRunId = reviewRun.data.id;
-          
-          // Poll for completion (max 20 seconds for Redfin)
-          let reviewStatus = reviewRun.data.status;
-          let attempts = 0;
-          while (reviewStatus !== 'SUCCEEDED' && reviewStatus !== 'FAILED' && attempts < 10) {
-            await new Promise(r => setTimeout(r, 2000));
-            const statusResp = await fetch(
-              `https://api.apify.com/v2/acts/${reviewActorId}/runs/${reviewRunId}?token=${apiToken}`
-            );
-            if (statusResp.ok) {
-              const statusData = await statusResp.json();
-              reviewStatus = statusData.data.status;
-            }
-            attempts++;
-          }
-
-          if (reviewStatus === 'SUCCEEDED') {
-            const datasetId = reviewRun.data.defaultDatasetId;
-            const dataResp = await fetch(
-              `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiToken}`
-            );
-            if (dataResp.ok) {
-              const reviews = await dataResp.json();
-              if (reviews && reviews.length > 0) {
-                rawAgents[i].redfinReviews = reviews;
-                rawAgents[i].redfinReviewCount = reviews.length;
-                rawAgents[i].redfinUrl = possibleRedfinUrl;
-                console.log(`✓ Fetched ${reviews.length} Redfin reviews for agent #${i+1}`);
-              } else {
-                console.log(`No Redfin reviews found for agent #${i+1}`);
-              }
-            }
-          } else {
-            console.log(`Redfin review fetch did not complete for agent #${i+1}: ${reviewStatus}`);
-          }
-        }
-      } catch (reviewError) {
-        console.error(`Error fetching Redfin data for agent #${i+1}:`, reviewError);
-      }
-      
-      // Delay between enrichment calls to avoid rate limits
-      if (i < Math.min(rawAgents.length, 15) - 1) {
-        await new Promise(r => setTimeout(r, 2000));
-      }
-    }
-
-    console.log(`Completed Redfin enrichment phase`);
+    // Step 2: Redfin enrichment removed - proceeding directly to memo23
 
     // Step 3: Scrape detailed profile data with memo23
     console.log(`Step 3: Scraping detailed Zillow profiles with memo23 actor`);
