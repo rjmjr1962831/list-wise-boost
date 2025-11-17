@@ -292,7 +292,65 @@ export default function DynamicCategoryList() {
             // Don't wait for reviews - render immediately
             setReviewsReady(true);
           } else {
-            // Still no data - render empty state without placeholders
+            // Still no DB data - try lightweight fetch and render ephemeral results
+            try {
+              const { data: agentsResp, error: agentsErr } = await supabase.functions.invoke('fetch-zillow-agents', {
+                body: { city: cityWithCamelCase.name, state: cityWithCamelCase.state }
+              });
+              if (!agentsErr && Array.isArray(agentsResp)) {
+                const mapped = agentsResp.slice(0, 12).map((a: any, idx: number) => {
+                  const name = a['Business Name'] || a.name || 'Unknown Agent';
+                  const company = a['Company Name'] || a.company || '';
+                  const rating = Number(a['Rating'] || a.rating || 0) || 0;
+                  const reviews = Number(a['Review Count'] || a.reviews || 0) || 0;
+                  const phone = a['Phone Number'] || a.phone || '';
+                  const email = a.email || '';
+                  const website = a.website || a['Website'] || '';
+                  const address = a['Address'] || a.address || '';
+                  const image = a['Profile Image'] || a.image || '/placeholder.svg';
+                  const zuid = a['ZUID'] || a.zuid || null;
+                  const zip = a['ZIP Code'] || a.zip || null;
+                  const years = Number(a['Years of Experience'] || a.years_experience || a['Years Experience'] || 0) || undefined;
+                  const currentListings = Number(a['Active Listings'] || a.current_listings || 0) || undefined;
+                  const totalSales = Number(a['Recent Sales'] || a.total_sales || 0) || undefined;
+                  const specialties: string[] = [];
+                  return {
+                    rank: idx + 1,
+                    name,
+                    company: company || 'Real Estate Agent',
+                    rating,
+                    reviews,
+                    specialties,
+                    address,
+                    phone,
+                    email,
+                    website,
+                    description: '',
+                    stats: { currentListings, totalSales, yearsExperience: years },
+                    verified: false,
+                    image,
+                    zuid,
+                    zip_code: zip,
+                    years_experience: years,
+                    current_listings: currentListings,
+                    total_sales: totalSales,
+                  } as Professional;
+                });
+                if (mapped.length > 0) {
+                  setAllProfessionals(mapped);
+                  setFilteredProfessionals(mapped);
+                  setLoading(false);
+                  setIsGeneratingData(false);
+                  setReviewsReady(true);
+                  toast.info('Showing preliminary results', { description: 'Verified listings will appear shortly.' });
+                  return;
+                }
+              }
+            } catch (e) {
+              console.warn('Lightweight agent fetch failed:', e);
+            }
+
+            // Fallback: render empty state
             setAllProfessionals([]);
             setFilteredProfessionals([]);
             setLoading(false);
