@@ -23,7 +23,7 @@ interface BasicInfoStepProps {
 export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoStepProps) {
   const [isVerifying, setIsVerifying] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [bioSource, setBioSource] = useState<'zillow' | 'redfin' | 'new'>('new');
+  const [bioSource, setBioSource] = useState<'zillow' | 'new'>('new');
   const [isFetchingBio, setIsFetchingBio] = useState(false);
 
   // validateWebsite function removed - users can input URLs with or without protocol
@@ -80,7 +80,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
     }
   };
 
-  const fetchBioFromSource = async (source: 'zillow' | 'redfin') => {
+  const fetchBioFromSource = async (source: 'zillow') => {
     if (!data.zillowUrl && source === 'zillow') {
       toast.error('Please provide your Zillow URL first');
       return;
@@ -101,8 +101,6 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
         } else {
           toast.warning('No bio found on Zillow profile');
         }
-      } else if (source === 'redfin') {
-        toast.info('Redfin bio import coming soon. Please use manual entry.');
       }
     } catch (error) {
       console.error('Bio fetch error:', error);
@@ -112,7 +110,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
     }
   };
 
-  const handleBioSourceChange = (source: 'zillow' | 'redfin' | 'new') => {
+  const handleBioSourceChange = (source: 'zillow' | 'new') => {
     setBioSource(source);
     if (source === 'new') {
       updateData({ bio: '' });
@@ -269,7 +267,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
             )}
           </div>
 
-          {/* Zillow/Redfin/Home.com Links */}
+          {/* Zillow/Home.com Links */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
               <Switch
@@ -278,7 +276,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
                 onCheckedChange={(checked) => updateData({ hasZillowHomeLinks: checked })}
               />
               <Label htmlFor="hasZillowHomeLinks" className="font-normal cursor-pointer">
-                I want to add links to my Zillow, Redfin, or Home.com profiles
+                I want to add links to my Zillow or Home.com profiles
               </Label>
             </div>
 
@@ -295,13 +293,6 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="redfinUrl">Redfin Profile URL</Label>
-                  <Input
-                    id="redfinUrl"
-                    value={data.redfinUrl || ''}
-                    onChange={(e) => updateData({ redfinUrl: e.target.value })}
-                    placeholder="https://www.redfin.com/real-estate-agents/your-name"
-                  />
                 </div>
 
                 <div className="space-y-2">
@@ -329,7 +320,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
             {/* Bio Source Radio Group */}
             <RadioGroup
               value={bioSource}
-              onValueChange={(value) => handleBioSourceChange(value as 'zillow' | 'redfin' | 'new')}
+              onValueChange={(value) => handleBioSourceChange(value as 'zillow' | 'new')}
               className="flex gap-4 mb-2"
             >
               <div className="flex items-center space-x-2">
@@ -339,10 +330,6 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="redfin" id="bio-redfin" />
-                <Label htmlFor="bio-redfin" className="cursor-pointer font-normal">
-                  Import from Redfin
-                </Label>
               </div>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="new" id="bio-new" />
