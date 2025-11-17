@@ -79,21 +79,15 @@ export const ProfessionalCard = ({
         // Prefer profile-specific stats when we have a Zillow profile URL or ZUID; otherwise fall back to city-wide search
         const profile = profileUrl || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
 
-        if (profile) {
-          const { data, error } = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-            body: { profileUrl: profile, agentName: professional.name }
-          });
-          if (!error && (data as any)?.success && (data as any)?.stats && !cancelled) {
-            setLiveStats({ ...((data as any).stats || {}), zillow_data_fetched_at: new Date().toISOString() });
-            if (typeof window !== 'undefined') sessionStorage.setItem(key, '1');
-            return;
-          }
-        }
-
-        // Fallback: try updating via city/state search and DB update
+        // Using update-agent-zillow-stats which uses getdataforme actor
         const { data, error } = await supabase.functions.invoke('update-agent-zillow-stats', {
-          body: { professionalId: professional.id, city: cityName, state: stateName }
+          body: { 
+            professionalId: professional.id,
+            city: cityName || 'Phoenix',
+            state: stateName || 'AZ'
+          }
         });
+        
         if (!error && (data as any)?.success && !cancelled) {
           setLiveStats({ ...((data as any).updates || {}), zillow_data_fetched_at: ((data as any).updates && (data as any).updates.zillow_data_fetched_at) || new Date().toISOString() });
           if (typeof window !== 'undefined') sessionStorage.setItem(key, '1');

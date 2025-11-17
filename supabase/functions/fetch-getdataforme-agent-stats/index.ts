@@ -79,11 +79,8 @@ serve(async (req) => {
 
     // Start the actor run - CRITICAL: Use zipcode parameter, not location!
     // IMPORTANT: Use tilde (~) not slash (/) in API calls
-    // Determine actor to use (sanitize misconfigured secrets)
-    const rawActor = Deno.env.get('APIFY_ACTOR_ID') || '';
-    const actorId = (rawActor && !rawActor.startsWith('apify_api_') && rawActor.includes('~'))
-      ? rawActor
-      : 'agenscrape~zillow-agents-finder';
+    // Use only agenscrape actor
+    const actorId = 'agenscrape~zillow-agents-finder';
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs`,
       {

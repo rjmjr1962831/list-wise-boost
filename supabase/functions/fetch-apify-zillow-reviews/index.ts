@@ -129,7 +129,7 @@ serve(async (req) => {
       });
     }
 
-    // Using getdataforme actor - more reliable
+    // Using only getdataforme actor (agenscrape deprecated)
     const ACTORS = [
       'getdataforme~zillow-real-state-agents-scraper',
     ];

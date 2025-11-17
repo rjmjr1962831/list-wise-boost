@@ -47,81 +47,44 @@ export const useZillowStats = (
           console.warn(`No location could be derived for ${agentName}. Proceeding without it.`);
         }
 
-        // Try direct Zillow profile scrape using scrapestorm actor
+        // Use getdataforme API for stats (fetch-zillow-profile-stats deprecated)
+        console.log('Fetching stats via getdataforme API');
         let resolvedStats: Partial<ZillowStats> | null = null;
         let zipCandidate: string | null = null;
 
-        if (profileUrl && profileUrl.includes('zillow.com')) {
-          const profileResp = await supabase.functions.invoke('fetch-zillow-profile-stats', {
-            body: {
-              profileUrl,
-              agentName,
-            }
-          });
-
-          if (profileResp.error) {
-            console.warn('Zillow profile scrape error:', profileResp.error);
-          } else {
-            const ps = profileResp.data?.stats ?? profileResp.data;
-            if (ps) {
-              const partial: Partial<ZillowStats> = {};
-              if (ps.forSale != null || ps.currentListings != null) partial.forSale = ps.forSale ?? ps.currentListings;
-              const soldVal = ps.sold ?? ps.salesLast12Months ?? ps.salesLastYear ?? ps.totalSales;
-              if (soldVal != null) partial.sold = soldVal;
-              if (ps.forRent != null) partial.forRent = ps.forRent;
-              const rev = ps.reviews ?? ps.totalReviews;
-              if (rev != null) partial.reviews = rev;
-              const cl = ps.currentListings ?? ps.forSale;
-              if (cl != null) partial.currentListings = cl;
-              if (ps.totalSales != null) partial.totalSales = ps.totalSales;
-              if (ps.yearsExperience != null) partial.yearsExperience = ps.yearsExperience;
-
-              if (Object.keys(partial).length > 0) {
-                resolvedStats = partial;
-              }
-              zipCandidate = ps.zipCode ?? zipCandidate;
-            }
+        // Use fetch-getdataforme-agent-stats (agenscrape actor)
+        const apifyResp = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
+          body: {
+            profileUrl,
+            zipcode: zipCode ?? undefined,
+            location: zipCode ? undefined : locationParam,
+            agentName,
           }
+        });
+
+        if (apifyResp.error) {
+          console.error('GetDataForMe error:', apifyResp.error);
+          throw apifyResp.error;
         }
 
-        // Fallback: Apify-based agent stats if profile scrape didn't return
-        // COMMENTED OUT: Using jupri/zillow-agents instead of getdataforme
-        /*
-        if (!resolvedStats) {
-          const apifyResp = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
-            body: {
-              profileUrl,
-              zipcode: zipCode ?? undefined,
-              location: zipCode ? undefined : locationParam,
-              agentName,
-            }
-          });
-
-          if (apifyResp.error) {
-            console.error('GetDataForMe error:', apifyResp.error);
-            throw apifyResp.error;
+        if (apifyResp.data?.success && apifyResp.data.stats) {
+          const s = apifyResp.data.stats;
+          const partial: Partial<ZillowStats> = {};
+          if (s.currentListings != null) {
+            partial.forSale = s.currentListings;
+            partial.currentListings = s.currentListings;
           }
-
-          if (apifyResp.data?.success && apifyResp.data.stats) {
-            const s = apifyResp.data.stats;
-            const partial: Partial<ZillowStats> = {};
-            if (s.currentListings != null) {
-              partial.currentListings = s.currentListings;
-              partial.forSale = s.currentListings;
-            }
-            const soldVal = s.salesLastYear ?? s.totalSales;
-            if (soldVal != null) partial.sold = soldVal;
-            if (s.totalSales != null) partial.totalSales = s.totalSales;
-            if (s.totalReviews != null) partial.reviews = s.totalReviews;
-            if (s.yearsExperience != null) partial.yearsExperience = s.yearsExperience;
-
-            if (Object.keys(partial).length > 0) {
-              resolvedStats = partial;
-            }
-            zipCandidate = s.zipCode ?? zipCandidate;
+          if (s.totalSales != null) {
+            partial.sold = s.totalSales;
+            partial.totalSales = s.totalSales;
           }
+          if (s.yearsExperience != null) partial.yearsExperience = s.yearsExperience;
+          
+          if (Object.keys(partial).length > 0) {
+            resolvedStats = partial;
+          }
+          zipCandidate = s.zipCode ?? zipCandidate;
         }
-        */
 
         if (resolvedStats) {
           setStats(resolvedStats as ZillowStats);
