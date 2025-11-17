@@ -50,23 +50,49 @@ export const BulkStatsFetcher = () => {
         try {
           console.log(`Fetching stats for ${prof.name}...`);
 
-          const { data, error } = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
-            body: {
-              profileUrl: prof.zillow_profile_url,
-              zipcode: prof.zip_code,
-              location: prof.zip_code ? undefined : `${cityName}, ${cityData.state}`,
-              agentName: prof.name,
-            }
-          });
+          let stats = null;
 
-          if (error) {
-            console.error(`Error fetching stats for ${prof.name}:`, error);
-            failed++;
-            continue;
+          // Try getdataforme first
+          try {
+            const { data, error } = await supabase.functions.invoke('fetch-getdataforme-agent-stats', {
+              body: {
+                profileUrl: prof.zillow_profile_url,
+                zipcode: prof.zip_code,
+                location: prof.zip_code ? undefined : `${cityName}, ${cityData.state}`,
+                agentName: prof.name,
+              }
+            });
+
+            if (!error && data?.success && data?.stats) {
+              stats = data.stats;
+              console.log(`✓ GetDataForMe found stats for ${prof.name}`);
+            }
+          } catch (e) {
+            console.log(`GetDataForMe failed for ${prof.name}, trying memo23...`);
           }
 
-          if (data?.success && data?.stats) {
-            const stats = data.stats;
+          // Try memo23 as fallback if getdataforme didn't work
+          if (!stats) {
+            try {
+              const { data, error } = await supabase.functions.invoke('fetch-apify-agent-stats', {
+                body: {
+                  agentName: prof.name,
+                  city: cityName,
+                  state: cityData.state,
+                  zipcode: prof.zip_code,
+                }
+              });
+
+              if (!error && data?.success && data?.stats) {
+                stats = data.stats;
+                console.log(`✓ Memo23 found stats for ${prof.name}`);
+              }
+            } catch (e) {
+              console.log(`Memo23 also failed for ${prof.name}`);
+            }
+          }
+
+          if (stats) {
             
             // Update professional with stats
             const { error: updateError } = await supabase
@@ -88,7 +114,7 @@ export const BulkStatsFetcher = () => {
               console.log(`✓ Updated ${prof.name}: ${stats.currentListings} current, ${stats.totalSales} total`);
             }
           } else {
-            console.log(`No stats found for ${prof.name}`);
+            console.log(`No stats found for ${prof.name} from either API`);
             failed++;
           }
 
@@ -116,11 +142,11 @@ export const BulkStatsFetcher = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bulk Stats Fetcher (GetDataForMe API)</CardTitle>
+        <CardTitle>Bulk Stats Fetcher (GetDataForMe + Memo23 APIs)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Fetch Zillow stats for all agents in a city using the GetDataForMe API.
+          Fetch Zillow stats for all agents in a city using GetDataForMe API (primary) and Memo23 API (fallback).
           This will update current_listings, total_sales, and years_experience.
         </p>
 
@@ -170,7 +196,9 @@ export const BulkStatsFetcher = () => {
         </div>
 
         <div className="text-xs text-muted-foreground mt-4">
-          Note: This process is rate-limited (2 seconds between requests) to avoid API throttling.
+          <strong>API Strategy:</strong> Tries GetDataForMe first, falls back to Memo23 if needed.
+          <br />
+          <strong>Rate Limiting:</strong> 2 seconds between requests to avoid API throttling.
           Each city may take several minutes to complete.
         </div>
       </CardContent>
