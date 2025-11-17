@@ -64,7 +64,9 @@ export const ProfessionalCard = ({
   const needsStats = true;
 
   useEffect(() => {
-    if (!needsStats || !professional.id) return; // Skip if no ID (preview data)
+    // Only run when we have a real UUID and required context
+    const isUUID = typeof professional.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(professional.id);
+    if (!needsStats || !professional.id || !isUUID) return; // Skip invalid/preview IDs
     // Avoid repeated updates per session
     const key = `upd_${professional.id}`;
     if (typeof window !== 'undefined' && sessionStorage.getItem(key)) return;
@@ -75,7 +77,7 @@ export const ProfessionalCard = ({
         const parts = (market || '').split(',');
         const cityName = parts[0]?.trim();
         const stateName = parts[1]?.trim();
-        if (!cityName || !stateName) return;
+        if (!cityName || !stateName) return; // Never use placeholders
 
         // Prefer profile-specific stats when we have a Zillow profile URL or ZUID; otherwise fall back to city-wide search
         const profile = profileUrl || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
@@ -84,8 +86,8 @@ export const ProfessionalCard = ({
         const { data, error } = await supabase.functions.invoke('update-agent-zillow-stats', {
           body: { 
             professionalId: professional.id,
-            city: cityName || 'Phoenix',
-            state: stateName || 'AZ'
+            city: cityName,
+            state: stateName
           }
         });
         

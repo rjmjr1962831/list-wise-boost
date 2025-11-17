@@ -292,39 +292,14 @@ export default function DynamicCategoryList() {
             // Don't wait for reviews - render immediately
             setReviewsReady(true);
           } else {
-            // No data after retries - render preview data to avoid hanging
-            const previewRaw = generateProfessionals(
-              cityData.id,
-              cityWithCamelCase.name,
-              categoryData.id,
-              categoryData.slug,
-              '555'
-            );
-            const preview = previewRaw.map((p, idx) => ({
-              id: `preview-${cityData.id}-${idx}`, // Add temporary ID for preview
-              rank: p.rank,
-              name: p.name,
-              company: 'Independent Realty',
-              rating: 4.6,
-              reviews: 48,
-              specialties: p.specialty,
-              address: `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`,
-              phone: p.phone,
-              email: p.email,
-              website: p.website,
-              description: p.description,
-              stats: { yearsExperience: p.years_experience },
-              verified: false,
-              image: p.image_url,
-              years_experience: p.years_experience,
-            }));
-            setAllProfessionals(preview);
-            setFilteredProfessionals(preview);
+            // Still no data - render empty state without placeholders
+            setAllProfessionals([]);
+            setFilteredProfessionals([]);
             setLoading(false);
             setIsGeneratingData(false);
             setReviewsReady(true);
-            toast.info('Showing preview while we import live data', {
-              description: 'This will update automatically when ready'
+            toast.info('We are importing real agents for this market. No placeholders will be shown.', {
+              description: 'Please check back shortly or refresh the page to see updates.'
             });
           }
         } else {
@@ -463,59 +438,11 @@ export default function DynamicCategoryList() {
       }
     }
     
-    // Fall back to fake data generator for other categories
-    const generated = generateProfessionals(
-      cityData.id,
-      cityData.name,
-      categoryData.id,
-      categoryData.slug,
-      '555' // Default area code, can be customized per city
-    );
-
-    if (generated.length === 0) {
-      toast.error(`Auto-generation not yet supported for ${categoryData.plural_name}`);
-      return;
-    }
-
-    toast.info(`Creating ${categoryData.plural_name} for ${cityData.name}...`);
-
-    const { error } = await supabase
-      .from('professionals')
-      .insert(generated);
-
-    if (error) {
-      console.error('Error inserting professionals:', error);
-      toast.error('Failed to create listings');
-    } else {
-      toast.success(`Created ${generated.length} ${categoryData.plural_name}!`);
-      
-      // Send notifications for professionals without photos
-      const pageUrl = `${window.location.origin}/${cityData.state_slug}/${cityData.slug}/${categoryData.slug}`;
-      
-      for (const prof of generated) {
-        // Check if professional has placeholder image
-        if (prof.image_url === '/api/placeholder/400/400' || !prof.image_url) {
-          try {
-            await supabase.functions.invoke('notify-missing-photo', {
-              body: {
-                professionalName: prof.name,
-                professionalEmail: prof.email,
-                professionalPhone: prof.phone,
-                professionalWebsite: prof.website,
-                rank: prof.rank,
-                category: categoryData.plural_name,
-                city: cityData.name,
-                state: cityData.state,
-                pageUrl: pageUrl
-              }
-            });
-            console.log(`Notification sent for ${prof.name} missing photo`);
-          } catch (notifyError) {
-            console.error(`Failed to send notification for ${prof.name}:`, notifyError);
-          }
-        }
-      }
-    }
+    // No placeholder generation for other categories; exit gracefully
+    toast.info(`No listings available yet for ${categoryData.plural_name} in ${cityData.name}.`, {
+      description: 'We will only display verified data when available.'
+    });
+    return;
   };
 
   // Check if quiz has been completed for real estate agents category
