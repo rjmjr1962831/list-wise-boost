@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
-import { TaskCompletionNotifier } from "@/components/TaskCompletionNotifier";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Loader2 } from "lucide-react";
@@ -33,10 +32,10 @@ const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <RateLimitGuard>
-      <TooltipProvider>
-        <BrowserRouter>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <RateLimitGuard>
+        <TooltipProvider>
           <Sonner />
           <div className="flex flex-col min-h-screen">
             <Header />
@@ -80,10 +79,10 @@ const App = () => (
             </main>
             <Footer />
           </div>
-        </BrowserRouter>
-      </TooltipProvider>
-    </RateLimitGuard>
-  </QueryClientProvider>
+        </TooltipProvider>
+      </RateLimitGuard>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;
