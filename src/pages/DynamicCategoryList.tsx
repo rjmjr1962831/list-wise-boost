@@ -241,11 +241,11 @@ export default function DynamicCategoryList() {
           await generateAndInsertProfessionals(cityWithCamelCase, categoryData);
           
           // Refetch after insertion with retry logic
-          let retries = 40;
+          let retries = 10;
           let newProfsData = null;
           
           while (retries > 0 && (!newProfsData || newProfsData.length === 0)) {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between retries (up to ~80s)
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s between retries (up to ~10s)
             
             const { data } = await supabase
               .from('professionals')
