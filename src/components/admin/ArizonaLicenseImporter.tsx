@@ -52,14 +52,14 @@ export const ArizonaLicenseImporter = () => {
       const lines = csvText.split('\n');
       const headers = lines[0].split(',');
 
-      // Parse CSV into lookup map
+      // Parse CSV into lookup map (new format with LicNumber column)
       const licenseMap = new Map();
       for (let i = 1; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
 
         const values = line.split(',');
-        if (values.length < 8) continue;
+        if (values.length < 13) continue;
 
         const lastName = values[0]?.replace(/"/g, '').trim();
         const firstName = values[1]?.replace(/"/g, '').trim();
@@ -68,16 +68,16 @@ export const ArizonaLicenseImporter = () => {
         const normalizedName = normalizeName(fullName);
 
         const issueDate = values[3]?.replace(/"/g, '').trim();
-        const licType = values[4]?.replace(/"/g, '').trim();
-        const phone = values[5]?.replace(/"/g, '').trim();
-        const addr1 = values[7]?.replace(/"/g, '').trim();
-        const addr2 = values[8]?.replace(/"/g, '').trim();
-        const city = values[9]?.replace(/"/g, '').trim();
-        const state = values[10]?.replace(/"/g, '').trim();
-        const zip = values[11]?.replace(/"/g, '').trim();
+        const licNumber = values[4]?.replace(/"/g, '').trim(); // Actual license number
+        const phone = values[7]?.replace(/"/g, '').trim();
+        const addr1 = values[8]?.replace(/"/g, '').trim();
+        const addr2 = values[9]?.replace(/"/g, '').trim();
+        const city = values[10]?.replace(/"/g, '').trim();
+        const state = values[11]?.replace(/"/g, '').trim();
+        const zip = values[12]?.replace(/"/g, '').trim();
 
         licenseMap.set(normalizedName, {
-          licenseNumber: `AZ-${licType}-${i}`,
+          licenseNumber: licNumber,
           issueDate,
           phone,
           address: formatAddress(addr1, addr2, city, state, zip),
