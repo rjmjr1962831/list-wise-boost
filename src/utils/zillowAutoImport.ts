@@ -75,7 +75,13 @@ export async function autoImportZillowAgents(
           throw new Error(`Zillow API error: ${zillowError.message}`);
         }
 
-        if (!zillowData || !zillowData.success) {
+        // Check for aborted run - retry immediately without runId
+        if (!zillowData || zillowData.aborted) {
+          console.log('Scraper run was aborted, retrying fresh...');
+          throw new Error('Scraper run aborted');
+        }
+
+        if (!zillowData.success) {
           throw new Error(zillowData?.error || 'Import failed');
         }
 

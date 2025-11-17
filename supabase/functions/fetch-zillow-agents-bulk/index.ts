@@ -267,7 +267,7 @@ serve(async (req) => {
     let scraperAttempts = 0;
     const maxAttempts = 60; // ~120 seconds
     
-    while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperAttempts < maxAttempts) {
+    while (scraperStatus !== 'SUCCEEDED' && scraperStatus !== 'FAILED' && scraperStatus !== 'ABORTED' && scraperAttempts < maxAttempts) {
       await new Promise(r => setTimeout(r, 2000));
       const statusResp = await fetch(
         `https://api.apify.com/v2/acts/${scraperActorId}/runs/${scraperRunId}?token=${apiToken}`
@@ -278,6 +278,19 @@ serve(async (req) => {
         console.log(`Status: ${scraperStatus} (attempt ${scraperAttempts + 1})`);
       }
       scraperAttempts++;
+    }
+
+    // Handle ABORTED runs - abandon and tell caller to retry fresh
+    if (scraperStatus === 'ABORTED') {
+      console.log(`Run ${scraperRunId} was aborted - client should retry without runId`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Scraper run was aborted. Please retry the import.',
+          aborted: true
+        }),
+        { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (scraperStatus === 'FAILED') {
