@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2, CreditCard, MapPin, DollarSign } from 'lucide-react';
-import zipCodeData from '@/data/zipCodeData.json';
+import { getZipCodeDetails } from '@/data/zipCodeLookup';
 
 interface ZipCodeItem {
   zipCode: string;
@@ -60,17 +60,17 @@ export default function AgentPayment() {
       for (const [cityId, zipCodes] of Object.entries(zipCodesData || {})) {
         const zipCodesArray = zipCodes as string[];
         for (const zipCode of zipCodesArray) {
-          // Find the zip code in our data
-          const zipData = zipCodeData.find((z: any) => z.zipCode === zipCode);
-          if (zipData) {
-            const tierPrice = getPriceFromTier(zipData.agentValue);
+          // Find the zip code in our data using the lookup function
+          const zipDetails = getZipCodeDetails(zipCode);
+          if (zipDetails) {
+            const tierPrice = getPriceFromTier(parseInt(zipDetails.agent_value));
             // First zip is free, subsequent zips are priced by tier
             const price = isFirstZip ? 0 : tierPrice;
             if (isFirstZip) isFirstZip = false;
             
             items.push({
               zipCode,
-              city: zipData.city,
+              city: zipDetails.city,
               price,
             });
             total += price;
