@@ -201,21 +201,16 @@ serve(async (req) => {
       timestamp: new Date().toISOString()
     });
 
-    // STEP 1: Use agenscrape to find Zillow agents
-    const discoveryActorId = 'agenscrape~zillow-agents-finder';
+    // STEP 1: Use getdataforme scraper to find Zillow agents
+    const discoveryActorId = 'getdataforme/zillow-real-state-agents-scraper';
     console.log(`Step 1: Finding agents with ${discoveryActorId}`);
     
     const discoveryInput = {
-      category: "real-estate-agents",
-      locationText: locationText,
-      name: "",  // Empty for bulk import
-      language: "English",
-      specialty: "",
-      maxResults: 50,
-      startPage: 1
+      location: locationText,
+      max_items: 50
     };
 
-    console.log('agenscrape input:', discoveryInput);
+    console.log('getdataforme scraper input:', discoveryInput);
 
     // Start discovery actor run with retry logic
     const discoveryResp = await retryWithBackoff(
@@ -343,10 +338,10 @@ serve(async (req) => {
       rawAgents = [];
     }
     
-    console.log(`agenscrape actor (${discoveryActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 0} items`);
+    console.log(`getdataforme scraper (${discoveryActorId}) returned ${Array.isArray(rawAgents) ? rawAgents.length : 0} items`);
 
     if (!Array.isArray(rawAgents) || rawAgents.length === 0) {
-      console.log('agenscrape returned no results');
+      console.log('getdataforme scraper returned no results');
       return new Response(JSON.stringify({
         success: true,
         summary: { created: 0, updated: 0, skipped: 0, total: 0 },
