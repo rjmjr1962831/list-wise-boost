@@ -138,6 +138,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     ...base,
     total_sales: (typeof dbProf.total_sales === 'number' ? dbProf.total_sales : undefined),
     current_listings: (typeof dbProf.current_listings === 'number' ? dbProf.current_listings : undefined),
+    years_experience: (typeof dbProf.years_experience === 'number' ? dbProf.years_experience : undefined),
     zillow_data_fetched_at: dbProf.zillow_data_fetched_at || undefined,
     zillow_profile_url: dbProf.zillow_profile_url || undefined,
   };

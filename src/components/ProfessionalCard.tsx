@@ -370,12 +370,10 @@ export const ProfessionalCard = ({
                     toNum(professional.years_experience) ??
                     toNum(statFromObj(professional, 'stats.yearsExperience')) ??
                     toNum((liveStats as any)?.yearsExperience);
-                  const salesLast12Mo = toNum(statFromObj(professional, 'stats.salesLast12Months'));
 
-                  const displayStats = { currentListings, salesLast12Mo, totalSales, yearsExperience } as const;
+                  const displayStats = { currentListings, totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
                     currentListings: 'Current Listings',
-                    salesLast12Mo: 'Sales (12mo)',
                     totalSales: 'Total Sales',
                     yearsExperience: 'Years Exp.'
                   };
