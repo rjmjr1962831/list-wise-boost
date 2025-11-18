@@ -3,20 +3,38 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { OnboardingData } from "./AgentOnboarding";
 
-// Import placeholder components - these need to be created
-const AuthStep = ({ onComplete }: any) => <div>Auth Step - To be implemented</div>;
-const EmailVerificationStep = ({ data, updateData, onNext, onBack }: any) => <div>Email Verification - To be implemented</div>;
-const PricingSummary = ({ data }: any) => <div>Pricing Summary</div>;
+// Step components
+import AuthStep from "@/components/onboarding/AuthStep";
+import EmailVerificationStep from "@/components/onboarding/EmailVerificationStep";
+import ZillowImportStep from "@/components/onboarding/ZillowImportStep";
+import PricingSummary from "@/components/onboarding/PricingSummary";
+
+interface OnboardingFunnelData {
+  userId?: string;
+  email?: string;
+  fullName?: string;
+  brokerageName?: string;
+  phone?: string;
+  website?: string;
+  state?: string;
+  licenseNumber?: string;
+  bio?: string;
+  specialties?: string[];
+  cities?: string[];
+  zipCodes?: Array<{ code: string; rating: number }>;
+  zillowUrl?: string;
+  yearsExperience?: number;
+}
 
 const AgentOnboardingFunnel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
-  const [data, setData] = useState<Partial<OnboardingData>>({ });
+  const [data, setData] = useState<OnboardingFunnelData>({ });
   const [loading, setLoading] = useState(true);
   const [applicationId, setApplicationId] = useState<string | null>(null);
 
@@ -61,7 +79,7 @@ const AgentOnboardingFunnel = () => {
     }
   };
 
-  const updateData = async (newData: Partial<OnboardingData>) => {
+  const updateData = async (newData: Partial<OnboardingFunnelData>) => {
     const updated = { ...data, ...newData };
     setData(updated);
 
@@ -109,15 +127,17 @@ const AgentOnboardingFunnel = () => {
       case 1:
         return <AuthStep onComplete={handleAuthComplete} />;
       case 2:
-        return <EmailVerificationStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
+        return <EmailVerificationStep data={data as any} updateData={updateData as any} onNext={nextStep} onBack={prevStep} />;
+      case 3:
+        return <ZillowImportStep data={data as any} updateData={updateData} onNext={nextStep} onBack={prevStep} />;
       default:
         return (
           <Card className="p-8">
             <h2 className="text-2xl font-bold mb-4">Step {currentStep} Coming Soon</h2>
             <p className="text-muted-foreground mb-4">This step is under development.</p>
             <div className="flex gap-4">
-              <button onClick={prevStep} className="px-4 py-2 border rounded">Back</button>
-              <button onClick={nextStep} className="px-4 py-2 bg-primary text-primary-foreground rounded">Next</button>
+              <Button onClick={prevStep} variant="outline">Back</Button>
+              <Button onClick={nextStep}>Next</Button>
             </div>
           </Card>
         );
