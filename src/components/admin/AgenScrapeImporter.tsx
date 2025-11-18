@@ -71,8 +71,13 @@ export function AgenScrapeImporter() {
   };
 
   const handleImport = async () => {
-    if (!selectedCityId || !selectedCategoryId || !locationText.trim()) {
-      toast.error('Please fill in all fields');
+    if (!selectedCategoryId) {
+      toast.error('Please select a category');
+      return;
+    }
+    
+    if (!selectedCityId) {
+      toast.error('Please select a city');
       return;
     }
 
@@ -80,8 +85,8 @@ export function AgenScrapeImporter() {
     try {
       const { data, error } = await supabase.functions.invoke('fetch-agenscrape-agents', {
         body: {
-          locationText: locationText.trim(),
-          cityId: selectedCityId,
+          locationText: locationText.trim() || undefined,
+          cityId: selectedCityId || undefined,
           categoryId: selectedCategoryId,
         },
       });
@@ -150,7 +155,7 @@ export function AgenScrapeImporter() {
 
       <div className="space-y-4">
         <div>
-          <Label htmlFor="city">City</Label>
+          <Label htmlFor="city">City *</Label>
           <Select value={selectedCityId} onValueChange={setSelectedCityId}>
             <SelectTrigger id="city">
               <SelectValue placeholder="Select city" />
@@ -163,10 +168,13 @@ export function AgenScrapeImporter() {
               ))}
             </SelectContent>
           </Select>
+          <p className="text-xs text-muted-foreground mt-1">
+            Required - agents will be associated with this city
+          </p>
         </div>
 
         <div>
-          <Label htmlFor="category">Category</Label>
+          <Label htmlFor="category">Category *</Label>
           <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId}>
             <SelectTrigger id="category">
               <SelectValue placeholder="Select category" />
@@ -182,21 +190,21 @@ export function AgenScrapeImporter() {
         </div>
 
         <div>
-          <Label htmlFor="locationText">Location</Label>
+          <Label htmlFor="locationText">Search Location (Optional)</Label>
           <Input
             id="locationText"
-            placeholder="e.g., 10001, New York NY, Los Angeles CA"
+            placeholder="e.g., 85251 or Phoenix AZ"
             value={locationText}
             onChange={(e) => setLocationText(e.target.value)}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Enter ZIP code, city name with state, or full address
+            Optional: Enter zip code or location to refine search. If blank, will search using selected city name.
           </p>
         </div>
 
         <Button 
           onClick={handleImport} 
-          disabled={isLoading || !selectedCityId || !selectedCategoryId || !locationText.trim()}
+          disabled={isLoading || !selectedCategoryId || !selectedCityId}
           className="w-full"
         >
           {isLoading ? (

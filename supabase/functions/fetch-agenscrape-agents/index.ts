@@ -13,8 +13,8 @@ serve(async (req) => {
   try {
     const { locationText, cityId, categoryId } = await req.json();
     
-    if (!locationText || !cityId || !categoryId) {
-      throw new Error('locationText, cityId, and categoryId are required');
+    if (!categoryId || !cityId) {
+      throw new Error('cityId and categoryId are required');
     }
 
     const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN');
@@ -25,11 +25,45 @@ serve(async (req) => {
       throw new Error('APIFY_API_TOKEN not configured');
     }
 
-    console.log(`Starting agenscrape scraper for location: ${locationText}`);
+    console.log(`Starting agenscrape scraper for location: ${locationText || 'city lookup'}`);
+
+    // Determine final cityId and search location
+    let finalCityId = cityId;
+    let searchLocation = locationText;
+    
+    if (!cityId && locationText) {
+      // User provided only locationText (zip code) but no city selected
+      // We'll use the locationText for search, but we need a cityId for database storage
+      throw new Error('Please select a city from the dropdown. Zip code alone is not sufficient - we need to know which city to associate these agents with.');
+    } else if (cityId && !locationText) {
+      // cityId provided but no locationText, get city name for AgenScrape search
+      const cityResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/cities?id=eq.${cityId}&select=name,state&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+        }
+      );
+      
+      const cityData = await cityResponse.json();
+      
+      if (cityData && cityData.length > 0) {
+        searchLocation = `${cityData[0].name}, ${cityData[0].state}`;
+        console.log(`Using city name for search: ${searchLocation}`);
+      } else {
+        throw new Error(`City not found with id: ${cityId}`);
+      }
+    }
+    
+    if (!finalCityId) {
+      throw new Error('Could not determine city for import');
+    }
 
     // Start the Apify actor
     const actorInput = {
-      locationText: locationText,
+      locationText: searchLocation,
       category: "real-estate-agents",
       maxResults: 50,
       startPage: 1
@@ -99,7 +133,7 @@ serve(async (req) => {
 
     // Get next rank using REST API
     const existingProsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/professionals?city_id=eq.${cityId}&category_id=eq.${categoryId}&select=rank&order=rank.desc&limit=1`,
+      `${SUPABASE_URL}/rest/v1/professionals?city_id=eq.${finalCityId}&category_id=eq.${categoryId}&select=rank&order=rank.desc&limit=1`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY!,
@@ -128,7 +162,7 @@ serve(async (req) => {
         zillow_profile_url: profileUrl,
         phone: agent.phoneNumber || null,
         company: agent.businessName || null,
-        city_id: cityId,
+        city_id: finalCityId,
         category_id: categoryId,
         rank: nextRank++,
         type: 'individual',
