@@ -184,7 +184,77 @@ serve(async (req) => {
         }
       );
 
-      // Always add to enrichedAgents array (even if DB update fails, we got the data)
+      if (updateResponse.ok) {
+        console.log(`✓ Updated professional ${professionalId} (${agent.name})`);
+        
+        // Arizona license lookup integration
+        const cityResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/professionals?select=city_id,cities(state)&id=eq.${professionalId}`,
+          {
+            headers: {
+              'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
+        
+        if (cityResponse.ok) {
+          const profData = await cityResponse.json();
+          const state = profData[0]?.cities?.state;
+          
+          if (state === 'Arizona') {
+            console.log(`🔍 Looking up Arizona license for ${agent.name}...`);
+            
+            try {
+              const licenseResponse = await fetch(
+                `${SUPABASE_URL}/functions/v1/lookup-agent-license`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    agentName: agent.name,
+                    state: 'Arizona',
+                  }),
+                }
+              );
+
+              if (licenseResponse.ok) {
+                const licenseData = await licenseResponse.json();
+                if (licenseData.success && licenseData.licenseNumber) {
+                  await fetch(
+                    `${SUPABASE_URL}/rest/v1/professionals?id=eq.${professionalId}`,
+                    {
+                      method: 'PATCH',
+                      headers: {
+                        'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+                        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        license_number: licenseData.licenseNumber,
+                        license_verified_at: new Date().toISOString(),
+                      }),
+                    }
+                  );
+                  console.log(`✓ Added Arizona license ${licenseData.licenseNumber} for ${agent.name}`);
+                } else {
+                  console.log(`⚠ No license found for ${agent.name}`);
+                }
+              }
+            } catch (licenseError) {
+              console.error(`✗ License lookup failed for ${agent.name}:`, licenseError);
+            }
+          }
+        }
+      } else {
+        const error = await updateResponse.text();
+        console.error(`✗ Failed to update professional ${professionalId}:`, error);
+      }
+
+      // Always add to enrichedAgents array
       const enrichedAgent = {
         id: professionalId,
         name: agent.name || 'Unknown',
@@ -196,13 +266,6 @@ serve(async (req) => {
       };
       
       enrichedAgents.push(enrichedAgent);
-      
-      if (updateResponse.ok) {
-        console.log(`✓ Updated professional ${professionalId} (${agent.name})`);
-      } else {
-        const error = await updateResponse.text();
-        console.error(`✗ Failed to update professional ${professionalId}:`, error);
-      }
     }
     
     console.log(`Enrichment complete: ${enrichedAgents.length} agents enriched`);
