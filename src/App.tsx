@@ -23,9 +23,11 @@ import AdminDashboard from "./pages/AdminDashboard";
 import MigrateData from "./pages/MigrateData";
 import VerifyAgentListing from "./pages/VerifyAgentListing";
 import AgentOnboarding from "./pages/AgentOnboarding";
+import AgentOnboardingFunnel from "./pages/AgentOnboardingFunnel";
 import AgentPayment from "./pages/AgentPayment";
 import AgentPaymentSuccess from "./pages/AgentPaymentSuccess";
 import AgentInfo from "./pages/AgentInfo";
+import PaymentComingSoon from "./pages/PaymentComingSoon";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
@@ -68,6 +70,9 @@ const App = () => (
                     <Route path="/agent-onboarding" element={<AgentOnboarding />} />
                     <Route path="/agent-onboarding/payment" element={<AgentPayment />} />
                     <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
+                    {/* New Agent Onboarding Funnel */}
+                    <Route path="/apply/onboarding" element={<AgentOnboardingFunnel />} />
+                    <Route path="/apply/payment-coming-soon" element={<PaymentComingSoon />} />
                     {/* Verification funnel */}
                     <Route path="/verify/:token" element={<VerifyListing />} />
                     <Route path="/verify/:token/details" element={<VerifyDetails />} />
