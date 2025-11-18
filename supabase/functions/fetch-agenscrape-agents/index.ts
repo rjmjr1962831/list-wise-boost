@@ -53,7 +53,9 @@ serve(async (req) => {
       // We'll use the locationText for search, but we need a cityId for database storage
       throw new Error('Please select a city from the dropdown. Zip code alone is not sufficient - we need to know which city to associate these agents with.');
       } else if (cityId && !locationText) {
-        // cityId provided but no locationText, use "City State" format
+        // cityId provided but no locationText.
+        // Prefer a single ZIP code (from our zipCodeData) because Apify docs
+        // say locationText should be a ZIP, city, or address (not a list).
         const cityResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/cities?id=eq.${cityId}&select=name,state&limit=1`,
           {
@@ -63,23 +65,46 @@ serve(async (req) => {
             },
           }
         );
-        
+
         const cityData = await cityResponse.json();
-        
+
         if (cityData && cityData.length > 0) {
           const cityName = cityData[0].name;
           const stateName = cityData[0].state;
-          
-          // Get state abbreviation
-          const stateAbbrev = stateAbbreviations[stateName];
-          if (!stateAbbrev) {
-            throw new Error(`Unknown state: ${stateName}`);
+
+          // Try to load a primary ZIP from local zipCodeData
+          try {
+            const zipDataModule = await import('../zipCodeData.json', { assert: { type: 'json' } });
+            const zipData = zipDataModule.default as any[];
+
+            const cityZipData = zipData.find((c: any) =>
+              c.city.toLowerCase() === cityName.toLowerCase()
+            );
+
+            const primaryZip: string | undefined = cityZipData?.suburbs?.[0]?.zipcodes?.[0]?.zipcode;
+
+            if (primaryZip) {
+              // Use a single ZIP code, e.g. "85226" – this is the safest per Apify docs
+              searchLocation = primaryZip;
+              console.log(`Using primary ZIP for ${cityName}: ${searchLocation}`);
+            } else {
+              // Fallback to "City ST" if no ZIP mapping exists
+              const stateAbbrev = stateAbbreviations[stateName];
+              if (!stateAbbrev) {
+                throw new Error(`Unknown state: ${stateName}`);
+              }
+              searchLocation = `${cityName} ${stateAbbrev}`;
+              console.log(`No ZIP found, using city/state: ${searchLocation}`);
+            }
+          } catch (zipErr) {
+            console.error('Error loading zipCodeData.json, falling back to city/state:', zipErr);
+            const stateAbbrev = stateAbbreviations[stateName];
+            if (!stateAbbrev) {
+              throw new Error(`Unknown state: ${stateName}`);
+            }
+            searchLocation = `${cityName} ${stateAbbrev}`;
+            console.log(`Fallback city/state location: ${searchLocation}`);
           }
-          
-          // Format: "City ST" (no comma, state abbreviation)
-          // Examples: "New York NY", "Los Angeles CA", "Phoenix AZ"
-          searchLocation = `${cityName} ${stateAbbrev}`;
-          console.log(`Using city location: ${searchLocation}`);
         } else {
           throw new Error(`City not found with id: ${cityId}`);
         }
