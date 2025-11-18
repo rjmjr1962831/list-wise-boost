@@ -97,7 +97,8 @@ serve(async (req) => {
       locationText: searchLocation,
       category: "real-estate-agents",
       maxResults: 50,
-      startPage: 1
+      startPage: 1,
+      concurrency: 50
     };
     
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
