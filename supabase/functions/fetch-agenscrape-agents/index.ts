@@ -52,31 +52,54 @@ serve(async (req) => {
       // User provided only locationText (zip code) but no city selected
       // We'll use the locationText for search, but we need a cityId for database storage
       throw new Error('Please select a city from the dropdown. Zip code alone is not sufficient - we need to know which city to associate these agents with.');
-    } else if (cityId && !locationText) {
-      // cityId provided but no locationText, get up to 10 zip codes for the city
-      const cityResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/cities?id=eq.${cityId}&select=name,state&limit=1`,
-        {
-          headers: {
-            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-        }
-      );
-      
-      const cityData = await cityResponse.json();
-      
-      if (cityData && cityData.length > 0) {
-        const cityName = cityData[0].name;
-        const stateName = cityData[0].state;
+      } else if (cityId && !locationText) {
+        // cityId provided but no locationText, get up to 10 zip codes for the city
+        const cityResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/cities?id=eq.${cityId}&select=name,state&limit=1`,
+          {
+            headers: {
+              'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            },
+          }
+        );
         
-        // Use "City, State" format which works better with the Apify actor
-        searchLocation = `${cityName}, ${stateName}`;
-        console.log(`Using city location: ${searchLocation}`);
-      } else {
-        throw new Error(`City not found with id: ${cityId}`);
+        const cityData = await cityResponse.json();
+        
+        if (cityData && cityData.length > 0) {
+          const cityName = cityData[0].name;
+          
+          // Load zip code data and find up to 10 zips for this city
+          const zipDataModule = await import('../zipCodeData.json', { assert: { type: 'json' } });
+          const zipData = zipDataModule.default;
+          
+          const cityZipData = zipData.find((c: any) => 
+            c.city.toLowerCase() === cityName.toLowerCase()
+          );
+          
+          if (cityZipData && cityZipData.suburbs) {
+            const allZips: string[] = [];
+            for (const suburb of cityZipData.suburbs) {
+              for (const zipRecord of suburb.zipcodes) {
+                allZips.push(zipRecord.zipcode);
+                if (allZips.length >= 10) break;
+              }
+              if (allZips.length >= 10) break;
+            }
+            
+            if (allZips.length > 0) {
+              searchLocation = allZips.join(',');
+              console.log(`Using ${allZips.length} zip codes for ${cityName}: ${searchLocation}`);
+            } else {
+              throw new Error(`No zip codes found for city: ${cityName}`);
+            }
+          } else {
+            throw new Error(`No zip codes found for city: ${cityName}`);
+          }
+        } else {
+          throw new Error(`City not found with id: ${cityId}`);
+        }
       }
-    }
     
     if (!finalCityId) {
       throw new Error('Could not determine city for import');
