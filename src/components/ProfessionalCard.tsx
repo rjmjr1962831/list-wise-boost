@@ -181,7 +181,7 @@ export const ProfessionalCard = ({
             {/* Data Last Refreshed */}
             {(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at) && (
               <div className="mt-2 text-xs text-center text-muted-foreground">
-                Updated {format(new Date(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at), 'MMMM dd, yyyy')}
+                Last updated: {format(new Date(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at), 'MMMM d, yyyy')}
               </div>
             )}
           </div>
@@ -246,26 +246,16 @@ export const ProfessionalCard = ({
                     )}
                   </div>
                 ) : (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 gap-1.5 text-xs"
-                        onClick={handleVerifyLicense}
-                        disabled={!licenseLookupUrl}
-                      >
-                        <Shield className="h-3.5 w-3.5" />
-                        Verify
-                        <Info className="h-3 w-3 text-muted-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs text-xs">
-                        Click to verify license via AI-powered lookup from the official {stateAbbr} state registry
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 gap-1.5 text-xs"
+                    onClick={handleVerifyLicense}
+                    disabled={!licenseLookupUrl}
+                  >
+                    <Shield className="h-3.5 w-3.5" />
+                    Verify
+                  </Button>
                 )}
               </div>
 
@@ -352,7 +342,7 @@ export const ProfessionalCard = ({
 
               {/* Data Source Indicator */}
               <div className="flex items-center justify-end gap-2 -mt-2">
-                {liveStats ? (
+                {liveStats && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
@@ -366,14 +356,7 @@ export const ProfessionalCard = ({
                       </p>
                     </TooltipContent>
                   </Tooltip>
-                ) : professional.zillow_data_fetched_at ? (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                    <span>
-                      Last updated: {format(new Date(professional.zillow_data_fetched_at), 'MMMM d, yyyy')}
-                    </span>
-                  </div>
-                ) : null}
+                )}
               </div>
 
 
@@ -423,9 +406,9 @@ export const ProfessionalCard = ({
               {/* Contact Information Section */}
               <div>
                 <h4 className="sr-only">Contact Information</h4>
-                <div className="grid sm:grid-cols-2 gap-3 pt-2">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm">
                   {(professional.website || professional.email) && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       <a
                         href={(() => {
@@ -458,7 +441,7 @@ export const ProfessionalCard = ({
                       </a>
                     </div>
                   )}
-                  <div className="flex items-center gap-2 text-sm">
+                  <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <a 
                       href={`tel:${professional.phone}`} 
@@ -470,7 +453,7 @@ export const ProfessionalCard = ({
                     </a>
                   </div>
                   {professional.email && (
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       <a 
                         href={`mailto:${professional.email}`} 
