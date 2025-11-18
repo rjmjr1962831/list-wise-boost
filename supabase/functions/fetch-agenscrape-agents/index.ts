@@ -139,30 +139,50 @@ serve(async (req) => {
     // Poll for completion
     let status = 'RUNNING';
     let attempts = 0;
-    const maxAttempts = 60; // 5 minutes max (5 sec intervals)
+    const maxAttempts = 120; // 10 minutes max (5 sec intervals)
 
+    console.log(`Starting to poll Apify run ${runId}...`);
+    
     while (status === 'RUNNING' && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
       
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/actor-runs/${runId}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${APIFY_API_TOKEN}`,
-          },
-        }
-      );
+      try {
+        const statusResponse = await fetch(
+          `https://api.apify.com/v2/actor-runs/${runId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${APIFY_API_TOKEN}`,
+            },
+          }
+        );
 
-      const { data: statusData } = await statusResponse.json();
-      status = statusData.status;
-      attempts++;
-      
-      console.log(`Run status: ${status}, attempt ${attempts}/${maxAttempts}`);
+        if (!statusResponse.ok) {
+          console.error(`Apify status check failed: ${statusResponse.status} ${statusResponse.statusText}`);
+          throw new Error(`Apify API error: ${statusResponse.status}`);
+        }
+
+        const { data: statusData } = await statusResponse.json();
+        status = statusData.status;
+        attempts++;
+        
+        console.log(`Run status: ${status}, attempt ${attempts}/${maxAttempts}, elapsed: ${attempts * 5}s`);
+        
+        // Log additional info if available
+        if (statusData.stats) {
+          console.log(`Apify stats:`, JSON.stringify(statusData.stats));
+        }
+      } catch (error) {
+        console.error(`Error polling Apify status:`, error);
+        throw error;
+      }
     }
 
     if (status !== 'SUCCEEDED') {
-      throw new Error(`Actor run did not succeed. Final status: ${status}`);
+      console.error(`Actor run failed or timed out. Final status: ${status}, attempts: ${attempts}`);
+      throw new Error(`Actor run did not succeed. Final status: ${status} after ${attempts} attempts (${attempts * 5} seconds)`);
     }
+    
+    console.log(`Apify run completed successfully after ${attempts * 5} seconds`);
 
     // Get results
     const resultsResponse = await fetch(
