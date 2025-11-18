@@ -204,10 +204,24 @@ serve(async (req) => {
         continue;
       }
 
+      // Extract email
+      const email = agent.email || null;
+      
+      // Generate website from email domain if no explicit website
+      let website = null;
+      if (email) {
+        const domain = email.split('@')[1];
+        if (domain) {
+          website = `https://${domain}`;
+        }
+      }
+
       const professionalData = {
-        name: agent.fullName || 'Agent ' + nextRank,
+        name: agent.fullName || agent.name || agent.screenName || 'Agent ' + nextRank,
         zillow_profile_url: profileUrl,
-        phone: agent.phoneNumber || null,
+        phone: agent.phoneNumber || agent.phoneNumbers?.business || agent.phoneNumbers?.cell || null,
+        email: email,
+        website: website,
         company: agent.businessName || null,
         city_id: finalCityId,
         category_id: categoryId,
