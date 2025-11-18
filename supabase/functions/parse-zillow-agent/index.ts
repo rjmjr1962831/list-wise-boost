@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
+import * as cheerio from "https://esm.sh/cheerio@1.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
