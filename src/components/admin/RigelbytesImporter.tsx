@@ -80,13 +80,19 @@ export function RigelbytesImporter() {
 
       if (error) throw error;
 
-      toast.success(`Successfully imported ${data.imported} out of ${data.total} agents`);
-      
-      // Reset form
-      setZipCodes('');
-      setSelectedCityId('');
-      setSelectedCategoryId('');
-      setDetailedProfiles(true);
+      if (!data.success && data.status === 'RUNNING') {
+        toast.warning('Scraper is still running. This process takes 5-10 minutes. Please try again later.', {
+          duration: 5000,
+        });
+      } else {
+        toast.success(`Successfully imported ${data.imported} out of ${data.total} agents`);
+        
+        // Reset form
+        setZipCodes('');
+        setSelectedCityId('');
+        setSelectedCategoryId('');
+        setDetailedProfiles(true);
+      }
     } catch (error: any) {
       console.error('Import error:', error);
       toast.error(error.message || 'Failed to import agents');
@@ -99,7 +105,8 @@ export function RigelbytesImporter() {
     <Card className="p-6">
       <h2 className="text-2xl font-bold mb-4">Import Agents from Rigelbytes</h2>
       <p className="text-muted-foreground mb-6">
-        Import real estate agents from Zillow using the rigelbytes scraper (searches by zip code)
+        Import real estate agents from Zillow using the rigelbytes scraper (searches by zip code).
+        <strong className="block mt-2 text-amber-600">⚠️ Note: This scraper takes 5-10 minutes to complete. Start with 1-2 zip codes for testing.</strong>
       </p>
 
       <div className="space-y-4">
