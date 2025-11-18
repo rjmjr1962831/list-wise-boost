@@ -11,6 +11,7 @@ import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
 import { MarketingContentManager } from "@/components/admin/MarketingContentManager";
 import { ZillowAgentImporter } from "@/components/admin/ZillowAgentImporter";
 import { AgenScrapeImporter } from "@/components/admin/AgenScrapeImporter";
+import { PhotoGenerator } from "@/components/admin/PhotoGenerator";
 import { ZipCodeManager } from "@/components/admin/ZipCodeManager";
 import { BioGenerator } from "@/components/admin/BioGenerator";
 import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
@@ -137,6 +138,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               AgenScrape
             </TabsTrigger>
+            <TabsTrigger value="photos">
+              <Wand2 className="mr-2 h-4 w-4" />
+              AI Photos
+            </TabsTrigger>
             <TabsTrigger value="zip-codes">
               <MapPin className="mr-2 h-4 w-4" />
               Zip Codes
@@ -193,6 +198,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="agenscrape" className="space-y-4">
             <AgenScrapeImporter />
+          </TabsContent>
+
+          <TabsContent value="photos" className="space-y-4">
+            <PhotoGenerator />
           </TabsContent>
 
           <TabsContent value="zip-codes" className="space-y-4">
