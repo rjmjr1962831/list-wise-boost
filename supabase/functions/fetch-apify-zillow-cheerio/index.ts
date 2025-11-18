@@ -251,8 +251,7 @@ serve(async (req) => {
       );
 
       if (updateResponse.ok) {
-        const responseData = await updateResponse.json();
-        console.log(`✓ Updated professional ${professionalId} (${agent.name}) - Response:`, JSON.stringify(responseData).substring(0, 200));
+        console.log(`✓ Updated professional ${professionalId} (${agent.name})`);
       } else {
         const errorText = await updateResponse.text();
         const errorStatus = updateResponse.status;
