@@ -359,6 +359,15 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
+              {/* Get to Know Me Section */}
+              {(professional as any).get_to_know_me && (
+                <div className="border-t pt-3">
+                  <h4 className="text-sm font-semibold mb-2">Get to Know {professional.name.split(' ')[0]}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {(professional as any).get_to_know_me}
+                  </p>
+                </div>
+              )}
 
               {/* Zillow Bio with collapsible "more" */}
               {professional.description && (

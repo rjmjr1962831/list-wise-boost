@@ -220,13 +220,52 @@ serve(async (req) => {
         }
       }
 
-      // Build description from available bio fields
+      // Build description from available bio fields (excluding getToKnowMe)
       const descriptionParts = [];
-      if (agent.getToKnowMe?.text) descriptionParts.push(agent.getToKnowMe.text);
       if (agent.professional?.text) descriptionParts.push(agent.professional.text);
       if (agent.cpdUserPronouns) descriptionParts.push(`Pronouns: ${agent.cpdUserPronouns}`);
       if (descriptionParts.length > 0) {
         updateData.description = descriptionParts.join('\n\n');
+      }
+
+      // Handle getToKnowMe separately with AI rewriting
+      if (agent.getToKnowMe?.text) {
+        const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+        if (LOVABLE_API_KEY) {
+          try {
+            const rewritePrompt = `Rewrite the following real estate agent bio in your own words. Keep it professional, engaging, and in third person. Maintain the key facts and personality but change the wording completely to avoid copyright issues. Keep it concise (100-150 words):
+
+${agent.getToKnowMe.text}`;
+
+            const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "google/gemini-2.5-flash",
+                messages: [
+                  { role: "system", content: "You are a professional bio writer. Rewrite content to be unique while preserving key information." },
+                  { role: "user", content: rewritePrompt },
+                ],
+              }),
+            });
+
+            if (aiResponse.ok) {
+              const aiData = await aiResponse.json();
+              const rewrittenBio = aiData.choices[0]?.message?.content?.trim();
+              if (rewrittenBio) {
+                updateData.get_to_know_me = rewrittenBio;
+                console.log(`✓ Rewrote getToKnowMe for ${agent.name}`);
+              }
+            } else {
+              console.log(`⚠ Failed to rewrite getToKnowMe for ${agent.name}, status: ${aiResponse.status}`);
+            }
+          } catch (aiError) {
+            console.log(`⚠ Error rewriting getToKnowMe for ${agent.name}:`, aiError);
+          }
+        }
       }
 
       // Extract website from professionalInformation if not already set
