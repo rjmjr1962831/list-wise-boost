@@ -140,6 +140,7 @@ serve(async (req) => {
       if (agent.name) updateData.name = agent.name;
       if (agent.businessName) updateData.company = agent.businessName;
       if (agent.email) updateData.email = agent.email;
+      if (agent.website) updateData.website = agent.website;
       if (agent.profilePhotoSrc) updateData.image_url = agent.profilePhotoSrc;
       if (agent.encodedZuid) updateData.zuid = agent.encodedZuid;
       
