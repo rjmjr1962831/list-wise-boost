@@ -208,14 +208,13 @@ serve(async (req) => {
       console.error('Error loading zip codes:', error);
     }
 
-    // STEP 3: Use RigelBytes Zillow Agents scraper which supports array format
-    const scraperActorId = 'rigelbytes/zillow-agents';
+    // STEP 3: Use the working getdataforme scraper (only accepts string format)
+    const scraperActorId = 'getdataforme~zillow-real-state-agents-scraper';
     console.log(`Fetching agents using ${scraperActorId} for ${city}, ${state}`);
     
     const scraperInput = {
-      // RigelBytes accepts an array: ["City, State", "zip1", "zip2", ...]
-      search_query: [`${city}, ${state}`, ...zipCodes],
-      detailed_profiles: false, // Set to true if you need detailed agent profiles
+      // This actor only accepts a simple string location, not an array with zip codes
+      search_query: `${city}, ${state}`,
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"],
