@@ -16,73 +16,94 @@ export type Database = {
     Tables: {
       agent_applications: {
         Row: {
+          ai_generated_bio: string | null
           bio: string
           brokerage_name: string
           cities: string[]
           created_at: string
+          current_step: number | null
           email: string
+          email_verified: boolean | null
           full_name: string
           home_url: string | null
           id: string
           is_team_member: boolean
           license_number: string
           license_verified: boolean
+          monthly_cost: number | null
           phone: string
+          profile_accepted: boolean | null
           publish_email: boolean
           redfin_url: string | null
+          selected_specialties: string[] | null
           specialties: string[]
           state: string
           status: string
           team_name: string | null
           updated_at: string
+          user_id: string | null
           website: string
           zillow_url: string | null
           zip_codes: Json
         }
         Insert: {
+          ai_generated_bio?: string | null
           bio: string
           brokerage_name: string
           cities?: string[]
           created_at?: string
+          current_step?: number | null
           email: string
+          email_verified?: boolean | null
           full_name: string
           home_url?: string | null
           id?: string
           is_team_member?: boolean
           license_number: string
           license_verified?: boolean
+          monthly_cost?: number | null
           phone: string
+          profile_accepted?: boolean | null
           publish_email?: boolean
           redfin_url?: string | null
+          selected_specialties?: string[] | null
           specialties?: string[]
           state: string
           status?: string
           team_name?: string | null
           updated_at?: string
+          user_id?: string | null
           website: string
           zillow_url?: string | null
           zip_codes?: Json
         }
         Update: {
+          ai_generated_bio?: string | null
           bio?: string
           brokerage_name?: string
           cities?: string[]
           created_at?: string
+          current_step?: number | null
           email?: string
+          email_verified?: boolean | null
           full_name?: string
           home_url?: string | null
           id?: string
           is_team_member?: boolean
           license_number?: string
           license_verified?: boolean
+          monthly_cost?: number | null
           phone?: string
+          profile_accepted?: boolean | null
           publish_email?: boolean
           redfin_url?: string | null
+          selected_specialties?: string[] | null
           specialties?: string[]
           state?: string
           status?: string
           team_name?: string | null
           updated_at?: string
+          user_id?: string | null
           website?: string
           zillow_url?: string | null
           zip_codes?: Json
