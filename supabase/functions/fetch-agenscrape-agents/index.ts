@@ -53,7 +53,7 @@ serve(async (req) => {
       // We'll use the locationText for search, but we need a cityId for database storage
       throw new Error('Please select a city from the dropdown. Zip code alone is not sufficient - we need to know which city to associate these agents with.');
     } else if (cityId && !locationText) {
-      // cityId provided but no locationText, get city name for AgenScrape search
+      // cityId provided but no locationText, get first zip code for the city
       const cityResponse = await fetch(
         `${SUPABASE_URL}/rest/v1/cities?id=eq.${cityId}&select=name,state&limit=1`,
         {
@@ -67,10 +67,22 @@ serve(async (req) => {
       const cityData = await cityResponse.json();
       
       if (cityData && cityData.length > 0) {
-        const stateName = cityData[0].state;
-        const stateAbbr = stateAbbreviations[stateName] || stateName;
-        searchLocation = `${cityData[0].name}, ${stateAbbr}`;
-        console.log(`Using city name for search: ${searchLocation}`);
+        const cityName = cityData[0].name;
+        
+        // Load zip code data and find first zip for this city
+        const zipDataModule = await import('../zipCodeData.json', { assert: { type: 'json' } });
+        const zipData = zipDataModule.default;
+        
+        const cityZipData = zipData.find((c: any) => 
+          c.city.toLowerCase() === cityName.toLowerCase()
+        );
+        
+        if (cityZipData && cityZipData.suburbs?.[0]?.zipcodes?.[0]) {
+          searchLocation = cityZipData.suburbs[0].zipcodes[0].zipcode;
+          console.log(`Using first zip code for ${cityName}: ${searchLocation}`);
+        } else {
+          throw new Error(`No zip codes found for city: ${cityName}`);
+        }
       } else {
         throw new Error(`City not found with id: ${cityId}`);
       }
