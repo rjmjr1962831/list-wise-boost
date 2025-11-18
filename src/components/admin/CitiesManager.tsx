@@ -72,33 +72,7 @@ const CitiesManager = () => {
           .single();
         if (error) throw error;
         
-        toast.success("City created successfully");
-        
-        // Auto-import agents from Zillow in the background
-        if (newCity) {
-          toast.loading("Importing agents from Zillow...", { id: "zillow-import" });
-          
-          // Dynamic import to avoid circular dependencies
-          const { autoImportZillowAgents } = await import("@/utils/zillowAutoImport");
-          
-          const importResult = await autoImportZillowAgents(
-            newCity.id,
-            formData.name,
-            formData.state
-          );
-          
-          if (importResult.success) {
-            toast.success(
-              `Successfully imported ${importResult.imported.toLocaleString('en-US', { maximumFractionDigits: 0 })} agents from Zillow. Found ${importResult.licensesFound.toLocaleString('en-US', { maximumFractionDigits: 0 })} license numbers.`,
-              { id: "zillow-import" }
-            );
-          } else {
-            toast.error(
-              `Failed to import agents: ${importResult.errors.join(", ")}`,
-              { id: "zillow-import" }
-            );
-          }
-        }
+        toast.success("City created successfully - agents can be added manually");
       }
       setIsDialogOpen(false);
       resetForm();

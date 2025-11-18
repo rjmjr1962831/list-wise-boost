@@ -452,59 +452,12 @@ export default function DynamicCategoryList() {
   }, [stateSlug, citySlug, categorySlug]);
 
   const generateAndInsertProfessionals = async (cityData: City, categoryData: Category) => {
-    // For real estate agents, use Zillow auto-import
+    // Scraper auto-import has been removed
     if (categoryData.slug === 'top10realestateagents') {
-      toast.info(`Importing ${categoryData.plural_name} from ${cityData.name}...`, {
-        description: 'This will complete in the background'
+      toast.info(`Automatic import disabled - please add ${categoryData.plural_name} manually`, {
+        description: 'Scraper functionality has been disconnected'
       });
-      
-      try {
-        const { autoImportZillowAgents } = await import('@/utils/zillowAutoImport');
-        
-        // Fire off the import in the background - don't block the UI
-        const importPromise = autoImportZillowAgents(
-          cityData.id,
-          cityData.name,
-          cityData.state
-        );
-        
-        // Give it 8 seconds to complete, then render the page anyway
-        const shortTimeout = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Initial import timeout - continuing in background')), 8000)
-        );
-        
-        try {
-          const result = await Promise.race([importPromise, shortTimeout]) as any;
-          
-          if (result.success) {
-            toast.success(`Imported ${result.imported} real estate agents!`);
-            return; // success: stop here, data will be fetched by retry logic
-          }
-        } catch (timeoutError) {
-          // Timeout hit - let import continue in background
-          console.log('Import continuing in background...');
-          
-          // Continue monitoring the import without blocking
-          importPromise.then((result: any) => {
-            if (result.success) {
-              toast.success(`Background import completed: ${result.imported} agents imported!`, {
-                description: 'Refresh to see the latest data',
-                duration: 5000
-              });
-            } else {
-              console.error('Background import failed:', result.errors);
-            }
-          }).catch(err => {
-            console.error('Background import error:', err);
-          });
-          
-          // Let the page render with whatever we have
-          return;
-        }
-      } catch (error: any) {
-        console.error('Error starting import:', error);
-        toast.error(`Import failed: ${error.message}`);
-      }
+      return;
     }
     
     // No placeholder generation for other categories; exit gracefully
