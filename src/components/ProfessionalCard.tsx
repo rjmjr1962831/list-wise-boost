@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useUpdateAgentStats } from "@/hooks/useUpdateAgentStats";
 import { Button } from "@/components/ui/button";
 import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info } from "lucide-react";
 import { format } from "date-fns";
@@ -63,44 +62,7 @@ export const ProfessionalCard = ({
   const profileUrl = (professional as any).zillow_profile_url || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
   const needsStats = true;
 
-  useEffect(() => {
-    // Only run when we have a real UUID and required context
-    const isUUID = typeof professional.id === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(professional.id);
-    if (!needsStats || !professional.id || !isUUID) return; // Skip invalid/preview IDs
-    // Avoid repeated updates per session
-    const key = `upd_${professional.id}`;
-    if (typeof window !== 'undefined' && sessionStorage.getItem(key)) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const parts = (market || '').split(',');
-        const cityName = parts[0]?.trim();
-        const stateName = parts[1]?.trim();
-        if (!cityName || !stateName) return; // Never use placeholders
-
-        // Prefer profile-specific stats when we have a Zillow profile URL or ZUID; otherwise fall back to city-wide search
-        const profile = profileUrl || ((professional as any).zuid ? `https://www.zillow.com/profile/${(professional as any).zuid}` : null);
-
-        // Using update-agent-zillow-stats which uses getdataforme actor
-        const { data, error } = await supabase.functions.invoke('update-agent-zillow-stats', {
-          body: { 
-            professionalId: professional.id,
-            city: cityName,
-            state: stateName
-          }
-        });
-        
-        if (!error && (data as any)?.success && !cancelled) {
-          setLiveStats({ ...((data as any).updates || {}), zillow_data_fetched_at: ((data as any).updates && (data as any).updates.zillow_data_fetched_at) || new Date().toISOString() });
-          if (typeof window !== 'undefined') sessionStorage.setItem(key, '1');
-        }
-      } catch (e) {
-        console.error('update-agent-zillow-stats failed', e);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [needsStats, professional.id, market]);
+  // Zillow auto-fetching removed - all scraper functionality has been disconnected
 
   const listingUrl = typeof window !== 'undefined' ? window.location.href : '';
   

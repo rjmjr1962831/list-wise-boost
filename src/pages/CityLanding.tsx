@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { getCityBySlug } from '@/data/cities';
 import { supabase } from '@/integrations/supabase/client';
-import { autoImportZillowAgents } from '@/utils/zillowAutoImport';
 import { formatCityName } from '@/utils/routeHelpers';
 import { MapPin } from 'lucide-react';
 
@@ -85,33 +84,14 @@ export default function CityLanding() {
           return;
         }
 
-        // Only try importing if we have less than 10 or stale data
-        if (!hasEnough || !fresh) {
-          setEnsureMsg('Fetching latest agents…');
-
-          try {
-            // Kick off import in background, but don't block the UI
-            const importPromise = autoImportZillowAgents(cityRow.id, cityRow.name, cityRow.state);
-            const shortTimeout = new Promise((_, reject) =>
-              setTimeout(() => reject(new Error('Continuing in background')), 8000)
-            );
-
-            // Give it a brief window to complete; otherwise continue
-            await Promise.race([importPromise, shortTimeout]).catch(() => {
-              console.log('CityLanding import continuing in background');
-            });
-          } catch (e) {
-            console.warn('CityLanding import start failed (continuing):', e);
-          }
-
-          // Navigate to the list page regardless; it will render immediately and update as data arrives
-          navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
-          return;
-        } else {
-          // Have enough fresh agents, go to list
-          navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
-          return;
+        // Scraper auto-import removed - navigate to list page directly
+        if (!hasEnough) {
+          setEnsureMsg('Not enough agents found - redirecting to list');
         }
+
+        // Navigate to the list page regardless
+        navigate(`/${city.stateSlug}/${city.slug}/top10realestateagents`, { replace: true });
+        return;
       } catch (e) {
         console.error('ensure agents error', e);
         setEnsureMsg('Error loading agents. Please try again later.');
