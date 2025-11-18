@@ -209,15 +209,32 @@ serve(async (req) => {
       }
 
       // License information from agentLicenses or professionalInformation
+      console.log(`📋 License data for ${agent.name}:`, JSON.stringify({
+        agentLicenses: agent.agentLicenses,
+        professionalInformation: agent.professionalInformation
+      }, null, 2));
+      
       if (agent.agentLicenses && agent.agentLicenses.length > 0) {
-        updateData.license_number = agent.agentLicenses[0].licenseNumber || agent.agentLicenses[0].license_number;
-        updateData.license_verified_at = new Date().toISOString(); // Verified from Zillow
+        const license = agent.agentLicenses[0];
+        const licenseNumber = license.licenseNumber || license.license_number || license.number;
+        if (licenseNumber) {
+          updateData.license_number = licenseNumber;
+          updateData.license_verified_at = new Date().toISOString();
+          console.log(`✓ License found in agentLicenses: ${licenseNumber}`);
+        } else {
+          console.log(`⚠ agentLicenses exists but no license number found:`, license);
+        }
       } else if (agent.professionalInformation && agent.professionalInformation.length > 0) {
         const licenseInfo = agent.professionalInformation.find((info: any) => info.licenses);
         if (licenseInfo?.licenses && licenseInfo.licenses.length > 0) {
           updateData.license_number = licenseInfo.licenses[0];
-          updateData.license_verified_at = new Date().toISOString(); // Verified from Zillow
+          updateData.license_verified_at = new Date().toISOString();
+          console.log(`✓ License found in professionalInformation: ${licenseInfo.licenses[0]}`);
+        } else {
+          console.log(`⚠ professionalInformation exists but no licenses found`);
         }
+      } else {
+        console.log(`⚠ No license data found for ${agent.name}`);
       }
 
       // Build description from available bio fields (excluding getToKnowMe)
