@@ -381,6 +381,47 @@ export type Database = {
           },
         ]
       }
+      professional_reviews: {
+        Row: {
+          created_at: string
+          id: string
+          professional_id: string
+          rating: number
+          review_date: string
+          review_text: string
+          reviewer_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          professional_id: string
+          rating: number
+          review_date?: string
+          review_text: string
+          reviewer_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          professional_id?: string
+          rating?: number
+          review_date?: string
+          review_text?: string
+          reviewer_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals: {
         Row: {
           active: boolean
