@@ -193,12 +193,12 @@ export function AgenScrapeImporter() {
           <Label htmlFor="locationText">Search Location (Optional)</Label>
           <Input
             id="locationText"
-            placeholder="e.g., 85251 or Phoenix AZ"
+            placeholder="e.g., Scottsdale AZ"
             value={locationText}
             onChange={(e) => setLocationText(e.target.value)}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Optional: Enter zip code or location to refine search. If blank, will search using selected city name.
+            Optional: Enter location as "City ST" (no comma, state abbreviation). If blank, will search using selected city name.
           </p>
         </div>
 
