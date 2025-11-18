@@ -216,7 +216,8 @@ serve(async (req) => {
       
       if (agent.agentLicenses && agent.agentLicenses.length > 0) {
         const license = agent.agentLicenses[0];
-        const licenseNumber = license.licenseNumber || license.license_number || license.number;
+        // Check for 'text' field which is what Apify actually returns
+        const licenseNumber = license.text || license.licenseNumber || license.license_number || license.number;
         if (licenseNumber) {
           updateData.license_number = licenseNumber;
           updateData.license_verified_at = new Date().toISOString();
@@ -225,11 +226,21 @@ serve(async (req) => {
           console.log(`⚠ agentLicenses exists but no license number found:`, license);
         }
       } else if (agent.professionalInformation && agent.professionalInformation.length > 0) {
-        const licenseInfo = agent.professionalInformation.find((info: any) => info.licenses);
-        if (licenseInfo?.licenses && licenseInfo.licenses.length > 0) {
-          updateData.license_number = licenseInfo.licenses[0];
-          updateData.license_verified_at = new Date().toISOString();
-          console.log(`✓ License found in professionalInformation: ${licenseInfo.licenses[0]}`);
+        // Try to find license in professionalInformation
+        const licenseInfo = agent.professionalInformation.find((info: any) => 
+          info.term === "Real Estate Licenses" && (info.lines || info.description)
+        );
+        if (licenseInfo) {
+          const licenseNumber = licenseInfo.lines?.[0] || licenseInfo.description;
+          if (licenseNumber && licenseNumber !== "Not provided") {
+            // Extract just the license number (remove state abbreviation if present)
+            const cleanLicense = licenseNumber.split(' ')[0];
+            updateData.license_number = cleanLicense;
+            updateData.license_verified_at = new Date().toISOString();
+            console.log(`✓ License found in professionalInformation: ${cleanLicense}`);
+          } else {
+            console.log(`⚠ License marked as "Not provided"`);
+          }
         } else {
           console.log(`⚠ professionalInformation exists but no licenses found`);
         }
@@ -237,52 +248,61 @@ serve(async (req) => {
         console.log(`⚠ No license data found for ${agent.name}`);
       }
 
-      // Build description from available bio fields (excluding getToKnowMe)
-      const descriptionParts = [];
-      if (agent.professional?.text) descriptionParts.push(agent.professional.text);
-      if (agent.cpdUserPronouns) descriptionParts.push(`Pronouns: ${agent.cpdUserPronouns}`);
-      if (descriptionParts.length > 0) {
-        updateData.description = descriptionParts.join('\n\n');
-      }
+      // Generate AI bio if no description exists
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (LOVABLE_API_KEY) {
+        try {
+          // Build context from available agent data
+          const specialties = agent.specialties?.join(', ') || 'real estate';
+          const yearsExp = updateData.years_experience || 'multiple years';
+          const totalSalesCount = updateData.total_sales || 'numerous';
+          
+          const bioPrompt = `Generate a professional and compelling bio for real estate agent ${agent.name}. 
 
-      // Handle getToKnowMe separately with AI rewriting
-      if (agent.getToKnowMe?.text) {
-        const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-        if (LOVABLE_API_KEY) {
-          try {
-            const rewritePrompt = `Rewrite the following real estate agent bio in your own words. Keep it professional, engaging, and in third person. Maintain the key facts and personality but change the wording completely to avoid copyright issues. Keep it concise (100-150 words):
+Agent Details:
+- Works at: ${agent.company || 'a reputable brokerage'}
+- Specialties: ${specialties}
+- Experience: ${yearsExp} years
+- Sales: ${totalSalesCount} transactions
+${agent.reviewCount ? `- Client reviews: ${agent.reviewCount} with ${agent.reviewValue} average rating` : ''}
 
-${agent.getToKnowMe.text}`;
+Requirements:
+- 2-3 sentences only
+- Professional and engaging tone
+- Focus on expertise and client success
+- Third person perspective
+- Highlight what makes them a great choice`;
 
-            const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "google/gemini-2.5-flash",
-                messages: [
-                  { role: "system", content: "You are a professional bio writer. Rewrite content to be unique while preserving key information." },
-                  { role: "user", content: rewritePrompt },
-                ],
-              }),
-            });
+          const bioResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              model: "google/gemini-2.5-flash",
+              messages: [
+                { role: "system", content: "You are a professional bio writer for real estate agents. Write compelling, concise bios." },
+                { role: "user", content: bioPrompt }
+              ],
+            }),
+          });
 
-            if (aiResponse.ok) {
-              const aiData = await aiResponse.json();
-              const rewrittenBio = aiData.choices[0]?.message?.content?.trim();
-              if (rewrittenBio) {
-                updateData.get_to_know_me = rewrittenBio;
-                console.log(`✓ Rewrote getToKnowMe for ${agent.name}`);
-              }
-            } else {
-              console.log(`⚠ Failed to rewrite getToKnowMe for ${agent.name}, status: ${aiResponse.status}`);
+          if (bioResponse.ok) {
+            const bioData = await bioResponse.json();
+            const generatedBio = bioData.choices[0]?.message?.content;
+            if (generatedBio) {
+              updateData.description = generatedBio;
+              console.log(`✓ Generated bio for ${agent.name}`);
             }
-          } catch (aiError) {
-            console.log(`⚠ Error rewriting getToKnowMe for ${agent.name}:`, aiError);
+          } else {
+            console.log(`⚠ Failed to generate bio for ${agent.name}: ${bioResponse.status}`);
           }
+        } catch (error) {
+          console.error(`Error generating bio for ${agent.name}:`, error);
         }
+      } else {
+        console.log(`⚠ No LOVABLE_API_KEY found, skipping bio generation`);
       }
 
       // Extract website from professionalInformation if not already set
