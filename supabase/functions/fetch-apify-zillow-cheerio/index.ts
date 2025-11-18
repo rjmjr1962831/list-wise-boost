@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
+declare const EdgeRuntime: {
+  waitUntil(promise: Promise<any>): void;
+};
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -30,6 +34,10 @@ serve(async (req) => {
     }
 
     console.log(`Starting Apify cheerio scraper for ${profileUrls.length} profiles`);
+
+    // Start background processing
+    const backgroundTask = async () => {
+      try {
 
     // Prepare Apify actor input
     const actorInput = {
@@ -378,14 +386,21 @@ Requirements:
       enrichedAgents.push(enrichedAgent);
     }
     
-    console.log(`Enrichment complete: ${enrichedAgents.length} agents enriched`);
+        console.log(`Enrichment complete: ${enrichedAgents.length} agents enriched`);
+      } catch (error) {
+        console.error('Background task error:', error);
+      }
+    };
 
+    // Start background task
+    EdgeRuntime.waitUntil(backgroundTask());
+
+    // Return immediate response
     return new Response(
       JSON.stringify({
         success: true,
-        enriched: agentDetails.length,
-        total: profileUrls.length,
-        agents: enrichedAgents,
+        message: `Started enrichment for ${profileUrls.length} profiles`,
+        status: 'processing'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
