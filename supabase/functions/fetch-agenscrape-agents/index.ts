@@ -165,6 +165,7 @@ serve(async (req) => {
         imported: insertedAgents.length,
         total: agents.length,
         agents: insertedAgents.map(a => ({
+          id: a.id,
           name: a.name,
           profileUrl: a.zillow_profile_url
         })),

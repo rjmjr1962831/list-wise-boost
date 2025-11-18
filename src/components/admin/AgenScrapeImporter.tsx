@@ -22,7 +22,7 @@ interface Category {
 interface ImportResult {
   imported: number;
   total: number;
-  agents?: Array<{ name: string; profileUrl: string }>;
+  agents?: Array<{ name: string; profileUrl: string; id: string }>;
 }
 
 export function AgenScrapeImporter() {
@@ -32,6 +32,7 @@ export function AgenScrapeImporter() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [locationText, setLocationText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isEnriching, setIsEnriching] = useState(false);
   const [lastResult, setLastResult] = useState<ImportResult | null>(null);
 
   useEffect(() => {
@@ -83,6 +84,32 @@ export function AgenScrapeImporter() {
       toast.error(error.message || 'Failed to import agents');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEnrich = async () => {
+    if (!lastResult?.agents || lastResult.agents.length === 0) {
+      toast.error('No agents to enrich');
+      return;
+    }
+
+    setIsEnriching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-apify-zillow-cheerio', {
+        body: {
+          profileUrls: lastResult.agents.map(a => a.profileUrl),
+          professionalIds: lastResult.agents.map(a => a.id),
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success(`Successfully enriched ${data.enriched} agent profiles with detailed data`);
+    } catch (error: any) {
+      console.error('Enrich error:', error);
+      toast.error(error.message || 'Failed to enrich agents');
+    } finally {
+      setIsEnriching(false);
     }
   };
 
@@ -164,7 +191,24 @@ export function AgenScrapeImporter() {
           
           {lastResult.agents && lastResult.agents.length > 0 && (
             <div className="space-y-2">
-              <h4 className="text-sm font-medium">Imported Agents:</h4>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium">Imported Agents:</h4>
+                <Button 
+                  onClick={handleEnrich} 
+                  disabled={isEnriching}
+                  size="sm"
+                  variant="secondary"
+                >
+                  {isEnriching ? (
+                    <>
+                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                      Enriching...
+                    </>
+                  ) : (
+                    'Enrich with Details'
+                  )}
+                </Button>
+              </div>
               <div className="max-h-60 overflow-y-auto space-y-2">
                 {lastResult.agents.map((agent, idx) => (
                   <div key={idx} className="text-sm p-2 bg-background rounded border">
