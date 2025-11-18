@@ -208,19 +208,17 @@ serve(async (req) => {
       console.error('Error loading zip codes:', error);
     }
 
-    // STEP 3: Use getdataforme scraper to get agent data
-    const scraperActorId = 'rigelbytes~zillow-agents';
+    // STEP 3: Use the same reliable getdataforme scraper as the single-city function
+    const scraperActorId = 'getdataforme~zillow-real-state-agents-scraper';
     console.log(`Fetching agents using ${scraperActorId} for ${city}, ${state}`);
     
     const scraperInput = {
-      detailed_profiles: true,
-      // Provide both formats to maximize compatibility
-      search_keywords: zipCodes.length > 0 ? zipCodes.slice(0, 5) : [`${city} ${state}`],
+      // This actor expects a simple search_query format
       search_query: `${city}, ${state}`,
       proxyConfiguration: {
         useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"]
-      }
+        apifyProxyGroups: ["RESIDENTIAL"],
+      },
     };
 
     // Start the actor run (do not wait here) and then poll until it finishes
