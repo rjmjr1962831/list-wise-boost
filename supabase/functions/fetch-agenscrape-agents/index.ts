@@ -164,7 +164,10 @@ serve(async (req) => {
         success: true,
         imported: insertedAgents.length,
         total: agents.length,
-        agents: insertedAgents,
+        agents: insertedAgents.map(a => ({
+          name: a.name,
+          profileUrl: a.zillow_profile_url
+        })),
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
