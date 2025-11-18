@@ -174,8 +174,33 @@ serve(async (req) => {
       // Sales stats
       if (agent.agentSalesStats) {
         updateData.total_sales = agent.agentSalesStats.countAllTime || agent.agentSalesStats.countLastYear;
-        updateData.years_experience = agent.agentSalesStats.countAllTime ? 
-          Math.ceil(agent.agentSalesStats.countAllTime / 10) : null;
+      }
+
+      // Calculate years_experience from license date
+      let licenseDate = null;
+      
+      // Try to get license date from agentLicenses
+      if (agent.agentLicenses && agent.agentLicenses.length > 0) {
+        const license = agent.agentLicenses[0];
+        licenseDate = license.issueDate || license.issue_date || license.licenseDate || license.license_date;
+      }
+      
+      // Fall back to professionalInformation
+      if (!licenseDate && agent.professionalInformation && agent.professionalInformation.length > 0) {
+        const licenseInfo = agent.professionalInformation.find((info: any) => info.licenseDate || info.license_date);
+        if (licenseInfo) {
+          licenseDate = licenseInfo.licenseDate || licenseInfo.license_date;
+        }
+      }
+      
+      // Calculate years from license date or estimate from sales
+      if (licenseDate) {
+        const issueYear = new Date(licenseDate).getFullYear();
+        const currentYear = new Date().getFullYear();
+        updateData.years_experience = currentYear - issueYear;
+      } else if (agent.agentSalesStats?.countAllTime) {
+        // Fall back to sales-based estimate
+        updateData.years_experience = Math.ceil(agent.agentSalesStats.countAllTime / 10);
       }
 
       // Current listings
