@@ -53,7 +53,7 @@ serve(async (req) => {
       // We'll use the locationText for search, but we need a cityId for database storage
       throw new Error('Please select a city from the dropdown. Zip code alone is not sufficient - we need to know which city to associate these agents with.');
       } else if (cityId && !locationText) {
-        // cityId provided but no locationText, get up to 10 zip codes for the city
+        // cityId provided but no locationText, use "City State" format
         const cityResponse = await fetch(
           `${SUPABASE_URL}/rest/v1/cities?id=eq.${cityId}&select=name,state&limit=1`,
           {
@@ -68,34 +68,18 @@ serve(async (req) => {
         
         if (cityData && cityData.length > 0) {
           const cityName = cityData[0].name;
+          const stateName = cityData[0].state;
           
-          // Load zip code data and find up to 10 zips for this city
-          const zipDataModule = await import('../zipCodeData.json', { assert: { type: 'json' } });
-          const zipData = zipDataModule.default;
-          
-          const cityZipData = zipData.find((c: any) => 
-            c.city.toLowerCase() === cityName.toLowerCase()
-          );
-          
-          if (cityZipData && cityZipData.suburbs) {
-            const allZips: string[] = [];
-            for (const suburb of cityZipData.suburbs) {
-              for (const zipRecord of suburb.zipcodes) {
-                allZips.push(zipRecord.zipcode);
-                if (allZips.length >= 10) break;
-              }
-              if (allZips.length >= 10) break;
-            }
-            
-            if (allZips.length > 0) {
-              searchLocation = allZips.join(',');
-              console.log(`Using ${allZips.length} zip codes for ${cityName}: ${searchLocation}`);
-            } else {
-              throw new Error(`No zip codes found for city: ${cityName}`);
-            }
-          } else {
-            throw new Error(`No zip codes found for city: ${cityName}`);
+          // Get state abbreviation
+          const stateAbbrev = stateAbbreviations[stateName];
+          if (!stateAbbrev) {
+            throw new Error(`Unknown state: ${stateName}`);
           }
+          
+          // Format: "City ST" (no comma, state abbreviation)
+          // Examples: "New York NY", "Los Angeles CA", "Phoenix AZ"
+          searchLocation = `${cityName} ${stateAbbrev}`;
+          console.log(`Using city location: ${searchLocation}`);
         } else {
           throw new Error(`City not found with id: ${cityId}`);
         }
