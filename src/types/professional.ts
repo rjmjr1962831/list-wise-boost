@@ -41,6 +41,7 @@ export interface Professional {
   total_sales?: number; // Real data from Zillow
   zip_code?: string | null; // US zip code for API lookups
   years_experience?: number; // Years in business
+  zillow_data_fetched_at?: string; // Timestamp of last Zillow data fetch
 }
 
 export interface ListSection {
