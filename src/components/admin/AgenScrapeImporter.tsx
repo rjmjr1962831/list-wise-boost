@@ -19,6 +19,12 @@ interface Category {
   name: string;
 }
 
+interface ImportResult {
+  imported: number;
+  total: number;
+  agents?: Array<{ name: string; profileUrl: string }>;
+}
+
 export function AgenScrapeImporter() {
   const [cities, setCities] = useState<City[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -26,6 +32,7 @@ export function AgenScrapeImporter() {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [locationText, setLocationText] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [lastResult, setLastResult] = useState<ImportResult | null>(null);
 
   useEffect(() => {
     fetchCitiesAndCategories();
@@ -66,12 +73,11 @@ export function AgenScrapeImporter() {
 
       if (error) throw error;
 
+      setLastResult(data);
       toast.success(`Successfully imported ${data.imported} out of ${data.total} agent profiles`);
       
-      // Reset form
-      setLocationText('');
-      setSelectedCityId('');
-      setSelectedCategoryId('');
+      // Keep form filled so user can see what they just imported
+      // User can manually clear if they want to do another import
     } catch (error: any) {
       console.error('Import error:', error);
       toast.error(error.message || 'Failed to import agents');
@@ -148,6 +154,36 @@ export function AgenScrapeImporter() {
           )}
         </Button>
       </div>
+
+      {lastResult && (
+        <div className="mt-6 p-4 bg-muted rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">Last Import Results</h3>
+          <p className="text-sm mb-4">
+            Successfully imported <strong>{lastResult.imported}</strong> out of <strong>{lastResult.total}</strong> agents
+          </p>
+          
+          {lastResult.agents && lastResult.agents.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Imported Agents:</h4>
+              <div className="max-h-60 overflow-y-auto space-y-2">
+                {lastResult.agents.map((agent, idx) => (
+                  <div key={idx} className="text-sm p-2 bg-background rounded border">
+                    <div className="font-medium">{agent.name}</div>
+                    <a 
+                      href={agent.profileUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary hover:underline break-all"
+                    >
+                      {agent.profileUrl}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </Card>
   );
 }
