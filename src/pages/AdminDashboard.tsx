@@ -10,6 +10,7 @@ import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
 import { MarketingContentManager } from "@/components/admin/MarketingContentManager";
 import { ZillowAgentImporter } from "@/components/admin/ZillowAgentImporter";
+import { AgenScrapeImporter } from "@/components/admin/AgenScrapeImporter";
 import { ZipCodeManager } from "@/components/admin/ZipCodeManager";
 import { BioGenerator } from "@/components/admin/BioGenerator";
 import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
@@ -132,6 +133,10 @@ const AdminDashboard = () => {
               <Home className="mr-2 h-4 w-4" />
               Zillow
             </TabsTrigger>
+            <TabsTrigger value="agenscrape">
+              <Database className="mr-2 h-4 w-4" />
+              AgenScrape
+            </TabsTrigger>
             <TabsTrigger value="zip-codes">
               <MapPin className="mr-2 h-4 w-4" />
               Zip Codes
@@ -184,6 +189,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="zillow" className="space-y-4">
             <ZillowAgentImporter />
+          </TabsContent>
+
+          <TabsContent value="agenscrape" className="space-y-4">
+            <AgenScrapeImporter />
           </TabsContent>
 
           <TabsContent value="zip-codes" className="space-y-4">
