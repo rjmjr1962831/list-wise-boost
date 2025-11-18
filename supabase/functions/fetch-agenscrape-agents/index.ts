@@ -83,26 +83,21 @@ serve(async (req) => {
 
             const primaryZip: string | undefined = cityZipData?.suburbs?.[0]?.zipcodes?.[0]?.zipcode;
 
-            if (primaryZip) {
-              // Use a single ZIP code, e.g. "85226" – this is the safest per Apify docs
-              searchLocation = primaryZip;
-              console.log(`Using primary ZIP for ${cityName}: ${searchLocation}`);
-            } else {
-              // Fallback to "City ST" if no ZIP mapping exists
-              const stateAbbrev = stateAbbreviations[stateName];
-              if (!stateAbbrev) {
-                throw new Error(`Unknown state: ${stateName}`);
-              }
-              searchLocation = `${cityName} ${stateAbbrev}`;
-              console.log(`No ZIP found, using city/state: ${searchLocation}`);
-            }
-          } catch (zipErr) {
-            console.error('Error loading zipCodeData.json, falling back to city/state:', zipErr);
+            // Always use "City ST" format instead of ZIP code alone
+            // as agenscrape seems to work better with city/state
             const stateAbbrev = stateAbbreviations[stateName];
             if (!stateAbbrev) {
               throw new Error(`Unknown state: ${stateName}`);
             }
-            searchLocation = `${cityName} ${stateAbbrev}`;
+            searchLocation = `${cityName}, ${stateAbbrev}`;
+            console.log(`Using city/state format for ${cityName}: ${searchLocation}`);
+                throw new Error(`Unknown state: ${stateName}`);
+          } catch (zipErr) {
+            console.error('Error loading zipCodeData.json, falling back to city/state:', zipErr);
+            const stateAbbrev = stateAbbreviations[stateName];
+            if (!stateAbbrev) {
+            }
+            searchLocation = `${cityName}, ${stateAbbrev}`;
             console.log(`Fallback city/state location: ${searchLocation}`);
           }
         } else {
