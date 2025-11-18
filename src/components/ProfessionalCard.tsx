@@ -424,27 +424,40 @@ export const ProfessionalCard = ({
               <div>
                 <h4 className="sr-only">Contact Information</h4>
                 <div className="grid sm:grid-cols-2 gap-3 pt-2">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <a
-                      href={(() => {
-                        let v = (professional.website || '').trim();
-                        // Fix common malformed patterns
-                        if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
-                        if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
-                        if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
-                        if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
-                        return v;
-                      })()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline agent-profile-link"
-                      itemProp="url"
-                      onClick={handleWebsiteClick}
-                    >
-                      Visit {professional.name.split(' ')[0]}'s Website
-                    </a>
-                  </div>
+                  {(professional.website || professional.email) && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <a
+                        href={(() => {
+                          let v = (professional.website || '').trim();
+                          
+                          // If no website but email exists, derive from email domain
+                          if (!v && professional.email) {
+                            const emailDomain = professional.email.split('@')[1];
+                            if (emailDomain) {
+                              v = `https://${emailDomain}`;
+                            }
+                          }
+                          
+                          // Fix common malformed patterns
+                          if (v) {
+                            if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
+                            if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
+                            if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
+                            if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+                          }
+                          return v;
+                        })()}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline agent-profile-link"
+                        itemProp="url"
+                        onClick={handleWebsiteClick}
+                      >
+                        Visit {professional.name.split(' ')[0]}'s Website
+                      </a>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 text-sm">
                     <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <a 
