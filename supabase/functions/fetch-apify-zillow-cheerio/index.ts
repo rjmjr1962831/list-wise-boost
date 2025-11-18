@@ -102,6 +102,20 @@ serve(async (req) => {
 
     const agentDetails = await resultsResponse.json();
     console.log(`Retrieved ${agentDetails.length} detailed agent profiles`);
+    
+    if (!agentDetails || agentDetails.length === 0) {
+      console.log('Warning: No agent details returned from Apify. Raw response:', JSON.stringify(agentDetails).substring(0, 500));
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Apify returned no agent data. The scraper may have failed or the profiles may be inaccessible.',
+          enriched: 0,
+          total: profileUrls.length,
+          agents: [],
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Update professionals table with enriched data
     const enrichedAgents = [];
@@ -110,7 +124,12 @@ serve(async (req) => {
       const agent = agentDetails[i];
       const professionalId = professionalIds[i];
       
-      if (!agent || !professionalId) continue;
+      console.log(`Processing agent ${i + 1}/${agentDetails.length}: ${agent?.name || 'Unknown'}`);
+      
+      if (!agent || !professionalId) {
+        console.log(`Skipping agent ${i + 1} - missing data:`, { hasAgent: !!agent, hasProfId: !!professionalId });
+        continue;
+      }
 
       const updateData: any = {
         updated_at: new Date().toISOString(),
@@ -165,24 +184,28 @@ serve(async (req) => {
         }
       );
 
+      // Always add to enrichedAgents array (even if DB update fails, we got the data)
+      const enrichedAgent = {
+        id: professionalId,
+        name: agent.name || 'Unknown',
+        photo: agent.profilePhotoSrc || null,
+        totalSales: agent.agentSalesStats?.countAllTime || 0,
+        currentListings: agent.forSaleListings?.listing_count || 0,
+        reviewsCount: agent.ratings?.count || 0,
+        rating: agent.ratings?.average || 0,
+      };
+      
+      enrichedAgents.push(enrichedAgent);
+      
       if (updateResponse.ok) {
-        console.log(`Updated professional ${professionalId} with enriched data`);
-        
-        // Store enriched agent info for response
-        enrichedAgents.push({
-          id: professionalId,
-          name: agent.name || 'Unknown',
-          photo: agent.profilePhotoSrc || null,
-          totalSales: agent.agentSalesStats?.countAllTime || 0,
-          currentListings: agent.forSaleListings?.listing_count || 0,
-          reviewsCount: agent.ratings?.count || 0,
-          rating: agent.ratings?.average || 0,
-        });
+        console.log(`✓ Updated professional ${professionalId} (${agent.name})`);
       } else {
         const error = await updateResponse.text();
-        console.error(`Error updating professional ${professionalId}:`, error);
+        console.error(`✗ Failed to update professional ${professionalId}:`, error);
       }
     }
+    
+    console.log(`Enrichment complete: ${enrichedAgents.length} agents enriched`);
 
     return new Response(
       JSON.stringify({
