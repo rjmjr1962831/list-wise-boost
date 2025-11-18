@@ -115,7 +115,14 @@ export function AgenScrapeImporter() {
 
       if (error) throw error;
 
-      setEnrichedData(data.agents || []);
+      // Handle cases where the edge function returns success: false or no agents
+      if (!data?.success || !data.agents || data.agents.length === 0) {
+        console.warn('Enrich returned no detailed agent data:', data);
+        toast.error(data?.error || 'Apify returned no detailed agent data. Make sure memo23 has access to these Zillow URLs.');
+        return;
+      }
+
+      setEnrichedData(data.agents);
       toast.success(`Successfully enriched ${data.enriched} agent profiles with detailed data`);
     } catch (error: any) {
       console.error('Enrich error:', error);
