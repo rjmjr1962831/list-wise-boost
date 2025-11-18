@@ -1,8 +1,5 @@
 project_id = "bgdtekbhelormzbymkhh"
 
-[functions.fetch-datawizards-agents]
-verify_jwt = false
-
 [functions.prerender-proxy]
 verify_jwt = false
 
