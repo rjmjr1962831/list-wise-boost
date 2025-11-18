@@ -23,9 +23,12 @@ const LicenseVerificationStep = ({ data, updateData, onNext, onBack }: LicenseVe
   const [verified, setVerified] = useState(data.licenseVerified || false);
 
   useEffect(() => {
-    // Auto-verify from Arizona list if state is Arizona
-    if (data.state === "Arizona" && data.fullName && !verified) {
+    // Only auto-verify for Arizona agents
+    if (data.state === "Arizona" && data.fullName && !verified && !manualEntry) {
       autoVerifyFromArizonaList();
+    } else if (data.state !== "Arizona") {
+      // For non-Arizona states, go directly to manual entry
+      setManualEntry(true);
     }
   }, []);
 
@@ -135,13 +138,17 @@ const LicenseVerificationStep = ({ data, updateData, onNext, onBack }: LicenseVe
     <Card className="p-8">
       <div className="mb-6">
         <div className="flex items-start gap-3 mb-4">
-          <AlertCircle className="h-6 w-6 text-yellow-500 mt-1" />
+          {data.state === "Arizona" ? (
+            <AlertCircle className="h-6 w-6 text-yellow-500 mt-1" />
+          ) : (
+            <AlertCircle className="h-6 w-6 text-blue-500 mt-1" />
+          )}
           <div>
             <h2 className="text-2xl font-bold mb-2">License Verification</h2>
             <p className="text-muted-foreground">
               {data.state === "Arizona" 
-                ? "We couldn't automatically verify your license. Please enter it manually."
-                : "Currently, we only support automatic verification for Arizona licenses. Please enter your license number manually."
+                ? "We couldn't automatically verify your Arizona license. Please enter it manually and we'll verify it with the state database."
+                : `Please enter your ${data.state} real estate license number. We currently only support automatic verification for Arizona licenses, but we'll verify your license with your state's licensing board during the review process.`
               }
             </p>
           </div>
@@ -150,7 +157,9 @@ const LicenseVerificationStep = ({ data, updateData, onNext, onBack }: LicenseVe
 
       <div className="space-y-4">
         <div>
-          <Label htmlFor="license">License Number</Label>
+          <Label htmlFor="license">
+            {data.state} Real Estate License Number
+          </Label>
           <Input
             id="license"
             value={licenseNumber}
@@ -158,7 +167,10 @@ const LicenseVerificationStep = ({ data, updateData, onNext, onBack }: LicenseVe
             placeholder="Enter your license number"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Don't worry, we'll verify this with your state's licensing board.
+            {data.state === "Arizona" 
+              ? "We'll verify this with the Arizona Department of Real Estate."
+              : "Our team will verify this with your state's licensing board during application review."
+            }
           </p>
         </div>
 
