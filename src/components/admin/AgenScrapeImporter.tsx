@@ -25,6 +25,16 @@ interface ImportResult {
   agents?: Array<{ name: string; profileUrl: string; id: string }>;
 }
 
+interface EnrichedAgent {
+  id: string;
+  name: string;
+  photo: string | null;
+  totalSales: number;
+  currentListings: number;
+  reviewsCount: number;
+  rating: number;
+}
+
 export function AgenScrapeImporter() {
   const [cities, setCities] = useState<City[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -34,6 +44,7 @@ export function AgenScrapeImporter() {
   const [isLoading, setIsLoading] = useState(false);
   const [isEnriching, setIsEnriching] = useState(false);
   const [lastResult, setLastResult] = useState<ImportResult | null>(null);
+  const [enrichedData, setEnrichedData] = useState<EnrichedAgent[] | null>(null);
 
   useEffect(() => {
     fetchCitiesAndCategories();
@@ -104,6 +115,7 @@ export function AgenScrapeImporter() {
 
       if (error) throw error;
 
+      setEnrichedData(data.agents || []);
       toast.success(`Successfully enriched ${data.enriched} agent profiles with detailed data`);
     } catch (error: any) {
       console.error('Enrich error:', error);
@@ -193,37 +205,75 @@ export function AgenScrapeImporter() {
             <div className="space-y-2">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="text-sm font-medium">Imported Agents:</h4>
-                <Button 
-                  onClick={handleEnrich} 
-                  disabled={isEnriching}
-                  size="sm"
-                  variant="secondary"
-                >
-                  {isEnriching ? (
-                    <>
-                      <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                      Enriching...
-                    </>
-                  ) : (
-                    'Enrich with Details'
-                  )}
-                </Button>
+                {!enrichedData && (
+                  <Button 
+                    onClick={handleEnrich} 
+                    disabled={isEnriching}
+                    size="sm"
+                    variant="secondary"
+                  >
+                    {isEnriching ? (
+                      <>
+                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                        Enriching...
+                      </>
+                    ) : (
+                      'Enrich with Details'
+                    )}
+                  </Button>
+                )}
               </div>
-              <div className="max-h-60 overflow-y-auto space-y-2">
-                {lastResult.agents.map((agent, idx) => (
-                  <div key={idx} className="text-sm p-2 bg-background rounded border">
-                    <div className="font-medium">{agent.name}</div>
-                    <a 
-                      href={agent.profileUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-xs text-primary hover:underline break-all"
-                    >
-                      {agent.profileUrl}
-                    </a>
-                  </div>
-                ))}
-              </div>
+
+              {enrichedData ? (
+                <div className="max-h-96 overflow-y-auto space-y-3">
+                  {enrichedData.map((agent, idx) => (
+                    <div key={idx} className="p-3 bg-background rounded-lg border">
+                      <div className="flex gap-3">
+                        {agent.photo && (
+                          <img 
+                            src={agent.photo} 
+                            alt={agent.name}
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                        )}
+                        <div className="flex-1">
+                          <div className="font-semibold text-base mb-1">{agent.name}</div>
+                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                            <div>
+                              <span className="font-medium">Sales:</span> {agent.totalSales}
+                            </div>
+                            <div>
+                              <span className="font-medium">Listings:</span> {agent.currentListings}
+                            </div>
+                            <div>
+                              <span className="font-medium">Reviews:</span> {agent.reviewsCount}
+                            </div>
+                            <div>
+                              <span className="font-medium">Rating:</span> {agent.rating.toFixed(1)} ⭐
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {lastResult.agents.map((agent, idx) => (
+                    <div key={idx} className="text-sm p-2 bg-background rounded border">
+                      <div className="font-medium">{agent.name}</div>
+                      <a 
+                        href={agent.profileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline break-all"
+                      >
+                        {agent.profileUrl}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

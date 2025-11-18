@@ -104,7 +104,7 @@ serve(async (req) => {
     console.log(`Retrieved ${agentDetails.length} detailed agent profiles`);
 
     // Update professionals table with enriched data
-    const updatedCount = 0;
+    const enrichedAgents = [];
     
     for (let i = 0; i < agentDetails.length; i++) {
       const agent = agentDetails[i];
@@ -167,6 +167,17 @@ serve(async (req) => {
 
       if (updateResponse.ok) {
         console.log(`Updated professional ${professionalId} with enriched data`);
+        
+        // Store enriched agent info for response
+        enrichedAgents.push({
+          id: professionalId,
+          name: agent.name || 'Unknown',
+          photo: agent.profilePhotoSrc || null,
+          totalSales: agent.agentSalesStats?.countAllTime || 0,
+          currentListings: agent.forSaleListings?.listing_count || 0,
+          reviewsCount: agent.ratings?.count || 0,
+          rating: agent.ratings?.average || 0,
+        });
       } else {
         const error = await updateResponse.text();
         console.error(`Error updating professional ${professionalId}:`, error);
@@ -178,6 +189,7 @@ serve(async (req) => {
         success: true,
         enriched: agentDetails.length,
         total: profileUrls.length,
+        agents: enrichedAgents,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
