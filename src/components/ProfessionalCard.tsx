@@ -319,16 +319,10 @@ export const ProfessionalCard = ({
                     toNum((liveStats as any)?.total_sales) ??
                     toNum((liveStats as any)?.sold);
 
-                  const yearsExperience =
-                    toNum(professional.years_experience) ??
-                    toNum(statFromObj(professional, 'stats.yearsExperience')) ??
-                    toNum((liveStats as any)?.yearsExperience);
-
-                  const displayStats = { currentListings, totalSales, yearsExperience } as const;
+                  const displayStats = { currentListings, totalSales } as const;
                   const labels: Record<string, string> = {
                     currentListings: 'Current Listings',
-                    totalSales: 'Total Sales',
-                    yearsExperience: 'Years Exp.'
+                    totalSales: 'Total Sales'
                   };
 
                   return Object.entries(displayStats).map(([key, value]) => (
@@ -341,7 +335,12 @@ export const ProfessionalCard = ({
               </div>
 
               {/* Data Source Indicator */}
-              <div className="flex items-center justify-end gap-2 -mt-2">
+              <div className="flex items-center justify-between gap-2 -mt-2">
+                {(professional as any).zillow_data_fetched_at && (
+                  <div className="text-xs text-muted-foreground">
+                    Updated: {format(new Date((professional as any).zillow_data_fetched_at), 'MMM d, yyyy')}
+                  </div>
+                )}
                 {liveStats && (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -352,7 +351,7 @@ export const ProfessionalCard = ({
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="max-w-xs text-xs">
-                        Statistics verified from Zillow (live)
+                        Statistics verified from Zillow
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -475,6 +474,27 @@ export const ProfessionalCard = ({
                   )}
                 </div>
               </div>
+
+              {/* Zillow Profile */}
+              {(professional as any).zillow_profile_url && (
+                <div className="pt-3 border-t">
+                  <h4 className="text-sm font-semibold mb-2">Zillow Profile</h4>
+                  <a 
+                    href={(professional as any).zillow_profile_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex items-center gap-1.5"
+                    onClick={() => trackEvent('press_mention_click', {
+                      agent_name: professional.name,
+                      market: market || '',
+                      source: 'Zillow Profile URL',
+                    })}
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    {(professional as any).zillow_profile_url}
+                  </a>
+                </div>
+              )}
 
               {/* Contact Button */}
               <div className="pt-4 border-t">
