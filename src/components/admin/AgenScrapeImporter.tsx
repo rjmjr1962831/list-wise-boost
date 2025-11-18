@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
 import { Loader2, ChevronDown } from 'lucide-react';
+import { ProfessionalCard } from '@/components/ProfessionalCard';
 
 interface City {
   id: string;
@@ -29,11 +30,23 @@ interface ImportResult {
 interface EnrichedAgent {
   id: string;
   name: string;
-  photo: string | null;
-  totalSales: number;
-  currentListings: number;
-  reviewsCount: number;
-  rating: number;
+  company: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  description: string | null;
+  image_url: string | null;
+  specialty: string[] | null;
+  license_number: string | null;
+  current_listings: number | null;
+  total_sales: number | null;
+  years_experience: number | null;
+  zillow_profile_url: string | null;
+  rank: number;
+  type: string;
+  address: string | null;
+  category_id: string;
+  city_id: string;
 }
 
 export function AgenScrapeImporter() {
@@ -135,7 +148,19 @@ export function AgenScrapeImporter() {
         return;
       }
 
-      setEnrichedData(data.agents);
+      // Fetch the updated professional records from database to get all fields
+      const { data: professionals, error: fetchError } = await supabase
+        .from('professionals')
+        .select('*')
+        .in('id', lastResult.agents.map(a => a.id));
+
+      if (fetchError) {
+        console.error('Error fetching updated professionals:', fetchError);
+        toast.error('Failed to fetch updated professional data');
+        return;
+      }
+
+      setEnrichedData(professionals || []);
       toast.success(`Successfully enriched ${data.enriched} agent profiles with detailed data`);
     } catch (error: any) {
       console.error('Enrich error:', error);
@@ -250,36 +275,34 @@ export function AgenScrapeImporter() {
                 </div>
 
                 {enrichedData ? (
-                  <div className="max-h-96 overflow-y-auto space-y-3">
-                    {enrichedData.map((agent, idx) => (
-                      <div key={idx} className="p-3 bg-background rounded-lg border">
-                        <div className="flex gap-3">
-                          {agent.photo && (
-                            <img 
-                              src={agent.photo} 
-                              alt={agent.name}
-                              className="w-16 h-16 rounded-full object-cover"
-                            />
-                          )}
-                          <div className="flex-1">
-                            <div className="font-semibold text-base mb-1">{agent.name}</div>
-                            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                              <div>
-                                <span className="font-medium">Sales:</span> {agent.totalSales}
-                              </div>
-                              <div>
-                                <span className="font-medium">Listings:</span> {agent.currentListings}
-                              </div>
-                              <div>
-                                <span className="font-medium">Reviews:</span> {agent.reviewsCount}
-                              </div>
-                              <div>
-                                <span className="font-medium">Rating:</span> {agent.rating.toFixed(1)} ⭐
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                  <div className="max-h-[800px] overflow-y-auto space-y-6">
+                    {enrichedData.map((agent) => (
+                      <ProfessionalCard
+                        key={agent.id}
+                        professional={{
+                          id: agent.id,
+                          rank: agent.rank,
+                          name: agent.name,
+                          company: agent.company || '',
+                          rating: 0, // Will be populated from Zillow reviews if available
+                          reviews: 0,
+                          specialties: agent.specialty || [],
+                          address: agent.address || '',
+                          phone: agent.phone || '',
+                          email: agent.email || '',
+                          website: agent.website || '',
+                          description: agent.description || '',
+                          stats: {
+                            currentListings: agent.current_listings,
+                            totalSales: agent.total_sales,
+                            yearsExperience: agent.years_experience,
+                          },
+                          verified: !!agent.license_number,
+                          image: agent.image_url || '',
+                          license_number: agent.license_number,
+                        }}
+                        accentColor="primary"
+                      />
                     ))}
                   </div>
                 ) : (
