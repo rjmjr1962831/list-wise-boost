@@ -103,6 +103,7 @@ serve(async (req) => {
 
     const agentDetails = await resultsResponse.json();
     console.log(`Retrieved ${agentDetails.length} detailed agent profiles`);
+    console.log(`📊 Sample of first agent data:`, JSON.stringify(agentDetails[0], null, 2).substring(0, 500));
     
     if (!agentDetails || agentDetails.length === 0) {
       console.log('Warning: No agent details returned from Apify. Raw response:', JSON.stringify(agentDetails).substring(0, 500));
@@ -173,6 +174,8 @@ serve(async (req) => {
         updateData.current_listings = agent.forSaleListings.listing_count;
       }
 
+      console.log(`📝 Update payload for ${agent.name}:`, JSON.stringify(updateData, null, 2));
+
       const updateResponse = await fetch(
         `${SUPABASE_URL}/rest/v1/professionals?id=eq.${professionalId}`,
         {
@@ -187,7 +190,8 @@ serve(async (req) => {
       );
 
       if (updateResponse.ok) {
-        console.log(`✓ Updated professional ${professionalId} (${agent.name})`);
+        const responseData = await updateResponse.json();
+        console.log(`✓ Updated professional ${professionalId} (${agent.name}) - Response:`, JSON.stringify(responseData).substring(0, 200));
         
         // Arizona license lookup integration
         const cityResponse = await fetch(
@@ -252,8 +256,14 @@ serve(async (req) => {
           }
         }
       } else {
-        const error = await updateResponse.text();
-        console.error(`✗ Failed to update professional ${professionalId}:`, error);
+        const errorText = await updateResponse.text();
+        const errorStatus = updateResponse.status;
+        console.error(`✗ Failed to update professional ${professionalId} (${agent.name}):`, {
+          status: errorStatus,
+          statusText: updateResponse.statusText,
+          error: errorText.substring(0, 500),
+          updateDataSample: JSON.stringify(updateData).substring(0, 200)
+        });
       }
 
       // Always add to enrichedAgents array
