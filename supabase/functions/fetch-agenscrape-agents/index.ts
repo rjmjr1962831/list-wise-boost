@@ -68,34 +68,11 @@ serve(async (req) => {
       
       if (cityData && cityData.length > 0) {
         const cityName = cityData[0].name;
+        const stateName = cityData[0].state;
         
-        // Load zip code data and find up to 10 zips for this city
-        const zipDataModule = await import('../zipCodeData.json', { assert: { type: 'json' } });
-        const zipData = zipDataModule.default;
-        
-        const cityZipData = zipData.find((c: any) => 
-          c.city.toLowerCase() === cityName.toLowerCase()
-        );
-        
-        if (cityZipData && cityZipData.suburbs) {
-          const allZips: string[] = [];
-          for (const suburb of cityZipData.suburbs) {
-            for (const zipRecord of suburb.zipcodes) {
-              allZips.push(zipRecord.zipcode);
-              if (allZips.length >= 10) break;
-            }
-            if (allZips.length >= 10) break;
-          }
-          
-          if (allZips.length > 0) {
-            searchLocation = allZips.join(',');
-            console.log(`Using ${allZips.length} zip codes for ${cityName}: ${searchLocation}`);
-          } else {
-            throw new Error(`No zip codes found for city: ${cityName}`);
-          }
-        } else {
-          throw new Error(`No zip codes found for city: ${cityName}`);
-        }
+        // Use "City, State" format which works better with the Apify actor
+        searchLocation = `${cityName}, ${stateName}`;
+        console.log(`Using city location: ${searchLocation}`);
       } else {
         throw new Error(`City not found with id: ${cityId}`);
       }
