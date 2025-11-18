@@ -138,13 +138,15 @@ serve(async (req) => {
         zillow_data_fetched_at: new Date().toISOString(),
       };
 
-      // Map fields from Apify response
+      // Basic info
       if (agent.name) updateData.name = agent.name;
+      if (agent.encodedZuid) updateData.zuid = agent.encodedZuid;
+      if (agent.url) updateData.zillow_profile_url = agent.url;
+      
+      // Business info
       if (agent.businessName) updateData.company = agent.businessName;
       if (agent.email) updateData.email = agent.email;
-      if (agent.website) updateData.website = agent.website;
       if (agent.profilePhotoSrc) updateData.image_url = agent.profilePhotoSrc;
-      if (agent.encodedZuid) updateData.zuid = agent.encodedZuid;
       
       // Phone number (prefer cell, fallback to business)
       if (agent.phoneNumbers) {
@@ -162,6 +164,13 @@ serve(async (req) => {
         }
       }
 
+      // Ratings - store as review count and calculate rating
+      if (agent.ratings) {
+        // Note: ratings are stored in professional_reviews table, not directly on professional
+        // We'll just log this for now
+        console.log(`Agent ${agent.name} has ${agent.ratings.count} reviews with ${agent.ratings.average} average`);
+      }
+
       // Sales stats
       if (agent.agentSalesStats) {
         updateData.total_sales = agent.agentSalesStats.countAllTime || agent.agentSalesStats.countLastYear;
@@ -172,6 +181,56 @@ serve(async (req) => {
       // Current listings
       if (agent.forSaleListings?.listing_count) {
         updateData.current_listings = agent.forSaleListings.listing_count;
+      }
+
+      // License information from agentLicenses or professionalInformation
+      if (agent.agentLicenses && agent.agentLicenses.length > 0) {
+        updateData.license_number = agent.agentLicenses[0].licenseNumber || agent.agentLicenses[0].license_number;
+      } else if (agent.professionalInformation && agent.professionalInformation.length > 0) {
+        const licenseInfo = agent.professionalInformation.find((info: any) => info.licenses);
+        if (licenseInfo?.licenses && licenseInfo.licenses.length > 0) {
+          updateData.license_number = licenseInfo.licenses[0];
+        }
+      }
+
+      // Build description from available bio fields
+      const descriptionParts = [];
+      if (agent.getToKnowMe?.text) descriptionParts.push(agent.getToKnowMe.text);
+      if (agent.professional?.text) descriptionParts.push(agent.professional.text);
+      if (agent.cpdUserPronouns) descriptionParts.push(`Pronouns: ${agent.cpdUserPronouns}`);
+      if (descriptionParts.length > 0) {
+        updateData.description = descriptionParts.join('\n\n');
+      }
+
+      // Extract website from professionalInformation if not already set
+      if (!updateData.website && agent.professionalInformation && agent.professionalInformation.length > 0) {
+        const websiteInfo = agent.professionalInformation.find((info: any) => info.websites);
+        if (websiteInfo?.websites && websiteInfo.websites.length > 0) {
+          updateData.website = websiteInfo.websites[0];
+        }
+      }
+
+      // Extract specialties from various sources
+      const specialties: string[] = [];
+      if (agent.professionalInformation && agent.professionalInformation.length > 0) {
+        agent.professionalInformation.forEach((info: any) => {
+          if (info.specialties) {
+            specialties.push(...info.specialties);
+          }
+        });
+      }
+      if (specialties.length > 0) {
+        updateData.specialty = Array.from(new Set(specialties)); // Remove duplicates
+      }
+
+      // Add badges based on achievements
+      const badges = [];
+      if (agent.isTopAgent) badges.push('Top Agent');
+      if (agent.isPremierAgent) badges.push('Premier Agent');
+      if (agent.ratings?.average === 5) badges.push('5-Star Rated');
+      if (agent.agentSalesStats?.countAllTime > 100) badges.push('100+ Sales');
+      if (badges.length > 0) {
+        updateData.badges = badges;
       }
 
       console.log(`📝 Update payload for ${agent.name}:`, JSON.stringify(updateData, null, 2));
