@@ -29,7 +29,10 @@ serve(async (req) => {
 
     // Start the Apify actor
     const actorInput = {
-      locationText: locationText
+      locationText: locationText,
+      category: "real-estate-agents",
+      maxResults: 50,
+      startPage: 1
     };
 
     const startResponse = await fetch(
@@ -112,8 +115,8 @@ serve(async (req) => {
     const insertedAgents = [];
     
     for (const agent of agents) {
-      // Extract agent info from profile URL if available
-      const profileUrl = agent.profileUrl || agent.url || agent.zillow_url;
+      // Extract agent info from Apify response
+      const profileUrl = agent.profileLink;
       
       if (!profileUrl) {
         console.log('Skipping agent without profile URL');
@@ -121,8 +124,10 @@ serve(async (req) => {
       }
 
       const professionalData = {
-        name: agent.name || 'Agent ' + nextRank, // Placeholder if name not provided
+        name: agent.fullName || 'Agent ' + nextRank,
         zillow_profile_url: profileUrl,
+        phone: agent.phoneNumber || null,
+        company: agent.businessName || null,
         city_id: cityId,
         category_id: categoryId,
         rank: nextRank++,
