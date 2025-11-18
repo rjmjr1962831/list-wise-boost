@@ -127,12 +127,15 @@ export function DataWizardsImporter() {
           <Label htmlFor="searchQuery">Search Query</Label>
           <Input
             id="searchQuery"
-            placeholder="e.g., chandler, az or texas"
+            placeholder="e.g., 'alabama' or 'huntsville, alabama'"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Location to search on Zillow (city, state or just state)
+            Try: State only ("alabama"), City + State ("huntsville, alabama"), or City + Abbrev ("huntsville, al")
+          </p>
+          <p className="text-xs text-amber-600 mt-1">
+            💡 Tip: If you get 0 results, try a broader search like just the state name
           </p>
         </div>
 
