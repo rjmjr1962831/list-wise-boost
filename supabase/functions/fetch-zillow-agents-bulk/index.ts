@@ -213,8 +213,8 @@ serve(async (req) => {
     console.log(`Fetching agents using ${scraperActorId} for ${city}, ${state}`);
     
     const scraperInput = {
-      // This actor expects a simple search_query format
-      search_query: `${city}, ${state}`,
+      // RygelBytes API format: ["City, State", "zip1", "zip2", ...]
+      search_query: [`${city}, ${state}`, ...zipCodes],
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"],
