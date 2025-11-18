@@ -37,7 +37,8 @@ serve(async (req) => {
       proxyConfiguration: {
         useApifyProxy: true,
         apifyProxyGroups: ["RESIDENTIAL"]
-      }
+      },
+      concurrency: 50
     };
 
     // Start the Apify actor
