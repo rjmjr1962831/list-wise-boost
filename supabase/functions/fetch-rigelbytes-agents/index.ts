@@ -95,10 +95,10 @@ serve(async (req) => {
     const runId = runData.id;
     console.log(`Actor started with run ID: ${runId}`);
 
-    // Poll for completion
+    // Poll for completion with timeout handling
     let status = 'RUNNING';
     let attempts = 0;
-    const maxAttempts = 120; // 10 minutes max (5 sec intervals)
+    const maxAttempts = 24; // 2 minutes max (5 sec intervals) to avoid edge function timeout
 
     while (status === 'RUNNING' && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
@@ -117,6 +117,19 @@ serve(async (req) => {
       attempts++;
       
       console.log(`Run status: ${status}, attempt ${attempts}/${maxAttempts}`);
+    }
+
+    // If still running after max attempts, return partial success
+    if (status === 'RUNNING') {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'Scraper is still running. This usually takes 5-10 minutes. Please check back later or try with fewer zip codes.',
+          runId: runId,
+          status: 'RUNNING'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (status !== 'SUCCEEDED') {
