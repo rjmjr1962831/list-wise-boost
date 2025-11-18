@@ -131,7 +131,7 @@ export function AgenScrapeImporter() {
         professionalIds: lastResult.agents.map(a => a.id),
       };
 
-      console.log('Sending to memo23:', requestBody);
+      console.log('Starting enrichment:', requestBody);
 
       const { data, error } = await supabase.functions.invoke('fetch-apify-zillow-cheerio', {
         body: requestBody,
@@ -141,32 +141,57 @@ export function AgenScrapeImporter() {
 
       if (error) throw error;
 
-      if (!data?.success || !data.agents || data.agents.length === 0) {
-        console.warn('Enrich returned no detailed agent data:', data);
-        toast.error(data?.error || 'Apify returned no detailed agent data. Make sure memo23 has access to these Zillow URLs.');
+      if (!data?.success) {
+        console.warn('Enrich request failed:', data);
+        toast.error(data?.error || 'Failed to start enrichment process');
         setDebugOpen(true);
         return;
       }
 
-      // Fetch the updated professional records from database to get all fields
-      const { data: professionals, error: fetchError } = await supabase
-        .from('professionals')
-        .select('*')
-        .in('id', lastResult.agents.map(a => a.id));
+      // Background processing started - show message and start polling
+      toast.success(`Enrichment started for ${lastResult.agents.length} agents. This may take several minutes...`);
+      
+      // Poll for completion every 10 seconds
+      let pollCount = 0;
+      const maxPolls = 60; // 10 minutes max
+      const pollInterval = setInterval(async () => {
+        pollCount++;
+        
+        // Fetch the updated professional records to check progress
+        const { data: professionals, error: fetchError } = await supabase
+          .from('professionals')
+          .select('*')
+          .in('id', lastResult.agents.map(a => a.id));
 
-      if (fetchError) {
-        console.error('Error fetching updated professionals:', fetchError);
-        toast.error('Failed to fetch updated professional data');
-        return;
-      }
+        if (fetchError) {
+          console.error('Error fetching professionals:', fetchError);
+          clearInterval(pollInterval);
+          setIsEnriching(false);
+          return;
+        }
 
-      setEnrichedData(professionals || []);
-      toast.success(`Successfully enriched ${data.enriched} agent profiles with detailed data`);
+        // Check how many have been enriched (have zillow_data_fetched_at set)
+        const enrichedCount = professionals?.filter(p => p.zillow_data_fetched_at).length || 0;
+        
+        console.log(`Poll ${pollCount}: ${enrichedCount}/${lastResult.agents.length} enriched`);
+
+        // If all enriched or max polls reached, stop polling
+        if (enrichedCount === lastResult.agents.length || pollCount >= maxPolls) {
+          clearInterval(pollInterval);
+          setIsEnriching(false);
+          setEnrichedData(professionals || []);
+          
+          if (enrichedCount === lastResult.agents.length) {
+            toast.success(`Successfully enriched all ${enrichedCount} agents!`);
+          } else {
+            toast.info(`Enriched ${enrichedCount} of ${lastResult.agents.length} agents`);
+          }
+        }
+      }, 10000); // Poll every 10 seconds
     } catch (error: any) {
       console.error('Enrich error:', error);
       toast.error(error.message || 'Failed to enrich agents');
       setDebugOpen(true);
-    } finally {
       setIsEnriching(false);
     }
   };
