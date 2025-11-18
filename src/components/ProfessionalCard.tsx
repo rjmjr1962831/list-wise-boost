@@ -2,10 +2,9 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { RefreshCw, CheckCircle2, AlertCircle } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info } from "lucide-react";
 import { format } from "date-fns";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
@@ -367,37 +366,14 @@ export const ProfessionalCard = ({
                       </p>
                     </TooltipContent>
                   </Tooltip>
-                ) : (
-                  (professional as any).stats?.dataSource === 'zillow' ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-                          <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
-                          Verified Stats
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs text-xs">
-                          Statistics verified from Zillow within the last 7 days
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Badge variant="outline" className="gap-1.5 text-xs bg-amber-50 dark:bg-amber-950 border-amber-200 dark:border-amber-800">
-                          <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                          Estimated Stats
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="max-w-xs text-xs">
-                          Statistics are estimated based on market data. Click the refresh button below to fetch live data.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )
-                )}
+                ) : professional.zillow_data_fetched_at ? (
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                    <span>
+                      Last updated: {format(new Date(professional.zillow_data_fetched_at), 'MMMM d, yyyy')}
+                    </span>
+                  </div>
+                ) : null}
               </div>
 
 
@@ -480,6 +456,18 @@ export const ProfessionalCard = ({
                       {professional.phone}
                     </a>
                   </div>
+                  {professional.email && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <a 
+                        href={`mailto:${professional.email}`} 
+                        className="text-primary hover:underline" 
+                        itemProp="email"
+                      >
+                        {professional.email}
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
