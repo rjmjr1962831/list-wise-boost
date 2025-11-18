@@ -42,6 +42,7 @@ export interface Professional {
   zip_code?: string | null; // US zip code for API lookups
   years_experience?: number; // Years in business
   zillow_data_fetched_at?: string; // Timestamp of last Zillow data fetch
+  get_to_know_me?: string; // Rewritten bio from Zillow's getToKnowMe
 }
 
 export interface ListSection {
