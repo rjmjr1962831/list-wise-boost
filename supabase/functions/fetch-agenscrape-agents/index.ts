@@ -68,6 +68,8 @@ serve(async (req) => {
       maxResults: 50,
       startPage: 1
     };
+    
+    console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
 
     const startResponse = await fetch(
       'https://api.apify.com/v2/acts/agenscrape~zillow-agents-finder/runs',
@@ -129,6 +131,7 @@ serve(async (req) => {
     );
 
     const agents = await resultsResponse.json();
+    console.log(`Raw Apify response:`, JSON.stringify(agents, null, 2));
     console.log(`Retrieved ${agents.length} agent profile URLs`);
 
     // Get next rank using REST API
