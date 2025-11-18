@@ -1,9 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno';
+import Stripe from 'https://esm.sh/stripe@18.5.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2023-10-16',
-  httpClient: Stripe.createFetchHttpClient(),
+  apiVersion: '2025-08-27.basil',
 });
 
 const corsHeaders = {
@@ -45,7 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Creating checkout session for:', { applicationId, agentName, zipCodeCount: zipCodes.length });
 
     // Build line items from zip codes
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = zipCodes.map((item) => ({
+    const lineItems = zipCodes.map((item) => ({
       price_data: {
         currency: 'usd',
         unit_amount: item.price * 100, // Convert to cents
