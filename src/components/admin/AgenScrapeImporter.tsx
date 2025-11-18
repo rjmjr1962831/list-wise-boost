@@ -5,8 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
 
 interface City {
   id: string;
@@ -45,6 +46,8 @@ export function AgenScrapeImporter() {
   const [isEnriching, setIsEnriching] = useState(false);
   const [lastResult, setLastResult] = useState<ImportResult | null>(null);
   const [enrichedData, setEnrichedData] = useState<EnrichedAgent[] | null>(null);
+  const [rawEnrichResponse, setRawEnrichResponse] = useState<any>(null);
+  const [debugOpen, setDebugOpen] = useState(false);
 
   useEffect(() => {
     fetchCitiesAndCategories();
@@ -87,9 +90,6 @@ export function AgenScrapeImporter() {
 
       setLastResult(data);
       toast.success(`Successfully imported ${data.imported} out of ${data.total} agent profiles`);
-      
-      // Keep form filled so user can see what they just imported
-      // User can manually clear if they want to do another import
     } catch (error: any) {
       console.error('Import error:', error);
       toast.error(error.message || 'Failed to import agents');
@@ -105,20 +105,28 @@ export function AgenScrapeImporter() {
     }
 
     setIsEnriching(true);
+    setRawEnrichResponse(null);
+    
     try {
+      const requestBody = {
+        profileUrls: lastResult.agents.map(a => a.profileUrl),
+        professionalIds: lastResult.agents.map(a => a.id),
+      };
+
+      console.log('Sending to memo23:', requestBody);
+
       const { data, error } = await supabase.functions.invoke('fetch-apify-zillow-cheerio', {
-        body: {
-          profileUrls: lastResult.agents.map(a => a.profileUrl),
-          professionalIds: lastResult.agents.map(a => a.id),
-        },
+        body: requestBody,
       });
+
+      setRawEnrichResponse({ request: requestBody, response: data, error });
 
       if (error) throw error;
 
-      // Handle cases where the edge function returns success: false or no agents
       if (!data?.success || !data.agents || data.agents.length === 0) {
         console.warn('Enrich returned no detailed agent data:', data);
         toast.error(data?.error || 'Apify returned no detailed agent data. Make sure memo23 has access to these Zillow URLs.');
+        setDebugOpen(true);
         return;
       }
 
@@ -127,6 +135,7 @@ export function AgenScrapeImporter() {
     } catch (error: any) {
       console.error('Enrich error:', error);
       toast.error(error.message || 'Failed to enrich agents');
+      setDebugOpen(true);
     } finally {
       setIsEnriching(false);
     }
@@ -202,86 +211,127 @@ export function AgenScrapeImporter() {
       </div>
 
       {lastResult && (
-        <div className="mt-6 p-4 bg-muted rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">Last Import Results</h3>
-          <p className="text-sm mb-4">
-            Successfully imported <strong>{lastResult.imported}</strong> out of <strong>{lastResult.total}</strong> agents
-          </p>
+        <div className="mt-6 space-y-4">
+          <div className="p-4 bg-muted rounded-lg">
+            <h3 className="text-lg font-semibold mb-2">Last Import Results</h3>
+            <p className="text-sm mb-4">
+              Successfully imported <strong>{lastResult.imported}</strong> out of <strong>{lastResult.total}</strong> agents
+            </p>
           
-          {lastResult.agents && lastResult.agents.length > 0 && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium">Imported Agents:</h4>
-                {!enrichedData && (
-                  <Button 
-                    onClick={handleEnrich} 
-                    disabled={isEnriching}
-                    size="sm"
-                    variant="secondary"
-                  >
-                    {isEnriching ? (
-                      <>
-                        <Loader2 className="mr-2 h-3 w-3 animate-spin" />
-                        Enriching...
-                      </>
-                    ) : (
-                      'Enrich with Details'
-                    )}
-                  </Button>
-                )}
-              </div>
+            {lastResult.agents && lastResult.agents.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-sm font-medium">Imported Agents:</h4>
+                  {!enrichedData && (
+                    <Button 
+                      onClick={handleEnrich} 
+                      disabled={isEnriching}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      {isEnriching ? (
+                        <>
+                          <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                          Enriching...
+                        </>
+                      ) : (
+                        'Enrich with Details'
+                      )}
+                    </Button>
+                  )}
+                </div>
 
-              {enrichedData ? (
-                <div className="max-h-96 overflow-y-auto space-y-3">
-                  {enrichedData.map((agent, idx) => (
-                    <div key={idx} className="p-3 bg-background rounded-lg border">
-                      <div className="flex gap-3">
-                        {agent.photo && (
-                          <img 
-                            src={agent.photo} 
-                            alt={agent.name}
-                            className="w-16 h-16 rounded-full object-cover"
-                          />
-                        )}
-                        <div className="flex-1">
-                          <div className="font-semibold text-base mb-1">{agent.name}</div>
-                          <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                            <div>
-                              <span className="font-medium">Sales:</span> {agent.totalSales}
-                            </div>
-                            <div>
-                              <span className="font-medium">Listings:</span> {agent.currentListings}
-                            </div>
-                            <div>
-                              <span className="font-medium">Reviews:</span> {agent.reviewsCount}
-                            </div>
-                            <div>
-                              <span className="font-medium">Rating:</span> {agent.rating.toFixed(1)} ⭐
+                {enrichedData ? (
+                  <div className="max-h-96 overflow-y-auto space-y-3">
+                    {enrichedData.map((agent, idx) => (
+                      <div key={idx} className="p-3 bg-background rounded-lg border">
+                        <div className="flex gap-3">
+                          {agent.photo && (
+                            <img 
+                              src={agent.photo} 
+                              alt={agent.name}
+                              className="w-16 h-16 rounded-full object-cover"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <div className="font-semibold text-base mb-1">{agent.name}</div>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                              <div>
+                                <span className="font-medium">Sales:</span> {agent.totalSales}
+                              </div>
+                              <div>
+                                <span className="font-medium">Listings:</span> {agent.currentListings}
+                              </div>
+                              <div>
+                                <span className="font-medium">Reviews:</span> {agent.reviewsCount}
+                              </div>
+                              <div>
+                                <span className="font-medium">Rating:</span> {agent.rating.toFixed(1)} ⭐
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="max-h-60 overflow-y-auto space-y-2">
+                    {lastResult.agents.map((agent, idx) => (
+                      <div key={idx} className="text-sm p-2 bg-background rounded border">
+                        <div className="font-medium">{agent.name}</div>
+                        <a 
+                          href={agent.profileUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary hover:underline break-all"
+                        >
+                          {agent.profileUrl}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {rawEnrichResponse && (
+            <Collapsible open={debugOpen} onOpenChange={setDebugOpen}>
+              <Card className="p-4 border-yellow-500/50 bg-yellow-500/5">
+                <CollapsibleTrigger className="flex items-center justify-between w-full">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    🔍 Debug: memo23 Enrichment Request/Response
+                  </h3>
+                  <ChevronDown className={`h-5 w-5 transition-transform ${debugOpen ? 'rotate-180' : ''}`} />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-4 space-y-4">
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Zillow URLs Sent ({rawEnrichResponse.request?.profileUrls?.length || 0}):</h4>
+                    <div className="bg-background p-3 rounded max-h-48 overflow-y-auto text-xs font-mono">
+                      {rawEnrichResponse.request?.profileUrls?.map((url: string, idx: number) => (
+                        <div key={idx} className="py-1 border-b border-border/30 last:border-0">
+                          {idx + 1}. {url}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="max-h-60 overflow-y-auto space-y-2">
-                  {lastResult.agents.map((agent, idx) => (
-                    <div key={idx} className="text-sm p-2 bg-background rounded border">
-                      <div className="font-medium">{agent.name}</div>
-                      <a 
-                        href={agent.profileUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-xs text-primary hover:underline break-all"
-                      >
-                        {agent.profileUrl}
-                      </a>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Raw Apify Response:</h4>
+                    <pre className="bg-background p-3 rounded max-h-64 overflow-auto text-xs">
+                      {JSON.stringify(rawEnrichResponse.response, null, 2)}
+                    </pre>
+                  </div>
+                  {rawEnrichResponse.error && (
+                    <div>
+                      <h4 className="text-sm font-medium mb-2 text-destructive">Error:</h4>
+                      <pre className="bg-destructive/10 p-3 rounded text-xs text-destructive">
+                        {JSON.stringify(rawEnrichResponse.error, null, 2)}
+                      </pre>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  )}
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           )}
         </div>
       )}
