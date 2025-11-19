@@ -234,67 +234,87 @@ serve(async (req) => {
       try {
         console.log('Rewriting bio to make it unique...');
 
-        // Handle both plain string and JSON-stringified bio objects
-        let originalBio: string = agentData.getToKnowMe;
-        let parsedBio: any | null = null;
+        // Normalize to a plain string we know is safe to send
+        const sourceBio: any = agentData.getToKnowMe;
+        let originalBio = '';
 
-        if (typeof originalBio === 'string') {
+        if (typeof sourceBio === 'string') {
+          originalBio = sourceBio.trim();
+
+          // Try to detect and unwrap JSON-wrapped HTML description
           try {
             const maybeJson = JSON.parse(originalBio);
             if (maybeJson && typeof maybeJson === 'object' && maybeJson.description) {
-              parsedBio = maybeJson;
-              // Strip HTML from description to get plain text
-              const htmlContent = maybeJson.description;
-              // Simple HTML tag removal using regex
+              const htmlContent = maybeJson.description as string;
               originalBio = htmlContent
-                .replace(/<[^>]*>/g, ' ')  // Remove HTML tags
-                .replace(/&amp;/g, '&')     // Decode HTML entities
+                .replace(/<[^>]*>/g, ' ')
+                .replace(/&amp;/g, '&')
                 .replace(/&lt;/g, '<')
                 .replace(/&gt;/g, '>')
                 .replace(/&quot;/g, '"')
                 .replace(/&#39;/g, "'")
-                .replace(/\s+/g, ' ')       // Collapse multiple spaces
+                .replace(/\s+/g, ' ')
                 .trim();
             }
           } catch {
-            // Not JSON, keep as-is
+            // Not JSON, keep as trimmed plain text
           }
+        } else if (sourceBio && typeof sourceBio === 'object' && (sourceBio as any).description) {
+          const htmlContent = (sourceBio as any).description as string;
+          originalBio = htmlContent
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\s+/g, ' ')
+            .trim();
         }
 
-        console.log('Sending bio to rewrite-bio function, length:', originalBio.length);
-
-        const rewriteResponse = await fetch(`${supabaseUrl}/functions/v1/rewrite-bio`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': supabaseKey,
-            'Authorization': `Bearer ${supabaseKey}`,
-          },
-          body: JSON.stringify({ originalBio }),
-        });
-
-        let rewrittenBio: string | null = null;
-
-        if (rewriteResponse.ok) {
-          const rewriteData = await rewriteResponse.json();
-          if (rewriteData?.rewrittenBio && typeof rewriteData.rewrittenBio === 'string') {
-            console.log('Bio rewritten successfully');
-            rewrittenBio = rewriteData.rewrittenBio;
-          }
+        if (!originalBio) {
+          console.warn('No usable bio text found; skipping rewrite-bio call');
+          // Still persist whatever we have locally as a best-effort plain text bio
+          const fallbackBio = typeof sourceBio === 'string' ? sourceBio : JSON.stringify(sourceBio ?? '');
+          updateData.get_to_know_me = fallbackBio;
+          updateData.description = fallbackBio;
         } else {
-          console.error('Bio rewrite HTTP error:', rewriteResponse.status, await rewriteResponse.text());
+          console.log('Sending bio to rewrite-bio function, length:', originalBio.length);
+
+          const rewriteResponse = await fetch(`${supabaseUrl}/functions/v1/rewrite-bio`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': supabaseKey,
+              'Authorization': `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({ originalBio }),
+          });
+
+          let rewrittenBio: string | null = null;
+
+          if (rewriteResponse.ok) {
+            const rewriteData = await rewriteResponse.json();
+            if (rewriteData?.rewrittenBio && typeof rewriteData.rewrittenBio === 'string') {
+              console.log('Bio rewritten successfully');
+              rewrittenBio = rewriteData.rewrittenBio;
+            }
+          } else {
+            console.error('Bio rewrite HTTP error:', rewriteResponse.status, await rewriteResponse.text());
+          }
+
+          const finalBio = rewrittenBio || originalBio;
+          updateData.get_to_know_me = finalBio;
+          updateData.description = finalBio;
         }
-
-        const finalBio = rewrittenBio || originalBio;
-
-        // Always save as plain text, not wrapped in JSON
-        updateData.get_to_know_me = finalBio;
-        updateData.description = finalBio;
       } catch (rewriteError) {
         console.error('Bio rewrite exception:', rewriteError);
-        // Fallback to original
-        updateData.get_to_know_me = agentData.getToKnowMe;
-        updateData.description = agentData.getToKnowMe;
+        // Fallback to original value without remote rewriting
+        const fallbackBio = typeof agentData.getToKnowMe === 'string'
+          ? agentData.getToKnowMe
+          : JSON.stringify(agentData.getToKnowMe ?? '');
+        updateData.get_to_know_me = fallbackBio;
+        updateData.description = fallbackBio;
       }
     }
     if (agentData.emailAddress) updateData.email = agentData.emailAddress;
