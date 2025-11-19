@@ -181,7 +181,7 @@ export const ProfessionalCard = ({
           </div>
 
           {/* Content */}
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-4 relative">
             <div className="space-y-2">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -194,30 +194,6 @@ export const ProfessionalCard = ({
                     {professional.company}
                   </p>
                 </div>
-                
-                {/* Video Thumbnail - Top Right */}
-                {(professional as any).sidebar_video_url && (() => {
-                  const videoUrl = (professional as any).sidebar_video_url;
-                  const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') 
-                    ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
-                    : null;
-                  
-                  return videoId ? (
-                    <div className="flex-shrink-0">
-                      <iframe
-                        width="200"
-                        height="113"
-                        src={`https://www.youtube.com/embed/${videoId}`}
-                        title="Agent video"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="rounded-lg border-2 border-border"
-                      />
-                      <p className="text-xs text-center text-muted-foreground mt-1">Watch Video</p>
-                    </div>
-                  ) : null;
-                })()}
                 {professional.verified && (
                   <Badge 
                     variant="secondary" 
@@ -318,7 +294,7 @@ export const ProfessionalCard = ({
               </div>
 
               {/* Statistics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y relative">
               {(() => {
                   const statFromObj = (obj: any, path: string) => {
                     try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
@@ -356,6 +332,30 @@ export const ProfessionalCard = ({
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
                     </div>
                   ));
+                })()}
+                
+                {/* Video positioned to align with stats */}
+                {(professional as any).sidebar_video_url && (() => {
+                  const videoUrl = (professional as any).sidebar_video_url;
+                  const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') 
+                    ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
+                    : null;
+                  
+                  return videoId ? (
+                    <div className="absolute right-0 top-0 hidden md:block">
+                      <iframe
+                        width="320"
+                        height="180"
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title="Agent video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="rounded-lg border-2 border-border shadow-lg"
+                      />
+                      <p className="text-xs text-center text-muted-foreground mt-1">Watch Video</p>
+                    </div>
+                  ) : null;
                 })()}
               </div>
 
