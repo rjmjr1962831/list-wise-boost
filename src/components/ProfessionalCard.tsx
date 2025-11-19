@@ -259,24 +259,31 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
-              {/* Rating */}
-              <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(professional.rating)
-                          ? "fill-primary text-primary"
-                          : "text-muted"
-                      }`}
-                    />
-                  ))}
+              {/* Rating - only show if real data exists */}
+              {professional.rating > 0 ? (
+                <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
+                  <div className="flex items-center gap-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-5 w-5 ${
+                          i < Math.floor(professional.rating)
+                            ? "fill-primary text-primary"
+                            : "text-muted"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="font-semibold" itemProp="ratingValue">{professional.rating}</span>
+                  <span className="text-muted-foreground">(<span itemProp="reviewCount">{professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
+                  <meta itemProp="bestRating" content="5" />
                 </div>
-                <span className="font-semibold" itemProp="ratingValue">{professional.rating}</span>
-                <span className="text-muted-foreground">(<span itemProp="reviewCount">{professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
-                <meta itemProp="bestRating" content="5" />
-              </div>
+              ) : (
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Info className="h-4 w-4" />
+                  <span className="text-sm">Rating not yet available</span>
+                </div>
+              )}
 
               {/* Specialties Section - Areas of Expertise */}
               <div>
@@ -449,17 +456,19 @@ export const ProfessionalCard = ({
                       </a>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <a 
-                      href={`tel:${professional.phone}`} 
-                      className="text-primary hover:underline contact-agent-button" 
-                      itemProp="telephone"
-                      onClick={handlePhoneClick}
-                    >
-                      {professional.phone}
-                    </a>
-                  </div>
+                  {professional.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <a 
+                        href={`tel:${professional.phone}`} 
+                        className="text-primary hover:underline contact-agent-button" 
+                        itemProp="telephone"
+                        onClick={handlePhoneClick}
+                      >
+                        {professional.phone}
+                      </a>
+                    </div>
+                  )}
                   {professional.email && (
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
