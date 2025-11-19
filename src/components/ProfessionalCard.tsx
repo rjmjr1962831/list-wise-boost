@@ -178,30 +178,6 @@ export const ProfessionalCard = ({
               className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
               itemProp="image"
             />
-            
-            {/* Video Thumbnail with Embedded Player */}
-            {(professional as any).sidebar_video_url && (() => {
-              const videoUrl = (professional as any).sidebar_video_url;
-              const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') 
-                ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
-                : null;
-              
-              return videoId ? (
-                <div className="mt-3">
-                  <iframe
-                    width="128"
-                    height="72"
-                    src={`https://www.youtube.com/embed/${videoId}`}
-                    title="Agent video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="rounded-lg border-2 border-border"
-                  />
-                  <p className="text-xs text-center text-muted-foreground mt-1">Watch Video</p>
-                </div>
-              ) : null;
-            })()}
           </div>
 
           {/* Content */}
@@ -218,6 +194,30 @@ export const ProfessionalCard = ({
                     {professional.company}
                   </p>
                 </div>
+                
+                {/* Video Thumbnail - Top Right */}
+                {(professional as any).sidebar_video_url && (() => {
+                  const videoUrl = (professional as any).sidebar_video_url;
+                  const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') 
+                    ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
+                    : null;
+                  
+                  return videoId ? (
+                    <div className="flex-shrink-0">
+                      <iframe
+                        width="200"
+                        height="113"
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title="Agent video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="rounded-lg border-2 border-border"
+                      />
+                      <p className="text-xs text-center text-muted-foreground mt-1">Watch Video</p>
+                    </div>
+                  ) : null;
+                })()}
                 {professional.verified && (
                   <Badge 
                     variant="secondary" 
