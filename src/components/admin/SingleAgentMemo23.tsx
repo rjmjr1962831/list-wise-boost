@@ -184,6 +184,33 @@ export const SingleAgentMemo23 = () => {
 
   return (
     <div className="space-y-4">
+      {profile && !profileLoading && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Adam Hamblen - Rendered Profile</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ProfessionalCard
+              professional={{
+                ...profile,
+                image: profile.image_url || '/placeholder.svg',
+                rating: profile.ratings?.average || profile.review_stars_rating || 0,
+                reviews: profile.num_total_reviews || 0,
+                specialties: profile.specialty || [],
+                verified: profile.claim_status === 'approved',
+                company: profile.company || profile.business_name || '',
+                stats: {
+                  totalSales: profile.total_sales || 0,
+                  currentListings: profile.current_listings || 0,
+                  yearsExperience: profile.years_experience || 0
+                }
+              }}
+              categorySlug={profile.category?.slug || ''}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Fetch Fresh Memo23 Data</CardTitle>
