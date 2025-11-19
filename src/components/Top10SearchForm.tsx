@@ -215,40 +215,60 @@ export const Top10SearchForm = () => {
       });
       
       try {
-        const { data, error } = await supabase.functions.invoke('import-city-agents', {
+        // Add a client-side timeout so we don't "hang" the UI while memo23 runs
+        const IMPORT_TIMEOUT_MS = 25000;
+
+        const importPromise = supabase.functions.invoke('import-city-agents', {
           body: {
             cityId: city.id,
             categoryId: category.id
           }
         });
 
+        const timeoutPromise = new Promise<null>((resolve) => {
+          setTimeout(() => resolve(null), IMPORT_TIMEOUT_MS);
+        });
+
+        const result = await Promise.race([importPromise, timeoutPromise]);
+
         setIsSearching(false);
 
-        if (error) {
-          console.error('Import error:', error);
-          toast.error('Failed to import agents', {
-            description: error.message
+        if (result && 'data' in result) {
+          const { data, error } = result as typeof importPromise extends Promise<infer T> ? T : never;
+
+          if (error) {
+            console.error('Import error:', error);
+            toast.error('Failed to import agents', {
+              description: error.message
+            });
+            return;
+          }
+
+          if (data?.success) {
+            console.log('Import completed:', data);
+            toast.success('Agents imported!', {
+              description: `${data.agenscrapeImported} profiles, ${data.memo23Enriched} enriched`
+            });
+          } else if (data?.error) {
+            toast.error('Import failed', {
+              description: data.error || 'Unknown error'
+            });
+            return;
+          }
+        } else {
+          // Timed out – agenscrape likely finished, memo23 still running
+          toast.info('Still enriching agents in the background…', {
+            description: 'Bio, license, and stats checks will continue while you browse.',
+            duration: 8000,
           });
-          return;
         }
 
-        if (data?.success) {
-          console.log('Import completed:', data);
-          toast.success('Agents imported!', {
-            description: `${data.agenscrapeImported} profiles, ${data.memo23Enriched} enriched`
-          });
-          
-          // Navigate after successful import
-          const url = `/${city.state_slug}/${city.slug}/${category.slug}`;
-          console.log('Navigating to:', url);
-          navigate(url);
-          return;
-        } else {
-          toast.error('Import failed', {
-            description: data?.error || 'Unknown error'
-          });
-          return;
-        }
+        // Navigate after we either completed or timed out – list page will show the
+        // full "Analyzing Agent Data" interstitial while enrichment continues.
+        const url = `/${city.state_slug}/${city.slug}/${category.slug}`;
+        console.log('Navigating to (post-import):', url);
+        navigate(url);
+        return;
       } catch (err: any) {
         console.error('Import exception:', err);
         toast.error('Import failed', {
