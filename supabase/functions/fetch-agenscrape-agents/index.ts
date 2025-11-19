@@ -112,7 +112,8 @@ serve(async (req) => {
     // Start the Apify actor
     const actorInput = {
       locationText: searchLocation,
-      maxResults: maxResults
+      maxResults: maxResults,
+      category: "real-estate-agents" // Explicitly set category to real estate agents
     };
     
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
@@ -218,6 +219,12 @@ serve(async (req) => {
     const insertedAgents = [];
     
     for (const agent of agents) {
+      // Skip non-real-estate-agents (property managers, etc.)
+      if (agent.category && agent.category !== 'real-estate-agents') {
+        console.log(`Skipping ${agent.fullName} - category: ${agent.category}`);
+        continue;
+      }
+
       // Extract agent info from Apify response
       const profileUrl = agent.profileLink;
       
@@ -250,6 +257,8 @@ serve(async (req) => {
         num_total_reviews: agent.numTotalReviews || 0,
         reviews_text: agent.reviews || null,
         review_stars_rating: agent.reviewStarsRating || null,
+        current_listings: agent.currentListings || agent.for_sale_count || 0,
+        total_sales: agent.totalSales || agent.sales_count || agent.sold_in_last_year || 0,
         city_id: finalCityId,
         category_id: categoryId,
         rank: nextRank++,
