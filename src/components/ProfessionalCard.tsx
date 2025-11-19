@@ -72,14 +72,21 @@ export const ProfessionalCard = ({
   // Use external control if provided, otherwise use local state
   const isContactModalOpen = externalShowContactModal !== undefined ? externalShowContactModal : showContactModal;
 
-  // Parse professional_information JSON once at the top
+  // Parse Adam-style JSON bio once at the top
   const parsedProfInfo = (() => {
     try {
-      const profInfoRaw = (professional as any).professional_information;
-      if (!profInfoRaw) return null;
-      
-      const parsed = typeof profInfoRaw === 'string' ? JSON.parse(profInfoRaw) : profInfoRaw;
-      
+      // Primary source: description/get_to_know_me JSON blob from memo23
+      const descRaw = (professional as any).description as string | null;
+      const getToKnowRaw = (professional as any).get_to_know_me as string | null;
+      const profInfoRaw = descRaw || getToKnowRaw || (professional as any).professional_information;
+
+      if (!profInfoRaw || typeof profInfoRaw !== 'string') return null;
+
+      const parsed = JSON.parse(profInfoRaw);
+
+      // Only treat as memo23-style object if it has the expected keys
+      if (!parsed || typeof parsed !== 'object' || !('description' in parsed)) return null;
+
       // Clean description HTML
       let cleanDescription = '';
       if (parsed.description) {
@@ -87,22 +94,22 @@ export const ProfessionalCard = ({
         tempDiv.innerHTML = parsed.description;
         cleanDescription = (tempDiv.textContent || tempDiv.innerText || '').trim();
       }
-      
+
       return {
-        yearsInIndustry: parsed.yearsInIndustry || null,
-        videoUrl: parsed.videoUrl || null,
-        specialties: Array.isArray(parsed.specialties) ? parsed.specialties : [],
-        websiteUrl: parsed.websiteUrl || null,
-        description: cleanDescription
+        yearsInIndustry: (parsed as any).yearsInIndustry ?? null,
+        videoUrl: (parsed as any).videoUrl ?? null,
+        specialties: Array.isArray((parsed as any).specialties) ? (parsed as any).specialties : [],
+        websiteUrl: (parsed as any).websiteUrl ?? null,
+        description: cleanDescription,
       };
     } catch (e) {
-      console.error('Error parsing professional_information:', e);
+      console.error('Error parsing memo23-style description JSON:', e);
       return null;
     }
   })();
 
   const handleWebsiteClick = () => {
-    // Use websiteUrl from professional_information if available
+    // Use websiteUrl from parsedProfInfo if available
     const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
     
     const url = (() => {
