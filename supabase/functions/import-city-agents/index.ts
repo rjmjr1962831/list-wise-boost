@@ -51,14 +51,14 @@ serve(async (req) => {
     const agenscrapeData = agenscrapeResult.data;
     console.log(`Agenscrape completed: ${agenscrapeData?.total || 0} agents imported`);
 
-    // Small delay between steps
-    await new Promise(resolve => setTimeout(resolve, 2000));
+      // Small delay between steps
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-    // Step 2: Run memo23 to enrich with detailed data
-    console.log('Step 2/2: Running memo23 to enrich with licenses, videos, stats, bios...');
-    const memo23Result = await supabase.functions.invoke('fetch-memo23-agents', {
-      body: { cityId, categoryId }
-    });
+      // Step 2: Run memo23 to enrich with detailed data
+      console.log('Step 2/2: Running memo23 to enrich with licenses, videos, stats, bios (concurrency=50)...');
+      const memo23Result = await supabase.functions.invoke('fetch-memo23-agents', {
+        body: { cityId, categoryId }
+      });
 
     if (memo23Result.error) {
       console.error('Memo23 error:', memo23Result.error);

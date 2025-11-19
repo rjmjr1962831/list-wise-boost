@@ -209,8 +209,9 @@ export const Top10SearchForm = () => {
     if (!profsError && professionalsData && professionalsData.length === 0) {
       // No data exists, trigger full import (agenscrape + memo23 enrichment)
       setIsSearching(true);
-      toast.info('Importing agents for this city...', {
-        description: 'Fetching profiles and enriching with stats, licenses, videos. This takes ~30 seconds.'
+      toast.info('Importing agents...', {
+        description: 'Step 1/2: Fetching profile URLs',
+        duration: 10000
       });
       
       try {
@@ -221,23 +222,35 @@ export const Top10SearchForm = () => {
           }
         });
 
+        setIsSearching(false);
+
         if (error) {
           console.error('Import error:', error);
           toast.error('Failed to import agents', {
             description: error.message
           });
-          setIsSearching(false);
           return;
         }
 
         if (data?.success) {
           console.log('Import completed:', data);
-          toast.success('Agents imported successfully!', {
-            description: `${data.agenscrapeImported} profiles imported, ${data.memo23Enriched} enriched`
+          toast.success('Agents imported!', {
+            description: `${data.agenscrapeImported} profiles, ${data.memo23Enriched} enriched`
           });
+          
+          // Navigate after successful import
+          const url = `/${city.state_slug}/${city.slug}/${category.slug}`;
+          console.log('Navigating to:', url);
+          navigate(url);
+          return;
+        } else {
+          toast.error('Import failed', {
+            description: data?.error || 'Unknown error'
+          });
+          return;
         }
       } catch (err: any) {
-        console.error('Import error:', err);
+        console.error('Import exception:', err);
         toast.error('Import failed', {
           description: err.message
         });
