@@ -185,7 +185,44 @@ serve(async (req) => {
       updateData.encoded_zuid = agentData.encodedZuid;
       updateData.zuid = agentData.encodedZuid;
     }
-    if (agentData.sidebarVideoUrl) updateData.sidebar_video_url = agentData.sidebarVideoUrl;
+    // Extract video URL from multiple possible locations
+    if (agentData.sidebarVideoUrl) {
+      updateData.sidebar_video_url = agentData.sidebarVideoUrl;
+    } else if (agentData.getToKnowMe) {
+      // Try to extract video URL from getToKnowMe JSON structure
+      try {
+        let videoUrl = null;
+        if (typeof agentData.getToKnowMe === 'string') {
+          const parsed = JSON.parse(agentData.getToKnowMe);
+          videoUrl = parsed.videoUrl;
+        } else if (agentData.getToKnowMe.videoUrl) {
+          videoUrl = agentData.getToKnowMe.videoUrl;
+        }
+        
+        if (videoUrl) {
+          updateData.sidebar_video_url = videoUrl;
+          console.log(`Extracted video URL from getToKnowMe: ${videoUrl}`);
+        }
+      } catch (e) {
+        console.log('Could not extract video from getToKnowMe:', e);
+      }
+    }
+    
+    // If still no video, try professionalInformation
+    if (!updateData.sidebar_video_url && agentData.professionalInformation) {
+      const videoInfo = agentData.professionalInformation.find((info: any) => 
+        info.term === 'Websites' && info.links
+      );
+      if (videoInfo?.links) {
+        const videoLink = videoInfo.links.find((link: any) => 
+          link.url && (link.url.includes('youtube') || link.url.includes('vimeo'))
+        );
+        if (videoLink?.url) {
+          updateData.sidebar_video_url = videoLink.url;
+          console.log(`Extracted video URL from professionalInformation: ${videoLink.url}`);
+        }
+      }
+    }
     if (agentData.businessAddress) {
       updateData.business_address = agentData.businessAddress;
       if (agentData.businessAddress.postalCode) {

@@ -203,6 +203,7 @@ export const SingleAgentMemo23 = () => {
                 <p><strong>City:</strong> {profile.city?.name || 'N/A'}</p>
                 <p><strong>Category:</strong> {profile.category?.name || 'N/A'}</p>
                 <p><strong>Image URL:</strong> {profile.image_url || 'None'}</p>
+                <p><strong>Video URL:</strong> {profile.sidebar_video_url || 'None'}</p>
                 <p><strong>Rating:</strong> {profile.ratings?.average || profile.review_stars_rating || 0}</p>
                 <p><strong>Reviews:</strong> {profile.num_total_reviews || 0}</p>
                 <p><strong>Total Sales:</strong> {profile.total_sales || 0}</p>
