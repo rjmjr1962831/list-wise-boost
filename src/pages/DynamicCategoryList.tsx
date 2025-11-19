@@ -462,19 +462,60 @@ export default function DynamicCategoryList() {
   }, [stateSlug, citySlug, categorySlug]);
 
   const generateAndInsertProfessionals = async (cityData: City, categoryData: Category) => {
-    // Scraper auto-import has been removed
-    if (categoryData.slug === 'top10realestateagents') {
-      toast.info(`Automatic import disabled - please add ${categoryData.plural_name} manually`, {
-        description: 'Scraper functionality has been disconnected'
+    if (categoryData.slug !== 'top10realestateagents') {
+      toast.info(`No listings available yet for ${categoryData.plural_name} in ${cityData.name}.`, {
+        description: 'We will only display verified data when available.'
       });
       return;
     }
-    
-    // No placeholder generation for other categories; exit gracefully
-    toast.info(`No listings available yet for ${categoryData.plural_name} in ${cityData.name}.`, {
-      description: 'We will only display verified data when available.'
-    });
-    return;
+
+    // For Fresno, use the two-step Zillow scraper
+    if (cityData.name === 'Fresno') {
+      console.log('Using two-step Zillow scraper for Fresno');
+      const { data, error } = await supabase.functions.invoke('fetch-zillow-agents-twostep', {
+        body: {
+          city: cityData.name,
+          state: cityData.state,
+          maxAgents: 10,
+          cityId: cityData.id,
+          categoryId: categoryData.id
+        }
+      });
+
+      if (error) {
+        console.error('Two-step Zillow scraper error:', error);
+        toast.error('Import Failed', {
+          description: error.message || 'Failed to import agents from Zillow'
+        });
+      } else {
+        console.log('Two-step Zillow scraper result:', data);
+        toast.success('Import Complete', {
+          description: `Successfully imported ${data?.imported || 0} agents for ${cityData.name}`
+        });
+      }
+    } else {
+      // For other cities, use agenscrape
+      console.log('Using agenscrape for non-Fresno city');
+      const { data, error } = await supabase.functions.invoke('fetch-agenscrape-agents', {
+        body: {
+          cityId: cityData.id,
+          categoryId: categoryData.id,
+          maxResults: 10
+        }
+      });
+
+      if (error) {
+        console.error('Agenscrape error:', error);
+        toast.error('Import Failed', {
+          description: error.message || 'Failed to import agents'
+        });
+      } else {
+        console.log('Agenscrape result:', data);
+        toast.info('Import Started', {
+          description: `Importing ${data?.urls?.length || 0} agent profiles...`
+        });
+      }
+    }
   };
 
   // Check if quiz has been completed for real estate agents category
