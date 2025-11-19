@@ -179,31 +179,29 @@ export const ProfessionalCard = ({
               itemProp="image"
             />
             
-            {/* Video Thumbnail with Play Button */}
-            {(professional as any).sidebar_video_url && (
-              <div className="mt-3 relative group cursor-pointer">
-                <a 
-                  href={(professional as any).sidebar_video_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="block relative"
-                >
-                  <div className="w-24 md:w-32 aspect-video bg-muted rounded-lg overflow-hidden border-2 border-border">
-                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-primary/80 rounded-full blur-sm"></div>
-                        <div className="relative bg-primary text-primary-foreground rounded-full p-3 group-hover:scale-110 transition-transform">
-                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            {/* Video Thumbnail with Embedded Player */}
+            {(professional as any).sidebar_video_url && (() => {
+              const videoUrl = (professional as any).sidebar_video_url;
+              const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') 
+                ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
+                : null;
+              
+              return videoId ? (
+                <div className="mt-3">
+                  <iframe
+                    width="128"
+                    height="72"
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    title="Agent video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="rounded-lg border-2 border-border"
+                  />
                   <p className="text-xs text-center text-muted-foreground mt-1">Watch Video</p>
-                </a>
-              </div>
-            )}
+                </div>
+              ) : null;
+            })()}
           </div>
 
           {/* Content */}
