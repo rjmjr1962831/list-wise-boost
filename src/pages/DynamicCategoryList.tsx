@@ -416,12 +416,25 @@ export default function DynamicCategoryList() {
             });
             
             // Trigger background import without awaiting
-            supabase.functions.invoke('fetch-agenscrape-agents', {
-              body: {
-                cityId: cityWithCamelCase.id,
-                categoryId: categoryData.id
-              }
-            }).then(({ data, error }) => {
+            // Use Zillow scraper for Fresno, agenscrape for others
+            const functionName = cityWithCamelCase.slug === 'fresno' 
+              ? 'fetch-zillow-agents-bulk' 
+              : 'fetch-agenscrape-agents';
+            
+            const body = cityWithCamelCase.slug === 'fresno'
+              ? {
+                  city: cityWithCamelCase.name,
+                  state: cityWithCamelCase.state,
+                  maxPages: 3,
+                  categoryId: categoryData.id,
+                  cityId: cityWithCamelCase.id
+                }
+              : {
+                  cityId: cityWithCamelCase.id,
+                  categoryId: categoryData.id
+                };
+            
+            supabase.functions.invoke(functionName, { body }).then(({ data, error }) => {
               if (error) {
                 console.error('Background Zillow import error:', error);
               } else if (data?.success) {
