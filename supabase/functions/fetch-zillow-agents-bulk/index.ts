@@ -41,9 +41,9 @@ serve(async (req) => {
 
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
 
-    // Start the Apify actor - using agenscrape
+    // Start the Apify actor - using the active Zillow real estate agents scraper
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/getdataforme~agenscrape/runs',
+      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
       {
         method: 'POST',
         headers: {
