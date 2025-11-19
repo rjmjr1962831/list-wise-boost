@@ -76,12 +76,31 @@ export const ProfessionalCard = ({
   // Parse Adam-style JSON bio once at the top
   const parsedProfInfo = (() => {
     try {
+      // ALWAYS extract website from professional_information if available
+      const profInfoArray = (professional as any).professional_information;
+      let websiteFromProfInfo: string | null = null;
+      
+      if (Array.isArray(profInfoArray) && profInfoArray.length > 0) {
+        type InfoEntry = { term?: string; description?: string; lines?: string[]; links?: { text?: string; url?: string }[] };
+        const entries = profInfoArray as InfoEntry[];
+        const websitesEntry = entries.find(e => e.term === 'Websites');
+        websiteFromProfInfo = websitesEntry?.links?.[0]?.url || null;
+      }
+
       // Primary source: description/get_to_know_me JSON blob from memo23
       const descRaw = (professional as any).description as string | null;
       const getToKnowRaw = (professional as any).get_to_know_me as string | null;
-      const profInfoRaw = descRaw || getToKnowRaw || (professional as any).professional_information;
+      const profInfoRaw = descRaw || getToKnowRaw || profInfoArray;
 
-      if (!profInfoRaw) return null;
+      if (!profInfoRaw) {
+        return websiteFromProfInfo ? { 
+          yearsInIndustry: null,
+          videoUrl: null,
+          specialties: [] as string[],
+          websiteUrl: websiteFromProfInfo,
+          description: null
+        } : null;
+      }
 
       // If it's already plain text (our rewritten bio), just surface it
       if (typeof profInfoRaw === 'string') {
@@ -94,7 +113,7 @@ export const ProfessionalCard = ({
             yearsInIndustry: null,
             videoUrl: null,
             specialties: [] as string[],
-            websiteUrl: null,
+            websiteUrl: websiteFromProfInfo,
             description: trimmed,
           };
         }
@@ -106,7 +125,7 @@ export const ProfessionalCard = ({
             yearsInIndustry: null,
             videoUrl: null,
             specialties: [] as string[],
-            websiteUrl: null,
+            websiteUrl: websiteFromProfInfo,
             description: trimmed,
           };
         }
@@ -123,13 +142,12 @@ export const ProfessionalCard = ({
           yearsInIndustry: (parsed as any).yearsInIndustry ?? null,
           videoUrl: (parsed as any).videoUrl ?? null,
           specialties: Array.isArray((parsed as any).specialties) ? (parsed as any).specialties : [],
-          websiteUrl: (parsed as any).websiteUrl ?? null,
+          websiteUrl: websiteFromProfInfo || (parsed as any).websiteUrl || null,
           description: cleanDescription || trimmed,
         };
       }
 
-      // Handle legacy memo23 JSONB array from professional_information
-      const profInfoArray = (professional as any).professional_information;
+      // Handle legacy memo23 JSONB array from professional_information for description
       if (Array.isArray(profInfoArray) && profInfoArray.length > 0) {
         type InfoEntry = { term?: string; description?: string; lines?: string[]; links?: { text?: string; url?: string }[] };
         const entries = profInfoArray as InfoEntry[];
@@ -138,9 +156,6 @@ export const ProfessionalCard = ({
 
         const addressEntry = findByTerm('Broker address');
         const memberSinceEntry = findByTerm('Member since');
-        const websitesEntry = findByTerm('Websites');
-
-        const websiteUrl = websitesEntry?.links?.[0]?.url || null;
 
         const descriptionParts: string[] = [];
         if (addressEntry?.lines?.length) {
@@ -156,19 +171,27 @@ export const ProfessionalCard = ({
           yearsInIndustry: null,
           videoUrl: null,
           specialties: [] as string[],
-          websiteUrl,
+          websiteUrl: websiteFromProfInfo,
           description: description || null,
         };
       }
 
       // If we somehow get a non-string (JSONB) without recognisable structure, fall back to simple description field
       const fallback = (professional as any).description as string | null;
-      if (!fallback) return null;
+      if (!fallback) {
+        return websiteFromProfInfo ? {
+          yearsInIndustry: null,
+          videoUrl: null,
+          specialties: [] as string[],
+          websiteUrl: websiteFromProfInfo,
+          description: null
+        } : null;
+      }
       return {
         yearsInIndustry: null,
         videoUrl: null,
         specialties: [] as string[],
-        websiteUrl: null,
+        websiteUrl: websiteFromProfInfo,
         description: fallback.trim(),
       };
     } catch (e) {
