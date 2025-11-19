@@ -14,6 +14,8 @@ export const SingleAgentMemo23 = () => {
 
   useEffect(() => {
     fetchProfile();
+    // Auto-run the full debug on mount
+    fetchAdamData();
   }, []);
 
   const fetchProfile = async () => {
