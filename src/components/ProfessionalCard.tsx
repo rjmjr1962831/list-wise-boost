@@ -567,26 +567,6 @@ export const ProfessionalCard = ({
                 </div>
               </div>
 
-              {/* Zillow Profile */}
-              {(professional as any).zillow_profile_url && (
-                <div className="pt-3 border-t">
-                  <h4 className="text-sm font-semibold mb-2">Zillow Profile</h4>
-                  <a 
-                    href={(professional as any).zillow_profile_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline flex items-center gap-1.5"
-                    onClick={() => trackEvent('press_mention_click', {
-                      agent_name: professional.name,
-                      market: market || '',
-                      source: 'Zillow Profile URL',
-                    })}
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    {(professional as any).zillow_profile_url}
-                  </a>
-                </div>
-              )}
 
               {/* Contact Button */}
               <div className="pt-4 border-t">
