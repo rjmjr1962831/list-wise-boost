@@ -435,7 +435,7 @@ export default function DynamicCategoryList() {
             supabase.functions.invoke(functionName, { body }).then(({ data, error }) => {
               if (error) {
                 console.error('Background Zillow import error:', error);
-              } else if (data?.success) {
+              } else if (data?.success && data?.summary?.updated) {
                 console.log('Background import complete:', data.summary);
                 toast.success(`Updated ${data.summary.updated} agents with latest Zillow stats`, {
                   description: 'Refresh the page to see updated numbers',
