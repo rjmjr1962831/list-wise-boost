@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.fetch-single-memo23-agent]
 verify_jwt = false
+
+[functions.rewrite-bio]
+verify_jwt = false

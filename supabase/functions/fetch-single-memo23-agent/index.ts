@@ -163,9 +163,34 @@ serve(async (req) => {
     if (agentData.professionalData) {
       updateData.professional_data = agentData.professionalData;
     }
+    // Rewrite bio if present to make it unique
     if (agentData.getToKnowMe) {
-      updateData.get_to_know_me = agentData.getToKnowMe;
-      updateData.description = agentData.getToKnowMe;
+      try {
+        console.log('Rewriting bio to make it unique...');
+        const { data: rewriteData, error: rewriteError } = await supabase.functions.invoke('rewrite-bio', {
+          body: { originalBio: agentData.getToKnowMe }
+        });
+
+        if (rewriteError) {
+          console.error('Bio rewrite error:', rewriteError);
+          // Fallback to original if rewrite fails
+          updateData.get_to_know_me = agentData.getToKnowMe;
+          updateData.description = agentData.getToKnowMe;
+        } else if (rewriteData?.rewrittenBio) {
+          console.log('Bio rewritten successfully');
+          updateData.get_to_know_me = rewriteData.rewrittenBio;
+          updateData.description = rewriteData.rewrittenBio;
+        } else {
+          // Fallback to original
+          updateData.get_to_know_me = agentData.getToKnowMe;
+          updateData.description = agentData.getToKnowMe;
+        }
+      } catch (rewriteError) {
+        console.error('Bio rewrite exception:', rewriteError);
+        // Fallback to original
+        updateData.get_to_know_me = agentData.getToKnowMe;
+        updateData.description = agentData.getToKnowMe;
+      }
     }
     if (agentData.emailAddress) updateData.email = agentData.emailAddress;
     if (agentData.numTotalReviews) updateData.num_total_reviews = agentData.numTotalReviews;
