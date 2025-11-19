@@ -103,6 +103,10 @@ export const SingleAgentMemo23 = () => {
             <ProfessionalCard
               professional={{
                 ...profile,
+                // Map database fields to component expected fields
+                image: profile.image_url || '/placeholder.svg',
+                rating: profile.ratings?.average || profile.review_stars_rating || 0,
+                reviews: profile.num_total_reviews || 0,
                 specialties: profile.specialty || [],
                 verified: profile.claim_status === 'approved',
                 stats: {
