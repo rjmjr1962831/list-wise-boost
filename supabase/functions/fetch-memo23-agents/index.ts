@@ -58,25 +58,15 @@ serve(async (req) => {
 
     // Start the memo23 Apify actor for detailed agent data
     const actorId = 'memo23~apify-zillow-agents-cheerio';
-    const actorInput: {
-      startUrls: Array<{ url: string }>;
-      maxConcurrency?: number;
-      proxyConfiguration?: { useApifyProxy: boolean };
-    } = {
-      startUrls: [], // Will be populated with agent URLs
-      maxConcurrency: 5,
-      proxyConfiguration: {
-        useApifyProxy: true
-      }
-    };
 
-    // First, get agent URLs from agenscrape or existing profiles
+    // First, get agent URLs from existing profiles
     const { data: existingProfiles } = await supabase
       .from('professionals')
       .select('zillow_profile_url')
       .eq('city_id', cityId)
       .eq('category_id', categoryId)
-      .not('zillow_profile_url', 'is', null);
+      .not('zillow_profile_url', 'is', null)
+      .limit(50); // Process up to 50 agents concurrently
 
     if (!existingProfiles || existingProfiles.length === 0) {
       return new Response(
@@ -90,65 +80,94 @@ serve(async (req) => {
       );
     }
 
-    // Use existing profile URLs as input
-    actorInput.startUrls = existingProfiles
+    const agentUrls = existingProfiles
       .filter(p => p.zillow_profile_url)
-      .map(p => ({ url: p.zillow_profile_url }));
+      .map(p => p.zillow_profile_url);
 
-    console.log(`Processing ${actorInput.startUrls.length} agent profiles with memo23`);
-    console.log('memo23 actor input:', JSON.stringify(actorInput, null, 2));
+    console.log(`Processing ${agentUrls.length} agent profiles with memo23 (1 URL per concurrent session)`);
 
-    const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(actorInput)
+    // Start concurrent actor runs (one URL per run for maximum speed)
+    const runPromises = agentUrls.map(async (url) => {
+      try {
+        const actorInput = {
+          startUrls: [{ url }], // Single URL per run
+          maxConcurrency: 1,
+          proxyConfiguration: { useApifyProxy: true }
+        };
+
+        const runResponse = await fetch(
+          `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(actorInput)
+          }
+        );
+
+        if (!runResponse.ok) {
+          console.error(`Failed to start run for ${url}`);
+          return null;
+        }
+
+        const runData = await runResponse.json();
+        return { runId: runData.data.id, url };
+      } catch (error) {
+        console.error(`Error starting run for ${url}:`, error);
+        return null;
       }
-    );
+    });
 
-    if (!runResponse.ok) {
-      const errorBody = await runResponse.text();
-      console.error('Apify API Error:', errorBody);
-      throw new Error(`Failed to start Apify actor (${runResponse.status}): ${runResponse.statusText}. ${errorBody}`);
-    }
+    const runs = (await Promise.all(runPromises)).filter(r => r !== null);
+    console.log(`Started ${runs.length} concurrent actor runs`);
 
-    const runData = await runResponse.json();
-    const runId = runData.data.id;
-    console.log(`Apify run started: ${runId}`);
+    // Poll all runs for completion concurrently
+    const resultPromises = runs.map(async ({ runId, url }) => {
+      try {
+        let attempts = 0;
+        const maxAttempts = 60; // 5 minutes max per run
+        let runStatus = 'RUNNING';
 
-    // Poll for completion (max 5 minutes)
-    let runStatus = 'RUNNING';
-    let attempts = 0;
-    const maxAttempts = 60;
+        while (runStatus === 'RUNNING' && attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+          attempts++;
 
-    while (runStatus === 'RUNNING' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`
-      );
-      
-      const statusData = await statusResponse.json();
-      runStatus = statusData.data.status;
-      console.log(`Run status: ${runStatus}, attempt ${attempts + 1}`);
-      attempts++;
-    }
+          const statusResponse = await fetch(
+            `https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`
+          );
+          
+          if (!statusResponse.ok) {
+            console.error(`Failed to check run status for ${url}`);
+            return null;
+          }
 
-    if (runStatus !== 'SUCCEEDED') {
-      throw new Error(`Apify run did not complete successfully: ${runStatus}`);
-    }
+          const statusData = await statusResponse.json();
+          runStatus = statusData.data.status;
 
-    // Fetch the results
-    const resultsResponse = await fetch(
-      `https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${apifyToken}`
-    );
+          if (runStatus === 'SUCCEEDED') {
+            // Fetch results for this run
+            const resultsResponse = await fetch(
+              `https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${apifyToken}`
+            );
 
-    if (!resultsResponse.ok) {
-      throw new Error('Failed to fetch results from Apify');
-    }
+            if (!resultsResponse.ok) {
+              console.error(`Failed to fetch results for ${url}`);
+              return null;
+            }
 
-    const agents = await resultsResponse.json();
+            const results = await resultsResponse.json();
+            return results[0]; // Return first (and only) result
+          }
+        }
+
+        console.error(`Timeout or failed for ${url}, status: ${runStatus}`);
+        return null;
+      } catch (error) {
+        console.error(`Error processing run for ${url}:`, error);
+        return null;
+      }
+    });
+
+    const agents = (await Promise.all(resultPromises)).filter(r => r !== null);
     console.log(`Retrieved ${agents.length} agent profiles from memo23`);
 
     // Get next rank for this city/category
