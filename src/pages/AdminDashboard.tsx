@@ -22,6 +22,8 @@ import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporte
 import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
 import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
 import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
+import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
+import CitiesManager from "@/components/admin/CitiesManager";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -167,6 +169,10 @@ const AdminDashboard = () => {
               <Bug className="mr-2 h-4 w-4" />
               Debug
             </TabsTrigger>
+            <TabsTrigger value="bulk-enrich">
+              <Database className="mr-2 h-4 w-4" />
+              Bulk Enrich
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -229,6 +235,10 @@ const AdminDashboard = () => {
           <TabsContent value="scraper-debug" className="space-y-4">
             <SingleAgentMemo23 />
             <ZillowScraperDebug />
+          </TabsContent>
+
+          <TabsContent value="bulk-enrich" className="space-y-4">
+            <BulkMemo23Enricher />
           </TabsContent>
         </Tabs>
       </div>
