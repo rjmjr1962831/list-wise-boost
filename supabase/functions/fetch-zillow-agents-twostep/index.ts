@@ -30,8 +30,9 @@ serve(async (req) => {
     // STEP 1: Get agent URLs from getdataforme scraper
     console.log('STEP 1: Getting agent list...');
     const step1Input = {
-      search_query: `${city} ${state}`,
-      max_items: maxAgents
+      category: "real-estate-agents",
+      locationText: `${city},${state}`,
+      maxResults: maxAgents
     };
 
     console.log('Step 1 input payload:', JSON.stringify(step1Input, null, 2));
@@ -117,20 +118,25 @@ serve(async (req) => {
     console.log('Sample Step 1 agent record:', JSON.stringify(step1Agents[0], null, 2));
 
     const profileUrls = step1Agents
-      .filter((a: any) => a.agent_url)
-      .map((a: any) => ({
-        url: `https://www.zillow.com${a.agent_url}`
-      }));
+      .filter((a: any) => a.profile_url || a.agent_url)
+      .map((a: any) => {
+        const url = a.profile_url || a.agent_url;
+        // If URL already starts with http, use as-is, otherwise prepend zillow domain
+        return {
+          url: url.startsWith('http') ? url : `https://www.zillow.com${url}`
+        };
+      });
 
     console.log(`Profile URLs derived from Step 1:`, JSON.stringify(profileUrls, null, 2));
 
     if (!profileUrls || profileUrls.length === 0) {
-      console.warn('No agent_url values found in Step 1 output; skipping Step 2');
+      console.warn('No profile_url or agent_url values found in Step 1 output; skipping Step 2');
       return new Response(
         JSON.stringify({
           success: false,
           message: 'No agent profile URLs found in Step 1 output',
-          imported: 0
+          imported: 0,
+          step1Count: step1Agents.length
         }),
         {
           status: 200,
