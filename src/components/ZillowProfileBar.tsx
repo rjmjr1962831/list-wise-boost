@@ -55,7 +55,7 @@ export function ZillowProfileBar({
         }
       >
         <a href={profileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-          <span>Zillow Profile and Reviews</span>
+          <span>Zillow Profile</span>
           <ExternalLink className="h-4 w-4" />
         </a>
       </Button>
