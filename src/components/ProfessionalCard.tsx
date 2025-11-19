@@ -382,39 +382,39 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
-              {/* Get to Know Me Section */}
-              {(professional as any).get_to_know_me && (
-                <div className="border-t pt-3">
-                  <h4 className="text-sm font-semibold mb-2">Get to Know {professional.name.split(' ')[0]}</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {(professional as any).get_to_know_me}
-                  </p>
-                </div>
-              )}
 
-              {/* Zillow Bio with collapsible "more" */}
-              {professional.description && (
-                <div itemProp="description" className="border-t pt-3">
-                  <h4 className="text-sm font-semibold mb-2">About</h4>
-                  {(() => {
-                    const description = professional.description || '';
-                    const paragraphs = description.split('\n\n').filter(p => p.trim());
-                    const firstTwoParagraphs = paragraphs.slice(0, 2);
-                    const hasMore = paragraphs.length > 2;
-                    
-                    if (!hasMore) {
-                      return (
-                        <div className="space-y-3">
-                          {paragraphs.map((para, idx) => (
-                            <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
-                              {para}
-                            </p>
-                          ))}
-                        </div>
-                      );
-                    }
-                    
-                    return (
+              {/* Bio Section - Parse from professional_information if available */}
+              {(() => {
+                const profInfo = (professional as any).professional_information;
+                let description = professional.description || '';
+                
+                // If we have professional_information JSON, extract and clean the description
+                if (profInfo && typeof profInfo === 'object' && profInfo.description) {
+                  // Strip HTML tags and decode entities
+                  const tempDiv = document.createElement('div');
+                  tempDiv.innerHTML = profInfo.description;
+                  description = tempDiv.textContent || tempDiv.innerText || '';
+                }
+                
+                if (!description) return null;
+                
+                const paragraphs = description.split('\n\n').filter(p => p.trim());
+                const firstTwoParagraphs = paragraphs.slice(0, 2);
+                const hasMore = paragraphs.length > 2;
+                const firstName = professional.name.split(' ')[0];
+                
+                return (
+                  <div itemProp="description" className="border-t pt-3">
+                    <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
+                    {!hasMore ? (
+                      <div className="space-y-3">
+                        {paragraphs.map((para, idx) => (
+                          <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
+                            {para}
+                          </p>
+                        ))}
+                      </div>
+                    ) : (
                       <div>
                         <div className="space-y-3">
                           {(showFullDescription ? paragraphs : firstTwoParagraphs).map((para, idx) => (
@@ -430,10 +430,10 @@ export const ProfessionalCard = ({
                           {showFullDescription ? 'less' : 'more'}
                         </button>
                       </div>
-                    );
-                  })()}
-                </div>
-              )}
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Contact Information Section */}
               <div>
