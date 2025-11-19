@@ -390,37 +390,24 @@ export default function DynamicCategoryList() {
               description: 'This will complete in the background'
             });
             
-            // Trigger background import without awaiting
-            // Use Zillow scraper for Fresno, agenscrape for others
-            const functionName = cityWithCamelCase.slug === 'fresno' 
-              ? 'fetch-zillow-agents-bulk' 
-              : 'fetch-agenscrape-agents';
-            
-            const body = cityWithCamelCase.slug === 'fresno'
-              ? {
-                  city: cityWithCamelCase.name,
-                  state: cityWithCamelCase.state,
-                  maxPages: 3,
-                  categoryId: categoryData.id,
-                  cityId: cityWithCamelCase.id
-                }
-              : {
-                  cityId: cityWithCamelCase.id,
-                  categoryId: categoryData.id
-                };
-            
-            supabase.functions.invoke(functionName, { body }).then(({ data, error }) => {
+            // Trigger background enrichment using import-city-agents (agenscrape + memo23)
+            supabase.functions.invoke('import-city-agents', {
+              body: {
+                cityId: cityWithCamelCase.id,
+                categoryId: categoryData.id
+              }
+            }).then(({ data, error }) => {
               if (error) {
-                console.error('Background Zillow import error:', error);
-              } else if (data?.success && data?.summary?.updated) {
-                console.log('Background import complete:', data.summary);
-                toast.success(`Updated ${data.summary.updated} agents with latest Zillow stats`, {
-                  description: 'Refresh the page to see updated numbers',
+                console.error('Background import error:', error);
+              } else if (data?.success) {
+                console.log('Background enrichment complete:', data);
+                toast.success(`Enriched ${data.memo23Enriched || 0} agents`, {
+                  description: 'Refresh to see updated data',
                   duration: 5000
                 });
               }
             }).catch(err => {
-              console.error('Background import failed:', err);
+              console.error('Background enrichment failed:', err);
             });
           }
         }
