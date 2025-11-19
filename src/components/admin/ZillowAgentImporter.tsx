@@ -286,13 +286,10 @@ export const ZillowAgentImporter = () => {
         description: "Using Apify scraper to bypass 403 errors. Takes ~10 seconds...",
       });
 
-      const { data, error } = await supabase.functions.invoke('fetch-zillow-agents-bulk', {
+      const { data, error } = await supabase.functions.invoke('fetch-agenscrape-agents', {
         body: { 
-          city: city.trim(), 
-          state: state.trim(), 
-          maxPages: 3,
-          categoryId: selectedCategoryId,
-          cityId: selectedCityId
+          cityId: selectedCityId,
+          categoryId: selectedCategoryId
         }
       });
 

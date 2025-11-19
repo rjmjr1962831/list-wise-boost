@@ -416,13 +416,10 @@ export default function DynamicCategoryList() {
             });
             
             // Trigger background import without awaiting
-            supabase.functions.invoke('fetch-zillow-agents-bulk', {
+            supabase.functions.invoke('fetch-agenscrape-agents', {
               body: {
-                city: cityWithCamelCase.name,
-                state: cityWithCamelCase.state,
-                maxPages: 3,
-                categoryId: categoryData.id,
-                cityId: cityWithCamelCase.id
+                cityId: cityWithCamelCase.id,
+                categoryId: categoryData.id
               }
             }).then(({ data, error }) => {
               if (error) {
