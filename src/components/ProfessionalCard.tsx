@@ -80,31 +80,74 @@ export const ProfessionalCard = ({
       const getToKnowRaw = (professional as any).get_to_know_me as string | null;
       const profInfoRaw = descRaw || getToKnowRaw || (professional as any).professional_information;
 
-      if (!profInfoRaw || typeof profInfoRaw !== 'string') return null;
+      if (!profInfoRaw) return null;
 
-      const parsed = JSON.parse(profInfoRaw);
+      // If it's already plain text (our rewritten bio), just surface it
+      if (typeof profInfoRaw === 'string') {
+        const trimmed = profInfoRaw.trim();
 
-      // Only treat as memo23-style object if it has the expected keys
-      if (!parsed || typeof parsed !== 'object' || !('description' in parsed)) return null;
+        // Heuristic: if it doesn't look like JSON, treat as plain bio text
+        const looksLikeJson = trimmed.startsWith('{') && trimmed.endsWith('}');
+        if (!looksLikeJson) {
+          return {
+            yearsInIndustry: null,
+            videoUrl: null,
+            specialties: [] as string[],
+            websiteUrl: null,
+            description: trimmed,
+          };
+        }
 
-      // Clean description HTML
-      let cleanDescription = '';
-      if (parsed.description) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = parsed.description;
-        cleanDescription = (tempDiv.textContent || tempDiv.innerText || '').trim();
+        // Try to parse memo23-style JSON
+        const parsed = JSON.parse(trimmed);
+        if (!parsed || typeof parsed !== 'object' || !('description' in parsed)) {
+          return {
+            yearsInIndustry: null,
+            videoUrl: null,
+            specialties: [] as string[],
+            websiteUrl: null,
+            description: trimmed,
+          };
+        }
+
+        // Clean description HTML from memo23 JSON
+        let cleanDescription = '';
+        if ((parsed as any).description) {
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = (parsed as any).description;
+          cleanDescription = (tempDiv.textContent || tempDiv.innerText || '').trim();
+        }
+
+        return {
+          yearsInIndustry: (parsed as any).yearsInIndustry ?? null,
+          videoUrl: (parsed as any).videoUrl ?? null,
+          specialties: Array.isArray((parsed as any).specialties) ? (parsed as any).specialties : [],
+          websiteUrl: (parsed as any).websiteUrl ?? null,
+          description: cleanDescription || trimmed,
+        };
       }
 
+      // If we somehow get a non-string (JSONB), fall back to simple description field
+      const fallback = (professional as any).description as string | null;
+      if (!fallback) return null;
       return {
-        yearsInIndustry: (parsed as any).yearsInIndustry ?? null,
-        videoUrl: (parsed as any).videoUrl ?? null,
-        specialties: Array.isArray((parsed as any).specialties) ? (parsed as any).specialties : [],
-        websiteUrl: (parsed as any).websiteUrl ?? null,
-        description: cleanDescription,
+        yearsInIndustry: null,
+        videoUrl: null,
+        specialties: [] as string[],
+        websiteUrl: null,
+        description: fallback.trim(),
       };
     } catch (e) {
       console.error('Error parsing memo23-style description JSON:', e);
-      return null;
+      const fallback = (professional as any).description as string | null;
+      if (!fallback) return null;
+      return {
+        yearsInIndustry: null,
+        videoUrl: null,
+        specialties: [] as string[],
+        websiteUrl: null,
+        description: fallback.trim(),
+      };
     }
   })();
 
