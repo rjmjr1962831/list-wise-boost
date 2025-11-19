@@ -334,7 +334,7 @@ export const ProfessionalCard = ({
                   ));
                 })()}
                 
-                {/* Video positioned to align with stats */}
+                {/* Video positioned with bottom aligned to "Total Sales" text */}
                 {(professional as any).sidebar_video_url && (() => {
                   const videoUrl = (professional as any).sidebar_video_url;
                   const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') 
@@ -342,7 +342,7 @@ export const ProfessionalCard = ({
                     : null;
                   
                   return videoId ? (
-                    <div className="absolute right-0 top-0 hidden md:block">
+                    <div className="absolute right-0 bottom-0 hidden md:block">
                       <iframe
                         width="320"
                         height="180"
@@ -353,7 +353,6 @@ export const ProfessionalCard = ({
                         allowFullScreen
                         className="rounded-lg border-2 border-border shadow-lg"
                       />
-                      <p className="text-xs text-center text-muted-foreground mt-1">Watch Video</p>
                     </div>
                   ) : null;
                 })()}
