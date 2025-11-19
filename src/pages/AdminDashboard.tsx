@@ -22,6 +22,7 @@ import { AgentStatsImporter } from "@/components/admin/AgentStatsImporter";
 import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporter";
 import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
 import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
+import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -235,6 +236,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="scraper-debug" className="space-y-4">
+            <SingleAgentMemo23 />
             <ZillowScraperDebug />
           </TabsContent>
         </Tabs>
