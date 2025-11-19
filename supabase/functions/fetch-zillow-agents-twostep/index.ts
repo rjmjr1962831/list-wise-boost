@@ -30,6 +30,7 @@ serve(async (req) => {
     // STEP 1: Get agent URLs from getdataforme scraper
     console.log('STEP 1: Getting agent list...');
     const step1Input = {
+      search_query: `${city},${state}`,
       category: "real-estate-agents",
       locationText: `${city},${state}`,
       name: "",
