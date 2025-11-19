@@ -127,7 +127,51 @@ serve(async (req) => {
     }
 
     if (!agentData) {
-      throw new Error('Failed to fetch agent data from memo23 - no data returned');
+      console.warn('No memo23 data returned; falling back to existing professional bio');
+
+      // Normalize existing DB bio (which may be JSON or HTML) into plain text
+      const rawDesc = (professional as any).description || (professional as any).get_to_know_me || '';
+      let plainText = '';
+
+      try {
+        if (typeof rawDesc === 'string') {
+          const trimmed = rawDesc.trim();
+          const looksLikeJson = trimmed.startsWith('{') && trimmed.endsWith('}');
+
+          if (looksLikeJson) {
+            const parsed = JSON.parse(trimmed);
+            const html = (parsed as any).description || trimmed;
+            plainText = html
+              .replace(/<[^>]*>/g, ' ')
+              .replace(/&amp;/g, '&')
+              .replace(/&lt;/g, '<')
+              .replace(/&gt;/g, '>')
+              .replace(/&quot;/g, '"')
+              .replace(/&#39;/g, "'")
+              .replace(/\s+/g, ' ')
+              .trim();
+          } else {
+            plainText = trimmed;
+          }
+        } else if (rawDesc && typeof rawDesc === 'object') {
+          const html = (rawDesc as any).description || JSON.stringify(rawDesc);
+          plainText = html
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\s+/g, ' ')
+            .trim();
+        }
+      } catch {
+        plainText = typeof rawDesc === 'string' ? rawDesc : '';
+      }
+
+      agentData = {
+        getToKnowMe: plainText,
+      };
     }
 
     // Map memo23 fields to database columns
