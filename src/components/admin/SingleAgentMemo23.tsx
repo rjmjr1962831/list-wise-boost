@@ -27,6 +27,7 @@ export const SingleAgentMemo23 = () => {
   const fetchProfile = async () => {
     setProfileLoading(true);
     try {
+      console.log('Fetching Adam Hamblen profile...');
       const { data, error } = await supabase
         .from('professionals')
         .select(`
@@ -37,11 +38,24 @@ export const SingleAgentMemo23 = () => {
         .eq('id', '4bf24984-40fe-4077-92c7-316ac57989d4')
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error fetching profile:', error);
+        throw error;
+      }
+      
+      console.log('Profile data received:', data);
+      
+      if (!data) {
+        console.error('No profile data returned');
+        toast.error('No profile found for Adam Hamblen');
+        return;
+      }
+      
       setProfile(data);
+      toast.success('Profile loaded successfully');
     } catch (error: any) {
       console.error('Error fetching profile:', error);
-      toast.error('Failed to load profile');
+      toast.error(`Failed to load profile: ${error.message}`);
     } finally {
       setProfileLoading(false);
     }
@@ -181,25 +195,44 @@ export const SingleAgentMemo23 = () => {
               <span>Loading profile...</span>
             </div>
           ) : profile ? (
-            <ProfessionalCard
-              professional={{
-                ...profile,
-                // Map database fields to component expected fields
-                image: profile.image_url || '/placeholder.svg',
-                rating: profile.ratings?.average || profile.review_stars_rating || 0,
-                reviews: profile.num_total_reviews || 0,
-                specialties: profile.specialty || [],
-                verified: profile.claim_status === 'approved',
-                stats: {
-                  totalSales: profile.total_sales || 0,
-                  currentListings: profile.current_listings || 0,
-                  yearsExperience: profile.years_experience || 0
-                }
-              }}
-              categorySlug={profile.category?.slug || ''}
-            />
+            <>
+              <div className="mb-4 p-3 bg-muted rounded-md text-xs">
+                <p><strong>Profile ID:</strong> {profile.id}</p>
+                <p><strong>Name:</strong> {profile.name}</p>
+                <p><strong>Company:</strong> {profile.company || profile.business_name || 'N/A'}</p>
+                <p><strong>City:</strong> {profile.city?.name || 'N/A'}</p>
+                <p><strong>Category:</strong> {profile.category?.name || 'N/A'}</p>
+                <p><strong>Image URL:</strong> {profile.image_url || 'None'}</p>
+                <p><strong>Rating:</strong> {profile.ratings?.average || profile.review_stars_rating || 0}</p>
+                <p><strong>Reviews:</strong> {profile.num_total_reviews || 0}</p>
+                <p><strong>Total Sales:</strong> {profile.total_sales || 0}</p>
+              </div>
+              <ProfessionalCard
+                professional={{
+                  ...profile,
+                  // Map database fields to component expected fields
+                  image: profile.image_url || '/placeholder.svg',
+                  rating: profile.ratings?.average || profile.review_stars_rating || 0,
+                  reviews: profile.num_total_reviews || 0,
+                  specialties: profile.specialty || [],
+                  verified: profile.claim_status === 'approved',
+                  company: profile.company || profile.business_name || '',
+                  stats: {
+                    totalSales: profile.total_sales || 0,
+                    currentListings: profile.current_listings || 0,
+                    yearsExperience: profile.years_experience || 0
+                  }
+                }}
+                categorySlug={profile.category?.slug || ''}
+              />
+            </>
           ) : (
-            <p className="text-muted-foreground">No profile data</p>
+            <Alert variant="destructive">
+              <AlertTitle>No profile loaded</AlertTitle>
+              <AlertDescription>
+                Profile data is missing. Check console for errors.
+              </AlertDescription>
+            </Alert>
           )}
         </CardContent>
       </Card>
