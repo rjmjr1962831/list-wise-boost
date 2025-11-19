@@ -167,23 +167,55 @@ serve(async (req) => {
     if (agentData.getToKnowMe) {
       try {
         console.log('Rewriting bio to make it unique...');
-        const { data: rewriteData, error: rewriteError } = await supabase.functions.invoke('rewrite-bio', {
-          body: { originalBio: agentData.getToKnowMe }
+
+        // Handle both plain string and JSON-stringified bio objects
+        let originalBio: string = agentData.getToKnowMe;
+        let parsedBio: any | null = null;
+
+        if (typeof originalBio === 'string') {
+          try {
+            const maybeJson = JSON.parse(originalBio);
+            if (maybeJson && typeof maybeJson === 'object' && maybeJson.description) {
+              parsedBio = maybeJson;
+              originalBio = maybeJson.description;
+            }
+          } catch {
+            // Not JSON, keep as-is
+          }
+        }
+
+        const rewriteResponse = await fetch(`${supabaseUrl}/functions/v1/rewrite-bio`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': supabaseKey,
+            'Authorization': `Bearer ${supabaseKey}`,
+          },
+          body: JSON.stringify({ originalBio }),
         });
 
-        if (rewriteError) {
-          console.error('Bio rewrite error:', rewriteError);
-          // Fallback to original if rewrite fails
-          updateData.get_to_know_me = agentData.getToKnowMe;
-          updateData.description = agentData.getToKnowMe;
-        } else if (rewriteData?.rewrittenBio) {
-          console.log('Bio rewritten successfully');
-          updateData.get_to_know_me = rewriteData.rewrittenBio;
-          updateData.description = rewriteData.rewrittenBio;
+        let rewrittenBio: string | null = null;
+
+        if (rewriteResponse.ok) {
+          const rewriteData = await rewriteResponse.json();
+          if (rewriteData?.rewrittenBio && typeof rewriteData.rewrittenBio === 'string') {
+            console.log('Bio rewritten successfully');
+            rewrittenBio = rewriteData.rewrittenBio;
+          }
         } else {
-          // Fallback to original
-          updateData.get_to_know_me = agentData.getToKnowMe;
-          updateData.description = agentData.getToKnowMe;
+          console.error('Bio rewrite HTTP error:', rewriteResponse.status, await rewriteResponse.text());
+        }
+
+        const finalBio = rewrittenBio || originalBio;
+
+        if (parsedBio) {
+          parsedBio.description = finalBio;
+          const serialized = JSON.stringify(parsedBio);
+          updateData.get_to_know_me = serialized;
+          updateData.description = serialized;
+        } else {
+          updateData.get_to_know_me = finalBio;
+          updateData.description = finalBio;
         }
       } catch (rewriteError) {
         console.error('Bio rewrite exception:', rewriteError);
