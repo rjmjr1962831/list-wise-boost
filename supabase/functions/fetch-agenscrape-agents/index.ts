@@ -89,7 +89,7 @@ serve(async (req) => {
             if (!stateAbbrev) {
               throw new Error(`Unknown state: ${stateName}`);
             }
-            searchLocation = `${cityName}, ${stateAbbrev}`;
+            searchLocation = `${cityName} ${stateAbbrev}`;
             console.log(`Using city/state format for ${cityName}: ${searchLocation}`);
                 throw new Error(`Unknown state: ${stateName}`);
           } catch (zipErr) {
@@ -97,7 +97,7 @@ serve(async (req) => {
             const stateAbbrev = stateAbbreviations[stateName];
             if (!stateAbbrev) {
             }
-            searchLocation = `${cityName}, ${stateAbbrev}`;
+            searchLocation = `${cityName} ${stateAbbrev}`;
             console.log(`Fallback city/state location: ${searchLocation}`);
           }
         } else {
