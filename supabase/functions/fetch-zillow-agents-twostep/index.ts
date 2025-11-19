@@ -30,13 +30,13 @@ serve(async (req) => {
     // STEP 1: Get agent URLs from getdataforme scraper
     console.log('STEP 1: Getting agent list...');
     const step1Input = {
-      // Required by the actor
-      search_query: `${city},${state}`,
-      // Optional extras based on your suggested shape
       category: "real-estate-agents",
       locationText: `${city},${state}`,
-      max_items: maxAgents,
-      maxResults: maxAgents
+      name: "",
+      language: "English",
+      specialty: "",
+      maxResults: maxAgents,
+      startPage: 1
     };
 
     console.log('Step 1 input payload:', JSON.stringify(step1Input, null, 2));
