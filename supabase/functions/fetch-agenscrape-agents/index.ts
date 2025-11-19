@@ -244,6 +244,7 @@ serve(async (req) => {
       const professionalData = {
         name: agent.fullName || agent.name || agent.screenName || 'Agent ' + nextRank,
         zillow_profile_url: profileUrl,
+        image_url: agent.profilePhotoSrc || null,
         phone: agent.phoneNumber || agent.phoneNumbers?.business || agent.phoneNumbers?.cell || null,
         email: email,
         website: website,
