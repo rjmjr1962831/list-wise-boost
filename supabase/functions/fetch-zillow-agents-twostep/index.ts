@@ -30,7 +30,7 @@ serve(async (req) => {
     // STEP 1: Get agent URLs from getdataforme scraper
     console.log('STEP 1: Getting agent list...');
     const step1Input = {
-      search_query: `${city}, ${state}`,
+      search_query: `${city} ${state}`,
       max_items: maxAgents
     };
 
