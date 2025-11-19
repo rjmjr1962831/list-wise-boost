@@ -207,23 +207,43 @@ export const Top10SearchForm = () => {
       .limit(1);
 
     if (!profsError && professionalsData && professionalsData.length === 0) {
-      // No data exists, trigger bulk import
+      // No data exists, trigger full import (agenscrape + memo23 enrichment)
+      setIsSearching(true);
       toast.info('Importing agents for this city...', {
-        description: 'This will take about 10 seconds'
+        description: 'Fetching profiles and enriching with stats, licenses, videos. This takes ~30 seconds.'
       });
       
-      supabase.functions.invoke('fetch-agenscrape-agents', {
-        body: {
-          cityId: city.id,
-          categoryId: category.id
-        }
-      }).then(({ data, error }) => {
+      try {
+        const { data, error } = await supabase.functions.invoke('import-city-agents', {
+          body: {
+            cityId: city.id,
+            categoryId: category.id
+          }
+        });
+
         if (error) {
-          console.error('Bulk import error:', error);
-        } else if (data?.success) {
-          console.log('Bulk import triggered:', data.summary);
+          console.error('Import error:', error);
+          toast.error('Failed to import agents', {
+            description: error.message
+          });
+          setIsSearching(false);
+          return;
         }
-      });
+
+        if (data?.success) {
+          console.log('Import completed:', data);
+          toast.success('Agents imported successfully!', {
+            description: `${data.agenscrapeImported} profiles imported, ${data.memo23Enriched} enriched`
+          });
+        }
+      } catch (err: any) {
+        console.error('Import error:', err);
+        toast.error('Import failed', {
+          description: err.message
+        });
+        setIsSearching(false);
+        return;
+      }
     }
 
     // Navigate to the list page

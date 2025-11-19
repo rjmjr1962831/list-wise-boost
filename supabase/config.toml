@@ -50,3 +50,6 @@ verify_jwt = false
 
 [functions.rewrite-bio]
 verify_jwt = false
+
+[functions.import-city-agents]
+verify_jwt = false
