@@ -262,7 +262,6 @@ serve(async (req) => {
         try {
           // Build context from available agent data
           const specialties = agent.specialties?.join(', ') || 'real estate';
-          const yearsExp = updateData.years_experience || 'multiple years';
           const totalSalesCount = updateData.total_sales || 'numerous';
           
           const bioPrompt = `Generate a professional and compelling bio for real estate agent ${agent.name}. 
@@ -270,7 +269,6 @@ serve(async (req) => {
 Agent Details:
 - Works at: ${agent.company || 'a reputable brokerage'}
 - Specialties: ${specialties}
-- Experience: ${yearsExp} years
 - Sales: ${totalSalesCount} transactions
 ${agent.reviewCount ? `- Client reviews: ${agent.reviewCount} with ${agent.reviewValue} average rating` : ''}
 
@@ -279,7 +277,8 @@ Requirements:
 - Professional and engaging tone
 - Focus on expertise and client success
 - Third person perspective
-- Highlight what makes them a great choice`;
+- Highlight what makes them a great choice
+- DO NOT mention or estimate years of experience`;
 
           const bioResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
