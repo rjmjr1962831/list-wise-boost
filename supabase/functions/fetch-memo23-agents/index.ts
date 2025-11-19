@@ -188,16 +188,7 @@ serve(async (req) => {
       try {
         const profileUrl = agent.url;
         
-        // Check if agent already exists
-        const { data: existing } = await supabase
-          .from('professionals')
-          .select('id')
-          .eq('zillow_profile_url', profileUrl)
-          .eq('city_id', cityId)
-          .eq('category_id', categoryId)
-          .maybeSingle();
-
-        // Fetch existing record to merge data
+        // Fetch existing record to check for updates
         const { data: existingRecord } = await supabase
           .from('professionals')
           .select('*')
@@ -239,49 +230,35 @@ serve(async (req) => {
         }
         if (agent.agentLicenses) memo23Data.agent_licenses = agent.agentLicenses;
         if (agent.agentSalesStats) memo23Data.agent_sales_stats = agent.agentSalesStats;
+        if (agent.teamDisplayInformation) memo23Data.team_display_information = agent.teamDisplayInformation;
         if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
         if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
-        if (agent.reviewsData) memo23Data.reviews_data = agent.reviewsData;
-        if (agent.teamDisplayInformation) memo23Data.team_display_information = agent.teamDisplayInformation;
         
-        // Always update these tracking fields
-        memo23Data.zillow_profile_url = profileUrl;
-        memo23Data.zillow_data_fetched_at = new Date().toISOString();
-
-        // Extract additional fields from nested data
+        // Extract phone from phoneNumbers array if available
+        if (agent.phoneNumbers && agent.phoneNumbers.length > 0) {
+          const primaryPhone = agent.phoneNumbers.find((p: any) => p.primary) || agent.phoneNumbers[0];
+          if (primaryPhone?.formattedPhoneNumber) {
+            memo23Data.phone = primaryPhone.formattedPhoneNumber;
+          }
+        }
+        
+        // Extract review data
         if (agent.ratings) {
-          if (agent.ratings.averageRating) memo23Data.review_stars_rating = agent.ratings.averageRating;
-          if (agent.ratings.count) memo23Data.num_total_reviews = agent.ratings.count;
+          if (agent.ratings.starRating) memo23Data.review_stars_rating = agent.ratings.starRating;
+          if (agent.ratings.totalReviews) memo23Data.num_total_reviews = agent.ratings.totalReviews;
         }
-
-        if (agent.agentSalesStats) {
-          const totalSales = agent.agentSalesStats.countAllTime || agent.agentSalesStats.countLastYear || 0;
-          if (totalSales > 0) memo23Data.total_sales = totalSales;
-          // memo23 doesn't provide current listings
-          memo23Data.current_listings = 0;
+        
+        // Extract sales data from agentSalesStats
+        if (agent.agentSalesStats?.totalTransactionSides) {
+          memo23Data.total_sales = agent.agentSalesStats.totalTransactionSides;
         }
-
-        if (agent.phoneNumbers) {
-          const phone = agent.phoneNumbers.cell || agent.phoneNumbers.business || agent.phoneNumbers.brokerage;
-          if (phone) memo23Data.phone = phone;
-        }
-
-        if (agent.businessAddress) {
-          const addr = agent.businessAddress;
-          const addressParts = [addr.address1, addr.address2, addr.city, addr.state, addr.postalCode].filter(Boolean);
-          if (addressParts.length > 0) memo23Data.address = addressParts.join(', ');
-          if (addr.postalCode) memo23Data.zip_code = addr.postalCode;
-        }
-
-        // Extract licenses
-        if (agent.agentLicenses && agent.agentLicenses.length > 0) {
-          const license = agent.agentLicenses[0].licenseNumber || agent.agentLicenses[0];
-          if (license) memo23Data.license_number = license;
-        }
+        
+        // Set zillow data fetch timestamp
+        memo23Data.zillow_data_fetched_at = new Date().toISOString();
+        memo23Data.zillow_profile_url = profileUrl;
 
         if (existingRecord) {
-          // Update existing professional, merging memo23 data with existing data
-          // memo23 data takes precedence, but we keep existing values for fields not in memo23
+          // Update existing professional using its ID
           const { error: updateError } = await supabase
             .from('professionals')
             .update(memo23Data)
@@ -294,7 +271,7 @@ serve(async (req) => {
             imported++;
           }
         } else {
-          // Insert new professional
+          // Insert new professional with rank
           memo23Data.rank = nextRank++;
           memo23Data.city_id = cityId;
           memo23Data.category_id = categoryId;
