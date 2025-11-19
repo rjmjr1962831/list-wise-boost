@@ -54,6 +54,9 @@ export const SingleAgentMemo23 = () => {
 
       setResult(data);
       toast.success('Successfully fetched memo23 data for Adam Hamblen');
+      
+      // Auto-refresh the profile to show updated data
+      await fetchProfile();
     } catch (error: any) {
       console.error('Error:', error);
       toast.error(error.message || 'Failed to fetch data');
