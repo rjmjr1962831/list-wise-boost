@@ -28,7 +28,7 @@ serve(async (req) => {
   }
 
   try {
-    const { locationText, cityId, categoryId } = await req.json();
+    const { locationText, cityId, categoryId, maxResults = 50 } = await req.json();
     
     if (!categoryId || !cityId) {
       throw new Error('cityId and categoryId are required');
@@ -113,7 +113,7 @@ serve(async (req) => {
     const actorInput = {
       locationText: searchLocation,
       category: "real-estate-agents",
-      maxResults: 3,
+      maxResults: maxResults,
       startPage: 1
     };
     
