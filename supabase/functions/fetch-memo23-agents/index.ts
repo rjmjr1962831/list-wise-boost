@@ -56,8 +56,9 @@ serve(async (req) => {
     // Prepare location for search
     const searchLocation = `${city.name}, ${city.state}`;
 
-    // Start the memo23 Apify actor for detailed agent data
-    const actorId = 'memo23/apify-zillow-agents-cheerio';
+    // Start the Zillow agent scraper for detailed agent data
+    // Using laelin/zillow-agent-scraper which is pay-per-event instead of monthly subscription
+    const actorId = 'XZzGeHDeKceHPRLvS'; // laelin/zillow-agent-scraper
     const actorInput: {
       startUrls: Array<{ url: string }>;
       maxConcurrency: number;
@@ -107,7 +108,9 @@ serve(async (req) => {
     );
 
     if (!runResponse.ok) {
-      throw new Error(`Failed to start Apify actor: ${runResponse.statusText}`);
+      const errorBody = await runResponse.text();
+      console.error('Apify API Error:', errorBody);
+      throw new Error(`Failed to start Apify actor (${runResponse.status}): ${runResponse.statusText}. ${errorBody}`);
     }
 
     const runData = await runResponse.json();
