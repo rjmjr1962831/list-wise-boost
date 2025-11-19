@@ -373,7 +373,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         professional: professional.name,
-        sidebarVideoUrl: agentData.sidebarVideoUrl || null,
+        sidebarVideoUrl: updateData.sidebar_video_url || null,
         updatedFields: Object.keys(updateData)
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
