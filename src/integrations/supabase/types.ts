@@ -465,8 +465,12 @@ export type Database = {
           license_number: string | null
           license_verified_at: string | null
           name: string
+          num_total_reviews: number | null
           phone: string | null
           rank: number
+          review_link: string | null
+          review_stars_rating: number | null
+          reviews_text: string | null
           specialty: string[] | null
           title: string | null
           total_sales: number | null
@@ -503,8 +507,12 @@ export type Database = {
           license_number?: string | null
           license_verified_at?: string | null
           name: string
+          num_total_reviews?: number | null
           phone?: string | null
           rank: number
+          review_link?: string | null
+          review_stars_rating?: number | null
+          reviews_text?: string | null
           specialty?: string[] | null
           title?: string | null
           total_sales?: number | null
@@ -541,8 +549,12 @@ export type Database = {
           license_number?: string | null
           license_verified_at?: string | null
           name?: string
+          num_total_reviews?: number | null
           phone?: string | null
           rank?: number
+          review_link?: string | null
+          review_stars_rating?: number | null
+          reviews_text?: string | null
           specialty?: string[] | null
           title?: string | null
           total_sales?: number | null
