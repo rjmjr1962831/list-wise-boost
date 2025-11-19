@@ -112,10 +112,7 @@ serve(async (req) => {
     // Start the Apify actor
     const actorInput = {
       locationText: searchLocation,
-      category: "real-estate-agents",
-      search_query: "real estate agents",
-      maxResults: maxResults,
-      startPage: 1
+      maxResults: maxResults
     };
     
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
