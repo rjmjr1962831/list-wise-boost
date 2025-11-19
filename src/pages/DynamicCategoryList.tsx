@@ -56,19 +56,16 @@ interface DBProfessional {
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
-  // Use real stats from database when available, otherwise generate consistent values
-  const hash = dbProf.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const seed = hash % 1000;
-  
-  // Rating: Use actual database rating if available, otherwise generate
+  // Use ONLY real stats from database - no fake data generation
+  // Rating: Use actual database rating ONLY if available and valid
   const rating = (typeof dbProf.review_stars_rating === 'number' && dbProf.review_stars_rating > 0)
     ? dbProf.review_stars_rating
-    : Math.round((4.5 + (seed % 50) / 100) * 100) / 100; // Generated fallback
+    : 0; // 0 indicates no rating available
   
-  // Reviews: Use actual database review count if available, otherwise generate
+  // Reviews: Use actual database review count ONLY if available and valid
   const reviews = (typeof dbProf.num_total_reviews === 'number' && dbProf.num_total_reviews > 0)
     ? dbProf.num_total_reviews
-    : 50 + (seed % 200); // Generated fallback
+    : 0; // 0 indicates no reviews available
   
   // Generate testimonials
   const testimonialTemplates = [
@@ -97,17 +94,17 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     stats.yearsExperience = dbProf.years_experience;
   }
   
-  // Use REAL database values when available
+  // Use REAL database values ONLY - no generation
   const currentListings = (typeof dbProf.current_listings === 'number' && dbProf.current_listings > 0)
     ? dbProf.current_listings
-    : Math.max(1, Math.floor(reviews / 100));
+    : 0; // 0 indicates no data available
     
   const totalSales = (typeof dbProf.total_sales === 'number' && dbProf.total_sales > 0)
     ? dbProf.total_sales
-    : Math.floor(reviews / 8);
+    : 0; // 0 indicates no data available
     
-  stats.currentListings = currentListings;
-  stats.totalSales = totalSales;
+  if (currentListings > 0) stats.currentListings = currentListings;
+  if (totalSales > 0) stats.totalSales = totalSales;
   
   const base: Professional = {
     id: dbProf.id,
@@ -118,15 +115,15 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     rating: rating,
     reviews: reviews,
     specialties: dbProf.specialty || [],
-    address: '',
-    phone: dbProf.phone || '(555) 555-5555',
-    email: dbProf.email || 'contact@example.com',
-    website: dbProf.website || dbProf.zillow_profile_url || 'https://example.com',
+    address: (dbProf as any).address || '',
+    phone: dbProf.phone || undefined, // Don't show fake phone numbers
+    email: dbProf.email || undefined, // Don't show fake emails
+    website: dbProf.website || dbProf.zillow_profile_url || undefined, // Only show real websites
     description: dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
     image: dbProf.image_url || '/api/placeholder/400/400',
-    testimonials: testimonialTemplates,
+    testimonials: reviews > 0 ? testimonialTemplates : [], // Only show testimonials if they have real reviews
     zuid: dbProf.zuid || null,
     license_number: dbProf.license_number || undefined,
     license_verified_at: dbProf.license_verified_at || undefined,
