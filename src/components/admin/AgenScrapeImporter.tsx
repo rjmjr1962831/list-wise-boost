@@ -325,7 +325,8 @@ export function AgenScrapeImporter() {
                           verified: !!agent.license_number,
                           image: agent.image_url || '',
                           license_number: agent.license_number,
-                        }}
+                          zillow_profile_url: agent.zillow_profile_url,
+                        } as any}
                         accentColor="primary"
                       />
                     ))}
