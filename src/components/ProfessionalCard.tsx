@@ -99,7 +99,7 @@ export const ProfessionalCard = ({
           };
         }
 
-        // Try to parse memo23-style JSON
+        // Try to parse memo23-style JSON (newer format)
         const parsed = JSON.parse(trimmed);
         if (!parsed || typeof parsed !== 'object' || !('description' in parsed)) {
           return {
@@ -128,7 +128,40 @@ export const ProfessionalCard = ({
         };
       }
 
-      // If we somehow get a non-string (JSONB), fall back to simple description field
+      // Handle legacy memo23 JSONB array from professional_information
+      const profInfoArray = (professional as any).professional_information;
+      if (Array.isArray(profInfoArray) && profInfoArray.length > 0) {
+        type InfoEntry = { term?: string; description?: string; lines?: string[]; links?: { text?: string; url?: string }[] };
+        const entries = profInfoArray as InfoEntry[];
+
+        const findByTerm = (term: string) => entries.find(e => e.term === term);
+
+        const addressEntry = findByTerm('Broker address');
+        const memberSinceEntry = findByTerm('Member since');
+        const websitesEntry = findByTerm('Websites');
+
+        const websiteUrl = websitesEntry?.links?.[0]?.url || null;
+
+        const descriptionParts: string[] = [];
+        if (addressEntry?.lines?.length) {
+          descriptionParts.push(addressEntry.lines[0]);
+        }
+        if (memberSinceEntry?.description) {
+          descriptionParts.push(`Member since ${memberSinceEntry.description}`);
+        }
+
+        const description = descriptionParts.join('. ');
+
+        return {
+          yearsInIndustry: null,
+          videoUrl: null,
+          specialties: [] as string[],
+          websiteUrl,
+          description: description || null,
+        };
+      }
+
+      // If we somehow get a non-string (JSONB) without recognisable structure, fall back to simple description field
       const fallback = (professional as any).description as string | null;
       if (!fallback) return null;
       return {
@@ -400,8 +433,12 @@ export const ProfessionalCard = ({
                     return Number.isFinite(n) ? n : null;
                   };
 
+                  const agentStats = (professional as any).agent_sales_stats;
+
                   const totalSales =
                     toNum(professional.total_sales) ??
+                    toNum(statFromObj(agentStats, 'countAllTime')) ??
+                    toNum(statFromObj(agentStats, 'countLastYear')) ??
                     toNum(statFromObj(professional, 'stats.totalSales')) ??
                     toNum(statFromObj(professional, 'stats.sold')) ??
                     toNum((liveStats as any)?.totalSales) ??
