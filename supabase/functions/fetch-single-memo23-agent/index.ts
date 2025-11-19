@@ -74,6 +74,8 @@ serve(async (req) => {
     let runStatus = 'RUNNING';
     let agentData = null;
 
+    console.log(`Starting to poll Apify run ${runId}...`);
+
     while (attempts < maxAttempts && runStatus === 'RUNNING') {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
@@ -85,27 +87,47 @@ serve(async (req) => {
         const statusData = await statusResponse.json();
         runStatus = statusData.data.status;
         
+        console.log(`Attempt ${attempts + 1}/${maxAttempts}: Run status = ${runStatus}`);
+        
         if (runStatus === 'SUCCEEDED') {
           const datasetId = statusData.data.defaultDatasetId;
+          console.log(`Run succeeded, fetching dataset ${datasetId}...`);
+          
           const datasetResponse = await fetch(
             `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
           );
           
           if (datasetResponse.ok) {
             const results = await datasetResponse.json();
+            console.log(`Dataset returned ${results?.length || 0} items`);
+            
             if (results && results.length > 0) {
               agentData = results[0];
               console.log('Successfully fetched memo23 data');
+            } else {
+              console.error('Dataset is empty - no agent data returned');
             }
+          } else {
+            console.error('Failed to fetch dataset:', await datasetResponse.text());
           }
           break;
+        } else if (runStatus === 'FAILED' || runStatus === 'ABORTED' || runStatus === 'TIMED-OUT') {
+          console.error(`Run ${runStatus}: ${JSON.stringify(statusData.data)}`);
+          throw new Error(`Apify run ${runStatus}`);
         }
+      } else {
+        console.error('Failed to check run status:', await statusResponse.text());
       }
       attempts++;
     }
 
+    if (runStatus === 'RUNNING') {
+      console.error(`Run timed out after ${maxAttempts} seconds`);
+      throw new Error('Apify run timed out after 60 seconds');
+    }
+
     if (!agentData) {
-      throw new Error('Failed to fetch agent data from memo23');
+      throw new Error('Failed to fetch agent data from memo23 - no data returned');
     }
 
     // Map memo23 fields to database columns
