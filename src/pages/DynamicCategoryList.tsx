@@ -51,6 +51,8 @@ interface DBProfessional {
   license_verified_at: string | null;
   zillow_profile_url: string | null;
   zillow_data_fetched_at: string | null;
+  review_stars_rating: number | null;
+  num_total_reviews: number | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -58,17 +60,14 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
   const hash = dbProf.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const seed = hash % 1000;
   
-  // Rating: Use Zillow rating if recently fetched, otherwise generate
-  const hasRecentZillowData = dbProf.zillow_data_fetched_at && 
-    (new Date().getTime() - new Date(dbProf.zillow_data_fetched_at).getTime()) < 7 * 24 * 60 * 60 * 1000; // 7 days
-  
-  const rating = hasRecentZillowData && dbProf.total_sales 
-    ? Math.min(5.0, 4.5 + (dbProf.total_sales % 50) / 100) // Real data correlation
+  // Rating: Use actual database rating if available, otherwise generate
+  const rating = (typeof dbProf.review_stars_rating === 'number' && dbProf.review_stars_rating > 0)
+    ? dbProf.review_stars_rating
     : Math.round((4.5 + (seed % 50) / 100) * 100) / 100; // Generated fallback
   
-  // Reviews: Estimate from real sales data or generate
-  const reviews = hasRecentZillowData && dbProf.total_sales
-    ? Math.max(10, Math.floor(dbProf.total_sales / 3)) // Rough estimate: 1 review per 3 sales
+  // Reviews: Use actual database review count if available, otherwise generate
+  const reviews = (typeof dbProf.num_total_reviews === 'number' && dbProf.num_total_reviews > 0)
+    ? dbProf.num_total_reviews
     : 50 + (seed % 200); // Generated fallback
   
   // Generate testimonials
@@ -109,7 +108,6 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     
   stats.currentListings = currentListings;
   stats.totalSales = totalSales;
-  stats.dataSource = hasRecentZillowData ? 'zillow' : 'estimated'; // Track data source
   
   const base: Professional = {
     id: dbProf.id,
