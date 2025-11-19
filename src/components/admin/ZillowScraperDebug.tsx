@@ -9,7 +9,7 @@ import { Bug, Play } from "lucide-react";
 
 export const ZillowScraperDebug = () => {
   const [city, setCity] = useState("Fresno");
-  const [state, setState] = useState("California");
+  const [state, setState] = useState("CA");
   const [maxAgents, setMaxAgents] = useState(10);
   const [loading, setLoading] = useState(false);
   const [requestPayload, setRequestPayload] = useState<any>(null);
@@ -22,11 +22,23 @@ export const ZillowScraperDebug = () => {
 
     try {
       // Get city and category IDs (using real estate agents category)
+      // Convert state abbreviation to full name for DB lookup
+      const stateMap: Record<string, string> = {
+        'CA': 'California',
+        'AZ': 'Arizona',
+        'TX': 'Texas',
+        'FL': 'Florida',
+        'NY': 'New York',
+        // Add more as needed
+      };
+      
+      const fullStateName = stateMap[state] || state;
+      
       const { data: cityData } = await supabase
         .from("cities")
-        .select("id")
+        .select("id, state")
         .eq("name", city)
-        .eq("state", state)
+        .eq("state", fullStateName)
         .single();
 
       const { data: categoryData } = await supabase
@@ -42,7 +54,7 @@ export const ZillowScraperDebug = () => {
 
       const payload = {
         city,
-        state,
+        state, // Use state abbreviation
         cityId: cityData.id,
         categoryId: categoryData.id,
         maxAgents
@@ -99,8 +111,9 @@ export const ZillowScraperDebug = () => {
             <Input
               id="state"
               value={state}
-              onChange={(e) => setState(e.target.value)}
-              placeholder="e.g. California"
+              onChange={(e) => setState(e.target.value.toUpperCase())}
+              placeholder="e.g. CA"
+              maxLength={2}
             />
           </div>
           <div className="space-y-2">
