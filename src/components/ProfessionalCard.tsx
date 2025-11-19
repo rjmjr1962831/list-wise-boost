@@ -72,9 +72,41 @@ export const ProfessionalCard = ({
   // Use external control if provided, otherwise use local state
   const isContactModalOpen = externalShowContactModal !== undefined ? externalShowContactModal : showContactModal;
 
+  // Parse professional_information JSON once at the top
+  const parsedProfInfo = (() => {
+    try {
+      const profInfoRaw = (professional as any).professional_information;
+      if (!profInfoRaw) return null;
+      
+      const parsed = typeof profInfoRaw === 'string' ? JSON.parse(profInfoRaw) : profInfoRaw;
+      
+      // Clean description HTML
+      let cleanDescription = '';
+      if (parsed.description) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = parsed.description;
+        cleanDescription = (tempDiv.textContent || tempDiv.innerText || '').trim();
+      }
+      
+      return {
+        yearsInIndustry: parsed.yearsInIndustry || null,
+        videoUrl: parsed.videoUrl || null,
+        specialties: Array.isArray(parsed.specialties) ? parsed.specialties : [],
+        websiteUrl: parsed.websiteUrl || null,
+        description: cleanDescription
+      };
+    } catch (e) {
+      console.error('Error parsing professional_information:', e);
+      return null;
+    }
+  })();
+
   const handleWebsiteClick = () => {
+    // Use websiteUrl from professional_information if available
+    const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
+    
     const url = (() => {
-      let v = (professional.website || '').trim();
+      let v = websiteSource.trim();
       // Fix common malformed patterns
       if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
       if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
@@ -170,7 +202,7 @@ export const ProfessionalCard = ({
     >
       <CardContent className="pt-6">
         <div className="flex flex-col md:flex-row gap-6">
-          {/* Photo */}
+          {/* Photo with specialties below */}
           <div className="flex-shrink-0">
             <img 
               src={professional.image} 
@@ -178,6 +210,16 @@ export const ProfessionalCard = ({
               className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
               itemProp="image"
             />
+            {/* Specialties from professional_information displayed under photo */}
+            {parsedProfInfo?.specialties && parsedProfInfo.specialties.length > 0 && (
+              <div className="mt-3 space-y-1">
+                {parsedProfInfo.specialties.map((specialty, idx) => (
+                  <div key={idx} className="text-xs text-muted-foreground text-center">
+                    {specialty}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Content */}
@@ -279,19 +321,21 @@ export const ProfessionalCard = ({
                 </div>
               )}
 
-              {/* Specialties Section - Areas of Expertise */}
-              <div>
-                <h4 className="sr-only">Areas of Expertise</h4>
-                <div className="flex flex-wrap gap-2">
-                  {professional.specialties.map((specialty, idx) => (
-                    <span key={idx} itemProp="knowsAbout">
-                      <Badge variant="outline">
-                        {specialty}
-                      </Badge>
-                    </span>
-                  ))}
+              {/* Specialties Section - Areas of Expertise (only if not in professional_information) */}
+              {(!parsedProfInfo?.specialties || parsedProfInfo.specialties.length === 0) && professional.specialties.length > 0 && (
+                <div>
+                  <h4 className="sr-only">Areas of Expertise</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {professional.specialties.map((specialty, idx) => (
+                      <span key={idx} itemProp="knowsAbout">
+                        <Badge variant="outline">
+                          {specialty}
+                        </Badge>
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y relative">
@@ -320,10 +364,14 @@ export const ProfessionalCard = ({
                     toNum((liveStats as any)?.total_sales) ??
                     toNum((liveStats as any)?.sold);
 
-                  const displayStats = { currentListings, totalSales } as const;
+                  // Use yearsInIndustry from professional_information if available
+                  const yearsExperience = parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
+
+                  const displayStats = { currentListings, totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
                     currentListings: 'Current Listings',
-                    totalSales: 'Total Sales'
+                    totalSales: 'Total Sales',
+                    yearsExperience: 'Years Experience'
                   };
 
                   return Object.entries(displayStats).map(([key, value]) => (
@@ -334,10 +382,10 @@ export const ProfessionalCard = ({
                   ));
                 })()}
                 
-                {/* Video positioned with bottom aligned to "Total Sales" text */}
-                {(professional as any).sidebar_video_url && (() => {
-                  const videoUrl = (professional as any).sidebar_video_url;
-                  const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') 
+                {/* Video positioned with bottom aligned to stats - use videoUrl from professional_information if available */}
+                {(parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
+                  const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
+                  const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
                     ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
                     : null;
                   
@@ -383,27 +431,9 @@ export const ProfessionalCard = ({
               </div>
 
 
-              {/* Bio Section - Parse from professional_information if available */}
+              {/* Bio Section - Use parsed description from professional_information */}
               {(() => {
-                let description = professional.description || '';
-                
-                // If we have professional_information JSON, extract and clean the description
-                try {
-                  const profInfoRaw = (professional as any).professional_information;
-                  if (profInfoRaw) {
-                    // Parse if it's a string
-                    const profInfo = typeof profInfoRaw === 'string' ? JSON.parse(profInfoRaw) : profInfoRaw;
-                    
-                    if (profInfo.description) {
-                      // Strip HTML tags and decode entities
-                      const tempDiv = document.createElement('div');
-                      tempDiv.innerHTML = profInfo.description;
-                      description = (tempDiv.textContent || tempDiv.innerText || '').trim();
-                    }
-                  }
-                } catch (e) {
-                  console.error('Error parsing professional_information:', e);
-                }
+                const description = parsedProfInfo?.description || professional.description || '';
                 
                 if (!description) return null;
                 
@@ -448,12 +478,12 @@ export const ProfessionalCard = ({
               <div>
                 <h4 className="sr-only">Contact Information</h4>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm">
-                  {(professional.website || professional.email) && (
+                  {(parsedProfInfo?.websiteUrl || professional.website || professional.email) && (
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       <a
                         href={(() => {
-                          let v = (professional.website || '').trim();
+                          let v = (parsedProfInfo?.websiteUrl || professional.website || '').trim();
                           
                           // If no website but email exists, derive from email domain
                           if (!v && professional.email) {
