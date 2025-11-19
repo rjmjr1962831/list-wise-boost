@@ -3,6 +3,9 @@ project_id = "bgdtekbhelormzbymkhh"
 [functions.fetch-agenscrape-agents]
 verify_jwt = false
 
+[functions.fetch-zillow-agents-twostep]
+verify_jwt = false
+
 [functions.bulk-generate-photos]
 verify_jwt = false
 
