@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.parse-zillow-agent]
 verify_jwt = false
+
+[functions.fetch-memo23-agents]
+verify_jwt = false
