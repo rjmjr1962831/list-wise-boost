@@ -56,13 +56,12 @@ serve(async (req) => {
     // Prepare location for search
     const searchLocation = `${city.name}, ${city.state}`;
 
-    // Start the Zillow agent scraper for detailed agent data
-    // Using laelin/zillow-agent-scraper which is pay-per-event instead of monthly subscription
-    const actorId = 'XZzGeHDeKceHPRLvS'; // laelin/zillow-agent-scraper
+    // Start the memo23 Apify actor for detailed agent data
+    const actorId = 'memo23~apify-zillow-agents-cheerio';
     const actorInput: {
       startUrls: Array<{ url: string }>;
-      maxConcurrency: number;
-      proxyConfiguration: { useApifyProxy: boolean };
+      maxConcurrency?: number;
+      proxyConfiguration?: { useApifyProxy: boolean };
     } = {
       startUrls: [], // Will be populated with agent URLs
       maxConcurrency: 5,
@@ -97,6 +96,7 @@ serve(async (req) => {
       .map(p => ({ url: p.zillow_profile_url }));
 
     console.log(`Processing ${actorInput.startUrls.length} agent profiles with memo23`);
+    console.log('memo23 actor input:', JSON.stringify(actorInput, null, 2));
 
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
