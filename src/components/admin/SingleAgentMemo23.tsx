@@ -44,7 +44,27 @@ export const SingleAgentMemo23 = () => {
     setResult(null);
     
     try {
-      toast.info('Fetching Adam Hamblen memo23 data...');
+      // Step 1: Fetch from agenscrape
+      toast.info('Step 1/2: Fetching agenscrape data for Adam Hamblen...');
+      
+      const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
+        body: { 
+          citySlug: 'glendale',
+          cityName: 'Glendale',
+          stateName: 'Arizona',
+          categorySlug: 'realtors'
+        }
+      });
+
+      if (agenscrapeResult.error) {
+        console.error('Agenscrape error:', agenscrapeResult.error);
+        toast.warning('Agenscrape fetch had issues, continuing to memo23...');
+      } else {
+        toast.success('Agenscrape data fetched');
+      }
+      
+      // Step 2: Fetch from memo23
+      toast.info('Step 2/2: Fetching memo23 data for Adam Hamblen...');
       
       const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
         body: { professionalId: '4bf24984-40fe-4077-92c7-316ac57989d4' }
@@ -53,10 +73,12 @@ export const SingleAgentMemo23 = () => {
       if (error) throw error;
 
       setResult(data);
-      toast.success('Successfully fetched memo23 data for Adam Hamblen');
+      toast.success('Successfully fetched all data for Adam Hamblen');
       
-      // Auto-refresh the profile to show updated data
+      // Step 3: Auto-refresh the profile to show updated data
+      toast.info('Rebuilding profile card...');
       await fetchProfile();
+      toast.success('Profile card rebuilt with fresh data');
     } catch (error: any) {
       console.error('Error:', error);
       toast.error(error.message || 'Failed to fetch data');
@@ -110,10 +132,10 @@ export const SingleAgentMemo23 = () => {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Fetching from memo23...
+                Fetching data from all sources...
               </>
             ) : (
-              'Fetch Adam\'s Data'
+              'Run Full Debug (Agenscrape + Memo23 + Rebuild)'
             )}
           </Button>
 
