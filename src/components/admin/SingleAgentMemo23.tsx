@@ -76,7 +76,16 @@ export const SingleAgentMemo23 = () => {
             </div>
           ) : profile ? (
             <ProfessionalCard
-              professional={profile}
+              professional={{
+                ...profile,
+                specialties: profile.specialty || [],
+                verified: profile.claim_status === 'approved',
+                stats: {
+                  totalSales: profile.total_sales || 0,
+                  currentListings: profile.current_listings || 0,
+                  yearsExperience: profile.years_experience || 0
+                }
+              }}
               categorySlug={profile.category?.slug || ''}
             />
           ) : (
