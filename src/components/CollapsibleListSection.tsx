@@ -75,7 +75,7 @@ export const CollapsibleListSection = ({
       <CollapsibleContent className="space-y-6">
         {section.items.map((professional) => (
           <ProfessionalCard 
-            key={professional.rank} 
+            key={`${section.title}-${professional.rank}-${professional.id}`}
             professional={professional}
             accentColor={section.accentColor}
             schemaType={schemaType}
