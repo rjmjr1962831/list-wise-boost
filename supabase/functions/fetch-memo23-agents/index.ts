@@ -84,91 +84,73 @@ serve(async (req) => {
       .filter(p => p.zillow_profile_url)
       .map(p => p.zillow_profile_url);
 
-    console.log(`Processing ${agentUrls.length} agent profiles with memo23 sequentially`);
+    console.log(`Processing ${agentUrls.length} agent profiles with memo23 at maxConcurrency=50`);
 
-    // Process agents sequentially to avoid rate limiting
-    const agents = [];
-    
-    for (let i = 0; i < agentUrls.length; i++) {
-      const url = agentUrls[i];
-      console.log(`Processing agent ${i + 1}/${agentUrls.length}: ${url}`);
-      
-      try {
-        const actorInput = {
-          startUrls: [{ url }],
-          maxConcurrency: 1,
-          proxyConfiguration: { useApifyProxy: true }
-        };
+    // Run memo23 actor with all URLs at once (high concurrency)
+    const actorInput = {
+      startUrls: agentUrls.map(url => ({ url })),
+      maxConcurrency: 50,
+      proxyConfiguration: { useApifyProxy: true }
+    };
 
-        // Start the run
-        const runResponse = await fetch(
-          `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(actorInput)
-          }
-        );
+    console.log('Starting memo23 actor...');
 
-        if (!runResponse.ok) {
-          console.error(`Failed to start run for ${url}`);
-          continue;
-        }
-
-        const runData = await runResponse.json();
-        const runId = runData.data.id;
-        
-        // Poll for completion
-        let attempts = 0;
-        const maxAttempts = 60; // 5 minutes max per run
-        let runStatus = 'RUNNING';
-
-        while (runStatus === 'RUNNING' && attempts < maxAttempts) {
-          await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-          attempts++;
-
-          const statusResponse = await fetch(
-            `https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`
-          );
-          
-          if (!statusResponse.ok) {
-            console.error(`Failed to check run status for ${url}`);
-            break;
-          }
-
-          const statusData = await statusResponse.json();
-          runStatus = statusData.data.status;
-
-          if (runStatus === 'SUCCEEDED') {
-            // Fetch results
-            const resultsResponse = await fetch(
-              `https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${apifyToken}`
-            );
-
-            if (resultsResponse.ok) {
-              const results = await resultsResponse.json();
-              if (results && results.length > 0) {
-                agents.push(results[0]);
-                console.log(`Successfully fetched data for ${url}`);
-              }
-            }
-            break;
-          }
-        }
-
-        if (runStatus !== 'SUCCEEDED') {
-          console.error(`Timeout or failed for ${url}, status: ${runStatus}`);
-        }
-        
-        // Small delay between requests to avoid rate limiting
-        if (i < agentUrls.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
-        }
-      } catch (error) {
-        console.error(`Error processing ${url}:`, error);
+    const actorResponse = await fetch(
+      `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(actorInput)
       }
+    );
+
+    if (!actorResponse.ok) {
+      throw new Error(`Failed to start Apify actor: ${actorResponse.status}`);
     }
 
+    const runData = await actorResponse.json();
+    const runId = runData.data.id;
+    console.log(`Actor started with run ID: ${runId}`);
+
+    // Poll for completion (up to 10 minutes for large batch)
+    const maxAttempts = 120;
+    let attempt = 0;
+    let runStatus = 'RUNNING';
+    
+    while (attempt < maxAttempts && !['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED-OUT'].includes(runStatus)) {
+      attempt++;
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      const statusResponse = await fetch(
+        `https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`
+      );
+      
+      if (!statusResponse.ok) {
+        throw new Error(`Failed to check run status: ${statusResponse.status}`);
+      }
+      
+      const statusData = await statusResponse.json();
+      runStatus = statusData.data.status;
+      
+      console.log(`Attempt ${attempt}/${maxAttempts}: Run status = ${runStatus}`);
+    }
+
+    if (runStatus !== 'SUCCEEDED') {
+      throw new Error(`Actor run did not complete successfully. Status: ${runStatus}`);
+    }
+
+    console.log('Actor run completed, fetching results...');
+
+    const datasetId = runData.data.defaultDatasetId;
+    const datasetResponse = await fetch(
+      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
+    );
+
+    if (!datasetResponse.ok) {
+      throw new Error(`Failed to fetch dataset: ${datasetResponse.status}`);
+    }
+
+    const agents = await datasetResponse.json();
     console.log(`Retrieved ${agents.length} agent profiles from memo23`);
 
     // Get next rank for this city/category
