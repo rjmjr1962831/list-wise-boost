@@ -447,7 +447,11 @@ export type Database = {
         Row: {
           active: boolean
           address: string | null
+          agent_licenses: Json | null
+          agent_sales_stats: Json | null
           badges: string[] | null
+          business_address: Json | null
+          business_name: string | null
           category_id: string
           city_id: string
           claim_notes: string | null
@@ -455,23 +459,40 @@ export type Database = {
           claimed_at: string | null
           claimed_by: string | null
           company: string | null
+          cpd_user_pronouns: string | null
           created_at: string
           current_listings: number | null
           description: string | null
           email: string | null
+          encoded_zuid: string | null
           get_to_know_me: string | null
           id: string
           image_url: string | null
+          in_canada: boolean | null
+          is_premier_agent: boolean | null
+          is_top_agent: boolean | null
           license_number: string | null
           license_verified_at: string | null
           name: string
           num_total_reviews: number | null
+          past_sales: Json | null
           phone: string | null
+          phone_numbers: Json | null
+          professional_data: Json | null
+          professional_information: Json | null
+          profile_image_id: string | null
+          profile_type_ids: Json | null
+          profile_types: Json | null
           rank: number
+          ratings: Json | null
           review_link: string | null
           review_stars_rating: number | null
+          reviews_data: Json | null
           reviews_text: string | null
+          screen_name: string | null
+          sidebar_video_url: string | null
           specialty: string[] | null
+          team_display_information: Json | null
           title: string | null
           total_sales: number | null
           type: string
@@ -489,7 +510,11 @@ export type Database = {
         Insert: {
           active?: boolean
           address?: string | null
+          agent_licenses?: Json | null
+          agent_sales_stats?: Json | null
           badges?: string[] | null
+          business_address?: Json | null
+          business_name?: string | null
           category_id: string
           city_id: string
           claim_notes?: string | null
@@ -497,23 +522,40 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           company?: string | null
+          cpd_user_pronouns?: string | null
           created_at?: string
           current_listings?: number | null
           description?: string | null
           email?: string | null
+          encoded_zuid?: string | null
           get_to_know_me?: string | null
           id?: string
           image_url?: string | null
+          in_canada?: boolean | null
+          is_premier_agent?: boolean | null
+          is_top_agent?: boolean | null
           license_number?: string | null
           license_verified_at?: string | null
           name: string
           num_total_reviews?: number | null
+          past_sales?: Json | null
           phone?: string | null
+          phone_numbers?: Json | null
+          professional_data?: Json | null
+          professional_information?: Json | null
+          profile_image_id?: string | null
+          profile_type_ids?: Json | null
+          profile_types?: Json | null
           rank: number
+          ratings?: Json | null
           review_link?: string | null
           review_stars_rating?: number | null
+          reviews_data?: Json | null
           reviews_text?: string | null
+          screen_name?: string | null
+          sidebar_video_url?: string | null
           specialty?: string[] | null
+          team_display_information?: Json | null
           title?: string | null
           total_sales?: number | null
           type: string
@@ -531,7 +573,11 @@ export type Database = {
         Update: {
           active?: boolean
           address?: string | null
+          agent_licenses?: Json | null
+          agent_sales_stats?: Json | null
           badges?: string[] | null
+          business_address?: Json | null
+          business_name?: string | null
           category_id?: string
           city_id?: string
           claim_notes?: string | null
@@ -539,23 +585,40 @@ export type Database = {
           claimed_at?: string | null
           claimed_by?: string | null
           company?: string | null
+          cpd_user_pronouns?: string | null
           created_at?: string
           current_listings?: number | null
           description?: string | null
           email?: string | null
+          encoded_zuid?: string | null
           get_to_know_me?: string | null
           id?: string
           image_url?: string | null
+          in_canada?: boolean | null
+          is_premier_agent?: boolean | null
+          is_top_agent?: boolean | null
           license_number?: string | null
           license_verified_at?: string | null
           name?: string
           num_total_reviews?: number | null
+          past_sales?: Json | null
           phone?: string | null
+          phone_numbers?: Json | null
+          professional_data?: Json | null
+          professional_information?: Json | null
+          profile_image_id?: string | null
+          profile_type_ids?: Json | null
+          profile_types?: Json | null
           rank?: number
+          ratings?: Json | null
           review_link?: string | null
           review_stars_rating?: number | null
+          reviews_data?: Json | null
           reviews_text?: string | null
+          screen_name?: string | null
+          sidebar_video_url?: string | null
           specialty?: string[] | null
+          team_display_information?: Json | null
           title?: string | null
           total_sales?: number | null
           type?: string
