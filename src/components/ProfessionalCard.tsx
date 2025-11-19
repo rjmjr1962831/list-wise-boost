@@ -178,10 +178,30 @@ export const ProfessionalCard = ({
               className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
               itemProp="image"
             />
-            {/* Data Last Refreshed */}
-            {(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at) && (
-              <div className="mt-2 text-xs text-center text-muted-foreground">
-                Last updated: {format(new Date(((professional as any).zillow_data_fetched_at) || (liveStats as any)?.zillow_data_fetched_at), 'MMMM d, yyyy')}
+            
+            {/* Video Thumbnail with Play Button */}
+            {(professional as any).sidebar_video_url && (
+              <div className="mt-3 relative group cursor-pointer">
+                <a 
+                  href={(professional as any).sidebar_video_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block relative"
+                >
+                  <div className="w-24 md:w-32 aspect-video bg-muted rounded-lg overflow-hidden border-2 border-border">
+                    <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+                      <div className="relative">
+                        <div className="absolute inset-0 bg-primary/80 rounded-full blur-sm"></div>
+                        <div className="relative bg-primary text-primary-foreground rounded-full p-3 group-hover:scale-110 transition-transform">
+                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs text-center text-muted-foreground mt-1">Watch Video</p>
+                </a>
               </div>
             )}
           </div>
