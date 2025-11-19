@@ -313,11 +313,43 @@ Requirements:
         console.log(`⚠ No LOVABLE_API_KEY found, skipping bio generation`);
       }
 
-      // Extract website from professionalInformation if not already set
-      if (!updateData.website && agent.professionalInformation && agent.professionalInformation.length > 0) {
-        const websiteInfo = agent.professionalInformation.find((info: any) => info.websites);
-        if (websiteInfo?.websites && websiteInfo.websites.length > 0) {
-          updateData.website = websiteInfo.websites[0];
+      // Extract website from professionalInformation - prioritize this source
+      if (agent.professionalInformation && agent.professionalInformation.length > 0) {
+        console.log(`🌐 Searching for website in professionalInformation for ${agent.name}:`, JSON.stringify(agent.professionalInformation, null, 2));
+        
+        // Try multiple possible field names and structures
+        for (const info of agent.professionalInformation) {
+          let foundWebsite = null;
+          
+          // Check for websites array
+          if (info.websites && Array.isArray(info.websites) && info.websites.length > 0) {
+            foundWebsite = info.websites[0];
+          }
+          // Check for single website field
+          else if (info.website && typeof info.website === 'string') {
+            foundWebsite = info.website;
+          }
+          // Check for url field
+          else if (info.url && typeof info.url === 'string') {
+            foundWebsite = info.url;
+          }
+          // Check for lines array (sometimes website is in there)
+          else if (info.lines && Array.isArray(info.lines)) {
+            const urlLine = info.lines.find((line: string) => 
+              line && (line.startsWith('http') || line.includes('.com') || line.includes('.net'))
+            );
+            if (urlLine) foundWebsite = urlLine;
+          }
+          
+          if (foundWebsite && foundWebsite.trim() !== '') {
+            updateData.website = foundWebsite.trim();
+            console.log(`✓ Website found in professionalInformation: ${updateData.website}`);
+            break;
+          }
+        }
+        
+        if (!updateData.website) {
+          console.log(`⚠ No website found in professionalInformation for ${agent.name}`);
         }
       }
 
