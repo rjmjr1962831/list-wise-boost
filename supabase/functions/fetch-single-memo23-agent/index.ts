@@ -177,12 +177,25 @@ serve(async (req) => {
             const maybeJson = JSON.parse(originalBio);
             if (maybeJson && typeof maybeJson === 'object' && maybeJson.description) {
               parsedBio = maybeJson;
-              originalBio = maybeJson.description;
+              // Strip HTML from description to get plain text
+              const htmlContent = maybeJson.description;
+              // Simple HTML tag removal using regex
+              originalBio = htmlContent
+                .replace(/<[^>]*>/g, ' ')  // Remove HTML tags
+                .replace(/&amp;/g, '&')     // Decode HTML entities
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#39;/g, "'")
+                .replace(/\s+/g, ' ')       // Collapse multiple spaces
+                .trim();
             }
           } catch {
             // Not JSON, keep as-is
           }
         }
+
+        console.log('Sending bio to rewrite-bio function, length:', originalBio.length);
 
         const rewriteResponse = await fetch(`${supabaseUrl}/functions/v1/rewrite-bio`, {
           method: 'POST',
@@ -208,15 +221,9 @@ serve(async (req) => {
 
         const finalBio = rewrittenBio || originalBio;
 
-        if (parsedBio) {
-          parsedBio.description = finalBio;
-          const serialized = JSON.stringify(parsedBio);
-          updateData.get_to_know_me = serialized;
-          updateData.description = serialized;
-        } else {
-          updateData.get_to_know_me = finalBio;
-          updateData.description = finalBio;
-        }
+        // Always save as plain text, not wrapped in JSON
+        updateData.get_to_know_me = finalBio;
+        updateData.description = finalBio;
       } catch (rewriteError) {
         console.error('Bio rewrite exception:', rewriteError);
         // Fallback to original
