@@ -84,17 +84,23 @@ serve(async (req) => {
       .filter(p => p.zillow_profile_url)
       .map(p => p.zillow_profile_url);
 
-    console.log(`Processing ${agentUrls.length} agent profiles with memo23 (1 URL per concurrent session)`);
+    console.log(`Processing ${agentUrls.length} agent profiles with memo23 sequentially`);
 
-    // Start concurrent actor runs (one URL per run for maximum speed)
-    const runPromises = agentUrls.map(async (url) => {
+    // Process agents sequentially to avoid rate limiting
+    const agents = [];
+    
+    for (let i = 0; i < agentUrls.length; i++) {
+      const url = agentUrls[i];
+      console.log(`Processing agent ${i + 1}/${agentUrls.length}: ${url}`);
+      
       try {
         const actorInput = {
-          startUrls: [{ url }], // Single URL per run
+          startUrls: [{ url }],
           maxConcurrency: 1,
           proxyConfiguration: { useApifyProxy: true }
         };
 
+        // Start the run
         const runResponse = await fetch(
           `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
           {
@@ -106,23 +112,13 @@ serve(async (req) => {
 
         if (!runResponse.ok) {
           console.error(`Failed to start run for ${url}`);
-          return null;
+          continue;
         }
 
         const runData = await runResponse.json();
-        return { runId: runData.data.id, url };
-      } catch (error) {
-        console.error(`Error starting run for ${url}:`, error);
-        return null;
-      }
-    });
-
-    const runs = (await Promise.all(runPromises)).filter(r => r !== null);
-    console.log(`Started ${runs.length} concurrent actor runs`);
-
-    // Poll all runs for completion concurrently
-    const resultPromises = runs.map(async ({ runId, url }) => {
-      try {
+        const runId = runData.data.id;
+        
+        // Poll for completion
         let attempts = 0;
         const maxAttempts = 60; // 5 minutes max per run
         let runStatus = 'RUNNING';
@@ -137,37 +133,42 @@ serve(async (req) => {
           
           if (!statusResponse.ok) {
             console.error(`Failed to check run status for ${url}`);
-            return null;
+            break;
           }
 
           const statusData = await statusResponse.json();
           runStatus = statusData.data.status;
 
           if (runStatus === 'SUCCEEDED') {
-            // Fetch results for this run
+            // Fetch results
             const resultsResponse = await fetch(
               `https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${apifyToken}`
             );
 
-            if (!resultsResponse.ok) {
-              console.error(`Failed to fetch results for ${url}`);
-              return null;
+            if (resultsResponse.ok) {
+              const results = await resultsResponse.json();
+              if (results && results.length > 0) {
+                agents.push(results[0]);
+                console.log(`Successfully fetched data for ${url}`);
+              }
             }
-
-            const results = await resultsResponse.json();
-            return results[0]; // Return first (and only) result
+            break;
           }
         }
 
-        console.error(`Timeout or failed for ${url}, status: ${runStatus}`);
-        return null;
+        if (runStatus !== 'SUCCEEDED') {
+          console.error(`Timeout or failed for ${url}, status: ${runStatus}`);
+        }
+        
+        // Small delay between requests to avoid rate limiting
+        if (i < agentUrls.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
       } catch (error) {
-        console.error(`Error processing run for ${url}:`, error);
-        return null;
+        console.error(`Error processing ${url}:`, error);
       }
-    });
+    }
 
-    const agents = (await Promise.all(resultPromises)).filter(r => r !== null);
     console.log(`Retrieved ${agents.length} agent profiles from memo23`);
 
     // Get next rank for this city/category
@@ -197,6 +198,9 @@ serve(async (req) => {
           .eq('category_id', categoryId)
           .maybeSingle();
 
+        // Log the raw agent data for debugging
+        console.log(`Processing agent: ${agent.name || 'unknown'}`, JSON.stringify(agent, null, 2));
+        
         // Map all memo23 fields, only including non-null/non-undefined values
         const memo23Data: any = {};
         
@@ -205,16 +209,32 @@ serve(async (req) => {
         if (agent.screenName) memo23Data.screen_name = agent.screenName;
         if (agent.encodedZuid) {
           memo23Data.encoded_zuid = agent.encodedZuid;
-          memo23Data.zuid = agent.encodedZuid; // Also store in zuid for compatibility
+          memo23Data.zuid = agent.encodedZuid;
         }
         if (agent.inCanada !== undefined) memo23Data.in_canada = agent.inCanada;
         if (agent.profileTypeIds) memo23Data.profile_type_ids = agent.profileTypeIds;
         if (agent.profileTypes) memo23Data.profile_types = agent.profileTypes;
         if (agent.sidebarVideoUrl) memo23Data.sidebar_video_url = agent.sidebarVideoUrl;
-        if (agent.businessAddress) memo23Data.business_address = agent.businessAddress;
+        if (agent.businessAddress) {
+          memo23Data.business_address = agent.businessAddress;
+          // Extract zip code from business address
+          if (agent.businessAddress.postalCode) {
+            memo23Data.zip_code = agent.businessAddress.postalCode;
+          }
+          // Build address string
+          const addrParts = [
+            agent.businessAddress.address1,
+            agent.businessAddress.city,
+            agent.businessAddress.state,
+            agent.businessAddress.postalCode
+          ].filter(Boolean);
+          if (addrParts.length > 0) {
+            memo23Data.address = addrParts.join(', ');
+          }
+        }
         if (agent.businessName) {
           memo23Data.business_name = agent.businessName;
-          memo23Data.company = agent.businessName; // Also map to company field
+          memo23Data.company = agent.businessName;
         }
         if (agent.cpdUserPronouns) memo23Data.cpd_user_pronouns = agent.cpdUserPronouns;
         if (agent.isTopAgent !== undefined) memo23Data.is_top_agent = agent.isTopAgent;
@@ -225,37 +245,87 @@ serve(async (req) => {
         if (agent.phoneNumbers) memo23Data.phone_numbers = agent.phoneNumbers;
         if (agent.email) memo23Data.email = agent.email;
         if (agent.professional) memo23Data.professional_data = agent.professional;
+        
+        // Extract get to know me - extract description and strip HTML
         if (agent.getToKnowMe) {
-          memo23Data.get_to_know_me = agent.getToKnowMe?.text || agent.getToKnowMe;
+          if (typeof agent.getToKnowMe === 'string') {
+            memo23Data.get_to_know_me = agent.getToKnowMe;
+          } else if (agent.getToKnowMe.description) {
+            // Store the raw HTML description - we'll strip it in the UI
+            memo23Data.get_to_know_me = agent.getToKnowMe.description;
+          }
         }
+        
         if (agent.agentLicenses) memo23Data.agent_licenses = agent.agentLicenses;
         if (agent.agentSalesStats) memo23Data.agent_sales_stats = agent.agentSalesStats;
         if (agent.teamDisplayInformation) memo23Data.team_display_information = agent.teamDisplayInformation;
         if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
         if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
         
-        // Extract phone from phoneNumbers array if available
+        // Extract license number from agentLicenses array - CRITICAL: extract text field only
+        if (agent.agentLicenses && Array.isArray(agent.agentLicenses) && agent.agentLicenses.length > 0) {
+          const license = agent.agentLicenses[0];
+          if (typeof license === 'string') {
+            memo23Data.license_number = license;
+          } else if (typeof license === 'object') {
+            // Extract just the text field, not the whole object
+            memo23Data.license_number = license.text || license.licenseNumber || null;
+          }
+        }
+        
+        // Extract phone from phoneNumbers array
         if (agent.phoneNumbers && agent.phoneNumbers.length > 0) {
           const primaryPhone = agent.phoneNumbers.find((p: any) => p.primary) || agent.phoneNumbers[0];
           if (primaryPhone?.formattedPhoneNumber) {
             memo23Data.phone = primaryPhone.formattedPhoneNumber;
+          } else if (typeof primaryPhone === 'string') {
+            memo23Data.phone = primaryPhone;
           }
         }
         
-        // Extract review data
+        // Extract review data from ratings
         if (agent.ratings) {
-          if (agent.ratings.starRating) memo23Data.review_stars_rating = agent.ratings.starRating;
-          if (agent.ratings.totalReviews) memo23Data.num_total_reviews = agent.ratings.totalReviews;
+          if (agent.ratings.starRating !== undefined) {
+            memo23Data.review_stars_rating = agent.ratings.starRating;
+          } else if (agent.ratings.averageRating !== undefined) {
+            memo23Data.review_stars_rating = agent.ratings.averageRating;
+          }
+          
+          if (agent.ratings.totalReviews !== undefined) {
+            memo23Data.num_total_reviews = agent.ratings.totalReviews;
+          } else if (agent.ratings.count !== undefined) {
+            memo23Data.num_total_reviews = agent.ratings.count;
+          }
         }
         
-        // Extract sales data from agentSalesStats
-        if (agent.agentSalesStats?.totalTransactionSides) {
-          memo23Data.total_sales = agent.agentSalesStats.totalTransactionSides;
+        // Extract sales data from agentSalesStats - use countAllTime as primary source
+        if (agent.agentSalesStats) {
+          if (agent.agentSalesStats.countAllTime !== undefined) {
+            memo23Data.total_sales = agent.agentSalesStats.countAllTime;
+          } else if (agent.agentSalesStats.totalTransactionSides !== undefined) {
+            memo23Data.total_sales = agent.agentSalesStats.totalTransactionSides;
+          } else if (agent.agentSalesStats.countLastYear !== undefined) {
+            memo23Data.total_sales = agent.agentSalesStats.countLastYear;
+          }
+          
+          // Current listings if available
+          if (agent.agentSalesStats.currentListings !== undefined) {
+            memo23Data.current_listings = agent.agentSalesStats.currentListings;
+          }
+        }
+        
+        // Extract years experience
+        if (agent.yearsExperience !== undefined) {
+          memo23Data.years_experience = agent.yearsExperience;
+        } else if (agent.professionalInformation?.yearsExperience !== undefined) {
+          memo23Data.years_experience = agent.professionalInformation.yearsExperience;
         }
         
         // Set zillow data fetch timestamp
         memo23Data.zillow_data_fetched_at = new Date().toISOString();
         memo23Data.zillow_profile_url = profileUrl;
+        
+        console.log(`Extracted memo23Data for ${agent.name}:`, JSON.stringify(memo23Data, null, 2));
 
         if (existingRecord) {
           // Update existing professional using its ID
