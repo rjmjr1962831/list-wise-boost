@@ -113,7 +113,7 @@ serve(async (req) => {
     const actorInput = {
       locationText: searchLocation,
       category: "real-estate-agents",
-      maxResults: 10,
+      maxResults: 3,
       startPage: 1
     };
     
