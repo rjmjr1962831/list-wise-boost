@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database } from "lucide-react";
+import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug } from "lucide-react";
 import { toast } from "sonner";
 import CitiesManager from "@/components/admin/CitiesManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
@@ -21,6 +21,7 @@ import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsMa
 import { AgentStatsImporter } from "@/components/admin/AgentStatsImporter";
 import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporter";
 import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
+import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -166,6 +167,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Import Stats
             </TabsTrigger>
+            <TabsTrigger value="scraper-debug">
+              <Bug className="mr-2 h-4 w-4" />
+              Debug
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="cities" className="space-y-4">
@@ -227,6 +232,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="import-stats" className="space-y-4">
             <AgentStatsImporter />
+          </TabsContent>
+
+          <TabsContent value="scraper-debug" className="space-y-4">
+            <ZillowScraperDebug />
           </TabsContent>
         </Tabs>
       </div>
