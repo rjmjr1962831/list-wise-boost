@@ -34,6 +34,8 @@ serve(async (req) => {
       max_items: maxAgents
     };
 
+    console.log('Step 1 input payload:', JSON.stringify(step1Input, null, 2));
+
     const step1Response = await fetch(
       'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
       {
