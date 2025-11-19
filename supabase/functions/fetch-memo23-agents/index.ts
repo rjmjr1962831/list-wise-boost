@@ -262,6 +262,31 @@ serve(async (req) => {
         if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
         if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
         
+        // Extract video URL from professionalInformation if not in sidebarVideoUrl
+        if (!agent.sidebarVideoUrl && agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+          for (const info of agent.professionalInformation) {
+            if (info.term === 'Websites' && Array.isArray(info.detail)) {
+              const videoLink = info.detail.find((d: any) => 
+                d.text?.toLowerCase().includes('video') || 
+                d.text?.toLowerCase().includes('youtube') ||
+                d.link?.includes('youtube.com') ||
+                d.link?.includes('youtu.be')
+              );
+              if (videoLink?.link) {
+                memo23Data.sidebar_video_url = videoLink.link;
+                console.log(`Extracted video URL from professionalInformation: ${videoLink.link}`);
+                break;
+              }
+            }
+          }
+        }
+        
+        // Also try extracting from getToKnowMe.videoUrl
+        if (!memo23Data.sidebar_video_url && agent.getToKnowMe?.videoUrl) {
+          memo23Data.sidebar_video_url = agent.getToKnowMe.videoUrl;
+          console.log(`Extracted video URL from getToKnowMe: ${agent.getToKnowMe.videoUrl}`);
+        }
+        
         // Extract license number from agentLicenses array - CRITICAL: extract text field only
         if (agent.agentLicenses && Array.isArray(agent.agentLicenses) && agent.agentLicenses.length > 0) {
           const license = agent.agentLicenses[0];
