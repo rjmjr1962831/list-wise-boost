@@ -544,6 +544,26 @@ export const ProfessionalCard = ({
                       </a>
                     </div>
                   )}
+                  {(professional as any).zuid && (
+                    <div className="flex items-center gap-2">
+                      <a 
+                        href={`https://www.zillow.com/profile/${(professional as any).zuid}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-1"
+                        onClick={() =>
+                          trackEvent('press_mention_click', {
+                            agent_name: professional.name,
+                            market: market || '',
+                            source: 'Zillow Profile',
+                          })
+                        }
+                      >
+                        Zillow Profile
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -609,8 +629,6 @@ export const ProfessionalCard = ({
                 lazyLoad={true}
               />
 
-              {/* Zillow profile CTA */}
-              <ZillowProfileBar agentName={professional.name} market={market} zuid={(professional as any).zuid || null} professionalId={professional.id} />
             </div>
           </div>
         </div>
