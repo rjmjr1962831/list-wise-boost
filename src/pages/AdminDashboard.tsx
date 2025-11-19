@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Building2, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug } from "lucide-react";
 import { toast } from "sonner";
-import CitiesManager from "@/components/admin/CitiesManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
 import { MarketingContentManager } from "@/components/admin/MarketingContentManager";
@@ -106,12 +105,8 @@ const AdminDashboard = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="cities" className="space-y-6">
+        <Tabs defaultValue="categories" className="space-y-6">
           <TabsList className="grid w-full grid-cols-12 max-w-7xl">
-            <TabsTrigger value="cities">
-              <Building2 className="mr-2 h-4 w-4" />
-              Cities
-            </TabsTrigger>
             <TabsTrigger value="categories">
               <Tag className="mr-2 h-4 w-4" />
               Categories
@@ -173,10 +168,6 @@ const AdminDashboard = () => {
               Debug
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="cities" className="space-y-4">
-            <CitiesManager />
-          </TabsContent>
 
           <TabsContent value="categories" className="space-y-4">
             <CategoriesManager />
