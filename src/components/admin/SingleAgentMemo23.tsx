@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ProfessionalCard } from '@/components/ProfessionalCard';
 
 export const SingleAgentMemo23 = () => {
   const [loading, setLoading] = useState(false);
@@ -20,7 +21,11 @@ export const SingleAgentMemo23 = () => {
     try {
       const { data, error } = await supabase
         .from('professionals')
-        .select('*')
+        .select(`
+          *,
+          city:cities(name, slug, state),
+          category:categories(name, slug)
+        `)
         .eq('id', '4bf24984-40fe-4077-92c7-316ac57989d4')
         .single();
 
@@ -61,49 +66,19 @@ export const SingleAgentMemo23 = () => {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Adam Hamblen Profile</CardTitle>
+          <CardTitle>Adam Hamblen Profile - As Rendered</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           {profileLoading ? (
             <div className="flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Loading profile...</span>
             </div>
           ) : profile ? (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground">Name</p>
-                <p>{profile.name}</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground">Company</p>
-                <p>{profile.company || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground">Type</p>
-                <p>{profile.type}</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground">Total Sales</p>
-                <p>{profile.total_sales || 0}</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground">Reviews</p>
-                <p>{profile.num_total_reviews || 0}</p>
-              </div>
-              <div>
-                <p className="text-sm font-semibold text-muted-foreground">Rating</p>
-                <p>{profile.review_stars_rating || 'N/A'}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm font-semibold text-muted-foreground">Sidebar Video URL</p>
-                <p className="text-xs break-all">{profile.sidebar_video_url || 'None'}</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-sm font-semibold text-muted-foreground">Description</p>
-                <p className="text-sm">{profile.description || 'N/A'}</p>
-              </div>
-            </div>
+            <ProfessionalCard
+              professional={profile}
+              categorySlug={profile.category?.slug || ''}
+            />
           ) : (
             <p className="text-muted-foreground">No profile data</p>
           )}
