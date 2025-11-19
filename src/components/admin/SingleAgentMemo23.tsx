@@ -186,60 +186,6 @@ export const SingleAgentMemo23 = () => {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Adam Hamblen Profile - As Rendered</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {profileLoading ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Loading profile...</span>
-            </div>
-          ) : profile ? (
-            <>
-              <div className="mb-4 p-3 bg-muted rounded-md text-xs">
-                <p><strong>Profile ID:</strong> {profile.id}</p>
-                <p><strong>Name:</strong> {profile.name}</p>
-                <p><strong>Company:</strong> {profile.company || profile.business_name || 'N/A'}</p>
-                <p><strong>City:</strong> {profile.city?.name || 'N/A'}</p>
-                <p><strong>Category:</strong> {profile.category?.name || 'N/A'}</p>
-                <p><strong>Image URL:</strong> {profile.image_url || 'None'}</p>
-                <p><strong>Video URL:</strong> {profile.sidebar_video_url || 'None'}</p>
-                <p><strong>Rating:</strong> {profile.ratings?.average || profile.review_stars_rating || 0}</p>
-                <p><strong>Reviews:</strong> {profile.num_total_reviews || 0}</p>
-                <p><strong>Total Sales:</strong> {profile.total_sales || 0}</p>
-              </div>
-              <ProfessionalCard
-                professional={{
-                  ...profile,
-                  // Map database fields to component expected fields
-                  image: profile.image_url || '/placeholder.svg',
-                  rating: profile.ratings?.average || profile.review_stars_rating || 0,
-                  reviews: profile.num_total_reviews || 0,
-                  specialties: profile.specialty || [],
-                  verified: profile.claim_status === 'approved',
-                  company: profile.company || profile.business_name || '',
-                  stats: {
-                    totalSales: profile.total_sales || 0,
-                    currentListings: profile.current_listings || 0,
-                    yearsExperience: profile.years_experience || 0
-                  }
-                }}
-                categorySlug={profile.category?.slug || ''}
-              />
-            </>
-          ) : (
-            <Alert variant="destructive">
-              <AlertTitle>No profile loaded</AlertTitle>
-              <AlertDescription>
-                Profile data is missing. Check console for errors.
-              </AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
           <CardTitle>Fetch Fresh Memo23 Data</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
