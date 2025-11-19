@@ -114,13 +114,30 @@ serve(async (req) => {
 
     // STEP 2: Get detailed data from memo23 scraper
     console.log('STEP 2: Getting detailed agent data...');
+    console.log('Sample Step 1 agent record:', JSON.stringify(step1Agents[0], null, 2));
+
     const profileUrls = step1Agents
       .filter((a: any) => a.agent_url)
       .map((a: any) => ({
         url: `https://www.zillow.com${a.agent_url}`
       }));
 
-    console.log(`Fetching details for ${profileUrls.length} agents`);
+    console.log(`Profile URLs derived from Step 1:`, JSON.stringify(profileUrls, null, 2));
+
+    if (!profileUrls || profileUrls.length === 0) {
+      console.warn('No agent_url values found in Step 1 output; skipping Step 2');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: 'No agent profile URLs found in Step 1 output',
+          imported: 0
+        }),
+        {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders }
+        }
+      );
+    }
 
     const step2Input = {
       startUrls: profileUrls,
