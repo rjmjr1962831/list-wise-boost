@@ -212,13 +212,10 @@ export const Top10SearchForm = () => {
         description: 'This will take about 10 seconds'
       });
       
-      supabase.functions.invoke('fetch-zillow-agents-bulk', {
+      supabase.functions.invoke('fetch-agenscrape-agents', {
         body: {
-          city: city.name,
-          state: city.state,
-          maxPages: 3,
-          categoryId: category.id,
-          cityId: city.id
+          cityId: city.id,
+          categoryId: category.id
         }
       }).then(({ data, error }) => {
         if (error) {
