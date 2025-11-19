@@ -85,7 +85,8 @@ serve(async (req) => {
 
             // Always use "City ST" format instead of ZIP code alone
             // as agenscrape seems to work better with city/state
-            const stateAbbrev = stateAbbreviations[stateName];
+            // Check if state is already an abbreviation (2 chars) or full name
+            const stateAbbrev = stateName.length === 2 ? stateName : stateAbbreviations[stateName];
             if (!stateAbbrev) {
               throw new Error(`Unknown state: ${stateName}`);
             }
