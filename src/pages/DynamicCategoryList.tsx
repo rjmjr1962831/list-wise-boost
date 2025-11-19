@@ -67,28 +67,6 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     ? dbProf.num_total_reviews
     : 0; // 0 indicates no reviews available
   
-  // Generate testimonials
-  const testimonialTemplates = [
-    {
-      author: 'Sarah M.',
-      text: `Exceptional service! ${dbProf.name} went above and beyond to ensure everything was perfect. Highly recommend their expertise and professionalism.`,
-      source: 'Google Reviews',
-      date: 'January 2025'
-    },
-    {
-      author: 'Michael R.',
-      text: `Working with ${dbProf.name} was a fantastic experience. Their knowledge and attention to detail made the entire process smooth and stress-free.`,
-      source: 'Yelp',
-      date: 'December 2024'
-    },
-    {
-      author: 'Jennifer L.',
-      text: `I couldn't be happier with the results! ${dbProf.name} truly understands client needs and delivers outstanding service every time.`,
-      source: 'Facebook',
-      date: 'November 2024'
-    }
-  ];
-  
   const stats: Record<string, number | string> = {};
   if (typeof dbProf.years_experience === 'number' && dbProf.years_experience > 0) {
     stats.yearsExperience = dbProf.years_experience;
@@ -123,7 +101,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
     image: dbProf.image_url || '/api/placeholder/400/400',
-    testimonials: reviews > 0 ? testimonialTemplates : [], // Only show testimonials if they have real reviews
+    testimonials: [], // No fake testimonials - only real reviews from external sources
     zuid: dbProf.zuid || null,
     license_number: dbProf.license_number || undefined,
     license_verified_at: dbProf.license_verified_at || undefined,
