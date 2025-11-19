@@ -385,15 +385,24 @@ export const ProfessionalCard = ({
 
               {/* Bio Section - Parse from professional_information if available */}
               {(() => {
-                const profInfo = (professional as any).professional_information;
                 let description = professional.description || '';
                 
                 // If we have professional_information JSON, extract and clean the description
-                if (profInfo && typeof profInfo === 'object' && profInfo.description) {
-                  // Strip HTML tags and decode entities
-                  const tempDiv = document.createElement('div');
-                  tempDiv.innerHTML = profInfo.description;
-                  description = tempDiv.textContent || tempDiv.innerText || '';
+                try {
+                  const profInfoRaw = (professional as any).professional_information;
+                  if (profInfoRaw) {
+                    // Parse if it's a string
+                    const profInfo = typeof profInfoRaw === 'string' ? JSON.parse(profInfoRaw) : profInfoRaw;
+                    
+                    if (profInfo.description) {
+                      // Strip HTML tags and decode entities
+                      const tempDiv = document.createElement('div');
+                      tempDiv.innerHTML = profInfo.description;
+                      description = (tempDiv.textContent || tempDiv.innerText || '').trim();
+                    }
+                  }
+                } catch (e) {
+                  console.error('Error parsing professional_information:', e);
                 }
                 
                 if (!description) return null;
