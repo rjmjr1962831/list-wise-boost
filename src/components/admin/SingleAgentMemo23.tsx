@@ -46,15 +46,22 @@ export const SingleAgentMemo23 = () => {
     setResult(null);
     
     try {
+      // Get city and category IDs from the profile
+      const cityId = profile?.city_id;
+      const categoryId = profile?.category_id;
+      
+      if (!cityId || !categoryId) {
+        toast.error('Missing city or category ID');
+        return;
+      }
+      
       // Step 1: Fetch from agenscrape
       toast.info('Step 1/2: Fetching agenscrape data for Adam Hamblen...');
       
       const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
         body: { 
-          citySlug: 'glendale',
-          cityName: 'Glendale',
-          stateName: 'Arizona',
-          categorySlug: 'realtors'
+          cityId,
+          categoryId
         }
       });
 
