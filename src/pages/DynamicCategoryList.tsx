@@ -53,6 +53,7 @@ interface DBProfessional {
   zillow_data_fetched_at: string | null;
   review_stars_rating: number | null;
   num_total_reviews: number | null;
+  sidebar_video_url: string | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -114,6 +115,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     years_experience: (typeof dbProf.years_experience === 'number' ? dbProf.years_experience : undefined),
     zillow_data_fetched_at: dbProf.zillow_data_fetched_at || undefined,
     zillow_profile_url: dbProf.zillow_profile_url || undefined,
+    sidebar_video_url: dbProf.sidebar_video_url || undefined,
   };
 
   return enriched;
