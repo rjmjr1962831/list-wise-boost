@@ -512,44 +512,56 @@ export const ProfessionalCard = ({
               </div>
 
 
-              {/* Bio Section - Use parsed description from professional_information */}
+              {/* Bio Section - Use get_to_know_me from memo23 if available */}
               {(() => {
-                const description = parsedProfInfo?.description || professional.description || '';
+                // Priority: get_to_know_me (full bio HTML) > parsed description (basic info) > description
+                const bioHtml = (professional as any).get_to_know_me;
+                const fallbackText = parsedProfInfo?.description || professional.description || '';
                 
-                if (!description) return null;
+                if (!bioHtml && !fallbackText) return null;
                 
-                const paragraphs = description.split('\n\n').filter(p => p.trim());
-                const firstTwoParagraphs = paragraphs.slice(0, 2);
-                const hasMore = paragraphs.length > 2;
                 const firstName = professional.name.split(' ')[0];
                 
                 return (
                   <div itemProp="description" className="border-t pt-3">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
-                    {!hasMore ? (
-                      <div className="space-y-3">
-                        {paragraphs.map((para, idx) => (
-                          <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
-                            {para}
-                          </p>
-                        ))}
-                      </div>
-                    ) : (
-                      <div>
+                    {bioHtml ? (
+                      <div 
+                        className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
+                        dangerouslySetInnerHTML={{ __html: bioHtml }}
+                      />
+                    ) : (() => {
+                      const paragraphs = fallbackText.split('\n\n').filter(p => p.trim());
+                      const firstTwoParagraphs = paragraphs.slice(0, 2);
+                      const hasMore = paragraphs.length > 2;
+                      
+                      return !hasMore ? (
                         <div className="space-y-3">
-                          {(showFullDescription ? paragraphs : firstTwoParagraphs).map((para, idx) => (
+                          {paragraphs.map((para, idx) => (
                             <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
                               {para}
                             </p>
                           ))}
                         </div>
-                        <button
-                          onClick={() => setShowFullDescription(!showFullDescription)}
-                          className="text-sm text-primary hover:underline mt-2 font-medium"
-                        >
-                          {showFullDescription ? 'less' : 'more'}
-                        </button>
-                      </div>
+                      ) : (
+                        <div>
+                          <div className="space-y-3">
+                            {(showFullDescription ? paragraphs : firstTwoParagraphs).map((para, idx) => (
+                              <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
+                                {para}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    {(bioHtml || fallbackText.length > 300) && (
+                      <button
+                        onClick={() => setShowFullDescription(!showFullDescription)}
+                        className="text-sm text-primary hover:underline mt-2 font-medium"
+                      >
+                        {showFullDescription ? 'less' : 'more'}
+                      </button>
                     )}
                   </div>
                 );

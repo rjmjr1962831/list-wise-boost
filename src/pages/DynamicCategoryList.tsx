@@ -54,19 +54,28 @@ interface DBProfessional {
   review_stars_rating: number | null;
   num_total_reviews: number | null;
   sidebar_video_url: string | null;
+  ratings: any | null;
+  professional_information: any | null;
+  get_to_know_me: string | null;
+  agent_sales_stats: any | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
   // Use ONLY real stats from database - no fake data generation
-  // Rating: Use actual database rating ONLY if available and valid
-  const rating = (typeof dbProf.review_stars_rating === 'number' && dbProf.review_stars_rating > 0)
-    ? dbProf.review_stars_rating
-    : 0; // 0 indicates no rating available
+  // Rating: Extract from ratings JSONB object (memo23 format)
+  const ratingsObj = dbProf.ratings as any;
+  const rating = (ratingsObj?.average && typeof ratingsObj.average === 'number' && ratingsObj.average > 0)
+    ? ratingsObj.average
+    : (typeof dbProf.review_stars_rating === 'number' && dbProf.review_stars_rating > 0)
+      ? dbProf.review_stars_rating
+      : 0; // 0 indicates no rating available
   
-  // Reviews: Use actual database review count ONLY if available and valid
-  const reviews = (typeof dbProf.num_total_reviews === 'number' && dbProf.num_total_reviews > 0)
-    ? dbProf.num_total_reviews
-    : 0; // 0 indicates no reviews available
+  // Reviews: Use ratings.count or num_total_reviews
+  const reviews = (ratingsObj?.count && typeof ratingsObj.count === 'number' && ratingsObj.count > 0)
+    ? ratingsObj.count
+    : (typeof dbProf.num_total_reviews === 'number' && dbProf.num_total_reviews > 0)
+      ? dbProf.num_total_reviews
+      : 0; // 0 indicates no reviews available
   
   const stats: Record<string, number | string> = {};
   if (typeof dbProf.years_experience === 'number' && dbProf.years_experience > 0) {
@@ -98,7 +107,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     phone: dbProf.phone || undefined, // Don't show fake phone numbers
     email: dbProf.email || undefined, // Don't show fake emails
     website: dbProf.website || dbProf.zillow_profile_url || undefined, // Only show real websites
-    description: dbProf.description || '',
+    description: (dbProf as any).get_to_know_me || dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
     image: dbProf.image_url || '/api/placeholder/400/400',
@@ -116,6 +125,10 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     zillow_data_fetched_at: dbProf.zillow_data_fetched_at || undefined,
     zillow_profile_url: dbProf.zillow_profile_url || undefined,
     sidebar_video_url: dbProf.sidebar_video_url || undefined,
+    professional_information: (dbProf as any).professional_information || undefined,
+    ratings: dbProf.ratings || undefined,
+    get_to_know_me: (dbProf as any).get_to_know_me || undefined,
+    agent_sales_stats: (dbProf as any).agent_sales_stats || undefined,
   };
 
   return enriched;
