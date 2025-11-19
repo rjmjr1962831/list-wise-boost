@@ -106,7 +106,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="categories" className="space-y-6">
-          <TabsList className="flex flex-wrap w-full max-w-7xl gap-1">
+          <TabsList className="inline-flex w-full max-w-7xl h-auto flex-wrap gap-1 p-2">
             <TabsTrigger value="categories">
               <Tag className="mr-2 h-4 w-4" />
               Categories
