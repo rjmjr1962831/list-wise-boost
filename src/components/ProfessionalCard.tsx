@@ -15,6 +15,7 @@ import { ZillowProfileBar } from "./ZillowProfileBar";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { extractYearsFromBio } from "@/utils/bioParser";
 
 
 interface ProfessionalCardProps {
@@ -399,13 +400,6 @@ export const ProfessionalCard = ({
                     return Number.isFinite(n) ? n : null;
                   };
 
-                  const currentListings =
-                    toNum(professional.current_listings) ??
-                    toNum(statFromObj(professional, 'stats.currentListings')) ??
-                    toNum((liveStats as any)?.currentListings) ??
-                    toNum((liveStats as any)?.current_listings) ??
-                    toNum((liveStats as any)?.forSale);
-
                   const totalSales =
                     toNum(professional.total_sales) ??
                     toNum(statFromObj(professional, 'stats.totalSales')) ??
@@ -414,12 +408,12 @@ export const ProfessionalCard = ({
                     toNum((liveStats as any)?.total_sales) ??
                     toNum((liveStats as any)?.sold);
 
-                  // Use yearsInIndustry from professional_information if available
-                  const yearsExperience = parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
+                  // Calculate years from bio if available, otherwise use stored values
+                  const bioYears = extractYearsFromBio(parsedProfInfo?.description || (professional as any).description || (professional as any).get_to_know_me);
+                  const yearsExperience = bioYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
 
-                  const displayStats = { currentListings, totalSales, yearsExperience } as const;
+                  const displayStats = { totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
-                    currentListings: 'Current Listings',
                     totalSales: 'Total Sales',
                     yearsExperience: 'Years Experience'
                   };
