@@ -13,9 +13,8 @@ export const SingleAgentMemo23 = () => {
   const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
+    // Load Adam's profile; scraping only runs when you click the debug button
     fetchProfile();
-    // Auto-run the full debug on mount
-    fetchAdamData();
   }, []);
 
   const fetchProfile = async () => {
@@ -42,20 +41,19 @@ export const SingleAgentMemo23 = () => {
   };
 
   const fetchAdamData = async () => {
+    // Require a fully loaded profile before attempting any scraping
+    const cityId = profile?.city_id;
+    const categoryId = profile?.category_id;
+
+    if (!cityId || !categoryId) {
+      toast.error('Missing city or category ID on profile; reload profile and try again.');
+      return;
+    }
+
     setLoading(true);
     setResult(null);
     
     try {
-      // Get city and category IDs from the profile
-      const cityId = profile?.city_id;
-      const categoryId = profile?.category_id;
-      
-      if (!cityId || !categoryId) {
-        toast.error('Missing city or category ID');
-        return;
-      }
-      
-      // Step 1: Fetch from agenscrape
       toast.info('Step 1/2: Fetching agenscrape data for Adam Hamblen...');
       
       const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
