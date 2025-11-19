@@ -27,18 +27,23 @@ serve(async (req) => {
 
     console.log(`Starting Zillow bulk scraper for ${city}, ${state}`);
 
-    // Prepare Apify actor input for Zillow agent search
+    // Prepare Apify actor input for agenscrape
     const actorInput = {
-      location: `${city}, ${state}`,
-      maxPages: maxPages,
-      category: "real-estate-agents"
+      search_query: `${city}, ${state}`,
+      category: "real-estate-agents",
+      locationText: `${city}, ${state}`,
+      name: "",
+      language: "en",
+      specialty: "",
+      maxResults: maxPages * 10,
+      startPage: 1
     };
 
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
 
-    // Start the Apify actor - using getdataforme's working scraper
+    // Start the Apify actor - using agenscrape
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
+      'https://api.apify.com/v2/acts/getdataforme~agenscrape/runs',
       {
         method: 'POST',
         headers: {
