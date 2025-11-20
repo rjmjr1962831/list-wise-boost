@@ -290,6 +290,18 @@ serve(async (req) => {
         const [inserted] = await insertResponse.json();
         insertedAgents.push(inserted);
         console.log(`Inserted agent with profile: ${profileUrl}`);
+        
+        // Trigger background email verification if email exists
+        if (email && inserted.id) {
+          fetch(`${SUPABASE_URL}/functions/v1/verify-email`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ professionalId: inserted.id })
+          }).catch(err => console.log('Background email verification failed:', err));
+        }
       } else {
         const error = await insertResponse.text();
         console.error(`Error inserting agent:`, error);
