@@ -310,6 +310,66 @@ export default function DynamicCategoryList() {
     fetchData();
   }, [stateSlug, citySlug, categorySlug]);
 
+  // Real-time subscription to update cards as agents get enriched by memo23
+  useEffect(() => {
+    if (!city?.id || !category?.id) return;
+
+    console.log(`🔴 Setting up realtime for city: ${city.name}, category: ${category.slug}`);
+
+    const channel = supabase
+      .channel('professionals-enrichment')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'professionals',
+          filter: `city_id=eq.${city.id}`,
+        },
+        (payload) => {
+          console.log('🟢 Realtime update received:', payload.new);
+          const updatedProf = payload.new as DBProfessional;
+          
+          // Only process if it belongs to current category and has enriched data
+          if (updatedProf.category_id === category.id && updatedProf.professional_information) {
+            const convertedProf = convertToProfessional(updatedProf);
+            
+            setAllProfessionals(prev => {
+              const index = prev.findIndex(p => p.id === updatedProf.id);
+              if (index === -1) return prev;
+              
+              const newProfs = [...prev];
+              newProfs[index] = convertedProf;
+              console.log(`✅ Updated ${convertedProf.name} in allProfessionals`);
+              return newProfs;
+            });
+            
+            setFilteredProfessionals(prev => {
+              const index = prev.findIndex(p => p.id === updatedProf.id);
+              if (index === -1) return prev;
+              
+              const newProfs = [...prev];
+              newProfs[index] = convertedProf;
+              console.log(`✅ Updated ${convertedProf.name} in filteredProfessionals`);
+              return newProfs;
+            });
+            
+            toast.success(`${updatedProf.name} enriched`, {
+              description: 'Profile data updated in real-time'
+            });
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+
+    return () => {
+      console.log('🔴 Cleaning up realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [city?.id, category?.id]);
+
   const generateAndInsertProfessionals = async (cityData: City, categoryData: Category) => {
     if (categoryData.slug !== 'top10realestateagents') {
       toast.info(`No listings available yet for ${categoryData.plural_name} in ${cityData.name}.`, {
