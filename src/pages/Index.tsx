@@ -1,6 +1,6 @@
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { ApplySearchForm } from "@/components/ApplySearchForm";
-import { Star } from "lucide-react";
+import { Star, Award } from "lucide-react";
 const Index = () => {
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
   return <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
@@ -27,6 +27,14 @@ const Index = () => {
               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
             </span>{" "}
             on every site we have looked at, at least 200 reviews, and been in business for more than 5 years. And that's just where we start!
+          </p>
+          <p className="text-xl text-muted-foreground leading-relaxed">
+            While agents can buy space on the list, just like they do on Google, they are not required to if they meet the requirements. We thoroughly vet an agent with humans before issuing them a preferred place. You can tell if they are paying us when you see the{" "}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold text-sm align-middle">
+              <Award className="w-3.5 h-3.5" />
+              Brand Builder
+            </span>{" "}
+            badge under their photo.
           </p>
         </div>
       </section>
