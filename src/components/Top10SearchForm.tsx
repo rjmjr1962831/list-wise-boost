@@ -394,10 +394,7 @@ export const Top10SearchForm = () => {
                     htmlFor={neighborhood.name}
                     className="text-sm cursor-pointer flex-1"
                   >
-                    <span className="font-medium">{neighborhood.name}</span>
-                    <span className="text-muted-foreground ml-2">
-                      ({neighborhood.zip_codes.length} zip code{neighborhood.zip_codes.length !== 1 ? 's' : ''})
-                    </span>
+                    {neighborhood.name}
                   </label>
                 </div>
               ))}
