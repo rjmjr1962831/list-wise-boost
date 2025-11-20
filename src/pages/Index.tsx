@@ -1,5 +1,6 @@
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { ApplySearchForm } from "@/components/ApplySearchForm";
+import { Star } from "lucide-react";
 const Index = () => {
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
   return <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
@@ -15,6 +16,17 @@ const Index = () => {
           </p>
           <p className="text-xl text-muted-foreground leading-relaxed">
             We've pored through dozens of sources and rated about 2,000,000 agents in the U.S.
+          </p>
+          <p className="text-xl text-muted-foreground leading-relaxed">
+            Every Agent on our list has 5.0{" "}
+            <span className="inline-flex items-center gap-0.5 align-middle">
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+            </span>{" "}
+            on every site we have looked at, at least 200 reviews, and been in business for more than 5 years. And that's just where we start!
           </p>
         </div>
       </section>
