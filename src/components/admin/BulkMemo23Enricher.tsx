@@ -33,34 +33,32 @@ export const BulkMemo23Enricher = () => {
     setProgress(0);
     
     try {
-      // Fetch all active cities and categories
-      const { data: cities, error: citiesError } = await supabase
-        .from('cities')
-        .select('id, name')
-        .eq('active', true);
-      
-      const { data: categories, error: categoriesError } = await supabase
-        .from('categories')
-        .select('id, name')
+      // Fetch only city-category combinations that have existing agents from agenscrape
+      const { data: agentCombos, error: combosError } = await supabase
+        .from('professionals')
+        .select('city_id, category_id, cities(name), categories(name)')
         .eq('active', true);
 
-      if (citiesError || categoriesError) {
-        toast.error('Failed to load cities or categories');
+      if (combosError) {
+        toast.error('Failed to load agent combinations');
         return;
       }
 
-      // Create all city-category combinations
-      const combinations: CityCategory[] = [];
-      for (const city of cities || []) {
-        for (const category of categories || []) {
-          combinations.push({
-            cityId: city.id,
-            cityName: city.name,
-            categoryId: category.id,
-            categoryName: category.name
+      // Create unique city-category combinations that have agents
+      const uniqueCombosMap = new Map<string, CityCategory>();
+      for (const agent of agentCombos || []) {
+        const key = `${agent.city_id}-${agent.category_id}`;
+        if (!uniqueCombosMap.has(key) && agent.cities && agent.categories) {
+          uniqueCombosMap.set(key, {
+            cityId: agent.city_id,
+            cityName: (agent.cities as any).name,
+            categoryId: agent.category_id,
+            categoryName: (agent.categories as any).name
           });
         }
       }
+      
+      const combinations = Array.from(uniqueCombosMap.values());
 
       toast.info(`Starting enrichment for ${combinations.length} city-category combinations`);
       
