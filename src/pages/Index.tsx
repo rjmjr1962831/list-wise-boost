@@ -1,11 +1,8 @@
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { ApplySearchForm } from "@/components/ApplySearchForm";
-
 const Index = () => {
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
-  
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
+  return <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       {/* What Is Top10Lists.us */}
       <section className="container mx-auto px-4 py-20 md:py-32 text-center">
         <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -16,9 +13,11 @@ const Index = () => {
             We're a{" "}
             <span className="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.
           </p>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            Your new text goes here
-          </p>
+          <p className="text-xl text-muted-foreground leading-relaxed">We've pored through dozens of sources and rated about 2,000,000 agents in the U.S.
+
+
+
+                                          </p>
         </div>
       </section>
 
@@ -29,8 +28,6 @@ const Index = () => {
           <ApplySearchForm />
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
