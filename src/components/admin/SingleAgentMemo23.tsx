@@ -140,7 +140,7 @@ export const SingleAgentMemo23 = () => {
       toast.info('Step 2/2: Fetching memo23 data for Adam Hamblen...');
       
       const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
-        body: { professionalId: '4bf24984-40fe-4077-92c7-316ac57989d4' }
+        body: { professionalId: profile.id }
       });
 
       setMemo23Response({ data, error });
