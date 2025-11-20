@@ -614,16 +614,18 @@ export const ProfessionalCard = ({
                     {bioHtml ? (() => {
                       const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
                       
-                      // If the bio already has HTML, preserve it as-is
+                      // CRITICAL: Always preserve line breaks in bios!
+                      // If the bio already has HTML, preserve it as-is with whitespace-pre-line
                       if (hasHtmlTags) {
                         return (
                           <div
-                            className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
+                            className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
                             dangerouslySetInnerHTML={{ __html: bioHtml }}
                           />
                         );
                       }
                       
+                      // CRITICAL: Always preserve line breaks - use whitespace-pre-line class
                       // Otherwise, render real <p> elements from newline-delimited text
                       const paragraphs = renderPlainTextParagraphs(bioHtml);
                       const visibleParagraphs = showFullDescription ? paragraphs : paragraphs.slice(0, 2);
@@ -632,7 +634,7 @@ export const ProfessionalCard = ({
                       return (
                         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                           {visibleParagraphs.map((para, idx) => (
-                            <p key={idx}>{para}</p>
+                            <p key={idx} className="whitespace-pre-line">{para}</p>
                           ))}
                           {hasMore && (
                             <button
@@ -645,6 +647,7 @@ export const ProfessionalCard = ({
                         </div>
                       );
                     })() : (() => {
+                      // CRITICAL: Always preserve line breaks - use whitespace-pre-line class
                       // Fallback text paragraph handling similar to bioHtml above
                       const paragraphs = renderPlainTextParagraphs(fallbackText);
                       const visibleParagraphs = showFullDescription ? paragraphs : paragraphs.slice(0, 2);
@@ -653,7 +656,7 @@ export const ProfessionalCard = ({
                       return (
                         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
                           {visibleParagraphs.map((para, idx) => (
-                            <p key={idx}>{para}</p>
+                            <p key={idx} className="whitespace-pre-line">{para}</p>
                           ))}
                           {hasMore && (
                             <button
