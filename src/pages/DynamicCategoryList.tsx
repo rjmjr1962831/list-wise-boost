@@ -157,6 +157,16 @@ export default function DynamicCategoryList() {
   // Immediately mark loading as complete - no artificial delay
   useEffect(() => {
     setMinLoadingComplete(true);
+    
+    // Force hard refresh on mobile browsers to prevent stale cached content
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const hasRefreshed = sessionStorage.getItem('page-refreshed');
+    
+    if (isMobile && !hasRefreshed) {
+      console.log('🔄 Mobile detected - forcing hard refresh to clear cache');
+      sessionStorage.setItem('page-refreshed', 'true');
+      window.location.reload();
+    }
   }, []);
 
   // Fetch city and category data
@@ -206,7 +216,8 @@ export default function DynamicCategoryList() {
 
         setCategory(categoryData);
 
-        // Fetch professionals
+        // Fetch professionals with cache-busting timestamp
+        const cacheBuster = Date.now();
         const { data: professionalsData, error: profsError } = await supabase
           .from('professionals')
           .select('*')
@@ -855,6 +866,7 @@ export default function DynamicCategoryList() {
         />
       )}
       <ProfessionalListLayout
+        key={`professionals-${allProfessionals.length}-${Date.now()}`}
         metadata={metadata}
         professionals={filteredProfessionals}
       >
