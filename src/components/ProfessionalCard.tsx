@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Facebook, Linkedin, Twitter, Instagram, Youtube, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -79,10 +79,48 @@ export const ProfessionalCard = ({
       const profInfoArray = (professional as any).professional_information;
       let websiteFromProfInfo: string | null = null;
       let phoneFromProfInfo: string | null = null;
+      let socialLinks: {
+        websiteUrl?: string;
+        facebookUrl?: string;
+        linkedInUrl?: string;
+        xUrl?: string;
+        instagramUrl?: string;
+        tiktokUrl?: string;
+        youtubeUrl?: string;
+        pinterestUrl?: string;
+      } = {};
       
       if (Array.isArray(profInfoArray) && profInfoArray.length > 0) {
-        type InfoEntry = { term?: string; description?: string; lines?: string[]; links?: { text?: string; url?: string }[] };
+        type InfoEntry = { 
+          term?: string; 
+          description?: string; 
+          lines?: string[]; 
+          links?: { text?: string; url?: string }[];
+          websiteUrl?: string;
+          facebookUrl?: string;
+          linkedInUrl?: string;
+          xUrl?: string;
+          instagramUrl?: string;
+          tiktokUrl?: string;
+          youtubeUrl?: string;
+          pinterestUrl?: string;
+        };
         const entries = profInfoArray as InfoEntry[];
+        
+        // Extract social links from the first entry (memo23 puts them there)
+        if (entries[0]) {
+          socialLinks = {
+            websiteUrl: entries[0].websiteUrl,
+            facebookUrl: entries[0].facebookUrl,
+            linkedInUrl: entries[0].linkedInUrl,
+            xUrl: entries[0].xUrl,
+            instagramUrl: entries[0].instagramUrl,
+            tiktokUrl: entries[0].tiktokUrl,
+            youtubeUrl: entries[0].youtubeUrl,
+            pinterestUrl: entries[0].pinterestUrl,
+          };
+        }
+        
         const websitesEntry = entries.find(e => e.term === 'Websites');
         websiteFromProfInfo = websitesEntry?.links?.[0]?.url || null;
         
@@ -134,7 +172,8 @@ export const ProfessionalCard = ({
           specialties: [] as string[],
           websiteUrl: websiteFromProfInfo,
           phone: phoneFromProfInfo,
-          description: null
+          description: null,
+          socialLinks
         } : null;
       }
 
@@ -482,12 +521,110 @@ export const ProfessionalCard = ({
             <div className="relative">
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-4">
-                  <div>
+                  <div className="flex-1">
                     {/* Semantic heading for SEO */}
-                    <h3 className="text-2xl font-bold" itemProp="name">
-                      {professional.name}
-                      {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
-                    </h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-2xl font-bold" itemProp="name">
+                        {professional.name}
+                        {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
+                      </h3>
+                      
+                      {/* Social Media Badges */}
+                      {parsedProfInfo?.socialLinks && (
+                        <div className="flex items-center gap-1.5">
+                          {parsedProfInfo.socialLinks.websiteUrl && (
+                            <a 
+                              href={parsedProfInfo.socialLinks.websiteUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-primary transition-colors"
+                              onClick={() => trackEvent('social_link_click', {
+                                agent_name: professional.name,
+                                market,
+                                platform: 'website'
+                              })}
+                            >
+                              <Link2 className="h-4 w-4" />
+                            </a>
+                          )}
+                          {parsedProfInfo.socialLinks.facebookUrl && (
+                            <a 
+                              href={parsedProfInfo.socialLinks.facebookUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-[#1877F2] transition-colors"
+                              onClick={() => trackEvent('social_link_click', {
+                                agent_name: professional.name,
+                                market,
+                                platform: 'facebook'
+                              })}
+                            >
+                              <Facebook className="h-4 w-4" />
+                            </a>
+                          )}
+                          {parsedProfInfo.socialLinks.linkedInUrl && (
+                            <a 
+                              href={parsedProfInfo.socialLinks.linkedInUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-[#0A66C2] transition-colors"
+                              onClick={() => trackEvent('social_link_click', {
+                                agent_name: professional.name,
+                                market,
+                                platform: 'linkedin'
+                              })}
+                            >
+                              <Linkedin className="h-4 w-4" />
+                            </a>
+                          )}
+                          {parsedProfInfo.socialLinks.xUrl && (
+                            <a 
+                              href={parsedProfInfo.socialLinks.xUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-foreground transition-colors"
+                              onClick={() => trackEvent('social_link_click', {
+                                agent_name: professional.name,
+                                market,
+                                platform: 'x'
+                              })}
+                            >
+                              <Twitter className="h-4 w-4" />
+                            </a>
+                          )}
+                          {parsedProfInfo.socialLinks.instagramUrl && (
+                            <a 
+                              href={parsedProfInfo.socialLinks.instagramUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-[#E4405F] transition-colors"
+                              onClick={() => trackEvent('social_link_click', {
+                                agent_name: professional.name,
+                                market,
+                                platform: 'instagram'
+                              })}
+                            >
+                              <Instagram className="h-4 w-4" />
+                            </a>
+                          )}
+                          {parsedProfInfo.socialLinks.youtubeUrl && (
+                            <a 
+                              href={parsedProfInfo.socialLinks.youtubeUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-[#FF0000] transition-colors"
+                              onClick={() => trackEvent('social_link_click', {
+                                agent_name: professional.name,
+                                market,
+                                platform: 'youtube'
+                              })}
+                            >
+                              <Youtube className="h-4 w-4" />
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
                     <p className="text-lg text-muted-foreground" itemProp="affiliation">
                       {professional.company}
                     </p>
