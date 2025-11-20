@@ -230,43 +230,47 @@ export const SingleAgentMemo23 = () => {
 
           {result && (
             <div className="space-y-4">
-              {result.sidebarVideoUrl && (
-                <div>
-                  <h4 className="font-semibold mb-3">Video Preview:</h4>
-                  <div className="w-full max-w-3xl">
-                    <iframe
-                      width="100%"
-                      height="450"
-                      src={`https://www.youtube.com/embed/${result.sidebarVideoUrl.split('v=')[1]?.split('&')[0] || result.sidebarVideoUrl.split('/').pop()?.split('?')[0]}`}
-                      title="Agent video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="rounded-lg border-2 w-full"
-                    />
+              <div className="flex flex-col md:flex-row gap-6 items-start">
+                {result.sidebarVideoUrl && (
+                  <div className="w-full md:w-1/2 max-w-xl">
+                    <h4 className="font-semibold mb-3">Video Preview:</h4>
+                    <div className="w-full aspect-video">
+                      <iframe
+                        width="100%"
+                        height="100%"
+                        src={`https://www.youtube.com/embed/${result.sidebarVideoUrl.split('v=')[1]?.split('&')[0] || result.sidebarVideoUrl.split('/').pop()?.split('?')[0]}`}
+                        title="Agent video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        className="rounded-lg border-2 w-full h-full"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex-1 space-y-3 w-full">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold">Result summary</h4>
+                    <Button 
+                      onClick={fetchProfile} 
+                      size="sm" 
+                      variant="outline"
+                      className="gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Refresh Profile
+                    </Button>
+                  </div>
+                  <div className="bg-muted p-4 rounded-lg space-y-2">
+                    <p><strong>Professional:</strong> {result.professional}</p>
+                    <p><strong>Sidebar Video URL:</strong> {result.sidebarVideoUrl || 'Not found'}</p>
+                    <p><strong>Phone Numbers:</strong> {result.phoneNumbers?.length > 0 ? result.phoneNumbers.join(', ') : 'None found'}</p>
+                    <p><strong>Email:</strong> {result.email || 'None found'}</p>
+                    <p><strong>Reviews Count:</strong> {result.reviewsCount || 0}</p>
+                    <p><strong>Updated Fields:</strong> {result.updatedFields?.join(', ')}</p>
                   </div>
                 </div>
-              )}
-              
-              <div className="flex items-center justify-between">
-                <h4 className="font-semibold">Result summary</h4>
-                <Button 
-                  onClick={fetchProfile} 
-                  size="sm" 
-                  variant="outline"
-                  className="gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Refresh Profile
-                </Button>
-              </div>
-              <div className="bg-muted p-4 rounded-lg space-y-2">
-                <p><strong>Professional:</strong> {result.professional}</p>
-                <p><strong>Sidebar Video URL:</strong> {result.sidebarVideoUrl || 'Not found'}</p>
-                <p><strong>Phone Numbers:</strong> {result.phoneNumbers?.length > 0 ? result.phoneNumbers.join(', ') : 'None found'}</p>
-                <p><strong>Email:</strong> {result.email || 'None found'}</p>
-                <p><strong>Reviews Count:</strong> {result.reviewsCount || 0}</p>
-                <p><strong>Updated Fields:</strong> {result.updatedFields?.join(', ')}</p>
               </div>
             </div>
           )}
