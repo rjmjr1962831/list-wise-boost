@@ -555,7 +555,7 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
-              {/* Video centered in blank space */}
+              {/* Video in upper-right blank space */}
               {(parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
                 const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
                 const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
@@ -563,10 +563,10 @@ export const ProfessionalCard = ({
                   : null;
                 
                 return videoId ? (
-                  <div className="hidden md:flex md:justify-center md:items-center mt-4 mb-4">
+                  <div className="hidden md:block absolute right-8 top-6">
                     <iframe
-                      width="320"
-                      height="180"
+                      width="360"
+                      height="202"
                       src={`https://www.youtube.com/embed/${videoId}`}
                       title="Agent video"
                       frameBorder="0"
