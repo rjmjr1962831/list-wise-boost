@@ -84,12 +84,12 @@ serve(async (req) => {
       .filter(p => p.zillow_profile_url)
       .map(p => p.zillow_profile_url);
 
-    console.log(`Processing ${agentUrls.length} agent profiles with memo23 at maxConcurrency=1000`);
+    console.log(`Processing ${agentUrls.length} agent profiles with memo23 at maxConcurrency=100`);
 
     // Run memo23 actor with high concurrency for faster processing
     const actorInput = {
       startUrls: agentUrls.map(url => ({ url })),
-      maxConcurrency: 1000,
+      maxConcurrency: 100,
       proxyConfiguration: { 
         useApifyProxy: true,
         apifyProxyGroups: ['RESIDENTIAL']
