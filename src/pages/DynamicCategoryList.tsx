@@ -106,7 +106,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     address: (dbProf as any).address || '',
     phone: dbProf.phone || undefined, // Don't show fake phone numbers
     email: dbProf.email || undefined, // Don't show fake emails
-    website: dbProf.website || dbProf.zillow_profile_url || undefined, // Only show real websites
+    website: dbProf.website || undefined, // Only show real personal websites
     description: (dbProf as any).get_to_know_me || dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),

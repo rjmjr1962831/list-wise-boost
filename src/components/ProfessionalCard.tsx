@@ -653,10 +653,10 @@ export const ProfessionalCard = ({
                       </a>
                     </div>
                   )}
-                  {(professional as any).zuid && (
+                  {(professional as any).zillow_profile_url || (professional as any).zuid ? (
                     <div className="flex items-center gap-2">
                       <a 
-                        href={`https://www.zillow.com/profile/${(professional as any).zuid}`}
+                        href={(professional as any).zillow_profile_url || `https://www.zillow.com/profile/${(professional as any).zuid}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline flex items-center gap-1"
@@ -672,7 +672,7 @@ export const ProfessionalCard = ({
                         <ExternalLink className="h-3 w-3" />
                       </a>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
