@@ -16,6 +16,7 @@ import { BioGenerator } from "@/components/admin/BioGenerator";
 import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
 import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
 import { ZuidExtractor } from "@/components/admin/ZuidExtractor";
+import { BeauvaisEnricher } from "@/components/admin/BeauvaisEnricher";
 import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsManager";
 import { AgentStatsImporter } from "@/components/admin/AgentStatsImporter";
 import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporter";
@@ -233,6 +234,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="scraper-debug" className="space-y-4">
+            <BeauvaisEnricher />
             <SingleAgentMemo23 />
             <ZillowScraperDebug />
           </TabsContent>
