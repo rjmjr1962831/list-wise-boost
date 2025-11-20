@@ -770,6 +770,26 @@ export const ProfessionalCard = ({
                       </a>
                     </div>
                   )}
+                  {professional.zuid && (
+                    <div className="flex items-center gap-2">
+                      <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <a
+                        href={`https://www.zillow.com/profile/${professional.zuid}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline agent-profile-link"
+                        onClick={() =>
+                          trackEvent('press_mention_click', {
+                            agent_name: professional.name,
+                            market: professional.address || '',
+                            source: 'Zillow Profile',
+                          })
+                        }
+                      >
+                        Zillow Profile
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
 
