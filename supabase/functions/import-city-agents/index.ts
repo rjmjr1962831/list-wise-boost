@@ -37,19 +37,19 @@ serve(async (req) => {
 
     console.log(`Starting full import for ${city?.name}, ${city?.state} - ${category?.name}`);
 
-    // Step 1: Run agenscrape to get profile URLs
-    console.log('Step 1/2: Running agenscrape to fetch profile URLs...');
+    // Step 1: Run getdataforme to get profile URLs
+    console.log('Step 1/2: Running getdataforme to fetch profile URLs (max 10)...');
     const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
-      body: { cityId, categoryId }
+      body: { cityId, categoryId, maxResults: 10 }
     });
 
     if (agenscrapeResult.error) {
-      console.error('Agenscrape error:', agenscrapeResult.error);
-      throw new Error(`Agenscrape failed: ${agenscrapeResult.error.message}`);
+      console.error('Getdataforme error:', agenscrapeResult.error);
+      throw new Error(`Getdataforme failed: ${agenscrapeResult.error.message}`);
     }
 
     const agenscrapeData = agenscrapeResult.data;
-    console.log(`Agenscrape completed: ${agenscrapeData?.total || 0} agents imported`);
+    console.log(`Getdataforme completed: ${agenscrapeData?.total || 0} agents imported`);
 
       // Small delay between steps
       await new Promise(resolve => setTimeout(resolve, 2000));

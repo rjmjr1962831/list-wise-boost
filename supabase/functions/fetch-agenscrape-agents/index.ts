@@ -28,7 +28,7 @@ serve(async (req) => {
   }
 
   try {
-    const { locationText, cityId, categoryId, maxResults = 50 } = await req.json();
+    const { locationText, cityId, categoryId, maxResults = 10 } = await req.json();
     
     if (!categoryId || !cityId) {
       throw new Error('cityId and categoryId are required');
@@ -42,7 +42,7 @@ serve(async (req) => {
       throw new Error('APIFY_API_TOKEN not configured');
     }
 
-    console.log(`Starting agenscrape scraper for location: ${locationText || 'city lookup'}`);
+    console.log(`Starting getdataforme scraper for location: ${locationText || 'city lookup'}`);
 
     // Determine final cityId and search location
     let finalCityId = cityId;
@@ -110,17 +110,22 @@ serve(async (req) => {
       throw new Error('Could not determine city for import');
     }
 
-    // Start the Apify actor
+    // Start the Apify actor with getdataforme
     const actorInput = {
+      search_query: searchLocation,
+      category: "real-estate-agents",
       locationText: searchLocation,
+      name: "",
+      language: "English",
+      specialty: "",
       maxResults: maxResults,
-      category: "real-estate-agents" // Explicitly set category to real estate agents
+      startPage: 1
     };
     
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
 
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/agenscrape~zillow-agents-finder/runs',
+      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
       {
         method: 'POST',
         headers: {
