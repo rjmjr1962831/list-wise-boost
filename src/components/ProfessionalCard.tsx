@@ -585,76 +585,84 @@ export const ProfessionalCard = ({
               {/* Bio Section - Use get_to_know_me from memo23 if available */}
               {(() => {
                 // Priority: get_to_know_me (full bio HTML) > parsed description (basic info) > description
-                const bioHtml = (professional as any).get_to_know_me;
+                const bioHtml = (professional as any).get_to_know_me as string | null;
                 const fallbackText = parsedProfInfo?.description || professional.description || '';
                 
                 if (!bioHtml && !fallbackText) return null;
                 
                 const firstName = professional.name.split(' ')[0];
                 
+                // Helper to turn plain text with newlines into paragraphs
+                const renderPlainTextParagraphs = (text: string) => {
+                  // Prefer double newlines, but fall back to single newlines if needed
+                  let paragraphs = text.split(/\n{2,}/).filter(p => p.trim());
+                  if (paragraphs.length === 1 && /\n/.test(text)) {
+                    paragraphs = text.split(/\n+/).filter(p => p.trim());
+                  }
+                  if (paragraphs.length === 0) {
+                    paragraphs = [text];
+                  }
+                  return paragraphs;
+                };
+                
                 return (
                   <div itemProp="description" className="border-t pt-3">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
-                    {bioHtml ? (
-                      <div 
-                        className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
-                        dangerouslySetInnerHTML={{ __html: (() => {
-                          const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
-                          if (hasHtmlTags) return bioHtml;
-                          
-                          // Try splitting by double newlines first
-                          let paragraphs = bioHtml.split(/\n{2,}/).filter(p => p.trim());
-                          
-                          // If that yields only one paragraph but text has single newlines, split by those
-                          if (paragraphs.length === 1 && /\n/.test(bioHtml)) {
-                            paragraphs = bioHtml.split(/\n+/).filter(p => p.trim());
-                          }
-                          
-                          if (paragraphs.length === 0) return bioHtml;
-                          return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
-                        })() }}
-                      />
-                    ) : (() => {
-                      // Fallback text paragraph handling similar to bioHtml above
-                      let paragraphs = fallbackText.split(/\n{2,}/).filter(p => p.trim());
-                      if (paragraphs.length === 1 && /\n/.test(fallbackText)) {
-                        paragraphs = fallbackText.split(/\n+/).filter(p => p.trim());
-                      }
-                      if (paragraphs.length === 0) {
-                        paragraphs = [fallbackText];
-                      }
-
-                      const firstTwoParagraphs = paragraphs.slice(0, 2);
-                      const hasMore = paragraphs.length > 2;
+                    {bioHtml ? (() => {
+                      const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
                       
-                      return !hasMore ? (
-                        <div className="space-y-3">
-                          {paragraphs.map((para, idx) => (
-                            <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
-                              {para}
-                            </p>
+                      // If the bio already has HTML, preserve it as-is
+                      if (hasHtmlTags) {
+                        return (
+                          <div
+                            className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
+                            dangerouslySetInnerHTML={{ __html: bioHtml }}
+                          />
+                        );
+                      }
+                      
+                      // Otherwise, render real <p> elements from newline-delimited text
+                      const paragraphs = renderPlainTextParagraphs(bioHtml);
+                      const visibleParagraphs = showFullDescription ? paragraphs : paragraphs.slice(0, 2);
+                      const hasMore = paragraphs.length > visibleParagraphs.length;
+                      
+                      return (
+                        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                          {visibleParagraphs.map((para, idx) => (
+                            <p key={idx}>{para}</p>
                           ))}
+                          {hasMore && (
+                            <button
+                              onClick={() => setShowFullDescription(!showFullDescription)}
+                              className="text-sm text-primary hover:underline mt-1 font-medium block"
+                            >
+                              {showFullDescription ? 'less' : 'more'}
+                            </button>
+                          )}
                         </div>
-                      ) : (
-                        <div>
-                          <div className="space-y-3">
-                            {(showFullDescription ? paragraphs : firstTwoParagraphs).map((para, idx) => (
-                              <p key={idx} className="text-sm text-muted-foreground leading-relaxed">
-                                {para}
-                              </p>
-                            ))}
-                          </div>
+                      );
+                    })() : (() => {
+                      // Fallback text paragraph handling similar to bioHtml above
+                      const paragraphs = renderPlainTextParagraphs(fallbackText);
+                      const visibleParagraphs = showFullDescription ? paragraphs : paragraphs.slice(0, 2);
+                      const hasMore = paragraphs.length > visibleParagraphs.length;
+                      
+                      return (
+                        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
+                          {visibleParagraphs.map((para, idx) => (
+                            <p key={idx}>{para}</p>
+                          ))}
+                          {hasMore && (
+                            <button
+                              onClick={() => setShowFullDescription(!showFullDescription)}
+                              className="text-sm text-primary hover:underline mt-1 font-medium block"
+                            >
+                              {showFullDescription ? 'less' : 'more'}
+                            </button>
+                          )}
                         </div>
                       );
                     })()}
-                    {(bioHtml || fallbackText.length > 300) && (
-                      <button
-                        onClick={() => setShowFullDescription(!showFullDescription)}
-                        className="text-sm text-primary hover:underline mt-2 font-medium"
-                      >
-                        {showFullDescription ? 'less' : 'more'}
-                      </button>
-                    )}
                   </div>
                 );
               })()}
