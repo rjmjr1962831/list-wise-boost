@@ -231,6 +231,13 @@ serve(async (req) => {
         continue;
       }
 
+      // Filter for 4.9+ star ratings only
+      const rating = agent.reviewStarsRating || agent.rating || 0;
+      if (rating < 4.9) {
+        console.log(`Skipping ${agent.fullName} - rating too low: ${rating}`);
+        continue;
+      }
+
       // Extract agent info from Apify response
       // Handle both old and new field names from different scrapers
       const profileUrl = agent.profileLink || agent.profile_url;
