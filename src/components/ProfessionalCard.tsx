@@ -592,19 +592,24 @@ export const ProfessionalCard = ({
                 
                 const firstName = professional.name.split(' ')[0];
                 
-                // Helper to turn plain text with newlines into paragraphs
+                // Helper to turn plain text with newlines or long sentences into paragraphs
                 const renderPlainTextParagraphs = (text: string) => {
-                  // Prefer double newlines, but fall back to single newlines if needed
+                  if (!text) return [] as string[];
+
+                  // Prefer explicit newlines if present
                   let paragraphs = text.split(/\n{2,}/).filter(p => p.trim());
                   if (paragraphs.length === 1 && /\n/.test(text)) {
                     paragraphs = text.split(/\n+/).filter(p => p.trim());
                   }
-                  if (paragraphs.length === 0) {
-                    paragraphs = [text];
+
+                  // If there were no newlines at all, fall back to sentence-based splitting
+                  if (paragraphs.length === 0 || (paragraphs.length === 1 && !/\n/.test(text))) {
+                    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+                    paragraphs = sentences.map(s => s.trim()).filter(Boolean);
                   }
+
                   return paragraphs;
                 };
-                
                 return (
                   <div itemProp="description" className="border-t pt-3">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
