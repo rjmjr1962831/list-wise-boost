@@ -513,17 +513,20 @@ export const ProfessionalCard = ({
                     toNum((liveStats as any)?.sold);
 
                   // CRITICAL: Always scan bio text for "since YYYY" to extract years of experience
-                  const bioYears = extractYearsFromBio(parsedProfInfo?.description || (professional as any).description || (professional as any).get_to_know_me);
+                  const bioText = parsedProfInfo?.description || (professional as any).description || (professional as any).get_to_know_me;
+                  const bioYears = extractYearsFromBio(bioText);
                   const yearsExperience = bioYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
                   
-                  // If we extracted years from bio and it differs from stored value, update database
-                  if (bioYears !== null && bioYears !== professional.years_experience) {
+                  // If we extracted years from bio and it differs from stored value, update database immediately
+                  if (bioYears !== null && bioYears !== professional.years_experience && professional.id) {
+                    console.log(`Updating years_experience for ${professional.name}: ${bioYears} years (extracted from bio)`);
                     supabase
                       .from('professionals')
                       .update({ years_experience: bioYears })
                       .eq('id', professional.id)
                       .then(({ error }) => {
                         if (error) console.error('Error updating years_experience:', error);
+                        else console.log(`Successfully updated years_experience for ${professional.name}`);
                       });
                   }
 
@@ -535,7 +538,7 @@ export const ProfessionalCard = ({
 
                   return Object.entries(displayStats).map(([key, value]) => (
                     <div key={key} className="text-center md:text-left">
-                      <div className="text-2xl font-bold text-primary">{(value == null || Number(value) <= 0) ? 'Not available' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                      <div className="text-2xl font-bold text-primary">{(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
                     </div>
                   ));
@@ -616,7 +619,13 @@ export const ProfessionalCard = ({
                         return (
                           <>
                             <div
-                              className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line prose prose-sm max-w-none ${!showFullDescription && isTooLong ? 'line-clamp-[8]' : ''}`}
+                              className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line prose prose-sm max-w-none ${!showFullDescription && isTooLong ? '' : ''}`}
+                              style={!showFullDescription && isTooLong ? { 
+                                display: '-webkit-box',
+                                WebkitLineClamp: 8,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden'
+                              } : {}}
                               dangerouslySetInnerHTML={{ __html: bioHtml }}
                             />
                             {isTooLong && (
@@ -634,7 +643,15 @@ export const ProfessionalCard = ({
                       // CRITICAL: Plain text - preserve line breaks with whitespace-pre-line
                       return (
                         <>
-                          <div className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line ${!showFullDescription && isTooLong ? 'line-clamp-[8]' : ''}`}>
+                          <div 
+                            className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line`}
+                            style={!showFullDescription && isTooLong ? { 
+                              display: '-webkit-box',
+                              WebkitLineClamp: 8,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            } : {}}
+                          >
                             {bioHtml}
                           </div>
                           {isTooLong && (
@@ -653,7 +670,15 @@ export const ProfessionalCard = ({
                       // CRITICAL: Fallback text - preserve line breaks with whitespace-pre-line
                       return (
                         <>
-                          <div className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line ${!showFullDescription && isTooLong ? 'line-clamp-[8]' : ''}`}>
+                          <div 
+                            className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line`}
+                            style={!showFullDescription && isTooLong ? { 
+                              display: '-webkit-box',
+                              WebkitLineClamp: 8,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            } : {}}
+                          >
                             {fallbackText}
                           </div>
                           {isTooLong && (
