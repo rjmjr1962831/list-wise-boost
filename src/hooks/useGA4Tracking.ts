@@ -28,6 +28,7 @@ export interface GA4EventParams {
   category?: string;
   search_type?: string;
   zip_code?: string;
+  neighborhoods_count?: string | number;
 }
 
 export const useGA4Tracking = () => {
