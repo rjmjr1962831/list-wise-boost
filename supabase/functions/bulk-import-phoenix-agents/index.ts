@@ -34,8 +34,13 @@ serve(async (req) => {
       .eq('slug', 'top10realestateagents')
       .single();
 
-    if (categoryError || !category) {
-      throw new Error('Realtor category not found');
+    if (categoryError) {
+      console.error('Category query error:', categoryError);
+      throw new Error(`Real Estate Agent category lookup failed: ${categoryError.message}`);
+    }
+    
+    if (!category) {
+      throw new Error('Real Estate Agent category not found with slug: top10realestateagents');
     }
 
     console.log(`Starting bulk import for ${cities?.length || 0} Phoenix-area cities`);
