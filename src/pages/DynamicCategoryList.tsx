@@ -234,8 +234,58 @@ export default function DynamicCategoryList() {
           // Don't wait for reviews - render immediately
           setReviewsReady(true);
         } else {
+          // Start from DB professionals
+          let baseProfessionals: DBProfessional[] = professionalsData;
+
+          // Scottsdale special case: ensure Beauvais-Real-Estate is ALWAYS present
+          if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
+            const hasBeauvais = baseProfessionals.some(p =>
+              (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
+              (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
+              (p.name && p.name.toLowerCase().includes('beauvais'))
+            );
+
+            if (!hasBeauvais) {
+              console.log('⚠️ Beauvais-Real-Estate not found in DB results for Scottsdale, injecting stub card');
+              const stub: DBProfessional = {
+                id: 'beauvais-stub',
+                name: 'Beauvais Real Estate',
+                title: 'Real Estate Team',
+                category_id: categoryData.id,
+                city_id: cityData.id,
+                rank: 1,
+                type: 'team',
+                specialty: [],
+                years_experience: null,
+                badges: [],
+                email: null,
+                phone: null,
+                website: 'https://www.zillow.com/profile/Beauvais-Real-Estate',
+                description: 'NA',
+                image_url: null,
+                zuid: 'Beauvais-Real-Estate',
+                company: 'Beauvais Real Estate',
+                current_listings: null,
+                total_sales: null,
+                license_number: null,
+                license_verified_at: null,
+                zillow_profile_url: 'https://www.zillow.com/profile/Beauvais-Real-Estate',
+                zillow_data_fetched_at: null,
+                review_stars_rating: null,
+                num_total_reviews: null,
+                sidebar_video_url: null,
+                ratings: null,
+                professional_information: [], // non-null so it passes enriched filter
+                get_to_know_me: null,
+                agent_sales_stats: null,
+              } as any;
+
+              baseProfessionals = [stub, ...baseProfessionals];
+            }
+          }
+
           // Only show agents with professional_information (enriched by memo23)
-          const enrichedOnly = professionalsData.filter(p => p.professional_information);
+          const enrichedOnly = baseProfessionals.filter(p => p.professional_information);
           
           // Special sorting for Scottsdale: Beauvais-Real-Estate always first
           if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
