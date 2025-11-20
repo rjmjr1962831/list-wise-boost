@@ -374,6 +374,9 @@ serve(async (req) => {
         success: true, 
         professional: professional.name,
         sidebarVideoUrl: updateData.sidebar_video_url || null,
+        phoneNumbers: updateData.phone_numbers ? Object.values(updateData.phone_numbers).filter(Boolean) : [],
+        email: updateData.email || null,
+        reviewsCount: updateData.num_total_reviews || 0,
         updatedFields: Object.keys(updateData)
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
