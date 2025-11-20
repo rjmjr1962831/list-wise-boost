@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { findCityByZip } from '@/data/zipCodeLookup';
-import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { useGA4Tracking, type GA4EventParams } from '@/hooks/useGA4Tracking';
 import { NeighborhoodSelector } from '@/components/NeighborhoodSelector';
 
 interface Category {
