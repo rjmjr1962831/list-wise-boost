@@ -216,7 +216,7 @@ export const ProfessionalCard = ({
     if (!websiteSource.trim()) {
       e.preventDefault();
       const firstName = professional.name.split(' ')[0];
-      toast.info(`Sorry, we don't know ${firstName}'s web address. Try contacting them directly.`);
+      toast.info(`Sorry, it doesn't look like ${firstName} has their own website. Try contacting them.`);
       return;
     }
 
@@ -229,6 +229,19 @@ export const ProfessionalCard = ({
       if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
       return v;
     })();
+
+    // If the "website" is actually a Zillow URL, treat it as missing personal site
+    try {
+      const parsed = new URL(url);
+      if (parsed.hostname.includes('zillow.com')) {
+        e.preventDefault();
+        const firstName = professional.name.split(' ')[0];
+        toast.info(`Sorry, it doesn't look like ${firstName} has their own website. Try contacting them.`);
+        return;
+      }
+    } catch {
+      // If URL parsing fails, let the browser handle it after tracking
+    }
 
     trackEvent('agent_profile_click', {
       agent_name: professional.name,
