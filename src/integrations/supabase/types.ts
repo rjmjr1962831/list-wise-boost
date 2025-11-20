@@ -464,6 +464,7 @@ export type Database = {
           current_listings: number | null
           description: string | null
           email: string | null
+          email_verified_at: string | null
           encoded_zuid: string | null
           get_to_know_me: string | null
           id: string
@@ -527,6 +528,7 @@ export type Database = {
           current_listings?: number | null
           description?: string | null
           email?: string | null
+          email_verified_at?: string | null
           encoded_zuid?: string | null
           get_to_know_me?: string | null
           id?: string
@@ -590,6 +592,7 @@ export type Database = {
           current_listings?: number | null
           description?: string | null
           email?: string | null
+          email_verified_at?: string | null
           encoded_zuid?: string | null
           get_to_know_me?: string | null
           id?: string
