@@ -51,39 +51,41 @@ serve(async (req) => {
     const agenscrapeData = agenscrapeResult.data;
     console.log(`Getdataforme completed: ${agenscrapeData?.total || 0} agents imported`);
 
-      // Small delay between steps
-      await new Promise(resolve => setTimeout(resolve, 2000));
+    // Kick off memo23 enrichment in the background so the client doesn't hang
+    const backgroundEnrichment = async () => {
+      try {
+        // Small delay between steps
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Step 2: Run memo23 to enrich with detailed data
-      console.log('Step 2/2: Running memo23 to enrich with licenses, videos, stats, bios (concurrency=10)...');
-      const memo23Result = await supabase.functions.invoke('fetch-memo23-agents', {
-        body: { cityId, categoryId }
-      });
+        // Step 2: Run memo23 to enrich with detailed data
+        console.log('Step 2/2: Running memo23 to enrich with licenses, videos, stats, bios (concurrency=10)...');
+        const memo23Result = await supabase.functions.invoke('fetch-memo23-agents', {
+          body: { cityId, categoryId }
+        });
 
-    if (memo23Result.error) {
-      console.error('Memo23 error:', memo23Result.error);
-      // Don't throw - agenscrape succeeded, so we have basic data
-      return new Response(
-        JSON.stringify({
-          success: true,
-          agenscrapeImported: agenscrapeData?.imported || 0,
-          memo23Enriched: 0,
-          warning: 'Enrichment failed but basic data imported',
-          error: memo23Result.error.message
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+        if (memo23Result.error) {
+          console.error('Memo23 error (background):', memo23Result.error);
+          return;
+        }
 
-    const memo23Data = memo23Result.data;
-    console.log(`Memo23 completed: ${memo23Data?.imported || 0} agents enriched`);
+        const memo23Data = memo23Result.data;
+        console.log(`Memo23 completed in background: ${memo23Data?.imported || 0} agents enriched`);
+      } catch (bgError) {
+        console.error('Background memo23 enrichment failed:', bgError);
+      }
+    };
+
+    // Use background task so the HTTP response can return immediately
+    // while memo23 continues to run.
+    // @ts-ignore - EdgeRuntime is provided by the Edge environment
+    EdgeRuntime.waitUntil(backgroundEnrichment());
 
     return new Response(
       JSON.stringify({
         success: true,
         agenscrapeImported: agenscrapeData?.imported || 0,
-        memo23Enriched: memo23Data?.imported || 0,
-        message: `Successfully imported ${agenscrapeData?.imported || 0} agents and enriched ${memo23Data?.imported || 0} with full data`
+        memo23EnrichmentStarted: true,
+        message: `Started import for ${agenscrapeData?.imported || 0} agents; detailed enrichment is running in the background.`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
