@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { findCityByZip } from '@/data/zipCodeLookup';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { CityAutocomplete } from '@/components/CityAutocomplete';
 
 interface Category {
   id: string;

@@ -10,7 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
-import arizonaMetrosData from '@/data/arizonaMetros.json';
+import { CityAutocomplete } from '@/components/CityAutocomplete';
+import arizonaCompleteData from '@/data/arizonaComplete.json';
 
 interface Neighborhood {
   name: string;
@@ -24,7 +25,11 @@ interface ArizonaCity {
   neighborhoods: Neighborhood[];
 }
 
-const arizonaCities: ArizonaCity[] = arizonaMetrosData.metros.flatMap((metro: any) => metro.cities);
+// Extract all cities from the new complete data structure
+const arizonaCities: ArizonaCity[] = [
+  ...arizonaCompleteData.metros.flatMap((metro: any) => metro.cities),
+  ...arizonaCompleteData.other_cities.cities
+];
 
 const ALL_STATES = ['Arizona']; // Only Arizona for now
 
@@ -305,55 +310,21 @@ export const Top10SearchForm = () => {
           )}
         </div>
 
-        {/* City Selector */}
-        <div className={cn("relative", cityOpen && "mb-64 md:mb-0")} ref={cityDropdownRef}>
-          <Input
-            placeholder="Select City"
-            value={cityInput}
-            onChange={(e) => handleCityInputChange(e.target.value)}
-            onFocus={() => {
-              if (selectedState) setCityOpen(true);
-            }}
-            className="bg-background"
-            disabled={!selectedState}
-          />
-          {cityOpen && filteredCities.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 z-[200] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
-              <Command>
-                <CommandList>
-                  <CommandEmpty>No city found.</CommandEmpty>
-                  <CommandGroup>
-                    {filteredCities.map((city) => (
-                      <CommandItem
-                        key={city.city}
-                        value={city.city}
-                        onSelect={() => {
-                          setSelectedCity(city.city);
-                          setCityInput(city.city);
-                          setCityOpen(false);
-                          
-                          trackEvent('search_city_select', {
-                            state: selectedState,
-                            city: city.city,
-                            search_type: 'top10_search'
-                          } as any);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedCity === city.city ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {city.city}
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </div>
-          )}
-        </div>
+        {/* City Autocomplete */}
+        <CityAutocomplete
+          value={selectedCity}
+          onValueChange={(city) => {
+            setSelectedCity(city);
+            setCityInput(city);
+            
+            trackEvent('search_city_select', {
+              state: selectedState,
+              city: city,
+              search_type: 'top10_search'
+            } as any);
+          }}
+          placeholder="Start typing the city..."
+        />
 
         {/* Search Button */}
         <Button 
