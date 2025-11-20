@@ -280,6 +280,17 @@ serve(async (req) => {
           }
         }
         
+        // Extract website from professionalInformation array
+        if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+          const websitesEntry = agent.professionalInformation.find((info: any) => info.term === 'Websites');
+          if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
+            const primaryWebsite = websitesEntry.links[0];
+            if (primaryWebsite?.url) {
+              memo23Data.website = primaryWebsite.url;
+            }
+          }
+        }
+        
         // Extract phone from phoneNumbers array
         if (agent.phoneNumbers && agent.phoneNumbers.length > 0) {
           const primaryPhone = agent.phoneNumbers.find((p: any) => p.primary) || agent.phoneNumbers[0];

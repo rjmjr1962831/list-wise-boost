@@ -685,7 +685,7 @@ export const ProfessionalCard = ({
                         className="text-primary hover:underline" 
                         itemProp="email"
                       >
-                        {professional.email}
+                        Email {professional.name.split(' ')[0]}
                       </a>
                     </div>
                   )}
