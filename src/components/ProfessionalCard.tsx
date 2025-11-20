@@ -439,11 +439,16 @@ export const ProfessionalCard = ({
             />
             {/* Specialties from professional_information displayed under photo */}
             {parsedProfInfo?.specialties && parsedProfInfo.specialties.length > 0 && (
-              <div className="mt-3 space-y-1">
+              <div className="mt-3 space-y-1.5 flex flex-col items-center">
                 {parsedProfInfo.specialties.map((specialty, idx) => (
-                  <div key={idx} className="text-xs text-muted-foreground text-center">
+                  <Badge 
+                    key={idx} 
+                    variant="secondary" 
+                    className="text-xs w-full justify-center"
+                    itemProp="knowsAbout"
+                  >
                     {specialty}
-                  </div>
+                  </Badge>
                 ))}
               </div>
             )}
