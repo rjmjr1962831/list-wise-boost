@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ExternalReview {
@@ -24,33 +24,36 @@ export function useExternalReviews({
   company?: string | null;
   market?: string | null;
 }) {
-  const queryKey = ['external-reviews', agentName, company, market];
-  
-  const { data, isLoading, error } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      if (!agentName || !market) return null;
-      
-      const { data: resp, error: err } = await supabase.functions.invoke('fetch-external-reviews', {
-        body: {
-          agentName,
-          company: company || undefined,
-          location: market || undefined,
-        },
-      });
+  const [data, setData] = useState<ExternalReviewsResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-      if (err) throw err;
-      return resp as ExternalReviewsResult;
-    },
-    enabled: !!(agentName && market),
-    staleTime: 1000 * 60 * 60, // Cache for 1 hour
-    gcTime: 1000 * 60 * 60 * 24, // Keep in cache for 24 hours
-    retry: 1, // Only retry once on failure
-  });
+  useEffect(() => {
+    if (!agentName || !market) return;
 
-  return { 
-    data: data || null, 
-    loading: isLoading, 
-    error: error ? (error instanceof Error ? error.message : 'Failed to load reviews') : null 
-  };
+    const run = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data: resp, error: err } = await supabase.functions.invoke('fetch-external-reviews', {
+          body: {
+            agentName,
+            company: company || undefined,
+            location: market || undefined,
+          },
+        });
+
+        if (err) throw err;
+        if (resp) setData(resp as ExternalReviewsResult);
+      } catch (e: any) {
+        setError(e?.message || 'Failed to load reviews');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    run();
+  }, [agentName, company, market]);
+
+  return { data, loading, error };
 }
