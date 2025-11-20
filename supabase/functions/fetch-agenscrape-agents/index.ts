@@ -110,22 +110,16 @@ serve(async (req) => {
       throw new Error('Could not determine city for import');
     }
 
-    // Start the Apify actor with getdataforme
+    // Start the Apify actor with getdataforme~agenscrape (the working scraper)
     const actorInput = {
       search_query: searchLocation,
-      category: "real-estate-agents",
-      locationText: searchLocation,
-      name: "",
-      language: "English",
-      specialty: "",
-      maxResults: maxResults,
-      startPage: 1
+      maxResults: maxResults
     };
     
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
 
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
+      'https://api.apify.com/v2/acts/getdataforme~agenscrape/runs',
       {
         method: 'POST',
         headers: {
@@ -232,7 +226,8 @@ serve(async (req) => {
       }
 
       // Extract agent info from Apify response
-      const profileUrl = agent.profileLink;
+      // Handle both old and new field names from different scrapers
+      const profileUrl = agent.profileLink || agent.profile_url;
       
       if (!profileUrl) {
         console.log('Skipping agent without profile URL');
@@ -251,20 +246,25 @@ serve(async (req) => {
         }
       }
 
+      // Parse sales from team_sales_last_12_months if available
+      const salesCount = agent.team_sales_last_12_months 
+        ? parseInt(agent.team_sales_last_12_months) 
+        : (agent.totalSales || agent.sales_count || agent.sold_in_last_year || 0);
+
       const professionalData = {
         name: agent.fullName || agent.name || agent.screenName || 'Agent ' + nextRank,
         zillow_profile_url: profileUrl,
-        image_url: agent.profilePhotoSrc || null,
+        image_url: agent.profilePhotoSrc || agent.image_url || null,
         phone: agent.phoneNumber || agent.phoneNumbers?.business || agent.phoneNumbers?.cell || null,
         email: email,
         website: website,
-        company: agent.businessName || null,
+        company: agent.businessName || agent.company || null,
         review_link: agent.reviewLink || null,
-        num_total_reviews: agent.numTotalReviews || 0,
+        num_total_reviews: agent.numTotalReviews || agent.reviews_count || 0,
         reviews_text: agent.reviews || null,
-        review_stars_rating: agent.reviewStarsRating || null,
+        review_stars_rating: agent.reviewStarsRating || agent.rating || null,
         current_listings: agent.currentListings || agent.for_sale_count || 0,
-        total_sales: agent.totalSales || agent.sales_count || agent.sold_in_last_year || 0,
+        total_sales: salesCount,
         city_id: finalCityId,
         category_id: categoryId,
         rank: nextRank++,
