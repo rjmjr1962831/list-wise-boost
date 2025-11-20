@@ -35,11 +35,16 @@ export function useExternalReviews({
       setLoading(true);
       setError(null);
       try {
-        // External reviews deprecated - only using Zillow reviews via getdataforme
-        const resp = { reviews: [], sources: [] };
-        const err = null;
+        const { data: resp, error: err } = await supabase.functions.invoke('fetch-external-reviews', {
+          body: {
+            agentName,
+            company: company || undefined,
+            location: market || undefined,
+          },
+        });
+
         if (err) throw err;
-        if (resp) setData(resp);
+        if (resp) setData(resp as ExternalReviewsResult);
       } catch (e: any) {
         setError(e?.message || 'Failed to load reviews');
       } finally {
