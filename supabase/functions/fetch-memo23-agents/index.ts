@@ -60,12 +60,17 @@ serve(async (req) => {
     const actorId = 'memo23~apify-zillow-agents-cheerio';
 
     // First, get agent URLs from existing profiles
+    // Only fetch agents that need updating (older than 30 days or no fetch date)
+    const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+    const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
+    
     const { data: existingProfiles } = await supabase
       .from('professionals')
-      .select('zillow_profile_url')
+      .select('zillow_profile_url, zillow_data_fetched_at')
       .eq('city_id', cityId)
       .eq('category_id', categoryId)
       .not('zillow_profile_url', 'is', null)
+      .or(`zillow_data_fetched_at.is.null,zillow_data_fetched_at.lt.${thirtyDaysAgo}`)
       .limit(50); // Process up to 50 agents concurrently
 
     if (!existingProfiles || existingProfiles.length === 0) {
@@ -84,7 +89,7 @@ serve(async (req) => {
       .filter(p => p.zillow_profile_url)
       .map(p => p.zillow_profile_url);
 
-    console.log(`Processing ${agentUrls.length} agent profiles with memo23 at maxConcurrency=50`);
+    console.log(`Processing ${agentUrls.length} stale agent profiles (>30 days old) with memo23 at maxConcurrency=50`);
 
     // Run memo23 actor with moderate concurrency for optimal performance
     const actorInput = {
