@@ -103,9 +103,11 @@ serve(async (req) => {
     // Read the JSONL file (try new format first, fallback to old)
     let jsonlText: string;
     try {
-      jsonlText = await Deno.readTextFile('./all_cities_formatted-2.jsonl');
+      const filePath = new URL('./all_cities_formatted-2.jsonl', import.meta.url).pathname;
+      jsonlText = await Deno.readTextFile(filePath);
     } catch {
-      jsonlText = await Deno.readTextFile('./all_cities_formatted.jsonl');
+      const filePath = new URL('./all_cities_formatted.jsonl', import.meta.url).pathname;
+      jsonlText = await Deno.readTextFile(filePath);
     }
     const lines = jsonlText.split('\n').filter(l => l.trim());
     
