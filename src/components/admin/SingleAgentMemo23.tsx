@@ -255,8 +255,8 @@ export const SingleAgentMemo23 = () => {
                 <div className="mt-4">
                   <h4 className="font-semibold mb-2">Video Preview:</h4>
                   <iframe
-                    width="320"
-                    height="180"
+                    width="560"
+                    height="315"
                     src={`https://www.youtube.com/embed/${result.sidebarVideoUrl.split('v=')[1]?.split('&')[0] || result.sidebarVideoUrl.split('/').pop()?.split('?')[0]}`}
                     title="Agent video"
                     frameBorder="0"
