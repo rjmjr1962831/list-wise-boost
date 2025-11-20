@@ -90,7 +90,10 @@ serve(async (req) => {
     const actorInput = {
       startUrls: agentUrls.map(url => ({ url })),
       maxConcurrency: 50,
-      proxyConfiguration: { useApifyProxy: true }
+      proxyConfiguration: { 
+        useApifyProxy: true,
+        apifyProxyGroups: ['RESIDENTIAL']
+      }
     };
 
     console.log('Starting memo23 actor...');
