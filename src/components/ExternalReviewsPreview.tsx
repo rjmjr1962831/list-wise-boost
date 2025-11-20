@@ -44,23 +44,8 @@ export function ExternalReviewsPreview({
   const recentReviews = (data?.reviews || [])
     .filter(r => {
       if (!r.reviewDate) return false;
-      
-      // Parse MM/DD/YYYY HH:mm:ss format explicitly
-      const dateStr = String(r.reviewDate).trim();
-      const dateParts = dateStr.split(/[\s\/]/); // Split by space or slash
-      if (dateParts.length >= 3) {
-        const month = parseInt(dateParts[0], 10) - 1; // Month is 0-indexed
-        const day = parseInt(dateParts[1], 10);
-        const year = parseInt(dateParts[2], 10);
-        if (!isNaN(month) && !isNaN(day) && !isNaN(year)) {
-          const reviewDate = new Date(year, month, day);
-          return reviewDate >= sixMonthsAgo;
-        }
-      }
-      
-      // Fallback to standard Date parsing
       const reviewDate = new Date(r.reviewDate);
-      return !isNaN(reviewDate.getTime()) && reviewDate >= sixMonthsAgo;
+      return reviewDate >= sixMonthsAgo;
     })
     .slice(0, 3);
 
