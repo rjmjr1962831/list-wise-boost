@@ -229,7 +229,25 @@ export const SingleAgentMemo23 = () => {
           )}
 
           {result && (
-            <div className="space-y-2">
+            <div className="space-y-4">
+              {result.sidebarVideoUrl && (
+                <div>
+                  <h4 className="font-semibold mb-3">Video Preview:</h4>
+                  <div className="w-full max-w-3xl">
+                    <iframe
+                      width="100%"
+                      height="450"
+                      src={`https://www.youtube.com/embed/${result.sidebarVideoUrl.split('v=')[1]?.split('&')[0] || result.sidebarVideoUrl.split('/').pop()?.split('?')[0]}`}
+                      title="Agent video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="rounded-lg border-2 w-full"
+                    />
+                  </div>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between">
                 <h4 className="font-semibold">Result summary</h4>
                 <Button 
@@ -250,22 +268,6 @@ export const SingleAgentMemo23 = () => {
                 <p><strong>Reviews Count:</strong> {result.reviewsCount || 0}</p>
                 <p><strong>Updated Fields:</strong> {result.updatedFields?.join(', ')}</p>
               </div>
-              
-              {result.sidebarVideoUrl && (
-                <div className="mt-4">
-                  <h4 className="font-semibold mb-2">Video Preview:</h4>
-                  <iframe
-                    width="560"
-                    height="315"
-                    src={`https://www.youtube.com/embed/${result.sidebarVideoUrl.split('v=')[1]?.split('&')[0] || result.sidebarVideoUrl.split('/').pop()?.split('?')[0]}`}
-                    title="Agent video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="rounded-lg border-2"
-                  />
-                </div>
-              )}
             </div>
           )}
         </CardContent>
