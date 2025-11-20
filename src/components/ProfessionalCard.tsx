@@ -437,35 +437,43 @@ export const ProfessionalCard = ({
               className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
               itemProp="image"
             />
-            {/* Specialties from professional_information displayed under photo */}
-            {parsedProfInfo?.specialties && parsedProfInfo.specialties.length > 0 && (
-              <div className="mt-3 space-y-1.5 flex flex-col items-center">
-                {parsedProfInfo.specialties.map((specialty, idx) => {
-                  const getSpecialtyIcon = (spec: string) => {
-                    const lower = spec.toLowerCase();
-                    if (lower.includes('residential') || lower.includes('single family')) return Home;
-                    if (lower.includes('commercial') || lower.includes('business')) return Building2;
-                    if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
-                    if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
-                    if (lower.includes('first') || lower.includes('buyer')) return Key;
-                    if (lower.includes('relocation')) return Users;
-                    return Award;
-                  };
-                  const Icon = getSpecialtyIcon(specialty);
-                  return (
-                    <Badge 
-                      key={idx} 
-                      variant="secondary" 
-                      className="text-xs w-full justify-start gap-1.5"
-                      itemProp="knowsAbout"
-                    >
-                      <Icon className="h-3 w-3" />
-                      {specialty}
-                    </Badge>
-                  );
-                })}
-              </div>
-            )}
+            {/* Specialties from memo23 (primary) or parsed description (fallback) */}
+            {(() => {
+              const dbSpecialties = (professional as any).specialty || [];
+              const parsedSpecialties = parsedProfInfo?.specialties || [];
+              const allSpecialties = dbSpecialties.length > 0 ? dbSpecialties : parsedSpecialties;
+              
+              if (allSpecialties.length === 0) return null;
+              
+              return (
+                <div className="mt-3 space-y-1.5 flex flex-col items-center">
+                  {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
+                    const getSpecialtyIcon = (spec: string) => {
+                      const lower = spec.toLowerCase();
+                      if (lower.includes('residential') || lower.includes('single family')) return Home;
+                      if (lower.includes('commercial') || lower.includes('business')) return Building2;
+                      if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
+                      if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
+                      if (lower.includes('first') || lower.includes('buyer')) return Key;
+                      if (lower.includes('relocation')) return Users;
+                      return Award;
+                    };
+                    const Icon = getSpecialtyIcon(specialty);
+                    return (
+                      <Badge 
+                        key={idx} 
+                        variant="secondary" 
+                        className="text-xs w-full justify-start gap-1.5"
+                        itemProp="knowsAbout"
+                      >
+                        <Icon className="h-3 w-3" />
+                        {specialty}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Content */}
