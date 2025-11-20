@@ -71,7 +71,7 @@ serve(async (req) => {
       .eq('category_id', categoryId)
       .not('zillow_profile_url', 'is', null)
       .or(`zillow_data_fetched_at.is.null,zillow_data_fetched_at.lt.${thirtyDaysAgo}`)
-      .limit(50); // Process up to 50 agents concurrently
+      .limit(10); // Process 10 agents per batch to avoid timeouts
 
     if (!existingProfiles || existingProfiles.length === 0) {
       return new Response(
@@ -89,12 +89,12 @@ serve(async (req) => {
       .filter(p => p.zillow_profile_url)
       .map(p => p.zillow_profile_url);
 
-    console.log(`Processing ${agentUrls.length} stale agent profiles (>30 days old) with memo23 at maxConcurrency=50`);
+    console.log(`Processing ${agentUrls.length} stale agent profiles (>30 days old) with memo23 at maxConcurrency=10`);
 
-    // Run memo23 actor with moderate concurrency for optimal performance
+    // Run memo23 actor with lower concurrency to prevent timeouts
     const actorInput = {
       startUrls: agentUrls.map(url => ({ url })),
-      maxConcurrency: 50,
+      maxConcurrency: 10,
       proxyConfiguration: { 
         useApifyProxy: true,
         apifyProxyGroups: ['RESIDENTIAL']
