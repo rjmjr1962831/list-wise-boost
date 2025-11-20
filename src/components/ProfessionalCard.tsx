@@ -86,18 +86,16 @@ export const ProfessionalCard = ({
         const websitesEntry = entries.find(e => e.term === 'Websites');
         websiteFromProfInfo = websitesEntry?.links?.[0]?.url || null;
         
-        // Extract phone from "Phone numbers" entry
-        const phoneEntry = entries.find(e => e.term === 'Phone numbers');
-        phoneFromProfInfo = phoneEntry?.lines?.[0] || null;
-      }
-      
-      // Also check phone_numbers JSONB field
-      if (!phoneFromProfInfo && (professional as any).phone_numbers) {
-        const phoneNumbers = (professional as any).phone_numbers;
-        if (Array.isArray(phoneNumbers) && phoneNumbers.length > 0) {
-          phoneFromProfInfo = phoneNumbers[0];
+        // Extract phone from any entry whose term mentions phone (e.g. "Phone numbers")
+        const phoneEntry = entries.find(e => (e.term || '').toLowerCase().includes('phone'));
+        if (phoneEntry?.lines && phoneEntry.lines.length > 0) {
+          const rawLine = phoneEntry.lines.find(l => l && l.trim().length > 0) || phoneEntry.lines[0];
+          // Many entries look like "Office: 480-555-1234" – strip label before colon
+          const parts = rawLine.split(':');
+          phoneFromProfInfo = (parts.length > 1 ? parts.slice(1).join(':') : rawLine).trim();
         }
       }
+      
 
       // Primary source: description/get_to_know_me JSON blob from memo23
       const descRaw = (professional as any).description as string | null;
