@@ -12,6 +12,7 @@ import { ZillowAgentImporter } from "@/components/admin/ZillowAgentImporter";
 import { AgenScrapeImporter } from "@/components/admin/AgenScrapeImporter";
 import { PhotoGenerator } from "@/components/admin/PhotoGenerator";
 import { ZipCodeManager } from "@/components/admin/ZipCodeManager";
+import { ZipCodeDataConverter } from "@/components/admin/ZipCodeDataConverter";
 import { BioGenerator } from "@/components/admin/BioGenerator";
 import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
 import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
@@ -209,6 +210,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="zip-codes" className="space-y-4">
+            <ZipCodeDataConverter />
             <ZipCodeManager />
           </TabsContent>
 
