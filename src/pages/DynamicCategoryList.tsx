@@ -295,39 +295,24 @@ export default function DynamicCategoryList() {
             }
           }
 
-          // Only show agents with professional_information (enriched by memo23)
-          // EXCEPT for Beauvais in Scottsdale - always show that one
-          const enrichedOnly = baseProfessionals.filter(p => {
-            const isBeauvais = (
-              (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
-              (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
-              (p.name && p.name.toLowerCase().includes('beauvais'))
-            );
-            
-            // For Scottsdale realtor list, always include Beauvais regardless of enrichment status
-            if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents' && isBeauvais) {
-              return true;
-            }
-            
-            // All other agents must have professional_information
-            return !!p.professional_information;
-          });
+          // Show all agents immediately - they'll upgrade in real-time as enrichment completes
+          let displayAgents = baseProfessionals;
           
           // Special sorting for Scottsdale: Beauvais-Real-Estate always first
           if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
-            const beauvaisIndex = enrichedOnly.findIndex(p => 
+            const beauvaisIndex = displayAgents.findIndex(p => 
               (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
               (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
               (p.name && p.name.toLowerCase().includes('beauvais'))
             );
             if (beauvaisIndex > 0) {
-              const beauvais = enrichedOnly.splice(beauvaisIndex, 1)[0];
-              enrichedOnly.unshift(beauvais);
+              const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
+              displayAgents.unshift(beauvais);
               console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale (initial load)');
             }
           }
           
-          const converted = enrichedOnly.map(convertToProfessional);
+          const converted = displayAgents.map(convertToProfessional);
           setAllProfessionals(converted);
           setFilteredProfessionals(converted);
           
@@ -336,9 +321,9 @@ export default function DynamicCategoryList() {
             try {
               const market = `${cityWithCamelCase.name}, ${cityWithCamelCase.state}`;
               let hasReviews = false;
-              // Only prefetch for enriched agents
-              const enrichedAgents = enrichedOnly.slice(0, 5);
-              for (const p of enrichedAgents) {
+              // Prefetch reviews for first 5 agents
+              const topAgents = displayAgents.slice(0, 5);
+              for (const p of topAgents) {
                 const [extRes, apifyRes] = await Promise.allSettled([
                   supabase.functions.invoke('fetch-external-reviews', {
                     body: { agentName: p.name, company: p.company ?? undefined, location: market },
@@ -422,8 +407,8 @@ export default function DynamicCategoryList() {
           console.log('🟢 Realtime update received:', payload.new);
           const updatedProf = payload.new as DBProfessional;
           
-          // Only process if it belongs to current category and has enriched data
-          if (updatedProf.category_id === category.id && updatedProf.professional_information) {
+          // Process all updates for current category (enrichment status doesn't matter)
+          if (updatedProf.category_id === category.id) {
             const convertedProf = convertToProfessional(updatedProf);
             
             // Add new enriched agent or update existing
@@ -643,30 +628,28 @@ export default function DynamicCategoryList() {
           .order('rank');
 
         if (data && data.length > 0) {
-          // Only show enriched agents
-          const enrichedOnly = data.filter(p => p.professional_information);
+          // Show all agents - they'll upgrade via realtime as enrichment completes
+          let displayAgents = data;
           
           // Special sorting for Scottsdale: Beauvais-Real-Estate always first
           if (city.slug === 'scottsdale' && category.slug === 'top10realestateagents') {
-            const beauvaisIndex = enrichedOnly.findIndex(p => 
+            const beauvaisIndex = displayAgents.findIndex(p => 
               p.zillow_profile_url?.includes('Beauvais-Real-Estate')
             );
             if (beauvaisIndex > 0) {
-              const beauvais = enrichedOnly.splice(beauvaisIndex, 1)[0];
-              enrichedOnly.unshift(beauvais);
+              const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
+              displayAgents.unshift(beauvais);
               console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale (polling)');
             }
           }
           
-          if (enrichedOnly.length > 0) {
-            const converted = enrichedOnly.map(convertToProfessional);
-            setAllProfessionals(converted);
-            setFilteredProfessionals(converted);
-            setLoading(false);
-            setIsGeneratingData(false);
-            setReviewsReady(true);
-            clearInterval(interval);
-          }
+          const converted = displayAgents.map(convertToProfessional);
+          setAllProfessionals(converted);
+          setFilteredProfessionals(converted);
+          setLoading(false);
+          setIsGeneratingData(false);
+          setReviewsReady(true);
+          clearInterval(interval);
         }
       } catch (e) {
         console.warn('Polling professionals failed:', e);
