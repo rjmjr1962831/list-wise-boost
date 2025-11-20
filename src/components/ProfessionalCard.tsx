@@ -75,15 +75,28 @@ export const ProfessionalCard = ({
   // Parse Adam-style JSON bio once at the top
   const parsedProfInfo = (() => {
     try {
-      // ALWAYS extract website from professional_information if available
+      // ALWAYS extract website and phone from professional_information if available
       const profInfoArray = (professional as any).professional_information;
       let websiteFromProfInfo: string | null = null;
+      let phoneFromProfInfo: string | null = null;
       
       if (Array.isArray(profInfoArray) && profInfoArray.length > 0) {
         type InfoEntry = { term?: string; description?: string; lines?: string[]; links?: { text?: string; url?: string }[] };
         const entries = profInfoArray as InfoEntry[];
         const websitesEntry = entries.find(e => e.term === 'Websites');
         websiteFromProfInfo = websitesEntry?.links?.[0]?.url || null;
+        
+        // Extract phone from "Phone numbers" entry
+        const phoneEntry = entries.find(e => e.term === 'Phone numbers');
+        phoneFromProfInfo = phoneEntry?.lines?.[0] || null;
+      }
+      
+      // Also check phone_numbers JSONB field
+      if (!phoneFromProfInfo && (professional as any).phone_numbers) {
+        const phoneNumbers = (professional as any).phone_numbers;
+        if (Array.isArray(phoneNumbers) && phoneNumbers.length > 0) {
+          phoneFromProfInfo = phoneNumbers[0];
+        }
       }
 
       // Primary source: description/get_to_know_me JSON blob from memo23
@@ -92,11 +105,12 @@ export const ProfessionalCard = ({
       const profInfoRaw = descRaw || getToKnowRaw || profInfoArray;
 
       if (!profInfoRaw) {
-        return websiteFromProfInfo ? { 
+        return websiteFromProfInfo || phoneFromProfInfo ? { 
           yearsInIndustry: null,
           videoUrl: null,
           specialties: [] as string[],
           websiteUrl: websiteFromProfInfo,
+          phone: phoneFromProfInfo,
           description: null
         } : null;
       }
@@ -113,6 +127,7 @@ export const ProfessionalCard = ({
             videoUrl: null,
             specialties: [] as string[],
             websiteUrl: websiteFromProfInfo,
+            phone: phoneFromProfInfo,
             description: trimmed,
           };
         }
@@ -125,6 +140,7 @@ export const ProfessionalCard = ({
             videoUrl: null,
             specialties: [] as string[],
             websiteUrl: websiteFromProfInfo,
+            phone: phoneFromProfInfo,
             description: trimmed,
           };
         }
@@ -142,6 +158,7 @@ export const ProfessionalCard = ({
           videoUrl: (parsed as any).videoUrl ?? null,
           specialties: Array.isArray((parsed as any).specialties) ? (parsed as any).specialties : [],
           websiteUrl: websiteFromProfInfo || (parsed as any).websiteUrl || null,
+          phone: phoneFromProfInfo,
           description: cleanDescription || trimmed,
         };
       }
@@ -171,6 +188,7 @@ export const ProfessionalCard = ({
           videoUrl: null,
           specialties: [] as string[],
           websiteUrl: websiteFromProfInfo,
+          phone: phoneFromProfInfo,
           description: description || null,
         };
       }
@@ -178,11 +196,12 @@ export const ProfessionalCard = ({
       // If we somehow get a non-string (JSONB) without recognisable structure, fall back to simple description field
       const fallback = (professional as any).description as string | null;
       if (!fallback) {
-        return websiteFromProfInfo ? {
+        return websiteFromProfInfo || phoneFromProfInfo ? {
           yearsInIndustry: null,
           videoUrl: null,
           specialties: [] as string[],
           websiteUrl: websiteFromProfInfo,
+          phone: phoneFromProfInfo,
           description: null
         } : null;
       }
@@ -191,6 +210,7 @@ export const ProfessionalCard = ({
         videoUrl: null,
         specialties: [] as string[],
         websiteUrl: websiteFromProfInfo,
+        phone: phoneFromProfInfo,
         description: fallback.trim(),
       };
     } catch (e) {
@@ -202,6 +222,7 @@ export const ProfessionalCard = ({
         videoUrl: null,
         specialties: [] as string[],
         websiteUrl: null,
+        phone: null,
         description: fallback.trim(),
       };
     }
@@ -745,19 +766,23 @@ export const ProfessionalCard = ({
                       Visit {professional.name.split(' ')[0]}'s Website
                     </a>
                   </div>
-                  {professional.phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <a 
-                        href={`tel:${professional.phone}`} 
-                        className="text-primary hover:underline contact-agent-button" 
-                        itemProp="telephone"
-                        onClick={handlePhoneClick}
-                      >
-                        {professional.phone}
-                      </a>
-                    </div>
-                  )}
+                  {(() => {
+                    const phoneDisplay = parsedProfInfo?.phone || professional.phone;
+                    if (!phoneDisplay) return null;
+                    return (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <a 
+                          href={`tel:${phoneDisplay}`} 
+                          className="text-primary hover:underline contact-agent-button" 
+                          itemProp="telephone"
+                          onClick={handlePhoneClick}
+                        >
+                          {phoneDisplay}
+                        </a>
+                      </div>
+                    );
+                  })()}
                   {professional.email && (
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
