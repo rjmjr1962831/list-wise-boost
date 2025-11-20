@@ -348,7 +348,7 @@ export const Top10SearchForm = () => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl p-6 shadow-lg relative z-10">
+    <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl px-6 pt-2 pb-6 shadow-lg relative z-10">
       <div className="flex items-center gap-2 mb-1">
         <Search className="h-5 w-5 text-primary" />
         <h3 className="text-lg font-semibold">Find your top10 Real estate agents</h3>
