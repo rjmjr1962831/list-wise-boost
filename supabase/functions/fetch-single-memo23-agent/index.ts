@@ -48,7 +48,10 @@ serve(async (req) => {
     const actorInput = {
       startUrls: [{ url: professional.zillow_profile_url }],
       maxConcurrency: 1,
-      proxyConfiguration: { useApifyProxy: true }
+      proxyConfiguration: { 
+        useApifyProxy: true,
+        apifyProxyGroups: ['RESIDENTIAL']
+      }
     };
 
     // Start the run
