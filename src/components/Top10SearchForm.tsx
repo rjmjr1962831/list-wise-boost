@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { findCityByZip } from '@/data/zipCodeLookup';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { NeighborhoodSelector } from '@/components/NeighborhoodSelector';
 
 interface Category {
   id: string;
@@ -99,6 +100,9 @@ export const Top10SearchForm = () => {
   const [stateOpen, setStateOpen] = useState(false);
   const [filteredStates, setFilteredStates] = useState<string[]>(ALL_STATES);
   const [isSearching, setIsSearching] = useState(false);
+  const [showNeighborhoodSelector, setShowNeighborhoodSelector] = useState(false);
+  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<string[]>([]);
+  const [isZipCodeSearch, setIsZipCodeSearch] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -308,6 +312,7 @@ export const Top10SearchForm = () => {
           setSelectedCity(cityMatch.id);
           setCityInput(cityMatch.name);
           setCityOpen(false);
+          setIsZipCodeSearch(true); // Mark as zip code search - skip neighborhood selector
         } else {
           toast.info(`${zipResult.city} not yet in our database`);
         }
@@ -422,6 +427,7 @@ export const Top10SearchForm = () => {
                           setSelectedCity(city.id);
                           setCityInput(city.name);
                           setCityOpen(false);
+                          setIsZipCodeSearch(false);
                           
                           // Track city selection
                           trackEvent('search_city_select', {
@@ -429,6 +435,11 @@ export const Top10SearchForm = () => {
                             city: city.name,
                             search_type: 'top10_search'
                           });
+                          
+                          // Show neighborhood selector after city selection (not zip)
+                          setTimeout(() => {
+                            setShowNeighborhoodSelector(true);
+                          }, 300);
                         }}
                       >
                         <Check
@@ -469,6 +480,24 @@ export const Top10SearchForm = () => {
           Find Top 10
         </Button>
       </div>
+
+      {/* Neighborhood Selector Modal */}
+      <NeighborhoodSelector
+        open={showNeighborhoodSelector}
+        onOpenChange={setShowNeighborhoodSelector}
+        cityName={cities.find(c => c.id === selectedCity)?.name || ''}
+        stateName={cities.find(c => c.id === selectedCity)?.state || ''}
+        onConfirm={(neighborhoods) => {
+          setSelectedNeighborhoods(neighborhoods);
+          // Track neighborhood selection
+          trackEvent('neighborhood_select', {
+            city: cities.find(c => c.id === selectedCity)?.name,
+            state: cities.find(c => c.id === selectedCity)?.state,
+            neighborhoods_count: neighborhoods.length === 0 ? 'all' : neighborhoods.length,
+            search_type: 'top10_search'
+          });
+        }}
+      />
     </div>
   );
 };
