@@ -569,21 +569,30 @@ export const ProfessionalCard = ({
                 </div>
               )}
 
-              {/* Specialties Section - Areas of Expertise (only if not in professional_information) */}
-              {(!parsedProfInfo?.specialties || parsedProfInfo.specialties.length === 0) && professional.specialties.length > 0 && (
-                <div>
-                  <h4 className="sr-only">Areas of Expertise</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {professional.specialties.map((specialty, idx) => (
-                      <span key={idx} itemProp="knowsAbout">
-                        <Badge variant="outline">
-                          {specialty}
-                        </Badge>
-                      </span>
-                    ))}
+              {/* Specialties Section - Areas of Expertise */}
+              {(() => {
+                // Combine specialties from both sources
+                const profInfoSpecialties = parsedProfInfo?.specialties || [];
+                const dbSpecialties = ((professional as any).specialty || []).filter((s: string) => s && s.trim());
+                const allSpecialties = [...new Set([...profInfoSpecialties, ...dbSpecialties])];
+                
+                if (allSpecialties.length === 0) return null;
+                
+                return (
+                  <div>
+                    <h4 className="sr-only">Areas of Expertise</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {allSpecialties.map((specialty, idx) => (
+                        <span key={idx} itemProp="knowsAbout">
+                          <Badge variant="outline">
+                            {specialty}
+                          </Badge>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Statistics */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
@@ -890,7 +899,7 @@ export const ProfessionalCard = ({
               <ExternalReviewsPreview 
                 agentName={professional.name} 
                 company={professional.company} 
-                market={market}
+                market={professional.address || market}
                 zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
               />
 
