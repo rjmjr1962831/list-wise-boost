@@ -49,7 +49,8 @@ export const Top10SearchForm = () => {
   useEffect(() => {
     // Update cities when state changes to Arizona
     if (selectedState === 'Arizona') {
-      setFilteredCities(arizonaCities);
+      const sortedCities = [...arizonaCities].sort((a, b) => a.city.localeCompare(b.city));
+      setFilteredCities(sortedCities);
     } else {
       setFilteredCities([]);
     }
@@ -126,12 +127,13 @@ export const Top10SearchForm = () => {
     setCityOpen(true);
     
     if (value) {
-      const filtered = arizonaCities.filter(c => 
-        c.city.toLowerCase().includes(value.toLowerCase())
-      );
+      const filtered = arizonaCities
+        .filter(c => c.city.toLowerCase().includes(value.toLowerCase()))
+        .sort((a, b) => a.city.localeCompare(b.city));
       setFilteredCities(filtered);
     } else {
-      setFilteredCities(arizonaCities);
+      const sortedCities = [...arizonaCities].sort((a, b) => a.city.localeCompare(b.city));
+      setFilteredCities(sortedCities);
     }
   };
 
