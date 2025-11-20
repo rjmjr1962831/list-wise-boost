@@ -374,19 +374,21 @@ export const ProfessionalCard = ({
           </div>
 
           {/* Content */}
-          <div className="flex-1 space-y-4 relative">
-            <div className="space-y-2">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  {/* Semantic heading for SEO */}
-                  <h3 className="text-2xl font-bold" itemProp="name">
-                    {professional.name}
-                    {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
-                  </h3>
-                  <p className="text-lg text-muted-foreground" itemProp="affiliation">
-                    {professional.company}
-                  </p>
-                </div>
+          <div className="flex-1 space-y-4">
+            {/* Header section with relative positioning for video placement */}
+            <div className="relative">
+              <div className="space-y-2">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    {/* Semantic heading for SEO */}
+                    <h3 className="text-2xl font-bold" itemProp="name">
+                      {professional.name}
+                      {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
+                    </h3>
+                    <p className="text-lg text-muted-foreground" itemProp="affiliation">
+                      {professional.company}
+                    </p>
+                  </div>
                 {professional.verified && (
                   <Badge 
                     variant="secondary" 
@@ -489,7 +491,7 @@ export const ProfessionalCard = ({
               )}
 
               {/* Statistics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y relative">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
               {(() => {
                   const statFromObj = (obj: any, path: string) => {
                     try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
@@ -529,29 +531,6 @@ export const ProfessionalCard = ({
                     </div>
                   ));
                 })()}
-                
-                {/* Video centered in the right-side blank area */}
-                {(parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
-                  const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
-                  const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
-                    ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
-                    : null;
-                  
-                  return videoId ? (
-                    <div className="hidden md:block absolute right-6 top-1/2 -translate-y-1/2">
-                      <iframe
-                        width="460"
-                        height="259"
-                        src={`https://www.youtube.com/embed/${videoId}`}
-                        title="Agent video"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="rounded-lg border-2 border-border shadow-lg"
-                      />
-                    </div>
-                  ) : null;
-                })()}
               </div>
 
               {/* Data Source Indicator */}
@@ -578,6 +557,30 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
+              {/* Video centered in the blank space between name and updated line */}
+              {(parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
+                const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
+                const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
+                  ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
+                  : null;
+                
+                return videoId ? (
+                  <div className="hidden md:block absolute right-6 top-1/2 -translate-y-1/2">
+                    <iframe
+                      width="460"
+                      height="259"
+                      src={`https://www.youtube.com/embed/${videoId}`}
+                      title="Agent video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="rounded-lg border-2 border-border shadow-lg"
+                    />
+                  </div>
+                ) : null;
+              })()}
+            </div>
+
 
               {/* Bio Section - Use get_to_know_me from memo23 if available */}
               {(() => {
@@ -598,7 +601,15 @@ export const ProfessionalCard = ({
                         dangerouslySetInnerHTML={{ __html: (() => {
                           const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
                           if (hasHtmlTags) return bioHtml;
-                          const paragraphs = bioHtml.split(/\n\s*\n/).filter(p => p.trim());
+                          
+                          // Try splitting by double newlines first
+                          let paragraphs = bioHtml.split(/\n{2,}/).filter(p => p.trim());
+                          
+                          // If that yields only one paragraph but text has single newlines, split by those
+                          if (paragraphs.length === 1 && /\n/.test(bioHtml)) {
+                            paragraphs = bioHtml.split(/\n+/).filter(p => p.trim());
+                          }
+                          
                           if (paragraphs.length === 0) return bioHtml;
                           return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
                         })() }}
