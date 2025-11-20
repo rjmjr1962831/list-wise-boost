@@ -530,7 +530,7 @@ export const ProfessionalCard = ({
                   ));
                 })()}
                 
-                {/* Video positioned in the right-side blank area, aligned with stats */}
+                {/* Video positioned in the right-side blank area, aligned with header/license */}
                 {(parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
                   const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
                   const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
@@ -538,10 +538,10 @@ export const ProfessionalCard = ({
                     : null;
                   
                   return videoId ? (
-                    <div className="hidden md:block absolute right-0 top-0">
+                    <div className="hidden md:block absolute right-4 top-0">
                       <iframe
-                        width="400"
-                        height="225"
+                        width="420"
+                        height="236"
                         src={`https://www.youtube.com/embed/${videoId}`}
                         title="Agent video"
                         frameBorder="0"
@@ -590,19 +590,19 @@ export const ProfessionalCard = ({
                 const firstName = professional.name.split(' ')[0];
                 
                 return (
-                  <div itemProp="description" className="border-t pt-3">
+                  <div itemProp="description" className="border-t pt-3 md:pr-[440px]">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
                     {bioHtml ? (
-                    <div 
-                      className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
-                      dangerouslySetInnerHTML={{ __html: (() => {
-                        const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
-                        if (hasHtmlTags) return bioHtml;
-                        const paragraphs = bioHtml.split(/\n\s*\n/).filter(p => p.trim());
-                        if (paragraphs.length === 0) return bioHtml;
-                        return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
-                      })() }}
-                    />
+                      <div 
+                        className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
+                        dangerouslySetInnerHTML={{ __html: (() => {
+                          const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
+                          if (hasHtmlTags) return bioHtml;
+                          const paragraphs = bioHtml.split(/\n\s*\n/).filter(p => p.trim());
+                          if (paragraphs.length === 0) return bioHtml;
+                          return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+                        })() }}
+                      />
                     ) : (() => {
                       const paragraphs = fallbackText.split('\n\n').filter(p => p.trim());
                       const firstTwoParagraphs = paragraphs.slice(0, 2);
