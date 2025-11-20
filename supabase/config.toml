@@ -56,3 +56,7 @@ verify_jwt = false
 
 [functions.verify-email]
 verify_jwt = false
+
+[functions.bulk-import-phoenix-agents]
+verify_jwt = true
+

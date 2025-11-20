@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -25,6 +25,7 @@ import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
 import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
 import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
 import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
+import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
 import CitiesManager from "@/components/admin/CitiesManager";
 
 const AdminDashboard = () => {
@@ -175,6 +176,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Bulk Enrich
             </TabsTrigger>
+            <TabsTrigger value="bulk-phoenix">
+              <Zap className="mr-2 h-4 w-4" />
+              Bulk Phoenix
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -243,6 +248,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="bulk-enrich" className="space-y-4">
             <BulkMemo23Enricher />
+          </TabsContent>
+
+          <TabsContent value="bulk-phoenix" className="space-y-4">
+            <BulkPhoenixImporter />
           </TabsContent>
         </Tabs>
       </div>
