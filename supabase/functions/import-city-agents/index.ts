@@ -55,7 +55,7 @@ serve(async (req) => {
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Step 2: Run memo23 to enrich with detailed data
-      console.log('Step 2/2: Running memo23 to enrich with licenses, videos, stats, bios (concurrency=50)...');
+      console.log('Step 2/2: Running memo23 to enrich with licenses, videos, stats, bios (concurrency=10)...');
       const memo23Result = await supabase.functions.invoke('fetch-memo23-agents', {
         body: { cityId, categoryId }
       });
