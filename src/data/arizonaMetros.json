@@ -1,0 +1,2359 @@
+{
+  "meta": {
+    "title": "Arizona Metro Areas - Complete Database",
+    "version": "1.0",
+    "last_updated": "November 2025",
+    "total_metros": 2,
+    "total_cities": 32,
+    "total_neighborhoods": 342,
+    "coverage": "Phoenix-Mesa-Chandler MSA and Tucson MSA"
+  },
+  "metros": [
+    {
+      "metro_name": "Phoenix Metro Area",
+      "metro_population": 4900000,
+      "metro_rank_us": 11,
+      "cities_count": 20,
+      "cities": [
+        {
+          "city": "Phoenix",
+          "population": 1673164,
+          "region": "Central",
+          "neighborhoods": [
+            {
+              "name": "Arcadia",
+              "zip_codes": [
+                "85018",
+                "85251"
+              ]
+            },
+            {
+              "name": "Downtown Phoenix",
+              "zip_codes": [
+                "85003",
+                "85004",
+                "85007"
+              ]
+            },
+            {
+              "name": "Biltmore Area",
+              "zip_codes": [
+                "85016",
+                "85018"
+              ]
+            },
+            {
+              "name": "Biltmore Highlands",
+              "zip_codes": [
+                "85016"
+              ]
+            },
+            {
+              "name": "Paradise Valley",
+              "zip_codes": [
+                "85254"
+              ]
+            },
+            {
+              "name": "North Mountain",
+              "zip_codes": [
+                "85020",
+                "85021"
+              ]
+            },
+            {
+              "name": "Desert Ridge",
+              "zip_codes": [
+                "85050",
+                "85054"
+              ]
+            },
+            {
+              "name": "Camelback East",
+              "zip_codes": [
+                "85018"
+              ]
+            },
+            {
+              "name": "Ahwatukee Foothills",
+              "zip_codes": [
+                "85044",
+                "85045",
+                "85048"
+              ]
+            },
+            {
+              "name": "Central Phoenix (Midtown)",
+              "zip_codes": [
+                "85012",
+                "85013",
+                "85014",
+                "85015"
+              ]
+            },
+            {
+              "name": "Roosevelt Row",
+              "zip_codes": [
+                "85004"
+              ]
+            },
+            {
+              "name": "Encanto-Palmcroft",
+              "zip_codes": [
+                "85003",
+                "85006"
+              ]
+            },
+            {
+              "name": "Willo Historic District",
+              "zip_codes": [
+                "85003",
+                "85006"
+              ]
+            },
+            {
+              "name": "Moon Valley",
+              "zip_codes": [
+                "85022",
+                "85023"
+              ]
+            },
+            {
+              "name": "Maryvale",
+              "zip_codes": [
+                "85031",
+                "85033",
+                "85035"
+              ]
+            },
+            {
+              "name": "North Gateway",
+              "zip_codes": [
+                "85027",
+                "85085"
+              ]
+            },
+            {
+              "name": "Deer Valley",
+              "zip_codes": [
+                "85024",
+                "85027",
+                "85083"
+              ]
+            },
+            {
+              "name": "South Mountain",
+              "zip_codes": [
+                "85040",
+                "85041",
+                "85042"
+              ]
+            },
+            {
+              "name": "Alhambra",
+              "zip_codes": [
+                "85007",
+                "85009"
+              ]
+            },
+            {
+              "name": "Coronado",
+              "zip_codes": [
+                "85007",
+                "85009"
+              ]
+            },
+            {
+              "name": "North Central Phoenix",
+              "zip_codes": [
+                "85012",
+                "85014",
+                "85020"
+              ]
+            },
+            {
+              "name": "Melrose District",
+              "zip_codes": [
+                "85013"
+              ]
+            },
+            {
+              "name": "Kierland",
+              "zip_codes": [
+                "85254"
+              ]
+            },
+            {
+              "name": "Desert View",
+              "zip_codes": [
+                "85032"
+              ]
+            },
+            {
+              "name": "Alvarado Historic District",
+              "zip_codes": [
+                "85009"
+              ]
+            },
+            {
+              "name": "Laveen",
+              "zip_codes": [
+                "85339"
+              ]
+            },
+            {
+              "name": "Estrella",
+              "zip_codes": [
+                "85339"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Scottsdale",
+          "population": 260000,
+          "region": "Central",
+          "neighborhoods": [
+            {
+              "name": "Old Town Scottsdale",
+              "zip_codes": [
+                "85251",
+                "85257"
+              ]
+            },
+            {
+              "name": "North Scottsdale",
+              "zip_codes": [
+                "85255",
+                "85259",
+                "85260"
+              ]
+            },
+            {
+              "name": "South Scottsdale",
+              "zip_codes": [
+                "85251",
+                "85257"
+              ]
+            },
+            {
+              "name": "Central Scottsdale",
+              "zip_codes": [
+                "85251",
+                "85258"
+              ]
+            },
+            {
+              "name": "DC Ranch",
+              "zip_codes": [
+                "85262"
+              ]
+            },
+            {
+              "name": "Troon",
+              "zip_codes": [
+                "85255",
+                "85262"
+              ]
+            },
+            {
+              "name": "Gainey Ranch",
+              "zip_codes": [
+                "85258"
+              ]
+            },
+            {
+              "name": "McCormick Ranch",
+              "zip_codes": [
+                "85258"
+              ]
+            },
+            {
+              "name": "Paradise Valley Village",
+              "zip_codes": [
+                "85032",
+                "85254"
+              ]
+            },
+            {
+              "name": "Indian Bend",
+              "zip_codes": [
+                "85250"
+              ]
+            },
+            {
+              "name": "Shea Corridor",
+              "zip_codes": [
+                "85260"
+              ]
+            },
+            {
+              "name": "Legend Trail",
+              "zip_codes": [
+                "85262"
+              ]
+            },
+            {
+              "name": "Desert Mountain",
+              "zip_codes": [
+                "85262"
+              ]
+            },
+            {
+              "name": "Whisper Rock",
+              "zip_codes": [
+                "85255"
+              ]
+            },
+            {
+              "name": "Grayhawk",
+              "zip_codes": [
+                "85255",
+                "85260"
+              ]
+            },
+            {
+              "name": "Silverleaf",
+              "zip_codes": [
+                "85255"
+              ]
+            },
+            {
+              "name": "Terravita",
+              "zip_codes": [
+                "85262"
+              ]
+            },
+            {
+              "name": "Estancia",
+              "zip_codes": [
+                "85262"
+              ]
+            },
+            {
+              "name": "The Boulders",
+              "zip_codes": [
+                "85262"
+              ]
+            },
+            {
+              "name": "Horizons",
+              "zip_codes": [
+                "85255"
+              ]
+            },
+            {
+              "name": "Scottsdale Ranch",
+              "zip_codes": [
+                "85258",
+                "85260"
+              ]
+            },
+            {
+              "name": "Pinnacle Peak",
+              "zip_codes": [
+                "85255"
+              ]
+            },
+            {
+              "name": "McDowell Mountain Ranch",
+              "zip_codes": [
+                "85255"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Mesa",
+          "population": 521649,
+          "region": "East Valley",
+          "neighborhoods": [
+            {
+              "name": "Eastmark",
+              "zip_codes": [
+                "85212",
+                "85213"
+              ]
+            },
+            {
+              "name": "Red Mountain Ranch",
+              "zip_codes": [
+                "85215"
+              ]
+            },
+            {
+              "name": "Dobson Ranch",
+              "zip_codes": [
+                "85202"
+              ]
+            },
+            {
+              "name": "The Groves",
+              "zip_codes": [
+                "85212"
+              ]
+            },
+            {
+              "name": "Alta Mesa",
+              "zip_codes": [
+                "85207"
+              ]
+            },
+            {
+              "name": "Superstition Springs",
+              "zip_codes": [
+                "85206"
+              ]
+            },
+            {
+              "name": "Las Sendas",
+              "zip_codes": [
+                "85207"
+              ]
+            },
+            {
+              "name": "Leisure World",
+              "zip_codes": [
+                "85206"
+              ]
+            },
+            {
+              "name": "Central Mesa",
+              "zip_codes": [
+                "85201"
+              ]
+            },
+            {
+              "name": "Downtown Mesa",
+              "zip_codes": [
+                "85201"
+              ]
+            },
+            {
+              "name": "Citrus",
+              "zip_codes": [
+                "85201"
+              ]
+            },
+            {
+              "name": "Lehi",
+              "zip_codes": [
+                "85213"
+              ]
+            },
+            {
+              "name": "Riverview",
+              "zip_codes": [
+                "85201"
+              ]
+            },
+            {
+              "name": "University Manor",
+              "zip_codes": [
+                "85213"
+              ]
+            },
+            {
+              "name": "Whitman Park",
+              "zip_codes": [
+                "85203"
+              ]
+            },
+            {
+              "name": "Fraser Fields",
+              "zip_codes": [
+                "85204"
+              ]
+            },
+            {
+              "name": "Reed Park",
+              "zip_codes": [
+                "85206"
+              ]
+            },
+            {
+              "name": "North Central Mesa",
+              "zip_codes": [
+                "85203"
+              ]
+            },
+            {
+              "name": "Evergreen Historic District",
+              "zip_codes": [
+                "85203"
+              ]
+            },
+            {
+              "name": "Desert Uplands",
+              "zip_codes": [
+                "85207"
+              ]
+            },
+            {
+              "name": "Mesa del Sol",
+              "zip_codes": [
+                "85208"
+              ]
+            },
+            {
+              "name": "Saguaro Mountain",
+              "zip_codes": [
+                "85207"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Chandler",
+          "population": 284109,
+          "region": "East Valley",
+          "neighborhoods": [
+            {
+              "name": "Downtown Chandler",
+              "zip_codes": [
+                "85224",
+                "85225",
+                "85226"
+              ]
+            },
+            {
+              "name": "Ocotillo",
+              "zip_codes": [
+                "85248"
+              ]
+            },
+            {
+              "name": "Sun Lakes",
+              "zip_codes": [
+                "85248"
+              ]
+            },
+            {
+              "name": "Fulton Ranch",
+              "zip_codes": [
+                "85249"
+              ]
+            },
+            {
+              "name": "Andersen Springs",
+              "zip_codes": [
+                "85286"
+              ]
+            },
+            {
+              "name": "Pecos Ranch",
+              "zip_codes": [
+                "85286"
+              ]
+            },
+            {
+              "name": "Riggs Ranch",
+              "zip_codes": [
+                "85249"
+              ]
+            },
+            {
+              "name": "Cooper Commons",
+              "zip_codes": [
+                "85225"
+              ]
+            },
+            {
+              "name": "Sun Groves",
+              "zip_codes": [
+                "85225"
+              ]
+            },
+            {
+              "name": "Clemente Ranch",
+              "zip_codes": [
+                "85286"
+              ]
+            },
+            {
+              "name": "Belmont",
+              "zip_codes": [
+                "85225"
+              ]
+            },
+            {
+              "name": "Markwood",
+              "zip_codes": [
+                "85226"
+              ]
+            },
+            {
+              "name": "Cottonwood",
+              "zip_codes": [
+                "85286"
+              ]
+            },
+            {
+              "name": "Paseo Trail",
+              "zip_codes": [
+                "85226"
+              ]
+            },
+            {
+              "name": "Del Rio",
+              "zip_codes": [
+                "85225"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Gilbert",
+          "population": 283029,
+          "region": "East Valley",
+          "neighborhoods": [
+            {
+              "name": "Power Ranch",
+              "zip_codes": [
+                "85297"
+              ]
+            },
+            {
+              "name": "Val Vista Lakes",
+              "zip_codes": [
+                "85295"
+              ]
+            },
+            {
+              "name": "Morrison Ranch",
+              "zip_codes": [
+                "85296"
+              ]
+            },
+            {
+              "name": "Seville",
+              "zip_codes": [
+                "85297"
+              ]
+            },
+            {
+              "name": "Agritopia",
+              "zip_codes": [
+                "85296"
+              ]
+            },
+            {
+              "name": "The Islands",
+              "zip_codes": [
+                "85233"
+              ]
+            },
+            {
+              "name": "Ashland Ranch",
+              "zip_codes": [
+                "85295"
+              ]
+            },
+            {
+              "name": "Lyon's Gate",
+              "zip_codes": [
+                "85295"
+              ]
+            },
+            {
+              "name": "Coronado Ranch",
+              "zip_codes": [
+                "85297"
+              ]
+            },
+            {
+              "name": "Gateway Ranch",
+              "zip_codes": [
+                "85295"
+              ]
+            },
+            {
+              "name": "Higley",
+              "zip_codes": [
+                "85296"
+              ]
+            },
+            {
+              "name": "Downtown Gilbert",
+              "zip_codes": [
+                "85233",
+                "85234",
+                "85295"
+              ]
+            },
+            {
+              "name": "Trilogy",
+              "zip_codes": [
+                "85298"
+              ]
+            },
+            {
+              "name": "The Bridges at Gilbert",
+              "zip_codes": [
+                "85295"
+              ]
+            },
+            {
+              "name": "Finley Farms",
+              "zip_codes": [
+                "85295"
+              ]
+            },
+            {
+              "name": "Copperleaf",
+              "zip_codes": [
+                "85233"
+              ]
+            },
+            {
+              "name": "Adora Trails",
+              "zip_codes": [
+                "85297"
+              ]
+            },
+            {
+              "name": "Neely Farms",
+              "zip_codes": [
+                "85296"
+              ]
+            },
+            {
+              "name": "Evans Ranch",
+              "zip_codes": [
+                "85296"
+              ]
+            },
+            {
+              "name": "Shamrock Estates",
+              "zip_codes": [
+                "85234"
+              ]
+            },
+            {
+              "name": "Marbella Vineyards",
+              "zip_codes": [
+                "85296"
+              ]
+            },
+            {
+              "name": "Spectrum at Val Vista",
+              "zip_codes": [
+                "85295"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Glendale",
+          "population": 250000,
+          "region": "West Valley",
+          "neighborhoods": [
+            {
+              "name": "Arrowhead Ranch",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "Arrowhead Lakes",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "Westgate Entertainment District",
+              "zip_codes": [
+                "85305"
+              ]
+            },
+            {
+              "name": "Historic Downtown Glendale",
+              "zip_codes": [
+                "85301",
+                "85304"
+              ]
+            },
+            {
+              "name": "Manistee Ranch",
+              "zip_codes": [
+                "85310"
+              ]
+            },
+            {
+              "name": "Coventry Estates",
+              "zip_codes": [
+                "85310"
+              ]
+            },
+            {
+              "name": "Palomino",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "Westerra",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "Secluded Acres and Estates",
+              "zip_codes": [
+                "85310"
+              ]
+            },
+            {
+              "name": "Hidden Manor",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "Hillcrest Ranch",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "Copperwood",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "North Glendale",
+              "zip_codes": [
+                "85310"
+              ]
+            },
+            {
+              "name": "Arrowhead",
+              "zip_codes": [
+                "85308"
+              ]
+            },
+            {
+              "name": "Sierra Verde",
+              "zip_codes": [
+                "85308"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Tempe",
+          "population": 190000,
+          "region": "East Valley",
+          "neighborhoods": [
+            {
+              "name": "Downtown Tempe",
+              "zip_codes": [
+                "85281"
+              ]
+            },
+            {
+              "name": "Tempe Town Lake",
+              "zip_codes": [
+                "85281"
+              ]
+            },
+            {
+              "name": "Mill Avenue District",
+              "zip_codes": [
+                "85281"
+              ]
+            },
+            {
+              "name": "ASU Campus Area",
+              "zip_codes": [
+                "85281",
+                "85287"
+              ]
+            },
+            {
+              "name": "South Tempe",
+              "zip_codes": [
+                "85282",
+                "85284"
+              ]
+            },
+            {
+              "name": "Kyrene Corridor",
+              "zip_codes": [
+                "85283",
+                "85284"
+              ]
+            },
+            {
+              "name": "Warner Ranch",
+              "zip_codes": [
+                "85284"
+              ]
+            },
+            {
+              "name": "Tempe Royal Palms",
+              "zip_codes": [
+                "85282"
+              ]
+            },
+            {
+              "name": "Maple-Ash",
+              "zip_codes": [
+                "85281"
+              ]
+            },
+            {
+              "name": "Mitchell Park",
+              "zip_codes": [
+                "85281"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Peoria",
+          "population": 190000,
+          "region": "West Valley",
+          "neighborhoods": [
+            {
+              "name": "Vistancia",
+              "zip_codes": [
+                "85383"
+              ]
+            },
+            {
+              "name": "The Village at Vistancia",
+              "zip_codes": [
+                "85383"
+              ]
+            },
+            {
+              "name": "Blackstone at Vistancia",
+              "zip_codes": [
+                "85383"
+              ]
+            },
+            {
+              "name": "Trilogy at Vistancia",
+              "zip_codes": [
+                "85383"
+              ]
+            },
+            {
+              "name": "WestWing Mountain",
+              "zip_codes": [
+                "85383"
+              ]
+            },
+            {
+              "name": "Fletcher Heights",
+              "zip_codes": [
+                "85345"
+              ]
+            },
+            {
+              "name": "Sonoran Mountain Ranch",
+              "zip_codes": [
+                "85383"
+              ]
+            },
+            {
+              "name": "Terramar",
+              "zip_codes": [
+                "85382"
+              ]
+            },
+            {
+              "name": "The Meadows at Camino a Lago",
+              "zip_codes": [
+                "85382"
+              ]
+            },
+            {
+              "name": "Dove Valley Ranch",
+              "zip_codes": [
+                "85382"
+              ]
+            },
+            {
+              "name": "North Peoria",
+              "zip_codes": [
+                "85383"
+              ]
+            },
+            {
+              "name": "West Wing",
+              "zip_codes": [
+                "85383"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Surprise",
+          "population": 167564,
+          "region": "West Valley",
+          "neighborhoods": [
+            {
+              "name": "Surprise Farms",
+              "zip_codes": [
+                "85387"
+              ]
+            },
+            {
+              "name": "Marley Park",
+              "zip_codes": [
+                "85374"
+              ]
+            },
+            {
+              "name": "Prasada",
+              "zip_codes": [
+                "85387"
+              ]
+            },
+            {
+              "name": "Arizona Traditions",
+              "zip_codes": [
+                "85374"
+              ]
+            },
+            {
+              "name": "Sun City Grand",
+              "zip_codes": [
+                "85374"
+              ]
+            },
+            {
+              "name": "Coyote Lakes",
+              "zip_codes": [
+                "85378"
+              ]
+            },
+            {
+              "name": "The Vineyards",
+              "zip_codes": [
+                "85378"
+              ]
+            },
+            {
+              "name": "Greer Ranch",
+              "zip_codes": [
+                "85374"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Goodyear",
+          "population": 118186,
+          "region": "West Valley",
+          "neighborhoods": [
+            {
+              "name": "Estrella",
+              "zip_codes": [
+                "85338"
+              ]
+            },
+            {
+              "name": "Palm Valley",
+              "zip_codes": [
+                "85392",
+                "85395"
+              ]
+            },
+            {
+              "name": "Pebble Creek",
+              "zip_codes": [
+                "85395"
+              ]
+            },
+            {
+              "name": "Canyon Trails",
+              "zip_codes": [
+                "85338"
+              ]
+            },
+            {
+              "name": "Avalon",
+              "zip_codes": [
+                "85338"
+              ]
+            },
+            {
+              "name": "Tuscano",
+              "zip_codes": [
+                "85338"
+              ]
+            },
+            {
+              "name": "Victory at Verrado",
+              "zip_codes": [
+                "85395"
+              ]
+            },
+            {
+              "name": "Estrella Mountain Ranch",
+              "zip_codes": [
+                "85338"
+              ]
+            },
+            {
+              "name": "Centerra",
+              "zip_codes": [
+                "85338"
+              ]
+            },
+            {
+              "name": "Franklin Ranch",
+              "zip_codes": [
+                "85338"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Buckeye",
+          "population": 114334,
+          "region": "West Valley",
+          "neighborhoods": [
+            {
+              "name": "Verrado",
+              "zip_codes": [
+                "85396"
+              ]
+            },
+            {
+              "name": "Sundance",
+              "zip_codes": [
+                "85326"
+              ]
+            },
+            {
+              "name": "Sienna Hills",
+              "zip_codes": [
+                "85396"
+              ]
+            },
+            {
+              "name": "Westpark",
+              "zip_codes": [
+                "85326"
+              ]
+            },
+            {
+              "name": "Tartesso",
+              "zip_codes": [
+                "85326"
+              ]
+            },
+            {
+              "name": "Festival Ranch",
+              "zip_codes": [
+                "85396"
+              ]
+            },
+            {
+              "name": "Sun City Festival",
+              "zip_codes": [
+                "85396"
+              ]
+            },
+            {
+              "name": "Riata West",
+              "zip_codes": [
+                "85326"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Avondale",
+          "population": 90000,
+          "region": "West Valley",
+          "neighborhoods": [
+            {
+              "name": "Palm Valley",
+              "zip_codes": [
+                "85392"
+              ]
+            },
+            {
+              "name": "Coldwater Ranch",
+              "zip_codes": [
+                "85323"
+              ]
+            },
+            {
+              "name": "Rancho Santa Fe",
+              "zip_codes": [
+                "85323"
+              ]
+            },
+            {
+              "name": "Cambridge Estates",
+              "zip_codes": [
+                "85323"
+              ]
+            },
+            {
+              "name": "Rio Crossing",
+              "zip_codes": [
+                "85323"
+              ]
+            },
+            {
+              "name": "Avondale Commons",
+              "zip_codes": [
+                "85323"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Queen Creek",
+          "population": 70000,
+          "region": "East Valley",
+          "neighborhoods": [
+            {
+              "name": "Encanterra",
+              "zip_codes": [
+                "85142"
+              ]
+            },
+            {
+              "name": "Cortina",
+              "zip_codes": [
+                "85142"
+              ]
+            },
+            {
+              "name": "Queen Creek Station",
+              "zip_codes": [
+                "85142"
+              ]
+            },
+            {
+              "name": "San Tan Heights",
+              "zip_codes": [
+                "85143"
+              ]
+            },
+            {
+              "name": "Montelena",
+              "zip_codes": [
+                "85143"
+              ]
+            },
+            {
+              "name": "Pecan Creek",
+              "zip_codes": [
+                "85142"
+              ]
+            },
+            {
+              "name": "Dorada Estates",
+              "zip_codes": [
+                "85143"
+              ]
+            },
+            {
+              "name": "Sossaman Estates",
+              "zip_codes": [
+                "85143"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "San Tan Valley",
+          "population": 105000,
+          "region": "East Valley",
+          "neighborhoods": [
+            {
+              "name": "Johnson Ranch",
+              "zip_codes": [
+                "85143"
+              ]
+            },
+            {
+              "name": "Pecan Creek",
+              "zip_codes": [
+                "85142"
+              ]
+            },
+            {
+              "name": "Skyline Ranch",
+              "zip_codes": [
+                "85143"
+              ]
+            },
+            {
+              "name": "Sonoran Heights",
+              "zip_codes": [
+                "85143"
+              ]
+            },
+            {
+              "name": "Copper Basin",
+              "zip_codes": [
+                "85140"
+              ]
+            },
+            {
+              "name": "Circle Cross Ranch",
+              "zip_codes": [
+                "85143"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Anthem",
+          "population": 23190,
+          "region": "North Valley",
+          "neighborhoods": [
+            {
+              "name": "Anthem Country Club",
+              "zip_codes": [
+                "85086"
+              ]
+            },
+            {
+              "name": "Anthem Parkside",
+              "zip_codes": [
+                "85086"
+              ]
+            },
+            {
+              "name": "Anthem North",
+              "zip_codes": [
+                "85086"
+              ]
+            },
+            {
+              "name": "Persimmon",
+              "zip_codes": [
+                "85086"
+              ]
+            },
+            {
+              "name": "Parkside Villas",
+              "zip_codes": [
+                "85086"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Paradise Valley",
+          "population": 14000,
+          "region": "Central",
+          "neighborhoods": [
+            {
+              "name": "Paradise Valley Estates",
+              "zip_codes": [
+                "85253"
+              ]
+            },
+            {
+              "name": "Clearwater Hills",
+              "zip_codes": [
+                "85253"
+              ]
+            },
+            {
+              "name": "Mountain Shadows",
+              "zip_codes": [
+                "85253"
+              ]
+            },
+            {
+              "name": "Mummy Mountain",
+              "zip_codes": [
+                "85253"
+              ]
+            },
+            {
+              "name": "Stonegate",
+              "zip_codes": [
+                "85253"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Fountain Hills",
+          "population": 25000,
+          "region": "Central",
+          "neighborhoods": [
+            {
+              "name": "Eagle Mountain",
+              "zip_codes": [
+                "85268"
+              ]
+            },
+            {
+              "name": "Desert Canyon",
+              "zip_codes": [
+                "85268"
+              ]
+            },
+            {
+              "name": "Balboa Peninsula",
+              "zip_codes": [
+                "85268"
+              ]
+            },
+            {
+              "name": "Sunridge Canyon",
+              "zip_codes": [
+                "85268"
+              ]
+            },
+            {
+              "name": "The Hills at Fountain Hills",
+              "zip_codes": [
+                "85268"
+              ]
+            },
+            {
+              "name": "Firerock",
+              "zip_codes": [
+                "85268"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Cave Creek",
+          "population": 6000,
+          "region": "North Valley",
+          "neighborhoods": [
+            {
+              "name": "Desert Hills",
+              "zip_codes": [
+                "85331"
+              ]
+            },
+            {
+              "name": "Tatum Ranch",
+              "zip_codes": [
+                "85331"
+              ]
+            },
+            {
+              "name": "Dove Valley Ranch",
+              "zip_codes": [
+                "85331"
+              ]
+            },
+            {
+              "name": "Lone Mountain",
+              "zip_codes": [
+                "85331"
+              ]
+            },
+            {
+              "name": "Black Mountain",
+              "zip_codes": [
+                "85331"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Carefree",
+          "population": 4000,
+          "region": "North Valley",
+          "neighborhoods": [
+            {
+              "name": "Carefree Estates",
+              "zip_codes": [
+                "85377"
+              ]
+            },
+            {
+              "name": "The Boulders",
+              "zip_codes": [
+                "85377"
+              ]
+            },
+            {
+              "name": "Desert Forest",
+              "zip_codes": [
+                "85377"
+              ]
+            },
+            {
+              "name": "Black Mountain",
+              "zip_codes": [
+                "85377"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Litchfield Park",
+          "population": 6000,
+          "region": "West Valley",
+          "neighborhoods": [
+            {
+              "name": "Wigwam Creek",
+              "zip_codes": [
+                "85340"
+              ]
+            },
+            {
+              "name": "The Wigwam",
+              "zip_codes": [
+                "85340"
+              ]
+            },
+            {
+              "name": "Litchfield Greens",
+              "zip_codes": [
+                "85340"
+              ]
+            },
+            {
+              "name": "Dreaming Summit",
+              "zip_codes": [
+                "85340"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "metro_name": "Tucson Metro Area",
+      "metro_population": 1024000,
+      "metro_rank_us": 53,
+      "cities_count": 12,
+      "cities": [
+        {
+          "city": "Tucson",
+          "population": 542629,
+          "region": "Central",
+          "neighborhoods": [
+            {
+              "name": "Downtown Tucson",
+              "zip_codes": [
+                "85701",
+                "85702"
+              ]
+            },
+            {
+              "name": "Armory Park",
+              "zip_codes": [
+                "85701"
+              ]
+            },
+            {
+              "name": "Barrio Viejo",
+              "zip_codes": [
+                "85701"
+              ]
+            },
+            {
+              "name": "Sam Hughes",
+              "zip_codes": [
+                "85716"
+              ]
+            },
+            {
+              "name": "Iron Horse",
+              "zip_codes": [
+                "85705"
+              ]
+            },
+            {
+              "name": "Dunbar Spring",
+              "zip_codes": [
+                "85705"
+              ]
+            },
+            {
+              "name": "West University",
+              "zip_codes": [
+                "85705"
+              ]
+            },
+            {
+              "name": "Old Fort Lowell",
+              "zip_codes": [
+                "85712"
+              ]
+            },
+            {
+              "name": "Civano",
+              "zip_codes": [
+                "85747"
+              ]
+            },
+            {
+              "name": "Catalina Foothills",
+              "zip_codes": [
+                "85718",
+                "85750"
+              ]
+            },
+            {
+              "name": "Starr Pass",
+              "zip_codes": [
+                "85713",
+                "85745"
+              ]
+            },
+            {
+              "name": "Saguaro Canyon",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Mitman",
+              "zip_codes": [
+                "85711"
+              ]
+            },
+            {
+              "name": "Rillito",
+              "zip_codes": [
+                "85704"
+              ]
+            },
+            {
+              "name": "Miles",
+              "zip_codes": [
+                "85705"
+              ]
+            },
+            {
+              "name": "Sewell",
+              "zip_codes": [
+                "85711"
+              ]
+            },
+            {
+              "name": "Bear Canyon",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Tucson Mountains",
+              "zip_codes": [
+                "85745"
+              ]
+            },
+            {
+              "name": "Campbell Grant",
+              "zip_codes": [
+                "85719"
+              ]
+            },
+            {
+              "name": "Miramonte",
+              "zip_codes": [
+                "85711"
+              ]
+            },
+            {
+              "name": "North University",
+              "zip_codes": [
+                "85719"
+              ]
+            },
+            {
+              "name": "Richland Heights",
+              "zip_codes": [
+                "85705"
+              ]
+            },
+            {
+              "name": "Sunnyside",
+              "zip_codes": [
+                "85706",
+                "85713"
+              ]
+            },
+            {
+              "name": "El Presidio",
+              "zip_codes": [
+                "85701"
+              ]
+            },
+            {
+              "name": "Menlo Park",
+              "zip_codes": [
+                "85701"
+              ]
+            },
+            {
+              "name": "Pie Allen",
+              "zip_codes": [
+                "85701"
+              ]
+            },
+            {
+              "name": "Rincon Heights",
+              "zip_codes": [
+                "85710"
+              ]
+            },
+            {
+              "name": "Blenman-Elm",
+              "zip_codes": [
+                "85716"
+              ]
+            },
+            {
+              "name": "Colonia Solana",
+              "zip_codes": [
+                "85706"
+              ]
+            },
+            {
+              "name": "Feldman's",
+              "zip_codes": [
+                "85711"
+              ]
+            },
+            {
+              "name": "El Encanto Estates",
+              "zip_codes": [
+                "85711"
+              ]
+            },
+            {
+              "name": "Broadmoor-Broadway",
+              "zip_codes": [
+                "85710"
+              ]
+            },
+            {
+              "name": "Rita Ranch",
+              "zip_codes": [
+                "85747"
+              ]
+            },
+            {
+              "name": "Vail",
+              "zip_codes": [
+                "85641",
+                "85747"
+              ]
+            },
+            {
+              "name": "Drexel Heights",
+              "zip_codes": [
+                "85746"
+              ]
+            },
+            {
+              "name": "Flowing Wells",
+              "zip_codes": [
+                "85705",
+                "85741"
+              ]
+            },
+            {
+              "name": "Tanque Verde",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Casas Adobes",
+              "zip_codes": [
+                "85704",
+                "85741",
+                "85742"
+              ]
+            },
+            {
+              "name": "Amphi",
+              "zip_codes": [
+                "85705"
+              ]
+            },
+            {
+              "name": "Midvale Park",
+              "zip_codes": [
+                "85711"
+              ]
+            },
+            {
+              "name": "Palo Verde",
+              "zip_codes": [
+                "85713"
+              ]
+            },
+            {
+              "name": "Alvernon Heights",
+              "zip_codes": [
+                "85711"
+              ]
+            },
+            {
+              "name": "Country Club",
+              "zip_codes": [
+                "85716"
+              ]
+            },
+            {
+              "name": "Solot",
+              "zip_codes": [
+                "85716"
+              ]
+            },
+            {
+              "name": "Winterhaven",
+              "zip_codes": [
+                "85719"
+              ]
+            },
+            {
+              "name": "Peter Howell",
+              "zip_codes": [
+                "85705"
+              ]
+            },
+            {
+              "name": "Painted Hills",
+              "zip_codes": [
+                "85748"
+              ]
+            },
+            {
+              "name": "Agua Caliente",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Sabino Canyon",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Houghton",
+              "zip_codes": [
+                "85748"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Oro Valley",
+          "population": 47500,
+          "region": "North",
+          "neighborhoods": [
+            {
+              "name": "Rancho Vistoso",
+              "zip_codes": [
+                "85755"
+              ]
+            },
+            {
+              "name": "Oro Valley Marketplace",
+              "zip_codes": [
+                "85755"
+              ]
+            },
+            {
+              "name": "Steam Pump Village",
+              "zip_codes": [
+                "85737"
+              ]
+            },
+            {
+              "name": "Heritage Highlands",
+              "zip_codes": [
+                "85737"
+              ]
+            },
+            {
+              "name": "Saddlebrooke",
+              "zip_codes": [
+                "85739"
+              ]
+            },
+            {
+              "name": "Sun City Vistoso",
+              "zip_codes": [
+                "85755"
+              ]
+            },
+            {
+              "name": "Oro Valley Country Club",
+              "zip_codes": [
+                "85737"
+              ]
+            },
+            {
+              "name": "The Golf Villas",
+              "zip_codes": [
+                "85737"
+              ]
+            },
+            {
+              "name": "Ironwood Hills",
+              "zip_codes": [
+                "85742"
+              ]
+            },
+            {
+              "name": "Mountain Vista",
+              "zip_codes": [
+                "85755"
+              ]
+            },
+            {
+              "name": "Canyon Del Oro",
+              "zip_codes": [
+                "85704"
+              ]
+            },
+            {
+              "name": "Sonoran Skyline",
+              "zip_codes": [
+                "85737"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Marana",
+          "population": 51908,
+          "region": "Northwest",
+          "neighborhoods": [
+            {
+              "name": "Dove Mountain",
+              "zip_codes": [
+                "85658"
+              ]
+            },
+            {
+              "name": "Gladden Farms",
+              "zip_codes": [
+                "85653"
+              ]
+            },
+            {
+              "name": "Tangerine Farms",
+              "zip_codes": [
+                "85653"
+              ]
+            },
+            {
+              "name": "Saguaro Springs",
+              "zip_codes": [
+                "85653"
+              ]
+            },
+            {
+              "name": "Heritage Highlands",
+              "zip_codes": [
+                "85658"
+              ]
+            },
+            {
+              "name": "The Gallery Golf Club",
+              "zip_codes": [
+                "85658"
+              ]
+            },
+            {
+              "name": "Tortolita",
+              "zip_codes": [
+                "85658"
+              ]
+            },
+            {
+              "name": "Continental Reserve",
+              "zip_codes": [
+                "85653"
+              ]
+            },
+            {
+              "name": "Adero Canyon",
+              "zip_codes": [
+                "85658"
+              ]
+            },
+            {
+              "name": "Town of Marana Historic District",
+              "zip_codes": [
+                "85653"
+              ]
+            },
+            {
+              "name": "Rocking K Ranch",
+              "zip_codes": [
+                "85658"
+              ]
+            },
+            {
+              "name": "Rancho Marana",
+              "zip_codes": [
+                "85653"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Sahuarita",
+          "population": 34467,
+          "region": "South",
+          "neighborhoods": [
+            {
+              "name": "Quail Creek",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "Rancho Sahuarita",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "La Posada",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "Casa Blanca",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "Madera Highlands",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "Old Sahuarita",
+              "zip_codes": [
+                "85614"
+              ]
+            },
+            {
+              "name": "Sahuarita Heights",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "Via Rancho Sahuarita",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "Desert Diamond Casino",
+              "zip_codes": [
+                "85629"
+              ]
+            },
+            {
+              "name": "Sopori Elementary Area",
+              "zip_codes": [
+                "85629"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Green Valley",
+          "population": 21391,
+          "region": "South",
+          "neighborhoods": [
+            {
+              "name": "Green Valley",
+              "zip_codes": [
+                "85614"
+              ]
+            },
+            {
+              "name": "Green Valley West",
+              "zip_codes": [
+                "85622"
+              ]
+            },
+            {
+              "name": "Canoa Ranch",
+              "zip_codes": [
+                "85614"
+              ]
+            },
+            {
+              "name": "Continental",
+              "zip_codes": [
+                "85622"
+              ]
+            },
+            {
+              "name": "Las Campanas",
+              "zip_codes": [
+                "85614"
+              ]
+            },
+            {
+              "name": "Canoa Hills",
+              "zip_codes": [
+                "85614"
+              ]
+            },
+            {
+              "name": "Quail Creek",
+              "zip_codes": [
+                "85614"
+              ]
+            },
+            {
+              "name": "Fairways",
+              "zip_codes": [
+                "85614"
+              ]
+            },
+            {
+              "name": "Desert Hills",
+              "zip_codes": [
+                "85614"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "South Tucson",
+          "population": 4601,
+          "region": "Central",
+          "neighborhoods": [
+            {
+              "name": "South Tucson Central",
+              "zip_codes": [
+                "85713"
+              ]
+            },
+            {
+              "name": "South Park",
+              "zip_codes": [
+                "85713"
+              ]
+            },
+            {
+              "name": "Liberty Triangle",
+              "zip_codes": [
+                "85713"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Vail",
+          "population": 15722,
+          "region": "Southeast",
+          "neighborhoods": [
+            {
+              "name": "Vail Preserve",
+              "zip_codes": [
+                "85641"
+              ]
+            },
+            {
+              "name": "Coyote Ranch",
+              "zip_codes": [
+                "85641"
+              ]
+            },
+            {
+              "name": "Del Webb at Rancho Del Lago",
+              "zip_codes": [
+                "85641"
+              ]
+            },
+            {
+              "name": "Rancho Del Lago",
+              "zip_codes": [
+                "85641"
+              ]
+            },
+            {
+              "name": "Los Ranchitos",
+              "zip_codes": [
+                "85641"
+              ]
+            },
+            {
+              "name": "Old Vail",
+              "zip_codes": [
+                "85641"
+              ]
+            },
+            {
+              "name": "Colossal Cave Area",
+              "zip_codes": [
+                "85641"
+              ]
+            },
+            {
+              "name": "Mesquite Valley",
+              "zip_codes": [
+                "85641"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Catalina",
+          "population": 7569,
+          "region": "North",
+          "neighborhoods": [
+            {
+              "name": "Catalina",
+              "zip_codes": [
+                "85739"
+              ]
+            },
+            {
+              "name": "Catalina State Park Area",
+              "zip_codes": [
+                "85739"
+              ]
+            },
+            {
+              "name": "Sutherland Heights",
+              "zip_codes": [
+                "85739"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Tanque Verde",
+          "population": 16901,
+          "region": "East",
+          "neighborhoods": [
+            {
+              "name": "Tanque Verde Estates",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Tanque Verde Valley",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Agua Caliente",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Forty-Niners Country Club",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Ventana Canyon",
+              "zip_codes": [
+                "85749"
+              ]
+            },
+            {
+              "name": "Skyline Country Club",
+              "zip_codes": [
+                "85750"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Tucson Estates",
+          "population": 11869,
+          "region": "West",
+          "neighborhoods": [
+            {
+              "name": "Tucson Estates",
+              "zip_codes": [
+                "85713",
+                "85735"
+              ]
+            },
+            {
+              "name": "Picture Rocks",
+              "zip_codes": [
+                "85743"
+              ]
+            },
+            {
+              "name": "Desert Sands",
+              "zip_codes": [
+                "85735"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Summit",
+          "population": 4245,
+          "region": "North",
+          "neighborhoods": [
+            {
+              "name": "Summit",
+              "zip_codes": [
+                "85739"
+              ]
+            },
+            {
+              "name": "Oracle Foothills",
+              "zip_codes": [
+                "85739"
+              ]
+            }
+          ]
+        },
+        {
+          "city": "Avra Valley",
+          "population": 6685,
+          "region": "West",
+          "neighborhoods": [
+            {
+              "name": "Avra Valley",
+              "zip_codes": [
+                "85653",
+                "85735"
+              ]
+            },
+            {
+              "name": "Picture Rocks",
+              "zip_codes": [
+                "85743"
+              ]
+            },
+            {
+              "name": "Red Rock",
+              "zip_codes": [
+                "85645"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
