@@ -209,23 +209,26 @@ export const ProfessionalCard = ({
   })();
 
   const handleWebsiteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
     // Use websiteUrl from parsedProfInfo if available
-    const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
-    
+    const websiteSource = parsedProfInfo?.websiteUrl || professional.website || "";
+
     // Check if we have a valid website
     if (!websiteSource.trim()) {
-      e.preventDefault();
-      const firstName = professional.name.split(' ')[0];
-      toast.info(`Sorry, it doesn't look like ${firstName} has their own website. Try contacting them.`);
+      const firstName = professional.name.split(" ")[0];
+      toast.info(
+        `Sorry, it doesn't look like ${firstName} has their own website. Try contacting them.`,
+      );
       return;
     }
 
     const url = (() => {
       let v = websiteSource.trim();
       // Fix common malformed patterns
-      if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
-      if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
-      if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
+      if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, "https://");
+      if (/^https\/:\/\//i.test(v)) v = v.replace(/^https\/:\/\//i, "https://");
+      if (/^http\/:\/\//i.test(v)) v = v.replace(/^http\/:\/\//i, "http://");
       if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
       return v;
     })();
@@ -233,28 +236,48 @@ export const ProfessionalCard = ({
     // If the "website" is actually a Zillow URL, treat it as missing personal site
     try {
       const parsed = new URL(url);
-      if (parsed.hostname.includes('zillow.com')) {
-        e.preventDefault();
-        const firstName = professional.name.split(' ')[0];
-        toast.info(`Sorry, it doesn't look like ${firstName} has their own website. Try contacting them.`);
+      if (parsed.hostname.includes("zillow.com")) {
+        const firstName = professional.name.split(" ")[0];
+        toast.info(
+          `Sorry, it doesn't look like ${firstName} has their own website. Try contacting them.`,
+        );
         return;
       }
     } catch {
-      // If URL parsing fails, let the browser handle it after tracking
+      // If URL parsing fails, we'll still attempt navigation after tracking
     }
 
-    trackEvent('agent_profile_click', {
+    trackEvent("agent_profile_click", {
       agent_name: professional.name,
       market,
       destination_url: url,
-      agent_type: agentType
+      agent_type: agentType,
     });
 
-    trackEvent('contact_cta_click', {
+    trackEvent("contact_cta_click", {
       agent_name: professional.name,
       market,
-      agent_type: agentType
+      agent_type: agentType,
     });
+
+    // Proactively check if the external site looks valid before sending the user there
+    (async () => {
+      try {
+        const response = await fetch(url, { method: "HEAD" });
+
+        if (response.ok && response.status < 400) {
+          window.open(url, "_blank", "noopener,noreferrer");
+        } else {
+          const firstName = professional.name.split(" ")[0];
+          toast.info(
+            `Sorry, it doesn't look like ${firstName} has their own website. Try contacting them.`,
+          );
+        }
+      } catch {
+        // If we can't determine the status (CORS/network), fall back to opening the site
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
+    })();
   };
 
   const handlePhoneClick = () => {
