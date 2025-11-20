@@ -336,7 +336,10 @@ serve(async (req) => {
         
         // Set zillow data fetch timestamp
         memo23Data.zillow_data_fetched_at = new Date().toISOString();
-        memo23Data.zillow_profile_url = profileUrl;
+        // Only set zillow_profile_url if it doesn't already exist (preserve getdataforme URL)
+        if (!existingRecord?.zillow_profile_url) {
+          memo23Data.zillow_profile_url = profileUrl;
+        }
         
         console.log(`Extracted memo23Data for ${agent.name}:`, JSON.stringify(memo23Data, null, 2));
 
