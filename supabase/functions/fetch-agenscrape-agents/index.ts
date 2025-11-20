@@ -275,7 +275,7 @@ serve(async (req) => {
         review_link: agent.reviewLink || null,
         num_total_reviews: agent.numTotalReviews || agent.reviews_count || 0,
         reviews_text: agent.reviews || null,
-        review_stars_rating: agent.reviewStarsRating || agent.rating || null,
+        review_stars_rating: rating || null,
         current_listings: agent.currentListings || agent.for_sale_count || 0,
         total_sales: salesCount,
         city_id: finalCityId,
