@@ -460,7 +460,7 @@ export const Top10SearchForm = () => {
 
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
           <SelectTrigger className="bg-background">
-            <SelectValue placeholder="Select Category" />
+            <SelectValue placeholder="Neighborhood" />
           </SelectTrigger>
           <SelectContent className="bg-popover border-2 shadow-xl z-[200]">
             {categories.map(category => (
