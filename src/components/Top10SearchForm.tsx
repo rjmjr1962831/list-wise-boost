@@ -108,17 +108,36 @@ export const Top10SearchForm = () => {
     setIsSearching(true);
 
     try {
-      // Look up the city in the database by name and state
+      // Track search form submission
+      trackEvent('search_form_submit', {
+        state: selectedState,
+        city: selectedCity,
+        neighborhoods: selectAllNeighborhoods ? 'all' : selectedNeighborhoods.size,
+        search_type: 'top10_search'
+      } as any);
+
+      // For Arizona cities from the new data, we need to check if they exist in the database
+      // If not, we'll show a message that data is being prepared
       const { data: cityData, error: cityError } = await supabase
         .from('cities')
         .select('*')
         .eq('name', selectedCity)
         .eq('state', selectedState)
         .eq('active', true)
-        .single();
+        .maybeSingle();
 
-      if (cityError || !cityData) {
-        toast.error('City not found in database');
+      if (cityError && cityError.code !== 'PGRST116') {
+        console.error('Database error:', cityError);
+        toast.error('Error searching for city');
+        setIsSearching(false);
+        return;
+      }
+
+      if (!cityData) {
+        // City not in database yet - this is expected for new Arizona cities
+        toast.info(`${selectedCity}, ${selectedState} data is being prepared`, {
+          description: 'We\'re currently building the agent database for this city. Please check back soon!'
+        });
         setIsSearching(false);
         return;
       }
@@ -136,14 +155,6 @@ export const Top10SearchForm = () => {
         setIsSearching(false);
         return;
       }
-
-      // Track search form submission
-      trackEvent('search_form_submit', {
-        state: selectedState,
-        city: selectedCity,
-        neighborhoods: selectAllNeighborhoods ? 'all' : selectedNeighborhoods.size,
-        search_type: 'top10_search'
-      } as any);
 
       // Check if professionals exist for this city
       const { data: professionalsData, error: profsError } = await supabase
