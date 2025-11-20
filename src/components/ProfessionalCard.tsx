@@ -565,7 +565,7 @@ export const ProfessionalCard = ({
                   : null;
                 
                 return videoId ? (
-                  <div className="hidden md:block absolute right-10 top-2">
+                  <div className="hidden md:block absolute right-6 top-0">
                     <iframe
                       width="460"
                       height="259"
@@ -593,7 +593,7 @@ export const ProfessionalCard = ({
                 const firstName = professional.name.split(' ')[0];
                 
                 return (
-                  <div itemProp="description" className="border-t pt-3 md:pr-[440px]">
+                  <div itemProp="description" className="border-t pt-3 md:pr-[360px]">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
                     {bioHtml ? (
                       <div 
