@@ -192,20 +192,21 @@ export const ApplySearchForm = () => {
           )}
         </div>
 
-        {/* City Input */}
+        {/* City Input with ZIP code support */}
         <div className={cn("relative", cityOpen && "mb-64 md:mb-0")} ref={cityDropdownRef}>
           <Input
-            placeholder="Enter City or ZIP"
+            placeholder="Start typing city or enter ZIP"
             value={cityInput}
             onChange={(e) => {
               const value = e.target.value;
               setCityInput(value);
               
+              // Check if it's a complete 5-digit ZIP
               if (/^\d{5}$/.test(value)) {
                 const zipResult = findCityByZip(value);
                 
                 if (zipResult) {
-                  toast.success(`Found ${zipResult.city}, ${zipResult.state} for zip ${value}`);
+                  toast.success(`Found ${zipResult.city}, ${zipResult.state} for ZIP ${value}`);
                   setSelectedState(zipResult.state);
                   setStateInput(zipResult.state);
                   
@@ -220,31 +221,51 @@ export const ApplySearchForm = () => {
                   } else {
                     toast.info(`${zipResult.city} not yet in our database`);
                   }
+                  
+                  trackEvent('apply_zip_lookup', {
+                    zip_code: value,
+                    state: zipResult.state,
+                    city: zipResult.city,
+                    search_type: 'apply_listing'
+                  });
                 } else {
-                  toast.error(`Zip code ${value} not found in our database`);
+                  toast.error(`ZIP code ${value} not found`);
                 }
               } else {
-                setCityOpen(true);
-                
-                if (selectedState && value) {
-                  const filtered = cities.filter(c => 
-                    c.state === selectedState && 
-                    c.name.toLowerCase().includes(value.toLowerCase())
-                  );
-                  setFilteredCities(filtered);
-                } else if (!selectedState && value) {
-                  toast.info('Select a state first or enter a 5-digit ZIP code');
+                // Auto-filter cities as user types (minimum 2 characters)
+                if (value.length >= 2) {
+                  setCityOpen(true);
+                  
+                  if (selectedState) {
+                    const filtered = cities.filter(c => 
+                      c.state === selectedState && 
+                      c.name.toLowerCase().includes(value.toLowerCase())
+                    );
+                    setFilteredCities(filtered);
+                  } else {
+                    // Allow nationwide search if state not selected
+                    const filtered = cities.filter(c =>
+                      c.name.toLowerCase().includes(value.toLowerCase())
+                    );
+                    setFilteredCities(filtered);
+                  }
+                } else {
+                  setCityOpen(false);
                 }
               }
             }}
-            onFocus={() => setCityOpen(true)}
+            onFocus={() => {
+              if (cityInput.length >= 2) {
+                setCityOpen(true);
+              }
+            }}
             className="bg-background"
           />
-          {cityOpen && (
+          {cityOpen && filteredCities.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 z-[100] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
               <Command>
                 <CommandList>
-                  <CommandEmpty>No city found.</CommandEmpty>
+                  <CommandEmpty>No city found. Try a ZIP code.</CommandEmpty>
                   <CommandGroup>
                     {filteredCities.slice(0, 10).map((city) => (
                       <CommandItem
@@ -253,9 +274,10 @@ export const ApplySearchForm = () => {
                         onSelect={() => {
                           setSelectedCity(city.id);
                           setCityInput(city.name);
+                          setSelectedState(city.state);
+                          setStateInput(city.state);
                           setCityOpen(false);
                           
-                          // Track city selection
                           trackEvent('apply_city_select', {
                             state: city.state,
                             city: city.name,
