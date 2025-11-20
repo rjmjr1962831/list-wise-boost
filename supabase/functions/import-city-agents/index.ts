@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cityId, categoryId } = await req.json();
+    const { cityId, categoryId, maxResults = 50 } = await req.json();
 
     if (!cityId || !categoryId) {
       throw new Error('cityId and categoryId are required');
@@ -38,9 +38,9 @@ serve(async (req) => {
     console.log(`Starting full import for ${city?.name}, ${city?.state} - ${category?.name}`);
 
     // Step 1: Run getdataforme to get profile URLs
-    console.log('Step 1/2: Running getdataforme to fetch profile URLs (max 50)...');
+    console.log(`Step 1/2: Running getdataforme to fetch profile URLs (max ${maxResults})...`);
     const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
-      body: { cityId, categoryId, maxResults: 50 }
+      body: { cityId, categoryId, maxResults }
     });
 
     if (agenscrapeResult.error) {
