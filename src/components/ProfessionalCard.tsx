@@ -208,10 +208,18 @@ export const ProfessionalCard = ({
     }
   })();
 
-  const handleWebsiteClick = () => {
+  const handleWebsiteClick = (e: React.MouseEvent) => {
     // Use websiteUrl from parsedProfInfo if available
     const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
     
+    // Check if we have a valid website
+    if (!websiteSource.trim()) {
+      e.preventDefault();
+      const firstName = professional.name.split(' ')[0];
+      toast.info(`Sorry, we don't know ${firstName}'s web address. Try contacting them directly.`);
+      return;
+    }
+
     const url = (() => {
       let v = websiteSource.trim();
       // Fix common malformed patterns
@@ -594,40 +602,32 @@ export const ProfessionalCard = ({
               <div>
                 <h4 className="sr-only">Contact Information</h4>
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm">
-                  {(parsedProfInfo?.websiteUrl || professional.website || professional.email) && (
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <a
-                        href={(() => {
-                          let v = (parsedProfInfo?.websiteUrl || professional.website || '').trim();
-                          
-                          // If no website but email exists, derive from email domain
-                          if (!v && professional.email) {
-                            const emailDomain = professional.email.split('@')[1];
-                            if (emailDomain) {
-                              v = `https://${emailDomain}`;
-                            }
-                          }
-                          
-                          // Fix common malformed patterns
-                          if (v) {
-                            if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
-                            if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
-                            if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
-                            if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
-                          }
-                          return v;
-                        })()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline agent-profile-link"
-                        itemProp="url"
-                        onClick={handleWebsiteClick}
-                      >
-                        Visit {professional.name.split(' ')[0]}'s Website
-                      </a>
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <a
+                      href={(() => {
+                        const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
+                        let v = websiteSource.trim();
+                        
+                        // If no website, return # to prevent navigation
+                        if (!v) return '#';
+                        
+                        // Fix common malformed patterns
+                        if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
+                        if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
+                        if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
+                        if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+                        return v;
+                      })()}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline agent-profile-link"
+                      itemProp="url"
+                      onClick={handleWebsiteClick}
+                    >
+                      Visit {professional.name.split(' ')[0]}'s Website
+                    </a>
+                  </div>
                   {professional.phone && (
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -707,7 +707,7 @@ export const ProfessionalCard = ({
                 agentName={professional.name} 
                 company={professional.company} 
                 market={market}
-                zillowProfileUrl={professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null}
+                zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
               />
 
               {/* Zillow Reviews Section */}

@@ -148,9 +148,21 @@ export const ProfessionalListLayout = ({
     };
   }, [metadata, professionals]);
 
+  // Calculate actual average rating from professionals
+  const calculateAverageRating = () => {
+    const professionalsWithRatings = professionals.filter(p => p.rating > 0);
+    if (professionalsWithRatings.length === 0) return null;
+    const sum = professionalsWithRatings.reduce((acc, p) => acc + p.rating, 0);
+    const avg = sum / professionalsWithRatings.length;
+    return avg.toFixed(1);
+  };
+
+  const averageRating = calculateAverageRating();
+  const ratingLabel = averageRating ? `${averageRating} Average Rating` : "Top Rated";
+
   const defaultHeroIcons = [
     { icon: <Award className="h-5 w-5 text-primary" />, label: "All Verified" },
-    { icon: <Star className="h-5 w-5 text-primary" />, label: "4.6+ Average Rating" },
+    { icon: <Star className="h-5 w-5 text-primary" />, label: ratingLabel },
     { icon: <TrendingUp className="h-5 w-5 text-primary" />, label: "Proven Records" },
     { icon: <MapPin className="h-5 w-5 text-primary" />, label: `${metadata.location.city} Specialists` }
   ];
