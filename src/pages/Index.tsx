@@ -16,6 +16,9 @@ const Index = () => {
             We're a{" "}
             <span className="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.
           </p>
+          <p className="text-xl text-muted-foreground leading-relaxed">
+            Your new text goes here
+          </p>
         </div>
       </section>
 
