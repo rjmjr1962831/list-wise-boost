@@ -115,47 +115,6 @@ serve(async (req) => {
     const runId = runData.data.id;
     console.log(`Actor started with run ID: ${runId}`);
 
-    // Poll for completion (up to 10 minutes for large batch)
-    const maxAttempts = 120;
-    let attempt = 0;
-    let runStatus = 'RUNNING';
-    
-    while (attempt < maxAttempts && !['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED-OUT'].includes(runStatus)) {
-      attempt++;
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`
-      );
-      
-      if (!statusResponse.ok) {
-        throw new Error(`Failed to check run status: ${statusResponse.status}`);
-      }
-      
-      const statusData = await statusResponse.json();
-      runStatus = statusData.data.status;
-      
-      console.log(`Attempt ${attempt}/${maxAttempts}: Run status = ${runStatus}`);
-    }
-
-    if (runStatus !== 'SUCCEEDED') {
-      throw new Error(`Actor run did not complete successfully. Status: ${runStatus}`);
-    }
-
-    console.log('Actor run completed, fetching results...');
-
-    const datasetId = runData.data.defaultDatasetId;
-    const datasetResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
-    );
-
-    if (!datasetResponse.ok) {
-      throw new Error(`Failed to fetch dataset: ${datasetResponse.status}`);
-    }
-
-    const agents = await datasetResponse.json();
-    console.log(`Retrieved ${agents.length} agent profiles from memo23`);
-
     // Get next rank for this city/category
     const { data: existingPros } = await supabase
       .from('professionals')
@@ -167,259 +126,80 @@ serve(async (req) => {
 
     let nextRank = existingPros && existingPros.length > 0 ? existingPros[0].rank + 1 : 1;
 
-    // Process and store each agent with full memo23 data
+    const datasetId = runData.data.defaultDatasetId;
+    let processedCount = 0;
     let imported = 0;
+    const processedUrls = new Set<string>();
+
+    // Poll dataset incrementally while actor is running
+    const maxAttempts = 120;
+    let attempt = 0;
+    let runStatus = 'RUNNING';
     
-    for (const agent of agents) {
-      try {
-        const profileUrl = agent.url;
-        
-        // Fetch existing record to check for updates
-        const { data: existingRecord } = await supabase
-          .from('professionals')
-          .select('*')
-          .eq('zillow_profile_url', profileUrl)
-          .eq('city_id', cityId)
-          .eq('category_id', categoryId)
-          .maybeSingle();
+    console.log('Starting incremental processing...');
+    
+    while (attempt < maxAttempts && !['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED-OUT'].includes(runStatus)) {
+      attempt++;
+      
+      // Check run status
+      const statusResponse = await fetch(
+        `https://api.apify.com/v2/actor-runs/${runId}?token=${apifyToken}`
+      );
+      
+      if (!statusResponse.ok) {
+        throw new Error(`Failed to check run status: ${statusResponse.status}`);
+      }
+      
+      const statusData = await statusResponse.json();
+      runStatus = statusData.data.status;
+      
+      // Fetch current dataset items
+      const datasetResponse = await fetch(
+        `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
+      );
 
-        // Log the raw agent data for debugging
-        console.log(`Processing agent: ${agent.name || 'unknown'}`, JSON.stringify(agent, null, 2));
+      if (datasetResponse.ok) {
+        const agents = await datasetResponse.json();
+        const newAgents = agents.filter((agent: any) => agent.url && !processedUrls.has(agent.url));
         
-        // Map all memo23 fields, only including non-null/non-undefined values
-        const memo23Data: any = {};
-        
-        // Basic fields - memo23 is authoritative when it has data
-        if (agent.name) memo23Data.name = agent.name;
-        if (agent.screenName) memo23Data.screen_name = agent.screenName;
-        if (agent.encodedZuid) {
-          memo23Data.encoded_zuid = agent.encodedZuid;
-          memo23Data.zuid = agent.encodedZuid;
-        }
-        if (agent.inCanada !== undefined) memo23Data.in_canada = agent.inCanada;
-        if (agent.profileTypeIds) memo23Data.profile_type_ids = agent.profileTypeIds;
-        if (agent.profileTypes) memo23Data.profile_types = agent.profileTypes;
-        if (agent.sidebarVideoUrl) memo23Data.sidebar_video_url = agent.sidebarVideoUrl;
-        if (agent.businessAddress) {
-          memo23Data.business_address = agent.businessAddress;
-          // Extract zip code from business address
-          if (agent.businessAddress.postalCode) {
-            memo23Data.zip_code = agent.businessAddress.postalCode;
-          }
-          // Build address string
-          const addrParts = [
-            agent.businessAddress.address1,
-            agent.businessAddress.city,
-            agent.businessAddress.state,
-            agent.businessAddress.postalCode
-          ].filter(Boolean);
-          if (addrParts.length > 0) {
-            memo23Data.address = addrParts.join(', ');
-          }
-        }
-        if (agent.businessName) {
-          memo23Data.business_name = agent.businessName;
-          memo23Data.company = agent.businessName;
-        }
-        if (agent.cpdUserPronouns) memo23Data.cpd_user_pronouns = agent.cpdUserPronouns;
-        if (agent.isTopAgent !== undefined) memo23Data.is_top_agent = agent.isTopAgent;
-        if (agent.profileImageId) memo23Data.profile_image_id = agent.profileImageId;
-        if (agent.profilePhotoSrc) memo23Data.image_url = agent.profilePhotoSrc;
-        if (agent.isPremierAgent !== undefined) memo23Data.is_premier_agent = agent.isPremierAgent;
-        if (agent.ratings) memo23Data.ratings = agent.ratings;
-        if (agent.phoneNumbers) memo23Data.phone_numbers = agent.phoneNumbers;
-        if (agent.email) memo23Data.email = agent.email;
-        if (agent.professional) memo23Data.professional_data = agent.professional;
-        
-        // Extract get to know me - extract description and strip HTML
-        if (agent.getToKnowMe) {
-          if (typeof agent.getToKnowMe === 'string') {
-            memo23Data.get_to_know_me = agent.getToKnowMe;
-          } else if (agent.getToKnowMe.description) {
-            // Store the raw HTML description - we'll strip it in the UI
-            memo23Data.get_to_know_me = agent.getToKnowMe.description;
-          }
-        }
-        
-        if (agent.agentLicenses) memo23Data.agent_licenses = agent.agentLicenses;
-        if (agent.agentSalesStats) memo23Data.agent_sales_stats = agent.agentSalesStats;
-        if (agent.teamDisplayInformation) memo23Data.team_display_information = agent.teamDisplayInformation;
-        if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
-        if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
-        
-        // Extract specialties from professionalInformation
-        if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
-          const specialtiesEntry = agent.professionalInformation.find((info: any) => 
-            info.term === 'Specialties' || info.term === 'Areas of Focus'
-          );
-          if (specialtiesEntry?.detail && Array.isArray(specialtiesEntry.detail)) {
-            const specialties = specialtiesEntry.detail
-              .map((item: any) => {
-                if (typeof item === 'string') return item;
-                if (item.text) return item.text;
-                return null;
-              })
-              .filter(Boolean);
-            if (specialties.length > 0) {
-              memo23Data.specialty = specialties;
-              console.log(`Extracted ${specialties.length} specialties for ${agent.name}:`, specialties);
+        if (newAgents.length > 0) {
+          console.log(`Found ${newAgents.length} new agents to process (Total: ${agents.length})`);
+          
+          // Process new agents immediately
+          for (const agent of newAgents) {
+            processedUrls.add(agent.url);
+            const result = await processAgent(agent, cityId, categoryId, supabase, nextRank);
+            if (result.success) {
+              imported++;
+              if (result.isNew) nextRank++;
             }
-          }
-        }
-        
-        // Extract video URL from professionalInformation if not in sidebarVideoUrl
-        if (!agent.sidebarVideoUrl && agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
-          for (const info of agent.professionalInformation) {
-            if (info.term === 'Websites' && Array.isArray(info.detail)) {
-              const videoLink = info.detail.find((d: any) => 
-                d.text?.toLowerCase().includes('video') || 
-                d.text?.toLowerCase().includes('youtube') ||
-                d.link?.includes('youtube.com') ||
-                d.link?.includes('youtu.be')
-              );
-              if (videoLink?.link) {
-                memo23Data.sidebar_video_url = videoLink.link;
-                console.log(`Extracted video URL from professionalInformation: ${videoLink.link}`);
-                break;
-              }
-            }
-          }
-        }
-        
-        // Also try extracting from getToKnowMe.videoUrl
-        if (!memo23Data.sidebar_video_url && agent.getToKnowMe?.videoUrl) {
-          memo23Data.sidebar_video_url = agent.getToKnowMe.videoUrl;
-          console.log(`Extracted video URL from getToKnowMe: ${agent.getToKnowMe.videoUrl}`);
-        }
-        
-        // Extract license number from agentLicenses array - CRITICAL: extract text field only
-        if (agent.agentLicenses && Array.isArray(agent.agentLicenses) && agent.agentLicenses.length > 0) {
-          const license = agent.agentLicenses[0];
-          if (typeof license === 'string') {
-            memo23Data.license_number = license;
-          } else if (typeof license === 'object') {
-            // Extract just the text field, not the whole object
-            memo23Data.license_number = license.text || license.licenseNumber || null;
-          }
-        }
-        
-        // Extract website from professionalInformation array
-        if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
-          const websitesEntry = agent.professionalInformation.find((info: any) => info.term === 'Websites');
-          if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
-            const primaryWebsite = websitesEntry.links[0];
-            if (primaryWebsite?.url) {
-              memo23Data.website = primaryWebsite.url;
-            }
-          }
-        }
-        
-        // Extract phone from phoneNumbers array
-        if (agent.phoneNumbers && agent.phoneNumbers.length > 0) {
-          const primaryPhone = agent.phoneNumbers.find((p: any) => p.primary) || agent.phoneNumbers[0];
-          if (primaryPhone?.formattedPhoneNumber) {
-            memo23Data.phone = primaryPhone.formattedPhoneNumber;
-          } else if (typeof primaryPhone === 'string') {
-            memo23Data.phone = primaryPhone;
-          }
-        }
-        
-        // Extract review data from ratings
-        if (agent.ratings) {
-          if (agent.ratings.starRating !== undefined) {
-            memo23Data.review_stars_rating = agent.ratings.starRating;
-          } else if (agent.ratings.averageRating !== undefined) {
-            memo23Data.review_stars_rating = agent.ratings.averageRating;
+            processedCount++;
           }
           
-          if (agent.ratings.totalReviews !== undefined) {
-            memo23Data.num_total_reviews = agent.ratings.totalReviews;
-          } else if (agent.ratings.count !== undefined) {
-            memo23Data.num_total_reviews = agent.ratings.count;
-          }
+          console.log(`Progress: ${processedCount}/${agentUrls.length} agents processed, ${imported} imported`);
         }
-        
-        // Extract review texts from reviewsData array
-        if (agent.reviewsData && Array.isArray(agent.reviewsData) && agent.reviewsData.length > 0) {
-          memo23Data.reviews_data = agent.reviewsData;
-          console.log(`Extracted ${agent.reviewsData.length} reviews for ${agent.name}`);
-        }
-        
-        // Extract sales data from agentSalesStats - use countAllTime as primary source
-        if (agent.agentSalesStats) {
-          if (agent.agentSalesStats.countAllTime !== undefined) {
-            memo23Data.total_sales = agent.agentSalesStats.countAllTime;
-          } else if (agent.agentSalesStats.totalTransactionSides !== undefined) {
-            memo23Data.total_sales = agent.agentSalesStats.totalTransactionSides;
-          } else if (agent.agentSalesStats.countLastYear !== undefined) {
-            memo23Data.total_sales = agent.agentSalesStats.countLastYear;
-          }
-          
-          // Current listings if available
-          if (agent.agentSalesStats.currentListings !== undefined) {
-            memo23Data.current_listings = agent.agentSalesStats.currentListings;
-          }
-        }
-        
-        // Extract years experience
-        if (agent.yearsExperience !== undefined) {
-          memo23Data.years_experience = agent.yearsExperience;
-        } else if (agent.professionalInformation?.yearsExperience !== undefined) {
-          memo23Data.years_experience = agent.professionalInformation.yearsExperience;
-        }
-        
-        // Set zillow data fetch timestamp
-        memo23Data.zillow_data_fetched_at = new Date().toISOString();
-        // Only set zillow_profile_url if it doesn't already exist (preserve getdataforme URL)
-        if (!existingRecord?.zillow_profile_url) {
-          memo23Data.zillow_profile_url = profileUrl;
-        }
-        
-        console.log(`Extracted memo23Data for ${agent.name}:`, JSON.stringify(memo23Data, null, 2));
-
-        if (existingRecord) {
-          // Update existing professional using its ID
-          const { error: updateError } = await supabase
-            .from('professionals')
-            .update(memo23Data)
-            .eq('id', existingRecord.id);
-
-          if (updateError) {
-            console.error(`Error updating agent ${agent.name}:`, updateError);
-          } else {
-            console.log(`Updated agent: ${agent.name}`);
-            imported++;
-          }
-        } else {
-          // Insert new professional with rank
-          memo23Data.rank = nextRank++;
-          memo23Data.city_id = cityId;
-          memo23Data.category_id = categoryId;
-          memo23Data.type = 'individual';
-          memo23Data.active = true;
-          
-          const { error: insertError } = await supabase
-            .from('professionals')
-            .insert(memo23Data);
-
-          if (insertError) {
-            console.error(`Error inserting agent ${agent.name}:`, insertError);
-          } else {
-            console.log(`Inserted agent: ${agent.name}`);
-            imported++;
-          }
-        }
-      } catch (error) {
-        console.error(`Error processing agent:`, error);
+      }
+      
+      console.log(`Attempt ${attempt}/${maxAttempts}: Status=${runStatus}, Processed=${processedCount}/${agentUrls.length}`);
+      
+      // Wait before next poll (shorter interval for faster updates)
+      if (runStatus === 'RUNNING') {
+        await new Promise(resolve => setTimeout(resolve, 3000));
       }
     }
+
+    if (runStatus !== 'SUCCEEDED') {
+      console.warn(`Actor run ended with status: ${runStatus}. Processed ${processedCount} agents.`);
+    }
+
+    console.log(`Incremental processing complete: ${imported} agents imported out of ${processedCount} processed`);
 
     return new Response(
       JSON.stringify({
         success: true,
         imported,
-        total: agents.length,
-        message: `Successfully processed ${imported} out of ${agents.length} agents with memo23 data`
+        total: processedCount,
+        message: `Successfully processed ${imported} out of ${processedCount} agents with memo23 data (incremental updates enabled)`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -436,3 +216,233 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to process a single agent
+async function processAgent(
+  agent: any,
+  cityId: string,
+  categoryId: string,
+  supabase: any,
+  rank: number
+): Promise<{ success: boolean; isNew: boolean }> {
+  try {
+    const profileUrl = agent.url;
+    
+    // Fetch existing record to check for updates
+    const { data: existingRecord } = await supabase
+      .from('professionals')
+      .select('*')
+      .eq('zillow_profile_url', profileUrl)
+      .eq('city_id', cityId)
+      .eq('category_id', categoryId)
+      .maybeSingle();
+
+    // Map all memo23 fields
+    const memo23Data: any = {};
+    
+    if (agent.name) memo23Data.name = agent.name;
+    if (agent.screenName) memo23Data.screen_name = agent.screenName;
+    if (agent.encodedZuid) {
+      memo23Data.encoded_zuid = agent.encodedZuid;
+      memo23Data.zuid = agent.encodedZuid;
+    }
+    if (agent.inCanada !== undefined) memo23Data.in_canada = agent.inCanada;
+    if (agent.profileTypeIds) memo23Data.profile_type_ids = agent.profileTypeIds;
+    if (agent.profileTypes) memo23Data.profile_types = agent.profileTypes;
+    if (agent.sidebarVideoUrl) memo23Data.sidebar_video_url = agent.sidebarVideoUrl;
+    if (agent.businessAddress) {
+      memo23Data.business_address = agent.businessAddress;
+      if (agent.businessAddress.postalCode) {
+        memo23Data.zip_code = agent.businessAddress.postalCode;
+      }
+      const addrParts = [
+        agent.businessAddress.address1,
+        agent.businessAddress.city,
+        agent.businessAddress.state,
+        agent.businessAddress.postalCode
+      ].filter(Boolean);
+      if (addrParts.length > 0) {
+        memo23Data.address = addrParts.join(', ');
+      }
+    }
+    if (agent.businessName) {
+      memo23Data.business_name = agent.businessName;
+      memo23Data.company = agent.businessName;
+    }
+    if (agent.cpdUserPronouns) memo23Data.cpd_user_pronouns = agent.cpdUserPronouns;
+    if (agent.isTopAgent !== undefined) memo23Data.is_top_agent = agent.isTopAgent;
+    if (agent.profileImageId) memo23Data.profile_image_id = agent.profileImageId;
+    if (agent.profilePhotoSrc) memo23Data.image_url = agent.profilePhotoSrc;
+    if (agent.isPremierAgent !== undefined) memo23Data.is_premier_agent = agent.isPremierAgent;
+    if (agent.ratings) memo23Data.ratings = agent.ratings;
+    if (agent.phoneNumbers) memo23Data.phone_numbers = agent.phoneNumbers;
+    if (agent.email) memo23Data.email = agent.email;
+    if (agent.professional) memo23Data.professional_data = agent.professional;
+    
+    if (agent.getToKnowMe) {
+      if (typeof agent.getToKnowMe === 'string') {
+        memo23Data.get_to_know_me = agent.getToKnowMe;
+      } else if (agent.getToKnowMe.description) {
+        memo23Data.get_to_know_me = agent.getToKnowMe.description;
+      }
+    }
+    
+    if (agent.agentLicenses) memo23Data.agent_licenses = agent.agentLicenses;
+    if (agent.agentSalesStats) memo23Data.agent_sales_stats = agent.agentSalesStats;
+    if (agent.teamDisplayInformation) memo23Data.team_display_information = agent.teamDisplayInformation;
+    if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
+    if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
+    
+    // Extract specialties
+    if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+      const specialtiesEntry = agent.professionalInformation.find((info: any) => 
+        info.term === 'Specialties' || info.term === 'Areas of Focus'
+      );
+      if (specialtiesEntry?.detail && Array.isArray(specialtiesEntry.detail)) {
+        const specialties = specialtiesEntry.detail
+          .map((item: any) => {
+            if (typeof item === 'string') return item;
+            if (item.text) return item.text;
+            return null;
+          })
+          .filter(Boolean);
+        if (specialties.length > 0) {
+          memo23Data.specialty = specialties;
+        }
+      }
+    }
+    
+    // Extract video URL
+    if (!agent.sidebarVideoUrl && agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+      for (const info of agent.professionalInformation) {
+        if (info.term === 'Websites' && Array.isArray(info.detail)) {
+          const videoLink = info.detail.find((d: any) => 
+            d.text?.toLowerCase().includes('video') || 
+            d.text?.toLowerCase().includes('youtube') ||
+            d.link?.includes('youtube.com') ||
+            d.link?.includes('youtu.be')
+          );
+          if (videoLink?.link) {
+            memo23Data.sidebar_video_url = videoLink.link;
+            break;
+          }
+        }
+      }
+    }
+    
+    if (!memo23Data.sidebar_video_url && agent.getToKnowMe?.videoUrl) {
+      memo23Data.sidebar_video_url = agent.getToKnowMe.videoUrl;
+    }
+    
+    // Extract license number
+    if (agent.agentLicenses && Array.isArray(agent.agentLicenses) && agent.agentLicenses.length > 0) {
+      const license = agent.agentLicenses[0];
+      if (typeof license === 'string') {
+        memo23Data.license_number = license;
+      } else if (typeof license === 'object') {
+        memo23Data.license_number = license.text || license.licenseNumber || null;
+      }
+    }
+    
+    // Extract website
+    if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+      const websitesEntry = agent.professionalInformation.find((info: any) => info.term === 'Websites');
+      if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
+        const primaryWebsite = websitesEntry.links[0];
+        if (primaryWebsite?.url) {
+          memo23Data.website = primaryWebsite.url;
+        }
+      }
+    }
+    
+    // Extract phone
+    if (agent.phoneNumbers && agent.phoneNumbers.length > 0) {
+      const primaryPhone = agent.phoneNumbers.find((p: any) => p.primary) || agent.phoneNumbers[0];
+      if (primaryPhone?.formattedPhoneNumber) {
+        memo23Data.phone = primaryPhone.formattedPhoneNumber;
+      } else if (typeof primaryPhone === 'string') {
+        memo23Data.phone = primaryPhone;
+      }
+    }
+    
+    // Extract review data
+    if (agent.ratings) {
+      if (agent.ratings.starRating !== undefined) {
+        memo23Data.review_stars_rating = agent.ratings.starRating;
+      } else if (agent.ratings.averageRating !== undefined) {
+        memo23Data.review_stars_rating = agent.ratings.averageRating;
+      }
+      
+      if (agent.ratings.totalReviews !== undefined) {
+        memo23Data.num_total_reviews = agent.ratings.totalReviews;
+      } else if (agent.ratings.count !== undefined) {
+        memo23Data.num_total_reviews = agent.ratings.count;
+      }
+    }
+    
+    if (agent.reviewsData && Array.isArray(agent.reviewsData) && agent.reviewsData.length > 0) {
+      memo23Data.reviews_data = agent.reviewsData;
+    }
+    
+    // Extract sales data
+    if (agent.agentSalesStats) {
+      if (agent.agentSalesStats.countAllTime !== undefined) {
+        memo23Data.total_sales = agent.agentSalesStats.countAllTime;
+      } else if (agent.agentSalesStats.totalTransactionSides !== undefined) {
+        memo23Data.total_sales = agent.agentSalesStats.totalTransactionSides;
+      } else if (agent.agentSalesStats.countLastYear !== undefined) {
+        memo23Data.total_sales = agent.agentSalesStats.countLastYear;
+      }
+      
+      if (agent.agentSalesStats.currentListings !== undefined) {
+        memo23Data.current_listings = agent.agentSalesStats.currentListings;
+      }
+    }
+    
+    // Extract years experience
+    if (agent.yearsExperience !== undefined) {
+      memo23Data.years_experience = agent.yearsExperience;
+    } else if (agent.professionalInformation?.yearsExperience !== undefined) {
+      memo23Data.years_experience = agent.professionalInformation.yearsExperience;
+    }
+    
+    memo23Data.zillow_data_fetched_at = new Date().toISOString();
+    if (!existingRecord?.zillow_profile_url) {
+      memo23Data.zillow_profile_url = profileUrl;
+    }
+
+    if (existingRecord) {
+      const { error: updateError } = await supabase
+        .from('professionals')
+        .update(memo23Data)
+        .eq('id', existingRecord.id);
+
+      if (updateError) {
+        console.error(`Error updating ${agent.name}:`, updateError);
+        return { success: false, isNew: false };
+      }
+      console.log(`✅ Updated: ${agent.name}`);
+      return { success: true, isNew: false };
+    } else {
+      memo23Data.rank = rank;
+      memo23Data.city_id = cityId;
+      memo23Data.category_id = categoryId;
+      memo23Data.type = 'individual';
+      memo23Data.active = true;
+      
+      const { error: insertError } = await supabase
+        .from('professionals')
+        .insert(memo23Data);
+
+      if (insertError) {
+        console.error(`Error inserting ${agent.name}:`, insertError);
+        return { success: false, isNew: true };
+      }
+      console.log(`✅ Inserted: ${agent.name}`);
+      return { success: true, isNew: true };
+    }
+  } catch (error) {
+    console.error(`Error processing agent:`, error);
+    return { success: false, isNew: false };
+  }
+}
