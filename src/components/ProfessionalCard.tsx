@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Facebook, Linkedin, Twitter, Instagram, Youtube, Link2 } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Facebook, Linkedin, Twitter, Instagram, Youtube, Link2, Music } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -538,10 +538,10 @@ export const ProfessionalCard = ({
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-primary transition-colors"
-                              onClick={() => trackEvent('social_link_click', {
+                              onClick={() => trackEvent('press_mention_click', {
                                 agent_name: professional.name,
                                 market,
-                                platform: 'website'
+                                source: 'Website'
                               })}
                             >
                               <Link2 className="h-4 w-4" />
@@ -553,10 +553,10 @@ export const ProfessionalCard = ({
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-[#1877F2] transition-colors"
-                              onClick={() => trackEvent('social_link_click', {
+                              onClick={() => trackEvent('press_mention_click', {
                                 agent_name: professional.name,
                                 market,
-                                platform: 'facebook'
+                                source: 'Facebook'
                               })}
                             >
                               <Facebook className="h-4 w-4" />
@@ -568,10 +568,10 @@ export const ProfessionalCard = ({
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-[#0A66C2] transition-colors"
-                              onClick={() => trackEvent('social_link_click', {
+                              onClick={() => trackEvent('press_mention_click', {
                                 agent_name: professional.name,
                                 market,
-                                platform: 'linkedin'
+                                source: 'LinkedIn'
                               })}
                             >
                               <Linkedin className="h-4 w-4" />
@@ -583,10 +583,10 @@ export const ProfessionalCard = ({
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-foreground transition-colors"
-                              onClick={() => trackEvent('social_link_click', {
+                              onClick={() => trackEvent('press_mention_click', {
                                 agent_name: professional.name,
                                 market,
-                                platform: 'x'
+                                source: 'X/Twitter'
                               })}
                             >
                               <Twitter className="h-4 w-4" />
@@ -598,13 +598,28 @@ export const ProfessionalCard = ({
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-[#E4405F] transition-colors"
-                              onClick={() => trackEvent('social_link_click', {
+                              onClick={() => trackEvent('press_mention_click', {
                                 agent_name: professional.name,
                                 market,
-                                platform: 'instagram'
+                                source: 'Instagram'
                               })}
                             >
                               <Instagram className="h-4 w-4" />
+                            </a>
+                          )}
+                          {parsedProfInfo.socialLinks.tiktokUrl && (
+                            <a 
+                              href={parsedProfInfo.socialLinks.tiktokUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-muted-foreground hover:text-foreground transition-colors"
+                              onClick={() => trackEvent('press_mention_click', {
+                                agent_name: professional.name,
+                                market,
+                                source: 'TikTok'
+                              })}
+                            >
+                              <Music className="h-4 w-4" />
                             </a>
                           )}
                           {parsedProfInfo.socialLinks.youtubeUrl && (
@@ -613,10 +628,10 @@ export const ProfessionalCard = ({
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-muted-foreground hover:text-[#FF0000] transition-colors"
-                              onClick={() => trackEvent('social_link_click', {
+                              onClick={() => trackEvent('press_mention_click', {
                                 agent_name: professional.name,
                                 market,
-                                platform: 'youtube'
+                                source: 'YouTube'
                               })}
                             >
                               <Youtube className="h-4 w-4" />
