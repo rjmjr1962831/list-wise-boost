@@ -10,8 +10,8 @@ const Index = () => {
             What Is Top10Lists.us?
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            We're a{" "}
-            <span className="font-semibold text-foreground">curated directory of the top 10 real estate agents</span> in every major U.S. city.
+            We are an{" "}
+            <span className="font-semibold text-foreground">AI curated directory of the top 10 real estate agents</span> in every major U.S. city.
           </p>
           <p className="text-xl text-muted-foreground leading-relaxed">We've pored through dozens of sources and rated about 2,000,000 agents in the U.S.
 
