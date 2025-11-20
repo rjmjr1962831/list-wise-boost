@@ -68,9 +68,9 @@ serve(async (req) => {
     const runData = await runResponse.json();
     const runId = runData.data.id;
     
-    // Poll for completion (max 60 seconds)
+    // Poll for completion (max 120 seconds to match batch processing)
     let attempts = 0;
-    const maxAttempts = 60;
+    const maxAttempts = 120;
     let runStatus = 'RUNNING';
     let agentData = null;
 
@@ -123,7 +123,7 @@ serve(async (req) => {
 
     if (runStatus === 'RUNNING') {
       console.error(`Run timed out after ${maxAttempts} seconds`);
-      throw new Error('Apify run timed out after 60 seconds');
+      throw new Error(`Apify run timed out after ${maxAttempts} seconds`);
     }
 
     if (!agentData) {

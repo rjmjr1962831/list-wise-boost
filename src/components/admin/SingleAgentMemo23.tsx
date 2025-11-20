@@ -26,6 +26,7 @@ export const SingleAgentMemo23 = () => {
 
   const fetchProfile = async () => {
     setProfileLoading(true);
+    setProfile(null); // Clear existing card
     try {
       console.log('Fetching Adam Hamblen profile...');
       const { data, error } = await supabase
