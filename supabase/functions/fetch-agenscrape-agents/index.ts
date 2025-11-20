@@ -91,12 +91,12 @@ serve(async (req) => {
               throw new Error(`Unknown state: ${stateName}`);
             }
             searchLocation = `${cityName} ${stateAbbrev}`;
-            console.log(`Using city/state format for ${cityName}: ${searchLocation}`);
-                throw new Error(`Unknown state: ${stateName}`);
+            console.log(`Using city/state location: ${searchLocation}, Primary ZIP: ${primaryZip || 'none found'}`);
           } catch (zipErr) {
             console.error('Error loading zipCodeData.json, falling back to city/state:', zipErr);
-            const stateAbbrev = stateAbbreviations[stateName];
+            const stateAbbrev = stateName.length === 2 ? stateName : stateAbbreviations[stateName];
             if (!stateAbbrev) {
+              throw new Error(`Unknown state: ${stateName}`);
             }
             searchLocation = `${cityName} ${stateAbbrev}`;
             console.log(`Fallback city/state location: ${searchLocation}`);
@@ -110,16 +110,22 @@ serve(async (req) => {
       throw new Error('Could not determine city for import');
     }
 
-    // Start the Apify actor with getdataforme~agenscrape (the working scraper)
+    // Start the Apify actor (NOTE: Using the scraper that actually works)
     const actorInput = {
       search_query: searchLocation,
-      maxResults: maxResults
+      category: "real-estate-agents",
+      locationText: searchLocation,
+      name: "",
+      language: "English",
+      specialty: "",
+      maxResults: maxResults,
+      startPage: 1
     };
     
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
 
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/getdataforme~agenscrape/runs',
+      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
       {
         method: 'POST',
         headers: {
