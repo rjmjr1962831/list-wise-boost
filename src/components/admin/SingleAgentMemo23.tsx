@@ -64,11 +64,8 @@ export const SingleAgentMemo23 = () => {
 
   const fetchAdamData = async () => {
     // Require a fully loaded profile before attempting any scraping
-    const cityId = profile?.city_id;
-    const categoryId = profile?.category_id;
-
-    if (!cityId || !categoryId) {
-      toast.error('Missing city or category ID on profile; reload profile and try again.');
+    if (!profile?.id) {
+      toast.error('Profile not loaded yet; please wait and try again.');
       return;
     }
 
@@ -81,64 +78,16 @@ export const SingleAgentMemo23 = () => {
     
     try {
       const timestamp = new Date().toLocaleTimeString();
-      setStatusHistory(prev => [
-        ...prev,
+      setStatusHistory([
         {
-          step: 'Agenscrape',
-          detail: 'Starting agenscrape run for city/category...',
+          step: 'Memo23',
+          detail: 'Starting memo23 single-agent run (Adam already has Zillow URL)...',
           level: 'info',
           timestamp,
         },
       ]);
 
-      toast.info('Step 1/2: Fetching agenscrape data for Adam Hamblen...');
-      
-      const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
-        body: { 
-          cityId,
-          categoryId
-        }
-      });
-
-      setAgenscrapeResponse(agenscrapeResult);
-
-      if (agenscrapeResult.error) {
-        console.error('Agenscrape error:', agenscrapeResult.error);
-        toast.warning('Agenscrape fetch had issues, continuing to memo23...');
-        setStatusHistory(prev => [
-          ...prev,
-          {
-            step: 'Agenscrape',
-            detail: String(agenscrapeResult.error?.message || agenscrapeResult.error),
-            level: 'error',
-            timestamp: new Date().toLocaleTimeString(),
-          },
-        ]);
-      } else {
-        toast.success('Agenscrape data fetched');
-        setStatusHistory(prev => [
-          ...prev,
-          {
-            step: 'Agenscrape',
-            detail: 'Agenscrape completed successfully',
-            level: 'success',
-            timestamp: new Date().toLocaleTimeString(),
-          },
-        ]);
-      }
-      
-      // Step 2: Fetch from memo23
-      setStatusHistory(prev => [
-        ...prev,
-        {
-          step: 'Memo23',
-          detail: 'Starting memo23 single-agent run...',
-          level: 'info',
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ]);
-
-      toast.info('Step 2/2: Fetching memo23 data for Adam Hamblen...');
+      toast.info('Fetching memo23 data for Adam Hamblen...');
       
       const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
         body: { professionalId: profile.id }
@@ -160,7 +109,7 @@ export const SingleAgentMemo23 = () => {
         },
       ]);
       
-      // Step 3: Auto-refresh the profile to show updated data
+      // Auto-refresh the profile to show updated data
       toast.info('Rebuilding profile card...');
       await fetchProfile();
       toast.success('Profile card rebuilt with fresh data');
@@ -228,7 +177,7 @@ export const SingleAgentMemo23 = () => {
                 Fetching data from all sources...
               </>
             ) : (
-              'Run Full Debug (Agenscrape + Memo23 + Rebuild)'
+              'Run Memo23 Only (Adam has URL already)'
             )}
           </Button>
 
