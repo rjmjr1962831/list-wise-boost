@@ -530,7 +530,7 @@ export const ProfessionalCard = ({
                   ));
                 })()}
                 
-                {/* Video positioned with bottom aligned to stats - use videoUrl from professional_information if available */}
+                {/* Video positioned in the right-side blank area, aligned with stats */}
                 {(parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
                   const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
                   const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
@@ -538,10 +538,10 @@ export const ProfessionalCard = ({
                     : null;
                   
                   return videoId ? (
-                    <div className="hidden md:block md:ml-6 flex-shrink-0">
+                    <div className="hidden md:block absolute right-0 top-0">
                       <iframe
-                        width="360"
-                        height="203"
+                        width="400"
+                        height="225"
                         src={`https://www.youtube.com/embed/${videoId}`}
                         title="Agent video"
                         frameBorder="0"
