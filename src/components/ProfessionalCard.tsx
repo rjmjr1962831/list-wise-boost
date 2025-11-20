@@ -49,6 +49,7 @@ export const ProfessionalCard = ({
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [license, setLicense] = useState<string | null>(professional.license_number || null);
   const [verifying, setVerifying] = useState(false);
+  const [extractedYears, setExtractedYears] = useState<number | null>(null);
   const isLicenseVerified = !!(professional as any).license_verified_at;
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
@@ -205,6 +206,39 @@ export const ProfessionalCard = ({
       };
     }
   })();
+
+  // CRITICAL: Extract years from bio on mount and update database if needed
+  useEffect(() => {
+    const bioText = parsedProfInfo?.description || (professional as any).description || (professional as any).get_to_know_me;
+    console.log(`[${professional.name}] Checking bio for years of experience...`);
+    console.log(`[${professional.name}] Bio text:`, bioText?.substring(0, 200));
+    
+    if (bioText) {
+      const bioYears = extractYearsFromBio(bioText);
+      console.log(`[${professional.name}] Extracted years from bio:`, bioYears);
+      console.log(`[${professional.name}] Current DB years_experience:`, professional.years_experience);
+      
+      if (bioYears !== null) {
+        setExtractedYears(bioYears);
+        
+        // Update database if extracted value differs from stored value
+        if (bioYears !== professional.years_experience && professional.id) {
+          console.log(`[${professional.name}] Updating database: ${bioYears} years`);
+          supabase
+            .from('professionals')
+            .update({ years_experience: bioYears })
+            .eq('id', professional.id)
+            .then(({ error }) => {
+              if (error) {
+                console.error(`[${professional.name}] Error updating years_experience:`, error);
+              } else {
+                console.log(`[${professional.name}] Successfully updated years_experience to ${bioYears}`);
+              }
+            });
+        }
+      }
+    }
+  }, [professional.id, professional.name, professional.years_experience, parsedProfInfo?.description]);
 
   const handleWebsiteClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -512,23 +546,8 @@ export const ProfessionalCard = ({
                     toNum((liveStats as any)?.total_sales) ??
                     toNum((liveStats as any)?.sold);
 
-                  // CRITICAL: Always scan bio text for "since YYYY" to extract years of experience
-                  const bioText = parsedProfInfo?.description || (professional as any).description || (professional as any).get_to_know_me;
-                  const bioYears = extractYearsFromBio(bioText);
-                  const yearsExperience = bioYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
-                  
-                  // If we extracted years from bio and it differs from stored value, update database immediately
-                  if (bioYears !== null && bioYears !== professional.years_experience && professional.id) {
-                    console.log(`Updating years_experience for ${professional.name}: ${bioYears} years (extracted from bio)`);
-                    supabase
-                      .from('professionals')
-                      .update({ years_experience: bioYears })
-                      .eq('id', professional.id)
-                      .then(({ error }) => {
-                        if (error) console.error('Error updating years_experience:', error);
-                        else console.log(`Successfully updated years_experience for ${professional.name}`);
-                      });
-                  }
+                  // Use extracted years if available, otherwise fall back to stored value
+                  const yearsExperience = extractedYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
 
                   const displayStats = { totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
