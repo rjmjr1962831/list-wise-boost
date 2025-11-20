@@ -35,7 +35,7 @@ export const SingleAgentMemo23 = () => {
           city:cities(name, slug, state),
           category:categories(name, slug)
         `)
-        .eq('id', '4bf24984-40fe-4077-92c7-316ac57989d4')
+        .eq('id', '30b82793-ccc3-4cc1-a745-5553be4376da')
         .single();
 
       if (error) {
