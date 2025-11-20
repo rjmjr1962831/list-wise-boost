@@ -21,7 +21,7 @@ const Index = () => {
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
             We are an{" "}
-            <span className="font-semibold text-foreground">AI curated directory of the top 10 real estate agents</span> in every major U.S. city.
+            <span className="font-semibold text-foreground">AI and Human curated directory of the top 10 real estate agents</span> in every major U.S. city.
           </p>
           <p className="text-xl text-muted-foreground leading-relaxed">
             We've pored through <span className="font-bold text-foreground">dozens of sources</span> and rated about <span className="font-bold text-foreground">2,000,000 agents</span> in the U.S.
@@ -47,11 +47,7 @@ const Index = () => {
           </p>
           
           <div className="pt-8">
-            <Button 
-              onClick={() => navigate('/agent-onboarding')}
-              size="lg"
-              className="w-full max-w-md mx-auto text-lg py-6"
-            >
+            <Button onClick={() => navigate('/agent-onboarding')} size="lg" className="w-full max-w-md mx-auto text-lg py-6">
               Think you should be on the list?
             </Button>
           </div>
