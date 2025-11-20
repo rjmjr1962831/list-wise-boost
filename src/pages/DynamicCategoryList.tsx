@@ -240,12 +240,14 @@ export default function DynamicCategoryList() {
           // Special sorting for Scottsdale: Beauvais-Real-Estate always first
           if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
             const beauvaisIndex = enrichedOnly.findIndex(p => 
-              p.zillow_profile_url?.includes('Beauvais-Real-Estate')
+              (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
+              (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
+              (p.name && p.name.toLowerCase().includes('beauvais'))
             );
             if (beauvaisIndex > 0) {
               const beauvais = enrichedOnly.splice(beauvaisIndex, 1)[0];
               enrichedOnly.unshift(beauvais);
-              console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale');
+              console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale (initial load)');
             }
           }
           
@@ -360,11 +362,14 @@ export default function DynamicCategoryList() {
                 // Apply Scottsdale special sorting
                 if (city?.slug === 'scottsdale' && category?.slug === 'top10realestateagents') {
                   const beauvaisIdx = newList.findIndex(p => 
-                    (p as any).zillow_profile_url?.includes('Beauvais-Real-Estate')
+                    ((p as any).zuid && (p as any).zuid.toLowerCase().includes('beauvais-real-estate')) ||
+                    ((p as any).zillow_profile_url && (p as any).zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
+                    (p.name && p.name.toLowerCase().includes('beauvais'))
                   );
                   if (beauvaisIdx > 0) {
                     const beauvais = newList.splice(beauvaisIdx, 1)[0];
                     newList.unshift(beauvais);
+                    console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale (realtime)');
                   }
                 }
                 
