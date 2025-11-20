@@ -86,15 +86,40 @@ export const ProfessionalCard = ({
         const websitesEntry = entries.find(e => e.term === 'Websites');
         websiteFromProfInfo = websitesEntry?.links?.[0]?.url || null;
         
-        // Extract phone from any entry whose term mentions phone (e.g. "Phone numbers")
+        // Extract phone from any entry whose term mentions phone (e.g. "Phone", "Phone numbers")
         const phoneEntry = entries.find(e => (e.term || '').toLowerCase().includes('phone'));
-        if (phoneEntry?.lines && phoneEntry.lines.length > 0) {
-          const rawLine = phoneEntry.lines.find(l => l && l.trim().length > 0) || phoneEntry.lines[0];
-          // Many entries look like "Office: 480-555-1234" – strip label before colon
-          const parts = rawLine.split(':');
-          phoneFromProfInfo = (parts.length > 1 ? parts.slice(1).join(':') : rawLine).trim();
+        if (phoneEntry) {
+          const candidates: string[] = [];
+          if (Array.isArray(phoneEntry.lines)) candidates.push(...phoneEntry.lines);
+          if (phoneEntry.description) candidates.push(phoneEntry.description);
+          
+          // Look for something that looks like a US phone number
+          const phoneRegex = /(\+?1[\s.-]?)?(\(?\d{3}\)?)[\s.-]?\d{3}[\s.-]?\d{4}/;
+          for (const raw of candidates) {
+            if (!raw) continue;
+            const match = raw.match(phoneRegex);
+            if (match) {
+              phoneFromProfInfo = match[0].trim();
+              break;
+            }
+          }
+          
+          // Fallback: if no regex match, just use first non-empty line/description
+          if (!phoneFromProfInfo) {
+            const rawLine = candidates.find(l => l && l.trim().length > 0);
+            if (rawLine) {
+              const parts = rawLine.split(':');
+              phoneFromProfInfo = (parts.length > 1 ? parts.slice(1).join(':') : rawLine).trim();
+            }
+          }
         }
       }
+
+      console.debug('parsedProfInfo contact sources', {
+        name: professional.name,
+        fromProfessionalInformation: phoneFromProfInfo,
+        topLevelPhone: (professional as any).phone,
+      });
       
 
       // Primary source: description/get_to_know_me JSON blob from memo23
