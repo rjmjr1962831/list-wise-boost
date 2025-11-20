@@ -1,6 +1,9 @@
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { Star, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 const Index = () => {
+  const navigate = useNavigate();
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
   return <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
       {/* Hero Section */}
@@ -42,6 +45,16 @@ const Index = () => {
             </span>{" "}
             badge under their photo.
           </p>
+          
+          <div className="pt-8">
+            <Button 
+              onClick={() => navigate('/agent-onboarding')}
+              size="lg"
+              className="w-full max-w-md mx-auto text-lg py-6"
+            >
+              Think you should be on the list?
+            </Button>
+          </div>
         </div>
       </section>
     </div>;
