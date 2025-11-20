@@ -26,19 +26,36 @@ interface ArizonaCity {
 
 const arizonaCities: ArizonaCity[] = arizonaMetrosData.metros.flatMap((metro: any) => metro.cities);
 
+const ALL_STATES = ['Arizona']; // Only Arizona for now
+
 export const Top10SearchForm = () => {
   const navigate = useNavigate();
   const { trackEvent } = useGA4Tracking();
+  const stateDropdownRef = useRef<HTMLDivElement>(null);
   const cityDropdownRef = useRef<HTMLDivElement>(null);
+  const [selectedState, setSelectedState] = useState('');
+  const [stateInput, setStateInput] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
   const [cityInput, setCityInput] = useState('');
-  const [filteredCities, setFilteredCities] = useState<ArizonaCity[]>(arizonaCities);
+  const [filteredCities, setFilteredCities] = useState<ArizonaCity[]>([]);
+  const [filteredStates, setFilteredStates] = useState<string[]>(ALL_STATES);
   const [cityOpen, setCityOpen] = useState(false);
+  const [stateOpen, setStateOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [availableNeighborhoods, setAvailableNeighborhoods] = useState<Neighborhood[]>([]);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
   const [selectAllNeighborhoods, setSelectAllNeighborhoods] = useState(false);
-  const selectedState = 'Arizona'; // Fixed to Arizona
+
+  useEffect(() => {
+    // Update cities when state changes to Arizona
+    if (selectedState === 'Arizona') {
+      setFilteredCities(arizonaCities);
+    } else {
+      setFilteredCities([]);
+    }
+    setSelectedCity('');
+    setCityInput('');
+  }, [selectedState]);
 
   useEffect(() => {
     // Update neighborhoods when city changes
@@ -57,7 +74,21 @@ export const Top10SearchForm = () => {
   }, [selectedCity]);
 
   useEffect(() => {
+    if (stateInput) {
+      const filtered = ALL_STATES.filter(state => 
+        state.toLowerCase().includes(stateInput.toLowerCase())
+      );
+      setFilteredStates(filtered);
+    } else {
+      setFilteredStates(ALL_STATES);
+    }
+  }, [stateInput]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (stateDropdownRef.current && !stateDropdownRef.current.contains(event.target as Node)) {
+        setStateOpen(false);
+      }
       if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
         setCityOpen(false);
       }
@@ -68,14 +99,14 @@ export const Top10SearchForm = () => {
   }, []);
 
   const handleSearch = async () => {
-    if (!selectedCity) {
-      toast.error('Please select a city');
+    if (!selectedState || !selectedCity) {
+      toast.error('Please select state and city');
       return;
     }
 
     // Track search form submission
     trackEvent('search_form_submit', {
-      state: 'Arizona',
+      state: selectedState,
       city: selectedCity,
       search_type: 'top10_search'
     } as any);
@@ -86,6 +117,12 @@ export const Top10SearchForm = () => {
 
   const handleCityInputChange = (value: string) => {
     setCityInput(value);
+    
+    if (!selectedState) {
+      toast.info('Please select a state first');
+      return;
+    }
+    
     setCityOpen(true);
     
     if (value) {
@@ -135,17 +172,70 @@ export const Top10SearchForm = () => {
     <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl px-6 pt-2 pb-6 shadow-lg relative z-10">
       <div className="flex items-center gap-2 mb-1">
         <Search className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold">Find your top10 Real estate agents in Arizona</h3>
+        <h3 className="text-lg font-semibold">Find your top10 Real estate agents</h3>
       </div>
       
-      <div className="grid md:grid-cols-2 gap-4 mb-4">
+      <div className="grid md:grid-cols-3 gap-4 mb-4">
+        {/* State Selector */}
+        <div className={cn("relative", stateOpen && "mb-64 md:mb-0")} ref={stateDropdownRef}>
+          <Input
+            placeholder="Select State"
+            value={stateInput}
+            onChange={(e) => {
+              setStateInput(e.target.value);
+              setStateOpen(true);
+            }}
+            onFocus={() => setStateOpen(true)}
+            className="bg-background"
+          />
+          {stateOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 z-[200] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
+              <Command>
+                <CommandList>
+                  <CommandEmpty>No state found.</CommandEmpty>
+                  <CommandGroup>
+                    {filteredStates.map((state) => (
+                      <CommandItem
+                        key={state}
+                        value={state}
+                        onSelect={() => {
+                          setSelectedState(state);
+                          setStateInput(state);
+                          setStateOpen(false);
+                          
+                          trackEvent('search_state_select', {
+                            state: state,
+                            search_type: 'top10_search'
+                          } as any);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedState === state ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {state}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </div>
+          )}
+        </div>
+
+        {/* City Selector */}
         <div className={cn("relative", cityOpen && "mb-64 md:mb-0")} ref={cityDropdownRef}>
           <Input
             placeholder="Select City"
             value={cityInput}
             onChange={(e) => handleCityInputChange(e.target.value)}
-            onFocus={() => setCityOpen(true)}
+            onFocus={() => {
+              if (selectedState) setCityOpen(true);
+            }}
             className="bg-background"
+            disabled={!selectedState}
           />
           {cityOpen && filteredCities.length > 0 && (
             <div className="absolute top-full left-0 right-0 mt-1 z-[200] rounded-md border-2 bg-popover shadow-xl max-h-60 overflow-auto">
@@ -163,10 +253,10 @@ export const Top10SearchForm = () => {
                           setCityOpen(false);
                           
                           trackEvent('search_city_select', {
-                            state: 'Arizona',
+                            state: selectedState,
                             city: city.city,
                             search_type: 'top10_search'
-                          });
+                          } as any);
                         }}
                       >
                         <Check
@@ -185,10 +275,11 @@ export const Top10SearchForm = () => {
           )}
         </div>
 
+        {/* Search Button */}
         <Button 
           onClick={handleSearch} 
           className="w-full"
-          disabled={!selectedCity}
+          disabled={!selectedState || !selectedCity}
         >
           <Search className="h-4 w-4 mr-2" />
           Find Top 10
