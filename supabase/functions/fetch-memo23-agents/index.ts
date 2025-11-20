@@ -247,6 +247,26 @@ serve(async (req) => {
         if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
         if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
         
+        // Extract specialties from professionalInformation
+        if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+          const specialtiesEntry = agent.professionalInformation.find((info: any) => 
+            info.term === 'Specialties' || info.term === 'Areas of Focus'
+          );
+          if (specialtiesEntry?.detail && Array.isArray(specialtiesEntry.detail)) {
+            const specialties = specialtiesEntry.detail
+              .map((item: any) => {
+                if (typeof item === 'string') return item;
+                if (item.text) return item.text;
+                return null;
+              })
+              .filter(Boolean);
+            if (specialties.length > 0) {
+              memo23Data.specialty = specialties;
+              console.log(`Extracted ${specialties.length} specialties for ${agent.name}:`, specialties);
+            }
+          }
+        }
+        
         // Extract video URL from professionalInformation if not in sidebarVideoUrl
         if (!agent.sidebarVideoUrl && agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
           for (const info of agent.professionalInformation) {

@@ -265,6 +265,24 @@ serve(async (req) => {
     }
     if (agentData.professionalInformation) {
       updateData.professional_information = agentData.professionalInformation;
+      
+      // Extract specialties from professionalInformation
+      const specialtiesEntry = agentData.professionalInformation.find((info: any) => 
+        info.term === 'Specialties' || info.term === 'Areas of Focus'
+      );
+      if (specialtiesEntry?.detail && Array.isArray(specialtiesEntry.detail)) {
+        const specialties = specialtiesEntry.detail
+          .map((item: any) => {
+            if (typeof item === 'string') return item;
+            if (item.text) return item.text;
+            return null;
+          })
+          .filter(Boolean);
+        if (specialties.length > 0) {
+          updateData.specialty = specialties;
+          console.log(`Extracted ${specialties.length} specialties:`, specialties);
+        }
+      }
     }
     if (agentData.professionalData) {
       updateData.professional_data = agentData.professionalData;
