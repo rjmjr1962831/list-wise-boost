@@ -600,7 +600,7 @@ export const ProfessionalCard = ({
                   };
 
                   return Object.entries(displayStats).map(([key, value]) => (
-                    <div key={key} className="text-center md:text-left">
+                    <div key={key} className={cn("text-center md:text-left", key === 'totalSales' && "hidden md:block")}>
                       <div className="text-2xl font-bold text-primary">{(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
                     </div>
