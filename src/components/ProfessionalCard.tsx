@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -440,16 +440,30 @@ export const ProfessionalCard = ({
             {/* Specialties from professional_information displayed under photo */}
             {parsedProfInfo?.specialties && parsedProfInfo.specialties.length > 0 && (
               <div className="mt-3 space-y-1.5 flex flex-col items-center">
-                {parsedProfInfo.specialties.map((specialty, idx) => (
-                  <Badge 
-                    key={idx} 
-                    variant="secondary" 
-                    className="text-xs w-full justify-center"
-                    itemProp="knowsAbout"
-                  >
-                    {specialty}
-                  </Badge>
-                ))}
+                {parsedProfInfo.specialties.map((specialty, idx) => {
+                  const getSpecialtyIcon = (spec: string) => {
+                    const lower = spec.toLowerCase();
+                    if (lower.includes('residential') || lower.includes('single family')) return Home;
+                    if (lower.includes('commercial') || lower.includes('business')) return Building2;
+                    if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
+                    if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
+                    if (lower.includes('first') || lower.includes('buyer')) return Key;
+                    if (lower.includes('relocation')) return Users;
+                    return Award;
+                  };
+                  const Icon = getSpecialtyIcon(specialty);
+                  return (
+                    <Badge 
+                      key={idx} 
+                      variant="secondary" 
+                      className="text-xs w-full justify-start gap-1.5"
+                      itemProp="knowsAbout"
+                    >
+                      <Icon className="h-3 w-3" />
+                      {specialty}
+                    </Badge>
+                  );
+                })}
               </div>
             )}
           </div>
