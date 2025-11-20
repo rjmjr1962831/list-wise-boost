@@ -285,7 +285,22 @@ export default function DynamicCategoryList() {
           }
 
           // Only show agents with professional_information (enriched by memo23)
-          const enrichedOnly = baseProfessionals.filter(p => p.professional_information);
+          // EXCEPT for Beauvais in Scottsdale - always show that one
+          const enrichedOnly = baseProfessionals.filter(p => {
+            const isBeauvais = (
+              (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
+              (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
+              (p.name && p.name.toLowerCase().includes('beauvais'))
+            );
+            
+            // For Scottsdale realtor list, always include Beauvais regardless of enrichment status
+            if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents' && isBeauvais) {
+              return true;
+            }
+            
+            // All other agents must have professional_information
+            return !!p.professional_information;
+          });
           
           // Special sorting for Scottsdale: Beauvais-Real-Estate always first
           if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
