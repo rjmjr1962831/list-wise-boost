@@ -27,11 +27,11 @@ serve(async (req) => {
 
     if (citiesError) throw citiesError;
 
-    // Get the Realtor category ID
+    // Get the Real Estate Agent category ID
     const { data: category, error: categoryError } = await supabase
       .from('categories')
       .select('id')
-      .eq('slug', 'realtor')
+      .eq('slug', 'top10realestateagents')
       .single();
 
     if (categoryError || !category) {
