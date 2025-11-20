@@ -512,9 +512,20 @@ export const ProfessionalCard = ({
                     toNum((liveStats as any)?.total_sales) ??
                     toNum((liveStats as any)?.sold);
 
-                  // Calculate years from bio if available, otherwise use stored values
+                  // CRITICAL: Always scan bio text for "since YYYY" to extract years of experience
                   const bioYears = extractYearsFromBio(parsedProfInfo?.description || (professional as any).description || (professional as any).get_to_know_me);
                   const yearsExperience = bioYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
+                  
+                  // If we extracted years from bio and it differs from stored value, update database
+                  if (bioYears !== null && bioYears !== professional.years_experience) {
+                    supabase
+                      .from('professionals')
+                      .update({ years_experience: bioYears })
+                      .eq('id', professional.id)
+                      .then(({ error }) => {
+                        if (error) console.error('Error updating years_experience:', error);
+                      });
+                  }
 
                   const displayStats = { totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
@@ -582,7 +593,7 @@ export const ProfessionalCard = ({
 
               {/* Bio Section - Use get_to_know_me from memo23 if available */}
               {(() => {
-                // Priority: get_to_know_me (full bio HTML) > parsed description (basic info) > description
+                // CRITICAL: Bio text MUST preserve line breaks - use whitespace-pre-line
                 const bioHtml = (professional as any).get_to_know_me as string | null;
                 const fallbackText = parsedProfInfo?.description || professional.description || '';
                 
@@ -590,53 +601,43 @@ export const ProfessionalCard = ({
                 
                 const firstName = professional.name.split(' ')[0];
                 
-                // Helper to turn plain text with newlines or long sentences into paragraphs
-                const renderPlainTextParagraphs = (text: string) => {
-                  if (!text) return [] as string[];
-
-                  // Prefer explicit newlines if present
-                  let paragraphs = text.split(/\n{2,}/).filter(p => p.trim());
-                  if (paragraphs.length === 1 && /\n/.test(text)) {
-                    paragraphs = text.split(/\n+/).filter(p => p.trim());
-                  }
-
-                  // If there were no newlines at all, fall back to sentence-based splitting
-                  if (paragraphs.length === 0 || (paragraphs.length === 1 && !/\n/.test(text))) {
-                    const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-                    paragraphs = sentences.map(s => s.trim()).filter(Boolean);
-                  }
-
-                  return paragraphs;
-                };
+                // Helper to check if text is long enough to need truncation (>600 chars = roughly 8 lines)
+                const needsTruncation = (text: string) => text.length > 600;
+                
                 return (
                   <div itemProp="description" className="border-t pt-3">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
                     {bioHtml ? (() => {
                       const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
+                      const isTooLong = needsTruncation(bioHtml);
                       
-                      // CRITICAL: Always preserve line breaks in bios!
-                      // If the bio already has HTML, preserve it as-is with whitespace-pre-line
+                      // CRITICAL: Always preserve line breaks in bios with whitespace-pre-line!
                       if (hasHtmlTags) {
                         return (
-                          <div
-                            className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
-                            dangerouslySetInnerHTML={{ __html: bioHtml }}
-                          />
+                          <>
+                            <div
+                              className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line prose prose-sm max-w-none ${!showFullDescription && isTooLong ? 'line-clamp-[8]' : ''}`}
+                              dangerouslySetInnerHTML={{ __html: bioHtml }}
+                            />
+                            {isTooLong && (
+                              <button
+                                onClick={() => setShowFullDescription(!showFullDescription)}
+                                className="text-sm text-primary hover:underline mt-1 font-medium block"
+                              >
+                                {showFullDescription ? 'less' : 'more'}
+                              </button>
+                            )}
+                          </>
                         );
                       }
                       
-                      // CRITICAL: Always preserve line breaks - use whitespace-pre-line class
-                      // Otherwise, render real <p> elements from newline-delimited text
-                      const paragraphs = renderPlainTextParagraphs(bioHtml);
-                      const visibleParagraphs = showFullDescription ? paragraphs : paragraphs.slice(0, 2);
-                      const hasMore = paragraphs.length > visibleParagraphs.length;
-                      
+                      // CRITICAL: Plain text - preserve line breaks with whitespace-pre-line
                       return (
-                        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {visibleParagraphs.map((para, idx) => (
-                            <p key={idx} className="whitespace-pre-line">{para}</p>
-                          ))}
-                          {hasMore && (
+                        <>
+                          <div className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line ${!showFullDescription && isTooLong ? 'line-clamp-[8]' : ''}`}>
+                            {bioHtml}
+                          </div>
+                          {isTooLong && (
                             <button
                               onClick={() => setShowFullDescription(!showFullDescription)}
                               className="text-sm text-primary hover:underline mt-1 font-medium block"
@@ -644,21 +645,18 @@ export const ProfessionalCard = ({
                               {showFullDescription ? 'less' : 'more'}
                             </button>
                           )}
-                        </div>
+                        </>
                       );
                     })() : (() => {
-                      // CRITICAL: Always preserve line breaks - use whitespace-pre-line class
-                      // Fallback text paragraph handling similar to bioHtml above
-                      const paragraphs = renderPlainTextParagraphs(fallbackText);
-                      const visibleParagraphs = showFullDescription ? paragraphs : paragraphs.slice(0, 2);
-                      const hasMore = paragraphs.length > visibleParagraphs.length;
+                      const isTooLong = needsTruncation(fallbackText);
                       
+                      // CRITICAL: Fallback text - preserve line breaks with whitespace-pre-line
                       return (
-                        <div className="space-y-3 text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                          {visibleParagraphs.map((para, idx) => (
-                            <p key={idx} className="whitespace-pre-line">{para}</p>
-                          ))}
-                          {hasMore && (
+                        <>
+                          <div className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line ${!showFullDescription && isTooLong ? 'line-clamp-[8]' : ''}`}>
+                            {fallbackText}
+                          </div>
+                          {isTooLong && (
                             <button
                               onClick={() => setShowFullDescription(!showFullDescription)}
                               className="text-sm text-primary hover:underline mt-1 font-medium block"
@@ -666,7 +664,7 @@ export const ProfessionalCard = ({
                               {showFullDescription ? 'less' : 'more'}
                             </button>
                           )}
-                        </div>
+                        </>
                       );
                     })()}
                   </div>
