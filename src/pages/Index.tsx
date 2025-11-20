@@ -35,7 +35,7 @@ const Index = () => {
             on every site we have looked at, <span className="font-bold text-foreground">at least 200 reviews</span>, and been in business for <span className="font-bold text-foreground">more than 5 years</span>. And that's just where we start!
           </p>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            While agents can <span className="font-bold text-foreground">buy space on the list</span>, just like they do on Google, they are <span className="font-bold text-foreground">not required to</span> if they meet the requirements. We thoroughly <span className="font-bold text-foreground">vet an agent with humans</span> before issuing them a preferred place. You can tell if they are paying us when you see the{" "}
+            While agents can <span className="font-bold text-foreground">buy placement on the list</span>, just like they do on Google, they are <span className="font-bold text-foreground">not required to</span> if they meet the requirements. We thoroughly <span className="font-bold text-foreground">vet an agent with humans</span> before issuing them a preferred place. You can tell if they are paying us when you see the{" "}
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold text-sm align-middle">
               <Award className="w-3.5 h-3.5" />
               Brand Builder
