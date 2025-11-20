@@ -9,9 +9,7 @@ import { format } from "date-fns";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
-import { ZillowReviewsSection } from "./ZillowReviewsSection";
 import { ExternalReviewsPreview } from "./ExternalReviewsPreview";
-import { ZillowProfileBar } from "./ZillowProfileBar";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -727,26 +725,6 @@ export const ProfessionalCard = ({
                       </a>
                     </div>
                   )}
-                  {(professional as any).zillow_profile_url || (professional as any).zuid ? (
-                    <div className="flex items-center gap-2">
-                      <a 
-                        href={(professional as any).zillow_profile_url || `https://www.zillow.com/profile/${(professional as any).zuid}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline flex items-center gap-1"
-                        onClick={() =>
-                          trackEvent('press_mention_click', {
-                            agent_name: professional.name,
-                            market: market || '',
-                            source: 'Zillow Profile',
-                          })
-                        }
-                      >
-                        Zillow Profile
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  ) : null}
                 </div>
               </div>
 
@@ -784,13 +762,6 @@ export const ProfessionalCard = ({
                 zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
               />
 
-              {/* Zillow Reviews Section */}
-              <ZillowReviewsSection 
-                zuid={(professional as any).zuid || undefined}
-                agentName={professional.name}
-                market={market}
-                lazyLoad={true}
-              />
 
             </div>
           </div>
