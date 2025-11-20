@@ -14,8 +14,8 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
       <RouterNavLink
         ref={ref}
         to={to}
-        target={target || "_blank"}
-        rel={rel || "noopener noreferrer"}
+        target={target}
+        rel={rel}
         className={({ isActive, isPending }) =>
           cn(className, isActive && activeClassName, isPending && pendingClassName)
         }
