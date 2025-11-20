@@ -105,15 +105,82 @@ export const Top10SearchForm = () => {
       return;
     }
 
-    // Track search form submission
-    trackEvent('search_form_submit', {
-      state: selectedState,
-      city: selectedCity,
-      search_type: 'top10_search'
-    } as any);
+    setIsSearching(true);
 
-    // For now, navigate to a default route (you'll need to update this based on your routing)
-    toast.info('Search functionality coming soon');
+    try {
+      // Look up the city in the database by name and state
+      const { data: cityData, error: cityError } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('name', selectedCity)
+        .eq('state', selectedState)
+        .eq('active', true)
+        .single();
+
+      if (cityError || !cityData) {
+        toast.error('City not found in database');
+        setIsSearching(false);
+        return;
+      }
+
+      // Get the real estate agents category
+      const { data: categoryData, error: categoryError } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('slug', 'top10realestateagents')
+        .eq('active', true)
+        .single();
+
+      if (categoryError || !categoryData) {
+        toast.error('Category not found');
+        setIsSearching(false);
+        return;
+      }
+
+      // Track search form submission
+      trackEvent('search_form_submit', {
+        state: selectedState,
+        city: selectedCity,
+        neighborhoods: selectAllNeighborhoods ? 'all' : selectedNeighborhoods.size,
+        search_type: 'top10_search'
+      } as any);
+
+      // Check if professionals exist for this city
+      const { data: professionalsData, error: profsError } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('city_id', cityData.id)
+        .eq('category_id', categoryData.id)
+        .limit(1);
+
+      if (!profsError && professionalsData && professionalsData.length === 0) {
+        // No data exists, trigger import
+        toast.info('Importing agents for ' + selectedCity + '...');
+        
+        try {
+          const importResult = await supabase.functions.invoke('import-city-agents', {
+            body: {
+              cityId: cityData.id,
+              categoryId: categoryData.id
+            }
+          });
+
+          if (importResult.error) {
+            console.error('Import error:', importResult.error);
+          }
+        } catch (err) {
+          console.error('Import exception:', err);
+        }
+      }
+
+      // Navigate to the list page
+      const url = `/${cityData.state_slug}/${cityData.slug}/${categoryData.slug}`;
+      navigate(url);
+    } catch (err: any) {
+      console.error('Search error:', err);
+      toast.error('Search failed: ' + err.message);
+      setIsSearching(false);
+    }
   };
 
   const handleCityInputChange = (value: string) => {
