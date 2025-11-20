@@ -538,10 +538,10 @@ export const ProfessionalCard = ({
                     : null;
                   
                   return videoId ? (
-                    <div className="absolute right-0 bottom-0 hidden md:block">
+                    <div className="hidden md:block md:ml-6 flex-shrink-0">
                       <iframe
-                        width="320"
-                        height="180"
+                        width="360"
+                        height="203"
                         src={`https://www.youtube.com/embed/${videoId}`}
                         title="Agent video"
                         frameBorder="0"
@@ -593,10 +593,16 @@ export const ProfessionalCard = ({
                   <div itemProp="description" className="border-t pt-3">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
                     {bioHtml ? (
-                      <div 
-                        className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
-                        dangerouslySetInnerHTML={{ __html: bioHtml }}
-                      />
+                    <div 
+                      className={`text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none ${!showFullDescription ? 'line-clamp-[8]' : ''}`}
+                      dangerouslySetInnerHTML={{ __html: (() => {
+                        const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
+                        if (hasHtmlTags) return bioHtml;
+                        const paragraphs = bioHtml.split(/\n\s*\n/).filter(p => p.trim());
+                        if (paragraphs.length === 0) return bioHtml;
+                        return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+                      })() }}
+                    />
                     ) : (() => {
                       const paragraphs = fallbackText.split('\n\n').filter(p => p.trim());
                       const firstTwoParagraphs = paragraphs.slice(0, 2);
