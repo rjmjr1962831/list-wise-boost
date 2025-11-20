@@ -565,7 +565,7 @@ export const ProfessionalCard = ({
                   : null;
                 
                 return videoId ? (
-                  <div className="hidden md:block absolute right-8 top-4">
+                  <div className="hidden md:block absolute right-10 top-2">
                     <iframe
                       width="460"
                       height="259"
