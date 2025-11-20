@@ -305,6 +305,12 @@ serve(async (req) => {
           }
         }
         
+        // Extract review texts from reviewsData array
+        if (agent.reviewsData && Array.isArray(agent.reviewsData) && agent.reviewsData.length > 0) {
+          memo23Data.reviews_data = agent.reviewsData;
+          console.log(`Extracted ${agent.reviewsData.length} reviews for ${agent.name}`);
+        }
+        
         // Extract sales data from agentSalesStats - use countAllTime as primary source
         if (agent.agentSalesStats) {
           if (agent.agentSalesStats.countAllTime !== undefined) {
