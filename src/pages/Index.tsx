@@ -13,11 +13,9 @@ const Index = () => {
             We are an{" "}
             <span className="font-semibold text-foreground">AI curated directory of the top 10 real estate agents</span> in every major U.S. city.
           </p>
-          <p className="text-xl text-muted-foreground leading-relaxed">We've pored through dozens of sources and rated about 2,000,000 agents in the U.S.
-
-
-
-                                          </p>
+          <p className="text-xl text-muted-foreground leading-relaxed">
+            We've pored through dozens of sources and rated about 2,000,000 agents in the U.S.
+          </p>
         </div>
       </section>
 
