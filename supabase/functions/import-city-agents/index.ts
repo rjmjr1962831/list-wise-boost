@@ -38,9 +38,9 @@ serve(async (req) => {
     console.log(`Starting full import for ${city?.name}, ${city?.state} - ${category?.name}`);
 
     // Step 1: Run getdataforme to get profile URLs
-    console.log('Step 1/2: Running getdataforme to fetch profile URLs (max 10)...');
+    console.log('Step 1/2: Running getdataforme to fetch profile URLs (max 50)...');
     const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
-      body: { cityId, categoryId, maxResults: 10 }
+      body: { cityId, categoryId, maxResults: 50 }
     });
 
     if (agenscrapeResult.error) {
