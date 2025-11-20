@@ -565,7 +565,7 @@ export const ProfessionalCard = ({
                   : null;
                 
                 return videoId ? (
-                  <div className="hidden md:block absolute right-32 top-0">
+                  <div className="hidden md:block absolute right-48 top-0">
                     <iframe
                       width="460"
                       height="259"
@@ -593,7 +593,7 @@ export const ProfessionalCard = ({
                 const firstName = professional.name.split(' ')[0];
                 
                 return (
-                  <div itemProp="description" className="border-t pt-3 md:pr-[80px]">
+                  <div itemProp="description" className="border-t pt-3">
                     <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
                     {bioHtml ? (
                       <div 
@@ -615,7 +615,15 @@ export const ProfessionalCard = ({
                         })() }}
                       />
                     ) : (() => {
-                      const paragraphs = fallbackText.split('\n\n').filter(p => p.trim());
+                      // Fallback text paragraph handling similar to bioHtml above
+                      let paragraphs = fallbackText.split(/\n{2,}/).filter(p => p.trim());
+                      if (paragraphs.length === 1 && /\n/.test(fallbackText)) {
+                        paragraphs = fallbackText.split(/\n+/).filter(p => p.trim());
+                      }
+                      if (paragraphs.length === 0) {
+                        paragraphs = [fallbackText];
+                      }
+
                       const firstTwoParagraphs = paragraphs.slice(0, 2);
                       const hasMore = paragraphs.length > 2;
                       
