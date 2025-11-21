@@ -8,14 +8,15 @@ import { supabase } from '@/integrations/supabase/client';
 export function TestProxyEnrichment() {
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState<string[]>([]);
+  const [enrichedProfiles, setEnrichedProfiles] = useState<Set<string>>(new Set());
 
   const handleEnrich = async () => {
     setIsRunning(true);
     setProgress(['Starting enrichment test...']);
     
     try {
-      // Get 10 qualified Scottsdale agents (excluding George Laughton duplicates)
-      const { data: agents, error: fetchError } = await supabase
+      // Get qualified Scottsdale agents
+      const { data: allAgents, error: fetchError } = await supabase
         .from('professionals')
         .select('id, name, zillow_profile_url')
         .eq('city_id', 'afe374d7-0de5-4574-99bc-1a596df7d995') // Scottsdale
@@ -24,13 +25,13 @@ export function TestProxyEnrichment() {
         .gte('num_total_reviews', 200)
         .neq('name', 'George Laughton')
         .not('zillow_profile_url', 'is', null)
-        .limit(10);
+        .limit(50); // Get more than we need to account for duplicates
 
       if (fetchError) {
         throw fetchError;
       }
 
-      if (!agents || agents.length === 0) {
+      if (!allAgents || allAgents.length === 0) {
         toast({
           title: "No Agents Found",
           description: "No qualifying agents found to enrich",
@@ -40,7 +41,29 @@ export function TestProxyEnrichment() {
         return;
       }
 
-      setProgress(prev => [...prev, `Found ${agents.length} agents to enrich`]);
+      // Deduplicate by zillow_profile_url and exclude already enriched profiles
+      const uniqueAgentsMap = new Map<string, typeof allAgents[0]>();
+      for (const agent of allAgents) {
+        if (agent.zillow_profile_url && 
+            !uniqueAgentsMap.has(agent.zillow_profile_url) &&
+            !enrichedProfiles.has(agent.zillow_profile_url)) {
+          uniqueAgentsMap.set(agent.zillow_profile_url, agent);
+        }
+      }
+      
+      const agents = Array.from(uniqueAgentsMap.values()).slice(0, 10);
+
+      if (agents.length === 0) {
+        toast({
+          title: "All Profiles Already Enriched",
+          description: "All available profiles have been enriched in this session",
+          variant: "destructive",
+        });
+        setProgress(prev => [...prev, '⚠️ All available profiles already enriched']);
+        return;
+      }
+
+      setProgress(prev => [...prev, `Found ${agents.length} unique profiles to enrich (${allAgents.length} total records, ${uniqueAgentsMap.size} unique)`]);
       setProgress(prev => [...prev, `Running ${agents.length} concurrent enrichments...`]);
 
       // Enrich all agents concurrently
@@ -67,10 +90,10 @@ export function TestProxyEnrichment() {
             
             if (http403 > 0 || http429 > 0) {
               setProgress(prev => [...prev, `[${index + 1}] ⚠️ SUCCESS (with errors): ${agent.name} (${duration}s) - ${http403} 403s, ${http429} 429s`]);
-              return { success: true, agent: agent.name, http403, http429, duration, hasWarnings: true };
+              return { success: true, agent: agent.name, profileUrl: agent.zillow_profile_url, http403, http429, duration, hasWarnings: true };
             } else {
               setProgress(prev => [...prev, `[${index + 1}] ✅ SUCCESS: ${agent.name} (${duration}s)`]);
-              return { success: true, agent: agent.name, http403: 0, http429: 0, duration, hasWarnings: false };
+              return { success: true, agent: agent.name, profileUrl: agent.zillow_profile_url, http403: 0, http429: 0, duration, hasWarnings: false };
             }
           }
         } catch (err: any) {
@@ -81,6 +104,15 @@ export function TestProxyEnrichment() {
       });
 
       const results = await Promise.all(enrichmentPromises);
+      
+      // Mark enriched profiles
+      const newlyEnrichedProfiles = new Set(enrichedProfiles);
+      results.forEach(result => {
+        if (result.success && result.profileUrl) {
+          newlyEnrichedProfiles.add(result.profileUrl);
+        }
+      });
+      setEnrichedProfiles(newlyEnrichedProfiles);
       
       const successCount = results.filter(r => r.success).length;
       const failCount = results.filter(r => !r.success).length;
@@ -103,6 +135,7 @@ export function TestProxyEnrichment() {
         setProgress(prev => [...prev, `🚫 HTTP Errors: ${total403s} 403s, ${total429s} 429s`]);
       }
       setProgress(prev => [...prev, `⏱️ Average duration: ${avgDuration}s per agent`]);
+      setProgress(prev => [...prev, `📋 Total enriched this session: ${newlyEnrichedProfiles.size} unique profiles`]);
       setProgress(prev => [...prev, `${'='.repeat(60)}`]);
       
       if (failCount === 0) {
