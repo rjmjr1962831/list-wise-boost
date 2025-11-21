@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -20,6 +20,24 @@ export const PhoenixMemo23Workflow = () => {
   const [jobs, setJobs] = useState<AgentJob[]>([]);
   const [progress, setProgress] = useState(0);
   const [concurrency, setConcurrency] = useState(10);
+  const [selectedCity, setSelectedCity] = useState<string>('Phoenix');
+  const [cities, setCities] = useState<Array<{id: string, name: string}>>([]);
+
+  // Fetch available cities on mount
+  useEffect(() => {
+    const fetchCities = async () => {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('id, name')
+        .eq('active', true)
+        .order('name');
+      
+      if (!error && data) {
+        setCities(data);
+      }
+    };
+    fetchCities();
+  }, []);
 
   const runWorkflow = async () => {
     setLoading(true);
@@ -28,15 +46,15 @@ export const PhoenixMemo23Workflow = () => {
     const processedAgentIds = new Set<string>(); // Track successfully processed agents
     
     try {
-      // Get Phoenix city and realtor category
-      const { data: phoenix, error: cityError } = await supabase
+      // Get selected city and realtor category
+      const { data: city, error: cityError } = await supabase
         .from('cities')
         .select('id, name')
-        .eq('name', 'Phoenix')
+        .eq('name', selectedCity)
         .single();
 
-      if (cityError || !phoenix) {
-        toast.error('Phoenix city not found');
+      if (cityError || !city) {
+        toast.error(`${selectedCity} city not found`);
         return;
       }
 
@@ -55,7 +73,7 @@ export const PhoenixMemo23Workflow = () => {
       const { data: agents, error: agentsError } = await supabase
         .from('professionals')
         .select('id, name, zillow_profile_url, review_stars_rating')
-        .eq('city_id', phoenix.id)
+        .eq('city_id', city.id)
         .eq('category_id', category.id)
         .eq('active', true)
         .gte('review_stars_rating', 5.0)
@@ -74,7 +92,7 @@ export const PhoenixMemo23Workflow = () => {
         return;
       }
 
-      toast.info(`Starting memo23 enrichment for ${agents.length} Phoenix agents with ${concurrency} concurrent sessions`);
+      toast.info(`Starting memo23 enrichment for ${agents.length} ${selectedCity} agents with ${concurrency} concurrent sessions`);
       
       // Initialize jobs
       const initialJobs: AgentJob[] = agents.map(agent => ({
@@ -199,9 +217,9 @@ export const PhoenixMemo23Workflow = () => {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Phoenix Memo23 Enrichment Workflow</CardTitle>
+          <CardTitle>Memo23 Enrichment Workflow</CardTitle>
           <CardDescription>
-            Enrich Phoenix agents with ProxyScrape residential proxies (10 concurrent sessions)
+            Enrich agents with ProxyScrape residential proxies - select city and run
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -209,14 +227,29 @@ export const PhoenixMemo23Workflow = () => {
             <AlertDescription>
               <strong>What this does:</strong>
               <ul className="list-disc list-inside mt-2 space-y-1">
-                <li>Fetches top 50 active Phoenix agents with 5.0+ ratings</li>
+                <li>Fetches top 50 active agents with 5.0+ ratings from selected city</li>
                 <li>Uses ProxyScrape residential proxies (85-95% success rate)</li>
                 <li>Runs {concurrency} concurrent enrichment sessions</li>
                 <li>Extracts videos, bios, licenses, stats, specialties, contact info</li>
                 <li>Rewrites bios for uniqueness using AI</li>
+                <li>Skips agents already processed in current run</li>
               </ul>
             </AlertDescription>
           </Alert>
+
+          <div className="flex items-center gap-4">
+            <label className="text-sm font-medium">City:</label>
+            <select 
+              value={selectedCity} 
+              onChange={(e) => setSelectedCity(e.target.value)}
+              disabled={loading}
+              className="border rounded px-3 py-2"
+            >
+              {cities.map(city => (
+                <option key={city.id} value={city.name}>{city.name}</option>
+              ))}
+            </select>
+          </div>
 
           <div className="flex items-center gap-4">
             <label className="text-sm font-medium">Concurrency:</label>
