@@ -31,6 +31,7 @@ import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow"
 import { ScottsdaleEnricher } from "@/components/admin/ScottsdaleEnricher";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 import { ProxyHealthDashboard } from "@/components/admin/ProxyHealthDashboard";
+import { ReplicateAgentPhoenix } from "@/components/admin/ReplicateAgentPhoenix";
 import CitiesManager from "@/components/admin/CitiesManager";
 
 const AdminDashboard = () => {
@@ -263,6 +264,7 @@ const AdminDashboard = () => {
 
           <TabsContent value="scraper-debug" className="space-y-4">
             <BeauvaisEnricher />
+            <ReplicateAgentPhoenix />
             <SingleAgentMemo23 />
             <ZillowScraperDebug />
           </TabsContent>
