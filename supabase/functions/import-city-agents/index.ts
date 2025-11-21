@@ -152,30 +152,81 @@ serve(async (req) => {
             }
           }
 
-          // Enrich qualifying agents with memo23 Zillow data
-          console.log(`Starting memo23 enrichment for ${qualifyingAgents.length} agents...`);
+          // Enrich qualifying agents - check for existing data first
+          console.log(`Starting enrichment for ${qualifyingAgents.length} agents...`);
+          
+          let reusedCount = 0;
+          let enrichedCount = 0;
           
           for (const agent of qualifyingAgents) {
             if (agent.zillow_profile_url) {
               try {
-                console.log(`Enriching ${agent.name} with memo23...`);
-                
-                await supabase.functions.invoke('fetch-single-memo23-agent', {
-                  body: { 
-                    professionalId: agent.id,
-                    profileUrl: agent.zillow_profile_url 
+                // Check if this agent already exists in another city with enriched data
+                const { data: existingAgent } = await supabase
+                  .from('professionals')
+                  .select('*')
+                  .eq('zillow_profile_url', agent.zillow_profile_url)
+                  .neq('id', agent.id) // Don't match self
+                  .not('zillow_data_fetched_at', 'is', null)
+                  .not('professional_information', 'is', null)
+                  .limit(1)
+                  .maybeSingle();
+
+                if (existingAgent) {
+                  console.log(`Reusing enriched data for ${agent.name} from existing record`);
+                  
+                  // Copy enriched fields from existing agent
+                  const { error: updateError } = await supabase
+                    .from('professionals')
+                    .update({
+                      professional_information: existingAgent.professional_information,
+                      agent_sales_stats: existingAgent.agent_sales_stats,
+                      agent_licenses: existingAgent.agent_licenses,
+                      business_address: existingAgent.business_address,
+                      phone_numbers: existingAgent.phone_numbers,
+                      reviews_data: existingAgent.reviews_data,
+                      ratings: existingAgent.ratings,
+                      get_to_know_me: existingAgent.get_to_know_me,
+                      sidebar_video_url: existingAgent.sidebar_video_url,
+                      years_experience: existingAgent.years_experience,
+                      email: existingAgent.email,
+                      phone: existingAgent.phone,
+                      website: existingAgent.website,
+                      company: existingAgent.company,
+                      title: existingAgent.title,
+                      specialty: existingAgent.specialty,
+                      image_url: existingAgent.image_url,
+                      zillow_data_fetched_at: new Date().toISOString()
+                    })
+                    .eq('id', agent.id);
+
+                  if (updateError) {
+                    console.error(`Failed to copy data for ${agent.name}:`, updateError);
+                  } else {
+                    reusedCount++;
                   }
-                });
-                
-                // Small delay between requests
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                } else {
+                  // No existing data found, fetch from memo23
+                  console.log(`Enriching ${agent.name} with memo23...`);
+                  
+                  await supabase.functions.invoke('fetch-single-memo23-agent', {
+                    body: { 
+                      professionalId: agent.id,
+                      profileUrl: agent.zillow_profile_url 
+                    }
+                  });
+                  
+                  enrichedCount++;
+                  // Small delay between requests
+                  await new Promise(resolve => setTimeout(resolve, 1000));
+                }
               } catch (enrichError) {
-                console.error(`Failed to enrich ${agent.name}:`, enrichError);
+                console.error(`Failed to process ${agent.name}:`, enrichError);
               }
             }
           }
           
-          console.log('Memo23 enrichment completed');
+          console.log(`Enrichment completed: ${reusedCount} reused, ${enrichedCount} newly enriched`);
         }
       } catch (bgError) {
         console.error('Background enrichment failed:', bgError);
