@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -28,6 +28,7 @@ import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
 import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
 import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow";
 import { ScottsdaleEnricher } from "@/components/admin/ScottsdaleEnricher";
+import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 import CitiesManager from "@/components/admin/CitiesManager";
 
 const AdminDashboard = () => {
@@ -186,6 +187,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Phoenix Memo23
             </TabsTrigger>
+            <TabsTrigger value="progress-dashboard">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Progress Dashboard
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -263,6 +268,10 @@ const AdminDashboard = () => {
           <TabsContent value="phoenix-memo23" className="space-y-4">
             <ScottsdaleEnricher />
             <PhoenixMemo23Workflow />
+          </TabsContent>
+
+          <TabsContent value="progress-dashboard" className="space-y-4">
+            <EnrichmentProgressDashboard />
           </TabsContent>
         </Tabs>
       </div>
