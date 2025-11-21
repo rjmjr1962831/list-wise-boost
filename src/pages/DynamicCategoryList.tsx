@@ -216,7 +216,7 @@ export default function DynamicCategoryList() {
 
         setCategory(categoryData);
 
-        // Fetch professionals with cache-busting timestamp
+        // Fetch professionals with cache-busting timestamp - ONLY enriched profiles
         const cacheBuster = Date.now();
         const { data: professionalsData, error: profsError } = await supabase
           .from('professionals')
@@ -224,6 +224,7 @@ export default function DynamicCategoryList() {
           .eq('city_id', cityData.id)
           .eq('category_id', categoryData.id)
           .eq('active', true)
+          .not('zillow_data_fetched_at', 'is', null) // Only show enriched profiles
           .order('rank');
 
         if (profsError) {
