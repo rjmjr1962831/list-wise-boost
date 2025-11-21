@@ -217,18 +217,57 @@ export default function DynamicCategoryList() {
         setCategory(categoryData);
 
         // Fetch professionals - ONLY enriched and qualified agents (4.8+ stars, 100+ reviews)
+        // SPECIAL CASE: For Scottsdale, always include Beauvais first (even if <100 reviews)
         const cacheBuster = Date.now();
-        const { data: professionalsData, error: profsError } = await supabase
-          .from('professionals')
-          .select('*')
-          .eq('city_id', cityData.id)
-          .eq('category_id', categoryData.id)
-          .eq('active', true)
-          .not('professional_information', 'is', null) // Must be enriched with memo23 data
-          .gte('review_stars_rating', 4.8) // Must have 4.8+ rating
-          .gte('num_total_reviews', 100) // Must have at least 100 reviews
-          .order('rank')
-          .limit(10); // Show top 10 qualified agents
+        
+        let professionalsData: any[] = [];
+        let profsError = null;
+        
+        if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
+          // Fetch Beauvais first (special case)
+          const { data: beauvaisData, error: beauvaisError } = await supabase
+            .from('professionals')
+            .select('*')
+            .eq('city_id', cityData.id)
+            .eq('category_id', categoryData.id)
+            .eq('active', true)
+            .not('professional_information', 'is', null)
+            .ilike('zillow_profile_url', '%beauvais%')
+            .limit(1);
+          
+          // Fetch other qualified agents (excluding Beauvais)
+          const { data: otherAgents, error: otherError } = await supabase
+            .from('professionals')
+            .select('*')
+            .eq('city_id', cityData.id)
+            .eq('category_id', categoryData.id)
+            .eq('active', true)
+            .not('professional_information', 'is', null)
+            .gte('review_stars_rating', 4.8)
+            .gte('num_total_reviews', 100)
+            .not('zillow_profile_url', 'ilike', '%beauvais%')
+            .order('rank')
+            .limit(9);
+          
+          profsError = beauvaisError || otherError;
+          professionalsData = [...(beauvaisData || []), ...(otherAgents || [])];
+        } else {
+          // Standard query for other cities
+          const { data, error } = await supabase
+            .from('professionals')
+            .select('*')
+            .eq('city_id', cityData.id)
+            .eq('category_id', categoryData.id)
+            .eq('active', true)
+            .not('professional_information', 'is', null)
+            .gte('review_stars_rating', 4.8)
+            .gte('num_total_reviews', 100)
+            .order('rank')
+            .limit(10);
+          
+          professionalsData = data || [];
+          profsError = error;
+        }
 
         if (profsError) {
           console.error('Error fetching professionals:', profsError);
