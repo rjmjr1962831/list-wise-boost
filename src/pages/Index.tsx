@@ -27,7 +27,7 @@ const Index = () => {
             We've pored through <span className="font-bold text-foreground">dozens of sources</span> and rated about <span className="font-bold text-foreground">2,000,000 agents</span> in the U.S.
           </p>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            Every Agent on our list has <span className="font-bold text-foreground">5.0</span>{" "}
+            Every Agent on our list has <span className="font-bold text-foreground">4.8  </span>{" "}
             <span className="inline-flex items-center gap-0.5 align-middle">
               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
               <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
