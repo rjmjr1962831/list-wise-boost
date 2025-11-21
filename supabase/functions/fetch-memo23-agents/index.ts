@@ -60,18 +60,28 @@ serve(async (req) => {
     const actorId = 'memo23~apify-zillow-agents-cheerio';
 
     // First, get agent URLs from existing profiles
-    // Only fetch agents that need updating (older than 30 days or no fetch date)
+    // Only fetch agents that need updating (never fetched OR older than 30 days)
     const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
     const thirtyDaysAgo = new Date(Date.now() - THIRTY_DAYS_MS).toISOString();
     
-    const { data: existingProfiles } = await supabase
+    // Query for agents that need enrichment
+    let query = supabase
       .from('professionals')
-      .select('zillow_profile_url, zillow_data_fetched_at')
+      .select('zillow_profile_url, zillow_data_fetched_at, name')
       .eq('city_id', cityId)
       .eq('category_id', categoryId)
       .not('zillow_profile_url', 'is', null)
-      .or(`zillow_data_fetched_at.is.null,zillow_data_fetched_at.lt.${thirtyDaysAgo}`)
       .limit(10); // Process 10 agents per batch to avoid timeouts
+    
+    // Get agents that have NEVER been fetched OR are stale
+    const { data: neverFetched } = await query.is('zillow_data_fetched_at', null);
+    const { data: staleFetched } = await query.lt('zillow_data_fetched_at', thirtyDaysAgo);
+    
+    // Combine both lists, prioritizing never-fetched
+    const existingProfiles = [
+      ...(neverFetched || []),
+      ...(staleFetched || [])
+    ].slice(0, 10);
 
     if (!existingProfiles || existingProfiles.length === 0) {
       return new Response(
@@ -89,7 +99,10 @@ serve(async (req) => {
       .filter(p => p.zillow_profile_url)
       .map(p => p.zillow_profile_url);
 
-    console.log(`Processing ${agentUrls.length} stale agent profiles (>30 days old) with memo23 at maxConcurrency=10`);
+    console.log(`Processing ${agentUrls.length} agent profiles with memo23:`);
+    existingProfiles.forEach(p => {
+      console.log(`  - ${p.name}: ${p.zillow_profile_url} (last fetch: ${p.zillow_data_fetched_at || 'NEVER'})`);
+    });
 
     // Run memo23 actor with lower concurrency to prevent timeouts
     const actorInput = {
