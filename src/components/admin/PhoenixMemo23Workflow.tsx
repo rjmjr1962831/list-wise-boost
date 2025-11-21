@@ -25,6 +25,7 @@ export const PhoenixMemo23Workflow = () => {
     setLoading(true);
     setJobs([]);
     setProgress(0);
+    const processedAgentIds = new Set<string>(); // Track successfully processed agents
     
     try {
       // Get Phoenix city and realtor category
@@ -95,6 +96,17 @@ export const PhoenixMemo23Workflow = () => {
         const batchPromises = batch.map(async (agent) => {
           const jobId = agent.id;
           
+          // Skip if already successfully processed in this run
+          if (processedAgentIds.has(jobId)) {
+            console.log(`Skipping ${agent.name} - already processed successfully`);
+            setJobs(prev => prev.map(j => 
+              j.id === jobId 
+                ? { ...j, status: 'success' as const, message: 'Already processed' } 
+                : j
+            ));
+            return;
+          }
+          
           // Update job status to running
           setJobs(prev => prev.map(j => 
             j.id === jobId ? { ...j, status: 'running' as const } : j
@@ -112,6 +124,9 @@ export const PhoenixMemo23Workflow = () => {
 
             if (error) throw error;
 
+            // Mark as successfully processed
+            processedAgentIds.add(jobId);
+            
             // Update job status to success
             setJobs(prev => prev.map(j => 
               j.id === jobId 
