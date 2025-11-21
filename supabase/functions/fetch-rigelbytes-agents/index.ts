@@ -42,8 +42,8 @@ serve(async (req) => {
 
     console.log(`Starting rigelbytes scrape for ${city.name}, ${city.state} - ${category.name}`);
 
-    // Use rigelbytes actor - only needs location
-    const actorId = 'rigelbytes~zillow-real-estate-agent-scraper';
+    // Use rigelbytes actor
+    const actorId = 'rigelbytes/zillow-agents';
     const actorInput = {
       location: `${city.name}, ${city.state}`,
       maxItems: maxResults,
