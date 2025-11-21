@@ -248,8 +248,8 @@ export default function DynamicCategoryList() {
           // Start from DB professionals
           let baseProfessionals: DBProfessional[] = professionalsData;
 
-          // Scottsdale special case: ensure Beauvais-Real-Estate is ALWAYS present
-          if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
+          // Scottsdale & Phoenix special case: ensure Beauvais-Real-Estate is ALWAYS present
+          if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && categoryData.slug === 'top10realestateagents') {
             const hasBeauvais = baseProfessionals.some(p =>
               (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
               (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
@@ -257,7 +257,7 @@ export default function DynamicCategoryList() {
             );
 
             if (!hasBeauvais) {
-              console.log('⚠️ Beauvais-Real-Estate not found in DB results for Scottsdale, injecting stub card');
+              console.log(`⚠️ Beauvais-Real-Estate not found in DB results for ${cityData.name}, injecting stub card`);
               const stub: DBProfessional = {
                 id: 'beauvais-stub',
                 name: 'Beauvais Real Estate',
@@ -299,7 +299,7 @@ export default function DynamicCategoryList() {
           let displayAgents = baseProfessionals;
           
           // Special sorting for Scottsdale: Beauvais-Real-Estate always first
-          if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
+          if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && categoryData.slug === 'top10realestateagents') {
             const beauvaisIndex = displayAgents.findIndex(p => 
               (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
               (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
@@ -308,7 +308,7 @@ export default function DynamicCategoryList() {
             if (beauvaisIndex > 0) {
               const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
               displayAgents.unshift(beauvais);
-              console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale (initial load)');
+              console.log(`✅ Moved Beauvais-Real-Estate to #1 for ${cityData.name} (initial load)`);
             }
           }
           
@@ -421,7 +421,7 @@ export default function DynamicCategoryList() {
                 const newList = [...prev, convertedProf];
                 
                 // Apply Scottsdale special sorting
-                if (city?.slug === 'scottsdale' && category?.slug === 'top10realestateagents') {
+                if ((city?.slug === 'scottsdale' || city?.slug === 'phoenix') && category?.slug === 'top10realestateagents') {
                   const beauvaisIdx = newList.findIndex(p => 
                     ((p as any).zuid && (p as any).zuid.toLowerCase().includes('beauvais-real-estate')) ||
                     ((p as any).zillow_profile_url && (p as any).zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
@@ -430,7 +430,7 @@ export default function DynamicCategoryList() {
                   if (beauvaisIdx > 0) {
                     const beauvais = newList.splice(beauvaisIdx, 1)[0];
                     newList.unshift(beauvais);
-                    console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale (realtime)');
+                    console.log(`✅ Moved Beauvais-Real-Estate to #1 for ${city?.name} (realtime)`);
                   }
                 }
                 
@@ -631,15 +631,15 @@ export default function DynamicCategoryList() {
           // Show all agents - they'll upgrade via realtime as enrichment completes
           let displayAgents = data;
           
-          // Special sorting for Scottsdale: Beauvais-Real-Estate always first
-          if (city.slug === 'scottsdale' && category.slug === 'top10realestateagents') {
+          // Special sorting for Scottsdale & Phoenix: Beauvais-Real-Estate always first
+          if ((city.slug === 'scottsdale' || city.slug === 'phoenix') && category.slug === 'top10realestateagents') {
             const beauvaisIndex = displayAgents.findIndex(p => 
               p.zillow_profile_url?.includes('Beauvais-Real-Estate')
             );
             if (beauvaisIndex > 0) {
               const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
               displayAgents.unshift(beauvais);
-              console.log('✅ Moved Beauvais-Real-Estate to #1 for Scottsdale (polling)');
+              console.log(`✅ Moved Beauvais-Real-Estate to #1 for ${city.name} (polling)`);
             }
           }
           
