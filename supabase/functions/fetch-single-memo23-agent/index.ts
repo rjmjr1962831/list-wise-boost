@@ -372,7 +372,8 @@ serve(async (req) => {
       }
     }
     if (agentData.professionalInformation) {
-      updateData.professional_information = agentData.professionalInformation;
+      // DO NOT store professional_information to avoid importing social media data
+      // updateData.professional_information = agentData.professionalInformation;
       
       // Extract specialties from professionalInformation
       const specialtiesEntry = agentData.professionalInformation.find((info: any) => 

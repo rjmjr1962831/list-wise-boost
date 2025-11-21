@@ -312,7 +312,8 @@ async function processAgent(
     if (agent.agentSalesStats) memo23Data.agent_sales_stats = agent.agentSalesStats;
     if (agent.teamDisplayInformation) memo23Data.team_display_information = agent.teamDisplayInformation;
     if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
-    if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
+    // DO NOT store professional_information to avoid importing social media data
+    // if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
     
     // Extract specialties from multiple possible locations
     if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
