@@ -448,6 +448,8 @@ async function processAgent(
         memo23Data.review_stars_rating = agent.ratings.starRating;
       } else if (agent.ratings.averageRating !== undefined) {
         memo23Data.review_stars_rating = agent.ratings.averageRating;
+      } else if (agent.ratings.average !== undefined) {
+        memo23Data.review_stars_rating = agent.ratings.average;
       }
       
       if (agent.ratings.totalReviews !== undefined) {
