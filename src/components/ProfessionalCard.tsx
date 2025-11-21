@@ -79,6 +79,7 @@ export const ProfessionalCard = ({
       const profInfoArray = (professional as any).professional_information;
       let websiteFromProfInfo: string | null = null;
       let phoneFromProfInfo: string | null = null;
+      let emailFromProfInfo: string | null = null;
       let socialLinks: {
         websiteUrl?: string;
         facebookUrl?: string;
@@ -124,6 +125,34 @@ export const ProfessionalCard = ({
         const websitesEntry = entries.find(e => e.term === 'Websites');
         websiteFromProfInfo = websitesEntry?.links?.[0]?.url || null;
         
+        // Extract email from any entry whose term mentions email
+        const emailEntry = entries.find(e => (e.term || '').toLowerCase().includes('email'));
+        if (emailEntry) {
+          const candidates: string[] = [];
+          if (Array.isArray(emailEntry.lines)) candidates.push(...emailEntry.lines);
+          if (emailEntry.description) candidates.push(emailEntry.description);
+          
+          // Look for valid email format
+          const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+          for (const raw of candidates) {
+            if (!raw) continue;
+            const match = raw.match(emailRegex);
+            if (match) {
+              emailFromProfInfo = match[0].trim();
+              break;
+            }
+          }
+          
+          // Fallback: if no regex match, just use first non-empty line/description
+          if (!emailFromProfInfo) {
+            const rawLine = candidates.find(l => l && l.trim().length > 0 && l.includes('@'));
+            if (rawLine) {
+              const parts = rawLine.split(':');
+              emailFromProfInfo = (parts.length > 1 ? parts.slice(1).join(':') : rawLine).trim();
+            }
+          }
+        }
+        
         // Extract phone from any entry whose term mentions phone (e.g. "Phone", "Phone numbers")
         const phoneEntry = entries.find(e => (e.term || '').toLowerCase().includes('phone'));
         if (phoneEntry) {
@@ -155,8 +184,8 @@ export const ProfessionalCard = ({
 
       console.debug('parsedProfInfo contact sources', {
         name: professional.name,
-        fromProfessionalInformation: phoneFromProfInfo,
-        topLevelPhone: (professional as any).phone,
+        fromProfessionalInformation: { phone: phoneFromProfInfo, email: emailFromProfInfo },
+        topLevel: { phone: (professional as any).phone, email: professional.email },
       });
       
 
@@ -166,12 +195,13 @@ export const ProfessionalCard = ({
       const profInfoRaw = descRaw || getToKnowRaw || profInfoArray;
 
       if (!profInfoRaw) {
-        return websiteFromProfInfo || phoneFromProfInfo ? { 
+        return websiteFromProfInfo || phoneFromProfInfo || emailFromProfInfo ? { 
           yearsInIndustry: null,
           videoUrl: null,
           specialties: [] as string[],
           websiteUrl: websiteFromProfInfo,
           phone: phoneFromProfInfo,
+          email: emailFromProfInfo,
           description: null,
           socialLinks
         } : null;
@@ -190,7 +220,9 @@ export const ProfessionalCard = ({
             specialties: [] as string[],
             websiteUrl: websiteFromProfInfo,
             phone: phoneFromProfInfo,
+            email: emailFromProfInfo,
             description: trimmed,
+            socialLinks
           };
         }
 
@@ -203,7 +235,9 @@ export const ProfessionalCard = ({
             specialties: [] as string[],
             websiteUrl: websiteFromProfInfo,
             phone: phoneFromProfInfo,
+            email: emailFromProfInfo,
             description: trimmed,
+            socialLinks
           };
         }
 
@@ -221,7 +255,9 @@ export const ProfessionalCard = ({
           specialties: Array.isArray((parsed as any).specialties) ? (parsed as any).specialties : [],
           websiteUrl: websiteFromProfInfo || (parsed as any).websiteUrl || null,
           phone: phoneFromProfInfo,
+          email: emailFromProfInfo,
           description: cleanDescription || trimmed,
+          socialLinks
         };
       }
 
@@ -251,20 +287,24 @@ export const ProfessionalCard = ({
           specialties: [] as string[],
           websiteUrl: websiteFromProfInfo,
           phone: phoneFromProfInfo,
+          email: emailFromProfInfo,
           description: description || null,
+          socialLinks
         };
       }
 
       // If we somehow get a non-string (JSONB) without recognisable structure, fall back to simple description field
       const fallback = (professional as any).description as string | null;
       if (!fallback) {
-        return websiteFromProfInfo || phoneFromProfInfo ? {
+        return websiteFromProfInfo || phoneFromProfInfo || emailFromProfInfo ? {
           yearsInIndustry: null,
           videoUrl: null,
           specialties: [] as string[],
           websiteUrl: websiteFromProfInfo,
           phone: phoneFromProfInfo,
-          description: null
+          email: emailFromProfInfo,
+          description: null,
+          socialLinks
         } : null;
       }
       return {
@@ -273,7 +313,9 @@ export const ProfessionalCard = ({
         specialties: [] as string[],
         websiteUrl: websiteFromProfInfo,
         phone: phoneFromProfInfo,
+        email: emailFromProfInfo,
         description: fallback.trim(),
+        socialLinks
       };
     } catch (e) {
       console.error('Error parsing memo23-style description JSON:', e);
@@ -285,7 +327,9 @@ export const ProfessionalCard = ({
         specialties: [] as string[],
         websiteUrl: null,
         phone: null,
+        email: null,
         description: fallback.trim(),
+        socialLinks: {}
       };
     }
   })();
@@ -994,18 +1038,22 @@ export const ProfessionalCard = ({
                       </div>
                     );
                   })()}
-                  {professional.email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <a 
-                        href={`mailto:${professional.email}`} 
-                        className="text-primary hover:underline" 
-                        itemProp="email"
-                      >
-                        Email {professional.name.split(' ')[0]}
-                      </a>
-                    </div>
-                  )}
+                   {(() => {
+                     const emailDisplay = parsedProfInfo?.email || professional.email;
+                     if (!emailDisplay) return null;
+                     return (
+                       <div className="flex items-center gap-2">
+                         <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                         <a 
+                           href={`mailto:${emailDisplay}`} 
+                           className="text-primary hover:underline" 
+                           itemProp="email"
+                         >
+                           {emailDisplay}
+                         </a>
+                       </div>
+                     );
+                   })()}
                   {professional.zuid && (
                     <div className="flex items-center gap-2">
                       <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
