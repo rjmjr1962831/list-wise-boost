@@ -320,6 +320,32 @@ async function processAgent(
     memo23Data.raw_scraper_data = agent;
     
     // Extract specialties from multiple possible locations
+    const specialties: string[] = [];
+    
+    // Map Zillow profile types to human-readable specialties
+    if (agent.profileTypes && Array.isArray(agent.profileTypes)) {
+      const profileTypeMap: Record<string, string> = {
+        'consumer': 'Buyer Representation',
+        'agent': 'Full-Service Agent',
+        'renter': 'Rental Specialist',
+        'showcaseBuyer': 'Luxury Homes',
+        'peeps': 'Client Reviews',
+        'listing': 'Listing Specialist',
+        'foreclosure': 'Foreclosure Expert',
+        'newConstruction': 'New Construction',
+        'relocation': 'Relocation Services',
+        'investment': 'Investment Properties'
+      };
+      
+      agent.profileTypes.forEach((pt: string) => {
+        const mapped = profileTypeMap[pt];
+        if (mapped && !specialties.includes(mapped)) {
+          specialties.push(mapped);
+        }
+      });
+    }
+    
+    // Extract specialties from professionalInformation
     if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
       const specialtiesEntry = agent.professionalInformation.find((info: any) => 
         info.term === 'Specialties' || info.term === 'Areas of Focus' || info.term === 'Service areas'
@@ -327,25 +353,23 @@ async function processAgent(
       if (specialtiesEntry) {
         // Try detail, lines, or description fields
         const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
-        const specialties: string[] = [];
         
         if (Array.isArray(rawData)) {
           rawData.forEach((item: any) => {
-            if (typeof item === 'string' && item.trim()) {
+            if (typeof item === 'string' && item.trim() && !specialties.includes(item.trim())) {
               specialties.push(item.trim());
-            } else if (item?.text && typeof item.text === 'string') {
+            } else if (item?.text && typeof item.text === 'string' && !specialties.includes(item.text.trim())) {
               specialties.push(item.text.trim());
             }
           });
-        } else if (typeof rawData === 'string' && rawData.trim()) {
-          // Single string specialty
+        } else if (typeof rawData === 'string' && rawData.trim() && !specialties.includes(rawData.trim())) {
           specialties.push(rawData.trim());
         }
-        
-        if (specialties.length > 0) {
-          memo23Data.specialty = specialties;
-        }
       }
+    }
+    
+    if (specialties.length > 0) {
+      memo23Data.specialty = specialties;
     }
     
     // Extract email from multiple sources
