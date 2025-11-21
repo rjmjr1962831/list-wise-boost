@@ -16,9 +16,8 @@ const Index = () => {
       {/* Agent CTA Section */}
       <section className="container mx-auto px-4 pb-12">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-lg text-muted-foreground mb-4">Are you a top-performing agent?</p>
           <Button onClick={() => navigate('/agent-onboarding')} size="lg" className="text-lg py-6 px-8">
-            Think you should be on the list?
+            Are you a top-performing agent?
           </Button>
         </div>
       </section>
