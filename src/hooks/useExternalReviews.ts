@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ExternalReview {
@@ -24,36 +24,28 @@ export function useExternalReviews({
   company?: string | null;
   market?: string | null;
 }) {
-  const [data, setData] = useState<ExternalReviewsResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['external-reviews', agentName, company, market],
+    queryFn: async () => {
+      const { data: resp, error: err } = await supabase.functions.invoke('fetch-external-reviews', {
+        body: {
+          agentName,
+          company: company || undefined,
+          location: market || undefined,
+        },
+      });
 
-  useEffect(() => {
-    if (!agentName || !market) return;
+      if (err) throw err;
+      return resp as ExternalReviewsResult;
+    },
+    enabled: !!agentName && !!market,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+    gcTime: 1000 * 60 * 60 * 24 * 7, // 7 days
+  });
 
-    const run = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const { data: resp, error: err } = await supabase.functions.invoke('fetch-external-reviews', {
-          body: {
-            agentName,
-            company: company || undefined,
-            location: market || undefined,
-          },
-        });
-
-        if (err) throw err;
-        if (resp) setData(resp as ExternalReviewsResult);
-      } catch (e: any) {
-        setError(e?.message || 'Failed to load reviews');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    run();
-  }, [agentName, company, market]);
-
-  return { data, loading, error };
+  return { 
+    data: data || null, 
+    loading: isLoading, 
+    error: error?.message || null 
+  };
 }
