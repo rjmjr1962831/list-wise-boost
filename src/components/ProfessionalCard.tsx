@@ -108,29 +108,51 @@ export const ProfessionalCard = ({
         };
         const entries = profInfoArray as InfoEntry[];
         
-        // Extract social links from the first entry (memo23 puts them there)
-        if (entries[0]) {
-          socialLinks = {
-            websiteUrl: entries[0].websiteUrl,
-            facebookUrl: entries[0].facebookUrl,
-            linkedInUrl: entries[0].linkedInUrl,
-            xUrl: entries[0].xUrl,
-            instagramUrl: entries[0].instagramUrl,
-            tiktokUrl: entries[0].tiktokUrl,
-            youtubeUrl: entries[0].youtubeUrl,
-            pinterestUrl: entries[0].pinterestUrl,
-          };
+        // Extract social links from the "Websites" entry (memo23 format)
+        const websitesEntry = entries.find(e => e.term === 'Websites');
+        if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
+          websitesEntry.links.forEach(link => {
+            const text = (link.text || '').toLowerCase();
+            const url = link.url || '';
+            if (!url) return;
+            
+            if (text.includes('facebook') || url.includes('facebook.com')) {
+              socialLinks.facebookUrl = url;
+            } else if (text.includes('linkedin') || url.includes('linkedin.com')) {
+              socialLinks.linkedInUrl = url;
+            } else if (text === 'x' || url.includes('twitter.com') || url.includes('x.com')) {
+              socialLinks.xUrl = url;
+            } else if (text.includes('instagram') || url.includes('instagram.com')) {
+              socialLinks.instagramUrl = url;
+            } else if (text.includes('tiktok') || url.includes('tiktok.com')) {
+              socialLinks.tiktokUrl = url;
+            } else if (text.includes('youtube') || url.includes('youtube.com')) {
+              socialLinks.youtubeUrl = url;
+            } else if (text.includes('pinterest') || url.includes('pinterest.com')) {
+              socialLinks.pinterestUrl = url;
+            } else if (text.includes('website') || (!socialLinks.websiteUrl && url)) {
+              // First non-social link is treated as primary website
+              socialLinks.websiteUrl = url;
+            }
+          });
         }
         
-        const websitesEntry = entries.find(e => e.term === 'Websites');
-        websiteFromProfInfo = websitesEntry?.links?.[0]?.url || null;
+        websiteFromProfInfo = socialLinks.websiteUrl || websitesEntry?.links?.[0]?.url || null;
         
-        // Extract email from any entry whose term mentions email
+        // Extract email from any entry whose term mentions email, or from links
         const emailEntry = entries.find(e => (e.term || '').toLowerCase().includes('email'));
         if (emailEntry) {
           const candidates: string[] = [];
           if (Array.isArray(emailEntry.lines)) candidates.push(...emailEntry.lines);
           if (emailEntry.description) candidates.push(emailEntry.description);
+          if (Array.isArray(emailEntry.links)) {
+            emailEntry.links.forEach(link => {
+              if (link.text) candidates.push(link.text);
+              if (link.url && link.url.startsWith('mailto:')) {
+                candidates.push(link.url.replace('mailto:', ''));
+              }
+            });
+          }
           
           // Look for valid email format
           const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
@@ -775,10 +797,35 @@ export const ProfessionalCard = ({
 
               {/* Specialties Section - Areas of Expertise */}
               {(() => {
-                // Combine specialties from both sources
+                // Combine specialties from multiple sources
                 const profInfoSpecialties = parsedProfInfo?.specialties || [];
                 const dbSpecialties = ((professional as any).specialty || []).filter((s: string) => s && s.trim());
-                const allSpecialties = [...new Set([...profInfoSpecialties, ...dbSpecialties])];
+                
+                // Also check professional_information for "Specialties" or "Areas of Focus" entries
+                const profInfoArray = (professional as any).professional_information;
+                const extractedSpecialties: string[] = [];
+                if (Array.isArray(profInfoArray)) {
+                  const specialtiesEntry = profInfoArray.find((e: any) => 
+                    e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
+                  );
+                  if (specialtiesEntry) {
+                    // Try multiple field formats
+                    const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
+                    if (Array.isArray(rawData)) {
+                      rawData.forEach((item: any) => {
+                        if (typeof item === 'string' && item.trim()) {
+                          extractedSpecialties.push(item.trim());
+                        } else if (item?.text) {
+                          extractedSpecialties.push(item.text);
+                        }
+                      });
+                    } else if (typeof rawData === 'string' && rawData.trim()) {
+                      extractedSpecialties.push(rawData.trim());
+                    }
+                  }
+                }
+                
+                const allSpecialties = [...new Set([...profInfoSpecialties, ...dbSpecialties, ...extractedSpecialties])];
                 
                 if (allSpecialties.length === 0) return null;
                 
@@ -1073,9 +1120,73 @@ export const ProfessionalCard = ({
                         Zillow Profile
                       </a>
                     </div>
-                  )}
-                </div>
-              </div>
+                   )}
+                 </div>
+                 
+                 {/* Social Media Badges */}
+                 {parsedProfInfo?.socialLinks && (() => {
+                   const social = parsedProfInfo.socialLinks;
+                   const hasAnySocial = social.facebookUrl || social.linkedInUrl || social.xUrl || 
+                                       social.instagramUrl || social.tiktokUrl || social.youtubeUrl || social.pinterestUrl;
+                   
+                   if (!hasAnySocial) return null;
+                   
+                   return (
+                     <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+                       <span className="text-xs text-muted-foreground font-medium">Connect:</span>
+                       {social.facebookUrl && (
+                         <a href={social.facebookUrl} target="_blank" rel="noopener noreferrer" 
+                            className="text-primary hover:text-primary/80 transition-colors"
+                            aria-label="Facebook">
+                           <Facebook className="h-5 w-5" />
+                         </a>
+                       )}
+                       {social.linkedInUrl && (
+                         <a href={social.linkedInUrl} target="_blank" rel="noopener noreferrer" 
+                            className="text-primary hover:text-primary/80 transition-colors"
+                            aria-label="LinkedIn">
+                           <Linkedin className="h-5 w-5" />
+                         </a>
+                       )}
+                       {social.xUrl && (
+                         <a href={social.xUrl} target="_blank" rel="noopener noreferrer" 
+                            className="text-primary hover:text-primary/80 transition-colors"
+                            aria-label="X (Twitter)">
+                           <Twitter className="h-5 w-5" />
+                         </a>
+                       )}
+                       {social.instagramUrl && (
+                         <a href={social.instagramUrl} target="_blank" rel="noopener noreferrer" 
+                            className="text-primary hover:text-primary/80 transition-colors"
+                            aria-label="Instagram">
+                           <Instagram className="h-5 w-5" />
+                         </a>
+                       )}
+                       {social.youtubeUrl && (
+                         <a href={social.youtubeUrl} target="_blank" rel="noopener noreferrer" 
+                            className="text-primary hover:text-primary/80 transition-colors"
+                            aria-label="YouTube">
+                           <Youtube className="h-5 w-5" />
+                         </a>
+                       )}
+                       {social.tiktokUrl && (
+                         <a href={social.tiktokUrl} target="_blank" rel="noopener noreferrer" 
+                            className="text-primary hover:text-primary/80 transition-colors"
+                            aria-label="TikTok">
+                           <Music className="h-5 w-5" />
+                         </a>
+                       )}
+                       {social.pinterestUrl && (
+                         <a href={social.pinterestUrl} target="_blank" rel="noopener noreferrer" 
+                            className="text-primary hover:text-primary/80 transition-colors"
+                            aria-label="Pinterest">
+                           <Link2 className="h-5 w-5" />
+                         </a>
+                       )}
+                     </div>
+                   );
+                 })()}
+               </div>
 
 
               {/* Contact Button */}

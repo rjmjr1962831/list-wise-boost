@@ -294,7 +294,10 @@ async function processAgent(
     if (agent.isPremierAgent !== undefined) memo23Data.is_premier_agent = agent.isPremierAgent;
     if (agent.ratings) memo23Data.ratings = agent.ratings;
     if (agent.phoneNumbers) memo23Data.phone_numbers = agent.phoneNumbers;
-    if (agent.email) memo23Data.email = agent.email;
+    
+    // Extract email is now handled in dedicated section above (lines 314-379)
+    // if (agent.email) memo23Data.email = agent.email;
+    
     if (agent.professional) memo23Data.professional_data = agent.professional;
     
     if (agent.getToKnowMe) {
@@ -311,21 +314,72 @@ async function processAgent(
     if (agent.pastSales) memo23Data.past_sales = agent.pastSales;
     if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
     
-    // Extract specialties
+    // Extract specialties from multiple possible locations
     if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
       const specialtiesEntry = agent.professionalInformation.find((info: any) => 
-        info.term === 'Specialties' || info.term === 'Areas of Focus'
+        info.term === 'Specialties' || info.term === 'Areas of Focus' || info.term === 'Service areas'
       );
-      if (specialtiesEntry?.detail && Array.isArray(specialtiesEntry.detail)) {
-        const specialties = specialtiesEntry.detail
-          .map((item: any) => {
-            if (typeof item === 'string') return item;
-            if (item.text) return item.text;
-            return null;
-          })
-          .filter(Boolean);
+      if (specialtiesEntry) {
+        // Try detail, lines, or description fields
+        const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
+        const specialties: string[] = [];
+        
+        if (Array.isArray(rawData)) {
+          rawData.forEach((item: any) => {
+            if (typeof item === 'string' && item.trim()) {
+              specialties.push(item.trim());
+            } else if (item?.text && typeof item.text === 'string') {
+              specialties.push(item.text.trim());
+            }
+          });
+        } else if (typeof rawData === 'string' && rawData.trim()) {
+          // Single string specialty
+          specialties.push(rawData.trim());
+        }
+        
         if (specialties.length > 0) {
           memo23Data.specialty = specialties;
+        }
+      }
+    }
+    
+    // Extract email from multiple sources
+    if (agent.email) {
+      memo23Data.email = agent.email;
+    } else if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+      // Check for email in professionalInformation
+      const emailEntry = agent.professionalInformation.find((info: any) => 
+        (info.term || '').toLowerCase().includes('email')
+      );
+      if (emailEntry) {
+        // Try links first (mailto: links)
+        if (emailEntry.links && Array.isArray(emailEntry.links)) {
+          for (const link of emailEntry.links) {
+            if (link.url && link.url.startsWith('mailto:')) {
+              memo23Data.email = link.url.replace('mailto:', '');
+              break;
+            } else if (link.text && link.text.includes('@')) {
+              memo23Data.email = link.text;
+              break;
+            }
+          }
+        }
+        
+        // Try lines or description
+        if (!memo23Data.email) {
+          const candidates = [];
+          if (Array.isArray(emailEntry.lines)) candidates.push(...emailEntry.lines);
+          if (emailEntry.description) candidates.push(emailEntry.description);
+          
+          const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+          for (const raw of candidates) {
+            if (!raw) continue;
+            const match = raw.match(emailRegex);
+            if (match) {
+              memo23Data.email = match[0].trim();
+              break;
+            }
+          }
         }
       }
     }
