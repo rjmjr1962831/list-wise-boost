@@ -46,24 +46,38 @@ serve(async (req) => {
 
     const proxyscrapeKey = Deno.env.get('PROXYSCRAPE_API_KEY');
     if (!proxyscrapeKey) {
-      throw new Error('PROXYSCRAPE_API_KEY not configured');
+      console.warn('PROXYSCRAPE_API_KEY not configured, using Apify proxy');
     }
 
-    // Build ProxyScrape residential proxy URL with US targeting
-    const proxyUrl = `http://${proxyscrapeKey}-country-us:${proxyscrapeKey}@residential.proxyscrape.com:6000`;
-    console.log('Using ProxyScrape residential proxy with US targeting');
+    // Build ProxyScrape residential proxy URL with US targeting and session ID for stickiness
+    const sessionId = `session-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+    const proxyUrl = proxyscrapeKey 
+      ? `http://${proxyscrapeKey}-country-us-session-${sessionId}:${proxyscrapeKey}@residential.proxyscrape.com:6000`
+      : null;
+    
+    if (proxyUrl) {
+      console.log(`Using ProxyScrape proxy with session: ${sessionId}`);
+    } else {
+      console.log('Using Apify proxy (no ProxyScrape key)');
+    }
 
     const actorId = 'memo23~apify-zillow-agents-cheerio';
     const actorInput = {
       startUrls: [{ url: professional.zillow_profile_url }],
-      maxConcurrency: 3,
+      maxConcurrency: 1, // Reduce concurrency to avoid rate limits
       maxRequestRetries: 5,
       requestHandlerTimeoutSecs: 180,
-      proxyConfiguration: { 
+      proxyConfiguration: proxyUrl ? { 
         useApifyProxy: false,
         proxyUrls: [proxyUrl]
+      } : {
+        useApifyProxy: true,
+        apifyProxyGroups: ['RESIDENTIAL'],
+        apifyProxyCountry: 'US'
       }
     };
+    
+    console.log('Actor input:', JSON.stringify(actorInput, null, 2));
 
     // Start the run
     const runResponse = await fetch(
