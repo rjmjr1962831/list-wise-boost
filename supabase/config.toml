@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.fetch-rigelbytes-agents]
+verify_jwt = false
+
 [functions.fetch-agenscrape-agents]
 verify_jwt = false
 
