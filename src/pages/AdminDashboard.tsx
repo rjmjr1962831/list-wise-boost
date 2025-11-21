@@ -29,6 +29,7 @@ import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
 import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow";
 import { ScottsdaleEnricher } from "@/components/admin/ScottsdaleEnricher";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
+import { ProxyHealthDashboard } from "@/components/admin/ProxyHealthDashboard";
 import CitiesManager from "@/components/admin/CitiesManager";
 
 const AdminDashboard = () => {
@@ -191,6 +192,10 @@ const AdminDashboard = () => {
               <TrendingUp className="mr-2 h-4 w-4" />
               Progress Dashboard
             </TabsTrigger>
+            <TabsTrigger value="proxy-health">
+              <Database className="mr-2 h-4 w-4" />
+              Proxy Health
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -272,6 +277,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="progress-dashboard" className="space-y-4">
             <EnrichmentProgressDashboard />
+          </TabsContent>
+
+          <TabsContent value="proxy-health" className="space-y-4">
+            <ProxyHealthDashboard />
           </TabsContent>
         </Tabs>
       </div>
