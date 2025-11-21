@@ -44,13 +44,24 @@ serve(async (req) => {
       throw new Error('APIFY_API_TOKEN not configured');
     }
 
+    const proxyscrapeKey = Deno.env.get('PROXYSCRAPE_API_KEY');
+    if (!proxyscrapeKey) {
+      throw new Error('PROXYSCRAPE_API_KEY not configured');
+    }
+
+    // Build ProxyScrape residential proxy URL with US targeting
+    const proxyUrl = `http://${proxyscrapeKey}-country-us:${proxyscrapeKey}@residential.proxyscrape.com:6000`;
+    console.log('Using ProxyScrape residential proxy with US targeting');
+
     const actorId = 'memo23~apify-zillow-agents-cheerio';
     const actorInput = {
       startUrls: [{ url: professional.zillow_profile_url }],
-      maxConcurrency: 1,
+      maxConcurrency: 10,
+      maxRequestRetries: 5,
+      requestHandlerTimeoutSecs: 180,
       proxyConfiguration: { 
-        useApifyProxy: true,
-        apifyProxyGroups: ['RESIDENTIAL']
+        useApifyProxy: false,
+        proxyUrls: [proxyUrl]
       }
     };
 
