@@ -341,6 +341,18 @@ export default function DynamicCategoryList() {
           // Show all agents immediately - they'll upgrade in real-time as enrichment completes
           let displayAgents = baseProfessionals;
           
+          // Deduplicate by zillow_profile_url (keep first occurrence)
+          const seenUrls = new Set<string>();
+          displayAgents = displayAgents.filter((p: DBProfessional) => {
+            const url = p.zillow_profile_url?.toLowerCase() || p.id;
+            if (seenUrls.has(url)) {
+              console.log(`🗑️ Removing duplicate: ${p.name} (${url})`);
+              return false;
+            }
+            seenUrls.add(url);
+            return true;
+          });
+          
           // Special sorting for Scottsdale: Beauvais-Real-Estate always first
           if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && categoryData.slug === 'top10realestateagents') {
             const beauvaisIndex = displayAgents.findIndex(p => 
@@ -674,9 +686,21 @@ export default function DynamicCategoryList() {
           // Show all agents - they'll upgrade via realtime as enrichment completes
           let displayAgents = data;
           
+          // Deduplicate by zillow_profile_url (keep first occurrence)
+          const seenUrls = new Set<string>();
+          displayAgents = displayAgents.filter((p: any) => {
+            const url = p.zillow_profile_url?.toLowerCase() || p.id;
+            if (seenUrls.has(url)) {
+              console.log(`🗑️ Removing duplicate in polling: ${p.name} (${url})`);
+              return false;
+            }
+            seenUrls.add(url);
+            return true;
+          });
+          
           // Special sorting for Scottsdale & Phoenix: Beauvais-Real-Estate always first
           if ((city.slug === 'scottsdale' || city.slug === 'phoenix') && category.slug === 'top10realestateagents') {
-            const beauvaisIndex = displayAgents.findIndex(p => 
+            const beauvaisIndex = displayAgents.findIndex((p: any) => 
               p.zillow_profile_url?.includes('Beauvais-Real-Estate')
             );
             if (beauvaisIndex > 0) {
