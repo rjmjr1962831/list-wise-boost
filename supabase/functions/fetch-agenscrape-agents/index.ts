@@ -244,19 +244,21 @@ serve(async (req) => {
         continue;
       }
 
-      // Filter for exact 5.0 star ratings and 200+ reviews
+      // Filter for 4.9+ star ratings and 200+ reviews BEFORE importing
       const rating = agent.reviewStarsRating || agent.rating || 0;
       const reviewCount = agent.numTotalReviews || agent.reviews_count || 0;
       
-      if (rating !== 5.0) {
-        console.log(`Skipping ${agent.fullName} - not 5.0 stars: ${rating}`);
+      if (rating < 4.9) {
+        console.log(`Skipping ${agent.fullName} - rating too low: ${rating} (need 4.9+)`);
         continue;
       }
       
       if (reviewCount < 200) {
-        console.log(`Skipping ${agent.fullName} - not enough reviews: ${reviewCount}`);
+        console.log(`Skipping ${agent.fullName} - not enough reviews: ${reviewCount} (need 200+)`);
         continue;
       }
+      
+      console.log(`✅ ${agent.fullName} qualifies: ${rating}★ with ${reviewCount} reviews`);
 
       // Extract agent info from Apify response
       // Handle both old and new field names from different scrapers
