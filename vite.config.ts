@@ -15,9 +15,6 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
       // Route all `import { toast } from "sonner"` to our local wrapper
       sonner: path.resolve(__dirname, "./src/components/ui/sonner.tsx"),
-      // Ensure single runtime modules for React across the app
-      "react/jsx-runtime": path.resolve(__dirname, "node_modules/react/jsx-runtime.js"),
-      "react/jsx-dev-runtime": path.resolve(__dirname, "node_modules/react/jsx-dev-runtime.js"),
     },
     dedupe: [
       "react",
