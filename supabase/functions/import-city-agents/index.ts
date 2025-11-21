@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-const MIN_AGENTS_REQUIRED = 10;
-const MIN_REVIEWS = 10;
-const MIN_RATING = 5.0; // Back to 5 stars minimum
+const MIN_AGENTS_REQUIRED = 50; // Target 50 agents per city
+const MIN_REVIEWS = 200; // Require 200+ reviews
+const MIN_RATING = 5.0; // Require perfect 5.0 rating
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -86,37 +86,77 @@ serve(async (req) => {
       console.log('Force refresh requested, skipping cache check');
     }
 
-    // Need fresh data - run Outscraper Google Maps scraper
-    console.log(`Starting Outscraper import (max ${maxResults} agents)...`);
+    // Loop until we have enough qualifying agents
+    let totalImported = 0;
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+      attempts++;
+      
+      // Check how many qualifying agents we currently have
+      const { count: currentCount } = await supabase
+        .from('professionals')
+        .select('*', { count: 'exact', head: true })
+        .eq('city_id', cityId)
+        .eq('category_id', categoryId)
+        .eq('active', true)
+        .gte('review_stars_rating', MIN_RATING)
+        .gte('num_total_reviews', MIN_REVIEWS);
 
-    const outscraperResult = await supabase.functions.invoke('fetch-outscraper-agents', {
-      body: { cityId, categoryId, maxResults }
-    });
+      console.log(`Attempt ${attempts}: Currently have ${currentCount || 0}/${MIN_AGENTS_REQUIRED} qualifying agents`);
 
-    if (outscraperResult.error) {
-      console.error('Outscraper error:', outscraperResult.error);
-      // Surface a non-fatal response to the frontend instead of a 500
-      return new Response(
-        JSON.stringify({
-          success: false,
-          cached: false,
-          imported: 0,
-          skipped: 0,
-          error: 'Outscraper import failed; please try again later.'
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      if (currentCount && currentCount >= MIN_AGENTS_REQUIRED) {
+        console.log(`Target reached! Have ${currentCount} qualifying agents.`);
+        break;
+      }
+
+      // Run getdataforme agenscrape to get more agents
+      console.log(`Running agenscrape import (batch ${attempts}, max ${maxResults} agents)...`);
+
+      const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
+        body: { 
+          cityId, 
+          categoryId, 
+          maxResults: maxResults * attempts // Increase batch size with each attempt
+        }
+      });
+
+      if (agenscrapeResult.error) {
+        console.error('Agenscrape error:', agenscrapeResult.error);
+        if (attempts === 1) {
+          // Only fail on first attempt
+          return new Response(
+            JSON.stringify({
+              success: false,
+              cached: false,
+              imported: 0,
+              error: 'Agenscrape import failed; please try again later.'
+            }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        // On later attempts, just log and continue
+        console.log('Continuing with agents imported so far...');
+        break;
+      }
+
+      const agenscrapeData = agenscrapeResult.data;
+      totalImported += agenscrapeData?.imported || 0;
+      console.log(`Batch ${attempts} completed: ${agenscrapeData?.imported || 0} agents imported (${totalImported} total)`);
+      
+      // Small delay before next batch
+      await new Promise(resolve => setTimeout(resolve, 3000));
     }
-
-    const outscraperData = outscraperResult.data;
-    console.log(`Outscraper completed: ${outscraperData?.imported || 0} agents imported`);
+    
+    console.log(`Import phase complete: ${totalImported} total agents imported across ${attempts} batches`);
 
     // Background enrichment: filter + memo23 enrichment for Zillow data
     const backgroundEnrichment = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        console.log('Filtering agents by rating and reviews...');
+        console.log(`Filtering agents for ${MIN_RATING} stars and ${MIN_REVIEWS}+ reviews...`);
 
         // Filter and keep only qualifying agents
         const { data: allAgents } = await supabase
@@ -127,12 +167,12 @@ serve(async (req) => {
 
         if (allAgents) {
           const qualifyingAgents = allAgents.filter(a => 
-            a.review_stars_rating && a.review_stars_rating >= MIN_RATING &&
+            a.review_stars_rating && a.review_stars_rating === MIN_RATING && // Exact 5.0
             a.num_total_reviews && a.num_total_reviews >= MIN_REVIEWS
           );
 
           const nonQualifyingAgents = allAgents.filter(a => 
-            !a.review_stars_rating || a.review_stars_rating < MIN_RATING ||
+            !a.review_stars_rating || a.review_stars_rating !== MIN_RATING ||
             !a.num_total_reviews || a.num_total_reviews < MIN_REVIEWS
           );
 
@@ -239,9 +279,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        agentsImported: outscraperData?.imported || 0,
-        agentsSkipped: outscraperData?.skipped || 0,
-        message: `Imported ${outscraperData?.imported || 0} agents with Outscraper (${outscraperData?.skipped || 0} skipped). Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews. Enriching with memo23 in background.`
+        agenscrapeImported: totalImported,
+        attempts: attempts,
+        message: `Imported ${totalImported} agents with agenscrape across ${attempts} batches. Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews. Enriching with memo23 in background (reusing existing enriched data where possible).`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

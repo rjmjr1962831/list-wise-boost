@@ -18,7 +18,7 @@ export function BulkPhoenixImporter() {
       
       setIsRunning(true);
       toast.success(
-        `Background import started for ${data.totalCities} Phoenix-area cities! The process will continue in the background - you can keep working.`,
+        `Background import started for ${data.totalCities} Phoenix-area cities! Will loop until 50 agents (5.0★ + 200+ reviews) per city. Reusing enriched data where available.`,
         { duration: 5000 }
       );
       
@@ -37,8 +37,9 @@ export function BulkPhoenixImporter() {
       <CardHeader>
         <CardTitle>Bulk Phoenix Agent Import</CardTitle>
         <CardDescription>
-          Automatically import 300 agents (4.9+ rating) for all Phoenix-area cities. 
-          This process runs in the background and may take 30-60 minutes.
+          Automatically import agents (5.0★ rating + 200+ reviews) for all Phoenix-area cities. 
+          Loops until 50 qualifying agents per city. Reuses enriched data from other cities. 
+          This process runs in the background and may take 1-2 hours.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -48,9 +49,10 @@ export function BulkPhoenixImporter() {
           </p>
           <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
             <li>Processes all active Arizona cities</li>
-            <li>Imports up to 300 agents per city</li>
-            <li>Filters for agents with 4.9+ star ratings</li>
-            <li>Uses agenscrape → memo23 enrichment pipeline</li>
+            <li>Imports agents until 50 with 5.0★ + 200+ reviews per city</li>
+            <li>Uses getdataforme (agenscrape) with proxyscrape</li>
+            <li>Reuses enriched data from agents in other cities</li>
+            <li>Only runs memo23 for new agents meeting criteria</li>
             <li>Runs completely in the background</li>
           </ul>
         </div>
