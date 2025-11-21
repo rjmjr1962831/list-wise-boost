@@ -9,7 +9,7 @@ const corsHeaders = {
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_AGENTS_REQUIRED = 50; // Target 50 agents per city
 const MIN_REVIEWS = 200; // Require 200+ reviews
-const MIN_RATING = 5.0; // Require perfect 5.0 rating
+const MIN_RATING = 4.9; // Require 4.9+ rating
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -167,12 +167,12 @@ serve(async (req) => {
 
         if (allAgents) {
           const qualifyingAgents = allAgents.filter(a => 
-            a.review_stars_rating && a.review_stars_rating === MIN_RATING && // Exact 5.0
+            a.review_stars_rating && a.review_stars_rating >= MIN_RATING && // 4.9 or higher
             a.num_total_reviews && a.num_total_reviews >= MIN_REVIEWS
           );
 
           const nonQualifyingAgents = allAgents.filter(a => 
-            !a.review_stars_rating || a.review_stars_rating !== MIN_RATING ||
+            !a.review_stars_rating || a.review_stars_rating < MIN_RATING ||
             !a.num_total_reviews || a.num_total_reviews < MIN_REVIEWS
           );
 
@@ -249,16 +249,22 @@ serve(async (req) => {
                   // No existing data found, fetch from memo23
                   console.log(`Enriching ${agent.name} with memo23...`);
                   
-                  await supabase.functions.invoke('fetch-single-memo23-agent', {
+                  const enrichResult = await supabase.functions.invoke('fetch-single-memo23-agent', {
                     body: { 
                       professionalId: agent.id,
                       profileUrl: agent.zillow_profile_url 
                     }
                   });
                   
-                  enrichedCount++;
-                  // Small delay between requests
-                  await new Promise(resolve => setTimeout(resolve, 1000));
+                  if (enrichResult.error) {
+                    console.error(`Memo23 enrichment failed for ${agent.name}:`, enrichResult.error);
+                  } else {
+                    console.log(`Successfully enriched ${agent.name}`);
+                    enrichedCount++;
+                  }
+                  
+                  // Small delay between requests to avoid rate limits
+                  await new Promise(resolve => setTimeout(resolve, 2000));
                 }
               } catch (enrichError) {
                 console.error(`Failed to process ${agent.name}:`, enrichError);
