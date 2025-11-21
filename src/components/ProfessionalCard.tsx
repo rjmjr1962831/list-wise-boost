@@ -50,6 +50,7 @@ export const ProfessionalCard = ({
   const [license, setLicense] = useState<string | null>(professional.license_number || null);
   const [verifying, setVerifying] = useState(false);
   const [extractedYears, setExtractedYears] = useState<number | null>(null);
+  const [emailRevealed, setEmailRevealed] = useState(false);
   const isLicenseVerified = !!(professional as any).license_verified_at;
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
@@ -604,19 +605,10 @@ export const ProfessionalCard = ({
                       {license}
                     </Badge>
                     {isLicenseVerified && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="default" className="gap-1 px-2 py-0.5 cursor-help bg-green-500 hover:bg-green-600">
-                            <ShieldCheck className="h-3 w-3" />
-                            <span className="text-xs">Verified</span>
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs text-xs">
-                            License verified from official state registry
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
+                      <Badge variant="default" className="gap-1 px-2 py-0.5 bg-green-500 hover:bg-green-600">
+                        <ShieldCheck className="h-3 w-3" />
+                        <span className="text-xs">Verified</span>
+                      </Badge>
                     )}
                   </div>
                 ) : (
@@ -953,13 +945,22 @@ export const ProfessionalCard = ({
                      return (
                        <div className="flex items-center gap-2">
                          <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                         <a 
-                           href={`mailto:${emailDisplay}`} 
-                           className="text-primary hover:underline" 
-                           itemProp="email"
-                         >
-                           {emailDisplay}
-                         </a>
+                         {emailRevealed ? (
+                           <a 
+                             href={`mailto:${emailDisplay}`} 
+                             className="text-primary hover:underline" 
+                             itemProp="email"
+                           >
+                             {emailDisplay}
+                           </a>
+                         ) : (
+                           <button
+                             onClick={() => setEmailRevealed(true)}
+                             className="text-primary hover:underline"
+                           >
+                             Email
+                           </button>
+                         )}
                        </div>
                      );
                    })()}
