@@ -35,11 +35,16 @@ serve(async (req) => {
     }
 
     const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN');
+    const PROXYSCRAPE_API_KEY = Deno.env.get('PROXYSCRAPE_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     if (!APIFY_API_TOKEN) {
       throw new Error('APIFY_API_TOKEN not configured');
+    }
+    
+    if (!PROXYSCRAPE_API_KEY) {
+      throw new Error('PROXYSCRAPE_API_KEY not configured');
     }
 
     console.log(`Starting getdataforme scraper for location: ${locationText || 'city lookup'}`);
@@ -110,7 +115,11 @@ serve(async (req) => {
       throw new Error('Could not determine city for import');
     }
 
-    // Start the Apify actor (NOTE: Using the scraper that actually works)
+    // Construct ProxyScrape URL for US residential proxies
+    const proxyUrl = `http://rp.proxyscrape.com:6060?auth=${PROXYSCRAPE_API_KEY}&country=us&protocol=http`;
+    console.log('Using ProxyScrape for US residential proxies');
+
+    // Start the Apify actor with proxy configuration
     const actorInput = {
       search_query: searchLocation,
       category: "real-estate-agents",
@@ -119,7 +128,11 @@ serve(async (req) => {
       language: "English",
       specialty: "",
       maxResults: maxResults,
-      startPage: 1
+      startPage: 1,
+      proxy: {
+        useApifyProxy: false,
+        proxyUrls: [proxyUrl]
+      }
     };
     
     console.log('Apify actor input:', JSON.stringify(actorInput, null, 2));
@@ -231,10 +244,17 @@ serve(async (req) => {
         continue;
       }
 
-      // Filter for 4.9+ star ratings only
+      // Filter for exact 5.0 star ratings and 200+ reviews
       const rating = agent.reviewStarsRating || agent.rating || 0;
-      if (rating < 4.9) {
-        console.log(`Skipping ${agent.fullName} - rating too low: ${rating}`);
+      const reviewCount = agent.numTotalReviews || agent.reviews_count || 0;
+      
+      if (rating !== 5.0) {
+        console.log(`Skipping ${agent.fullName} - not 5.0 stars: ${rating}`);
+        continue;
+      }
+      
+      if (reviewCount < 200) {
+        console.log(`Skipping ${agent.fullName} - not enough reviews: ${reviewCount}`);
         continue;
       }
 

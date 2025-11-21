@@ -51,14 +51,14 @@ serve(async (req) => {
         try {
           console.log(`Processing ${city.name}...`);
           
-          // Call import-city-agents for this city with 300 agents max
+          // Call import-city-agents for this city (will loop until 50 agents with 5★ + 200+ reviews)
           const { data: importData, error: importError } = await supabase.functions.invoke(
             'import-city-agents',
             {
               body: { 
                 cityId: city.id,
                 categoryId: category.id,
-                maxResults: 300
+                maxResults: 100 // Starting batch size, will increase if needed
               }
             }
           );
@@ -68,10 +68,10 @@ serve(async (req) => {
             continue;
           }
 
-          console.log(`✓ Completed ${city.name}: ${importData?.agenscrapeImported || 0} agents imported, ${importData?.memo23Enriched || 0} enriched`);
+          console.log(`✓ Completed ${city.name}: ${importData?.agenscrapeImported || 0} agents imported, enrichment in progress`);
           
-          // Delay between cities to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 10000));
+          // Delay between cities to manage rate limits
+          await new Promise(resolve => setTimeout(resolve, 15000));
           
         } catch (error) {
           console.error(`Failed to process ${city.name}:`, error);
