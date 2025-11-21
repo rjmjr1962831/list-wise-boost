@@ -520,9 +520,28 @@ export const ProfessionalCard = ({
             />
             {/* Specialties from memo23 (primary) or parsed description (fallback) */}
             {(() => {
+              // Map Zillow profile types to human-readable specialties
+              const profileTypeMap: Record<string, string> = {
+                'consumer': 'Buyer Representation',
+                'agent': 'Full-Service Agent',
+                'renter': 'Rental Specialist',
+                'showcaseBuyer': 'Luxury Homes',
+                'peeps': 'Client Reviews',
+                'listing': 'Listing Specialist',
+                'foreclosure': 'Foreclosure Expert',
+                'newConstruction': 'New Construction',
+                'relocation': 'Relocation Services',
+                'investment': 'Investment Properties'
+              };
+              
+              const profileTypes = ((professional as any).profile_types || []) as string[];
+              const mappedProfileTypes = profileTypes
+                .map(pt => profileTypeMap[pt])
+                .filter(Boolean);
+              
               const dbSpecialties = (professional as any).specialty || [];
               const parsedSpecialties = parsedProfInfo?.specialties || [];
-              const allSpecialties = dbSpecialties.length > 0 ? dbSpecialties : parsedSpecialties;
+              const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties])];
               
               if (allSpecialties.length === 0) return null;
               
@@ -653,6 +672,26 @@ export const ProfessionalCard = ({
 
               {/* Specialties Section - Areas of Expertise */}
               {(() => {
+                // Map Zillow profile types to human-readable specialties
+                const profileTypeMap: Record<string, string> = {
+                  'consumer': 'Buyer Representation',
+                  'agent': 'Full-Service Agent',
+                  'renter': 'Rental Specialist',
+                  'showcaseBuyer': 'Luxury Homes',
+                  'peeps': 'Client Reviews',
+                  'listing': 'Listing Specialist',
+                  'foreclosure': 'Foreclosure Expert',
+                  'newConstruction': 'New Construction',
+                  'relocation': 'Relocation Services',
+                  'investment': 'Investment Properties'
+                };
+                
+                // Get profile types from Zillow data
+                const profileTypes = ((professional as any).profile_types || []) as string[];
+                const mappedProfileTypes = profileTypes
+                  .map(pt => profileTypeMap[pt])
+                  .filter(Boolean);
+                
                 // Combine specialties from multiple sources
                 const profInfoSpecialties = parsedProfInfo?.specialties || [];
                 const dbSpecialties = ((professional as any).specialty || []).filter((s: string) => s && s.trim());
@@ -681,7 +720,7 @@ export const ProfessionalCard = ({
                   }
                 }
                 
-                const allSpecialties = [...new Set([...profInfoSpecialties, ...dbSpecialties, ...extractedSpecialties])];
+                const allSpecialties = [...new Set([...mappedProfileTypes, ...profInfoSpecialties, ...dbSpecialties, ...extractedSpecialties])];
                 
                 if (allSpecialties.length === 0) return null;
                 
