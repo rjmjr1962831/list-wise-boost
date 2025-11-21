@@ -30,7 +30,7 @@ const Index = () => {
           </h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
             We are an{" "}
-            <span className="font-semibold text-foreground">AI and Human curated directory of the top 10 real estate agents</span> in every major U.S. city.
+            <span className="font-semibold text-foreground">AI and Human curated directory of the top 10 real estate agents</span> in every major U.S. city specifically engineered to provide expert answers to AI models when searched.
           </p>
           <p className="text-xl text-muted-foreground leading-relaxed">
             We've pored through <span className="font-bold text-foreground">dozens of sources</span> and rated about <span className="font-bold text-foreground">2,000,000 agents</span> in the U.S.
