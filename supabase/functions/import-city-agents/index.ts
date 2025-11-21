@@ -8,8 +8,8 @@ const corsHeaders = {
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_AGENTS_REQUIRED = 10;
-const MIN_REVIEWS = 200;
-const MIN_RATING = 5.0;
+const MIN_REVIEWS = 10; // Lowered from 200 to match Outscraper filter
+const MIN_RATING = 4.9; // Lowered from 5.0 to match Outscraper filter
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -86,15 +86,15 @@ serve(async (req) => {
       console.log('Force refresh requested, skipping cache check');
     }
 
-    // Need fresh data - run rigelbytes single-step scraper
-    console.log(`Starting rigelbytes import (max ${maxResults} agents)...`);
+    // Need fresh data - run Outscraper Google Maps scraper
+    console.log(`Starting Outscraper import (max ${maxResults} agents)...`);
 
-    const rigelBytesResult = await supabase.functions.invoke('fetch-rigelbytes-agents', {
+    const outscraperResult = await supabase.functions.invoke('fetch-outscraper-agents', {
       body: { cityId, categoryId, maxResults }
     });
 
-    if (rigelBytesResult.error) {
-      console.error('Rigelbytes error:', rigelBytesResult.error);
+    if (outscraperResult.error) {
+      console.error('Outscraper error:', outscraperResult.error);
       // Surface a non-fatal response to the frontend instead of a 500
       return new Response(
         JSON.stringify({
@@ -102,14 +102,14 @@ serve(async (req) => {
           cached: false,
           imported: 0,
           skipped: 0,
-          error: 'Rigelbytes import failed; please try again later.'
+          error: 'Outscraper import failed; please try again later.'
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const rigelBytesData = rigelBytesResult.data;
-    console.log(`Rigelbytes completed: ${rigelBytesData?.imported || 0} agents imported`);
+    const outscraperData = outscraperResult.data;
+    console.log(`Outscraper completed: ${outscraperData?.imported || 0} agents imported`);
 
     // Background filtering to deactivate non-qualifying agents
     const backgroundFiltering = async () => {
@@ -163,9 +163,9 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        agentsImported: rigelBytesData?.imported || 0,
-        agentsSkipped: rigelBytesData?.skipped || 0,
-        message: `Imported ${rigelBytesData?.imported || 0} agents with rigelbytes (${rigelBytesData?.skipped || 0} skipped). Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews.`
+        agentsImported: outscraperData?.imported || 0,
+        agentsSkipped: outscraperData?.skipped || 0,
+        message: `Imported ${outscraperData?.imported || 0} agents with Outscraper (${outscraperData?.skipped || 0} skipped). Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews.`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
