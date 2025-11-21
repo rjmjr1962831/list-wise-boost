@@ -85,8 +85,8 @@ serve(async (req) => {
         const rating = agent.rating || 0;
         const reviewCount = agent.reviews || 0;
         
-        // Filter by rating (4.9+) and reviews (minimum 10)
-        if (rating < 4.9 || reviewCount < 10) {
+        // Filter by rating (5.0) and reviews (minimum 10)
+        if (rating < 5.0 || reviewCount < 10) {
           skipped.push({
             name: agent.name,
             reason: `Rating ${rating} or reviews ${reviewCount} below threshold`,
@@ -107,6 +107,15 @@ serve(async (req) => {
         const phone = agent.phone || agent.phone_mobile || null;
         const email = agent.emails?.[0] || agent.email || null;
         const website = agent.site || agent.website || null;
+        
+        // Try to extract Zillow profile URL from website or description
+        let zillowUrl = null;
+        if (website && website.includes('zillow.com/profile/')) {
+          zillowUrl = website;
+        } else if (agent.description && agent.description.includes('zillow.com/profile/')) {
+          const match = agent.description.match(/zillow\.com\/profile\/[\w-]+/);
+          if (match) zillowUrl = `https://www.${match[0]}`;
+        }
 
         // Map Outscraper data to our schema
         const professionalData: any = {
@@ -115,6 +124,7 @@ serve(async (req) => {
           phone: phone,
           email: email,
           website: website,
+          zillow_profile_url: zillowUrl,
           
           // Address
           address: agent.full_address || agent.street || null,
