@@ -216,7 +216,7 @@ export default function DynamicCategoryList() {
 
         setCategory(categoryData);
 
-        // Fetch professionals - ONLY enriched and qualified agents (4.9+ rating)
+        // Fetch professionals - ONLY enriched and qualified agents (4.8+ stars, 100+ reviews)
         const cacheBuster = Date.now();
         const { data: professionalsData, error: profsError } = await supabase
           .from('professionals')
@@ -225,7 +225,8 @@ export default function DynamicCategoryList() {
           .eq('category_id', categoryData.id)
           .eq('active', true)
           .not('professional_information', 'is', null) // Must be enriched with memo23 data
-          .gte('review_stars_rating', 4.9) // Must have 4.9+ rating
+          .gte('review_stars_rating', 4.8) // Must have 4.8+ rating
+          .gte('num_total_reviews', 100) // Must have at least 100 reviews
           .order('rank')
           .limit(10); // Show top 10 qualified agents
 
