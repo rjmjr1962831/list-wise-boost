@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { 
   CheckCircle2, 
   XCircle, 
@@ -11,7 +12,8 @@ import {
   TrendingUp, 
   Database,
   Users,
-  RefreshCw
+  RefreshCw,
+  AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -34,9 +36,24 @@ interface RecentAgent {
   num_total_reviews: number;
 }
 
+interface EnrichmentAlert {
+  id: string;
+  timestamp: string;
+  city: string;
+  state: string;
+  totalAttempts: number;
+  error403Count: number;
+  error403Rate: string;
+  enrichedCount: number;
+  reusedCount: number;
+  remainingAgents: number;
+  lastFailedAgent: string;
+}
+
 export function EnrichmentProgressDashboard() {
   const [stats, setStats] = useState<CityStats[]>([]);
   const [recentAgents, setRecentAgents] = useState<RecentAgent[]>([]);
+  const [alerts, setAlerts] = useState<EnrichmentAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -128,11 +145,43 @@ export function EnrichmentProgressDashboard() {
         })));
       }
 
+      // Fetch enrichment alerts
+      const { data: alertsData } = await supabase
+        .from('marketing_content')
+        .select('*')
+        .eq('page', 'admin')
+        .eq('section', 'enrichment_alert')
+        .eq('type', 'error')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (alertsData) {
+        const parsedAlerts = alertsData.map((alert: any) => {
+          try {
+            return {
+              id: alert.id,
+              ...JSON.parse(alert.value)
+            };
+          } catch {
+            return null;
+          }
+        }).filter(Boolean);
+        setAlerts(parsedAlerts as EnrichmentAlert[]);
+      }
+
       setLoading(false);
     } catch (error) {
       console.error('Error fetching stats:', error);
       setLoading(false);
     }
+  };
+
+  const dismissAlert = async (alertId: string) => {
+    await supabase
+      .from('marketing_content')
+      .delete()
+      .eq('id', alertId);
+    setAlerts(alerts.filter(a => a.id !== alertId));
   };
 
   useEffect(() => {
@@ -171,6 +220,38 @@ export function EnrichmentProgressDashboard() {
 
   return (
     <div className="space-y-4">
+      {/* Enrichment Alerts */}
+      {alerts.length > 0 && (
+        <div className="space-y-2">
+          {alerts.map((alert) => (
+            <Alert key={alert.id} variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle className="flex items-center justify-between">
+                <span>Enrichment Stopped - High 403 Error Rate</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => dismissAlert(alert.id)}
+                >
+                  Dismiss
+                </Button>
+              </AlertTitle>
+              <AlertDescription>
+                <div className="mt-2 space-y-1 text-sm">
+                  <p><strong>Location:</strong> {alert.city}, {alert.state}</p>
+                  <p><strong>403 Error Rate:</strong> {alert.error403Rate} ({alert.error403Count}/{alert.totalAttempts} attempts)</p>
+                  <p><strong>Progress:</strong> {alert.enrichedCount} enriched, {alert.reusedCount} reused, {alert.remainingAgents} remaining</p>
+                  <p><strong>Last Failed Agent:</strong> {alert.lastFailedAgent}</p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {new Date(alert.timestamp).toLocaleString()}
+                  </p>
+                </div>
+              </AlertDescription>
+            </Alert>
+          ))}
+        </div>
+      )}
+
       {/* Overall Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card>

@@ -197,6 +197,8 @@ serve(async (req) => {
           
           let reusedCount = 0;
           let enrichedCount = 0;
+          let error403Count = 0;
+          let totalEnrichAttempts = 0;
           
           for (const agent of qualifyingAgents) {
             if (agent.zillow_profile_url) {
@@ -247,6 +249,7 @@ serve(async (req) => {
                   }
                 } else {
                   // No existing data found, fetch from memo23
+                  totalEnrichAttempts++;
                   console.log(`📋 [${enrichedCount + 1}/${qualifyingAgents.length}] Enriching ${agent.name} with memo23...`);
                   console.log(`   Profile URL: ${agent.zillow_profile_url}`);
                   
@@ -265,7 +268,43 @@ serve(async (req) => {
                     // Check for specific error types
                     const errorMsg = enrichResult.error.message || JSON.stringify(enrichResult.error);
                     if (errorMsg.includes('403')) {
+                      error403Count++;
                       console.error(`🚫 403 ERROR detected for ${agent.name} - possible proxy block`);
+                      
+                      // Check if we've exceeded 50% 403 error rate
+                      const error403Rate = (error403Count / totalEnrichAttempts) * 100;
+                      console.error(`⚠️ 403 Error Rate: ${error403Rate.toFixed(1)}% (${error403Count}/${totalEnrichAttempts})`);
+                      
+                      if (totalEnrichAttempts >= 10 && error403Rate > 50) {
+                        // Stop the enrichment and alert admin
+                        const diagnostics = {
+                          timestamp: new Date().toISOString(),
+                          city: city?.name,
+                          state: city?.state,
+                          totalAttempts: totalEnrichAttempts,
+                          error403Count: error403Count,
+                          error403Rate: error403Rate.toFixed(1) + '%',
+                          enrichedCount: enrichedCount,
+                          reusedCount: reusedCount,
+                          remainingAgents: qualifyingAgents.length - (enrichedCount + reusedCount),
+                          lastFailedAgent: agent.name
+                        };
+                        
+                        console.error('🛑 STOPPING ENRICHMENT - 403 error rate exceeded 50%');
+                        console.error('Diagnostics:', JSON.stringify(diagnostics, null, 2));
+                        
+                        // Store alert in marketing_content table
+                        await supabase.from('marketing_content').insert({
+                          page: 'admin',
+                          section: 'enrichment_alert',
+                          key: `alert_${Date.now()}`,
+                          type: 'error',
+                          value: JSON.stringify(diagnostics)
+                        });
+                        
+                        // Exit the enrichment loop
+                        throw new Error(`Enrichment stopped: ${error403Rate.toFixed(1)}% 403 error rate (${error403Count}/${totalEnrichAttempts}). ${JSON.stringify(diagnostics)}`);
+                      }
                     } else if (errorMsg.includes('429')) {
                       console.error(`⏱️ 429 RATE LIMIT for ${agent.name} - slowing down...`);
                       // Add extra delay on rate limit
