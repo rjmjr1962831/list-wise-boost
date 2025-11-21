@@ -74,10 +74,10 @@ serve(async (req) => {
     const runId = runData.data.id;
     console.log(`Rigelbytes actor started with run ID: ${runId}`);
 
-    // Poll for completion
+    // Poll for completion - Rigelbytes can take 15-20 minutes for large cities
     let runStatus = 'RUNNING';
     let attempts = 0;
-    const maxAttempts = 120; // 10 minutes max
+    const maxAttempts = 300; // 25 minutes max (300 * 5 seconds)
 
     while (runStatus === 'RUNNING' && attempts < maxAttempts) {
       await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
@@ -215,7 +215,7 @@ serve(async (req) => {
           professionalData.city_id = cityId;
           professionalData.category_id = categoryId;
           professionalData.rank = nextRank;
-          professionalData.type = 'agent';
+          professionalData.type = 'individual'; // Fixed: must be 'individual' per DB constraint
           professionalData.active = true;
           professionalData.created_at = new Date().toISOString();
 
