@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.replicate-agent-phoenix]
+verify_jwt = false
+
 [functions.fetch-rigelbytes-agents]
 verify_jwt = false
 
