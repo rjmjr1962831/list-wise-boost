@@ -1015,7 +1015,8 @@ export const ProfessionalCard = ({
 
               {/* External reviews preview (Google/Yelp/Facebook) */}
               <ExternalReviewsPreview 
-                agentName={professional.name} 
+                agentName={professional.name}
+                professionalId={professional.id}
                 company={professional.company} 
                 market={professional.address || market}
                 zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,6 +10,7 @@ interface ReqBody {
   agentName: string;
   company?: string;
   location?: string;
+  professionalId?: string;
 }
 
 interface ExternalReview {
@@ -26,7 +28,7 @@ serve(async (req) => {
   }
 
   try {
-    const { agentName, company, location }: ReqBody = await req.json();
+    const { agentName, company, location, professionalId }: ReqBody = await req.json();
     if (!agentName) throw new Error('agentName is required');
 
     const OUTSCRAPER_API_KEY = Deno.env.get('OUTSCRAPER_API_KEY');
@@ -80,6 +82,34 @@ serve(async (req) => {
         }
       } catch (e) {
         console.error('Error fetching Google reviews:', e);
+      }
+    }
+
+    // Store reviews in database if professionalId provided
+    if (professionalId && reviews.length > 0) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        const { error: updateError } = await supabase
+          .from('professionals')
+          .update({
+            reviews_data: {
+              external_reviews: reviews,
+              external_sources: sources,
+              external_reviews_fetched_at: new Date().toISOString()
+            }
+          })
+          .eq('id', professionalId);
+
+        if (updateError) {
+          console.error('Failed to store external reviews:', updateError);
+        } else {
+          console.log(`Stored ${reviews.length} external reviews for professional ${professionalId}`);
+        }
+      } catch (storeError) {
+        console.error('Error storing reviews in database:', storeError);
       }
     }
 

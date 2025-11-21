@@ -8,13 +8,15 @@ export function ExternalReviewsPreview({
   company,
   market,
   zillowProfileUrl,
+  professionalId,
 }: {
   agentName: string;
   company?: string | null;
   market?: string | null;
   zillowProfileUrl?: string | null;
+  professionalId?: string;
 }) {
-  const { data, loading } = useExternalReviews({ agentName, company, market });
+  const { data, loading } = useExternalReviews({ agentName, company, market, professionalId });
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
   const truncateWords = (text: string, limit = 60) => {
