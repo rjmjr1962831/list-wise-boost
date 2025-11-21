@@ -27,6 +27,7 @@ import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
 import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
 import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
 import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow";
+import { ScottsdaleEnricher } from "@/components/admin/ScottsdaleEnricher";
 import CitiesManager from "@/components/admin/CitiesManager";
 
 const AdminDashboard = () => {
@@ -260,6 +261,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="phoenix-memo23" className="space-y-4">
+            <ScottsdaleEnricher />
             <PhoenixMemo23Workflow />
           </TabsContent>
         </Tabs>
