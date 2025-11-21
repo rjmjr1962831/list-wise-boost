@@ -121,13 +121,16 @@ serve(async (req) => {
 
     for (const agent of agents) {
       try {
-        // Filter by rating (4.9+) and reviews (minimum 10)
-        const rating = agent.ratings?.average || agent.review_average || 0;
-        const reviewCount = agent.ratings?.count || 0;
+        // Rigelbytes actor returns different field names than memo23
+        const rating = agent.review_average || 0;
+        const reviewCount = typeof agent.review_count === 'string' 
+          ? parseInt(agent.review_count.replace(/[()]/g, ''), 10) || 0
+          : agent.review_count || 0;
         
+        // Filter by rating (4.9+) and reviews (minimum 10)
         if (rating < 4.9 || reviewCount < 10) {
           skipped.push({
-            name: agent.name,
+            name: agent.title,
             reason: `Rating ${rating} or reviews ${reviewCount} below threshold`,
           });
           continue;
@@ -145,53 +148,43 @@ serve(async (req) => {
         const zuidMatch = profileUrl?.match(/profile\/([^\/]+)/);
         const zuid = zuidMatch ? zuidMatch[1] : null;
 
+        // Parse profile_data array to extract stats
+        const profileDataObj: any = {};
+        if (Array.isArray(agent.profile_data)) {
+          agent.profile_data.forEach((item: any) => {
+            Object.assign(profileDataObj, item);
+          });
+        }
+
+        const teamSalesLast12Months = profileDataObj['team sales last 12 months'];
+        const teamSalesTotal = profileDataObj['team sales in Phoenix'] || profileDataObj['team sales in Scottsdale'];
+
         // Map rigelbytes data to our schema
         const professionalData: any = {
-          name: agent.name,
-          company: agent.business_name,
-          email: agent.email,
-          phone: agent.phone_numbers?.cell || agent.phone_numbers?.business,
-          website: agent.know_me?.websiteUrl,
+          name: agent.title,
+          company: agent.secondary_title,
           zillow_profile_url: profileUrl,
           zuid: zuid,
-          encoded_zuid: agent.encoded_zuid,
-          address: agent.business_address ? 
-            `${agent.business_address.address1}, ${agent.business_address.city}, ${agent.business_address.state} ${agent.business_address.postalCode}` : null,
-          business_address: agent.business_address,
-          business_name: agent.business_name,
-          phone_numbers: agent.phone_numbers,
           
-          // Stats
-          current_listings: agent.for_sale_listings?.listing_count || 0,
-          total_sales: agent.agent_sales_stats?.countAllTime || 0,
-          review_stars_rating: agent.ratings?.average || agent.review_average,
-          num_total_reviews: agent.ratings?.count || 0,
-          years_experience: agent.know_me?.yearsInIndustry,
+          // Stats from profile_data
+          current_listings: 0, // Not provided by rigelbytes
+          total_sales: teamSalesTotal ? parseInt(String(teamSalesTotal).replace(/,/g, ''), 10) : 0,
+          review_stars_rating: rating,
+          num_total_reviews: reviewCount,
           
           // Premium status
-          is_premier_agent: agent.is_premier_agent || false,
+          is_premier_agent: false, // Not provided
           is_top_agent: agent.top_agent || false,
           
-          // JSON data
-          agent_sales_stats: agent.agent_sales_stats,
-          agent_licenses: agent.licenses,
-          ratings: agent.ratings,
-          reviews_data: agent.reviews_data,
-          past_sales: agent.past_sales,
-          professional_information: [agent], // Store full rigelbytes data
-          
-          // Bio
-          get_to_know_me: agent.know_me?.description?.replace(/<[^>]*>/g, ''), // Strip HTML
-          description: agent.know_me?.description?.replace(/<[^>]*>/g, ''),
-          
-          // Specialties
-          specialty: agent.know_me?.specialties || [],
+          // JSON data - store full rigelbytes response
+          professional_information: [agent],
+          ratings: {
+            average: rating,
+            count: reviewCount
+          },
           
           // Images
-          image_url: agent.profile_photo || agent.image_url,
-          
-          // Location
-          in_canada: agent.in_canada || false,
+          image_url: agent.image_url,
           
           // Timestamps
           zillow_data_fetched_at: new Date().toISOString(),
