@@ -482,6 +482,59 @@ serve(async (req) => {
     console.log(`✅ Updated professional ${professional.name} with memo23 data`);
     console.log(`   Updated ${Object.keys(updateData).length} fields`);
 
+    // Log proxy metrics for health monitoring
+    try {
+      const proxyProvider = proxyUrl ? 'proxyscrape_residential' : 'apify_residential';
+      const isSuccess = http403Count === 0 && agentData !== null;
+      
+      // Fetch existing metrics
+      const { data: existingMetric } = await supabase
+        .from('marketing_content')
+        .select('*')
+        .eq('page', 'admin')
+        .eq('section', 'proxy_metrics')
+        .eq('key', proxyProvider)
+        .maybeSingle();
+
+      const existingData = existingMetric ? JSON.parse(existingMetric.value) : {
+        totalRequests: 0,
+        successfulRequests: 0,
+        failedRequests: 0,
+        error403Count: 0,
+        error429Count: 0
+      };
+
+      const updatedData = {
+        totalRequests: existingData.totalRequests + 1,
+        successfulRequests: existingData.successfulRequests + (isSuccess ? 1 : 0),
+        failedRequests: existingData.failedRequests + (isSuccess ? 0 : 1),
+        error403Count: existingData.error403Count + http403Count,
+        error429Count: existingData.error429Count + http429Count
+      };
+
+      if (existingMetric) {
+        await supabase
+          .from('marketing_content')
+          .update({ value: JSON.stringify(updatedData) })
+          .eq('id', existingMetric.id);
+      } else {
+        await supabase
+          .from('marketing_content')
+          .insert({
+            page: 'admin',
+            section: 'proxy_metrics',
+            key: proxyProvider,
+            type: 'json',
+            value: JSON.stringify(updatedData)
+          });
+      }
+
+      console.log(`📊 Updated proxy metrics for ${proxyProvider}`);
+    } catch (metricsError) {
+      console.error('Failed to update proxy metrics:', metricsError);
+      // Don't fail the request if metrics update fails
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 
