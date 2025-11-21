@@ -337,7 +337,18 @@ serve(async (req) => {
       updateData.company = agentData.businessName;
     }
     if (agentData.profilePhotoSrc) updateData.image_url = agentData.profilePhotoSrc;
-    if (agentData.ratings) updateData.ratings = agentData.ratings;
+    if (agentData.ratings) {
+      updateData.ratings = agentData.ratings;
+      // Extract numeric rating and review count for filtering
+      if (agentData.ratings.average !== undefined) {
+        updateData.review_stars_rating = agentData.ratings.average;
+        console.log(`Extracted rating: ${agentData.ratings.average}`);
+      }
+      if (agentData.ratings.count !== undefined) {
+        updateData.num_total_reviews = agentData.ratings.count;
+        console.log(`Extracted review count: ${agentData.ratings.count}`);
+      }
+    }
     if (agentData.phoneNumbers) {
       updateData.phone_numbers = agentData.phoneNumbers;
       if (agentData.phoneNumbers.cell) updateData.phone = agentData.phoneNumbers.cell;
