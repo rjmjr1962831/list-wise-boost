@@ -26,6 +26,7 @@ import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
 import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
 import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
 import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
+import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow";
 import CitiesManager from "@/components/admin/CitiesManager";
 
 const AdminDashboard = () => {
@@ -180,6 +181,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Bulk Phoenix
             </TabsTrigger>
+            <TabsTrigger value="phoenix-memo23">
+              <Zap className="mr-2 h-4 w-4" />
+              Phoenix Memo23
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -252,6 +257,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="bulk-phoenix" className="space-y-4">
             <BulkPhoenixImporter />
+          </TabsContent>
+
+          <TabsContent value="phoenix-memo23" className="space-y-4">
+            <PhoenixMemo23Workflow />
           </TabsContent>
         </Tabs>
       </div>
