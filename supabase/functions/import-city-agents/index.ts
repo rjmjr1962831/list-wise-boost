@@ -86,40 +86,27 @@ serve(async (req) => {
       console.log('Force refresh requested, skipping cache check');
     }
 
-    // Need fresh data - run scrapers
-    console.log(`Starting full import (max ${maxResults} agents)...`);
+    // Need fresh data - run rigelbytes single-step scraper
+    console.log(`Starting rigelbytes import (max ${maxResults} agents)...`);
 
-    // Step 1: Run getdataforme to get profile URLs
-    console.log(`Step 1/2: Running getdataforme (agenscrape)...`);
-    const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
+    const rigelBytesResult = await supabase.functions.invoke('fetch-rigelbytes-agents', {
       body: { cityId, categoryId, maxResults }
     });
 
-    if (agenscrapeResult.error) {
-      console.error('Agenscrape error:', agenscrapeResult.error);
-      throw new Error(`Agenscrape failed: ${agenscrapeResult.error.message}`);
+    if (rigelBytesResult.error) {
+      console.error('Rigelbytes error:', rigelBytesResult.error);
+      throw new Error(`Rigelbytes failed: ${rigelBytesResult.error.message}`);
     }
 
-    const agenscrapeData = agenscrapeResult.data;
-    console.log(`Agenscrape completed: ${agenscrapeData?.total || 0} profile URLs collected`);
+    const rigelBytesData = rigelBytesResult.data;
+    console.log(`Rigelbytes completed: ${rigelBytesData?.imported || 0} agents imported`);
 
-    // Background enrichment with filtering
-    const backgroundEnrichment = async () => {
+    // Background filtering to deactivate non-qualifying agents
+    const backgroundFiltering = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        console.log('Step 2/2: Running memo23 enrichment...');
-        const memo23Result = await supabase.functions.invoke('fetch-memo23-agents', {
-          body: { cityId, categoryId }
-        });
-
-        if (memo23Result.error) {
-          console.error('Memo23 error (background):', memo23Result.error);
-          return;
-        }
-
-        const memo23Data = memo23Result.data;
-        console.log(`Memo23 completed: ${memo23Data?.imported || 0} agents enriched`);
+        console.log('Filtering agents by rating and reviews...');
 
         // Filter and keep only qualifying agents
         const { data: allAgents } = await supabase
@@ -161,14 +148,14 @@ serve(async (req) => {
     };
 
     // @ts-ignore - EdgeRuntime is provided by the Edge environment
-    EdgeRuntime.waitUntil(backgroundEnrichment());
+    EdgeRuntime.waitUntil(backgroundFiltering());
 
     return new Response(
       JSON.stringify({
         success: true,
-        agentsFound: agenscrapeData?.imported || 0,
-        memo23EnrichmentStarted: true,
-        message: `Import started for ${agenscrapeData?.imported || 0} agents. Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews. Enrichment running in background.`
+        agentsImported: rigelBytesData?.imported || 0,
+        agentsSkipped: rigelBytesData?.skipped || 0,
+        message: `Imported ${rigelBytesData?.imported || 0} agents with rigelbytes (${rigelBytesData?.skipped || 0} skipped). Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews.`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
