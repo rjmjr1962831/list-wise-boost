@@ -13,6 +13,16 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Agent CTA Section */}
+      <section className="container mx-auto px-4 pb-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-lg text-muted-foreground mb-4">Are you a top-performing agent?</p>
+          <Button onClick={() => navigate('/agent-onboarding')} size="lg" className="text-lg py-6 px-8">
+            Think you should be on the list?
+          </Button>
+        </div>
+      </section>
+
       {/* What Is Top10Lists.us */}
       <section className="container mx-auto px-4 pt-8 pb-20 md:pt-12 md:pb-32 text-center">
         <div className="max-w-4xl mx-auto text-center space-y-8">
@@ -45,12 +55,6 @@ const Index = () => {
             </span>{" "}
             badge under their photo.
           </p>
-          
-          <div className="pt-8">
-            <Button onClick={() => navigate('/agent-onboarding')} size="lg" className="w-full max-w-md mx-auto text-lg py-6">
-              Think you should be on the list?
-            </Button>
-          </div>
         </div>
       </section>
     </div>;
