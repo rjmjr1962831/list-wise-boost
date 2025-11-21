@@ -56,7 +56,7 @@ serve(async (req) => {
     const actorId = 'memo23~apify-zillow-agents-cheerio';
     const actorInput = {
       startUrls: [{ url: professional.zillow_profile_url }],
-      maxConcurrency: 10,
+      maxConcurrency: 3,
       maxRequestRetries: 5,
       requestHandlerTimeoutSecs: 180,
       proxyConfiguration: { 
