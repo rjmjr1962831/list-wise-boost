@@ -45,14 +45,14 @@ serve(async (req) => {
     // Use rigelbytes actor - Apify API expects the tilde (`~`) separator
     const actorId = 'rigelbytes~zillow-agents';
     const actorInput = {
-      // Rigelbytes actor requires search_keywords as an array of strings
-      search_keywords: [`${category.name} in ${city.name}, ${city.state}`],
-      location: `${city.name}, ${city.state}`,
-      maxItems: maxResults,
-      proxy: {
+      // Rigelbytes actor required input per OpenAPI schema
+      search_keywords: [`${city.name}, ${city.state}`],
+      max_agents: maxResults,
+      detailed_profiles: true,
+      proxyConfiguration: {
         useApifyProxy: true,
-        apifyProxyGroups: ['RESIDENTIAL']
-      }
+        apifyProxyGroups: ['RESIDENTIAL'],
+      },
     };
 
     console.log('Starting rigelbytes actor with input:', JSON.stringify(actorInput, null, 2));
