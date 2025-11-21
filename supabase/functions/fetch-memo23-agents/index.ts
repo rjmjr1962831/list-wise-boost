@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { cityId, categoryId } = await req.json();
+    const { cityId, categoryId, maxConcurrency = 10 } = await req.json();
 
     if (!cityId || !categoryId) {
       throw new Error('cityId and categoryId are required');
@@ -104,10 +104,10 @@ serve(async (req) => {
       console.log(`  - ${p.name}: ${p.zillow_profile_url} (last fetch: ${p.zillow_data_fetched_at || 'NEVER'})`);
     });
 
-    // Run memo23 actor with lower concurrency to prevent timeouts
+    // Run memo23 actor with configurable concurrency
     const actorInput = {
       startUrls: agentUrls.map(url => ({ url })),
-      maxConcurrency: 10,
+      maxConcurrency: maxConcurrency,
       proxyConfiguration: { 
         useApifyProxy: true,
         apifyProxyGroups: ['RESIDENTIAL']

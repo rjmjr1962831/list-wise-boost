@@ -19,7 +19,7 @@ export const PhoenixMemo23Workflow = () => {
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<AgentJob[]>([]);
   const [progress, setProgress] = useState(0);
-  const [concurrency, setConcurrency] = useState(10);
+  const [concurrency, setConcurrency] = useState(30);
   const [selectedCity, setSelectedCity] = useState<string>('Phoenix');
   const [cities, setCities] = useState<Array<{id: string, name: string}>>([]);
 

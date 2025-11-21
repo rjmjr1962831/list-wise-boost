@@ -944,14 +944,12 @@ export const ProfessionalCard = ({
                 
                 if (!bioHtml && !fallbackText) return null;
                 
-                const firstName = professional.name.split(' ')[0];
-                
                 // Helper to check if text is long enough to need truncation (>600 chars = roughly 8 lines)
                 const needsTruncation = (text: string) => text.length > 600;
                 
                 return (
                   <div itemProp="description" className="border-t pt-3">
-                    <h4 className="text-sm font-semibold mb-2">From {firstName}:</h4>
+                    <h4 className="text-sm font-semibold mb-2">From {professional.name}:</h4>
                     {bioHtml ? (() => {
                       const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
                       const isTooLong = needsTruncation(bioHtml);
