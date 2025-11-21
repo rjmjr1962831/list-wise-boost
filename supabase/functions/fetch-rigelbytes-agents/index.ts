@@ -42,8 +42,8 @@ serve(async (req) => {
 
     console.log(`Starting rigelbytes scrape for ${city.name}, ${city.state} - ${category.name}`);
 
-    // Use rigelbytes actor
-    const actorId = 'rigelbytes/zillow-agents';
+    // Use rigelbytes actor - Apify API expects the tilde (`~`) separator
+    const actorId = 'rigelbytes~zillow-agents';
     const actorInput = {
       location: `${city.name}, ${city.state}`,
       maxItems: maxResults,
