@@ -24,6 +24,7 @@ import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporte
 import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
 import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
 import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
+import { BackfillScottsdaleRatings } from "@/components/admin/BackfillScottsdaleRatings";
 import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
 import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
 import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow";
@@ -196,6 +197,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Proxy Health
             </TabsTrigger>
+            <TabsTrigger value="backfill">
+              <Zap className="mr-2 h-4 w-4" />
+              Backfill Ratings
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -281,6 +286,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="proxy-health" className="space-y-4">
             <ProxyHealthDashboard />
+          </TabsContent>
+
+          <TabsContent value="backfill" className="space-y-4">
+            <BackfillScottsdaleRatings />
           </TabsContent>
         </Tabs>
       </div>
