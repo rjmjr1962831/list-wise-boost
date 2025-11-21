@@ -486,6 +486,7 @@ export type Database = {
           profile_types: Json | null
           rank: number
           ratings: Json | null
+          raw_scraper_data: Json | null
           review_link: string | null
           review_stars_rating: number | null
           reviews_data: Json | null
@@ -550,6 +551,7 @@ export type Database = {
           profile_types?: Json | null
           rank: number
           ratings?: Json | null
+          raw_scraper_data?: Json | null
           review_link?: string | null
           review_stars_rating?: number | null
           reviews_data?: Json | null
@@ -614,6 +616,7 @@ export type Database = {
           profile_types?: Json | null
           rank?: number
           ratings?: Json | null
+          raw_scraper_data?: Json | null
           review_link?: string | null
           review_stars_rating?: number | null
           reviews_data?: Json | null

@@ -316,6 +316,9 @@ async function processAgent(
     // ALWAYS store professional_information for full enrichment (includes contact details, licenses, specialties)
     if (agent.professionalInformation) memo23Data.professional_information = agent.professionalInformation;
     
+    // Store complete raw scraper data for future reference (all fields, even ones we don't currently use)
+    memo23Data.raw_scraper_data = agent;
+    
     // Extract specialties from multiple possible locations
     if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
       const specialtiesEntry = agent.professionalInformation.find((info: any) => 
