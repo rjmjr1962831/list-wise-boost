@@ -82,16 +82,16 @@ serve(async (req) => {
     const runData = await runResponse.json();
     const runId = runData.data.id;
     
-    // Poll for completion (max 120 seconds to match batch processing)
+    // Poll for completion (max 5 minutes for complex profiles)
     let attempts = 0;
-    const maxAttempts = 120;
+    const maxAttempts = 150; // 150 attempts * 2 seconds = 5 minutes
     let runStatus = 'RUNNING';
     let agentData = null;
 
     console.log(`Starting to poll Apify run ${runId}...`);
 
     while (attempts < maxAttempts && runStatus === 'RUNNING') {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Poll every 2 seconds
       
       const statusResponse = await fetch(
         `https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apifyToken}`
@@ -136,8 +136,9 @@ serve(async (req) => {
     }
 
     if (runStatus === 'RUNNING') {
-      console.error(`Run timed out after ${maxAttempts} seconds`);
-      throw new Error(`Apify run timed out after ${maxAttempts} seconds`);
+      const timeoutMinutes = (maxAttempts * 2) / 60;
+      console.error(`Run timed out after ${timeoutMinutes} minutes`);
+      throw new Error(`Apify run timed out after ${timeoutMinutes} minutes`);
     }
 
     if (!agentData) {
