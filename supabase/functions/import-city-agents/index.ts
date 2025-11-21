@@ -247,24 +247,44 @@ serve(async (req) => {
                   }
                 } else {
                   // No existing data found, fetch from memo23
-                  console.log(`Enriching ${agent.name} with memo23...`);
+                  console.log(`📋 [${enrichedCount + 1}/${qualifyingAgents.length}] Enriching ${agent.name} with memo23...`);
+                  console.log(`   Profile URL: ${agent.zillow_profile_url}`);
                   
+                  const enrichStartTime = Date.now();
                   const enrichResult = await supabase.functions.invoke('fetch-single-memo23-agent', {
                     body: { 
                       professionalId: agent.id,
                       profileUrl: agent.zillow_profile_url 
                     }
                   });
+                  const enrichDuration = ((Date.now() - enrichStartTime) / 1000).toFixed(1);
                   
                   if (enrichResult.error) {
-                    console.error(`Memo23 enrichment failed for ${agent.name}:`, enrichResult.error);
+                    console.error(`❌ Memo23 enrichment failed for ${agent.name} (${enrichDuration}s):`, enrichResult.error);
+                    
+                    // Check for specific error types
+                    const errorMsg = enrichResult.error.message || JSON.stringify(enrichResult.error);
+                    if (errorMsg.includes('403')) {
+                      console.error(`🚫 403 ERROR detected for ${agent.name} - possible proxy block`);
+                    } else if (errorMsg.includes('429')) {
+                      console.error(`⏱️ 429 RATE LIMIT for ${agent.name} - slowing down...`);
+                      // Add extra delay on rate limit
+                      await new Promise(resolve => setTimeout(resolve, 5000));
+                    }
                   } else {
-                    console.log(`Successfully enriched ${agent.name}`);
+                    const data = enrichResult.data || {};
+                    console.log(`✅ Successfully enriched ${agent.name} (${enrichDuration}s)`);
+                    if (data.http403Count > 0 || data.http429Count > 0) {
+                      console.warn(`   ⚠️ Encountered ${data.http403Count || 0} 403s, ${data.http429Count || 0} 429s during enrichment`);
+                    }
                     enrichedCount++;
                   }
                   
-                  // Small delay between requests to avoid rate limits
-                  await new Promise(resolve => setTimeout(resolve, 2000));
+                  // Progressive delay: increase wait time as we process more agents
+                  const baseDelay = 2000;
+                  const progressiveDelay = baseDelay + Math.floor(enrichedCount / 10) * 1000; // +1s per 10 agents
+                  console.log(`⏱️ Waiting ${progressiveDelay / 1000}s before next agent...`);
+                  await new Promise(resolve => setTimeout(resolve, progressiveDelay));
                 }
               } catch (enrichError) {
                 console.error(`Failed to process ${agent.name}:`, enrichError);

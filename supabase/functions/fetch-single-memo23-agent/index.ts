@@ -79,7 +79,8 @@ serve(async (req) => {
     
     console.log('Actor input:', JSON.stringify(actorInput, null, 2));
 
-    // Start the run
+    // Start the run with detailed logging
+    console.log(`🚀 Starting Apify actor run for ${professional.name}...`);
     const runResponse = await fetch(
       `https://api.apify.com/v2/acts/${actorId}/runs?token=${apifyToken}`,
       {
@@ -89,70 +90,134 @@ serve(async (req) => {
       }
     );
 
+    console.log(`📡 Apify API Response Status: ${runResponse.status} ${runResponse.statusText}`);
+    
     if (!runResponse.ok) {
-      throw new Error('Failed to start Apify run');
+      const errorText = await runResponse.text();
+      console.error(`❌ Failed to start Apify run - Status ${runResponse.status}:`, errorText);
+      
+      if (runResponse.status === 403) {
+        console.error('🚫 403 FORBIDDEN from Apify API - Check API token or account limits');
+      } else if (runResponse.status === 429) {
+        console.error('⏱️ 429 RATE LIMIT from Apify API - Too many requests');
+      }
+      
+      throw new Error(`Failed to start Apify run: ${runResponse.status} ${errorText}`);
     }
 
     const runData = await runResponse.json();
     const runId = runData.data.id;
+    console.log(`✅ Apify run started successfully - Run ID: ${runId}`);
     
-    // Poll for completion (max 5 minutes for complex profiles)
+    // Poll for completion with exponential backoff
     let attempts = 0;
-    const maxAttempts = 150; // 150 attempts * 2 seconds = 5 minutes
+    const maxAttempts = 150; // 150 attempts with exponential backoff = up to 10 minutes
     let runStatus = 'RUNNING';
     let agentData = null;
+    let http403Count = 0;
+    let http429Count = 0;
 
-    console.log(`Starting to poll Apify run ${runId}...`);
+    console.log(`⏳ Starting to poll Apify run ${runId} with exponential backoff...`);
 
     while (attempts < maxAttempts && runStatus === 'RUNNING') {
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Poll every 2 seconds
+      // Exponential backoff: start at 2s, increase by 1.5x each time, cap at 30s
+      const baseDelay = 2000;
+      const backoffMultiplier = Math.min(Math.pow(1.5, Math.floor(attempts / 10)), 15);
+      const delay = Math.min(baseDelay * backoffMultiplier, 30000);
+      
+      console.log(`⏱️ Waiting ${(delay / 1000).toFixed(1)}s before next poll (backoff multiplier: ${backoffMultiplier.toFixed(2)}x)...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
       
       const statusResponse = await fetch(
         `https://api.apify.com/v2/acts/${actorId}/runs/${runId}?token=${apifyToken}`
       );
       
+      console.log(`📊 Poll attempt ${attempts + 1}/${maxAttempts} - API Status: ${statusResponse.status}`);
+      
+      if (statusResponse.status === 403) {
+        http403Count++;
+        console.error(`🚫 403 FORBIDDEN on status check (count: ${http403Count}) - Apify API may be blocking`);
+      } else if (statusResponse.status === 429) {
+        http429Count++;
+        console.error(`⏱️ 429 RATE LIMIT on status check (count: ${http429Count}) - Slowing down...`);
+        // Add extra delay on rate limit
+        await new Promise(resolve => setTimeout(resolve, 10000));
+      }
+      
       if (statusResponse.ok) {
         const statusData = await statusResponse.json();
         runStatus = statusData.data.status;
+        const stats = statusData.data.stats || {};
         
-        console.log(`Attempt ${attempts + 1}/${maxAttempts}: Run status = ${runStatus}`);
+        console.log(`📈 Attempt ${attempts + 1}/${maxAttempts}: Status = ${runStatus}`);
+        console.log(`   Stats - Requests: ${stats.requestsFinished || 0}/${stats.requestsTotal || 0}, Failed: ${stats.requestsFailed || 0}, Retries: ${stats.requestsRetries || 0}`);
+        
+        // Log if actor is experiencing errors
+        if (stats.requestsFailed > 0) {
+          console.warn(`⚠️ Actor has ${stats.requestsFailed} failed requests - may indicate blocking`);
+        }
         
         if (runStatus === 'SUCCEEDED') {
           const datasetId = statusData.data.defaultDatasetId;
-          console.log(`Run succeeded, fetching dataset ${datasetId}...`);
+          console.log(`✅ Run succeeded! Fetching dataset ${datasetId}...`);
+          console.log(`📊 Final stats - Duration: ${stats.computeUnits || 0} compute units, Cost: $${((stats.computeUnits || 0) * 0.0004).toFixed(4)}`);
           
           const datasetResponse = await fetch(
             `https://api.apify.com/v2/datasets/${datasetId}/items?token=${apifyToken}`
           );
           
+          console.log(`📦 Dataset fetch status: ${datasetResponse.status}`);
+          
+          if (datasetResponse.status === 403) {
+            console.error('🚫 403 FORBIDDEN on dataset fetch - Apify API blocking dataset access');
+            http403Count++;
+          }
+          
           if (datasetResponse.ok) {
             const results = await datasetResponse.json();
-            console.log(`Dataset returned ${results?.length || 0} items`);
+            console.log(`✅ Dataset returned ${results?.length || 0} items`);
             
             if (results && results.length > 0) {
               agentData = results[0];
-              console.log('Successfully fetched memo23 data');
+              console.log(`✅ Successfully fetched memo23 data for ${professional.name}`);
+              console.log(`   Data includes: ${Object.keys(agentData).slice(0, 10).join(', ')}...`);
             } else {
-              console.error('Dataset is empty - no agent data returned');
+              console.error('❌ Dataset is empty - no agent data returned (possible scraping failure)');
             }
           } else {
-            console.error('Failed to fetch dataset:', await datasetResponse.text());
+            const errorText = await datasetResponse.text();
+            console.error(`❌ Failed to fetch dataset: ${datasetResponse.status} - ${errorText}`);
           }
           break;
         } else if (runStatus === 'FAILED' || runStatus === 'ABORTED' || runStatus === 'TIMED-OUT') {
-          console.error(`Run ${runStatus}: ${JSON.stringify(statusData.data)}`);
-          throw new Error(`Apify run ${runStatus}`);
+          console.error(`❌ Run ${runStatus}:`);
+          console.error(`   Error: ${statusData.data.stats?.errors || 'No error details'}`);
+          console.error(`   Exit code: ${statusData.data.exitCode || 'N/A'}`);
+          console.error(`   Full data: ${JSON.stringify(statusData.data, null, 2)}`);
+          
+          // Log if this was due to 403s
+          if (http403Count > 0) {
+            console.error(`🚫 Run failed after encountering ${http403Count} 403 errors`);
+          }
+          
+          throw new Error(`Apify run ${runStatus}: ${statusData.data.stats?.errors || 'Unknown error'}`);
         }
       } else {
-        console.error('Failed to check run status:', await statusResponse.text());
+        const errorText = await statusResponse.text();
+        console.error(`❌ Failed to check run status: ${statusResponse.status} - ${errorText}`);
       }
       attempts++;
     }
+    
+    // Log final 403/429 counts
+    if (http403Count > 0 || http429Count > 0) {
+      console.error(`🚨 HTTP Error Summary: ${http403Count} 403s, ${http429Count} 429s encountered during polling`);
+    }
 
     if (runStatus === 'RUNNING') {
-      const timeoutMinutes = (maxAttempts * 2) / 60;
-      console.error(`Run timed out after ${timeoutMinutes} minutes`);
-      throw new Error(`Apify run timed out after ${timeoutMinutes} minutes`);
+      console.error(`⏰ Run timed out after ${maxAttempts} polling attempts`);
+      console.error(`   Final HTTP error counts: ${http403Count} 403s, ${http429Count} 429s`);
+      throw new Error(`Apify run timed out after ${maxAttempts} attempts (${http403Count} 403s, ${http429Count} 429s)`);
     }
 
     if (!agentData) {
@@ -414,7 +479,8 @@ serve(async (req) => {
       throw new Error(`Failed to update professional: ${updateError.message}`);
     }
 
-    console.log(`Updated professional ${professional.name} with memo23 data`);
+    console.log(`✅ Updated professional ${professional.name} with memo23 data`);
+    console.log(`   Updated ${Object.keys(updateData).length} fields`);
 
     return new Response(
       JSON.stringify({ 
@@ -424,15 +490,33 @@ serve(async (req) => {
         phoneNumbers: updateData.phone_numbers ? Object.values(updateData.phone_numbers).filter(Boolean) : [],
         email: updateData.email || null,
         reviewsCount: updateData.num_total_reviews || 0,
-        updatedFields: Object.keys(updateData)
+        updatedFields: Object.keys(updateData),
+        http403Count: http403Count || 0,
+        http429Count: http429Count || 0
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error: any) {
-    console.error('Error:', error);
+    console.error('❌ FATAL ERROR:', error.message);
+    console.error('   Stack:', error.stack);
+    
+    // Check if error message indicates 403
+    const is403Error = error.message?.includes('403') || error.message?.includes('FORBIDDEN');
+    const is429Error = error.message?.includes('429') || error.message?.includes('rate limit');
+    
+    if (is403Error) {
+      console.error('🚫 403 FORBIDDEN ERROR - Proxy may be blocked by Zillow or Apify API issue');
+    } else if (is429Error) {
+      console.error('⏱️ 429 RATE LIMIT ERROR - Need to slow down requests');
+    }
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        errorType: is403Error ? '403_FORBIDDEN' : is429Error ? '429_RATE_LIMIT' : 'UNKNOWN',
+        timestamp: new Date().toISOString()
+      }),
       { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
