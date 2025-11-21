@@ -8,8 +8,8 @@ const corsHeaders = {
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_AGENTS_REQUIRED = 10;
-const MIN_REVIEWS = 10; // Lowered from 200 to match Outscraper filter
-const MIN_RATING = 4.9; // Lowered from 5.0 to match Outscraper filter
+const MIN_REVIEWS = 10;
+const MIN_RATING = 5.0; // Back to 5 stars minimum
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -111,8 +111,8 @@ serve(async (req) => {
     const outscraperData = outscraperResult.data;
     console.log(`Outscraper completed: ${outscraperData?.imported || 0} agents imported`);
 
-    // Background filtering to deactivate non-qualifying agents
-    const backgroundFiltering = async () => {
+    // Background enrichment: filter + memo23 enrichment for Zillow data
+    const backgroundEnrichment = async () => {
       try {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -121,7 +121,7 @@ serve(async (req) => {
         // Filter and keep only qualifying agents
         const { data: allAgents } = await supabase
           .from('professionals')
-          .select('id, name, review_stars_rating, num_total_reviews')
+          .select('id, name, zillow_profile_url, review_stars_rating, num_total_reviews')
           .eq('city_id', cityId)
           .eq('category_id', categoryId);
 
@@ -151,6 +151,31 @@ serve(async (req) => {
               console.log(`Deactivated ${nonQualifyingAgents.length} non-qualifying agents`);
             }
           }
+
+          // Enrich qualifying agents with memo23 Zillow data
+          console.log(`Starting memo23 enrichment for ${qualifyingAgents.length} agents...`);
+          
+          for (const agent of qualifyingAgents) {
+            if (agent.zillow_profile_url) {
+              try {
+                console.log(`Enriching ${agent.name} with memo23...`);
+                
+                await supabase.functions.invoke('fetch-single-memo23-agent', {
+                  body: { 
+                    professionalId: agent.id,
+                    profileUrl: agent.zillow_profile_url 
+                  }
+                });
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              } catch (enrichError) {
+                console.error(`Failed to enrich ${agent.name}:`, enrichError);
+              }
+            }
+          }
+          
+          console.log('Memo23 enrichment completed');
         }
       } catch (bgError) {
         console.error('Background enrichment failed:', bgError);
@@ -158,14 +183,14 @@ serve(async (req) => {
     };
 
     // @ts-ignore - EdgeRuntime is provided by the Edge environment
-    EdgeRuntime.waitUntil(backgroundFiltering());
+    EdgeRuntime.waitUntil(backgroundEnrichment());
 
     return new Response(
       JSON.stringify({
         success: true,
         agentsImported: outscraperData?.imported || 0,
         agentsSkipped: outscraperData?.skipped || 0,
-        message: `Imported ${outscraperData?.imported || 0} agents with Outscraper (${outscraperData?.skipped || 0} skipped). Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews.`
+        message: `Imported ${outscraperData?.imported || 0} agents with Outscraper (${outscraperData?.skipped || 0} skipped). Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews. Enriching with memo23 in background.`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
