@@ -95,7 +95,17 @@ serve(async (req) => {
 
     if (rigelBytesResult.error) {
       console.error('Rigelbytes error:', rigelBytesResult.error);
-      throw new Error(`Rigelbytes failed: ${rigelBytesResult.error.message}`);
+      // Surface a non-fatal response to the frontend instead of a 500
+      return new Response(
+        JSON.stringify({
+          success: false,
+          cached: false,
+          imported: 0,
+          skipped: 0,
+          error: 'Rigelbytes import failed; please try again later.'
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const rigelBytesData = rigelBytesResult.data;

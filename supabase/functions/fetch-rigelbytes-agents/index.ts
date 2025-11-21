@@ -91,7 +91,11 @@ serve(async (req) => {
     }
 
     if (runStatus !== 'SUCCEEDED') {
-      throw new Error(`Rigelbytes actor failed with status: ${runStatus}`);
+      console.error(`Rigelbytes actor ended with status: ${runStatus}`);
+      return new Response(
+        JSON.stringify({ success: false, imported: 0, skipped: 0, error: `Rigelbytes actor status: ${runStatus}` }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Get the dataset
