@@ -37,12 +37,13 @@ export function TestProxyEnrichment() {
       }
 
       setProgress(prev => [...prev, `Found ${agents.length} agents to enrich`]);
+      setProgress(prev => [...prev, `Running ${agents.length} concurrent enrichments...`]);
 
-      // Enrich each agent sequentially
-      for (let i = 0; i < agents.length; i++) {
-        const agent = agents[i];
-        setProgress(prev => [...prev, `[${i + 1}/${agents.length}] Enriching ${agent.name}...`]);
+      // Enrich all agents concurrently
+      const enrichmentPromises = agents.map(async (agent, index) => {
+        setProgress(prev => [...prev, `[${index + 1}] Starting: ${agent.name}`]);
 
+        const startTime = Date.now();
         const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
           body: { 
             professionalId: agent.id,
@@ -50,25 +51,34 @@ export function TestProxyEnrichment() {
           }
         });
 
+        const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+
         if (error) {
-          setProgress(prev => [...prev, `❌ Failed: ${agent.name} - ${error.message}`]);
+          setProgress(prev => [...prev, `❌ [${index + 1}] Failed: ${agent.name} (${duration}s) - ${error.message}`]);
+          return { success: false, agent: agent.name, error: error.message };
         } else {
           const http403 = data?.http403Count || 0;
           const http429 = data?.http429Count || 0;
           const status = http403 > 0 || http429 > 0 
             ? `⚠️ (${http403} 403s, ${http429} 429s)` 
             : '✅';
-          setProgress(prev => [...prev, `${status} Completed: ${agent.name}`]);
+          setProgress(prev => [...prev, `${status} [${index + 1}] Completed: ${agent.name} (${duration}s)`]);
+          return { success: true, agent: agent.name, http403, http429 };
         }
+      });
 
-        // Wait 3 seconds between agents
-        if (i < agents.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-        }
+      const results = await Promise.all(enrichmentPromises);
+      
+      const successCount = results.filter(r => r.success).length;
+      const total403s = results.reduce((sum, r) => sum + (r.http403 || 0), 0);
+      const total429s = results.reduce((sum, r) => sum + (r.http429 || 0), 0);
+
+      setProgress(prev => [...prev, `\n✅ Enrichment test complete!`]);
+      setProgress(prev => [...prev, `📊 Results: ${successCount}/${agents.length} successful`]);
+      if (total403s > 0 || total429s > 0) {
+        setProgress(prev => [...prev, `⚠️ HTTP Errors: ${total403s} 403s, ${total429s} 429s`]);
       }
-
-      setProgress(prev => [...prev, '✅ Enrichment test complete!']);
-      toast.success(`Successfully enriched ${agents.length} agents`);
+      toast.success(`Successfully enriched ${successCount}/${agents.length} agents`);
 
     } catch (error: any) {
       console.error('Enrichment error:', error);
