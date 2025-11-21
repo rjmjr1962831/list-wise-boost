@@ -29,6 +29,7 @@ import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
 import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
 import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow";
 import { ScottsdaleEnricher } from "@/components/admin/ScottsdaleEnricher";
+import { PhoenixEnricher } from "@/components/admin/PhoenixEnricher";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 import { ProxyHealthDashboard } from "@/components/admin/ProxyHealthDashboard";
 import { ReplicateAgentPhoenix } from "@/components/admin/ReplicateAgentPhoenix";
@@ -280,6 +281,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="phoenix-memo23" className="space-y-4">
+            <PhoenixEnricher />
             <ScottsdaleEnricher />
             <PhoenixMemo23Workflow />
           </TabsContent>

@@ -8,8 +8,8 @@ const corsHeaders = {
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const MIN_AGENTS_REQUIRED = 50; // Target 50 agents per city
-const MIN_REVIEWS = 200; // Require 200+ reviews
-const MIN_RATING = 4.9; // Require 4.9+ rating
+const MIN_REVIEWS = 100; // Require 100+ reviews
+const MIN_RATING = 4.8; // Require 4.8+ rating
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
