@@ -55,7 +55,7 @@ export function EnrichmentProgressDashboard() {
   const [recentAgents, setRecentAgents] = useState<RecentAgent[]>([]);
   const [alerts, setAlerts] = useState<EnrichmentAlert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
 
   const fetchStats = async () => {
     try {
@@ -188,7 +188,7 @@ export function EnrichmentProgressDashboard() {
     fetchStats();
 
     if (autoRefresh) {
-      const interval = setInterval(fetchStats, 10000); // Refresh every 10 seconds
+      const interval = setInterval(fetchStats, 60000); // Refresh every 60 seconds
       return () => clearInterval(interval);
     }
   }, [autoRefresh]);

@@ -38,7 +38,7 @@ export function ProxyHealthDashboard() {
   const [metrics, setMetrics] = useState<ProxyMetrics[]>([]);
   const [alerts, setAlerts] = useState<ProxyHealthAlert[]>([]);
   const [loading, setLoading] = useState(true);
-  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(false);
 
   const fetchProxyMetrics = async () => {
     try {
@@ -97,7 +97,7 @@ export function ProxyHealthDashboard() {
     fetchProxyMetrics();
 
     if (autoRefresh) {
-      const interval = setInterval(fetchProxyMetrics, 30000); // Refresh every 30 seconds
+      const interval = setInterval(fetchProxyMetrics, 60000); // Refresh every 60 seconds
       return () => clearInterval(interval);
     }
   }, [autoRefresh]);

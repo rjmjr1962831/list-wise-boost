@@ -35,7 +35,7 @@ const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 const queryClient = new QueryClient();
 
 const App = () => (
-  <BrowserRouter>
+  <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <QueryClientProvider client={queryClient}>
       <RateLimitGuard>
         <TooltipProvider>
