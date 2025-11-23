@@ -66,3 +66,12 @@ verify_jwt = false
 [functions.bulk-import-phoenix-agents]
 verify_jwt = true
 
+[functions.claude-score-lead]
+verify_jwt = true
+
+[functions.claude-draft-email]
+verify_jwt = true
+
+[functions.claude-analyze-contact]
+verify_jwt = true
+
