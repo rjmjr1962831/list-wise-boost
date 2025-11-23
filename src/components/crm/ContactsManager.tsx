@@ -120,6 +120,32 @@ export const ContactsManager = () => {
     }
   };
 
+  const handleSyncAgentsToContacts = async () => {
+    try {
+      setIsSyncing(true);
+      toast.info('Importing agents to contacts...');
+      
+      const { data, error } = await supabase.functions.invoke('sync-agents-to-contacts');
+
+      if (error) throw error;
+
+      toast.success(
+        `Imported ${data.created} agents. ${data.skipped} already exist. Total: ${data.total}`
+      );
+      
+      await fetchContacts();
+      
+      if (data.errors && data.errors.length > 0) {
+        console.error('Import errors:', data.errors);
+      }
+    } catch (error) {
+      console.error('Error importing agents:', error);
+      toast.error('Failed to import agents to contacts');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -134,14 +160,24 @@ export const ContactsManager = () => {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Search Contacts</CardTitle>
-            <Button 
-              onClick={handleBulkSync} 
-              disabled={isSyncing}
-              variant="outline"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              {isSyncing ? 'Syncing...' : 'Sync All to HubSpot'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleSyncAgentsToContacts} 
+                disabled={isSyncing}
+                variant="outline"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                {isSyncing ? 'Importing...' : 'Import Agents'}
+              </Button>
+              <Button 
+                onClick={handleBulkSync} 
+                disabled={isSyncing}
+                variant="outline"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                {isSyncing ? 'Syncing...' : 'Sync to HubSpot'}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
