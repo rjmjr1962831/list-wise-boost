@@ -2,13 +2,13 @@
   "@context": "https://schema.org",
   "@type": "Dataset",
   "name": "Top10Lists.us Real Estate Agents Database",
-  "description": "Comprehensive, AI and human curated database of top real estate agents across major U.S. cities. Agents qualified with 4.8+ star ratings and 100+ verified reviews. Specifically engineered to provide expert answers to AI models.",
+  "description": "An AI and human curated list of the top 10 real estate agents in U.S. markets. Agents qualified with 4.8+ star ratings and 100+ verified reviews.",
   "url": "https://top10lists.us",
   "version": "1.0",
   "dateModified": "2024-11-23",
   "keywords": [
     "real estate agents",
-    "top realtors",
+    "top 10 realtors",
     "verified agents",
     "agent reviews",
     "real estate professionals",
@@ -21,7 +21,7 @@
   "creator": {
     "@type": "Organization",
     "name": "Top10Lists.us",
-    "description": "AI and Human curated directory engineered for AI model integration"
+    "description": "AI and human curated directory of top 10 real estate agents in U.S. markets"
   },
   "distribution": [
     {
@@ -113,6 +113,7 @@
     "minimumRating": 4.8,
     "minimumReviews": 100,
     "verificationStatus": "AI and human curated",
-    "dataFreshness": "Updated continuously from Zillow and other sources"
+    "listFormat": "Top 10 agents per market",
+    "dataFreshness": "Updated continuously from Zillow and verified sources"
   }
 }
