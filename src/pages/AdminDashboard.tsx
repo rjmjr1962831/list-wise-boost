@@ -38,6 +38,7 @@ import CitiesManager from "@/components/admin/CitiesManager";
 import { BulkEmailUpdater } from "@/components/admin/BulkEmailUpdater";
 import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
 import { PhoneNumberRestorer } from "@/components/admin/PhoneNumberRestorer";
+import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGenerator";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -228,6 +229,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Phone Restorer
             </TabsTrigger>
+            <TabsTrigger value="verification-links">
+              <Link2 className="mr-2 h-4 w-4" />
+              Verification Links
+            </TabsTrigger>
             <TabsTrigger value="deduplicator">
               <Users className="mr-2 h-4 w-4" />
               Deduplicator
@@ -332,6 +337,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="phone-restorer" className="space-y-4">
             <PhoneNumberRestorer />
+          </TabsContent>
+
+          <TabsContent value="verification-links" className="space-y-4">
+            <VerificationLinkGenerator />
           </TabsContent>
 
           <TabsContent value="deduplicator" className="space-y-4">
