@@ -40,6 +40,7 @@ import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
 import { PhoneNumberRestorer } from "@/components/admin/PhoneNumberRestorer";
 import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGenerator";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
+import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -242,6 +243,10 @@ const AdminDashboard = () => {
               <Download className="mr-2 h-4 w-4" />
               CRM Export
             </TabsTrigger>
+            <TabsTrigger value="enrichment-queue">
+              <Zap className="mr-2 h-4 w-4" />
+              Enrichment Queue
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -354,6 +359,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="crm-export" className="space-y-4">
             <CRMExportGenerator />
+          </TabsContent>
+
+          <TabsContent value="enrichment-queue" className="space-y-4">
+            <ContactEnrichmentQueue />
           </TabsContent>
         </Tabs>
       </div>
