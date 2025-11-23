@@ -14,6 +14,7 @@ interface AgentResult {
   oldPhone: string | null;
   newEmail: string | null;
   newPhone: string | null;
+  specialties?: string[];
   status: 'updated' | 'unchanged' | 'failed' | 'error';
   error?: string;
 }
@@ -177,6 +178,11 @@ export const BulkEmailUpdater = () => {
                         <span className="font-semibold">{agent.name}</span>
                         {getStatusBadge(agent.status)}
                       </div>
+                      {agent.specialties && agent.specialties.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          Specialties: {agent.specialties.join(', ')}
+                        </div>
+                      )}
                       <div className="text-xs space-y-0.5">
                         <div className="flex items-center gap-2">
                           <span className="text-muted-foreground">Old Email:</span>
