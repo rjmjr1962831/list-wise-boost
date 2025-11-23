@@ -20,6 +20,7 @@ import CityLanding from "./pages/CityLanding";
 import BookAppointment from "./pages/BookAppointment";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import CRM from "./pages/CRM";
 import MigrateData from "./pages/MigrateData";
 import VerifyAgentListing from "./pages/VerifyAgentListing";
 import AgentOnboarding from "./pages/AgentOnboarding";
@@ -59,6 +60,7 @@ const App = () => (
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/crm" element={<CRM />} />
                     <Route path="/migrate-data" element={<MigrateData />} />
                     {/* Static pages */}
                     <Route path="/privacy" element={<Privacy />} />
