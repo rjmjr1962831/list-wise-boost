@@ -389,6 +389,37 @@ serve(async (req) => {
           console.log(`Extracted ${specialties.length} specialties:`, specialties);
         }
       }
+      
+      // Extract email from professionalInformation
+      const emailEntry = agentData.professionalInformation.find((info: any) => 
+        info.term === 'Email' || info.term === 'Contact Email'
+      );
+      if (emailEntry?.detail) {
+        const emailValue = Array.isArray(emailEntry.detail) ? emailEntry.detail[0] : emailEntry.detail;
+        if (typeof emailValue === 'string' && emailValue.includes('@')) {
+          updateData.email = emailValue;
+          console.log(`Extracted email from professionalInformation: ${emailValue}`);
+        } else if (emailValue?.text && emailValue.text.includes('@')) {
+          updateData.email = emailValue.text;
+          console.log(`Extracted email from professionalInformation: ${emailValue.text}`);
+        }
+      }
+      
+      // Extract website from professionalInformation
+      const websitesEntry = agentData.professionalInformation.find((info: any) => 
+        info.term === 'Websites' || info.term === 'Website'
+      );
+      if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
+        const websiteLink = websitesEntry.links.find((link: any) => 
+          link.url && !link.url.includes('youtube') && !link.url.includes('vimeo') && 
+          !link.url.includes('facebook') && !link.url.includes('instagram') &&
+          !link.url.includes('twitter') && !link.url.includes('linkedin')
+        );
+        if (websiteLink?.url) {
+          updateData.website = websiteLink.url;
+          console.log(`Extracted website from professionalInformation: ${websiteLink.url}`);
+        }
+      }
     }
     if (agentData.professionalData) {
       updateData.professional_data = agentData.professionalData;
