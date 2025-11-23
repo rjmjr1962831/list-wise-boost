@@ -87,9 +87,10 @@ export function CRMExportGenerator() {
           : 'No token';
 
         // Generate Top10 profile link
+        const stateSlug = (prof.cities as any)?.state_slug || 'unknown';
         const citySlug = prof.cities?.slug || 'unknown';
         const categorySlug = prof.categories?.slug || 'unknown';
-        const top10Link = `https://top10lists.us/${citySlug}/${categorySlug}`;
+        const top10Link = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}`;
 
         // Parse specialties and badges
         const specialties = Array.isArray(prof.specialty) ? prof.specialty.join('; ') : '';
