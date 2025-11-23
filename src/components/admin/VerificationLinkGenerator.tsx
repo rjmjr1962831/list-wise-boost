@@ -10,10 +10,29 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 interface VerificationLink {
   id: string;
   name: string;
-  email: string;
-  phone: string;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  company: string | null;
+  business_name: string | null;
+  title: string | null;
+  address: string | null;
+  zip_code: string | null;
+  specialty: string[] | null;
+  badges: string[] | null;
+  description: string | null;
+  get_to_know_me: string | null;
+  years_experience: number | null;
+  total_sales: number | null;
+  current_listings: number | null;
+  review_stars_rating: number | null;
+  num_total_reviews: number | null;
+  license_number: string | null;
+  zillow_profile_url: string | null;
+  rank: number;
   verification_link: string;
   token: string;
+  [key: string]: any; // For any additional fields
 }
 
 export function VerificationLinkGenerator() {
@@ -77,12 +96,62 @@ export function VerificationLinkGenerator() {
   }
 
   function downloadCSV() {
-    const csv = [
-      'Name,Email,Phone,Verification Link',
-      ...links.map(link => 
-        `"${link.name}","${link.email || ''}","${link.phone || ''}","${link.verification_link}"`
-      )
-    ].join('\n');
+    const headers = [
+      'Name',
+      'Email',
+      'Phone',
+      'Website',
+      'Company',
+      'Business Name',
+      'Title',
+      'Address',
+      'Zip Code',
+      'Specialties',
+      'Badges',
+      'Description',
+      'Get to Know Me',
+      'Years Experience',
+      'Total Sales',
+      'Current Listings',
+      'Rating',
+      'Total Reviews',
+      'License Number',
+      'Zillow Profile URL',
+      'Rank',
+      'Verification Link'
+    ];
+    
+    const rows = links.map(link => {
+      const specialties = Array.isArray(link.specialty) ? link.specialty.join('; ') : '';
+      const badges = Array.isArray(link.badges) ? link.badges.join('; ') : '';
+      
+      return [
+        link.name,
+        link.email || '',
+        link.phone || '',
+        link.website || '',
+        link.company || '',
+        link.business_name || '',
+        link.title || '',
+        link.address || '',
+        link.zip_code || '',
+        specialties,
+        badges,
+        link.description || '',
+        link.get_to_know_me || '',
+        link.years_experience || '',
+        link.total_sales || '',
+        link.current_listings || '',
+        link.review_stars_rating || '',
+        link.num_total_reviews || '',
+        link.license_number || '',
+        link.zillow_profile_url || '',
+        link.rank,
+        link.verification_link
+      ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
+    });
+
+    const csv = [headers.join(','), ...rows].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);

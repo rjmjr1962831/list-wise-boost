@@ -20,10 +20,10 @@ serve(async (req) => {
 
     console.log('Generating verification links for:', { cityId, categoryId, regenerate });
 
-    // Build query
+    // Build query - select ALL fields
     let query = supabase
       .from('professionals')
-      .select('id, name, email, phone, verification_token, verification_token_expires_at, city_id, category_id')
+      .select('*')
       .eq('active', true);
 
     if (cityId) query = query.eq('city_id', cityId);
@@ -57,10 +57,7 @@ serve(async (req) => {
       }
 
       links.push({
-        id: agent.id,
-        name: agent.name,
-        email: agent.email,
-        phone: agent.phone,
+        ...agent, // Include all agent fields
         verification_link: `${req.headers.get('origin') || 'https://top10lists.us'}/verify-listing/${token}`,
         token: token
       });
