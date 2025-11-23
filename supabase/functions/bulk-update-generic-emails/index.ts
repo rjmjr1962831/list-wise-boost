@@ -20,11 +20,14 @@ serve(async (req) => {
   }
 
   try {
+    const { limit } = await req.json();
+    const maxAgents = limit || 5; // Default to 5 for testing
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('🔍 Finding agents with generic emails or missing phone numbers...');
+    console.log(`🔍 Finding agents with generic emails or missing phone numbers (limit: ${maxAgents})...`);
 
     // Find all active agents with Zillow profiles
     const { data: agents, error: fetchError } = await supabase
@@ -38,11 +41,17 @@ serve(async (req) => {
     }
 
     // Filter for agents needing enrichment (generic email OR missing phone)
-    const agentsNeedingEnrichment = agents?.filter(agent => 
+    let agentsNeedingEnrichment = agents?.filter(agent => 
       isGenericEmail(agent.email) || !agent.phone || agent.phone.trim() === ''
     ) || [];
 
     console.log(`📧 Found ${agentsNeedingEnrichment.length} agents needing enrichment (generic emails or missing phones)`);
+    
+    // Limit the number of agents to process
+    if (agentsNeedingEnrichment.length > maxAgents) {
+      console.log(`⚠️ Limiting to first ${maxAgents} agents for this run`);
+      agentsNeedingEnrichment = agentsNeedingEnrichment.slice(0, maxAgents);
+    }
 
     const results = {
       total: agentsNeedingEnrichment.length,

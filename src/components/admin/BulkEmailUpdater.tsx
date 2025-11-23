@@ -29,16 +29,17 @@ interface BulkUpdateResult {
 export const BulkEmailUpdater = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BulkUpdateResult | null>(null);
+  const [limit, setLimit] = useState(5);
 
   const runBulkUpdate = async () => {
     setLoading(true);
     setResult(null);
     
     try {
-      toast.info('Starting bulk email update...');
+      toast.info(`Starting bulk update for ${limit} agents...`);
       
       const { data, error } = await supabase.functions.invoke('bulk-update-generic-emails', {
-        body: {}
+        body: { limit }
       });
 
       if (error) throw error;
@@ -100,6 +101,24 @@ export const BulkEmailUpdater = () => {
               Each agent is processed sequentially to avoid rate limits.
             </AlertDescription>
           </Alert>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Number of agents to update:</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={limit}
+                onChange={(e) => setLimit(Math.max(1, parseInt(e.target.value) || 1))}
+                className="flex h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                disabled={loading}
+              />
+              <span className="text-sm text-muted-foreground self-center">
+                (Use 5 for testing, increase for full updates)
+              </span>
+            </div>
+          </div>
 
           <Button 
             onClick={runBulkUpdate} 
