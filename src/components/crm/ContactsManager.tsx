@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Calendar, Search, ExternalLink, RefreshCw, Upload } from "lucide-react";
+import { Mail, Phone, Calendar, Search, ExternalLink, RefreshCw, Upload, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,7 @@ interface Contact {
   full_name: string;
   email: string;
   phone: string | null;
+  website: string | null;
   message: string;
   created_at: string;
 }
@@ -184,6 +185,19 @@ export const ContactsManager = () => {
                       <Phone className="h-4 w-4 text-muted-foreground" />
                       <a href={`tel:${contact.phone}`} className="text-primary hover:underline">
                         {contact.phone}
+                      </a>
+                    </div>
+                  )}
+                  {contact.website && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <a 
+                        href={contact.website.startsWith('http') ? contact.website : `https://${contact.website}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-primary hover:underline"
+                      >
+                        {contact.website}
                       </a>
                     </div>
                   )}

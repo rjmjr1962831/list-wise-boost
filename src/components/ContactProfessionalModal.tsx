@@ -38,6 +38,7 @@ export function ContactProfessionalModal({
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [website, setWebsite] = useState('');
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quizPreferences, setQuizPreferences] = useState<Record<string, string> | null>(null);
@@ -90,6 +91,19 @@ export function ContactProfessionalModal({
 
       const isFirstContact = !professional?.verification_token;
 
+      // Save to contacts table first
+      const { error: contactError } = await supabase
+        .from('contacts')
+        .insert({
+          full_name: fullName,
+          email: email,
+          phone: phone,
+          website: website || null,
+          message: message || '',
+        });
+
+      if (contactError) throw contactError;
+
       const { error } = await supabase.functions.invoke('send-contact-email', {
         body: {
           professionalName,
@@ -123,6 +137,7 @@ export function ContactProfessionalModal({
       setFullName('');
       setEmail('');
       setPhone('');
+      setWebsite('');
       setMessage('');
       onOpenChange(false);
     } catch (error) {
@@ -180,6 +195,17 @@ export function ContactProfessionalModal({
               onChange={(e) => setPhone(e.target.value)}
               placeholder="(555) 123-4567"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="website">Website (Optional)</Label>
+            <Input
+              id="website"
+              type="url"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              placeholder="https://example.com"
             />
           </div>
 

@@ -49,6 +49,7 @@ serve(async (req) => {
             firstname: contact.full_name.split(' ')[0] || contact.full_name,
             lastname: contact.full_name.split(' ').slice(1).join(' ') || '',
             phone: contact.phone || '',
+            website: contact.website || '',
             message: contact.message,
             lifecyclestage: 'lead',
           }
