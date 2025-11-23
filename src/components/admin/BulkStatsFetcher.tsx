@@ -1,13 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, PauseCircle, RotateCcw } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const BulkStatsFetcher = () => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0, success: 0, failed: 0 });
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const [pausedJobs, setPausedJobs] = useState<any[]>([]);
+
+  // Load paused jobs on mount
+  useEffect(() => {
+    loadPausedJobs();
+  }, []);
+
+  const loadPausedJobs = async () => {
+    const { data, error } = await supabase
+      .from('enrichment_queue')
+      .select('*')
+      .eq('job_type', 'stats')
+      .in('status', ['paused', 'running'])
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setPausedJobs(data);
+    }
+  };
+
+  const handlePause = async () => {
+    setPaused(true);
+    if (currentJobId) {
+      await supabase
+        .from('enrichment_queue')
+        .update({ 
+          status: 'paused',
+          paused_at: new Date().toISOString()
+        })
+        .eq('id', currentJobId);
+      
+      toast.info('Job paused. Progress saved to database.');
+      await loadPausedJobs();
+    }
+  };
 
   const normalizeName = (name: string) => {
     return name.toLowerCase().trim().replace(/[^a-z\s]/g, '');
@@ -20,9 +59,12 @@ export const BulkStatsFetcher = () => {
     return Math.round(years);
   };
 
-  const fetchStatsForCity = async (cityName: string) => {
+  const fetchStatsForCity = async (cityName: string, resumeJobId?: string) => {
     setIsProcessing(true);
+    setPaused(false);
     setProgress({ current: 0, total: 0, success: 0, failed: 0 });
+
+    let queueJob: any = null;
 
     try {
       // Get city ID
@@ -76,6 +118,49 @@ export const BulkStatsFetcher = () => {
         return;
       }
 
+      // Create or resume database job record
+      if (resumeJobId) {
+        const { data } = await supabase
+          .from('enrichment_queue')
+          .select('*')
+          .eq('id', resumeJobId)
+          .single();
+        
+        queueJob = data;
+        setCurrentJobId(resumeJobId);
+        
+        await supabase
+          .from('enrichment_queue')
+          .update({ 
+            status: 'running',
+            paused_at: null
+          })
+          .eq('id', resumeJobId);
+      } else {
+        const { data: newJob, error: queueError } = await supabase
+          .from('enrichment_queue')
+          .insert({
+            job_type: 'stats',
+            city_id: cityData.id,
+            city_name: cityName,
+            status: 'running',
+            total_items: professionalsToProcess.length,
+            started_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+
+        if (queueError || !newJob) {
+          toast.error('Failed to create job record');
+          setIsProcessing(false);
+          return;
+        }
+
+        queueJob = newJob;
+        setCurrentJobId(newJob.id);
+      }
+
+
       // Load and parse Arizona license CSV
       const licenseMap = new Map();
       try {
@@ -113,10 +198,11 @@ export const BulkStatsFetcher = () => {
         toast.warning('Could not load license data, will only fetch Zillow stats');
       }
 
-      let success = 0;
-      let failed = 0;
+      let success = queueJob?.successful_items || 0;
+      let failed = queueJob?.failed_items || 0;
+      const startIndex = queueJob?.current_index || 0;
 
-      for (let i = 0; i < professionalsToProcess.length; i++) {
+      for (let i = startIndex; i < professionalsToProcess.length && !paused; i++) {
         const prof = professionalsToProcess[i];
         setProgress(prev => ({ ...prev, current: i + 1 }));
 
@@ -207,9 +293,29 @@ export const BulkStatsFetcher = () => {
               success++;
               console.log(`✓ Updated ${prof.name} (rating: ${rating}): ${stats.currentListings} current, ${stats.totalSales} total, ${updateData.years_experience} years exp`);
             }
+
+            // Update database progress
+            await supabase
+              .from('enrichment_queue')
+              .update({ 
+                current_index: i + 1,
+                processed_items: i + 1,
+                successful_items: success,
+                failed_items: failed
+              })
+              .eq('id', queueJob.id);
           } else {
             console.log(`No stats found for ${prof.name} from either API`);
             failed++;
+
+            await supabase
+              .from('enrichment_queue')
+              .update({ 
+                current_index: i + 1,
+                processed_items: i + 1,
+                failed_items: failed
+              })
+              .eq('id', queueJob.id);
           }
 
           // Rate limiting: wait 2 seconds between requests
@@ -219,17 +325,40 @@ export const BulkStatsFetcher = () => {
         } catch (error) {
           console.error(`Failed to process ${prof.name}:`, error);
           failed++;
+
+          await supabase
+            .from('enrichment_queue')
+            .update({ 
+              current_index: i + 1,
+              processed_items: i + 1,
+              failed_items: failed,
+              error_message: (error as Error).message
+            })
+            .eq('id', queueJob.id);
         }
 
         setProgress(prev => ({ ...prev, success, failed }));
       }
 
-      toast.success(`Completed! ${success} succeeded, ${failed} failed`);
+      if (!paused) {
+        await supabase
+          .from('enrichment_queue')
+          .update({ 
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', queueJob.id);
+
+        toast.success(`Completed! ${success} succeeded, ${failed} failed`);
+      }
+      
+      await loadPausedJobs();
     } catch (error) {
       console.error('Error in bulk stats fetch:', error);
       toast.error('Failed to fetch stats: ' + (error as Error).message);
     } finally {
       setIsProcessing(false);
+      setCurrentJobId(null);
     }
   };
 
@@ -245,17 +374,61 @@ export const BulkStatsFetcher = () => {
           Updates: current_listings, total_sales, years_experience (from license), license_number, phone, zip_code.
         </p>
 
+        {pausedJobs.length > 0 && (
+          <Alert>
+            <AlertDescription>
+              <div className="space-y-2">
+                <div className="font-medium">{pausedJobs.length} paused job(s) available</div>
+                {pausedJobs.map(job => (
+                  <div key={job.id} className="p-3 bg-background rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <div className="font-medium">{job.city_name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Progress: {job.processed_items}/{job.total_items}
+                        </div>
+                      </div>
+                      <Button
+                        onClick={() => fetchStatsForCity(job.city_name, job.id)}
+                        disabled={isProcessing}
+                        size="sm"
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" />
+                        Resume
+                      </Button>
+                    </div>
+                    <Progress value={(job.processed_items / job.total_items) * 100} />
+                  </div>
+                ))}
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {isProcessing && (
           <div className="space-y-2 p-4 bg-muted rounded-lg">
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm">
-                Processing {progress.current} of {progress.total}...
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span className="text-sm">
+                  Processing {progress.current} of {progress.total}...
+                </span>
+              </div>
+              {!paused && (
+                <Button
+                  onClick={handlePause}
+                  variant="outline"
+                  size="sm"
+                >
+                  <PauseCircle className="mr-2 h-4 w-4" />
+                  Pause
+                </Button>
+              )}
             </div>
             <div className="text-xs text-muted-foreground">
               Success: {progress.success} | Failed: {progress.failed}
             </div>
+            <Progress value={(progress.current / progress.total) * 100} />
           </div>
         )}
 
