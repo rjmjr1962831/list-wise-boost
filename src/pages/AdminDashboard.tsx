@@ -124,16 +124,20 @@ const AdminDashboard = () => {
         <div className="mb-6 p-4 bg-card rounded-lg border">
           <h2 className="text-lg font-semibold mb-2">Download Files</h2>
           <div className="flex gap-2">
-            <Button asChild variant="outline">
-              <a href="/newly-added-cities-enriched.csv" download="newly-added-cities-enriched.csv">
-                Download Cities CSV
-              </a>
-            </Button>
-            <Button asChild variant="outline">
-              <a href="/qualified-agents-crm.csv" download="qualified-agents-crm.csv">
-                Download CRM Export (129 Agents)
-              </a>
-            </Button>
+            <a 
+              href="/newly-added-cities-enriched.csv" 
+              download="newly-added-cities-enriched.csv"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
+              Download Cities CSV
+            </a>
+            <a 
+              href="/qualified-agents-crm.csv" 
+              download="qualified-agents-crm.csv"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+            >
+              Download CRM Export (129 Agents)
+            </a>
           </div>
         </div>
 
