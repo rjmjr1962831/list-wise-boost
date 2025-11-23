@@ -32,7 +32,7 @@ serve(async (req) => {
     // Find all active agents with Zillow profiles
     const { data: agents, error: fetchError } = await supabase
       .from('professionals')
-      .select('id, name, email, phone, zillow_profile_url, city_id, category_id')
+      .select('id, name, email, phone, zillow_profile_url, city_id, category_id, review_stars_rating')
       .eq('active', true)
       .not('zillow_profile_url', 'is', null);
 
@@ -40,10 +40,12 @@ serve(async (req) => {
       throw new Error(`Failed to fetch agents: ${fetchError.message}`);
     }
 
-    // Filter for agents needing enrichment (generic email OR missing phone)
-    let agentsNeedingEnrichment = agents?.filter(agent => 
-      isGenericEmail(agent.email) || !agent.phone || agent.phone.trim() === ''
-    ) || [];
+    // Filter for agents needing enrichment (generic email OR missing phone) AND rating >= 4.8
+    let agentsNeedingEnrichment = agents?.filter(agent => {
+      const hasIssue = isGenericEmail(agent.email) || !agent.phone || agent.phone.trim() === '';
+      const goodRating = agent.review_stars_rating >= 4.8;
+      return hasIssue && goodRating;
+    }) || [];
 
     console.log(`📧 Found ${agentsNeedingEnrichment.length} agents needing enrichment (generic emails or missing phones)`);
     
