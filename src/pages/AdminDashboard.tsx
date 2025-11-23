@@ -36,6 +36,7 @@ import { ReplicateAgentPhoenix } from "@/components/admin/ReplicateAgentPhoenix"
 import { TestProxyEnrichment } from "@/components/admin/TestProxyEnrichment";
 import CitiesManager from "@/components/admin/CitiesManager";
 import { BulkEmailUpdater } from "@/components/admin/BulkEmailUpdater";
+import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -222,6 +223,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Email Updater
             </TabsTrigger>
+            <TabsTrigger value="deduplicator">
+              <Users className="mr-2 h-4 w-4" />
+              Deduplicator
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -318,6 +323,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="email-updater" className="space-y-4">
             <BulkEmailUpdater />
+          </TabsContent>
+
+          <TabsContent value="deduplicator" className="space-y-4">
+            <AgentDeduplicator />
           </TabsContent>
         </Tabs>
       </div>
