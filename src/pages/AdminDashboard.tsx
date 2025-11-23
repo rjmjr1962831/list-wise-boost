@@ -35,6 +35,7 @@ import { ProxyHealthDashboard } from "@/components/admin/ProxyHealthDashboard";
 import { ReplicateAgentPhoenix } from "@/components/admin/ReplicateAgentPhoenix";
 import { TestProxyEnrichment } from "@/components/admin/TestProxyEnrichment";
 import CitiesManager from "@/components/admin/CitiesManager";
+import { BulkEmailUpdater } from "@/components/admin/BulkEmailUpdater";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -217,6 +218,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Backfill Ratings
             </TabsTrigger>
+            <TabsTrigger value="email-updater">
+              <Database className="mr-2 h-4 w-4" />
+              Email Updater
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -309,6 +314,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="backfill" className="space-y-4">
             <BackfillScottsdaleRatings />
+          </TabsContent>
+
+          <TabsContent value="email-updater" className="space-y-4">
+            <BulkEmailUpdater />
           </TabsContent>
         </Tabs>
       </div>
