@@ -29,7 +29,7 @@ interface BulkUpdateResult {
 export const BulkEmailUpdater = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BulkUpdateResult | null>(null);
-  const [limit, setLimit] = useState(5);
+  const [limit, setLimit] = useState(50);
 
   const runBulkUpdate = async () => {
     setLoading(true);
