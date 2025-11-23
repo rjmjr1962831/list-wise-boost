@@ -53,10 +53,29 @@ export function PhoneNumberRestorer() {
 
       if (error) throw error;
 
-      setResults(data);
+      // Verify database state after restoration
+      console.log("🔍 Verifying phone numbers in database...");
+      const { count: totalAgents } = await supabase
+        .from('professionals')
+        .select('*', { count: 'exact', head: true });
+      
+      const { count: agentsWithPhones } = await supabase
+        .from('professionals')
+        .select('*', { count: 'exact', head: true })
+        .not('phone', 'is', null)
+        .neq('phone', '');
+
+      const verificationData = {
+        ...data,
+        total_agents: totalAgents || 0,
+        agents_with_phones: agentsWithPhones || 0,
+        agents_without_phones: (totalAgents || 0) - (agentsWithPhones || 0)
+      };
+
+      setResults(verificationData);
       
       toast.success(`✅ Restored ${data.phones_updated} phone numbers!`, {
-        description: `Found ${data.agents_found} agents, ${data.agents_not_found.length} not found`
+        description: `${agentsWithPhones}/${totalAgents} agents now have phone numbers`
       });
 
     } catch (error: any) {
@@ -132,7 +151,7 @@ export function PhoneNumberRestorer() {
 
         {results && (
           <div className="space-y-4 mt-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2">
@@ -140,6 +159,18 @@ export function PhoneNumberRestorer() {
                     <div>
                       <div className="text-2xl font-bold">{results.phones_updated}</div>
                       <div className="text-sm text-muted-foreground">Phones Updated</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-5 w-5 text-blue-500" />
+                    <div>
+                      <div className="text-2xl font-bold">{results.agents_with_phones}/{results.total_agents}</div>
+                      <div className="text-sm text-muted-foreground">Have Phone Numbers</div>
                     </div>
                   </div>
                 </CardContent>
