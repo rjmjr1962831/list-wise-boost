@@ -34,9 +34,13 @@ export const BulkMemo23Enricher = () => {
     
     try {
       // Fetch only city-category combinations that have existing agents from agenscrape
+      // Prioritize those not enriched in the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
       const { data: agentCombos, error: combosError } = await supabase
         .from('professionals')
-        .select('city_id, category_id, cities(name), categories(name)')
+        .select('city_id, category_id, zillow_data_fetched_at, cities(name), categories(name)')
         .eq('active', true);
 
       if (combosError) {
@@ -44,23 +48,50 @@ export const BulkMemo23Enricher = () => {
         return;
       }
 
-      // Create unique city-category combinations that have agents
-      const uniqueCombosMap = new Map<string, CityCategory>();
+      // Create unique city-category combinations that have agents needing enrichment
+      const uniqueCombosMap = new Map<string, { combo: CityCategory, needsEnrichment: boolean }>();
       for (const agent of agentCombos || []) {
         const key = `${agent.city_id}-${agent.category_id}`;
-        if (!uniqueCombosMap.has(key) && agent.cities && agent.categories) {
+        if (!agent.cities || !agent.categories) continue;
+        
+        const needsEnrichment = !agent.zillow_data_fetched_at || 
+          new Date(agent.zillow_data_fetched_at) < thirtyDaysAgo;
+        
+        if (!uniqueCombosMap.has(key)) {
           uniqueCombosMap.set(key, {
-            cityId: agent.city_id,
-            cityName: (agent.cities as any).name,
-            categoryId: agent.category_id,
-            categoryName: (agent.categories as any).name
+            combo: {
+              cityId: agent.city_id,
+              cityName: (agent.cities as any).name,
+              categoryId: agent.category_id,
+              categoryName: (agent.categories as any).name
+            },
+            needsEnrichment
           });
+        } else if (needsEnrichment) {
+          // Mark combo as needing enrichment if any agent needs it
+          uniqueCombosMap.get(key)!.needsEnrichment = true;
         }
       }
       
-      const combinations = Array.from(uniqueCombosMap.values());
+      // Filter to only combos with agents needing enrichment
+      const combinations = Array.from(uniqueCombosMap.values())
+        .filter(item => item.needsEnrichment)
+        .map(item => item.combo);
+      
+      const totalCombos = uniqueCombosMap.size;
+      const skippedCombos = totalCombos - combinations.length;
 
-      toast.info(`Starting enrichment for ${combinations.length} city-category combinations`);
+      if (skippedCombos > 0) {
+        toast.info(`⚡ Skipping ${skippedCombos} recently-enriched combinations. Processing ${combinations.length}.`);
+      } else {
+        toast.info(`Starting enrichment for ${combinations.length} city-category combinations`);
+      }
+      
+      if (combinations.length === 0) {
+        toast.success('All agents are up to date! No enrichment needed.');
+        setLoading(false);
+        return;
+      }
       
       // Initialize jobs
       const initialJobs: EnrichmentJob[] = combinations.map(combo => ({
