@@ -16,28 +16,41 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('🔍 Finding duplicate agents...');
+    console.log('🔍 Finding duplicate real estate agents by zuid...');
 
-    // Find all agents grouped by name with duplicates
-    const { data: duplicateGroups, error: fetchError } = await supabase
+    // Get real estate category ID
+    const { data: reCategory, error: catError } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('slug', 'top10realestateagents')
+      .single();
+
+    if (catError) {
+      throw new Error(`Failed to fetch category: ${catError.message}`);
+    }
+
+    // Find all real estate agents with zuid, grouped for duplicates
+    const { data: allAgents, error: fetchError } = await supabase
       .from('professionals')
-      .select('name, id, email, phone, website, review_stars_rating, updated_at, zillow_profile_url, active')
-      .eq('active', true);
+      .select('*')
+      .eq('active', true)
+      .eq('category_id', reCategory.id)
+      .not('zuid', 'is', null);
 
     if (fetchError) {
       throw new Error(`Failed to fetch agents: ${fetchError.message}`);
     }
 
-    // Group by name
-    const nameGroups = new Map<string, any[]>();
-    duplicateGroups?.forEach(agent => {
-      const existing = nameGroups.get(agent.name) || [];
+    // Group by zuid
+    const zuidGroups = new Map<string, any[]>();
+    allAgents?.forEach(agent => {
+      const existing = zuidGroups.get(agent.zuid) || [];
       existing.push(agent);
-      nameGroups.set(agent.name, existing);
+      zuidGroups.set(agent.zuid, existing);
     });
 
     // Filter to only groups with duplicates
-    const duplicates = Array.from(nameGroups.entries())
+    const duplicates = Array.from(zuidGroups.entries())
       .filter(([_, agents]) => agents.length > 1);
 
     console.log(`📊 Found ${duplicates.length} agent groups with duplicates`);
@@ -49,8 +62,8 @@ serve(async (req) => {
     };
 
     // Process each duplicate group
-    for (const [name, agents] of duplicates) {
-      console.log(`\n👥 Processing ${name} (${agents.length} duplicates)...`);
+    for (const [zuid, agents] of duplicates) {
+      console.log(`\n👥 Processing zuid ${zuid} - ${agents[0]?.name} (${agents.length} duplicates)...`);
 
       // Sort by: 1) has zillow_profile_url, 2) most recent update, 3) highest rating
       const sorted = agents.sort((a, b) => {
@@ -65,18 +78,65 @@ serve(async (req) => {
       const keepRecord = sorted[0];
       const duplicatesToRemove = sorted.slice(1);
 
-      // Merge data: collect all non-null values from duplicates
-      const mergedData: any = {
-        email: keepRecord.email,
-        phone: keepRecord.phone,
-        website: keepRecord.website
-      };
+      // Merge ALL data fields: collect non-null values from all duplicates
+      const mergedData: any = { ...keepRecord };
 
-      // Fill in missing data from duplicates
+      // Data fields to merge (prioritize non-null/non-empty values)
+      const stringFields = ['email', 'phone', 'website', 'address', 'business_name', 'company', 
+                           'license_number', 'title', 'description', 'get_to_know_me'];
+      const jsonFields = ['specialty', 'badges', 'professional_information', 'agent_sales_stats',
+                         'agent_licenses', 'reviews_data', 'past_sales', 'business_address'];
+      const numberFields = ['years_experience', 'total_sales', 'current_listings', 'num_total_reviews'];
+
+      // Merge string fields
+      for (const field of stringFields) {
+        for (const dup of duplicatesToRemove) {
+          if (!mergedData[field] && dup[field]) {
+            mergedData[field] = dup[field];
+          }
+        }
+      }
+
+      // Merge number fields (take highest value)
+      for (const field of numberFields) {
+        for (const dup of duplicatesToRemove) {
+          if (dup[field] && (!mergedData[field] || dup[field] > mergedData[field])) {
+            mergedData[field] = dup[field];
+          }
+        }
+      }
+
+      // Merge JSON/array fields (combine data)
+      for (const field of jsonFields) {
+        if (Array.isArray(mergedData[field])) {
+          // Merge arrays
+          for (const dup of duplicatesToRemove) {
+            if (Array.isArray(dup[field]) && dup[field].length > 0) {
+              mergedData[field] = [...new Set([...mergedData[field], ...dup[field]])];
+            }
+          }
+        } else if (mergedData[field] && typeof mergedData[field] === 'object') {
+          // Merge objects
+          for (const dup of duplicatesToRemove) {
+            if (dup[field] && typeof dup[field] === 'object') {
+              mergedData[field] = { ...mergedData[field], ...dup[field] };
+            }
+          }
+        } else {
+          // Use first non-null value
+          for (const dup of duplicatesToRemove) {
+            if (!mergedData[field] && dup[field]) {
+              mergedData[field] = dup[field];
+            }
+          }
+        }
+      }
+
+      // Take highest rating
       for (const dup of duplicatesToRemove) {
-        if (!mergedData.email && dup.email) mergedData.email = dup.email;
-        if (!mergedData.phone && dup.phone) mergedData.phone = dup.phone;
-        if (!mergedData.website && dup.website) mergedData.website = dup.website;
+        if (dup.review_stars_rating && (!mergedData.review_stars_rating || dup.review_stars_rating > mergedData.review_stars_rating)) {
+          mergedData.review_stars_rating = dup.review_stars_rating;
+        }
       }
 
       // Update the kept record with merged data
@@ -102,17 +162,25 @@ serve(async (req) => {
         continue;
       }
 
-      console.log(`✅ Merged ${name}: kept ${keepRecord.id}, removed ${duplicateIds.length} duplicates`);
-      console.log(`   Data: email=${mergedData.email}, phone=${mergedData.phone}, website=${mergedData.website}`);
+      console.log(`✅ Merged zuid ${zuid}: kept ${keepRecord.id}, removed ${duplicateIds.length} duplicates`);
+      console.log(`   Name: ${keepRecord.name}, Email: ${mergedData.email}, Phone: ${mergedData.phone}`);
 
       results.total_groups++;
       results.total_duplicates_removed += duplicateIds.length;
       results.groups.push({
-        name,
+        name: keepRecord.name,
         count: agents.length,
-        records: agents,
+        records: agents.map(a => ({
+          id: a.id,
+          email: a.email,
+          phone: a.phone,
+          website: a.website,
+          review_stars_rating: a.review_stars_rating
+        })),
         merged: {
-          ...mergedData,
+          email: mergedData.email,
+          phone: mergedData.phone,
+          website: mergedData.website,
           kept_id: keepRecord.id
         }
       });
