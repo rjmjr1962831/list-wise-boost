@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap, TrendingUp, Briefcase } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap, TrendingUp, Briefcase, Download } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -39,6 +39,7 @@ import { BulkEmailUpdater } from "@/components/admin/BulkEmailUpdater";
 import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
 import { PhoneNumberRestorer } from "@/components/admin/PhoneNumberRestorer";
 import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGenerator";
+import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -237,6 +238,10 @@ const AdminDashboard = () => {
               <Users className="mr-2 h-4 w-4" />
               Deduplicator
             </TabsTrigger>
+            <TabsTrigger value="crm-export">
+              <Download className="mr-2 h-4 w-4" />
+              CRM Export
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -345,6 +350,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="deduplicator" className="space-y-4">
             <AgentDeduplicator />
+          </TabsContent>
+
+          <TabsContent value="crm-export" className="space-y-4">
+            <CRMExportGenerator />
           </TabsContent>
         </Tabs>
       </div>
