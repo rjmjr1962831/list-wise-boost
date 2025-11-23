@@ -25,22 +25,30 @@ interface BulkUpdateResult {
   updated: number;
   failed: number;
   agents: AgentResult[];
+  batches?: number;
 }
 
 export const BulkEmailUpdater = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<BulkUpdateResult | null>(null);
   const [limit, setLimit] = useState(50);
+  const [processAll, setProcessAll] = useState(false);
 
-  const runBulkUpdate = async () => {
+  const runBulkUpdate = async (runAll = false) => {
     setLoading(true);
     setResult(null);
     
     try {
-      toast.info(`Starting bulk update for ${limit} agents...`);
+      const message = runAll 
+        ? 'Starting bulk update for ALL agents in batches of 50...' 
+        : `Starting bulk update for ${limit} agents...`;
+      toast.info(message);
       
       const { data, error } = await supabase.functions.invoke('bulk-update-generic-emails', {
-        body: { limit }
+        body: { 
+          limit: runAll ? undefined : limit,
+          processAll: runAll 
+        }
       });
 
       if (error) throw error;
@@ -121,27 +129,57 @@ export const BulkEmailUpdater = () => {
             </div>
           </div>
 
-          <Button 
-            onClick={runBulkUpdate} 
-            disabled={loading}
-            className="w-full"
-            size="lg"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating Emails...
-              </>
-            ) : (
-              <>
-                <Mail className="mr-2 h-4 w-4" />
-                Start Bulk Contact Update
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => runBulkUpdate(false)} 
+              disabled={loading}
+              className="flex-1"
+              size="lg"
+              variant="outline"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Update {limit} Agents
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              onClick={() => runBulkUpdate(true)} 
+              disabled={loading}
+              className="flex-1"
+              size="lg"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing All...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Update ALL Agents (Batches of 50)
+                </>
+              )}
+            </Button>
+          </div>
 
           {result && (
             <>
+              {result.batches && result.batches > 1 && (
+                <Alert>
+                  <AlertDescription>
+                    Processed {result.batches} batches of up to 50 agents each
+                  </AlertDescription>
+                </Alert>
+              )}
+              
               <div className="grid grid-cols-4 gap-4 text-sm">
                 <div className="text-center p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
                   <div className="text-2xl font-bold">{result.total}</div>
