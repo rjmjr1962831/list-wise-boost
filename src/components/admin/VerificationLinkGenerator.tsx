@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Link2, Download, RefreshCw } from 'lucide-react';
+import { Loader2, Link2, Download, RefreshCw, Upload } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface VerificationLink {
   id: string;
@@ -17,11 +18,13 @@ interface VerificationLink {
 
 export function VerificationLinkGenerator() {
   const [loading, setLoading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [links, setLinks] = useState<VerificationLink[]>([]);
   const [cityId, setCityId] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [cities, setCities] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [syncResults, setSyncResults] = useState<any>(null);
 
   useEffect(() => {
     loadFilters();
@@ -95,6 +98,41 @@ export function VerificationLinkGenerator() {
   function copyLink(link: string) {
     navigator.clipboard.writeText(link);
     toast.success('Link copied to clipboard!');
+  }
+
+  async function syncToHubSpot() {
+    if (links.length === 0) {
+      toast.error('No links to sync', {
+        description: 'Generate verification links first'
+      });
+      return;
+    }
+
+    try {
+      setSyncing(true);
+      setSyncResults(null);
+      console.log('🚀 Syncing to HubSpot...');
+
+      const { data, error } = await supabase.functions.invoke('sync-verification-links-to-hubspot', {
+        body: { links }
+      });
+
+      if (error) throw error;
+
+      setSyncResults(data.results);
+      
+      toast.success(`✅ Synced to HubSpot!`, {
+        description: `${data.results.created} created, ${data.results.updated} updated, ${data.results.failed} failed`
+      });
+
+    } catch (error: any) {
+      console.error('Error syncing to HubSpot:', error);
+      toast.error('Failed to sync to HubSpot', {
+        description: error.message
+      });
+    } finally {
+      setSyncing(false);
+    }
   }
 
   return (
@@ -177,11 +215,53 @@ export function VerificationLinkGenerator() {
               <p className="text-sm text-muted-foreground">
                 {links.length} verification links generated
               </p>
-              <Button onClick={downloadCSV} variant="outline" size="sm">
-                <Download className="mr-2 h-4 w-4" />
-                Download CSV
-              </Button>
+              <div className="flex gap-2">
+                <Button onClick={syncToHubSpot} disabled={syncing} variant="default" size="sm">
+                  {syncing ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Sync to HubSpot
+                    </>
+                  )}
+                </Button>
+                <Button onClick={downloadCSV} variant="outline" size="sm">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download CSV
+                </Button>
+              </div>
             </div>
+
+            {syncResults && (
+              <Alert>
+                <AlertDescription>
+                  <div className="space-y-1">
+                    <p className="font-semibold">HubSpot Sync Results:</p>
+                    <ul className="text-sm space-y-1">
+                      <li>✅ {syncResults.created} contacts created</li>
+                      <li>🔄 {syncResults.updated} contacts updated</li>
+                      <li>❌ {syncResults.failed} failed</li>
+                    </ul>
+                    {syncResults.errors.length > 0 && (
+                      <details className="mt-2">
+                        <summary className="cursor-pointer text-sm font-medium">
+                          View Errors ({syncResults.errors.length})
+                        </summary>
+                        <ul className="mt-2 text-xs space-y-1 text-muted-foreground">
+                          {syncResults.errors.map((error: string, i: number) => (
+                            <li key={i}>• {error}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
 
             <div className="max-h-96 overflow-auto border rounded-lg">
               <table className="w-full text-sm">
