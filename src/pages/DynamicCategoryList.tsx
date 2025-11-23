@@ -742,8 +742,8 @@ export default function DynamicCategoryList() {
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "ItemList",
-      "name": `Top ${category.plural_name} in ${city.name}, ${city.state}`,
-      "description": `Verified ${category.plural_name.toLowerCase()} with 4.8+ star ratings and 100+ reviews serving ${city.name}, ${city.state}`,
+      "name": `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
+      "description": `AI and human curated list of the top 10 ${category.plural_name.toLowerCase()} in ${city.name}, ${city.state}. Qualified with 4.8+ star ratings and 100+ verified reviews.`,
       "url": `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`,
       "numberOfItems": allProfessionals.length,
       "itemListElement": allProfessionals.slice(0, 10).map((agent, index) => ({
