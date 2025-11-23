@@ -101,7 +101,9 @@ serve(async (req) => {
       const stringFields = ['email', 'phone', 'website', 'address', 'business_name', 'company', 
                            'license_number', 'title', 'description', 'get_to_know_me'];
       const jsonFields = ['specialty', 'badges', 'professional_information', 'agent_sales_stats',
-                         'agent_licenses', 'reviews_data', 'past_sales', 'business_address'];
+                         'agent_licenses', 'reviews_data', 'past_sales', 'business_address',
+                         'phone_numbers', 'profile_types', 'ratings', 'professional_data', 
+                         'team_display_information'];
       const numberFields = ['years_experience', 'total_sales', 'current_listings', 'num_total_reviews'];
 
       // Merge string fields
