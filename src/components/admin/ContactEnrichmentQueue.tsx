@@ -89,15 +89,15 @@ export const ContactEnrichmentQueue = () => {
   const processQueue = async () => {
     setLoading(true);
     try {
-      toast.info('Processing queue batch...');
+      toast.info('Processing all pending agents...');
       
       const { data, error } = await supabase.functions.invoke('process-contact-enrichment-queue', {
-        body: { batchSize: 5 }
+        body: { batchSize: 100 } // Process up to 100 at a time
       });
 
       if (error) throw error;
 
-      toast.success(`Processed ${data.processed} agents`);
+      toast.success(`Processed ${data.processed} agents: ${data.succeeded} succeeded, ${data.failed} failed`);
       fetchStats();
     } catch (error: any) {
       console.error('Error processing queue:', error);
@@ -178,7 +178,7 @@ export const ContactEnrichmentQueue = () => {
             
             <Button 
               onClick={processQueue} 
-              disabled={loading}
+              disabled={loading || (stats?.pending === 0)}
               className="flex-1"
             >
               {loading ? (
@@ -186,7 +186,7 @@ export const ContactEnrichmentQueue = () => {
               ) : (
                 <PlayCircle className="mr-2 h-4 w-4" />
               )}
-              Process 5 Now
+              Process All ({stats?.pending || 0})
             </Button>
 
             <Button 
