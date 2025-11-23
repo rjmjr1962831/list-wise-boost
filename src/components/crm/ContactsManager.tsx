@@ -50,24 +50,29 @@ export const ContactsManager = () => {
       contact.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const extractCityFromMessage = (message: string): string | null => {
-    const cityMatch = message.match(/City:\s*([^|]+)/);
-    if (cityMatch) {
-      const city = cityMatch[1].trim();
-      // Convert "Scottsdale, Arizona" to "scottsdale-az"
-      const [cityName, state] = city.split(',').map(s => s.trim());
-      const stateAbbr = state === 'Arizona' ? 'az' : state.toLowerCase().slice(0, 2);
-      return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${stateAbbr}`;
-    }
-    return null;
-  };
+  const handleViewProfile = async (contact: Contact) => {
+    try {
+      // Search for matching professional by name
+      const { data: professionals, error } = await supabase
+        .from("professionals")
+        .select("id, name, city_id, cities(slug, state_slug)")
+        .ilike("name", `%${contact.full_name}%`)
+        .limit(1)
+        .single();
 
-  const handleViewProfile = (contact: Contact) => {
-    const citySlug = extractCityFromMessage(contact.message);
-    if (citySlug) {
-      navigate(`/${citySlug}/realtors`);
-    } else {
-      toast.error("Could not determine city for this contact");
+      if (error || !professionals) {
+        toast.error("This contact doesn't have a profile in the directory yet");
+        return;
+      }
+
+      // Navigate to their specific profile
+      const cityData = professionals.cities as any;
+      if (cityData) {
+        navigate(`/${cityData.slug}-${cityData.state_slug}/realtors`);
+      }
+    } catch (error) {
+      console.error("Error finding profile:", error);
+      toast.error("Could not find profile for this contact");
     }
   };
 
