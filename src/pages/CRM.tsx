@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogOut, Users, UserPlus, CheckSquare, BarChart3 } from "lucide-react";
 import { toast } from "sonner";
-import { ContactsManager } from "@/components/crm/ContactsManager";
 import { LeadsManager } from "@/components/crm/LeadsManager";
 import { FollowUpsManager } from "@/components/crm/FollowUpsManager";
 import { CRMDashboard } from "@/components/crm/CRMDashboard";
@@ -94,10 +93,6 @@ const CRM = () => {
               <BarChart3 className="mr-2 h-4 w-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex-1">
-              <Users className="mr-2 h-4 w-4" />
-              Contacts
-            </TabsTrigger>
             <TabsTrigger value="leads" className="flex-1">
               <UserPlus className="mr-2 h-4 w-4" />
               Leads
@@ -110,10 +105,6 @@ const CRM = () => {
 
           <TabsContent value="overview">
             <CRMDashboard />
-          </TabsContent>
-
-          <TabsContent value="contacts">
-            <ContactsManager />
           </TabsContent>
 
           <TabsContent value="leads">
