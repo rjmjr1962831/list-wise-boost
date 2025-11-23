@@ -253,8 +253,8 @@ serve(async (req) => {
         continue;
       }
       
-      if (reviewCount < 200) {
-        console.log(`Skipping ${agent.fullName} - not enough reviews: ${reviewCount} (need 200+)`);
+      if (reviewCount < 80) {
+        console.log(`Skipping ${agent.fullName} - not enough reviews: ${reviewCount} (need 80+)`);
         continue;
       }
       
