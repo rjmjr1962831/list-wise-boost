@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Calendar, Search } from "lucide-react";
+import { Mail, Phone, Calendar, Search, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface Contact {
   id: string;
@@ -21,6 +22,7 @@ export const ContactsManager = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchContacts();
@@ -47,6 +49,27 @@ export const ContactsManager = () => {
       contact.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       contact.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const extractCityFromMessage = (message: string): string | null => {
+    const cityMatch = message.match(/City:\s*([^|]+)/);
+    if (cityMatch) {
+      const city = cityMatch[1].trim();
+      // Convert "Scottsdale, Arizona" to "scottsdale-az"
+      const [cityName, state] = city.split(',').map(s => s.trim());
+      const stateAbbr = state === 'Arizona' ? 'az' : state.toLowerCase().slice(0, 2);
+      return `${cityName.toLowerCase().replace(/\s+/g, '-')}-${stateAbbr}`;
+    }
+    return null;
+  };
+
+  const handleViewProfile = (contact: Contact) => {
+    const citySlug = extractCityFromMessage(contact.message);
+    if (citySlug) {
+      navigate(`/${citySlug}/realtors`);
+    } else {
+      toast.error("Could not determine city for this contact");
+    }
+  };
 
   if (isLoading) {
     return (
@@ -112,7 +135,11 @@ export const ContactsManager = () => {
                   <p className="text-sm whitespace-pre-line">{contact.message}</p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
+                  <Button size="sm" variant="default" onClick={() => handleViewProfile(contact)}>
+                    <ExternalLink className="mr-1 h-3 w-3" />
+                    View Profile
+                  </Button>
                   <Button size="sm" variant="outline" asChild>
                     <a href={`mailto:${contact.email}`}>Reply</a>
                   </Button>
