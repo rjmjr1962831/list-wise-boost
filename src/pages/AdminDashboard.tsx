@@ -37,6 +37,7 @@ import { TestProxyEnrichment } from "@/components/admin/TestProxyEnrichment";
 import CitiesManager from "@/components/admin/CitiesManager";
 import { BulkEmailUpdater } from "@/components/admin/BulkEmailUpdater";
 import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
+import { PhoneNumberRestorer } from "@/components/admin/PhoneNumberRestorer";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -223,6 +224,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Email Updater
             </TabsTrigger>
+            <TabsTrigger value="phone-restorer">
+              <Database className="mr-2 h-4 w-4" />
+              Phone Restorer
+            </TabsTrigger>
             <TabsTrigger value="deduplicator">
               <Users className="mr-2 h-4 w-4" />
               Deduplicator
@@ -323,6 +328,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="email-updater" className="space-y-4">
             <BulkEmailUpdater />
+          </TabsContent>
+
+          <TabsContent value="phone-restorer" className="space-y-4">
+            <PhoneNumberRestorer />
           </TabsContent>
 
           <TabsContent value="deduplicator" className="space-y-4">
