@@ -35,6 +35,13 @@ interface DeduplicationResult {
 export const AgentDeduplicator = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<DeduplicationResult | null>(null);
+  const [batchProgress, setBatchProgress] = useState<{
+    batchNumber: number;
+    totalGroups: number;
+    totalRemoved: number;
+    isRunning: boolean;
+  }>({ batchNumber: 0, totalGroups: 0, totalRemoved: 0, isRunning: false });
+  const [shouldStop, setShouldStop] = useState(false);
   const { toast } = useToast();
 
   const runDeduplication = async () => {
@@ -63,6 +70,68 @@ export const AgentDeduplicator = () => {
     }
   };
 
+  const runBatchDeduplication = async () => {
+    setBatchProgress({ batchNumber: 0, totalGroups: 0, totalRemoved: 0, isRunning: true });
+    setShouldStop(false);
+    setResult(null);
+    
+    let batchNum = 0;
+    let cumulativeGroups = 0;
+    let cumulativeRemoved = 0;
+    
+    try {
+      while (!shouldStop) {
+        batchNum++;
+        setBatchProgress(prev => ({ ...prev, batchNumber: batchNum }));
+        
+        const { data, error } = await supabase.functions.invoke('deduplicate-agents');
+        
+        if (error) throw error;
+        
+        const batchResult = data as DeduplicationResult;
+        cumulativeGroups += batchResult.total_groups;
+        cumulativeRemoved += batchResult.total_duplicates_removed;
+        
+        setBatchProgress({
+          batchNumber: batchNum,
+          totalGroups: cumulativeGroups,
+          totalRemoved: cumulativeRemoved,
+          isRunning: true,
+        });
+        
+        if (batchResult.total_groups === 0) {
+          toast({
+            title: "Batch Deduplication Complete",
+            description: `All duplicates merged! Total: ${cumulativeGroups} groups, ${cumulativeRemoved} duplicates removed across ${batchNum} batches`,
+          });
+          break;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+      
+      if (shouldStop) {
+        toast({
+          title: "Batch Deduplication Stopped",
+          description: `Processed ${cumulativeGroups} groups, removed ${cumulativeRemoved} duplicates across ${batchNum} batches`,
+        });
+      }
+    } catch (error: any) {
+      console.error('Batch deduplication error:', error);
+      toast({
+        title: "Batch Deduplication Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setBatchProgress(prev => ({ ...prev, isRunning: false }));
+    }
+  };
+
+  const stopBatchDeduplication = () => {
+    setShouldStop(true);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -84,24 +153,67 @@ export const AgentDeduplicator = () => {
           </AlertDescription>
         </Alert>
 
-        <Button
-          onClick={runDeduplication}
-          disabled={loading}
-          variant="default"
-          className="w-full"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Deduplicating...
-            </>
-          ) : (
-            <>
-              <Trash2 className="mr-2 h-4 w-4" />
-              Find & Merge Duplicates
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={runDeduplication}
+            disabled={loading || batchProgress.isRunning}
+            variant="outline"
+            className="flex-1"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Single Batch
+              </>
+            )}
+          </Button>
+          <Button
+            onClick={batchProgress.isRunning ? stopBatchDeduplication : runBatchDeduplication}
+            disabled={loading}
+            variant={batchProgress.isRunning ? "destructive" : "default"}
+            className="flex-1"
+          >
+            {batchProgress.isRunning ? (
+              <>
+                <AlertCircle className="mr-2 h-4 w-4" />
+                Stop Processing
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Run All Batches
+              </>
+            )}
+          </Button>
+        </div>
+
+        {batchProgress.isRunning && (
+          <Alert className="border-primary">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <AlertTitle>Batch Processing Active</AlertTitle>
+            <AlertDescription>
+              <div className="mt-2 space-y-1 text-sm">
+                <div className="flex justify-between">
+                  <span>Current Batch:</span>
+                  <span className="font-semibold">#{batchProgress.batchNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Groups Merged:</span>
+                  <span className="font-semibold">{batchProgress.totalGroups}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Duplicates Removed:</span>
+                  <span className="font-semibold text-destructive">{batchProgress.totalRemoved}</span>
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {result && (
           <div className="space-y-4">
