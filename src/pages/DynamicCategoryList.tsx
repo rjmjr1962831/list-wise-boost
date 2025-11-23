@@ -143,7 +143,6 @@ export default function DynamicCategoryList() {
   
   const [loading, setLoading] = useState(true);
   const [isGeneratingData, setIsGeneratingData] = useState(false);
-  const [minLoadingComplete, setMinLoadingComplete] = useState(false);
   const [reviewsReady, setReviewsReady] = useState(false);
   const [city, setCity] = useState<City | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
@@ -154,11 +153,8 @@ export default function DynamicCategoryList() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
 
-  // Immediately mark loading as complete - no artificial delay
+  // Force hard refresh on mobile to prevent stale cached content
   useEffect(() => {
-    setMinLoadingComplete(true);
-    
-    // Force hard refresh on mobile browsers to prevent stale cached content
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const hasRefreshed = sessionStorage.getItem('page-refreshed');
     
@@ -731,7 +727,7 @@ export default function DynamicCategoryList() {
   }, [city, category, allProfessionals.length]);
 
 
-  if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
+  if (loading || isGeneratingData || !reviewsReady) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
         <div className="flex flex-col items-center gap-8 text-center max-w-2xl">
