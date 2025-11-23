@@ -16,7 +16,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('🔍 Finding duplicate real estate agents by zuid...');
+    console.log('🔍 Finding duplicate real estate agents by zuid or zillow_profile_url...');
 
     // Get real estate category ID
     const { data: reCategory, error: catError } = await supabase
@@ -29,28 +29,44 @@ serve(async (req) => {
       throw new Error(`Failed to fetch category: ${catError.message}`);
     }
 
-    // Find all real estate agents with zuid, grouped for duplicates
+    // Find all real estate agents with zuid OR zillow_profile_url
     const { data: allAgents, error: fetchError } = await supabase
       .from('professionals')
       .select('*')
       .eq('active', true)
       .eq('category_id', reCategory.id)
-      .not('zuid', 'is', null);
+      .or('zuid.not.is.null,zillow_profile_url.not.is.null');
 
     if (fetchError) {
       throw new Error(`Failed to fetch agents: ${fetchError.message}`);
     }
 
-    // Group by zuid
-    const zuidGroups = new Map<string, any[]>();
+    // Group by unique identifier: normalize zillow_profile_url and use zuid as fallback
+    const identifierGroups = new Map<string, any[]>();
+    
     allAgents?.forEach(agent => {
-      const existing = zuidGroups.get(agent.zuid) || [];
-      existing.push(agent);
-      zuidGroups.set(agent.zuid, existing);
+      // Create unique identifier: use normalized zillow URL or zuid
+      let identifier = '';
+      
+      if (agent.zillow_profile_url) {
+        // Normalize zillow URL: remove protocol, trailing slashes, convert to lowercase
+        identifier = agent.zillow_profile_url
+          .toLowerCase()
+          .replace(/^https?:\/\//, '')
+          .replace(/\/$/, '');
+      } else if (agent.zuid) {
+        identifier = `zuid:${agent.zuid}`;
+      }
+      
+      if (identifier) {
+        const existing = identifierGroups.get(identifier) || [];
+        existing.push(agent);
+        identifierGroups.set(identifier, existing);
+      }
     });
 
     // Filter to only groups with duplicates
-    const duplicates = Array.from(zuidGroups.entries())
+    const duplicates = Array.from(identifierGroups.entries())
       .filter(([_, agents]) => agents.length > 1);
 
     console.log(`📊 Found ${duplicates.length} agent groups with duplicates`);
@@ -62,8 +78,8 @@ serve(async (req) => {
     };
 
     // Process each duplicate group
-    for (const [zuid, agents] of duplicates) {
-      console.log(`\n👥 Processing zuid ${zuid} - ${agents[0]?.name} (${agents.length} duplicates)...`);
+    for (const [identifier, agents] of duplicates) {
+      console.log(`\n👥 Processing ${identifier} - ${agents[0]?.name} (${agents.length} duplicates)...`);
 
       // Sort by: 1) has zillow_profile_url, 2) most recent update, 3) highest rating
       const sorted = agents.sort((a, b) => {
@@ -162,7 +178,7 @@ serve(async (req) => {
         continue;
       }
 
-      console.log(`✅ Merged zuid ${zuid}: kept ${keepRecord.id}, removed ${duplicateIds.length} duplicates`);
+      console.log(`✅ Merged ${identifier}: kept ${keepRecord.id}, removed ${duplicateIds.length} duplicates`);
       console.log(`   Name: ${keepRecord.name}, Email: ${mergedData.email}, Phone: ${mergedData.phone}`);
 
       results.total_groups++;
