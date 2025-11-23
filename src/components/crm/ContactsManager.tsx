@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Phone, Calendar, Search, ExternalLink } from "lucide-react";
+import { Mail, Phone, Calendar, Search, ExternalLink, RefreshCw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,7 @@ export const ContactsManager = () => {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -76,6 +77,48 @@ export const ContactsManager = () => {
     }
   };
 
+  const handleSyncToHubspot = async (contactId: string) => {
+    try {
+      setIsSyncing(true);
+      const { data, error } = await supabase.functions.invoke('sync-contact-to-hubspot', {
+        body: { contactId }
+      });
+
+      if (error) throw error;
+
+      toast.success(`Contact ${data.action} in HubSpot successfully`);
+    } catch (error) {
+      console.error('Error syncing to HubSpot:', error);
+      toast.error('Failed to sync contact to HubSpot');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleBulkSync = async () => {
+    try {
+      setIsSyncing(true);
+      toast.info('Starting bulk sync to HubSpot...');
+      
+      const { data, error } = await supabase.functions.invoke('sync-all-contacts-to-hubspot');
+
+      if (error) throw error;
+
+      toast.success(
+        `Synced ${data.success} contacts (${data.created} created, ${data.updated} updated). ${data.failed} failed.`
+      );
+      
+      if (data.errors.length > 0) {
+        console.error('Sync errors:', data.errors);
+      }
+    } catch (error) {
+      console.error('Error in bulk sync:', error);
+      toast.error('Failed to sync contacts to HubSpot');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -88,7 +131,17 @@ export const ContactsManager = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Search Contacts</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Search Contacts</CardTitle>
+            <Button 
+              onClick={handleBulkSync} 
+              disabled={isSyncing}
+              variant="outline"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              {isSyncing ? 'Syncing...' : 'Sync All to HubSpot'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="relative">
@@ -141,7 +194,16 @@ export const ContactsManager = () => {
                 </div>
 
                 <div className="flex gap-2 flex-wrap">
-                  <Button size="sm" variant="default" onClick={() => handleViewProfile(contact)}>
+                  <Button 
+                    size="sm" 
+                    variant="default" 
+                    onClick={() => handleSyncToHubspot(contact.id)}
+                    disabled={isSyncing}
+                  >
+                    <RefreshCw className="mr-1 h-3 w-3" />
+                    Sync to HubSpot
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleViewProfile(contact)}>
                     <ExternalLink className="mr-1 h-3 w-3" />
                     View Profile
                   </Button>
