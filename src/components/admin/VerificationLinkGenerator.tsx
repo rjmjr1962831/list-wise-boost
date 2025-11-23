@@ -39,8 +39,8 @@ export function VerificationLinkGenerator() {
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [links, setLinks] = useState<VerificationLink[]>([]);
-  const [cityId, setCityId] = useState<string>('');
-  const [categoryId, setCategoryId] = useState<string>('');
+  const [cityId, setCityId] = useState<string>('all');
+  const [categoryId, setCategoryId] = useState<string>('all');
   const [cities, setCities] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [syncResults, setSyncResults] = useState<any>(null);
@@ -72,7 +72,11 @@ export function VerificationLinkGenerator() {
       console.log('🔗 Generating verification links...');
 
       const { data, error } = await supabase.functions.invoke('generate-verification-links', {
-        body: { cityId, categoryId, regenerate }
+        body: { 
+          cityId: cityId === 'all' ? '' : cityId, 
+          categoryId: categoryId === 'all' ? '' : categoryId, 
+          regenerate 
+        }
       });
 
       if (error) throw error;
@@ -221,7 +225,7 @@ export function VerificationLinkGenerator() {
                 <SelectValue placeholder="All cities" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All cities</SelectItem>
+                <SelectItem value="all">All cities</SelectItem>
                 {cities.map(city => (
                   <SelectItem key={city.id} value={city.id}>
                     {city.name}, {city.state}
@@ -238,7 +242,7 @@ export function VerificationLinkGenerator() {
                 <SelectValue placeholder="All categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All categories</SelectItem>
+                <SelectItem value="all">All categories</SelectItem>
                 {categories.map(category => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
