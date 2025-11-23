@@ -11,7 +11,9 @@ import { Badge } from '@/components/ui/badge';
 interface AgentResult {
   name: string;
   oldEmail: string;
+  oldPhone: string | null;
   newEmail: string | null;
+  newPhone: string | null;
   status: 'updated' | 'unchanged' | 'failed' | 'error';
   error?: string;
 }
@@ -87,14 +89,14 @@ export const BulkEmailUpdater = () => {
             Bulk Email Updater
           </CardTitle>
           <CardDescription>
-            Find agents with generic emails (info@, contact@) and update with personal emails from memo23
+            Find agents with generic emails (info@, contact@) or missing phone numbers and re-enrich from memo23
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertDescription>
               This will scan all active agents for generic email addresses (info@, contact@, hello@, etc.) 
-              and re-enrich their profiles from memo23 to extract personal email addresses. 
+              or missing phone numbers and re-enrich their profiles from memo23 to extract personal contact details. 
               Each agent is processed sequentially to avoid rate limits.
             </AlertDescription>
           </Alert>
@@ -113,7 +115,7 @@ export const BulkEmailUpdater = () => {
             ) : (
               <>
                 <Mail className="mr-2 h-4 w-4" />
-                Start Bulk Email Update
+                Start Bulk Contact Update
               </>
             )}
           </Button>
@@ -158,13 +160,25 @@ export const BulkEmailUpdater = () => {
                       </div>
                       <div className="text-xs space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-muted-foreground">Old:</span>
-                          <span className="font-mono text-red-600 dark:text-red-400">{agent.oldEmail}</span>
+                          <span className="text-muted-foreground">Old Email:</span>
+                          <span className="font-mono text-red-600 dark:text-red-400">{agent.oldEmail || 'N/A'}</span>
                         </div>
                         {agent.newEmail && agent.newEmail !== agent.oldEmail && (
                           <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground">New:</span>
+                            <span className="text-muted-foreground">New Email:</span>
                             <span className="font-mono text-green-600 dark:text-green-400">{agent.newEmail}</span>
+                          </div>
+                        )}
+                        {(!agent.oldPhone || agent.oldPhone.trim() === '') && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">Old Phone:</span>
+                            <span className="font-mono text-red-600 dark:text-red-400">Missing</span>
+                          </div>
+                        )}
+                        {agent.newPhone && agent.newPhone !== agent.oldPhone && agent.newPhone.trim() !== '' && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">New Phone:</span>
+                            <span className="font-mono text-green-600 dark:text-green-400">{agent.newPhone}</span>
                           </div>
                         )}
                       </div>

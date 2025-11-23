@@ -24,27 +24,28 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('🔍 Finding agents with generic emails...');
+    console.log('🔍 Finding agents with generic emails or missing phone numbers...');
 
-    // Find all active agents with generic emails
+    // Find all active agents with Zillow profiles
     const { data: agents, error: fetchError } = await supabase
       .from('professionals')
-      .select('id, name, email, zillow_profile_url, city_id, category_id')
+      .select('id, name, email, phone, zillow_profile_url, city_id, category_id')
       .eq('active', true)
-      .not('email', 'is', null)
       .not('zillow_profile_url', 'is', null);
 
     if (fetchError) {
       throw new Error(`Failed to fetch agents: ${fetchError.message}`);
     }
 
-    // Filter for generic emails
-    const agentsWithGenericEmails = agents?.filter(agent => isGenericEmail(agent.email)) || [];
+    // Filter for agents needing enrichment (generic email OR missing phone)
+    const agentsNeedingEnrichment = agents?.filter(agent => 
+      isGenericEmail(agent.email) || !agent.phone || agent.phone.trim() === ''
+    ) || [];
 
-    console.log(`📧 Found ${agentsWithGenericEmails.length} agents with generic emails`);
+    console.log(`📧 Found ${agentsNeedingEnrichment.length} agents needing enrichment (generic emails or missing phones)`);
 
     const results = {
-      total: agentsWithGenericEmails.length,
+      total: agentsNeedingEnrichment.length,
       processed: 0,
       updated: 0,
       failed: 0,
@@ -52,11 +53,15 @@ serve(async (req) => {
     };
 
     // Process each agent
-    for (const agent of agentsWithGenericEmails) {
+    for (const agent of agentsNeedingEnrichment) {
       results.processed++;
       
       try {
-        console.log(`\n🔄 Processing ${agent.name} (${agent.email})...`);
+        const reasons = [];
+        if (isGenericEmail(agent.email)) reasons.push('generic email');
+        if (!agent.phone || agent.phone.trim() === '') reasons.push('missing phone');
+        
+        console.log(`\n🔄 Processing ${agent.name} (${reasons.join(', ')})...`);
         
         // Call fetch-single-memo23-agent to re-enrich
         const { data: enrichData, error: enrichError } = await supabase.functions.invoke(
@@ -72,38 +77,49 @@ serve(async (req) => {
           results.agents.push({
             name: agent.name,
             oldEmail: agent.email,
+            oldPhone: agent.phone,
             newEmail: null,
+            newPhone: null,
             status: 'failed',
             error: enrichError.message
           });
           continue;
         }
 
-        // Check if email was updated
+        // Check if email or phone was updated
         const { data: updatedAgent } = await supabase
           .from('professionals')
-          .select('email')
+          .select('email, phone')
           .eq('id', agent.id)
           .single();
 
         const newEmail = updatedAgent?.email;
-        const wasUpdated = newEmail && newEmail !== agent.email && !isGenericEmail(newEmail);
+        const newPhone = updatedAgent?.phone;
+        const emailUpdated = newEmail && newEmail !== agent.email && !isGenericEmail(newEmail);
+        const phoneUpdated = newPhone && newPhone !== agent.phone && newPhone.trim() !== '';
 
-        if (wasUpdated) {
-          console.log(`✅ Updated ${agent.name}: ${agent.email} → ${newEmail}`);
+        if (emailUpdated || phoneUpdated) {
+          const changes = [];
+          if (emailUpdated) changes.push(`email: ${agent.email} → ${newEmail}`);
+          if (phoneUpdated) changes.push(`phone: ${agent.phone || 'missing'} → ${newPhone}`);
+          console.log(`✅ Updated ${agent.name}: ${changes.join(', ')}`);
           results.updated++;
           results.agents.push({
             name: agent.name,
             oldEmail: agent.email,
+            oldPhone: agent.phone,
             newEmail: newEmail,
+            newPhone: newPhone,
             status: 'updated'
           });
         } else {
-          console.log(`⚠️ No personal email found for ${agent.name}`);
+          console.log(`⚠️ No improvements found for ${agent.name}`);
           results.agents.push({
             name: agent.name,
             oldEmail: agent.email,
+            oldPhone: agent.phone,
             newEmail: newEmail || agent.email,
+            newPhone: newPhone || agent.phone,
             status: 'unchanged'
           });
         }
@@ -117,7 +133,9 @@ serve(async (req) => {
         results.agents.push({
           name: agent.name,
           oldEmail: agent.email,
+          oldPhone: agent.phone,
           newEmail: null,
+          newPhone: null,
           status: 'error',
           error: error.message
         });
