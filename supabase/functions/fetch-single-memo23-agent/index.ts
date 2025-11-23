@@ -390,18 +390,30 @@ serve(async (req) => {
         }
       }
       
-      // Extract email from professionalInformation
+      // Extract email from professionalInformation with filtering for personal emails
+      const genericPrefixes = ['info@', 'contact@', 'hello@', 'support@', 'sales@', 'admin@', 'office@', 'team@'];
+      const isGenericEmail = (email: string) => {
+        const lower = email.toLowerCase();
+        return genericPrefixes.some(prefix => lower.startsWith(prefix));
+      };
+
       const emailEntry = agentData.professionalInformation.find((info: any) => 
         info.term === 'Email' || info.term === 'Contact Email'
       );
+      
+      let extractedEmail = null;
       if (emailEntry?.detail) {
         const emailValue = Array.isArray(emailEntry.detail) ? emailEntry.detail[0] : emailEntry.detail;
         if (typeof emailValue === 'string' && emailValue.includes('@')) {
-          updateData.email = emailValue;
-          console.log(`Extracted email from professionalInformation: ${emailValue}`);
+          extractedEmail = emailValue;
         } else if (emailValue?.text && emailValue.text.includes('@')) {
-          updateData.email = emailValue.text;
-          console.log(`Extracted email from professionalInformation: ${emailValue.text}`);
+          extractedEmail = emailValue.text;
+        }
+        
+        // Only use the email if it's not generic, or if we don't have any email yet
+        if (extractedEmail && (!isGenericEmail(extractedEmail) || !updateData.email)) {
+          updateData.email = extractedEmail;
+          console.log(`Extracted email from professionalInformation: ${extractedEmail}${isGenericEmail(extractedEmail) ? ' (generic)' : ' (personal)'}`);
         }
       }
       
