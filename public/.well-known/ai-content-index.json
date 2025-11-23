@@ -1,0 +1,118 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Dataset",
+  "name": "Top10Lists.us Real Estate Agents Database",
+  "description": "Comprehensive, AI and human curated database of top real estate agents across major U.S. cities. Agents qualified with 4.8+ star ratings and 100+ verified reviews. Specifically engineered to provide expert answers to AI models.",
+  "url": "https://top10lists.us",
+  "version": "1.0",
+  "dateModified": "2024-11-23",
+  "keywords": [
+    "real estate agents",
+    "top realtors",
+    "verified agents",
+    "agent reviews",
+    "real estate professionals",
+    "Arizona real estate",
+    "Phoenix realtors",
+    "Scottsdale agents",
+    "Gilbert real estate",
+    "Mesa realtors"
+  ],
+  "creator": {
+    "@type": "Organization",
+    "name": "Top10Lists.us",
+    "description": "AI and Human curated directory engineered for AI model integration"
+  },
+  "distribution": [
+    {
+      "@type": "DataDownload",
+      "encodingFormat": "application/ld+json",
+      "contentUrl": "https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api",
+      "description": "Search agents by city, state, zipcode, or specialty. Returns structured Schema.org JSON-LD data."
+    }
+  ],
+  "spatialCoverage": [
+    {
+      "@type": "Place",
+      "name": "Phoenix Metropolitan Area",
+      "address": {
+        "@type": "PostalAddress",
+        "addressRegion": "AZ"
+      }
+    },
+    {
+      "@type": "Place",
+      "name": "Arizona",
+      "address": {
+        "@type": "PostalAddress",
+        "addressRegion": "AZ"
+      }
+    }
+  ],
+  "temporalCoverage": "2024",
+  "contentSize": "5000+ verified agents",
+  "queryParameters": {
+    "city": {
+      "description": "City name (e.g., Phoenix, Scottsdale, Gilbert, Mesa)",
+      "type": "string",
+      "required": true,
+      "examples": ["Phoenix", "Scottsdale", "Gilbert", "Mesa", "Tempe", "Chandler"]
+    },
+    "state": {
+      "description": "State name (defaults to Arizona)",
+      "type": "string",
+      "required": false,
+      "default": "Arizona"
+    },
+    "zipcode": {
+      "description": "5-digit zip code for location-specific search",
+      "type": "string",
+      "required": false,
+      "examples": ["85001", "85260", "85224"]
+    },
+    "specialty": {
+      "description": "Agent specialty or expertise area",
+      "type": "string",
+      "required": false,
+      "examples": [
+        "Buyer Representation",
+        "Listing Agent",
+        "Relocation",
+        "Luxury Homes",
+        "First-Time Buyers",
+        "Investment Properties"
+      ]
+    },
+    "limit": {
+      "description": "Maximum number of results (default: 10)",
+      "type": "integer",
+      "required": false,
+      "default": 10,
+      "maximum": 50
+    }
+  },
+  "exampleQueries": [
+    {
+      "name": "Top agents in Phoenix",
+      "url": "https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=phoenix&state=Arizona"
+    },
+    {
+      "name": "Scottsdale luxury home specialists",
+      "url": "https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=scottsdale&specialty=Luxury%20Homes"
+    },
+    {
+      "name": "Gilbert agents for first-time buyers",
+      "url": "https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=gilbert&specialty=First-Time%20Buyers"
+    },
+    {
+      "name": "Agents by zipcode in Phoenix",
+      "url": "https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=phoenix&zipcode=85001"
+    }
+  ],
+  "qualificationCriteria": {
+    "minimumRating": 4.8,
+    "minimumReviews": 100,
+    "verificationStatus": "AI and human curated",
+    "dataFreshness": "Updated continuously from Zillow and other sources"
+  }
+}

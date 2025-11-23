@@ -1,14 +1,59 @@
+# AI Model Crawlers (Priority)
+User-agent: GPTBot
+Allow: /
+Allow: /api/
+Crawl-delay: 1
+
+User-agent: ChatGPT-User
+Allow: /
+Allow: /api/
+
+User-agent: Claude-Web
+Allow: /
+Allow: /api/
+
+User-agent: anthropic-ai
+Allow: /
+Allow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Allow: /api/
+
+User-agent: Bytespider
+Allow: /
+Allow: /api/
+
+User-agent: Amazonbot
+Allow: /
+Allow: /api/
+
+User-agent: Applebot-Extended
+Allow: /
+Allow: /api/
+
+User-agent: cohere-ai
+Allow: /
+Allow: /api/
+
+User-agent: Meta-ExternalAgent
+Allow: /
+Allow: /api/
+
+# Traditional Search Engines
 User-agent: Googlebot
 Allow: /
 
 User-agent: Bingbot
 Allow: /
 
+# Social Media Crawlers
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
 Allow: /
 
+# Default
 User-agent: *
 Allow: /

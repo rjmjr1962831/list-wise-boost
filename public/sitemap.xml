@@ -1,15 +1,76 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Homepage -->
   <url>
     <loc>https://top10lists.us/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+  
+  <!-- API Endpoints for AI Discovery -->
+  <url>
+    <loc>https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=phoenix</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=scottsdale</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=gilbert</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/agents-search-api?city=mesa</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- AI Content Index -->
+  <url>
+    <loc>https://top10lists.us/.well-known/ai-content-index.json</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- Dynamic City Pages -->
+  <url>
+    <loc>https://top10lists.us/az/phoenix/top10realestateagents</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://top10lists.us/az/scottsdale/top10realestateagents</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://top10lists.us/az/gilbert/top10realestateagents</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://top10lists.us/az/mesa/top10realestateagents</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Legacy Pages -->
   <url>
     <loc>https://top10lists.us/gilbert-realtors</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  
   <url>
     <loc>https://top10lists.us/gilbert-dentists</loc>
     <changefreq>monthly</changefreq>

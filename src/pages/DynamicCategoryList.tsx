@@ -735,6 +735,81 @@ export default function DynamicCategoryList() {
   }, [city, category, allProfessionals.length]);
 
 
+  // Generate structured data for LLM/SEO
+  useEffect(() => {
+    if (!city || !category || allProfessionals.length === 0) return;
+
+    const structuredData = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": `Top ${category.plural_name} in ${city.name}, ${city.state}`,
+      "description": `Verified ${category.plural_name.toLowerCase()} with 4.8+ star ratings and 100+ reviews serving ${city.name}, ${city.state}`,
+      "url": `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`,
+      "numberOfItems": allProfessionals.length,
+      "itemListElement": allProfessionals.slice(0, 10).map((agent, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "RealEstateAgent",
+          "@id": `https://top10lists.us/agent/${agent.id}`,
+          "name": agent.name,
+          "description": agent.description || `Professional ${category.name.toLowerCase()} serving ${city.name}, ${city.state}`,
+          "email": agent.email || undefined,
+          "telephone": agent.phone || undefined,
+          "url": agent.website || undefined,
+          "image": agent.image || undefined,
+          "address": agent.address ? {
+            "@type": "PostalAddress",
+            "streetAddress": agent.address,
+            "addressLocality": city.name,
+            "addressRegion": city.state
+          } : undefined,
+          "areaServed": {
+            "@type": "City",
+            "name": city.name,
+            "containedInPlace": {
+              "@type": "State",
+              "name": city.state
+            }
+          },
+          "knowsAbout": agent.specialties || [],
+          "aggregateRating": agent.rating > 0 ? {
+            "@type": "AggregateRating",
+            "ratingValue": agent.rating,
+            "reviewCount": agent.reviews,
+            "bestRating": 5,
+            "worstRating": 1
+          } : undefined,
+          "yearsInOperation": agent.stats?.yearsExperience || undefined,
+          "memberOf": agent.company ? {
+            "@type": "Organization",
+            "name": agent.company
+          } : undefined
+        }
+      }))
+    };
+
+    // Inject structured data into document head
+    const scriptId = 'structured-data-jsonld';
+    let script = document.getElementById(scriptId) as HTMLScriptElement;
+    
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.type = 'application/ld+json';
+      document.head.appendChild(script);
+    }
+    
+    script.textContent = JSON.stringify(structuredData);
+
+    return () => {
+      const existingScript = document.getElementById(scriptId);
+      if (existingScript) {
+        existingScript.remove();
+      }
+    };
+  }, [city, category, allProfessionals]);
+
   if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
