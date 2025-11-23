@@ -9,8 +9,31 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function PhoneNumberRestorer() {
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [csvData, setCsvData] = useState("");
   const [results, setResults] = useState<any>(null);
+
+  const loadCSVFile = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/qualified-agents-crm.csv');
+      if (!response.ok) {
+        throw new Error('CSV file not found');
+      }
+      const text = await response.text();
+      setCsvData(text);
+      toast.success("CSV file loaded!", {
+        description: `${text.split('\n').length - 1} rows ready to process`
+      });
+    } catch (error: any) {
+      console.error("Failed to load CSV:", error);
+      toast.error("Failed to load CSV file", {
+        description: "Make sure qualified-agents-crm.csv exists in the public folder"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleRestore = async () => {
     if (!csvData.trim()) {
@@ -58,15 +81,38 @@ export function PhoneNumberRestorer() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Button 
+            onClick={loadCSVFile} 
+            disabled={isLoading}
+            variant="outline"
+            className="flex-1"
+          >
+            {isLoading ? (
+              <>Loading...</>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Load CSV from File
+              </>
+            )}
+          </Button>
+        </div>
+
         <div className="space-y-2">
-          <label className="text-sm font-medium">Paste CSV Data:</label>
+          <label className="text-sm font-medium">CSV Data:</label>
           <Textarea
-            placeholder="Name,Brokerage,City,State,Rank,Email,Phone,Website,Rating,Reviews&#10;John Doe,Realty Co,Phoenix,Arizona,1,john@example.com,(480) 555-1234,..."
+            placeholder="Click 'Load CSV from File' to auto-load, or paste CSV data manually..."
             value={csvData}
             onChange={(e) => setCsvData(e.target.value)}
             rows={8}
             className="font-mono text-xs"
           />
+          {csvData && (
+            <p className="text-xs text-muted-foreground">
+              {csvData.split('\n').length - 1} rows loaded
+            </p>
+          )}
         </div>
 
         <Button 
@@ -78,7 +124,7 @@ export function PhoneNumberRestorer() {
             <>Processing...</>
           ) : (
             <>
-              <Upload className="mr-2 h-4 w-4" />
+              <Phone className="mr-2 h-4 w-4" />
               Restore Phone Numbers
             </>
           )}
