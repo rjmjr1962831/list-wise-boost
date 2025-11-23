@@ -111,11 +111,18 @@ const AdminDashboard = () => {
 
         <div className="mb-6 p-4 bg-card rounded-lg border">
           <h2 className="text-lg font-semibold mb-2">Download Files</h2>
-          <Button asChild variant="outline">
-            <a href="/newly-added-cities-enriched.csv" download="newly-added-cities-enriched.csv">
-              Download Cities CSV
-            </a>
-          </Button>
+          <div className="flex gap-2">
+            <Button asChild variant="outline">
+              <a href="/newly-added-cities-enriched.csv" download="newly-added-cities-enriched.csv">
+                Download Cities CSV
+              </a>
+            </Button>
+            <Button asChild variant="outline">
+              <a href="/qualified-agents-crm.csv" download="qualified-agents-crm.csv">
+                Download CRM Export (129 Agents)
+              </a>
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="categories" className="space-y-6">
