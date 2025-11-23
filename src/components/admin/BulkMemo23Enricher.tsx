@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, PlayCircle, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, PlayCircle, CheckCircle2, XCircle, PauseCircle, RotateCcw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
@@ -24,11 +24,202 @@ interface EnrichmentJob {
 
 export const BulkMemo23Enricher = () => {
   const [loading, setLoading] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [jobs, setJobs] = useState<EnrichmentJob[]>([]);
   const [progress, setProgress] = useState(0);
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  const [pausedJobs, setPausedJobs] = useState<any[]>([]);
+
+  // Load paused jobs on mount
+  useEffect(() => {
+    loadPausedJobs();
+  }, []);
+
+  const loadPausedJobs = async () => {
+    const { data, error } = await supabase
+      .from('enrichment_queue')
+      .select('*')
+      .eq('job_type', 'memo23')
+      .in('status', ['paused', 'running'])
+      .order('created_at', { ascending: false });
+
+    if (!error && data) {
+      setPausedJobs(data);
+    }
+  };
+
+  const handlePause = async () => {
+    setPaused(true);
+    if (currentJobId) {
+      await supabase
+        .from('enrichment_queue')
+        .update({ 
+          status: 'paused',
+          paused_at: new Date().toISOString()
+        })
+        .eq('id', currentJobId);
+      
+      toast.info('Job paused. Progress saved to database.');
+      await loadPausedJobs();
+    }
+  };
+
+  const resumeJob = async (queueJob: any) => {
+    setLoading(true);
+    setPaused(false);
+    setCurrentJobId(queueJob.id);
+
+    try {
+      // Update status to running
+      await supabase
+        .from('enrichment_queue')
+        .update({ 
+          status: 'running',
+          paused_at: null
+        })
+        .eq('id', queueJob.id);
+
+      // Fetch combinations again
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const { data: agentCombos, error: combosError } = await supabase
+        .from('professionals')
+        .select('city_id, category_id, zillow_data_fetched_at, cities(name), categories(name)')
+        .eq('active', true)
+        .eq('city_id', queueJob.city_id);
+
+      if (combosError) {
+        toast.error('Failed to resume job');
+        return;
+      }
+
+      const uniqueCombosMap = new Map<string, { combo: CityCategory, needsEnrichment: boolean }>();
+      for (const agent of agentCombos || []) {
+        const key = `${agent.city_id}-${agent.category_id}`;
+        if (!agent.cities || !agent.categories) continue;
+        
+        const needsEnrichment = !agent.zillow_data_fetched_at || 
+          new Date(agent.zillow_data_fetched_at) < thirtyDaysAgo;
+        
+        if (!uniqueCombosMap.has(key)) {
+          uniqueCombosMap.set(key, {
+            combo: {
+              cityId: agent.city_id,
+              cityName: (agent.cities as any).name,
+              categoryId: agent.category_id,
+              categoryName: (agent.categories as any).name
+            },
+            needsEnrichment
+          });
+        } else if (needsEnrichment) {
+          uniqueCombosMap.get(key)!.needsEnrichment = true;
+        }
+      }
+      
+      const combinations = Array.from(uniqueCombosMap.values())
+        .filter(item => item.needsEnrichment)
+        .map(item => item.combo);
+
+      const initialJobs: EnrichmentJob[] = combinations.map(combo => ({
+        id: `${combo.cityId}-${combo.categoryId}`,
+        cityName: combo.cityName,
+        categoryName: combo.categoryName,
+        status: 'pending' as const
+      }));
+      setJobs(initialJobs);
+
+      // Resume from where we left off
+      for (let i = queueJob.current_index; i < combinations.length && !paused; i++) {
+        const combo = combinations[i];
+        const jobId = `${combo.cityId}-${combo.categoryId}`;
+        
+        setJobs(prev => prev.map(j => 
+          j.id === jobId ? { ...j, status: 'running' as const } : j
+        ));
+
+        try {
+          const { data, error } = await supabase.functions.invoke('fetch-memo23-agents', {
+            body: { 
+              cityId: combo.cityId,
+              categoryId: combo.categoryId
+            }
+          });
+
+          if (error) throw error;
+
+          setJobs(prev => prev.map(j => 
+            j.id === jobId 
+              ? { 
+                  ...j, 
+                  status: 'success' as const, 
+                  message: `Enriched ${data?.imported || 0} profiles` 
+                } 
+              : j
+          ));
+          
+          // Update database progress
+          await supabase
+            .from('enrichment_queue')
+            .update({ 
+              current_index: i + 1,
+              processed_items: i + 1,
+              successful_items: queueJob.successful_items + 1
+            })
+            .eq('id', queueJob.id);
+
+        } catch (error: any) {
+          setJobs(prev => prev.map(j => 
+            j.id === jobId 
+              ? { 
+                  ...j, 
+                  status: 'error' as const, 
+                  message: error.message || 'Unknown error' 
+                } 
+              : j
+          ));
+
+          await supabase
+            .from('enrichment_queue')
+            .update({ 
+              current_index: i + 1,
+              processed_items: i + 1,
+              failed_items: queueJob.failed_items + 1
+            })
+            .eq('id', queueJob.id);
+        }
+        
+        setProgress(((i + 1) / combinations.length) * 100);
+        
+        if (i < combinations.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+      }
+
+      if (!paused) {
+        await supabase
+          .from('enrichment_queue')
+          .update({ 
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', queueJob.id);
+
+        toast.success('Job completed!');
+      }
+      
+      await loadPausedJobs();
+    } catch (error: any) {
+      toast.error(`Resume failed: ${error.message}`);
+    } finally {
+      setLoading(false);
+      setCurrentJobId(null);
+    }
+  };
 
   const runBulkEnrichment = async () => {
     setLoading(true);
+    setPaused(false);
     setJobs([]);
     setProgress(0);
     
@@ -92,6 +283,30 @@ export const BulkMemo23Enricher = () => {
         setLoading(false);
         return;
       }
+
+      // Create database job record
+      const { data: queueJob, error: queueError } = await supabase
+        .from('enrichment_queue')
+        .insert({
+          job_type: 'memo23',
+          city_id: combinations[0].cityId,
+          city_name: combinations[0].cityName,
+          category_id: combinations[0].categoryId,
+          category_name: combinations[0].categoryName,
+          status: 'running',
+          total_items: combinations.length,
+          started_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (queueError || !queueJob) {
+        toast.error('Failed to create job record');
+        setLoading(false);
+        return;
+      }
+
+      setCurrentJobId(queueJob.id);
       
       // Initialize jobs
       const initialJobs: EnrichmentJob[] = combinations.map(combo => ({
@@ -103,7 +318,7 @@ export const BulkMemo23Enricher = () => {
       setJobs(initialJobs);
 
       // Process each combination sequentially
-      for (let i = 0; i < combinations.length; i++) {
+      for (let i = 0; i < combinations.length && !paused; i++) {
         const combo = combinations[i];
         const jobId = `${combo.cityId}-${combo.categoryId}`;
         
@@ -136,6 +351,16 @@ export const BulkMemo23Enricher = () => {
               : j
           ));
           
+          // Update database progress
+          await supabase
+            .from('enrichment_queue')
+            .update({ 
+              current_index: i + 1,
+              processed_items: i + 1,
+              successful_items: queueJob.successful_items + 1
+            })
+            .eq('id', queueJob.id);
+          
           toast.success(`✓ ${combo.cityName} - ${combo.categoryName}`);
         } catch (error: any) {
           console.error(`Error enriching ${combo.cityName} - ${combo.categoryName}:`, error);
@@ -150,6 +375,16 @@ export const BulkMemo23Enricher = () => {
                 } 
               : j
           ));
+
+          await supabase
+            .from('enrichment_queue')
+            .update({ 
+              current_index: i + 1,
+              processed_items: i + 1,
+              failed_items: queueJob.failed_items + 1,
+              error_message: error.message
+            })
+            .eq('id', queueJob.id);
         }
         
         // Update progress
@@ -161,12 +396,25 @@ export const BulkMemo23Enricher = () => {
         }
       }
 
-      toast.success('Bulk enrichment completed!');
+      if (!paused) {
+        await supabase
+          .from('enrichment_queue')
+          .update({ 
+            status: 'completed',
+            completed_at: new Date().toISOString()
+          })
+          .eq('id', queueJob.id);
+
+        toast.success('Bulk enrichment completed!');
+      }
+      
+      await loadPausedJobs();
     } catch (error: any) {
       console.error('Error in bulk enrichment:', error);
       toast.error(`Bulk enrichment failed: ${error.message}`);
     } finally {
       setLoading(false);
+      setCurrentJobId(null);
     }
   };
 
@@ -204,24 +452,70 @@ export const BulkMemo23Enricher = () => {
             </AlertDescription>
           </Alert>
 
-          <Button 
-            onClick={runBulkEnrichment} 
-            disabled={loading}
-            className="w-full"
-            size="lg"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Enriching... {Math.round(progress)}%
-              </>
-            ) : (
-              <>
-                <PlayCircle className="mr-2 h-4 w-4" />
-                Start Bulk Enrichment
-              </>
+          {pausedJobs.length > 0 && (
+            <Alert>
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <span>{pausedJobs.length} paused job(s) available to resume</span>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <div className="flex gap-2">
+            <Button 
+              onClick={runBulkEnrichment} 
+              disabled={loading}
+              className="flex-1"
+              size="lg"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Enriching... {Math.round(progress)}%
+                </>
+              ) : (
+                <>
+                  <PlayCircle className="mr-2 h-4 w-4" />
+                  Start New Job
+                </>
+              )}
+            </Button>
+
+            {loading && !paused && (
+              <Button 
+                onClick={handlePause}
+                variant="outline"
+                size="lg"
+              >
+                <PauseCircle className="mr-2 h-4 w-4" />
+                Pause
+              </Button>
             )}
-          </Button>
+          </div>
+
+          {pausedJobs.map(job => (
+            <div key={job.id} className="p-4 bg-muted rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <div className="font-medium">{job.city_name} - {job.category_name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Progress: {job.processed_items}/{job.total_items} 
+                    ({Math.round((job.processed_items / job.total_items) * 100)}%)
+                  </div>
+                </div>
+                <Button
+                  onClick={() => resumeJob(job)}
+                  disabled={loading}
+                  size="sm"
+                >
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Resume
+                </Button>
+              </div>
+              <Progress value={(job.processed_items / job.total_items) * 100} className="w-full" />
+            </div>
+          ))}
 
           {jobs.length > 0 && (
             <>

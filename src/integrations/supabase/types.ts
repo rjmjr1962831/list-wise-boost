@@ -325,6 +325,77 @@ export type Database = {
         }
         Relationships: []
       }
+      enrichment_queue: {
+        Row: {
+          category_id: string | null
+          category_name: string | null
+          city_id: string | null
+          city_name: string
+          completed_at: string | null
+          created_at: string
+          current_index: number
+          error_message: string | null
+          failed_items: number
+          id: string
+          job_type: string
+          paused_at: string | null
+          processed_items: number
+          started_at: string | null
+          status: string
+          successful_items: number
+          total_items: number
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          category_name?: string | null
+          city_id?: string | null
+          city_name: string
+          completed_at?: string | null
+          created_at?: string
+          current_index?: number
+          error_message?: string | null
+          failed_items?: number
+          id?: string
+          job_type: string
+          paused_at?: string | null
+          processed_items?: number
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          category_name?: string | null
+          city_id?: string | null
+          city_name?: string
+          completed_at?: string | null
+          created_at?: string
+          current_index?: number
+          error_message?: string | null
+          failed_items?: number
+          id?: string
+          job_type?: string
+          paused_at?: string | null
+          processed_items?: number
+          started_at?: string | null
+          status?: string
+          successful_items?: number
+          total_items?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enrichment_queue_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_content: {
         Row: {
           created_at: string
