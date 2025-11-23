@@ -75,3 +75,13 @@ verify_jwt = true
 [functions.claude-analyze-contact]
 verify_jwt = true
 
+[functions.enqueue-agents-for-enrichment]
+verify_jwt = true
+
+[functions.process-contact-enrichment-queue]
+verify_jwt = false
+
+[functions.bulk-update-generic-emails]
+verify_jwt = true
+
+
