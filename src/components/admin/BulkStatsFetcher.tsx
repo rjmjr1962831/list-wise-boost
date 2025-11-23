@@ -37,7 +37,7 @@ export const BulkStatsFetcher = () => {
       // Fetch all professionals in this city
       const { data: professionals, error: profError } = await supabase
         .from('professionals')
-        .select('id, name, zip_code, zillow_profile_url')
+        .select('id, name, zip_code, zillow_profile_url, zillow_data_fetched_at, current_listings, total_sales')
         .eq('city_id', cityData.id)
         .eq('active', true);
 
@@ -48,8 +48,33 @@ export const BulkStatsFetcher = () => {
         return;
       }
 
-      setProgress(prev => ({ ...prev, total: professionals.length }));
-      toast.info(`Starting stats fetch for ${professionals.length} agents in ${cityName}`);
+      // Filter out agents enriched within last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const professionalsToProcess = professionals.filter(prof => {
+        const needsEnrichment = !prof.zillow_data_fetched_at || 
+          new Date(prof.zillow_data_fetched_at) < thirtyDaysAgo ||
+          !prof.current_listings ||
+          !prof.total_sales;
+        return needsEnrichment;
+      });
+      
+      const skippedCount = professionals.length - professionalsToProcess.length;
+      
+      setProgress(prev => ({ ...prev, total: professionalsToProcess.length }));
+      
+      if (skippedCount > 0) {
+        toast.info(`⚡ Skipping ${skippedCount} recently-enriched agents. Processing ${professionalsToProcess.length} in ${cityName}`);
+      } else {
+        toast.info(`Starting stats fetch for ${professionalsToProcess.length} agents in ${cityName}`);
+      }
+      
+      if (professionalsToProcess.length === 0) {
+        toast.success(`All ${professionals.length} agents in ${cityName} are up to date!`);
+        setIsProcessing(false);
+        return;
+      }
 
       // Load and parse Arizona license CSV
       const licenseMap = new Map();
@@ -91,8 +116,8 @@ export const BulkStatsFetcher = () => {
       let success = 0;
       let failed = 0;
 
-      for (let i = 0; i < professionals.length; i++) {
-        const prof = professionals[i];
+      for (let i = 0; i < professionalsToProcess.length; i++) {
+        const prof = professionalsToProcess[i];
         setProgress(prev => ({ ...prev, current: i + 1 }));
 
         try {
@@ -188,7 +213,7 @@ export const BulkStatsFetcher = () => {
           }
 
           // Rate limiting: wait 2 seconds between requests
-          if (i < professionals.length - 1) {
+          if (i < professionalsToProcess.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 2000));
           }
         } catch (error) {
