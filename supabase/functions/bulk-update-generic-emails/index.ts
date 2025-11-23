@@ -20,8 +20,9 @@ serve(async (req) => {
   }
 
   try {
-    const { limit } = await req.json();
-    const maxAgents = limit || 5; // Default to 5 for testing
+    const { limit, processAll } = await req.json();
+    const batchSize = 50;
+    const maxAgents = processAll ? null : (limit || 5); // Default to 5 for testing
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -50,7 +51,9 @@ serve(async (req) => {
     console.log(`📧 Found ${agentsNeedingEnrichment.length} agents needing enrichment (generic emails or missing phones)`);
     
     // Limit the number of agents to process
-    if (agentsNeedingEnrichment.length > maxAgents) {
+    if (processAll) {
+      console.log(`🔄 Processing ALL ${agentsNeedingEnrichment.length} agents in batches of ${batchSize}`);
+    } else if (agentsNeedingEnrichment.length > maxAgents) {
       console.log(`⚠️ Limiting to first ${maxAgents} agents for this run`);
       agentsNeedingEnrichment = agentsNeedingEnrichment.slice(0, maxAgents);
     }
@@ -60,11 +63,23 @@ serve(async (req) => {
       processed: 0,
       updated: 0,
       failed: 0,
-      agents: [] as any[]
+      agents: [] as any[],
+      batches: 0
     };
 
-    // Process each agent
-    for (const agent of agentsNeedingEnrichment) {
+    // Process agents in batches
+    const totalAgents = agentsNeedingEnrichment.length;
+    let currentBatch = 0;
+    
+    for (let i = 0; i < totalAgents; i += batchSize) {
+      currentBatch++;
+      const batch = agentsNeedingEnrichment.slice(i, Math.min(i + batchSize, totalAgents));
+      results.batches = currentBatch;
+      
+      console.log(`\n📦 Processing batch ${currentBatch}/${Math.ceil(totalAgents / batchSize)} (${batch.length} agents)`);
+
+    // Process each agent in the current batch
+    for (const agent of batch) {
       results.processed++;
       
       try {
@@ -156,8 +171,16 @@ serve(async (req) => {
         });
       }
     }
+    
+    // Delay between batches (only if there are more batches)
+    if (i + batchSize < totalAgents) {
+      console.log(`\n⏸️ Batch ${currentBatch} complete. Waiting 5 seconds before next batch...`);
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+    }
 
     console.log('\n📊 Bulk update completed:', results);
+    console.log(`✅ Processed ${results.batches} batches of up to ${batchSize} agents each`);
 
     return new Response(
       JSON.stringify(results),
