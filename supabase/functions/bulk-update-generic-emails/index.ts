@@ -32,7 +32,7 @@ serve(async (req) => {
     // Find all active agents with Zillow profiles
     const { data: agents, error: fetchError } = await supabase
       .from('professionals')
-      .select('id, name, email, phone, zillow_profile_url, city_id, category_id, review_stars_rating')
+      .select('id, name, email, phone, zillow_profile_url, city_id, category_id, review_stars_rating, specialty')
       .eq('active', true)
       .not('zillow_profile_url', 'is', null);
 
@@ -91,6 +91,7 @@ serve(async (req) => {
             oldPhone: agent.phone,
             newEmail: null,
             newPhone: null,
+            specialties: agent.specialty || [],
             status: 'failed',
             error: enrichError.message
           });
@@ -121,6 +122,7 @@ serve(async (req) => {
             oldPhone: agent.phone,
             newEmail: newEmail,
             newPhone: newPhone,
+            specialties: agent.specialty || [],
             status: 'updated'
           });
         } else {
@@ -131,6 +133,7 @@ serve(async (req) => {
             oldPhone: agent.phone,
             newEmail: newEmail || agent.email,
             newPhone: newPhone || agent.phone,
+            specialties: agent.specialty || [],
             status: 'unchanged'
           });
         }
@@ -147,6 +150,7 @@ serve(async (req) => {
           oldPhone: agent.phone,
           newEmail: null,
           newPhone: null,
+          specialties: agent.specialty || [],
           status: 'error',
           error: error.message
         });
