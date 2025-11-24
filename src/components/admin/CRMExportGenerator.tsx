@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Download } from 'lucide-react';
+import { Loader2, Download, Trash2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 export function CRMExportGenerator() {
   const [loading, setLoading] = useState(false);
+  const [purging, setPurging] = useState(false);
   const [includeInactive, setIncludeInactive] = useState(true);
   const [stats, setStats] = useState<{ total: number; withEmail: number; withPhone: number; active: number; inactive: number } | null>(null);
 
@@ -192,6 +194,58 @@ export function CRMExportGenerator() {
     }
   }
 
+  async function purgeAlaskaNorthDakota() {
+    try {
+      setPurging(true);
+      console.log('🗑️ Purging Alaska and North Dakota agents...');
+
+      // First, get all cities in Alaska and North Dakota
+      const { data: cities, error: citiesError } = await supabase
+        .from('cities')
+        .select('id, name, state')
+        .in('state', ['Alaska', 'North Dakota']);
+
+      if (citiesError) throw citiesError;
+      if (!cities || cities.length === 0) {
+        toast.info('No cities found in Alaska or North Dakota');
+        return;
+      }
+
+      const cityIds = cities.map(c => c.id);
+      console.log(`Found ${cities.length} cities in AK/ND:`, cities.map(c => `${c.name}, ${c.state}`));
+
+      // Get count of agents to be deleted
+      const { count } = await supabase
+        .from('professionals')
+        .select('*', { count: 'exact', head: true })
+        .in('city_id', cityIds);
+
+      if (!count || count === 0) {
+        toast.info('No agents found in Alaska or North Dakota');
+        return;
+      }
+
+      // Delete all professionals in those cities
+      const { error: deleteError } = await supabase
+        .from('professionals')
+        .delete()
+        .in('city_id', cityIds);
+
+      if (deleteError) throw deleteError;
+
+      toast.success(`✅ Purged ${count} agents from Alaska and North Dakota`);
+      console.log(`✅ Successfully deleted ${count} agents from AK/ND`);
+
+    } catch (error: any) {
+      console.error('Error purging agents:', error);
+      toast.error('Failed to purge agents', {
+        description: error.message
+      });
+    } finally {
+      setPurging(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -267,6 +321,50 @@ export function CRMExportGenerator() {
             <li>Top10 profile link for each agent</li>
           </ul>
           <p className="text-xs italic mt-2">💡 Professional Info JSON contains broker addresses, websites, social links - parse for missing contact data</p>
+        </div>
+
+        <div className="border-t pt-4 mt-4">
+          <p className="text-sm font-semibold text-destructive mb-2">⚠️ Danger Zone</p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={purging}
+                className="w-full"
+              >
+                {purging ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Purging...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Purge Alaska & North Dakota Agents
+                  </>
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete ALL agents from Alaska and North Dakota.
+                  This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={purgeAlaskaNorthDakota}
+                  className="bg-destructive hover:bg-destructive/90"
+                >
+                  Yes, purge them
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </CardContent>
     </Card>
