@@ -46,7 +46,7 @@ export function CRMExportGenerator() {
       const inactive = professionals.length - active;
       setStats({ total: professionals.length, withEmail, withPhone, active, inactive });
 
-      // Generate CSV with ALL fields
+      // Generate CSV with ALL fields including enrichment data
       const headers = [
         'ID',
         'Name',
@@ -76,12 +76,19 @@ export function CRMExportGenerator() {
         'Zillow ZUID',
         'Description',
         'Bio (Get to Know Me)',
+        'Video URL',
+        'Phone Numbers (JSON)',
+        'Professional Info (JSON)',
+        'Agent Licenses (JSON)',
+        'Agent Sales Stats (JSON)',
+        'Business Address (JSON)',
         'Review Link',
         'Is Premier Agent',
         'Is Top Agent',
         'Claim Status',
         'Email Verified',
         'License Verified',
+        'Last Enriched',
         'Created At',
         'Updated At',
         'Verification Link',
@@ -103,6 +110,13 @@ export function CRMExportGenerator() {
         // Parse specialties and badges
         const specialties = Array.isArray(prof.specialty) ? prof.specialty.join('; ') : '';
         const badges = Array.isArray(prof.badges) ? prof.badges.join('; ') : '';
+
+        // Serialize JSON fields for CSV
+        const phoneNumbersJson = prof.phone_numbers ? JSON.stringify(prof.phone_numbers) : '';
+        const professionalInfoJson = prof.professional_information ? JSON.stringify(prof.professional_information) : '';
+        const agentLicensesJson = prof.agent_licenses ? JSON.stringify(prof.agent_licenses) : '';
+        const agentSalesStatsJson = prof.agent_sales_stats ? JSON.stringify(prof.agent_sales_stats) : '';
+        const businessAddressJson = prof.business_address ? JSON.stringify(prof.business_address) : '';
 
         return [
           prof.id,
@@ -133,12 +147,19 @@ export function CRMExportGenerator() {
           prof.zuid || '',
           prof.description || '',
           prof.get_to_know_me || '',
+          prof.sidebar_video_url || '',
+          phoneNumbersJson,
+          professionalInfoJson,
+          agentLicensesJson,
+          agentSalesStatsJson,
+          businessAddressJson,
           prof.review_link || '',
           prof.is_premier_agent ? 'Yes' : 'No',
           prof.is_top_agent ? 'Yes' : 'No',
           prof.claim_status || 'unclaimed',
           prof.email_verified_at ? 'Yes' : 'No',
           prof.license_verified_at ? 'Yes' : 'No',
+          prof.zillow_data_fetched_at || '',
           prof.created_at,
           prof.updated_at,
           verificationLink,
@@ -232,17 +253,20 @@ export function CRMExportGenerator() {
         </Button>
 
         <div className="text-sm text-muted-foreground space-y-2 border-t pt-4">
-          <p className="font-semibold">Includes all fields:</p>
+          <p className="font-semibold">Includes all fields + enrichment data:</p>
           <ul className="list-disc list-inside space-y-1 text-xs">
             <li>Full contact info (email, phone, website)</li>
             <li>Business details (company, brokerage, address)</li>
             <li>Performance stats (sales, listings, ratings)</li>
             <li>Specialties and badges</li>
             <li>License and verification status</li>
-            <li>Zillow profile data</li>
+            <li>Zillow profile data (ZUID, profile URL)</li>
+            <li><strong>Enrichment data</strong>: Video URL, phone numbers JSON, professional info JSON, licenses JSON, sales stats JSON</li>
+            <li>Last enriched timestamp</li>
             <li>Verification link for each agent</li>
             <li>Top10 profile link for each agent</li>
           </ul>
+          <p className="text-xs italic mt-2">💡 Professional Info JSON contains broker addresses, websites, social links - parse for missing contact data</p>
         </div>
       </CardContent>
     </Card>
