@@ -40,6 +40,7 @@ import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
 import { PhoneNumberRestorer } from "@/components/admin/PhoneNumberRestorer";
 import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGenerator";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
+import { LicenseVerifier } from "@/components/admin/LicenseVerifier";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 
 const AdminDashboard = () => {
@@ -195,6 +196,10 @@ const AdminDashboard = () => {
               <FlaskConical className="mr-2 h-4 w-4" />
               AZ Licenses
             </TabsTrigger>
+            <TabsTrigger value="verify-licenses">
+              <FlaskConical className="mr-2 h-4 w-4" />
+              Verify Licenses
+            </TabsTrigger>
             <TabsTrigger value="import-stats">
               <Database className="mr-2 h-4 w-4" />
               Import Stats
@@ -305,6 +310,10 @@ const AdminDashboard = () => {
           <TabsContent value="az-licenses" className="space-y-4">
             <ArizonaLicenseImporter />
             <BulkStatsFetcher />
+          </TabsContent>
+
+          <TabsContent value="verify-licenses" className="space-y-4">
+            <LicenseVerifier />
           </TabsContent>
 
           <TabsContent value="import-stats" className="space-y-4">
