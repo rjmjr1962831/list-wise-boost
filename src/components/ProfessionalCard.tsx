@@ -766,6 +766,7 @@ export const ProfessionalCard = ({
 
                   // Use extracted years if available, otherwise fall back to stored value
                   const yearsExperience = extractedYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
+                  const hasLicenseVerifiedBadge = ((professional as any).badges || []).includes('License Verified');
 
                   const displayStats = { totalSales, yearsExperience } as const;
                   const labels: Record<string, string> = {
@@ -775,7 +776,21 @@ export const ProfessionalCard = ({
 
                   return Object.entries(displayStats).map(([key, value]) => (
                     <div key={key} className={cn("text-center md:text-left", key === 'totalSales' && "hidden md:block")}>
-                      <div className="text-2xl font-bold text-primary">{(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}</div>
+                      <div className="flex items-center gap-2 justify-center md:justify-start">
+                        <div className="text-2xl font-bold text-primary">
+                          {(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                        </div>
+                        {key === 'yearsExperience' && hasLicenseVerifiedBadge && value != null && Number(value) > 0 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs">License Verified</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
                     </div>
                   ));
