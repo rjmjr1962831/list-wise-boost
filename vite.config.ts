@@ -16,6 +16,7 @@ export default defineConfig(({ mode }) => ({
       // Route all `import { toast } from "sonner"` to our local wrapper
       sonner: path.resolve(__dirname, "./src/components/ui/sonner.tsx"),
     },
+    dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
   },
   optimizeDeps: {
     include: ["react", "react-dom", "react-router", "react-router-dom"],
