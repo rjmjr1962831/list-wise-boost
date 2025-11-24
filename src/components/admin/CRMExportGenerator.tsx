@@ -12,7 +12,42 @@ export function CRMExportGenerator() {
   const [purging, setPurging] = useState(false);
   const [includeInactive, setIncludeInactive] = useState(true);
   const [onlyQualified, setOnlyQualified] = useState(false);
+  const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
   const [stats, setStats] = useState<{ total: number; withEmail: number; withPhone: number; active: number; inactive: number } | null>(null);
+
+  async function getPreviewCount() {
+    try {
+      setLoadingPreview(true);
+      let query = supabase
+        .from('professionals')
+        .select('*', { count: 'exact', head: true });
+      
+      if (!includeInactive) {
+        query = query.eq('active', true);
+      }
+
+      if (onlyQualified) {
+        query = query
+          .not('email_verified_at', 'is', null)
+          .gte('review_stars_rating', 4.9);
+      }
+      
+      const { count, error } = await query;
+      if (error) throw error;
+      
+      setPreviewCount(count || 0);
+      
+      if (count === 0) {
+        toast.info('No agents match your current filters');
+      }
+    } catch (error: any) {
+      console.error('Error getting preview count:', error);
+      toast.error('Failed to get preview count');
+    } finally {
+      setLoadingPreview(false);
+    }
+  }
 
   async function generateCRMExport() {
     try {
@@ -288,7 +323,10 @@ export function CRMExportGenerator() {
               type="checkbox"
               id="includeInactive"
               checked={includeInactive}
-              onChange={(e) => setIncludeInactive(e.target.checked)}
+              onChange={(e) => {
+                setIncludeInactive(e.target.checked);
+                setPreviewCount(null);
+              }}
               className="h-4 w-4"
             />
             <label htmlFor="includeInactive" className="text-sm font-medium">
@@ -301,7 +339,10 @@ export function CRMExportGenerator() {
               type="checkbox"
               id="onlyQualified"
               checked={onlyQualified}
-              onChange={(e) => setOnlyQualified(e.target.checked)}
+              onChange={(e) => {
+                setOnlyQualified(e.target.checked);
+                setPreviewCount(null);
+              }}
               className="h-4 w-4"
             />
             <label htmlFor="onlyQualified" className="text-sm font-medium">
@@ -309,6 +350,36 @@ export function CRMExportGenerator() {
             </label>
           </div>
         </div>
+
+        <Button
+          onClick={getPreviewCount}
+          disabled={loadingPreview}
+          variant="outline"
+          className="w-full"
+        >
+          {loadingPreview ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Checking...
+            </>
+          ) : (
+            <>Preview Count</>
+          )}
+        </Button>
+
+        {previewCount !== null && (
+          <Alert>
+            <AlertDescription>
+              <p className="font-semibold">
+                {previewCount === 0 ? (
+                  <span className="text-destructive">⚠️ No agents match your filters</span>
+                ) : (
+                  <span className="text-primary">✅ {previewCount} agents will be exported</span>
+                )}
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Button
           onClick={generateCRMExport} 
