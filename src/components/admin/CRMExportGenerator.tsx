@@ -8,22 +8,28 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export function CRMExportGenerator() {
   const [loading, setLoading] = useState(false);
-  const [stats, setStats] = useState<{ total: number; withEmail: number; withPhone: number } | null>(null);
+  const [includeInactive, setIncludeInactive] = useState(true);
+  const [stats, setStats] = useState<{ total: number; withEmail: number; withPhone: number; active: number; inactive: number } | null>(null);
 
   async function generateCRMExport() {
     try {
       setLoading(true);
-      console.log('📊 Generating comprehensive CRM export...');
+      console.log('📊 Generating comprehensive CRM export (including all enriched agents)...');
 
-      // Fetch ALL active professionals with ALL fields
-      const { data: professionals, error } = await supabase
+      // Fetch ALL professionals with ALL fields (active and inactive if checkbox is checked)
+      let query = supabase
         .from('professionals')
         .select(`
           *,
           cities (name, state, slug),
           categories (name, plural_name, slug)
-        `)
-        .eq('active', true)
+        `);
+      
+      if (!includeInactive) {
+        query = query.eq('active', true);
+      }
+      
+      const { data: professionals, error } = await query
         .order('city_id')
         .order('rank');
 
@@ -36,7 +42,9 @@ export function CRMExportGenerator() {
       // Calculate stats
       const withEmail = professionals.filter(p => p.email && !p.email.includes('unavailable')).length;
       const withPhone = professionals.filter(p => p.phone && p.phone !== 'N/A').length;
-      setStats({ total: professionals.length, withEmail, withPhone });
+      const active = professionals.filter(p => p.active).length;
+      const inactive = professionals.length - active;
+      setStats({ total: professionals.length, withEmail, withPhone, active, inactive });
 
       // Generate CSV with ALL fields
       const headers = [
@@ -179,6 +187,8 @@ export function CRMExportGenerator() {
                 <p className="font-semibold">Last Export Stats:</p>
                 <ul className="text-sm space-y-1">
                   <li>📊 Total agents: {stats.total}</li>
+                  <li>✅ Active: {stats.active}</li>
+                  <li>⏸️ Inactive: {stats.inactive}</li>
                   <li>📧 With email: {stats.withEmail} ({Math.round((stats.withEmail / stats.total) * 100)}%)</li>
                   <li>📱 With phone: {stats.withPhone} ({Math.round((stats.withPhone / stats.total) * 100)}%)</li>
                   <li>❌ Missing email: {stats.total - stats.withEmail}</li>
@@ -189,7 +199,20 @@ export function CRMExportGenerator() {
           </Alert>
         )}
 
-        <Button 
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="includeInactive"
+            checked={includeInactive}
+            onChange={(e) => setIncludeInactive(e.target.checked)}
+            className="h-4 w-4"
+          />
+          <label htmlFor="includeInactive" className="text-sm font-medium">
+            Include inactive agents (recommended for full enrichment data)
+          </label>
+        </div>
+
+        <Button
           onClick={generateCRMExport} 
           disabled={loading}
           className="w-full"
