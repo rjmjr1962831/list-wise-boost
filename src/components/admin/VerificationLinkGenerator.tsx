@@ -155,7 +155,8 @@ export function VerificationLinkGenerator() {
       ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
     });
 
-    const csv = [headers.join(','), ...rows].join('\n');
+    const headerRow = headers.map(h => `"${h}"`).join(',');
+    const csv = [headerRow, ...rows].join('\n');
 
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);

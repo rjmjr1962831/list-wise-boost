@@ -123,7 +123,8 @@ export const Memo23FieldsExporter = () => {
         ].map(cell => `"${String(cell)}"`).join(',');
       });
 
-      const csv = [headers.join(','), ...rows].join('\n');
+      const headerRow = headers.map(h => `"${h}"`).join(',');
+      const csv = [headerRow, ...rows].join('\n');
 
       // Download CSV
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -184,7 +185,7 @@ export const Memo23FieldsExporter = () => {
       'license_verified_at'
     ];
 
-    const csv = headers.join(',');
+    const csv = headers.map(h => `"${h}"`).join(',');
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
