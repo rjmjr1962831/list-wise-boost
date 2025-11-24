@@ -16,10 +16,24 @@ export default defineConfig(({ mode }) => ({
       // Route all `import { toast } from "sonner"` to our local wrapper
       sonner: path.resolve(__dirname, "./src/components/ui/sonner.tsx"),
     },
-    dedupe: ["react", "react-dom", "react-router", "react-router-dom"],
+    dedupe: [
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "react-router",
+      "react-router-dom",
+    ],
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router", "react-router-dom"],
+    include: [
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+      "react-router",
+      "react-router-dom",
+    ],
     esbuildOptions: {
       // Ensure consistent React instance during pre-bundling
       define: { "process.env.NODE_ENV": JSON.stringify(mode) },
