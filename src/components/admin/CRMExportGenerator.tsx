@@ -235,7 +235,9 @@ export function CRMExportGenerator() {
         ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
       });
 
-      const csv = [headers.join(','), ...rows].join('\n');
+      // Properly quote headers to match data row formatting
+      const headerRow = headers.map(h => `"${h}"`).join(',');
+      const csv = [headerRow, ...rows].join('\n');
 
       // Download CSV
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
