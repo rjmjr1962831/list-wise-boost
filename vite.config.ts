@@ -12,33 +12,12 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
     alias: {
-      "react": path.resolve(__dirname, "node_modules/react"),
-      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
       "@": path.resolve(__dirname, "./src"),
-      // Route all `import { toast } from "sonner"` to our local wrapper
-      sonner: path.resolve(__dirname, "./src/components/ui/sonner.tsx"),
     },
-    dedupe: [
-      "react",
-      "react-dom",
-      "react/jsx-runtime",
-      "react/jsx-dev-runtime",
-      "react-router",
-      "react-router-dom",
-    ],
+    dedupe: ["react", "react-dom"],
   },
   optimizeDeps: {
-    include: [
-      "react",
-      "react-dom",
-      "react/jsx-runtime",
-      "react/jsx-dev-runtime",
-      "react-router",
-      "react-router-dom",
-    ],
-    esbuildOptions: {
-      // Ensure consistent React instance during pre-bundling
-      define: { "process.env.NODE_ENV": JSON.stringify(mode) },
-    },
+    include: ["react", "react-dom"],
+    force: true,
   },
 }));
