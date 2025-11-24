@@ -110,7 +110,7 @@ export function AgentStatsImporter() {
       if (error) throw error;
 
       const headers = ['id', 'name', 'zuid', 'zillow_profile_url', 'current_listings', 'total_sales', 'years_experience', 'zip_code'];
-      const csvRows = [headers.join(',')];
+      const csvRows = [headers.map(h => `"${h}"`).join(',')];
 
       data?.forEach(row => {
         const values = [

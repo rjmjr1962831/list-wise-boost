@@ -97,7 +97,8 @@ export const LicenseVerificationReport = () => {
         ].map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',');
       });
 
-      const csv = [headers.join(','), ...rows].join('\n');
+      const headerRow = headers.map(h => `"${h}"`).join(',');
+      const csv = [headerRow, ...rows].join('\n');
 
       // Download CSV
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
