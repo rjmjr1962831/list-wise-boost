@@ -42,6 +42,7 @@ import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGe
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { LicenseVerifier } from "@/components/admin/LicenseVerifier";
 import { LicenseVerificationReport } from "@/components/admin/LicenseVerificationReport";
+import { Memo23FieldsExporter } from "@/components/admin/Memo23FieldsExporter";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 
 const AdminDashboard = () => {
@@ -316,6 +317,7 @@ const AdminDashboard = () => {
           <TabsContent value="verify-licenses" className="space-y-4">
             <LicenseVerifier />
             <LicenseVerificationReport />
+            <Memo23FieldsExporter />
           </TabsContent>
 
           <TabsContent value="import-stats" className="space-y-4">
