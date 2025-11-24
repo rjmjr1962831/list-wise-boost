@@ -41,6 +41,7 @@ import { PhoneNumberRestorer } from "@/components/admin/PhoneNumberRestorer";
 import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGenerator";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { LicenseVerifier } from "@/components/admin/LicenseVerifier";
+import { LicenseVerificationReport } from "@/components/admin/LicenseVerificationReport";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 
 const AdminDashboard = () => {
@@ -314,6 +315,7 @@ const AdminDashboard = () => {
 
           <TabsContent value="verify-licenses" className="space-y-4">
             <LicenseVerifier />
+            <LicenseVerificationReport />
           </TabsContent>
 
           <TabsContent value="import-stats" className="space-y-4">
