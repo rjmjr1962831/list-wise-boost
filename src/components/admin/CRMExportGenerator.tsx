@@ -19,31 +19,54 @@ export function CRMExportGenerator() {
   async function getPreviewCount() {
     try {
       setLoadingPreview(true);
+      
+      // First check if we can see ANY professionals at all
+      const { count: totalCount, error: totalError } = await supabase
+        .from('professionals')
+        .select('*', { count: 'exact', head: true });
+      
+      console.log('📊 Total professionals in DB:', totalCount);
+      if (totalError) {
+        console.error('Error fetching total:', totalError);
+      }
+      
       let query = supabase
         .from('professionals')
         .select('*', { count: 'exact', head: true });
       
       if (!includeInactive) {
+        console.log('🔍 Filtering for active only');
         query = query.eq('active', true);
       }
 
       if (onlyQualified) {
+        console.log('🔍 Filtering for qualified (verified email + 4.9+ rating)');
         query = query
           .not('email_verified_at', 'is', null)
           .gte('review_stars_rating', 4.9);
       }
       
       const { count, error } = await query;
-      if (error) throw error;
+      if (error) {
+        console.error('Query error:', error);
+        throw error;
+      }
       
+      console.log('📊 Filtered count:', count);
       setPreviewCount(count || 0);
       
       if (count === 0) {
-        toast.info('No agents match your current filters');
+        toast.info('No agents match your current filters', {
+          description: `Total in DB: ${totalCount || 0}`
+        });
+      } else {
+        toast.success(`${count} agents match your filters`);
       }
     } catch (error: any) {
       console.error('Error getting preview count:', error);
-      toast.error('Failed to get preview count');
+      toast.error('Failed to get preview count', {
+        description: error.message
+      });
     } finally {
       setLoadingPreview(false);
     }
