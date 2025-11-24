@@ -11,6 +11,7 @@ export function CRMExportGenerator() {
   const [loading, setLoading] = useState(false);
   const [purging, setPurging] = useState(false);
   const [includeInactive, setIncludeInactive] = useState(true);
+  const [onlyQualified, setOnlyQualified] = useState(false);
   const [stats, setStats] = useState<{ total: number; withEmail: number; withPhone: number; active: number; inactive: number } | null>(null);
 
   async function generateCRMExport() {
@@ -29,6 +30,13 @@ export function CRMExportGenerator() {
       
       if (!includeInactive) {
         query = query.eq('active', true);
+      }
+
+      // Filter for qualified agents only
+      if (onlyQualified) {
+        query = query
+          .not('email_verified_at', 'is', null)
+          .gte('review_stars_rating', 4.9);
       }
       
       const { data: professionals, error } = await query
@@ -274,17 +282,32 @@ export function CRMExportGenerator() {
           </Alert>
         )}
 
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="includeInactive"
-            checked={includeInactive}
-            onChange={(e) => setIncludeInactive(e.target.checked)}
-            className="h-4 w-4"
-          />
-          <label htmlFor="includeInactive" className="text-sm font-medium">
-            Include inactive agents (recommended for full enrichment data)
-          </label>
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="includeInactive"
+              checked={includeInactive}
+              onChange={(e) => setIncludeInactive(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <label htmlFor="includeInactive" className="text-sm font-medium">
+              Include inactive agents (recommended for full enrichment data)
+            </label>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="onlyQualified"
+              checked={onlyQualified}
+              onChange={(e) => setOnlyQualified(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <label htmlFor="onlyQualified" className="text-sm font-medium">
+              Only qualified agents (verified email + rating 4.9+)
+            </label>
+          </div>
         </div>
 
         <Button
