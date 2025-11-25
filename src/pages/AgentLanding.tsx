@@ -96,7 +96,7 @@ export default function AgentLanding() {
               and Claude cite you as the expert when clients search for agents in your market.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+            <div className="flex justify-center pt-6">
               <Button 
                 size="lg"
                 onClick={() => navigate('/verify-listing')}
@@ -104,14 +104,6 @@ export default function AgentLanding() {
               >
                 Check Your Current Listing
                 <Search className="ml-2 w-5 h-5" />
-              </Button>
-              <Button 
-                size="lg"
-                onClick={() => navigate('/agent-setup')}
-                className="text-lg px-8 py-6"
-              >
-                Get Started
-                <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
 
@@ -285,22 +277,14 @@ export default function AgentLanding() {
                 Then schedule 15 minutes with our founder to discuss your strategy.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex justify-center">
                 <Button 
                   size="lg"
                   onClick={() => navigate('/verify-listing')}
                   className="text-lg px-8 py-6 group"
                 >
-                  Verify Your Listing
+                  Check Your Current Listing
                   <Search className="ml-2 w-5 h-5" />
-                </Button>
-                <Button 
-                  size="lg"
-                  onClick={() => navigate('/agent-setup')}
-                  className="text-lg px-8 py-6"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </div>
 
