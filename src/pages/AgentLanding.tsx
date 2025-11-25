@@ -99,7 +99,7 @@ export default function AgentLanding() {
             <div className="flex justify-center pt-6">
               <Button 
                 size="lg"
-                onClick={() => navigate('/verify-listing')}
+                onClick={() => navigate('/agent-setup')}
                 className="text-lg px-8 py-6 group"
               >
                 Check Your Current Listing
@@ -280,7 +280,7 @@ export default function AgentLanding() {
               <div className="flex justify-center">
                 <Button 
                   size="lg"
-                  onClick={() => navigate('/verify-listing')}
+                  onClick={() => navigate('/agent-setup')}
                   className="text-lg px-8 py-6 group"
                 >
                   Check Your Current Listing
