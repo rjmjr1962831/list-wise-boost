@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Save } from 'lucide-react';
+import { Eye, EyeOff, Save, TestTube } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProxyCredentials {
   endpoint: string;
@@ -18,8 +19,8 @@ export const ProxySettings = () => {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
   
-  // Load from environment or default values
   const [credentials, setCredentials] = useState<ProxyCredentials>({
     endpoint: 'rp.scrapegw.com:6060',
     username: '',
@@ -27,27 +28,67 @@ export const ProxySettings = () => {
     protocol: 'HTTP/Socks5'
   });
 
+  const handleTest = async () => {
+    setIsTesting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('test-proxy-connection', {
+        body: credentials
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: 'Proxy connection successful',
+          description: data.message || 'Proxy settings are valid and working.',
+        });
+        console.log('Proxy test result:', data);
+      } else {
+        toast({
+          title: 'Proxy connection test',
+          description: data.note || data.error || 'Unable to verify proxy connection directly.',
+        });
+        console.log('Proxy test result:', data);
+      }
+    } catch (error) {
+      console.error('Error testing proxy:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      toast({
+        title: 'Test failed',
+        description: errorMessage || 'Could not test proxy connection. Check credentials.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // In a real implementation, this would save to Supabase secrets
-      // For now, we'll show a success message
-      toast({
-        title: 'Proxy settings saved',
-        description: 'Your proxy credentials have been updated successfully.',
+      const { data, error } = await supabase.functions.invoke('update-proxy-settings', {
+        body: credentials
       });
-      
-      console.log('Saving proxy credentials:', {
-        endpoint: credentials.endpoint,
-        username: credentials.username,
-        password: '***',
-        protocol: credentials.protocol
-      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: 'Proxy settings validated',
+          description: 'Your proxy credentials have been validated successfully.',
+        });
+        console.log('Proxy settings saved:', data);
+      } else {
+        throw new Error(data.error || 'Failed to save settings');
+      }
     } catch (error) {
       console.error('Error saving proxy settings:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
       toast({
         title: 'Error',
-        description: 'Failed to save proxy settings. Please try again.',
+        description: errorMessage || 'Failed to save proxy settings. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -139,10 +180,24 @@ export const ProxySettings = () => {
             Reset password
           </Button>
           
-          <Button onClick={handleSave} disabled={isSaving}>
-            <Save className="mr-2 h-4 w-4" />
-            {isSaving ? 'Saving...' : 'Save settings'}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleTest} 
+              disabled={isTesting || !credentials.username || !credentials.password}
+              variant="outline"
+            >
+              <TestTube className="mr-2 h-4 w-4" />
+              {isTesting ? 'Testing...' : 'Test connection'}
+            </Button>
+            
+            <Button 
+              onClick={handleSave} 
+              disabled={isSaving || !credentials.username || !credentials.password}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {isSaving ? 'Saving...' : 'Save settings'}
+            </Button>
+          </div>
         </div>
 
         <div className="text-sm text-muted-foreground pt-4 border-t">
