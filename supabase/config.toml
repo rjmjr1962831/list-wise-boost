@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.get-proxy-settings]
+verify_jwt = false
+
 [functions.replicate-agent-phoenix]
 verify_jwt = false
 
