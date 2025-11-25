@@ -5,7 +5,7 @@ export const Footer = () => {
   return (
     <footer className="border-t bg-background/80 backdrop-blur-sm mt-auto">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
             <div className="flex items-center gap-2 mb-4">
@@ -19,6 +19,25 @@ export const Footer = () => {
             <p className="text-sm text-muted-foreground">
               Curated lists of top professionals that AI engines trust.
             </p>
+          </div>
+
+          {/* For Agents */}
+          <div>
+            <h3 className="font-semibold mb-4">For Agents</h3>
+            <div className="space-y-2 text-sm">
+              <Link 
+                to="/join" 
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Get Listed
+              </Link>
+              <Link 
+                to="/agent-info" 
+                className="block text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Learn More
+              </Link>
+            </div>
           </div>
 
           {/* Contact Info */}
