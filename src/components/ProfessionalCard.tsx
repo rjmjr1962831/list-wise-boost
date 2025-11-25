@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -781,14 +780,9 @@ export const ProfessionalCard = ({
                           {(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
                         </div>
                         {key === 'yearsExperience' && hasLicenseVerifiedBadge && value != null && Number(value) > 0 && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p className="text-xs">License Verified</p>
-                            </TooltipContent>
-                          </Tooltip>
+                          <span title="License Verified">
+                            <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                          </span>
                         )}
                       </div>
                       <div className="text-xs text-muted-foreground">{labels[key]}</div>
@@ -805,19 +799,14 @@ export const ProfessionalCard = ({
                   </div>
                 )}
                 {liveStats && (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge variant="outline" className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800">
-                        <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
-                        Verified Stats
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs text-xs">
-                        Statistics verified from Zillow
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <Badge 
+                    variant="outline" 
+                    className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+                    title="Statistics verified from Zillow"
+                  >
+                    <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
+                    Verified Stats
+                  </Badge>
                 )}
               </div>
 

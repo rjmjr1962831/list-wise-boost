@@ -1,6 +1,5 @@
 import { Suspense, lazy } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
@@ -40,9 +39,8 @@ const App = () => (
   <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <QueryClientProvider client={queryClient}>
       <RateLimitGuard>
-        <TooltipProvider>
-          <Sonner />
-          <div className="flex flex-col min-h-screen">
+        <Sonner />
+        <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1">
               <ErrorBoundary>
@@ -91,7 +89,6 @@ const App = () => (
             </main>
             <Footer />
           </div>
-        </TooltipProvider>
       </RateLimitGuard>
     </QueryClientProvider>
   </BrowserRouter>
