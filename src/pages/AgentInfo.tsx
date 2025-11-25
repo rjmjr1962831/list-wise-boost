@@ -361,7 +361,7 @@ const AgentInfo = () => {
             <p className="text-xl opacity-90 max-w-2xl mx-auto">
               Join the elite real estate professionals already benefiting from premium placement
             </p>
-            <Link to="/apply-listing">
+            <Link to="/join">
               <Button size="lg" variant="secondary" className="mt-4">
                 Apply Now
                 <ArrowRight className="ml-2 h-5 w-5" />
