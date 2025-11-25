@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Edit } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Edit, Save, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
@@ -13,7 +15,6 @@ import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractYearsFromBio } from "@/utils/bioParser";
-import { EditProfileModal } from "./EditProfileModal";
 
 
 interface ProfessionalCardProps {
@@ -51,9 +52,22 @@ export const ProfessionalCard = ({
   const [verifying, setVerifying] = useState(false);
   const [extractedYears, setExtractedYears] = useState<number | null>(null);
   const [emailRevealed, setEmailRevealed] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editedData, setEditedData] = useState({
+    license_number: professional.license_number || "",
+    total_sales: (professional as any).total_sales || 0,
+    years_experience: professional.years_experience || 0,
+    description: professional.description || "",
+    website: professional.website || "",
+    phone: professional.phone || "",
+    email: professional.email || "",
+    zillow_profile_url: (professional as any).zillow_profile_url || "",
+    sidebar_video_url: (professional as any).sidebar_video_url || "",
+  });
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const isLicenseVerified = !!(professional as any).license_verified_at;
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
@@ -86,6 +100,112 @@ export const ProfessionalCard = ({
   }, []);
 
   const isOwnProfile = currentUser && (professional as any).claimed_by === currentUser.id;
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadPhoto = async (): Promise<string | null> => {
+    if (!photoFile) return null;
+
+    const fileExt = photoFile.name.split('.').pop();
+    const fileName = `${professional.id}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('professional-photos')
+      .upload(filePath, photoFile, { upsert: true });
+
+    if (uploadError) {
+      console.error('Error uploading photo:', uploadError);
+      throw uploadError;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('professional-photos')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
+  const verifyLicenseNumber = async (licenseNumber: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-arizona-license', {
+        body: { licenseNumber, professionalId: professional.id }
+      });
+
+      if (error) throw error;
+      return data?.verified || false;
+    } catch (error) {
+      console.error('Error verifying license:', error);
+      return false;
+    }
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      let photoUrl = (professional as any).image_url;
+
+      if (photoFile) {
+        photoUrl = await uploadPhoto();
+      }
+
+      let licenseVerified = isLicenseVerified;
+      if (editedData.license_number !== professional.license_number) {
+        licenseVerified = await verifyLicenseNumber(editedData.license_number);
+        if (licenseVerified) {
+          toast.success("License verified successfully!");
+        } else {
+          toast.info("License not found in Arizona records, using your entry");
+        }
+      }
+
+      const updateData: any = {
+        license_number: editedData.license_number,
+        total_sales: parseInt(editedData.total_sales.toString()) || 0,
+        years_experience: parseInt(editedData.years_experience.toString()) || 0,
+        description: editedData.description,
+        website: editedData.website,
+        phone: editedData.phone,
+        email: editedData.email,
+        zillow_profile_url: editedData.zillow_profile_url,
+        sidebar_video_url: editedData.sidebar_video_url,
+      };
+
+      if (photoUrl) {
+        updateData.image_url = photoUrl;
+      }
+
+      if (licenseVerified) {
+        updateData.license_verified_at = new Date().toISOString();
+      }
+
+      const { error } = await supabase
+        .from('professionals')
+        .update(updateData)
+        .eq('id', professional.id);
+
+      if (error) throw error;
+
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Parse Adam-style JSON bio once at the top
   const parsedProfInfo = (() => {
@@ -526,12 +646,25 @@ export const ProfessionalCard = ({
         <div className="flex flex-col md:flex-row gap-6">
           {/* Photo with specialties below */}
           <div className="flex-shrink-0">
-            <img 
-              src={professional.image} 
-              alt={`${professional.name} - Top professional specializing in ${professional.specialties.slice(0, 3).join(', ')}`}
-              className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
-              itemProp="image"
-            />
+            <div className="relative">
+              <img 
+                src={photoPreview || professional.image} 
+                alt={`${professional.name} - Top professional specializing in ${professional.specialties.slice(0, 3).join(', ')}`}
+                className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
+                itemProp="image"
+              />
+              {isOwnProfile && isEditing && (
+                <label className="absolute -top-2 -right-2 cursor-pointer bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90 shadow-lg">
+                  <Edit className="h-3 w-3" />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handlePhotoChange}
+                  />
+                </label>
+              )}
+            </div>
             {/* Specialties from memo23 (primary) or parsed description (fallback) */}
             {(() => {
               // Map Zillow profile types to human-readable specialties
@@ -603,11 +736,11 @@ export const ProfessionalCard = ({
                          {professional.name}
                          {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
                        </h3>
-                       {isOwnProfile && (
+                       {isOwnProfile && !isEditing && (
                          <Button
                            variant="ghost"
                            size="sm"
-                           onClick={() => setShowEditModal(true)}
+                           onClick={() => setIsEditing(true)}
                            className="ml-2"
                          >
                            <Edit className="h-4 w-4 mr-1" />
@@ -638,7 +771,16 @@ export const ProfessionalCard = ({
                   <span>License #:</span>
                 </div>
                 
-                {verifying ? (
+                {isOwnProfile && isEditing ? (
+                  <div className="flex items-center gap-2 flex-1">
+                    <Input
+                      value={editedData.license_number}
+                      onChange={(e) => setEditedData({ ...editedData, license_number: e.target.value })}
+                      placeholder="Enter license number"
+                      className="h-8 max-w-xs"
+                    />
+                  </div>
+                ) : verifying ? (
                   <div className="flex items-center gap-2">
                     <div className="h-6 w-32 bg-muted animate-pulse rounded" />
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -801,17 +943,34 @@ export const ProfessionalCard = ({
 
                   return Object.entries(displayStats).map(([key, value]) => (
                     <div key={key} className={cn("text-center md:text-left", key === 'totalSales' && "hidden md:block")}>
-                      <div className="flex items-center gap-2 justify-center md:justify-start">
-                        <div className="text-2xl font-bold text-primary">
-                          {(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                      {isOwnProfile && isEditing ? (
+                        <div className="space-y-1">
+                          <Input
+                            type="number"
+                            value={key === 'totalSales' ? editedData.total_sales : editedData.years_experience}
+                            onChange={(e) => setEditedData({ 
+                              ...editedData, 
+                              [key === 'totalSales' ? 'total_sales' : 'years_experience']: parseInt(e.target.value) || 0 
+                            })}
+                            className="h-8 w-24"
+                          />
+                          <div className="text-xs text-muted-foreground">{labels[key]}</div>
                         </div>
-                        {key === 'yearsExperience' && hasLicenseVerifiedBadge && value != null && Number(value) > 0 && (
-                          <span title="License Verified">
-                            <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">{labels[key]}</div>
+                      ) : (
+                        <>
+                          <div className="flex items-center gap-2 justify-center md:justify-start">
+                            <div className="text-2xl font-bold text-primary">
+                              {(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                            </div>
+                            {key === 'yearsExperience' && hasLicenseVerifiedBadge && value != null && Number(value) > 0 && (
+                              <span title="License Verified">
+                                <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{labels[key]}</div>
+                        </>
+                      )}
                     </div>
                   ));
                 })()}
@@ -836,8 +995,21 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
-              {/* Video in upper-right blank space */}
-              {(parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
+              {/* Video in upper-right blank space or edit field */}
+              {isOwnProfile && isEditing ? (
+                <div className="space-y-2 mb-4">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <Edit className="h-4 w-4" />
+                    YouTube Video URL
+                  </label>
+                  <Input
+                    value={editedData.sidebar_video_url}
+                    onChange={(e) => setEditedData({ ...editedData, sidebar_video_url: e.target.value })}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="max-w-md"
+                  />
+                </div>
+              ) : (parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
                 const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
                 const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
                   ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
@@ -866,6 +1038,24 @@ export const ProfessionalCard = ({
                 // CRITICAL: Bio text MUST preserve line breaks - use whitespace-pre-line
                 const bioHtml = (professional as any).get_to_know_me as string | null;
                 const fallbackText = parsedProfInfo?.description || professional.description || '';
+                
+                if (isOwnProfile && isEditing) {
+                  return (
+                    <div className="border-t pt-3">
+                      <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                        <Edit className="h-4 w-4" />
+                        Bio
+                      </label>
+                      <Textarea
+                        value={editedData.description}
+                        onChange={(e) => setEditedData({ ...editedData, description: e.target.value })}
+                        placeholder="Tell clients about yourself..."
+                        rows={6}
+                        className="whitespace-pre-line"
+                      />
+                    </div>
+                  );
+                }
                 
                 if (!bioHtml && !fallbackText) return null;
                 
@@ -949,7 +1139,60 @@ export const ProfessionalCard = ({
               {/* Contact Information Section */}
               <div>
                 <h4 className="sr-only">Contact Information</h4>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm">
+                {isOwnProfile && isEditing ? (
+                  <div className="space-y-3 pt-3 border-t">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Globe className="h-4 w-4" />
+                        Website
+                      </label>
+                      <Input
+                        value={editedData.website}
+                        onChange={(e) => setEditedData({ ...editedData, website: e.target.value })}
+                        placeholder="https://yourwebsite.com"
+                        className="max-w-md"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Phone className="h-4 w-4" />
+                        Phone Number
+                      </label>
+                      <Input
+                        value={editedData.phone}
+                        onChange={(e) => setEditedData({ ...editedData, phone: e.target.value })}
+                        placeholder="(555) 123-4567"
+                        className="max-w-md"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <Mail className="h-4 w-4" />
+                        Email
+                      </label>
+                      <Input
+                        value={editedData.email}
+                        onChange={(e) => setEditedData({ ...editedData, email: e.target.value })}
+                        placeholder="your@email.com"
+                        type="email"
+                        className="max-w-md"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Zillow Profile URL
+                      </label>
+                      <Input
+                        value={editedData.zillow_profile_url}
+                        onChange={(e) => setEditedData({ ...editedData, zillow_profile_url: e.target.value })}
+                        placeholder="https://www.zillow.com/profile/..."
+                        className="max-w-md"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <a
@@ -1018,28 +1261,29 @@ export const ProfessionalCard = ({
                        </div>
                      );
                    })()}
-                  {professional.zuid && (
-                    <div className="flex items-center gap-2">
-                      <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <a
-                        href={`https://www.zillow.com/profile/${professional.zuid}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline agent-profile-link"
-                        onClick={() =>
-                          trackEvent('press_mention_click', {
-                            agent_name: professional.name,
-                            market: professional.address || '',
-                            source: 'Zillow Profile',
-                          })
-                        }
-                      >
-                        Zillow Profile
-                      </a>
-                    </div>
-                   )}
-                 </div>
-               </div>
+                   {professional.zuid && (
+                     <div className="flex items-center gap-2">
+                       <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                       <a
+                         href={`https://www.zillow.com/profile/${professional.zuid}`}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="text-primary hover:underline agent-profile-link"
+                         onClick={() =>
+                           trackEvent('press_mention_click', {
+                             agent_name: professional.name,
+                             market: professional.address || '',
+                             source: 'Zillow Profile',
+                           })
+                         }
+                       >
+                         Zillow Profile
+                       </a>
+                     </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
 
               {/* Contact Button */}
@@ -1094,16 +1338,41 @@ export const ProfessionalCard = ({
         />
       )}
 
-      <EditProfileModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        professional={professional}
-        onUpdate={() => {
-          setRefreshTrigger(prev => prev + 1);
-          // Trigger page refresh or refetch
-          window.location.reload();
-        }}
-      />
+      {/* Save/Cancel buttons when editing */}
+      {isOwnProfile && isEditing && (
+        <div className="border-t p-4 flex gap-2 justify-end bg-muted/30">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setIsEditing(false);
+              setPhotoFile(null);
+              setPhotoPreview(null);
+            }}
+            disabled={saving}
+          >
+            <X className="h-4 w-4 mr-1" />
+            Cancel
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSave}
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-1" />
+                Save Changes
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </Card>
   );
 };
