@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Edit } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -13,6 +13,7 @@ import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractYearsFromBio } from "@/utils/bioParser";
+import { EditProfileModal } from "./EditProfileModal";
 
 
 interface ProfessionalCardProps {
@@ -50,6 +51,9 @@ export const ProfessionalCard = ({
   const [verifying, setVerifying] = useState(false);
   const [extractedYears, setExtractedYears] = useState<number | null>(null);
   const [emailRevealed, setEmailRevealed] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const isLicenseVerified = !!(professional as any).license_verified_at;
   const borderColorClass = `border-l-${accentColor}`;
   const shadowColorClass = `hover:shadow-${accentColor}/10`;
@@ -71,6 +75,17 @@ export const ProfessionalCard = ({
   
   // Use external control if provided, otherwise use local state
   const isContactModalOpen = externalShowContactModal !== undefined ? externalShowContactModal : showContactModal;
+
+  // Check if current user owns this profile
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+    };
+    checkAuth();
+  }, []);
+
+  const isOwnProfile = currentUser && (professional as any).claimed_by === currentUser.id;
 
   // Parse Adam-style JSON bio once at the top
   const parsedProfInfo = (() => {
@@ -582,17 +597,28 @@ export const ProfessionalCard = ({
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
-                    {/* Semantic heading for SEO */}
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-2xl font-bold" itemProp="name">
-                        {professional.name}
-                        {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
-                      </h3>
-                    </div>
-                    <p className="text-lg text-muted-foreground" itemProp="affiliation">
-                      {professional.company}
-                    </p>
-                  </div>
+                     {/* Semantic heading for SEO */}
+                     <div className="flex items-center gap-2 flex-wrap">
+                       <h3 className="text-2xl font-bold" itemProp="name">
+                         {professional.name}
+                         {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
+                       </h3>
+                       {isOwnProfile && (
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => setShowEditModal(true)}
+                           className="ml-2"
+                         >
+                           <Edit className="h-4 w-4 mr-1" />
+                           Edit Profile
+                         </Button>
+                       )}
+                     </div>
+                     <p className="text-lg text-muted-foreground" itemProp="affiliation">
+                       {professional.company}
+                     </p>
+                   </div>
                 {professional.verified && (
                   <Badge 
                     variant="secondary" 
@@ -1067,6 +1093,17 @@ export const ProfessionalCard = ({
           categorySlug={categorySlug}
         />
       )}
+
+      <EditProfileModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        professional={professional}
+        onUpdate={() => {
+          setRefreshTrigger(prev => prev + 1);
+          // Trigger page refresh or refetch
+          window.location.reload();
+        }}
+      />
     </Card>
   );
 };
