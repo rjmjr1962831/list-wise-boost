@@ -138,7 +138,7 @@ export default function AgentSetup() {
         toast.success('Profile found and loaded!');
       }
 
-      // Create user account
+      // Create or sign in to user account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -151,13 +151,26 @@ export default function AgentSetup() {
         }
       });
 
-      if (authError) {
+      // If user already exists, sign them in instead
+      if (authError?.message?.includes('already registered')) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        
+        if (signInError) {
+          toast.error('Incorrect password. Please try again.');
+          setIsLoading(false);
+          return;
+        }
+        
+        toast.success('Welcome back! Signed in successfully.');
+      } else if (authError) {
         console.error('Auth error:', authError);
         toast.error(authError.message);
+        setIsLoading(false);
         return;
-      }
-
-      if (authData.user) {
+      } else if (authData.user) {
         toast.success('Account created! Please check your email to verify.');
       }
 
@@ -263,9 +276,9 @@ export default function AgentSetup() {
         <Card>
           <CardHeader className="text-center">
             <UserPlus className="w-12 h-12 text-primary mx-auto mb-4" />
-            <CardTitle className="text-2xl md:text-3xl">Create Your Account</CardTitle>
+            <CardTitle className="text-2xl md:text-3xl">Agent Access</CardTitle>
             <CardDescription>
-              Claim your existing listing or set up your premium Top10Lists profile.
+              Enter your information to claim your listing or sign in to your existing account
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -377,24 +390,14 @@ export default function AgentSetup() {
                     Processing...
                   </>
                 ) : (
-                  'Find My Listing & Create Account'
+                  'Find My Listing & Continue'
                 )}
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                By creating an account, you agree to our Terms of Service and Privacy Policy
+                By continuing, you agree to our Terms of Service and Privacy Policy
               </p>
             </form>
-            <div className="pt-4 border-t text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
-              <button
-                type="button"
-                className="font-medium text-primary hover:underline"
-                onClick={() => navigate('/admin/login')}
-              >
-                Log in here
-              </button>
-            </div>
           </CardContent>
         </Card>
       </div>
