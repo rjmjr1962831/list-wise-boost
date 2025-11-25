@@ -888,7 +888,8 @@ export const ProfessionalCard = ({
                         </>
                       );
                     })() : (() => {
-                      const isTooLong = needsTruncation(fallbackText);
+                      const cleanFallbackText = stripHtml(fallbackText);
+                      const isTooLong = needsTruncation(cleanFallbackText);
                       
                       // CRITICAL: Fallback text - preserve line breaks with whitespace-pre-line
                       return (
@@ -902,7 +903,7 @@ export const ProfessionalCard = ({
                               overflow: 'hidden'
                             } : {}}
                           >
-                            {fallbackText}
+                            {cleanFallbackText}
                           </div>
                           {isTooLong && (
                             <button
