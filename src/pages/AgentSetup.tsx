@@ -211,8 +211,10 @@ export default function AgentSetup() {
 
           <ProfessionalCard 
             professional={{
+              id: matchedAgent.id,
               rank: matchedAgent.rank,
               name: matchedAgent.name,
+              title: matchedAgent.title || undefined,
               company: matchedAgent.company || 'NA',
               rating: matchedAgent.review_stars_rating || 0,
               reviews: matchedAgent.num_total_reviews || 0,
@@ -229,6 +231,10 @@ export default function AgentSetup() {
               },
               verified: !!matchedAgent.license_verified_at,
               image: matchedAgent.image_url || '',
+              license_number: matchedAgent.license_number || undefined,
+              license_verified_at: matchedAgent.license_verified_at || undefined,
+              years_experience: matchedAgent.years_experience || undefined,
+              zuid: matchedAgent.zuid || undefined,
             }}
           />
 
@@ -259,7 +265,7 @@ export default function AgentSetup() {
             <UserPlus className="w-12 h-12 text-primary mx-auto mb-4" />
             <CardTitle className="text-2xl md:text-3xl">Create Your Account</CardTitle>
             <CardDescription>
-              Enter your information to find your listing and get started
+              Claim your existing listing or set up your premium Top10Lists profile.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -379,6 +385,16 @@ export default function AgentSetup() {
                 By creating an account, you agree to our Terms of Service and Privacy Policy
               </p>
             </form>
+            <div className="pt-4 border-t text-center text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <button
+                type="button"
+                className="font-medium text-primary hover:underline"
+                onClick={() => navigate('/admin/login')}
+              >
+                Log in here
+              </button>
+            </div>
           </CardContent>
         </Card>
       </div>
