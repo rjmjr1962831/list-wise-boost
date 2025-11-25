@@ -107,11 +107,10 @@ export default function AgentLanding() {
               </Button>
               <Button 
                 size="lg"
-                variant="outline"
-                onClick={() => window.open('https://calendly.com/top10lists/15min', '_blank')}
+                onClick={() => navigate('/agent-setup')}
                 className="text-lg px-8 py-6"
               >
-                Schedule with Founder (15 min)
+                Get Started
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
@@ -297,12 +296,11 @@ export default function AgentLanding() {
                 </Button>
                 <Button 
                   size="lg"
-                  variant="outline"
-                  onClick={() => window.open('https://calendly.com/top10lists/15min', '_blank')}
+                  onClick={() => navigate('/agent-setup')}
                   className="text-lg px-8 py-6"
                 >
-                  Book a Call
-                  <Clock className="ml-2 w-5 h-5" />
+                  Get Started
+                  <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </div>
 
