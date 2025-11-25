@@ -713,6 +713,14 @@ export const ProfessionalCard = ({
                 </label>
               )}
             </div>
+            
+            {/* Updated date under photo */}
+            {(professional as any).zillow_data_fetched_at && (
+              <div className="mt-2 text-xs text-muted-foreground text-center">
+                Updated: {format(new Date((professional as any).zillow_data_fetched_at), 'MMM d, yyyy')}
+              </div>
+            )}
+            
             {/* Specialties from memo23 (primary) or parsed description (fallback) */}
             {(() => {
               // Map Zillow profile types to human-readable specialties
@@ -736,7 +744,40 @@ export const ProfessionalCard = ({
               
               const dbSpecialties = (professional as any).specialty || [];
               const parsedSpecialties = parsedProfInfo?.specialties || [];
-              const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties])];
+              
+              // Also extract from professional_information if available
+              const profInfoArray = (professional as any).professional_information;
+              const extractedSpecialties: string[] = [];
+              if (Array.isArray(profInfoArray)) {
+                const specialtiesEntry = profInfoArray.find((e: any) => 
+                  e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
+                );
+                if (specialtiesEntry) {
+                  const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
+                  if (Array.isArray(rawData)) {
+                    rawData.forEach((item: any) => {
+                      if (typeof item === 'string' && item.trim()) {
+                        extractedSpecialties.push(item.trim());
+                      } else if (item?.text) {
+                        extractedSpecialties.push(item.text);
+                      }
+                    });
+                  } else if (typeof rawData === 'string' && rawData.trim()) {
+                    extractedSpecialties.push(rawData.trim());
+                  }
+                }
+              }
+              
+              const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties])];
+              
+              console.log('Specialties debug:', { 
+                profileTypes, 
+                mappedProfileTypes, 
+                dbSpecialties, 
+                parsedSpecialties,
+                extractedSpecialties,
+                allSpecialties 
+              });
               
               if (allSpecialties.length === 0) return null;
               
@@ -1025,13 +1066,8 @@ export const ProfessionalCard = ({
               </div>
 
               {/* Data Source Indicator */}
-              <div className="flex items-center justify-between gap-2 -mt-2">
-                {(professional as any).zillow_data_fetched_at && (
-                  <div className="text-xs text-muted-foreground">
-                    Updated: {format(new Date((professional as any).zillow_data_fetched_at), 'MMM d, yyyy')}
-                  </div>
-                )}
-                {liveStats && (
+              {liveStats && (
+                <div className="flex items-center justify-between gap-2 -mt-2">
                   <Badge 
                     variant="outline" 
                     className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
@@ -1040,8 +1076,8 @@ export const ProfessionalCard = ({
                     <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
                     Verified Stats
                   </Badge>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Video in upper-right blank space or edit field */}
               {isOwnProfile && isEditing ? (
