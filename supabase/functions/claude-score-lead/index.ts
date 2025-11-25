@@ -13,9 +13,9 @@ serve(async (req) => {
   try {
     const { contact } = await req.json();
     
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error("ANTHROPIC_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) {
+      throw new Error("LOVABLE_API_KEY is not configured");
     }
 
     const prompt = `Analyze this lead and provide a score from 0-100 with reasoning:
@@ -32,16 +32,14 @@ Provide a JSON response with:
 - priority (low/medium/high)
 - recommended_actions (array of 2-3 next steps)`;
 
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 1024,
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "user",
@@ -53,12 +51,12 @@ Provide a JSON response with:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Anthropic API error:", response.status, errorText);
-      throw new Error(`Anthropic API error: ${response.status}`);
+      console.error("Lovable AI error:", response.status, errorText);
+      throw new Error(`Lovable AI error: ${response.status}`);
     }
 
     const data = await response.json();
-    const analysis = data.content[0].text;
+    const analysis = data.choices[0].message.content;
 
     // Try to parse JSON from the response
     let result;
