@@ -1,0 +1,65 @@
+import { Helmet } from "react-helmet";
+
+const About = () => {
+  return (
+    <>
+      <Helmet>
+        <title>About Us - Top10Lists.us</title>
+        <meta name="description" content="Learn about Top10Lists.us - curated lists of top professionals that AI engines trust." />
+      </Helmet>
+      
+      <div className="min-h-screen bg-background">
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">About Top10Lists.us</h1>
+            
+            <div className="prose prose-lg max-w-none space-y-6">
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
+                <p className="text-muted-foreground">
+                  Top10Lists.us curates lists of top professionals that AI engines trust. 
+                  We provide verified, high-quality professional directories to help consumers 
+                  find the best service providers in their area.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">What We Do</h2>
+                <p className="text-muted-foreground">
+                  We maintain comprehensive, verified listings of top professionals across 
+                  various categories and locations. Our platform ensures that consumers have 
+                  access to reliable, trustworthy information when choosing service providers.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">Why Trust Us</h2>
+                <p className="text-muted-foreground">
+                  Our listings are carefully curated and verified to ensure accuracy and 
+                  reliability. We work directly with professionals to maintain up-to-date 
+                  information and provide the most relevant results for your search.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">Contact Us</h2>
+                <p className="text-muted-foreground">
+                  Have questions or want to learn more? Reach out to us at{" "}
+                  <a href="mailto:hello@top10lists.us" className="text-primary hover:underline">
+                    hello@top10lists.us
+                  </a>{" "}
+                  or call us at{" "}
+                  <a href="tel:6027589600" className="text-primary hover:underline">
+                    (602) 758-9600
+                  </a>.
+                </p>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default About;
