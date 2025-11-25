@@ -120,8 +120,9 @@ export const ProxySettings = () => {
           <Input
             id="proxy-username"
             value={credentials.username}
-            onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
+            onChange={(e) => setCredentials({ ...credentials, username: e.target.value.trim() })}
             placeholder="wslet3ycrlwml6w"
+            required
           />
         </div>
 
@@ -132,9 +133,10 @@ export const ProxySettings = () => {
               id="proxy-password"
               type={showPassword ? 'text' : 'password'}
               value={credentials.password}
-              onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+              onChange={(e) => setCredentials({ ...credentials, password: e.target.value.trim() })}
               placeholder="Enter proxy password"
               className="pr-10"
+              required
             />
             <Button
               type="button"
@@ -185,6 +187,7 @@ export const ProxySettings = () => {
               onClick={handleTest} 
               disabled={isTesting || !credentials.username || !credentials.password}
               variant="outline"
+              title={!credentials.username || !credentials.password ? 'Enter username and password first' : 'Test proxy connection'}
             >
               <TestTube className="mr-2 h-4 w-4" />
               {isTesting ? 'Testing...' : 'Test connection'}
