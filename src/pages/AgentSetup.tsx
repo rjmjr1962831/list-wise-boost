@@ -165,13 +165,19 @@ export default function AgentSetup() {
         }
         
         toast.success('Welcome back! Signed in successfully.');
+        // Navigate to dashboard
+        navigate('/agent/dashboard');
+        return;
       } else if (authError) {
         console.error('Auth error:', authError);
         toast.error(authError.message);
         setIsLoading(false);
         return;
       } else if (authData.user) {
-        toast.success('Account created! Please check your email to verify.');
+        toast.success('Account created! Signed in successfully.');
+        // Navigate to dashboard
+        navigate('/agent/dashboard');
+        return;
       }
 
     } catch (error) {
