@@ -77,7 +77,7 @@ export default function AgentDashboard() {
           website: data.website || '',
           description: data.get_to_know_me || data.description || '',
           stats: {
-            totalSales: data.total_sales || 0,
+            totalSales: data.total_sales || (data.agent_sales_stats as any)?.countAllTime || 0,
             currentListings: data.current_listings || 0,
             yearsExperience: data.years_experience || 0,
           },
@@ -87,7 +87,12 @@ export default function AgentDashboard() {
           license_verified_at: data.license_verified_at || '',
           zuid: data.zuid,
           years_experience: data.years_experience,
-        };
+          // Pass through raw fields used by ProfessionalCard for stats & external links
+          ...(data.total_sales !== null && { total_sales: data.total_sales }),
+          agent_sales_stats: data.agent_sales_stats as any,
+          zillow_profile_url: data.zillow_profile_url || null,
+          sidebar_video_url: data.sidebar_video_url || null,
+        } as any;
 
         setProfessional(transformedProfessional);
       }
