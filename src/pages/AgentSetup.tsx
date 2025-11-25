@@ -93,7 +93,7 @@ export default function AgentSetup() {
 
         // Call the edge function to fetch agent data
         const { data: fetchResult, error: fetchError } = await supabase.functions.invoke(
-          'fetch-single-memo23-agent',
+          'search-and-import-agent',
           {
             body: {
               email: formData.email,
