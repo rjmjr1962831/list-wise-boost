@@ -29,6 +29,7 @@ import AgentPaymentSuccess from "./pages/AgentPaymentSuccess";
 import AgentInfo from "./pages/AgentInfo";
 import AgentLanding from "./pages/AgentLanding";
 import AgentSetup from "./pages/AgentSetup";
+import AgentDashboard from "./pages/AgentDashboard";
 import PaymentComingSoon from "./pages/PaymentComingSoon";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -71,6 +72,7 @@ const App = () => (
                     {/* Agent Landing & Onboarding */}
                     <Route path="/join" element={<AgentLanding />} />
                     <Route path="/agent-setup" element={<AgentSetup />} />
+                    <Route path="/agent/dashboard" element={<AgentDashboard />} />
                     <Route path="/agent-onboarding" element={<AgentOnboarding />} />
                     <Route path="/agent-onboarding/payment" element={<AgentPayment />} />
                     <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
