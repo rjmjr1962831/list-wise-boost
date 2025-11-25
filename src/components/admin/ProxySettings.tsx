@@ -4,8 +4,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Save, TestTube, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Save, TestTube, Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ProxyCredentials {
@@ -21,6 +22,7 @@ export const ProxySettings = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [testResult, setTestResult] = useState<any>(null);
   
   const [credentials, setCredentials] = useState<ProxyCredentials>({
     endpoint: 'rp.scrapegw.com:6060',
@@ -57,6 +59,7 @@ export const ProxySettings = () => {
 
   const handleTest = async () => {
     setIsTesting(true);
+    setTestResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('test-proxy-connection', {
         body: credentials
@@ -64,6 +67,8 @@ export const ProxySettings = () => {
 
       if (error) throw error;
 
+      setTestResult(data);
+      
       if (data.success) {
         toast({
           title: 'Proxy connection successful',
@@ -80,6 +85,8 @@ export const ProxySettings = () => {
     } catch (error) {
       console.error('Error testing proxy:', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      setTestResult({ success: false, error: errorMessage });
       
       toast({
         title: 'Test failed',
@@ -142,6 +149,36 @@ export const ProxySettings = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {testResult && (
+          <Alert variant={testResult.success ? "default" : "destructive"}>
+            {testResult.success ? (
+              <CheckCircle2 className="h-4 w-4" />
+            ) : (
+              <XCircle className="h-4 w-4" />
+            )}
+            <AlertTitle>
+              {testResult.success ? 'Connection Test Successful' : 'Connection Test Failed'}
+            </AlertTitle>
+            <AlertDescription>
+              {testResult.success ? (
+                <div className="space-y-1 text-sm mt-2">
+                  <p><strong>Message:</strong> {testResult.message}</p>
+                  {testResult.connectionTest && (
+                    <>
+                      <p><strong>Status:</strong> {testResult.connectionTest.status}</p>
+                      <p><strong>IP Address:</strong> {testResult.connectionTest.ip}</p>
+                      <p><strong>Endpoint:</strong> {testResult.connectionTest.endpoint}</p>
+                      <p><strong>Protocol:</strong> {testResult.connectionTest.protocol}</p>
+                    </>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm mt-2">{testResult.error || testResult.message}</p>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <div className="space-y-2">
           <Label htmlFor="proxy-endpoint">Proxy endpoint</Label>
           <Input
