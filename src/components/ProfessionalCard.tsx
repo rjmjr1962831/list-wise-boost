@@ -55,11 +55,43 @@ export const ProfessionalCard = ({
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Helper to strip HTML tags
+  const stripHtml = (html: string): string => {
+    if (!html) return '';
+    const withoutTags = html.replace(/<[^>]*>/g, '');
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = withoutTags;
+    return textarea.value;
+  };
+  
+  // Get actual total_sales using same fallback logic as display
+  const getActualTotalSales = () => {
+    const agentStats = (professional as any).agent_sales_stats;
+    const toNum = (v: any) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+    
+    return toNum((professional as any).total_sales) ||
+           toNum(agentStats?.countAllTime) ||
+           toNum(agentStats?.countLastYear) ||
+           0;
+  };
+  
+  // Get clean bio text
+  const getCleanBio = () => {
+    const bioHtml = (professional as any).get_to_know_me;
+    const description = (professional as any).description;
+    const source = bioHtml || description || '';
+    return stripHtml(source);
+  };
+  
   const [editedData, setEditedData] = useState({
     license_number: professional.license_number || "",
-    total_sales: (professional as any).total_sales || 0,
+    total_sales: getActualTotalSales(),
     years_experience: professional.years_experience || 0,
-    description: professional.description || "",
+    description: getCleanBio(),
     website: professional.website || "",
     phone: professional.phone || "",
     email: professional.email || "",
@@ -105,6 +137,18 @@ export const ProfessionalCard = ({
     currentUser.email === professional.email || 
     (professional as any).claimed_by === currentUser.id
   );
+
+  // Update editedData with parsedProfInfo values when entering edit mode
+  useEffect(() => {
+    if (isEditing && parsedProfInfo) {
+      setEditedData(prev => ({
+        ...prev,
+        website: parsedProfInfo.websiteUrl || prev.website,
+        phone: parsedProfInfo.phone || prev.phone,
+        email: parsedProfInfo.email || prev.email,
+      }));
+    }
+  }, [isEditing]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
