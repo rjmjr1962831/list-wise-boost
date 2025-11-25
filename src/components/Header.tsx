@@ -19,7 +19,7 @@ export const Header = () => {
             <Link to="/agent-info" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               About
             </Link>
-            <Link to="/join">
+            <Link to="/agent-setup">
               <Button variant="default" size="sm">
                 For Agents
               </Button>
