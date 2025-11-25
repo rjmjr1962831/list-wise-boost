@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { 
   CheckCircle2, 
   Star, 
@@ -10,87 +10,109 @@ import {
   Shield,
   Sparkles,
   ArrowRight,
-  BadgeCheck
+  BadgeCheck,
+  Search,
+  Award,
+  DollarSign,
+  BarChart3,
+  Clock,
+  Zap,
+  Target
 } from 'lucide-react';
+import { AISearchComparison } from '@/components/brand/AISearchComparison';
+import { IndustryShiftStats } from '@/components/brand/IndustryShiftStats';
+import { CitationBadge } from '@/components/brand/CitationBadge';
 
 export default function AgentLanding() {
   const navigate = useNavigate();
 
-  const benefits = [
+  const whyTop10Features = [
     {
-      icon: Star,
-      title: 'Premium Placement',
-      description: 'Get featured in top 10 lists for your market with verified badge'
+      icon: Sparkles,
+      title: 'Built AI-First',
+      description: 'Our platform is engineered from the ground up to be cited by LLMs—not retrofitted like legacy sites'
     },
     {
-      icon: TrendingUp,
-      title: 'Increased Visibility',
-      description: 'Reach motivated buyers and sellers actively searching for agents'
+      icon: BarChart3,
+      title: 'LLMs Love Lists',
+      description: 'Structured, authoritative rankings are exactly what AI search engines look for when answering queries'
     },
     {
-      icon: Users,
-      title: 'Quality Leads',
-      description: 'Connect with pre-qualified clients in your target neighborhoods'
+      icon: Award,
+      title: 'Publication Strategy',
+      description: 'Regular features in major outlets create the authoritative citations that LLMs require'
     },
     {
-      icon: Shield,
-      title: 'Verified Profile',
-      description: 'Build trust with license verification and authentic reviews'
+      icon: Target,
+      title: 'First-Mover Advantage',
+      description: 'Once you\'re the answer AI provides, you\'re incredibly difficult to displace'
     }
   ];
 
-  const features = [
-    'Prominent listing in curated top 10 agent rankings',
-    'Verified badge and professional profile showcase',
-    'Direct contact form for lead generation',
-    'Integration with your Zillow reviews and stats',
-    'Multi-city coverage for broader market reach',
-    'SEO-optimized profile for organic search traffic'
+  const brandBuilderBenefits = [
+    {
+      icon: DollarSign,
+      title: 'Simple Monthly Fee',
+      description: 'No per-lead charges. No cuts of closed deals. Just transparent, affordable pricing.'
+    },
+    {
+      icon: Users,
+      title: 'Direct Contact Display',
+      description: 'Your phone and email front and center—clients reach you directly, not through a paywall.'
+    },
+    {
+      icon: Zap,
+      title: 'Priority Placement',
+      description: 'Premium positioning in AI citation-optimized lists for maximum visibility.'
+    },
+    {
+      icon: Clock,
+      title: 'Faster Results',
+      description: 'Like SEO, it takes time—but the time to invest is now. Be the answer before others catch on.'
+    }
   ];
 
   return (
     <>
       <Helmet>
-        <title>Join Top10Lists - Get Listed as a Top Real Estate Agent</title>
-        <meta name="description" content="Get featured on Top10Lists and connect with motivated home buyers and sellers. Join Arizona's most trusted directory of top-rated real estate agents." />
-        <meta name="keywords" content="real estate agent listing, get more leads, agent directory, top agents, real estate marketing" />
+        <title>Be the Answer When AI Recommends | Top10Lists Real Estate Agents</title>
+        <meta name="description" content="When ChatGPT, Gemini, or Claude search for top agents, will they find you? Top10Lists uses cutting-edge technology to make LLMs cite you as the expert. 4.9+ rating required." />
+        <meta name="keywords" content="AI search optimization, LLM citations, real estate agent AI, ChatGPT real estate, brand builder agents, AI real estate leads" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20">
         {/* Hero Section */}
         <section className="container mx-auto px-4 pt-20 pb-16 md:pt-32 md:pb-24">
           <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
-              <Sparkles className="w-4 h-4" />
-              Exclusive Directory for Top-Performing Agents
-            </div>
+            <CitationBadge text="AI-First Directory" variant="verified" className="mb-4" />
             
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Get Listed on Arizona's
-              <span className="text-primary block mt-2">Top Real Estate Agent Directory</span>
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight leading-tight">
+              When AI Searches for
+              <span className="text-primary block mt-2">Top Agents, Will They Find You?</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Join the elite group of top-rated agents and connect with motivated clients 
-              actively searching for the best professionals in their area.
+              AI search is the present. Top10Lists uses cutting-edge technology to make LLMs like ChatGPT, Gemini, 
+              and Claude cite you as the expert when clients search for agents in your market.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
               <Button 
                 size="lg"
-                onClick={() => navigate('/agent-onboarding')}
+                onClick={() => navigate('/verify-listing')}
                 className="text-lg px-8 py-6 group"
               >
-                Get Started
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                Check Your Current Listing
+                <Search className="ml-2 w-5 h-5" />
               </Button>
               <Button 
                 size="lg"
                 variant="outline"
-                onClick={() => navigate('/agent-info')}
+                onClick={() => window.open('https://calendly.com/top10lists/15min', '_blank')}
                 className="text-lg px-8 py-6"
               >
-                Learn More
+                Schedule with Founder (15 min)
+                <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </div>
 
@@ -105,109 +127,189 @@ export default function AgentLanding() {
                 <span>4.9+ Rating Required</span>
               </div>
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-primary" />
-                <span>500+ Active Agents</span>
+                <Sparkles className="w-5 h-5 text-primary" />
+                <span>AI Citation Optimized</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Benefits Section */}
+        {/* The Industry Shift Stats */}
+        <section className="container mx-auto px-4 py-16 md:py-20 bg-muted/30">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                The Shift Is Happening Now
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                AI search was the future. Now it's the present. The data is undeniable.
+              </p>
+            </div>
+
+            <IndustryShiftStats />
+          </div>
+        </section>
+
+        {/* Old SEO vs AI Search Comparison */}
         <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Why Top Agents Choose Top10Lists
+                Why Legacy Sites Can't Compete
               </h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Stand out from the competition with premium placement and verified credentials
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                Sites like Zillow were built for traditional SEO. To be cited by AI requires a complete 
+                technological rebuild—something that will take legacy platforms years to accomplish.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {benefits.map((benefit, index) => (
+            <AISearchComparison />
+          </div>
+        </section>
+
+        {/* Why Top10Lists Section */}
+        <section className="container mx-auto px-4 py-16 md:py-24 bg-muted/30">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Why Top10Lists Works
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                We're not trying to retrofit an old system. We built for AI from day one.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {whyTop10Features.map((feature, index) => (
                 <Card key={index} className="p-6 hover:shadow-lg transition-shadow border-border/50">
-                  <benefit.icon className="w-12 h-12 text-primary mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
+                  <feature.icon className="w-12 h-12 text-primary mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-muted-foreground">{feature.description}</p>
                 </Card>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Features Section */}
-        <section className="container mx-auto px-4 py-16 md:py-24 bg-muted/30">
+        {/* Eligibility Requirements */}
+        <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Everything You Need to Succeed
+                Free & Premium Listings
               </h2>
               <p className="text-lg text-muted-foreground">
-                Comprehensive profile features designed to convert visitors into clients
+                To qualify for any listing, you must meet our standards
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              {features.map((feature, index) => (
-                <div key={index} className="flex items-start gap-3 p-4 rounded-lg hover:bg-background/50 transition-colors">
-                  <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                  <p className="text-foreground">{feature}</p>
+            <Card className="p-8 mb-8 border-2 border-primary/20">
+              <h3 className="text-2xl font-bold mb-6 text-center">Eligibility Requirements</h3>
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="text-center">
+                  <Star className="w-10 h-10 text-primary mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">4.9+ Star Rating</h4>
+                  <p className="text-sm text-muted-foreground">Verified client reviews only</p>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing CTA Section */}
-        <section className="container mx-auto px-4 py-16 md:py-24">
-          <div className="max-w-3xl mx-auto">
-            <Card className="p-8 md:p-12 text-center border-primary/20 shadow-xl">
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-6">
-                <Star className="w-4 h-4" />
-                Limited Spots Available
+                <div className="text-center">
+                  <Shield className="w-10 h-10 text-primary mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Experience</h4>
+                  <p className="text-sm text-muted-foreground">Proven track record required</p>
+                </div>
+                <div className="text-center">
+                  <TrendingUp className="w-10 h-10 text-primary mx-auto mb-3" />
+                  <h4 className="font-semibold mb-2">Great Reviews</h4>
+                  <p className="text-sm text-muted-foreground">Authentic client testimonials</p>
+                </div>
               </div>
-              
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to Generate More Leads?
-              </h2>
-              
-              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join hundreds of top-performing agents already growing their business with Top10Lists
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-                <Button 
-                  size="lg"
-                  onClick={() => navigate('/agent-onboarding')}
-                  className="text-lg px-8 py-6 group"
-                >
-                  Start Your Application
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Quick 5-minute application • License verification required • Premium placement
-              </p>
             </Card>
           </div>
         </section>
 
-        {/* FAQ Preview */}
-        <section className="container mx-auto px-4 py-16 md:py-24 bg-muted/30">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6">Have Questions?</h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Learn more about how Top10Lists can help grow your real estate business
-            </p>
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => navigate('/agent-info')}
-            >
-              View Full Details
-            </Button>
+        {/* Brand Builder Premium Section */}
+        <section className="container mx-auto px-4 py-16 md:py-24 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <Award className="w-4 h-4" />
+                Premium Tier
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Brand Builder: The Smart Investment
+              </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Unlike other real estate sites, Brand Builder is just a low monthly fee. No per-lead charges. 
+                No cuts of your closed deals. Your contact info is displayed directly—clients reach you, not a paywall.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              {brandBuilderBenefits.map((benefit, index) => (
+                <Card key={index} className="p-6 bg-card/50 backdrop-blur">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <benefit.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">{benefit.title}</h3>
+                      <p className="text-muted-foreground text-sm">{benefit.description}</p>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+
+            <div className="bg-card rounded-lg p-8 text-center border-2 border-primary/20 shadow-xl">
+              <h3 className="text-2xl font-bold mb-4">
+                The Time to Invest Is Now
+              </h3>
+              <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+                Like SEO, becoming an AI citation takes time. But once you're the answer, you're incredibly 
+                difficult to displace. The agents who invest now will dominate their markets for years to come.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="container mx-auto px-4 py-16 md:py-24">
+          <div className="max-w-3xl mx-auto">
+            <Card className="p-8 md:p-12 text-center border-primary/20 shadow-xl">
+              <Sparkles className="w-16 h-16 text-primary mx-auto mb-6" />
+              
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Check Your Current Listing
+              </h2>
+              
+              <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+                See how you're currently listed and discover what Brand Builder can do for your business. 
+                Then schedule 15 minutes with our founder to discuss your strategy.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg"
+                  onClick={() => navigate('/verify-listing')}
+                  className="text-lg px-8 py-6 group"
+                >
+                  Verify Your Listing
+                  <Search className="ml-2 w-5 h-5" />
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  onClick={() => window.open('https://calendly.com/top10lists/15min', '_blank')}
+                  className="text-lg px-8 py-6"
+                >
+                  Book a Call
+                  <Clock className="ml-2 w-5 h-5" />
+                </Button>
+              </div>
+
+              <p className="text-sm text-muted-foreground mt-6">
+                4.9+ rating required • Experience matters • AI-first platform
+              </p>
+            </Card>
           </div>
         </section>
       </div>

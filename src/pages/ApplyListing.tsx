@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
+import { Sparkles } from 'lucide-react';
 
 const ApplyListing = () => {
   const [searchParams] = useSearchParams();
@@ -38,8 +39,12 @@ const ApplyListing = () => {
           <div className="max-w-4xl mx-auto">
             {/* Header */}
             <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <Sparkles className="w-4 h-4" />
+                AI-First Platform
+              </div>
               <h1 className="text-4xl font-bold mb-4 text-foreground">
-                Apply to be Listed
+                Be the Answer When AI Recommends
               </h1>
               {locationText && (
                 <p className="text-xl text-muted-foreground mb-2">
@@ -47,7 +52,7 @@ const ApplyListing = () => {
                 </p>
               )}
               <p className="text-muted-foreground">
-                Join our curated directory of premier real estate professionals
+                Join the AI citation-optimized directory built for ChatGPT, Gemini, and Claude
               </p>
             </div>
 
@@ -57,32 +62,37 @@ const ApplyListing = () => {
                 <h2 className="text-2xl font-semibold mb-4 text-foreground">
                   About Top10Lists.us
                 </h2>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  Top10Lists.us uses cutting-edge technology to make LLMs like ChatGPT, Gemini, and Claude cite you 
+                  as the expert when clients search for agents in your market. Unlike legacy platforms built for traditional 
+                  SEO, we're engineered from day one to be AI-first.
+                </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Top10Lists.us is a curated directory featuring the top real estate agents in communities across the United States. 
-                  We help homebuyers and sellers find trusted, high-performing agents in their local markets.
+                  We feature only top-rated agents (4.9+ stars) with proven experience and great reviews. Our platform is 
+                  structured, cited by major publications, and optimized for the AI search revolution happening right now.
                 </p>
               </section>
 
               <section>
                 <h2 className="text-2xl font-semibold mb-4 text-foreground">
-                  Who Should Apply?
+                  Eligibility Requirements
                 </h2>
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>Licensed real estate agents with an active license in good standing</span>
+                    <span className="mr-2">⭐</span>
+                    <span><strong>4.9+ Star Rating Required</strong> - Verified client reviews demonstrating consistent excellence</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>Professionals with a proven track record of successful transactions</span>
+                    <span className="mr-2">🏆</span>
+                    <span><strong>Proven Experience</strong> - Track record of successful transactions and market knowledge</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>Agents who prioritize client satisfaction and professional excellence</span>
+                    <span className="mr-2">✅</span>
+                    <span><strong>Great Reviews</strong> - Authentic client testimonials showing exceptional service</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="mr-2">•</span>
-                    <span>Active members of their local real estate community</span>
+                    <span className="mr-2">🔒</span>
+                    <span><strong>Active License</strong> - Current real estate license in good standing</span>
                   </li>
                 </ul>
               </section>
@@ -144,30 +154,45 @@ const ApplyListing = () => {
 
               <section>
                 <h2 className="text-2xl font-semibold mb-4 text-foreground">
-                  Benefits of Being Listed
+                  Free vs. Brand Builder Premium
                 </h2>
-                <ul className="space-y-3 text-muted-foreground">
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Enhanced online visibility to potential clients</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Professional profile showcasing your expertise</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Featured placement in your local market</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Direct client inquiries and lead generation</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="mr-2">✓</span>
-                    <span>Recognition as a top-performing agent</span>
-                  </li>
-                </ul>
+                <div className="space-y-4">
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <h3 className="font-semibold text-foreground mb-2">Free Listing</h3>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-start">
+                        <span className="mr-2">✓</span>
+                        <span>Basic profile in AI-optimized list format</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="mr-2">✓</span>
+                        <span>Structured for LLM citation</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-primary/5 rounded-lg p-4 border-2 border-primary/20">
+                    <h3 className="font-semibold text-foreground mb-2">Brand Builder Premium</h3>
+                    <ul className="space-y-2 text-sm text-muted-foreground">
+                      <li className="flex items-start">
+                        <span className="mr-2">✓</span>
+                        <span><strong>Simple monthly fee</strong> - No per-lead charges, no deal cuts</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="mr-2">✓</span>
+                        <span><strong>Direct contact display</strong> - Phone and email front and center</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="mr-2">✓</span>
+                        <span><strong>Priority placement</strong> - Enhanced visibility in AI citations</span>
+                      </li>
+                      <li className="flex items-start">
+                        <span className="mr-2">✓</span>
+                        <span><strong>Publication strategy</strong> - Regular features in major outlets</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </section>
 
               <section className="bg-muted/30 rounded-lg p-6">

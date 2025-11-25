@@ -69,48 +69,32 @@ const AgentInfo = () => {
         })}
       </script>
 
-      {/* Why You Should Be on the List */}
-      <section className="bg-card py-20">
+      {/* The AI Revolution Section */}
+      <section className="bg-gradient-to-b from-primary/5 to-card py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <Zap className="w-4 h-4" />
+                Industry Transformation
+              </div>
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Why You Should Be on the List
+                The AI Revolution in Real Estate Search
               </h2>
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Traditional SEO is fading. AI search is the present. Top10Lists is engineered to make 
+                ChatGPT, Gemini, and Claude cite you when clients search for agents.
+              </p>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
               <Card className="border-2">
                 <CardContent className="pt-6 space-y-4">
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
-                    <Check className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold">Authority Positioning</h3>
-                  <p className="text-muted-foreground">
-                    Being listed as a Top 10 agent instantly positions you as a trusted expert in your local market.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2">
-                <CardContent className="pt-6 space-y-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                     <TrendingUp className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold">Increased Visibility</h3>
+                  <h3 className="text-xl font-bold">AI Citation Authority</h3>
                   <p className="text-muted-foreground">
-                    Get discovered by buyers and sellers actively searching for top agents in your area.
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-2">
-                <CardContent className="pt-6 space-y-4">
-                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
-                    <Zap className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold">Qualified Leads</h3>
-                  <p className="text-muted-foreground">
-                    Connect with motivated clients who specifically seek out top-performing agents.
+                    Being cited as the answer by LLMs positions you as the trusted expert when clients ask AI for recommendations.
                   </p>
                 </CardContent>
               </Card>
@@ -120,9 +104,33 @@ const AgentInfo = () => {
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
                     <Search className="h-6 w-6 text-primary" />
                   </div>
-                  <h3 className="text-xl font-bold">SEO Benefits</h3>
+                  <h3 className="text-xl font-bold">Built AI-First</h3>
                   <p className="text-muted-foreground">
-                    Your profile is optimized for search engines, helping potential clients find you organically.
+                    Unlike legacy platforms, we're engineered from the ground up to be parsed and cited by AI search engines.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <Zap className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold">First-Mover Advantage</h3>
+                  <p className="text-muted-foreground">
+                    Once you're the answer AI provides, you're incredibly difficult to displace. The time to invest is now.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+                    <Check className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-bold">Qualified AI-Driven Leads</h3>
+                  <p className="text-muted-foreground">
+                    Clients who ask AI for recommendations are pre-qualified, motivated, and ready to work with top performers.
                   </p>
                 </CardContent>
               </Card>
@@ -384,9 +392,20 @@ const AgentInfo = () => {
 
             <Card>
               <CardContent className="pt-6">
-                <h3 className="text-lg font-bold mb-2">How much does it cost?</h3>
+                <h3 className="text-lg font-bold mb-2">How much does Brand Builder cost?</h3>
                 <p className="text-muted-foreground">
-                  Listing fees vary by market and ranking position. Contact us for specific pricing in your area. We offer flexible payment options for qualified agents.
+                  Brand Builder premium is a simple monthly fee—no per-lead charges, no cuts of your closed deals. 
+                  Your direct contact information is displayed front and center. Contact us for pricing details in your market.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="pt-6">
+                <h3 className="text-lg font-bold mb-2">Why is AI search optimization different from traditional SEO?</h3>
+                <p className="text-muted-foreground">
+                  AI search engines like ChatGPT parse structured data and authoritative citations—not keyword-stuffed content or hundreds of backlinks. 
+                  Sites built for traditional SEO (like Zillow) struggle to be cited by LLMs without a complete rebuild.
                 </p>
               </CardContent>
             </Card>
