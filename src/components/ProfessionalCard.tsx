@@ -1335,29 +1335,66 @@ export const ProfessionalCard = ({
               </div>
 
 
-              {/* Contact Button */}
+              {/* Contact Button or Save/Cancel when editing */}
               <div className="pt-4 border-t">
-                <Button 
-                  onClick={() => {
-                    trackEvent('contact_cta_click', {
-                      agent_name: professional.name,
-                      market: market,
-                      agent_type: agentType
-                    });
-                    
-                    if (onContactClick) {
-                      // Use parent's contact handling
-                      onContactClick();
-                    } else {
-                      // Fallback to local modal
-                      setShowContactModal(true);
-                    }
-                  }}
-                  className="w-full"
-                  variant="default"
-                >
-                  Contact {professional.name.split(' ')[0]}
-                </Button>
+                {isOwnProfile && isEditing ? (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="default"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setPhotoFile(null);
+                        setPhotoPreview(null);
+                      }}
+                      disabled={saving}
+                      className="flex-1"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button
+                      size="default"
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="flex-1"
+                    >
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-1" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    onClick={() => {
+                      trackEvent('contact_cta_click', {
+                        agent_name: professional.name,
+                        market: market,
+                        agent_type: agentType
+                      });
+                      
+                      if (onContactClick) {
+                        // Use parent's contact handling
+                        onContactClick();
+                      } else {
+                        // Fallback to local modal
+                        setShowContactModal(true);
+                      }
+                    }}
+                    className="w-full"
+                    variant="default"
+                  >
+                    Contact {professional.name.split(' ')[0]}
+                  </Button>
+                )}
               </div>
 
               {/* External reviews preview (Google/Yelp/Facebook) */}
@@ -1385,42 +1422,6 @@ export const ProfessionalCard = ({
           citySlug={citySlug}
           categorySlug={categorySlug}
         />
-      )}
-
-      {/* Save/Cancel buttons when editing */}
-      {isOwnProfile && isEditing && (
-        <div className="border-t p-4 flex gap-2 justify-end bg-muted/30">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setIsEditing(false);
-              setPhotoFile(null);
-              setPhotoPreview(null);
-            }}
-            disabled={saving}
-          >
-            <X className="h-4 w-4 mr-1" />
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-1" />
-                Save Changes
-              </>
-            )}
-          </Button>
-        </div>
       )}
     </Card>
   );
