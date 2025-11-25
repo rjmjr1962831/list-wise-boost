@@ -31,6 +31,40 @@ serve(async (req) => {
     const { agentName, company, location, professionalId }: ReqBody = await req.json();
     if (!agentName) throw new Error('agentName is required');
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Check cache first if professionalId provided
+    if (professionalId) {
+      const { data: professional } = await supabase
+        .from('professionals')
+        .select('reviews_data')
+        .eq('id', professionalId)
+        .single();
+
+      const cachedReviews = professional?.reviews_data?.external_reviews;
+      const fetchedAt = professional?.reviews_data?.external_reviews_fetched_at;
+      
+      if (cachedReviews && Array.isArray(cachedReviews) && cachedReviews.length > 0 && fetchedAt) {
+        const cacheAge = Date.now() - new Date(fetchedAt).getTime();
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+        
+        // Return cached reviews if less than 30 days old
+        if (cacheAge < thirtyDays) {
+          console.log(`Serving cached reviews for professional ${professionalId} (${Math.floor(cacheAge / (24 * 60 * 60 * 1000))} days old)`);
+          return new Response(
+            JSON.stringify({
+              reviews: cachedReviews,
+              sources: professional.reviews_data.external_sources || ['Google'],
+              cached: true
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+    }
+
     const OUTSCRAPER_API_KEY = Deno.env.get('OUTSCRAPER_API_KEY');
     const reviews: ExternalReview[] = [];
     const sources: string[] = [];
@@ -88,10 +122,6 @@ serve(async (req) => {
     // Store reviews in database if professionalId provided
     if (professionalId && reviews.length > 0) {
       try {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-        const supabase = createClient(supabaseUrl, supabaseKey);
-
         const { error: updateError } = await supabase
           .from('professionals')
           .update({
