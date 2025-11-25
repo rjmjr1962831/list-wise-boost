@@ -51,7 +51,6 @@ export const ProfessionalCard = ({
   const [license, setLicense] = useState<string | null>(professional.license_number || null);
   const [verifying, setVerifying] = useState(false);
   const [extractedYears, setExtractedYears] = useState<number | null>(null);
-  const [emailRevealed, setEmailRevealed] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1291,22 +1290,13 @@ export const ProfessionalCard = ({
                      return (
                        <div className="flex items-center gap-2">
                          <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                         {emailRevealed ? (
-                           <a 
-                             href={`mailto:${emailDisplay}`} 
-                             className="text-primary hover:underline" 
-                             itemProp="email"
-                           >
-                             {emailDisplay}
-                           </a>
-                         ) : (
-                           <button
-                             onClick={() => setEmailRevealed(true)}
-                             className="text-primary hover:underline"
-                           >
-                             Email
-                           </button>
-                         )}
+                         <a 
+                           href={`mailto:${emailDisplay}`} 
+                           className="text-primary hover:underline" 
+                           itemProp="email"
+                         >
+                           Email
+                         </a>
                        </div>
                      );
                    })()}
