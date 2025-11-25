@@ -853,8 +853,8 @@ export const ProfessionalCard = ({
                   return textarea.value;
                 };
                 
-                // Helper to check if text is long enough to need truncation (>600 chars = roughly 8 lines)
-                const needsTruncation = (text: string) => text.length > 600;
+                // Helper to check if text is long enough to need truncation (>150 chars = roughly 3 lines)
+                const needsTruncation = (text: string) => text.length > 150;
                 
                 return (
                   <div itemProp="description" className="border-t pt-3">
@@ -870,7 +870,7 @@ export const ProfessionalCard = ({
                             className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
                             style={!showFullDescription && isTooLong ? { 
                               display: '-webkit-box',
-                              WebkitLineClamp: 8,
+                              WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden'
                             } : {}}
@@ -897,7 +897,7 @@ export const ProfessionalCard = ({
                             className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
                             style={!showFullDescription && isTooLong ? { 
                               display: '-webkit-box',
-                              WebkitLineClamp: 8,
+                              WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical',
                               overflow: 'hidden'
                             } : {}}

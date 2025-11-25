@@ -19,13 +19,6 @@ export function ExternalReviewsPreview({
   const { data, loading } = useExternalReviews({ agentName, company, market, professionalId });
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
-  const truncateWords = (text: string, limit = 60) => {
-    const words = (text || '').trim().split(/\s+/);
-    const shouldTruncate = words.length > limit;
-    const preview = shouldTruncate ? words.slice(0, limit).join(' ') + '…' : text;
-    return { preview, shouldTruncate };
-  };
-
   if (loading) {
     return (
       <div className="mt-4 pt-4 border-t">
@@ -62,7 +55,9 @@ export function ExternalReviewsPreview({
       <div className="space-y-4">
         {recentReviews.map((r, idx) => {
           const isOpen = !!expanded[idx];
-          const { preview, shouldTruncate } = truncateWords(r.reviewText || '', 60);
+          const reviewText = r.reviewText || '';
+          const needsExpansion = reviewText.length > 150;
+          
           return (
             <article key={idx} className="rounded-md border p-3">
               <div className="flex items-center justify-between">
@@ -80,18 +75,26 @@ export function ExternalReviewsPreview({
               {r.reviewDate && (
                 <div className="text-xs text-muted-foreground mt-1">{r.reviewDate}</div>
               )}
-              <p className="mt-2 text-sm leading-relaxed">
-                {isOpen ? r.reviewText : preview}
+              <p 
+                className="mt-2 text-sm leading-relaxed"
+                style={!isOpen && needsExpansion ? {
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden'
+                } : {}}
+              >
+                {reviewText}
               </p>
               <div className="flex items-center justify-between mt-2">
-                {shouldTruncate && (
+                {needsExpansion && (
                   <button
                     type="button"
-                    className="text-sm text-primary hover:underline"
+                    className="text-sm text-primary hover:underline font-medium"
                     onClick={() => setExpanded((prev) => ({ ...prev, [idx]: !isOpen }))}
                     aria-expanded={isOpen}
                   >
-                    {isOpen ? 'Show less' : 'More'}
+                    {isOpen ? 'less' : 'more'}
                   </button>
                 )}
               </div>
