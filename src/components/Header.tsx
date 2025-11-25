@@ -16,7 +16,7 @@ export const Header = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/agent-info" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               About
             </Link>
             <Link to="/agent-setup">

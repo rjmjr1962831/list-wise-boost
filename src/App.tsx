@@ -31,6 +31,7 @@ import AgentLanding from "./pages/AgentLanding";
 import AgentSetup from "./pages/AgentSetup";
 import AgentDashboard from "./pages/AgentDashboard";
 import PaymentComingSoon from "./pages/PaymentComingSoon";
+import About from "./pages/About";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
@@ -53,7 +54,7 @@ const App = () => (
                 }>
                   <Routes>
                     <Route path="/" element={<Index />} />
-                    {/* /about will be built later */}
+                    <Route path="/about" element={<About />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Dynamic city and category routes */}
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
