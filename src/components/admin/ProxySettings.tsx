@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Save, TestTube } from 'lucide-react';
+import { Eye, EyeOff, Save, TestTube, Loader2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,6 +20,7 @@ export const ProxySettings = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const [credentials, setCredentials] = useState<ProxyCredentials>({
     endpoint: 'rp.scrapegw.com:6060',
@@ -27,6 +28,32 @@ export const ProxySettings = () => {
     password: '',
     protocol: 'HTTP/Socks5'
   });
+
+  useEffect(() => {
+    loadProxySettings();
+  }, []);
+
+  const loadProxySettings = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase.functions.invoke('get-proxy-settings');
+      
+      if (error) throw error;
+      
+      if (data?.success && data?.settings?.hasCredentials) {
+        setCredentials(prev => ({
+          ...prev,
+          endpoint: data.settings.endpoint || prev.endpoint,
+          username: data.settings.username || '',
+          password: data.settings.password || '',
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading proxy settings:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleTest = async () => {
     setIsTesting(true);
@@ -95,6 +122,16 @@ export const ProxySettings = () => {
       setIsSaving(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
