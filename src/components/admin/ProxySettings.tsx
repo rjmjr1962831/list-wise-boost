@@ -187,7 +187,6 @@ export const ProxySettings = () => {
               onClick={handleTest} 
               disabled={isTesting || !credentials.username || !credentials.password}
               variant="outline"
-              title={!credentials.username || !credentials.password ? 'Enter username and password first' : 'Test proxy connection'}
             >
               <TestTube className="mr-2 h-4 w-4" />
               {isTesting ? 'Testing...' : 'Test connection'}
