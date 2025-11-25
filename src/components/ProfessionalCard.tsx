@@ -95,11 +95,16 @@ export const ProfessionalCard = ({
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
+      console.log('Current user:', user?.email, 'Professional email:', professional.email);
     };
     checkAuth();
   }, []);
 
-  const isOwnProfile = currentUser && (professional as any).claimed_by === currentUser.id;
+  // Allow editing if user's email matches professional's email OR if claimed_by matches user ID
+  const isOwnProfile = currentUser && (
+    currentUser.email === professional.email || 
+    (professional as any).claimed_by === currentUser.id
+  );
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
