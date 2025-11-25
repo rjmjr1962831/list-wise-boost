@@ -843,6 +843,16 @@ export const ProfessionalCard = ({
                 
                 if (!bioHtml && !fallbackText) return null;
                 
+                // Helper to strip HTML tags and decode entities
+                const stripHtml = (html: string): string => {
+                  // Remove HTML tags
+                  const withoutTags = html.replace(/<[^>]*>/g, '');
+                  // Decode common HTML entities
+                  const textarea = document.createElement('textarea');
+                  textarea.innerHTML = withoutTags;
+                  return textarea.value;
+                };
+                
                 // Helper to check if text is long enough to need truncation (>600 chars = roughly 8 lines)
                 const needsTruncation = (text: string) => text.length > 600;
                 
@@ -850,40 +860,14 @@ export const ProfessionalCard = ({
                   <div itemProp="description" className="border-t pt-3">
                     <h4 className="text-sm font-semibold mb-2">From {professional.name}:</h4>
                     {bioHtml ? (() => {
-                      const hasHtmlTags = /<p|<br|<div/i.test(bioHtml);
-                      const isTooLong = needsTruncation(bioHtml);
+                      const cleanText = stripHtml(bioHtml);
+                      const isTooLong = needsTruncation(cleanText);
                       
                       // CRITICAL: Always preserve line breaks in bios with whitespace-pre-line!
-                      if (hasHtmlTags) {
-                        return (
-                          <>
-                            <div
-                              className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line prose prose-sm max-w-none ${!showFullDescription && isTooLong ? '' : ''}`}
-                              style={!showFullDescription && isTooLong ? { 
-                                display: '-webkit-box',
-                                WebkitLineClamp: 8,
-                                WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden'
-                              } : {}}
-                              dangerouslySetInnerHTML={{ __html: bioHtml }}
-                            />
-                            {isTooLong && (
-                              <button
-                                onClick={() => setShowFullDescription(!showFullDescription)}
-                                className="text-sm text-primary hover:underline mt-1 font-medium block"
-                              >
-                                {showFullDescription ? 'less' : 'more'}
-                              </button>
-                            )}
-                          </>
-                        );
-                      }
-                      
-                      // CRITICAL: Plain text - preserve line breaks with whitespace-pre-line
                       return (
                         <>
                           <div 
-                            className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line`}
+                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
                             style={!showFullDescription && isTooLong ? { 
                               display: '-webkit-box',
                               WebkitLineClamp: 8,
@@ -891,7 +875,7 @@ export const ProfessionalCard = ({
                               overflow: 'hidden'
                             } : {}}
                           >
-                            {bioHtml}
+                            {cleanText}
                           </div>
                           {isTooLong && (
                             <button
@@ -910,7 +894,7 @@ export const ProfessionalCard = ({
                       return (
                         <>
                           <div 
-                            className={`text-sm text-muted-foreground leading-relaxed whitespace-pre-line`}
+                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
                             style={!showFullDescription && isTooLong ? { 
                               display: '-webkit-box',
                               WebkitLineClamp: 8,
