@@ -44,6 +44,7 @@ import { LicenseVerifier } from "@/components/admin/LicenseVerifier";
 import { LicenseVerificationReport } from "@/components/admin/LicenseVerificationReport";
 import { Memo23FieldsExporter } from "@/components/admin/Memo23FieldsExporter";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
+import { ProxySettings } from "@/components/admin/ProxySettings";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -258,6 +259,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Enrichment Queue
             </TabsTrigger>
+            <TabsTrigger value="proxy-settings">
+              <Database className="mr-2 h-4 w-4" />
+              Proxy Settings
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -380,6 +385,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="enrichment-queue" className="space-y-4">
             <ContactEnrichmentQueue />
+          </TabsContent>
+
+          <TabsContent value="proxy-settings" className="space-y-4">
+            <ProxySettings />
           </TabsContent>
         </Tabs>
       </div>
