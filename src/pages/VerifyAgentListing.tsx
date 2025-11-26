@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle2, Phone, Mail, Globe, Award } from "lucide-react";
+import { Loader2, CheckCircle2, Phone, Mail, Globe, Award, Copy, ExternalLink } from "lucide-react";
 import { Helmet } from "react-helmet";
+import { toast as sonnerToast } from "sonner";
 
 interface Professional {
   id: string;
@@ -38,6 +40,7 @@ export default function VerifyAgentListing() {
     website: "",
     description: "",
   });
+  const [ogImageUrl, setOgImageUrl] = useState<string>("");
 
   useEffect(() => {
     fetchProfessional();
@@ -73,6 +76,11 @@ export default function VerifyAgentListing() {
         website: data.website || "",
         description: data.description || "",
       });
+      
+      // Load OG image
+      const cacheBust = Date.now();
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-og-image?id=${data.id}&v=${cacheBust}`;
+      setOgImageUrl(url);
     } catch (error) {
       console.error("Error fetching professional:", error);
       toast({
@@ -140,6 +148,27 @@ export default function VerifyAgentListing() {
 
   const cityName = professional.cities?.name || "Unknown";
   const stateName = professional.cities?.state || "";
+  
+  const agentUrl = professional.cities 
+    ? `${window.location.origin}/top10realestateagents/${professional.cities.name.toLowerCase().replace(/\s+/g, '-')}-${professional.cities.state.toLowerCase()}`
+    : "";
+
+  const copyMetaTags = () => {
+    const metaTags = `
+<meta property="og:title" content="${professional?.name} - Top Real Estate Agent" />
+<meta property="og:description" content="${professional?.description?.substring(0, 200) || 'Premier real estate services'}" />
+<meta property="og:image" content="${ogImageUrl}" />
+<meta property="og:url" content="${agentUrl}" />
+<meta property="og:type" content="profile" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="${professional?.name} - Top Real Estate Agent" />
+<meta name="twitter:description" content="${professional?.description?.substring(0, 200) || 'Premier real estate services'}" />
+<meta name="twitter:image" content="${ogImageUrl}" />
+    `.trim();
+
+    navigator.clipboard.writeText(metaTags);
+    sonnerToast.success("Meta tags copied to clipboard!");
+  };
 
   return (
     <>
@@ -268,6 +297,157 @@ export default function VerifyAgentListing() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Social Media Preview Section */}
+        {ogImageUrl && (
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>Social Media Preview</CardTitle>
+              <CardDescription>
+                See how your profile will appear when shared on social media
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="facebook">
+                <TabsList className="grid w-full grid-cols-3 mb-4">
+                  <TabsTrigger value="facebook">Facebook</TabsTrigger>
+                  <TabsTrigger value="twitter">Twitter/X</TabsTrigger>
+                  <TabsTrigger value="linkedin">LinkedIn</TabsTrigger>
+                </TabsList>
+
+                {/* Facebook Preview */}
+                <TabsContent value="facebook">
+                  <div className="border rounded-lg overflow-hidden bg-white">
+                    <img 
+                      src={ogImageUrl} 
+                      alt="Facebook Preview" 
+                      className="w-full h-auto"
+                    />
+                    <div className="p-3 border-t bg-gray-50">
+                      <p className="text-xs text-gray-500 uppercase mb-1">top10lists.us</p>
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {professional.name} - Top Real Estate Agent
+                      </h3>
+                      <p className="text-sm text-gray-600 line-clamp-2">
+                        {professional.description || 'Premier real estate services'}
+                      </p>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Twitter Preview */}
+                <TabsContent value="twitter">
+                  <div className="border rounded-xl overflow-hidden bg-white max-w-[504px]">
+                    <img 
+                      src={ogImageUrl} 
+                      alt="Twitter Preview" 
+                      className="w-full h-auto"
+                    />
+                    <div className="p-3 border-t">
+                      <p className="text-xs text-gray-500 mb-1">top10lists.us</p>
+                      <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                        {professional.name} - Top Real Estate Agent
+                      </h3>
+                      <p className="text-sm text-gray-600 line-clamp-1">
+                        {professional.description || 'Premier real estate services'}
+                      </p>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* LinkedIn Preview */}
+                <TabsContent value="linkedin">
+                  <div className="border rounded-lg overflow-hidden bg-white">
+                    <img 
+                      src={ogImageUrl} 
+                      alt="LinkedIn Preview" 
+                      className="w-full h-auto"
+                    />
+                    <div className="p-4 border-t bg-gray-50">
+                      <h3 className="font-semibold text-gray-900 mb-1">
+                        {professional.name} - Top Real Estate Agent
+                      </h3>
+                      <p className="text-xs text-gray-500 mb-2">top10lists.us</p>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+
+              <div className="mt-4 pt-4 border-t space-y-3">
+                <Button
+                  variant="outline"
+                  onClick={copyMetaTags}
+                  className="w-full"
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy Meta Tags
+                </Button>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    asChild
+                    size="sm"
+                  >
+                    <a
+                      href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(agentUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Test on Facebook
+                    </a>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    asChild
+                    size="sm"
+                  >
+                    <a
+                      href={`https://cards-dev.twitter.com/validator`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Twitter Validator
+                    </a>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    asChild
+                    size="sm"
+                  >
+                    <a
+                      href={`https://www.linkedin.com/post-inspector/inspect/${encodeURIComponent(agentUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      LinkedIn Inspector
+                    </a>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    asChild
+                    size="sm"
+                  >
+                    <a
+                      href={`https://opengraphcheck.com/result.php?url=${encodeURIComponent(agentUrl)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      OG Check
+                    </a>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card>
           <CardHeader>
