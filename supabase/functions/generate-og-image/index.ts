@@ -133,11 +133,6 @@ serve(async (req) => {
         <text x="220" y="225" font-family="Inter, sans-serif" font-size="17" fill="hsl(234, 45%, 61%)">
           ${location}
         </text>
-        ${professional.license_number ? `
-          <text x="220" y="250" font-family="Inter, sans-serif" font-size="16" fill="hsl(234, 45%, 51%)">
-            License: ${professional.license_number}
-          </text>
-        ` : ''}
         
         <!-- Rating and Stats - single line -->
         <text x="30" y="280" font-family="Inter, sans-serif" font-size="26" font-weight="700" fill="hsl(27, 87%, 57%)">
@@ -222,9 +217,7 @@ serve(async (req) => {
       headers: {
         ...corsHeaders,
         'Content-Type': 'image/svg+xml',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
+        'Cache-Control': 'public, max-age=31536000, immutable',
       },
     });
   } catch (error) {
