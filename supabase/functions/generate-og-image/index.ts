@@ -94,97 +94,91 @@ serve(async (req) => {
         <!-- Left accent border -->
         <rect x="0" y="0" width="8" height="${height}" fill="hsl(234, 45%, 21%)"/>
         
-        <!-- Photo -->
-        <defs>
-          <clipPath id="photoClip">
-            <circle cx="140" cy="140" r="75"/>
-          </clipPath>
-        </defs>
-        ${professional.image_url ? `
-          <image href="${professional.image_url}" x="65" y="65" width="150" height="150" clip-path="url(#photoClip)" preserveAspectRatio="xMidYMid slice"/>
-        ` : `
-          <circle cx="140" cy="140" r="80" fill="hsl(234, 45%, 21%)" opacity="0.1"/>
-          <circle cx="140" cy="140" r="75" fill="hsl(0, 0%, 90%)"/>
-        `}
-        
         <!-- TOP10LISTS.US branding -->
-        <text x="50" y="50" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="hsl(234, 45%, 21%)">
+        <text x="30" y="45" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="hsl(234, 45%, 21%)">
           TOP10LISTS.US
         </text>
         
-        <!-- Name -->
-        <text x="260" y="110" font-family="Playfair Display, serif" font-size="42" font-weight="700" fill="hsl(234, 45%, 21%)">
-          ${professional.name.substring(0, 30)}
+        <!-- Confirm or Edit button - top right -->
+        <rect x="${width - 240}" y="20" width="210" height="55" rx="28" fill="hsl(176, 100%, 50%)"/>
+        <text x="${width - 135}" y="55" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="hsl(234, 45%, 21%)" text-anchor="middle">
+          Confirm or Edit
         </text>
         
-        <!-- Category/Company -->
-        <text x="50" y="150" font-family="Inter, sans-serif" font-size="22" fill="hsl(0, 0%, 45%)">
+        <!-- Photo - left side, not overlapping -->
+        <defs>
+          <clipPath id="photoClip">
+            <circle cx="110" cy="160" r="70"/>
+          </clipPath>
+        </defs>
+        ${professional.image_url ? `
+          <image href="${professional.image_url}" x="40" y="90" width="140" height="140" clip-path="url(#photoClip)" preserveAspectRatio="xMidYMid slice"/>
+        ` : `
+          <circle cx="110" cy="160" r="70" fill="hsl(234, 45%, 21%)" opacity="0.1"/>
+          <circle cx="110" cy="160" r="65" fill="hsl(0, 0%, 90%)"/>
+        `}
+        
+        <!-- Name - right of photo -->
+        <text x="220" y="130" font-family="Playfair Display, serif" font-size="44" font-weight="700" fill="hsl(234, 45%, 21%)">
+          ${professional.name.substring(0, 28)}
+        </text>
+        
+        <!-- Title and Company -->
+        <text x="220" y="170" font-family="Inter, sans-serif" font-size="20" fill="hsl(234, 45%, 41%)">
           ${(professional.categories as any)?.name || 'Real Estate Agent'}
         </text>
-        <text x="50" y="180" font-family="Inter, sans-serif" font-size="20" fill="hsl(0, 0%, 50%)">
-          ${(professional.company || '').substring(0, 35)}
+        <text x="220" y="200" font-family="Inter, sans-serif" font-size="18" fill="hsl(234, 45%, 51%)">
+          ${(professional.company || '').substring(0, 45)}
         </text>
-        
-        <!-- Location -->
-        <text x="50" y="210" font-family="Inter, sans-serif" font-size="18" fill="hsl(0, 0%, 55%)">
+        <text x="220" y="225" font-family="Inter, sans-serif" font-size="17" fill="hsl(234, 45%, 61%)">
           ${location}
         </text>
         
-        <!-- Contact Information -->
-        ${professional.website ? `
-        <text x="50" y="240" font-family="Inter, sans-serif" font-size="16" fill="hsl(0, 0%, 50%)">
-          Website: ${professional.website.replace('https://', '').replace('http://', '').substring(0, 40)}
+        <!-- Rating and Stats - single line -->
+        <text x="30" y="280" font-family="Inter, sans-serif" font-size="26" font-weight="700" fill="hsl(27, 87%, 57%)">
+          ⭐ ${rating.toFixed(1)}
         </text>
-        ` : ''}
-        ${professional.email ? `
-        <text x="50" y="265" font-family="Inter, sans-serif" font-size="16" fill="hsl(0, 0%, 50%)">
-          Email: ${professional.email}
-        </text>
-        ` : ''}
-        ${professional.phone ? `
-        <text x="50" y="290" font-family="Inter, sans-serif" font-size="16" fill="hsl(0, 0%, 50%)">
-          Phone: ${professional.phone}
-        </text>
-        ` : ''}
-        
-        <!-- Rating stars -->
-        <text x="50" y="330" font-family="Inter, sans-serif" font-size="24" font-weight="600" fill="hsl(25, 95%, 60%)">
-          ${'★'.repeat(Math.floor(rating))}${'☆'.repeat(5 - Math.floor(rating))} ${rating.toFixed(1)}
-        </text>
-        <text x="260" y="330" font-family="Inter, sans-serif" font-size="18" fill="hsl(0, 0%, 50%)">
+        <text x="150" y="280" font-family="Inter, sans-serif" font-size="19" fill="hsl(234, 45%, 41%)">
           ${reviewCount} reviews
         </text>
-        
-        <!-- Stats -->
         ${yearsExp > 0 ? `
-        <text x="420" y="330" font-family="Inter, sans-serif" font-size="18" fill="hsl(0, 0%, 50%)">
-          • ${yearsExp} Years
-        </text>
+          <text x="330" y="280" font-family="Inter, sans-serif" font-size="19" fill="hsl(234, 45%, 41%)">
+            • ${yearsExp} Years
+          </text>
         ` : ''}
         ${totalSales > 0 ? `
-        <text x="560" y="330" font-family="Inter, sans-serif" font-size="18" fill="hsl(0, 0%, 50%)">
-          • ${totalSales}+ Sales
-        </text>
+          <text x="480" y="280" font-family="Inter, sans-serif" font-size="19" fill="hsl(234, 45%, 41%)">
+            • ${totalSales}+ Sales
+          </text>
         ` : ''}
         
-        <!-- Specialties -->
-        ${specialties.map((spec: string, idx: number) => `
-          <rect x="${50 + (idx * 180)}" y="370" width="${Math.min(spec.length * 9 + 30, 170)}" height="36" rx="18" fill="hsl(186, 100%, 50%)" opacity="0.15"/>
-          <text x="${65 + (idx * 180)}" y="393" font-family="Inter, sans-serif" font-size="14" font-weight="500" fill="hsl(234, 45%, 21%)">
-            ${spec.substring(0, 18)}
+        <!-- Contact Info - Single Line -->
+        <text x="30" y="335" font-family="Inter, sans-serif" font-size="16" fill="hsl(234, 45%, 51%)">
+          ${(professional.website || 'No website').replace('https://', '').replace('http://', '').substring(0, 35)} • ${professional.email || 'No email'} • ${professional.phone || 'No phone'}
+        </text>
+        
+        <!-- Video URL -->
+        ${professional.sidebar_video_url ? `
+          <text x="30" y="370" font-family="Inter, sans-serif" font-size="17" font-weight="600" fill="hsl(176, 100%, 35%)">
+            📹 Video available at profile
           </text>
-        `).join('')}
+        ` : `
+          <text x="30" y="370" font-family="Inter, sans-serif" font-size="17" fill="hsl(0, 0%, 55%)">
+            No video found
+          </text>
+        `}
+        
+        <!-- Specialties -->
+        ${specialties.length > 0 ? `
+          <text x="30" y="420" font-family="Inter, sans-serif" font-size="18" font-weight="600" fill="hsl(234, 45%, 41%)">
+            ${specialties.slice(0, 3).join(' • ')}
+          </text>
+        ` : ''}
         
         <!-- Bio (line-wrapped) -->
-        ${wrapText(truncatedBio, 50, 440, 1100, 20, 28).map(line => 
-          `<text x="50" y="${line.y}" font-family="Inter, sans-serif" font-size="18" fill="hsl(0, 0%, 35%)">${line.text}</text>`
+        ${wrapText(truncatedBio, 30, 465, 1140, 18, 26).map(line => 
+          `<text x="30" y="${line.y}" font-family="Inter, sans-serif" font-size="17" fill="hsl(0, 0%, 35%)">${line.text}</text>`
         ).join('')}
-        
-        <!-- Confirm or Edit Profile -->
-        <rect x="950" y="40" width="200" height="40" rx="20" fill="hsl(186, 100%, 50%)"/>
-        <text x="1000" y="67" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="white" text-anchor="middle">
-          Confirm or Edit
-        </text>
       </svg>
     `;
 
