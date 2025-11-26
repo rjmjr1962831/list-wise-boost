@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap, TrendingUp, Briefcase, Download } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap, TrendingUp, Briefcase, Download, Image } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -46,6 +46,7 @@ import { Memo23FieldsExporter } from "@/components/admin/Memo23FieldsExporter";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import { ProxySettings } from "@/components/admin/ProxySettings";
 import SpecialtiesManager from "@/components/admin/SpecialtiesManager";
+import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -184,6 +185,10 @@ const AdminDashboard = () => {
               <Wand2 className="mr-2 h-4 w-4" />
               AI Photos
             </TabsTrigger>
+            <TabsTrigger value="og-images">
+              <Image className="mr-2 h-4 w-4" />
+              OG Images
+            </TabsTrigger>
             <TabsTrigger value="zip-codes">
               <MapPin className="mr-2 h-4 w-4" />
               Zip Codes
@@ -304,6 +309,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="photos" className="space-y-4">
             <PhotoGenerator />
+          </TabsContent>
+
+          <TabsContent value="og-images" className="space-y-4">
+            <OGImageGenerator />
           </TabsContent>
 
           <TabsContent value="zip-codes" className="space-y-4">
