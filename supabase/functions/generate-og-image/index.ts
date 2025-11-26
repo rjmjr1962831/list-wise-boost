@@ -94,13 +94,26 @@ serve(async (req) => {
         <!-- Left accent border -->
         <rect x="0" y="0" width="8" height="${height}" fill="hsl(234, 45%, 21%)"/>
         
+        <!-- Photo -->
+        <defs>
+          <clipPath id="photoClip">
+            <circle cx="140" cy="140" r="75"/>
+          </clipPath>
+        </defs>
+        ${professional.image_url ? `
+          <image href="${professional.image_url}" x="65" y="65" width="150" height="150" clip-path="url(#photoClip)" preserveAspectRatio="xMidYMid slice"/>
+        ` : `
+          <circle cx="140" cy="140" r="80" fill="hsl(234, 45%, 21%)" opacity="0.1"/>
+          <circle cx="140" cy="140" r="75" fill="hsl(0, 0%, 90%)"/>
+        `}
+        
         <!-- TOP10LISTS.US branding -->
         <text x="50" y="50" font-family="Inter, sans-serif" font-size="18" font-weight="700" fill="hsl(234, 45%, 21%)">
           TOP10LISTS.US
         </text>
         
         <!-- Name -->
-        <text x="50" y="110" font-family="Playfair Display, serif" font-size="42" font-weight="700" fill="hsl(234, 45%, 21%)">
+        <text x="260" y="110" font-family="Playfair Display, serif" font-size="42" font-weight="700" fill="hsl(234, 45%, 21%)">
           ${professional.name.substring(0, 30)}
         </text>
         
