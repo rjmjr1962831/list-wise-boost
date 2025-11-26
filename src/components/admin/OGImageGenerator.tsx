@@ -60,7 +60,16 @@ export const OGImageGenerator = () => {
     setIsPreviewLoading(true);
     try {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-og-image?id=${selectedAgentId}`;
-      const response = await fetch(url);
+      
+      // Include auth token to satisfy edge function JWT requirement
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const accessToken = session?.access_token;
+
+      const response = await fetch(url, {
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+      });
       
       if (!response.ok) {
         throw new Error(`Failed to generate preview: ${response.statusText}`);
@@ -118,8 +127,16 @@ export const OGImageGenerator = () => {
           // Generate the OG image URL (the edge function will generate it on-demand)
           const ogImageUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-og-image?id=${professional.id}`;
 
+          // Include auth token to satisfy edge function JWT requirement
+          const {
+            data: { session },
+          } = await supabase.auth.getSession();
+          const accessToken = session?.access_token;
+
           // Test that the image generates successfully
-          const response = await fetch(ogImageUrl);
+          const response = await fetch(ogImageUrl, {
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          });
           
           if (!response.ok) {
             throw new Error(`Failed to generate image: ${response.statusText}`);
