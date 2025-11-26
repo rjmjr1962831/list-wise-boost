@@ -74,19 +74,20 @@ export const CollapsibleListSection = ({
       {/* Content always in DOM for SEO, visibility controlled by CSS */}
       <CollapsibleContent className="space-y-6">
         {section.items.map((professional) => (
-          <ProfessionalCard 
-            key={`${section.title}-${professional.rank}-${professional.id}`}
-            professional={professional}
-            accentColor={section.accentColor}
-            schemaType={schemaType}
-            market={market}
-            stateAbbr={stateAbbr}
-            agentType={section.title}
-            citySlug={citySlug}
-            categorySlug={categorySlug}
-            onContactClick={() => onContactClick?.(professional)}
-            quizCompleted={quizCompleted}
-          />
+          <div key={`${section.title}-${professional.rank}-${professional.id}`} id={`agent-${professional.id}`}>
+            <ProfessionalCard 
+              professional={professional}
+              accentColor={section.accentColor}
+              schemaType={schemaType}
+              market={market}
+              stateAbbr={stateAbbr}
+              agentType={section.title}
+              citySlug={citySlug}
+              categorySlug={categorySlug}
+              onContactClick={() => onContactClick?.(professional)}
+              quizCompleted={quizCompleted}
+            />
+          </div>
         ))}
       </CollapsibleContent>
     </Collapsible>

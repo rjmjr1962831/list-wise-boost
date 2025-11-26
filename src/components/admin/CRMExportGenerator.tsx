@@ -160,7 +160,9 @@ export function CRMExportGenerator() {
         'Created At',
         'Updated At',
         'Verification Link',
-        'Top10 Profile Link'
+        'Top10 Profile Link',
+        'Direct Profile URL',
+        'Anchor Link'
       ];
 
       const rows = professionals.map(prof => {
@@ -174,6 +176,12 @@ export function CRMExportGenerator() {
         const citySlug = prof.cities?.slug || 'unknown';
         const categorySlug = prof.categories?.slug || 'unknown';
         const top10Link = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}`;
+
+        // Generate Direct Profile URL (with query parameter)
+        const directProfileUrl = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}?agent=${prof.id}`;
+        
+        // Generate Anchor Link (with hash)
+        const anchorLink = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}#agent-${prof.id}`;
 
         // Parse specialties and badges
         const specialties = Array.isArray(prof.specialty) ? prof.specialty.join('; ') : '';
@@ -231,7 +239,9 @@ export function CRMExportGenerator() {
           prof.created_at,
           prof.updated_at,
           verificationLink,
-          top10Link
+          top10Link,
+          directProfileUrl,
+          anchorLink
         ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
       });
 
@@ -438,6 +448,8 @@ export function CRMExportGenerator() {
             <li>Last enriched timestamp</li>
             <li>Verification link for each agent</li>
             <li>Top10 profile link for each agent</li>
+            <li><strong>Direct Profile URL</strong> (opens agent modal with query param)</li>
+            <li><strong>Anchor Link</strong> (scrolls to agent card on list page)</li>
           </ul>
           <p className="text-xs italic mt-2">💡 Professional Info JSON contains broker addresses, websites, social links - parse for missing contact data</p>
         </div>
