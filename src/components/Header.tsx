@@ -118,7 +118,7 @@ export const Header = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Link to="/admin-login">
+              <Link to="/admin/login">
                 <Button variant="outline" size="sm">
                   Login
                 </Button>
