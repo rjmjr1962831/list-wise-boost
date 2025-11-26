@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalListLayout } from '@/components/ProfessionalListLayout';
 import { CollapsibleListSection } from '@/components/CollapsibleListSection';
@@ -8,6 +8,7 @@ import { generatePageTitle, generateMetaDescription, formatCityName } from '@/ut
 import { ListSection, Professional } from '@/types/professional';
 import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
+import { AgentDetailModal } from '@/components/AgentDetailModal';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 
@@ -140,6 +141,7 @@ export default function DynamicCategoryList() {
     citySlug: string; 
     categorySlug: string;
   }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   const [loading, setLoading] = useState(true);
   const [isGeneratingData, setIsGeneratingData] = useState(false);
@@ -153,6 +155,7 @@ export default function DynamicCategoryList() {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Set minimum loading timer to show counter animation
   useEffect(() => {
@@ -641,6 +644,27 @@ export default function DynamicCategoryList() {
     }
   };
 
+  // Handle query parameter for direct agent links
+  useEffect(() => {
+    const agentId = searchParams.get('agent');
+    if (agentId && allProfessionals.length > 0) {
+      const agent = allProfessionals.find(p => p.id === agentId);
+      if (agent) {
+        // Scroll to agent card
+        setTimeout(() => {
+          const element = document.getElementById(`agent-${agentId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+        
+        // Open detail modal
+        setSelectedProfessional(agent);
+        setShowDetailModal(true);
+      }
+    }
+  }, [searchParams, allProfessionals]);
+
   const handleContactClick = (professional: Professional) => {
     setSelectedProfessional(professional);
     
@@ -979,18 +1003,37 @@ export default function DynamicCategoryList() {
         />
       )}
       {selectedProfessional && city && category && (
-        <ContactProfessionalModal
-          open={showContactModal}
-          onOpenChange={setShowContactModal}
-          professionalName={selectedProfessional.name}
-          professionalId={`${city.id}-${category.id}-${selectedProfessional.rank}`}
-          listingUrl={typeof window !== 'undefined' ? window.location.href : ''}
-          citySlug={city.slug}
-          categorySlug={categorySlug}
-          cityName={city.name}
-          categoryName={category.name}
-          professionalWebsite={selectedProfessional.website}
-        />
+        <>
+          <ContactProfessionalModal
+            open={showContactModal}
+            onOpenChange={setShowContactModal}
+            professionalName={selectedProfessional.name}
+            professionalId={`${city.id}-${category.id}-${selectedProfessional.rank}`}
+            listingUrl={typeof window !== 'undefined' ? window.location.href : ''}
+            citySlug={city.slug}
+            categorySlug={categorySlug}
+            cityName={city.name}
+            categoryName={category.name}
+            professionalWebsite={selectedProfessional.website}
+          />
+          <AgentDetailModal
+            professional={selectedProfessional}
+            open={showDetailModal}
+            onOpenChange={(open) => {
+              setShowDetailModal(open);
+              if (!open) {
+                // Remove query parameter when modal closes
+                searchParams.delete('agent');
+                setSearchParams(searchParams);
+              }
+            }}
+            market={formatCityName(city)}
+            stateAbbr={metadata.location.stateAbbr}
+            agentType={(selectedProfessional as any).type || 'Individual'}
+            citySlug={city.slug}
+            categorySlug={categorySlug}
+          />
+        </>
       )}
       <ProfessionalListLayout
         key={`professionals-${allProfessionals.length}-${Date.now()}`}
