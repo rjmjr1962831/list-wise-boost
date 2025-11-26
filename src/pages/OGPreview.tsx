@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Search, ExternalLink, Copy, Share2 } from "lucide-react";
+import { Search, ExternalLink, Copy, Share2, Edit } from "lucide-react";
 
 export default function OGPreview() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("");
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
@@ -66,6 +68,20 @@ export default function OGPreview() {
 
     navigator.clipboard.writeText(metaTags);
     toast.success("Meta tags copied to clipboard!");
+  };
+
+  const handleCheckItOut = async () => {
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      toast.info("Please sign in to edit your profile");
+      // Store the intended destination
+      sessionStorage.setItem('returnTo', `/verify-listing/${selectedAgentId}`);
+      navigate('/agent-setup');
+    } else {
+      navigate(`/verify-listing/${selectedAgentId}`);
+    }
   };
 
   return (
@@ -135,10 +151,20 @@ export default function OGPreview() {
                       {selectedAgent.cities?.name}, {selectedAgent.cities?.state}
                     </p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={copyMetaTags}>
-                    <Copy className="mr-2 h-4 w-4" />
-                    Copy Meta Tags
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={copyMetaTags}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy Meta Tags
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      onClick={handleCheckItOut}
+                      className="bg-[#40E0D0] hover:bg-[#38CAB8] text-black font-semibold"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Check It Out
+                    </Button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-muted-foreground">Profile URL:</span>

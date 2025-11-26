@@ -165,8 +165,14 @@ export default function AgentSetup() {
         }
         
         toast.success('Welcome back! Signed in successfully.');
-        // Navigate to dashboard
-        navigate('/agent/dashboard');
+        // Check for returnTo redirect
+        const returnTo = sessionStorage.getItem('returnTo');
+        if (returnTo) {
+          sessionStorage.removeItem('returnTo');
+          navigate(returnTo);
+        } else {
+          navigate('/agent/dashboard');
+        }
         return;
       } else if (authError) {
         console.error('Auth error:', authError);
@@ -175,8 +181,14 @@ export default function AgentSetup() {
         return;
       } else if (authData.user) {
         toast.success('Account created! Signed in successfully.');
-        // Navigate to dashboard
-        navigate('/agent/dashboard');
+        // Check for returnTo redirect
+        const returnTo = sessionStorage.getItem('returnTo');
+        if (returnTo) {
+          sessionStorage.removeItem('returnTo');
+          navigate(returnTo);
+        } else {
+          navigate('/agent/dashboard');
+        }
         return;
       }
 
