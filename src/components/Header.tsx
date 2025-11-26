@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,6 @@ import { LogOut, User as UserIcon, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 export const Header = () => {
-  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -29,7 +28,9 @@ export const Header = () => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
@@ -43,19 +44,19 @@ export const Header = () => {
 
   const checkAdminStatus = async (userId: string) => {
     const { data } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .eq('role', 'admin')
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
       .single();
-    
+
     setIsAdmin(!!data);
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     toast.success("Logged out successfully");
-    navigate("/");
+    window.location.href = "/";
   };
 
   return (
@@ -101,12 +102,12 @@ export const Header = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <DropdownMenuItem onClick={() => (window.location.href = "/admin")}>
                       <Shield className="mr-2 h-4 w-4" />
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => navigate("/agent-dashboard")}>
+                  <DropdownMenuItem onClick={() => (window.location.href = "/agent/dashboard")}>
                     <UserIcon className="mr-2 h-4 w-4" />
                     Agent Dashboard
                   </DropdownMenuItem>
