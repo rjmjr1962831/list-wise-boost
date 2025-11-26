@@ -217,12 +217,13 @@ serve(async (req) => {
       return lines;
     }
 
-    // Return SVG as PNG (browsers will render SVG)
+    // Return SVG (browsers will render SVG)
     return new Response(svg, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'image/svg+xml',
-        'Cache-Control': 'public, max-age=31536000, immutable',
+        // Short cache so design tweaks show up quickly
+        'Cache-Control': 'public, max-age=60',
       },
     });
   } catch (error) {
