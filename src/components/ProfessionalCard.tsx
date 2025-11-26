@@ -96,8 +96,11 @@ export const ProfessionalCard = ({
     email: professional.email || "",
     zillow_profile_url: (professional as any).zillow_profile_url || "",
     sidebar_video_url: (professional as any).sidebar_video_url || "",
+    specialty: (professional as any).specialty || [],
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
+  const [newSpecialty, setNewSpecialty] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const isLicenseVerified = !!(professional as any).license_verified_at;
   const borderColorClass = `border-l-${accentColor}`;
@@ -148,6 +151,27 @@ export const ProfessionalCard = ({
       }));
     }
   }, [isEditing]);
+
+  // Fetch available specialties for editing
+  useEffect(() => {
+    const fetchSpecialties = async () => {
+      const { data, error } = await supabase
+        .from('specialties')
+        .select('name')
+        .eq('active', true)
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching specialties:', error);
+      } else {
+        setAvailableSpecialties(data?.map(s => s.name) || []);
+      }
+    };
+    
+    if (isOwnProfile) {
+      fetchSpecialties();
+    }
+  }, [isOwnProfile]);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -227,6 +251,7 @@ export const ProfessionalCard = ({
         email: editedData.email,
         zillow_profile_url: editedData.zillow_profile_url,
         sidebar_video_url: editedData.sidebar_video_url,
+        specialty: editedData.specialty,
       };
 
       if (photoUrl) {
@@ -252,6 +277,43 @@ export const ProfessionalCard = ({
       toast.error("Failed to update profile");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const toggleSpecialty = (specialty: string) => {
+    setEditedData(prev => ({
+      ...prev,
+      specialty: prev.specialty.includes(specialty) 
+        ? prev.specialty.filter((s: string) => s !== specialty)
+        : [...prev.specialty, specialty]
+    }));
+  };
+
+  const addCustomSpecialty = async () => {
+    if (!newSpecialty.trim()) return;
+
+    const specialty = newSpecialty.trim();
+    
+    if (availableSpecialties.includes(specialty)) {
+      toggleSpecialty(specialty);
+      setNewSpecialty('');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('specialties')
+        .insert({ name: specialty, active: true });
+
+      if (error && !error.message.includes('duplicate')) throw error;
+
+      setAvailableSpecialties(prev => [...prev, specialty].sort());
+      toggleSpecialty(specialty);
+      setNewSpecialty('');
+      toast.success('Specialty added!');
+    } catch (error) {
+      console.error('Error adding specialty:', error);
+      toast.error('Failed to add specialty');
     }
   };
 
@@ -721,95 +783,154 @@ export const ProfessionalCard = ({
               </div>
             )}
             
-            {/* Specialties from memo23 (primary) or parsed description (fallback) */}
-            {(() => {
-              // Map Zillow profile types to human-readable specialties
-              const profileTypeMap: Record<string, string> = {
-                'consumer': 'Buyer Representation',
-                'agent': 'Full-Service Agent',
-                'renter': 'Rental Specialist',
-                'showcaseBuyer': 'Luxury Homes',
-                'peeps': 'Client Reviews',
-                'listing': 'Listing Specialist',
-                'foreclosure': 'Foreclosure Expert',
-                'newConstruction': 'New Construction',
-                'relocation': 'Relocation Services',
-                'investment': 'Investment Properties'
-              };
-              
-              const profileTypes = ((professional as any).profile_types || []) as string[];
-              const mappedProfileTypes = profileTypes
-                .map(pt => profileTypeMap[pt])
-                .filter(Boolean);
-              
-              const dbSpecialties = (professional as any).specialty || [];
-              const parsedSpecialties = parsedProfInfo?.specialties || [];
-              
-              // Also extract from professional_information if available
-              const profInfoArray = (professional as any).professional_information;
-              const extractedSpecialties: string[] = [];
-              if (Array.isArray(profInfoArray)) {
-                const specialtiesEntry = profInfoArray.find((e: any) => 
-                  e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
-                );
-                if (specialtiesEntry) {
-                  const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
-                  if (Array.isArray(rawData)) {
-                    rawData.forEach((item: any) => {
-                      if (typeof item === 'string' && item.trim()) {
-                        extractedSpecialties.push(item.trim());
-                      } else if (item?.text) {
-                        extractedSpecialties.push(item.text);
-                      }
-                    });
-                  } else if (typeof rawData === 'string' && rawData.trim()) {
-                    extractedSpecialties.push(rawData.trim());
-                  }
-                }
-              }
-              
-              const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties])];
-              
-              console.log('Specialties debug:', { 
-                profileTypes, 
-                mappedProfileTypes, 
-                dbSpecialties, 
-                parsedSpecialties,
-                extractedSpecialties,
-                allSpecialties 
-              });
-              
-              if (allSpecialties.length === 0) return null;
-              
-              return (
-                <div className="mt-3 space-y-1.5 flex flex-col items-center">
-                  {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
-                    const getSpecialtyIcon = (spec: string) => {
-                      const lower = spec.toLowerCase();
-                      if (lower.includes('residential') || lower.includes('single family')) return Home;
-                      if (lower.includes('commercial') || lower.includes('business')) return Building2;
-                      if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
-                      if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
-                      if (lower.includes('first') || lower.includes('buyer')) return Key;
-                      if (lower.includes('relocation')) return Users;
-                      return Award;
-                    };
-                    const Icon = getSpecialtyIcon(specialty);
+            {/* Specialties editor or display */}
+            {isOwnProfile && isEditing ? (
+              <div className="mt-4 space-y-3 w-full">
+                <h4 className="text-sm font-semibold">Specialties</h4>
+                
+                {/* Available specialties */}
+                <div className="flex flex-wrap gap-2">
+                  {availableSpecialties.map((specialty) => {
+                    const isSelected = editedData.specialty.includes(specialty);
                     return (
-                      <Badge 
-                        key={idx} 
-                        variant="secondary" 
-                        className="text-xs w-full justify-start gap-1.5"
-                        itemProp="knowsAbout"
+                      <Badge
+                        key={specialty}
+                        variant={isSelected ? 'default' : 'outline'}
+                        className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
+                        onClick={() => toggleSpecialty(specialty)}
                       >
-                        <Icon className="h-3 w-3" />
                         {specialty}
+                        {isSelected && <X className="h-3 w-3 ml-1" />}
                       </Badge>
                     );
                   })}
                 </div>
-              );
-            })()}
+
+                {/* Add custom specialty */}
+                <div className="flex gap-2">
+                  <Input
+                    value={newSpecialty}
+                    onChange={(e) => setNewSpecialty(e.target.value)}
+                    placeholder="Add custom specialty..."
+                    className="text-sm"
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addCustomSpecialty();
+                      }
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    onClick={addCustomSpecialty}
+                    disabled={!newSpecialty.trim()}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Add
+                  </Button>
+                </div>
+
+                {/* Selected specialties preview */}
+                {editedData.specialty.length > 0 && (
+                  <div className="p-3 bg-muted/30 rounded-lg">
+                    <p className="text-xs text-muted-foreground mb-2">Selected ({editedData.specialty.length}):</p>
+                    <div className="flex flex-wrap gap-2">
+                      {editedData.specialty.map((specialty: string) => (
+                        <Badge
+                          key={specialty}
+                          variant="secondary"
+                          className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground text-xs"
+                          onClick={() => toggleSpecialty(specialty)}
+                        >
+                          {specialty}
+                          <X className="h-3 w-3 ml-1" />
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Display specialties */
+              (() => {
+                const profileTypeMap: Record<string, string> = {
+                  'consumer': 'Buyer Representation',
+                  'agent': 'Full-Service Agent',
+                  'renter': 'Rental Specialist',
+                  'showcaseBuyer': 'Luxury Homes',
+                  'peeps': 'Client Reviews',
+                  'listing': 'Listing Specialist',
+                  'foreclosure': 'Foreclosure Expert',
+                  'newConstruction': 'New Construction',
+                  'relocation': 'Relocation Services',
+                  'investment': 'Investment Properties'
+                };
+                
+                const profileTypes = ((professional as any).profile_types || []) as string[];
+                const mappedProfileTypes = profileTypes
+                  .map(pt => profileTypeMap[pt])
+                  .filter(Boolean);
+                
+                const dbSpecialties = (professional as any).specialty || [];
+                const parsedSpecialties = parsedProfInfo?.specialties || [];
+                
+                const profInfoArray = (professional as any).professional_information;
+                const extractedSpecialties: string[] = [];
+                if (Array.isArray(profInfoArray)) {
+                  const specialtiesEntry = profInfoArray.find((e: any) => 
+                    e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
+                  );
+                  if (specialtiesEntry) {
+                    const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
+                    if (Array.isArray(rawData)) {
+                      rawData.forEach((item: any) => {
+                        if (typeof item === 'string' && item.trim()) {
+                          extractedSpecialties.push(item.trim());
+                        } else if (item?.text) {
+                          extractedSpecialties.push(item.text);
+                        }
+                      });
+                    } else if (typeof rawData === 'string' && rawData.trim()) {
+                      extractedSpecialties.push(rawData.trim());
+                    }
+                  }
+                }
+                
+                const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties])];
+                
+                if (allSpecialties.length === 0) return null;
+                
+                return (
+                  <div className="mt-3 space-y-1.5 flex flex-col items-center">
+                    {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
+                      const getSpecialtyIcon = (spec: string) => {
+                        const lower = spec.toLowerCase();
+                        if (lower.includes('residential') || lower.includes('single family')) return Home;
+                        if (lower.includes('commercial') || lower.includes('business')) return Building2;
+                        if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
+                        if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
+                        if (lower.includes('first') || lower.includes('buyer')) return Key;
+                        if (lower.includes('relocation')) return Users;
+                        return Award;
+                      };
+                      const Icon = getSpecialtyIcon(specialty);
+                      return (
+                        <Badge 
+                          key={idx} 
+                          variant="secondary" 
+                          className="text-xs w-full justify-start gap-1.5"
+                          itemProp="knowsAbout"
+                        >
+                          <Icon className="h-3 w-3" />
+                          {specialty}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                );
+              })()
+            )}
           </div>
 
           {/* Content */}
