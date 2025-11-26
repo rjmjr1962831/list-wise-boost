@@ -45,6 +45,7 @@ import { LicenseVerificationReport } from "@/components/admin/LicenseVerificatio
 import { Memo23FieldsExporter } from "@/components/admin/Memo23FieldsExporter";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import { ProxySettings } from "@/components/admin/ProxySettings";
+import SpecialtiesManager from "@/components/admin/SpecialtiesManager";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -150,6 +151,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="categories">
               <Tag className="mr-2 h-4 w-4" />
               Categories
+            </TabsTrigger>
+            <TabsTrigger value="specialties">
+              <Tag className="mr-2 h-4 w-4" />
+              Specialties
             </TabsTrigger>
             <TabsTrigger value="professionals">
               <Users className="mr-2 h-4 w-4" />
@@ -267,6 +272,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="categories" className="space-y-4">
             <CategoriesManager />
+          </TabsContent>
+
+          <TabsContent value="specialties" className="space-y-4">
+            <SpecialtiesManager />
           </TabsContent>
 
           <TabsContent value="professionals" className="space-y-4">
