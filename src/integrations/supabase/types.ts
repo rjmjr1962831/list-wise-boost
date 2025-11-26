@@ -600,6 +600,7 @@ export type Database = {
           license_verified_at: string | null
           name: string
           num_total_reviews: number | null
+          og_image_url: string | null
           past_sales: Json | null
           phone: string | null
           phone_numbers: Json | null
@@ -665,6 +666,7 @@ export type Database = {
           license_verified_at?: string | null
           name: string
           num_total_reviews?: number | null
+          og_image_url?: string | null
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
@@ -730,6 +732,7 @@ export type Database = {
           license_verified_at?: string | null
           name?: string
           num_total_reviews?: number | null
+          og_image_url?: string | null
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
