@@ -99,10 +99,15 @@ serve(async (req) => {
           TOP10LISTS.US
         </text>
         
-        <!-- Confirm or Edit button - centered in right space -->
+        <!-- Text above button -->
+        <text x="${width - 230}" y="${(height / 2) - 70}" font-family="Playfair Display, serif" font-size="26" font-weight="600" fill="hsl(234, 45%, 31%)" text-anchor="middle">
+          We have much more data.
+        </text>
+        
+        <!-- Check It Out button - centered in right space -->
         <rect x="${width - 400}" y="${(height / 2) - 45}" width="340" height="90" rx="45" fill="hsl(176, 100%, 50%)"/>
         <text x="${width - 230}" y="${(height / 2) + 10}" font-family="Inter, sans-serif" font-size="28" font-weight="700" fill="hsl(234, 45%, 21%)" text-anchor="middle">
-          Confirm or Edit
+          Check It Out
         </text>
         
         <!-- Photo - left side, not overlapping -->
