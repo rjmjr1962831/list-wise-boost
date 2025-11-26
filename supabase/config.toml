@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.og-image-proxy]
+verify_jwt = false
+
 [functions.get-proxy-settings]
 verify_jwt = false
 
