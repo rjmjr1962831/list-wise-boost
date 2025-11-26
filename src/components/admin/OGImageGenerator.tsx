@@ -59,7 +59,8 @@ export const OGImageGenerator = () => {
 
     setIsPreviewLoading(true);
     try {
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-og-image?id=${selectedAgentId}`;
+      const cacheBust = Date.now();
+      const previewUrlWithCacheBust = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-og-image?id=${selectedAgentId}&v=${cacheBust}`;
       
       // Include auth token to satisfy edge function JWT requirement
       const {
@@ -67,7 +68,7 @@ export const OGImageGenerator = () => {
       } = await supabase.auth.getSession();
       const accessToken = session?.access_token;
 
-      const response = await fetch(url, {
+      const response = await fetch(previewUrlWithCacheBust, {
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
       });
       
@@ -75,7 +76,7 @@ export const OGImageGenerator = () => {
         throw new Error(`Failed to generate preview: ${response.statusText}`);
       }
       
-      setPreviewUrl(url);
+      setPreviewUrl(previewUrlWithCacheBust);
       toast.success('Preview generated successfully!');
     } catch (err) {
       console.error('Error generating preview:', err);
