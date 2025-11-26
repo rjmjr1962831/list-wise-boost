@@ -32,6 +32,7 @@ import AgentSetup from "./pages/AgentSetup";
 import AgentDashboard from "./pages/AgentDashboard";
 import PaymentComingSoon from "./pages/PaymentComingSoon";
 import About from "./pages/About";
+import OGPreview from "./pages/OGPreview";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
@@ -62,6 +63,7 @@ const App = () => (
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/og-preview" element={<OGPreview />} />
                     <Route path="/crm" element={<CRM />} />
                     <Route path="/migrate-data" element={<MigrateData />} />
                     {/* Static pages */}

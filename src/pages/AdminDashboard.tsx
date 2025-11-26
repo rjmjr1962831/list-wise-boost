@@ -120,6 +120,10 @@ const AdminDashboard = () => {
               <Briefcase className="mr-2 h-4 w-4" />
               CRM
             </Button>
+            <Button onClick={() => navigate("/og-preview")} variant="outline">
+              <Image className="mr-2 h-4 w-4" />
+              OG Preview
+            </Button>
             <Button onClick={handleLogout} variant="outline">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
