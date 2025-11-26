@@ -99,9 +99,9 @@ serve(async (req) => {
           TOP10LISTS.US
         </text>
         
-        <!-- Confirm or Edit button - top right -->
-        <rect x="${width - 240}" y="20" width="210" height="55" rx="28" fill="hsl(176, 100%, 50%)"/>
-        <text x="${width - 135}" y="55" font-family="Inter, sans-serif" font-size="20" font-weight="700" fill="hsl(234, 45%, 21%)" text-anchor="middle">
+        <!-- Confirm or Edit button - centered in right space -->
+        <rect x="${width - 400}" y="${(height / 2) - 45}" width="340" height="90" rx="45" fill="hsl(176, 100%, 50%)"/>
+        <text x="${width - 230}" y="${(height / 2) + 10}" font-family="Inter, sans-serif" font-size="28" font-weight="700" fill="hsl(234, 45%, 21%)" text-anchor="middle">
           Confirm or Edit
         </text>
         
