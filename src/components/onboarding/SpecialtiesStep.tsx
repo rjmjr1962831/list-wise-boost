@@ -19,6 +19,7 @@ export function SpecialtiesStep({ data, updateData, onNext, onBack }: Specialtie
   const [availableSpecialties, setAvailableSpecialties] = useState<string[]>([]);
   const [newSpecialty, setNewSpecialty] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
     fetchSpecialties();
@@ -53,15 +54,40 @@ export function SpecialtiesStep({ data, updateData, onNext, onBack }: Specialtie
     }
   };
 
+  const handleSpecialtyInputChange = (value: string) => {
+    setNewSpecialty(value);
+    
+    if (value.trim()) {
+      // Find case-insensitive matches
+      const matches = availableSpecialties.filter(specialty =>
+        specialty.toLowerCase().includes(value.toLowerCase())
+      );
+      setSuggestions(matches);
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const selectSuggestion = (specialty: string) => {
+    toggleSpecialty(specialty);
+    setNewSpecialty('');
+    setSuggestions([]);
+  };
+
   const addCustomSpecialty = async () => {
     if (!newSpecialty.trim()) return;
 
     const specialty = newSpecialty.trim();
     
-    // Check if already exists
-    if (availableSpecialties.includes(specialty)) {
-      toggleSpecialty(specialty);
+    // Check if already exists (case-insensitive)
+    const existingMatch = availableSpecialties.find(
+      s => s.toLowerCase() === specialty.toLowerCase()
+    );
+    
+    if (existingMatch) {
+      toggleSpecialty(existingMatch);
       setNewSpecialty('');
+      setSuggestions([]);
       return;
     }
 
@@ -77,6 +103,7 @@ export function SpecialtiesStep({ data, updateData, onNext, onBack }: Specialtie
       setAvailableSpecialties([...availableSpecialties, specialty].sort());
       toggleSpecialty(specialty);
       setNewSpecialty('');
+      setSuggestions([]);
       toast.success('Specialty added!');
     } catch (error) {
       console.error('Error adding specialty:', error);
@@ -140,19 +167,43 @@ export function SpecialtiesStep({ data, updateData, onNext, onBack }: Specialtie
           )}
 
           {/* Add Custom Specialty */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <div className="flex gap-2">
-              <Input
-                value={newSpecialty}
-                onChange={(e) => setNewSpecialty(e.target.value)}
-                placeholder="Add custom specialty..."
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    addCustomSpecialty();
-                  }
-                }}
-              />
+              <div className="flex-1 relative">
+                <Input
+                  value={newSpecialty}
+                  onChange={(e) => handleSpecialtyInputChange(e.target.value)}
+                  placeholder="Type to search or add specialty..."
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      addCustomSpecialty();
+                    }
+                  }}
+                />
+                
+                {/* Autocomplete Suggestions */}
+                {suggestions.length > 0 && (
+                  <div className="absolute z-50 w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {suggestions.map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => selectSuggestion(suggestion)}
+                        className="w-full px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground flex items-center justify-between group"
+                      >
+                        <span>{suggestion}</span>
+                        <Badge 
+                          variant={data.specialties?.includes(suggestion) ? 'default' : 'outline'}
+                          className="text-xs"
+                        >
+                          {data.specialties?.includes(suggestion) ? 'Selected' : 'Select'}
+                        </Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
               <Button
                 type="button"
                 onClick={addCustomSpecialty}
@@ -164,7 +215,9 @@ export function SpecialtiesStep({ data, updateData, onNext, onBack }: Specialtie
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Press Enter or click Add to include a custom specialty
+              {suggestions.length > 0 
+                ? 'Click a suggestion to select, or press Enter to add as new' 
+                : 'Type to search existing specialties or add a new one'}
             </p>
           </div>
 
