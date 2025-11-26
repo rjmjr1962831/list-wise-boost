@@ -217,6 +217,19 @@ serve(async (req) => {
       return lines;
     }
 
+    // Generate proxy URL using top10lists.us domain
+    const proxyUrl = `https://top10lists.us/functions/v1/og-image-proxy?path=${professionalId}.svg`;
+    
+    // Update professional with proxy URL
+    const { error: updateError } = await supabase
+      .from('professionals')
+      .update({ og_image_url: proxyUrl })
+      .eq('id', professionalId);
+    
+    if (updateError) {
+      console.error('Error updating og_image_url:', updateError);
+    }
+
     // Return SVG (browsers will render SVG)
     return new Response(svg, {
       headers: {
