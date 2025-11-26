@@ -1,12 +1,21 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Image, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, Image, CheckCircle2, XCircle, Search, Eye } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const OGImageGenerator = () => {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -16,6 +25,56 @@ export const OGImageGenerator = () => {
   const [successful, setSuccessful] = useState(0);
   const [failed, setFailed] = useState(0);
   const [onlyMissing, setOnlyMissing] = useState(true);
+  
+  // Preview states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("");
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+
+  // Search agents query
+  const { data: searchResults } = useQuery({
+    queryKey: ['agent-search', searchQuery],
+    queryFn: async () => {
+      if (!searchQuery || searchQuery.length < 2) return [];
+      
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('id, name, city_id')
+        .eq('active', true)
+        .ilike('name', `%${searchQuery}%`)
+        .limit(10);
+      
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: searchQuery.length >= 2,
+  });
+
+  const generatePreview = async () => {
+    if (!selectedAgentId) {
+      toast.error('Please select an agent first');
+      return;
+    }
+
+    setIsPreviewLoading(true);
+    try {
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-og-image?id=${selectedAgentId}`;
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to generate preview: ${response.statusText}`);
+      }
+      
+      setPreviewUrl(url);
+      toast.success('Preview generated successfully!');
+    } catch (err) {
+      console.error('Error generating preview:', err);
+      toast.error('Failed to generate preview');
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  };
 
   const generateOGImages = async () => {
     try {
@@ -109,18 +168,94 @@ export const OGImageGenerator = () => {
           Generate social media preview images (Open Graph images) for all agents
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center space-x-2">
-          <Switch
-            id="only-missing"
-            checked={onlyMissing}
-            onCheckedChange={setOnlyMissing}
-            disabled={isGenerating}
-          />
-          <Label htmlFor="only-missing">
-            Only generate for agents without OG images
-          </Label>
+      <CardContent className="space-y-6">
+        {/* Preview Section */}
+        <div className="space-y-4 pb-6 border-b">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Preview OG Image
+          </h3>
+          
+          <div className="space-y-3">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search agent by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+
+            {searchResults && searchResults.length > 0 && (
+              <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an agent to preview" />
+                </SelectTrigger>
+                <SelectContent>
+                  {searchResults.map((agent) => (
+                    <SelectItem key={agent.id} value={agent.id}>
+                      {agent.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            <Button
+              onClick={generatePreview}
+              disabled={!selectedAgentId || isPreviewLoading}
+              variant="outline"
+              className="w-full"
+            >
+              {isPreviewLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating Preview...
+                </>
+              ) : (
+                <>
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview OG Image
+                </>
+              )}
+            </Button>
+
+            {previewUrl && (
+              <div className="space-y-2">
+                <div className="border rounded-lg overflow-hidden bg-muted/30">
+                  <img
+                    src={previewUrl}
+                    alt="OG Image Preview"
+                    className="w-full h-auto"
+                    style={{ maxWidth: '600px', margin: '0 auto', display: 'block' }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground break-all">
+                  {previewUrl}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Batch Generation Section */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Batch Generation</h3>
+          
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="only-missing"
+              checked={onlyMissing}
+              onCheckedChange={setOnlyMissing}
+              disabled={isGenerating}
+            />
+            <Label htmlFor="only-missing">
+              Only generate for agents without OG images
+            </Label>
+          </div>
 
         {isGenerating && (
           <div className="space-y-2">
@@ -141,32 +276,33 @@ export const OGImageGenerator = () => {
           </div>
         )}
 
-        <Button
-          onClick={generateOGImages}
-          disabled={isGenerating}
-          className="w-full"
-        >
-          {isGenerating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <Image className="mr-2 h-4 w-4" />
-              Generate OG Images
-            </>
-          )}
-        </Button>
+          <Button
+            onClick={generateOGImages}
+            disabled={isGenerating}
+            className="w-full"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <Image className="mr-2 h-4 w-4" />
+                Generate OG Images for All
+              </>
+            )}
+          </Button>
 
-        <div className="text-xs text-muted-foreground border-t pt-4 space-y-1">
-          <p><strong>How it works:</strong></p>
-          <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>Generates 1200x630px social preview images</li>
-            <li>Includes agent photo, name, rating, specialties, and bio</li>
-            <li>Images are served dynamically via Edge Function</li>
-            <li>URLs are stored in the database for quick access</li>
-          </ul>
+          <div className="text-xs text-muted-foreground border-t pt-4 space-y-1">
+            <p><strong>How it works:</strong></p>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li>Generates 1200x630px social preview images</li>
+              <li>Includes agent photo, name, rating, specialties, and bio</li>
+              <li>Images are served dynamically via Edge Function</li>
+              <li>URLs are stored in the database for quick access</li>
+            </ul>
+          </div>
         </div>
       </CardContent>
     </Card>
