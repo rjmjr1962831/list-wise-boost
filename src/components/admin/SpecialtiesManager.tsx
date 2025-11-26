@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Plus, Edit, Trash2, Tag } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 
 interface Specialty {
   id: string;
@@ -21,25 +20,20 @@ interface Specialty {
   created_by: string | null;
 }
 
-interface Category {
-  id: string;
-  name: string;
-}
-
 const SpecialtiesManager = () => {
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSpecialty, setEditingSpecialty] = useState<Specialty | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [formData, setFormData] = useState({
     name: "",
-    category_id: "",
     active: true,
   });
+
+  // Real Estate Agent category ID
+  const REAL_ESTATE_CATEGORY_ID = "1384f127-fc2e-4693-9b8f-406451adf3aa";
 
   useEffect(() => {
     fetchData();
@@ -47,23 +41,14 @@ const SpecialtiesManager = () => {
 
   const fetchData = async () => {
     try {
-      const [specialtiesRes, categoriesRes] = await Promise.all([
-        supabase
-          .from("specialties")
-          .select("*")
-          .order("name", { ascending: true }),
-        supabase
-          .from("categories")
-          .select("id, name")
-          .eq("active", true)
-          .order("name", { ascending: true })
-      ]);
+      const { data, error } = await supabase
+        .from("specialties")
+        .select("*")
+        .eq("category_id", REAL_ESTATE_CATEGORY_ID)
+        .order("name", { ascending: true });
 
-      if (specialtiesRes.error) throw specialtiesRes.error;
-      if (categoriesRes.error) throw categoriesRes.error;
-
-      setSpecialties(specialtiesRes.data || []);
-      setCategories(categoriesRes.data || []);
+      if (error) throw error;
+      setSpecialties(data || []);
     } catch (error: any) {
       toast.error("Failed to load data: " + error.message);
     } finally {
@@ -90,7 +75,7 @@ const SpecialtiesManager = () => {
 
       const submitData = {
         name: formData.name.trim(),
-        category_id: formData.category_id || null,
+        category_id: REAL_ESTATE_CATEGORY_ID,
         active: formData.active,
         ...(editingSpecialty ? {} : { created_by: user.id }),
       };
@@ -152,7 +137,6 @@ const SpecialtiesManager = () => {
     setEditingSpecialty(specialty);
     setFormData({
       name: specialty.name,
-      category_id: specialty.category_id || "",
       active: specialty.active,
     });
     setIsDialogOpen(true);
@@ -177,24 +161,17 @@ const SpecialtiesManager = () => {
     setEditingSpecialty(null);
     setFormData({
       name: "",
-      category_id: "",
       active: true,
     });
   };
 
-  const getCategoryName = (categoryId: string | null) => {
-    if (!categoryId) return "All Categories";
-    return categories.find(c => c.id === categoryId)?.name || "Unknown";
-  };
-
   const filteredSpecialties = specialties.filter(specialty => {
     const matchesSearch = specialty.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === "all" || specialty.category_id === filterCategory;
     const matchesStatus = filterStatus === "all" || 
       (filterStatus === "active" && specialty.active) || 
       (filterStatus === "inactive" && !specialty.active);
     
-    return matchesSearch && matchesCategory && matchesStatus;
+    return matchesSearch && matchesStatus;
   });
 
   if (isLoading) {
@@ -237,26 +214,8 @@ const SpecialtiesManager = () => {
                   placeholder="e.g., Buyer's Agent, Luxury Homes, First-Time Buyers"
                   required
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="category">Category (Optional)</Label>
-                <Select
-                  value={formData.category_id}
-                  onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
                 <p className="text-xs text-muted-foreground">
-                  Associate this specialty with a specific category
+                  This specialty will be associated with Real Estate Agents
                 </p>
               </div>
               <div className="flex items-center space-x-2">
@@ -286,22 +245,6 @@ const SpecialtiesManager = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="w-[200px]">
-            <Label htmlFor="filter-category" className="mb-2">Filter by Category</Label>
-            <Select value={filterCategory} onValueChange={setFilterCategory}>
-              <SelectTrigger id="filter-category">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <div className="w-[150px]">
             <Label htmlFor="filter-status" className="mb-2">Status</Label>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -322,7 +265,6 @@ const SpecialtiesManager = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -330,7 +272,7 @@ const SpecialtiesManager = () => {
           <TableBody>
             {filteredSpecialties.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                <TableCell colSpan={3} className="text-center text-muted-foreground py-8">
                   No specialties found
                 </TableCell>
               </TableRow>
@@ -338,11 +280,6 @@ const SpecialtiesManager = () => {
               filteredSpecialties.map((specialty) => (
                 <TableRow key={specialty.id}>
                   <TableCell className="font-medium">{specialty.name}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {getCategoryName(specialty.category_id)}
-                    </Badge>
-                  </TableCell>
                   <TableCell>
                     <Button
                       size="sm"
