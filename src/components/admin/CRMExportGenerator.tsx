@@ -162,7 +162,8 @@ export function CRMExportGenerator() {
         'Verification Link',
         'Top10 Profile Link',
         'Direct Profile URL',
-        'Anchor Link'
+        'Anchor Link',
+        'OG Image URL (Proxy)'
       ];
 
       const rows = professionals.map(prof => {
@@ -182,6 +183,9 @@ export function CRMExportGenerator() {
         
         // Generate Anchor Link (with hash)
         const anchorLink = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}#agent-${prof.id}`;
+        
+        // Generate OG Image Proxy URL
+        const ogImageProxyUrl = `https://top10lists.us/functions/v1/og-image-proxy?path=${prof.id}.svg`;
 
         // Parse specialties and badges
         const specialties = Array.isArray(prof.specialty) ? prof.specialty.join('; ') : '';
@@ -241,7 +245,8 @@ export function CRMExportGenerator() {
           verificationLink,
           top10Link,
           directProfileUrl,
-          anchorLink
+          anchorLink,
+          ogImageProxyUrl
         ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(',');
       });
 
@@ -450,6 +455,7 @@ export function CRMExportGenerator() {
             <li>Top10 profile link for each agent</li>
             <li><strong>Direct Profile URL</strong> (opens agent modal with query param)</li>
             <li><strong>Anchor Link</strong> (scrolls to agent card on list page)</li>
+            <li><strong>OG Image URL (Proxy)</strong> - top10lists.us domain for HubSpot emails</li>
           </ul>
           <p className="text-xs italic mt-2">💡 Professional Info JSON contains broker addresses, websites, social links - parse for missing contact data</p>
         </div>
