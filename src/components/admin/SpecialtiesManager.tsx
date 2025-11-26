@@ -80,10 +80,19 @@ const SpecialtiesManager = () => {
     }
 
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("You must be logged in to add specialties");
+        return;
+      }
+
       const submitData = {
         name: formData.name.trim(),
         category_id: formData.category_id || null,
         active: formData.active,
+        ...(editingSpecialty ? {} : { created_by: user.id }),
       };
 
       if (editingSpecialty) {
@@ -91,13 +100,19 @@ const SpecialtiesManager = () => {
           .from("specialties")
           .update(submitData)
           .eq("id", editingSpecialty.id);
-        if (error) throw error;
+        if (error) {
+          console.error("Update error:", error);
+          throw error;
+        }
         toast.success("Specialty updated successfully");
       } else {
         const { error } = await supabase
           .from("specialties")
           .insert([submitData]);
-        if (error) throw error;
+        if (error) {
+          console.error("Insert error:", error);
+          throw error;
+        }
         toast.success("Specialty created successfully");
       }
       
@@ -105,10 +120,13 @@ const SpecialtiesManager = () => {
       resetForm();
       fetchData();
     } catch (error: any) {
-      if (error.message.includes("duplicate")) {
+      console.error("Specialty submission error:", error);
+      if (error.message?.includes("duplicate")) {
         toast.error("A specialty with this name already exists");
+      } else if (error.code === "PGRST301") {
+        toast.error("Permission denied. Please make sure you're logged in as an admin.");
       } else {
-        toast.error(error.message);
+        toast.error("Failed to save specialty: " + (error.message || "Unknown error"));
       }
     }
   };
