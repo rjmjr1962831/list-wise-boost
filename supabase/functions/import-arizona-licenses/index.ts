@@ -5,6 +5,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Parse CSV line respecting quoted fields with embedded commas
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  // Push the last field
+  result.push(current.trim());
+  return result;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -43,7 +67,7 @@ Deno.serve(async (req) => {
         const line = lines[j].trim();
         if (!line) continue;
 
-        const values = line.split(',').map((v: string) => v.trim().replace(/^"|"$/g, ''));
+        const values = parseCSVLine(line);
         
         if (values.length < 8) {
           skipped++;
