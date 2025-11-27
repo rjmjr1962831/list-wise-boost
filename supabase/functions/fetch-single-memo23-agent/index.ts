@@ -755,6 +755,21 @@ serve(async (req) => {
     if (agentData.emailAddress) updateData.email = agentData.emailAddress;
     if (agentData.numTotalReviews) updateData.num_total_reviews = agentData.numTotalReviews;
 
+    // Extract Zillow reviews from memo23
+    if (agentData.reviewsData && Array.isArray(agentData.reviewsData) && agentData.reviewsData.length > 0) {
+      console.log(`📝 Found ${agentData.reviewsData.length} Zillow reviews from memo23`);
+      
+      // Merge with existing reviews_data to preserve Google reviews
+      const existingReviewsData = professional.reviews_data || {};
+      updateData.reviews_data = {
+        ...existingReviewsData,
+        zillow_reviews: agentData.reviewsData,
+        zillow_reviews_fetched_at: new Date().toISOString()
+      };
+      
+      console.log(`✅ Stored ${agentData.reviewsData.length} Zillow reviews in reviews_data.zillow_reviews`);
+    }
+
     // Update the professional record
     const { error: updateError } = await supabase
       .from('professionals')
