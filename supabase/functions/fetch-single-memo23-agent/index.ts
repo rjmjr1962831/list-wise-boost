@@ -44,18 +44,17 @@ serve(async (req) => {
       throw new Error('APIFY_API_TOKEN not configured');
     }
 
-    const rotatingProxyUser = Deno.env.get('ROTATING_PROXY_USERNAME');
-    const rotatingProxyPass = Deno.env.get('ROTATING_PROXY_PASSWORD');
+    const proxyscrapeApiKey = Deno.env.get('PROXYSCRAPE_API_KEY');
     
-    // Build rotating proxy URL with authentication
-    const proxyUrl = (rotatingProxyUser && rotatingProxyPass)
-      ? `http://${rotatingProxyUser}:${rotatingProxyPass}@rp.scrapegw.com:6060`
+    // Build Proxyscrape proxy URL with API key
+    const proxyUrl = proxyscrapeApiKey
+      ? `http://customer-${proxyscrapeApiKey}:@proxy.proxyscrape.com:6060`
       : null;
     
     if (proxyUrl) {
-      console.log('Using rotating proxy service at rp.scrapegw.com');
+      console.log('Using Proxyscrape residential proxy');
     } else {
-      console.warn('Rotating proxy credentials not configured, using Apify proxy');
+      console.warn('PROXYSCRAPE_API_KEY not configured, using Apify proxy');
     }
 
     const actorId = 'memo23~apify-zillow-agents-cheerio';
