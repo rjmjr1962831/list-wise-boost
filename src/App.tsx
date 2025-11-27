@@ -18,7 +18,6 @@ import VerifyCities from "./pages/VerifyCities";
 import CityLanding from "./pages/CityLanding";
 import BookAppointment from "./pages/BookAppointment";
 import AdminLogin from "./pages/AdminLogin";
-import AdminDashboard from "./pages/AdminDashboard";
 import CRM from "./pages/CRM";
 import MigrateData from "./pages/MigrateData";
 import VerifyAgentListing from "./pages/VerifyAgentListing";
@@ -36,6 +35,7 @@ import OGPreview from "./pages/OGPreview";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 const queryClient = new QueryClient();
 
