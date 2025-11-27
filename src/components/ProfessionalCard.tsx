@@ -981,44 +981,43 @@ export const ProfessionalCard = ({
                   <span>License #:</span>
                 </div>
                 
-                {isOwnProfile && isEditing ? (
-                  <div className="flex items-center gap-2 flex-1">
-                    <Input
-                      value={editedData.license_number}
-                      onChange={(e) => setEditedData({ ...editedData, license_number: e.target.value })}
-                      placeholder="Enter license number"
-                      className="h-8 max-w-xs"
-                    />
-                  </div>
-                ) : verifying ? (
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-32 bg-muted animate-pulse rounded" />
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                  </div>
-                ) : license ? (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide">
-                      {license}
-                    </Badge>
-                    {isLicenseVerified && (
-                      <Badge variant="default" className="gap-1 px-2 py-0.5 bg-green-500 hover:bg-green-600">
-                        <ShieldCheck className="h-3 w-3" />
-                        <span className="text-xs">Verified</span>
+                  {isOwnProfile && isEditing ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <Input
+                        value={editedData.license_number}
+                        onChange={(e) => setEditedData({ ...editedData, license_number: e.target.value })}
+                        placeholder="Enter license number"
+                        className="h-8 max-w-xs"
+                      />
+                    </div>
+                  ) : verifying ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-6 w-32 bg-muted animate-pulse rounded" />
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    </div>
+                  ) : license ? (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide">
+                        {license}
                       </Badge>
-                    )}
-                  </div>
-                ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-7 gap-1.5 text-xs"
-                    onClick={handleVerifyLicense}
-                    disabled={!licenseLookupUrl}
-                  >
-                    <Shield className="h-3.5 w-3.5" />
-                    Verify
-                  </Button>
-                )}
+                      {isLicenseVerified && (
+                        <span title="Verified from state license database">
+                          <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1.5 text-xs"
+                      onClick={handleVerifyLicense}
+                      disabled={!licenseLookupUrl}
+                    >
+                      <Shield className="h-3.5 w-3.5" />
+                      Verify
+                    </Button>
+                  )}
               </div>
 
               {/* Rating - only show if real data exists */}
@@ -1172,8 +1171,8 @@ export const ProfessionalCard = ({
                             <div className="text-2xl font-bold text-primary">
                               {(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
                             </div>
-                            {key === 'yearsExperience' && hasLicenseVerifiedBadge && value != null && Number(value) > 0 && (
-                              <span title="License Verified">
+                            {value != null && Number(value) > 0 && (
+                              <span title={key === 'totalSales' ? 'Verified from Zillow data' : 'Verified from license database'}>
                                 <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
                               </span>
                             )}
