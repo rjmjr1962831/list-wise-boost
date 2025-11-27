@@ -307,6 +307,25 @@ serve(async (req) => {
         active: true,
       };
 
+      // Check if agent already exists by zillow_profile_url
+      const checkExistingResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/professionals?zillow_profile_url=eq.${encodeURIComponent(profileUrl)}&city_id=eq.${finalCityId}&category_id=eq.${categoryId}&select=id,name&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+        }
+      );
+
+      if (checkExistingResponse.ok) {
+        const existingAgents = await checkExistingResponse.json();
+        if (existingAgents && existingAgents.length > 0) {
+          console.log(`⏭️ Skipping ${professionalData.name} - already exists (ID: ${existingAgents[0].id})`);
+          continue;
+        }
+      }
+
       const insertResponse = await fetch(
         `${SUPABASE_URL}/rest/v1/professionals`,
         {
