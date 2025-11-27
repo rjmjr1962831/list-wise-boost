@@ -246,6 +246,32 @@ serve(async (req) => {
                     console.error(`Failed to copy data for ${agent.name}:`, updateError);
                   } else {
                     reusedCount++;
+                    
+                    // If reviews are stale or missing, fetch fresh ones
+                    const reviewsAge = existingAgent.reviews_data?.fetched_at 
+                      ? Date.now() - new Date(existingAgent.reviews_data.fetched_at).getTime()
+                      : Infinity;
+                    
+                    if (reviewsAge > THIRTY_DAYS_MS) {
+                      console.log(`Reviews are stale for ${agent.name}, fetching fresh reviews...`);
+                      try {
+                        const reviewsResult = await supabase.functions.invoke('fetch-external-reviews', {
+                          body: {
+                            agentName: agent.name,
+                            company: existingAgent.company || '',
+                            location: `${city?.name}, ${city?.state}`,
+                            professionalId: agent.id
+                          }
+                        });
+                        
+                        if (!reviewsResult.error) {
+                          const reviewData = reviewsResult.data || {};
+                          console.log(`✅ Refreshed reviews: ${reviewData.reviews?.length || 0} from ${reviewData.sources?.join(', ') || 'unknown'}`);
+                        }
+                      } catch (reviewError) {
+                        console.warn(`⚠️ Failed to refresh reviews:`, reviewError);
+                      }
+                    }
                   }
                 } else {
                   // No existing data found, fetch from memo23
@@ -317,6 +343,28 @@ serve(async (req) => {
                       console.warn(`   ⚠️ Encountered ${data.http403Count || 0} 403s, ${data.http429Count || 0} 429s during enrichment`);
                     }
                     enrichedCount++;
+                    
+                    // Fetch and cache reviews immediately after enrichment
+                    try {
+                      console.log(`📝 Fetching reviews for ${agent.name}...`);
+                      const reviewsResult = await supabase.functions.invoke('fetch-external-reviews', {
+                        body: {
+                          agentName: agent.name,
+                          company: data.company || '',
+                          location: `${city?.name}, ${city?.state}`,
+                          professionalId: agent.id
+                        }
+                      });
+                      
+                      if (reviewsResult.error) {
+                        console.warn(`⚠️ Failed to fetch reviews for ${agent.name}:`, reviewsResult.error);
+                      } else {
+                        const reviewData = reviewsResult.data || {};
+                        console.log(`✅ Cached ${reviewData.reviews?.length || 0} reviews from ${reviewData.sources?.join(', ') || 'unknown sources'}`);
+                      }
+                    } catch (reviewError) {
+                      console.warn(`⚠️ Error fetching reviews for ${agent.name}:`, reviewError);
+                    }
                   }
                   
                   // Progressive delay: increase wait time as we process more agents
