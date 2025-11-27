@@ -48,6 +48,7 @@ import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueu
 import { ProxySettings } from "@/components/admin/ProxySettings";
 import SpecialtiesManager from "@/components/admin/SpecialtiesManager";
 import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
+import { BulkZillowReviewsFetcher } from "@/components/admin/BulkZillowReviewsFetcher";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -278,6 +279,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Proxy Settings
             </TabsTrigger>
+            <TabsTrigger value="zillow-reviews">
+              <Home className="mr-2 h-4 w-4" />
+              Zillow Reviews
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -413,6 +418,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="proxy-settings" className="space-y-4">
             <ProxySettings />
+          </TabsContent>
+
+          <TabsContent value="zillow-reviews" className="space-y-4">
+            <BulkZillowReviewsFetcher />
           </TabsContent>
         </Tabs>
       </div>

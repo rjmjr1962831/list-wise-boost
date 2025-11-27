@@ -32,6 +32,50 @@ export const useZillowReviews = (zuid: string | null, agentName?: string | null,
       setError(null);
 
       try {
+        // First, check if we have cached reviews in the database
+        if (agentName) {
+          const { data: professional } = await supabase
+            .from('professionals')
+            .select('reviews_data')
+            .ilike('name', agentName)
+            .single();
+
+          if (professional?.reviews_data) {
+            const reviewsData = professional.reviews_data as any;
+            if (reviewsData.zillow_reviews && Array.isArray(reviewsData.zillow_reviews)) {
+              // Check if cache is fresh (< 30 days)
+              const fetchedAt = reviewsData.zillow_reviews_fetched_at 
+                ? new Date(reviewsData.zillow_reviews_fetched_at)
+                : null;
+              
+              const thirtyDaysAgo = new Date();
+              thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+              if (fetchedAt && fetchedAt > thirtyDaysAgo) {
+                console.log('Using cached Zillow reviews from database');
+                
+                // Map cached reviews to expected format
+                const cachedReviews = reviewsData.zillow_reviews.map((review: any) => ({
+                  reviewerName: review.reviewerName || 'Anonymous',
+                  reviewText: review.text || review.reviewText || '',
+                  rating: review.rating || 5,
+                  reviewDate: review.createDate || review.reviewDate || new Date().toISOString()
+                }));
+
+                setReviews({
+                  reviews: cachedReviews,
+                  totalReviews: cachedReviews.length,
+                  averageRating: cachedReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / cachedReviews.length,
+                  profileUrl: reviewsData.zillow_profile_url || (zuid ? `https://www.zillow.com/profile/${zuid}` : undefined)
+                });
+                setLoading(false);
+                return;
+              }
+            }
+          }
+        }
+
+        // No cache or stale cache - fetch from API
         // Discover ZUID/profile if missing
         let targetZuid: string | null = zuid || null;
         let discoveredProfileUrl: string | undefined;
