@@ -403,35 +403,68 @@ serve(async (req) => {
           
           if (csvResponse && csvResponse.ok) {
             const csvText = await csvResponse.text();
-            const lines = csvText.split('\n');
+            
+            // Debug: Show first few characters to check encoding
+            console.log(`CSV starts with: ${csvText.substring(0, 100)}`);
+            
+            // Split lines and handle both Unix (\n) and Windows (\r\n) line endings
+            const lines = csvText.split(/\r?\n/);
+            console.log(`Total lines in CSV: ${lines.length}`);
             
             // Normalize license number for comparison (remove spaces, make uppercase)
             const normalizedLicense = updateData.license_number.replace(/\s/g, '').toUpperCase();
             console.log(`Searching for normalized license: ${normalizedLicense}`);
             
+            // Helper function to parse CSV line properly handling empty fields
+            const parseCSVLine = (line: string): string[] => {
+              const fields: string[] = [];
+              let currentField = '';
+              let inQuotes = false;
+              
+              for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                  inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                  fields.push(currentField.trim());
+                  currentField = '';
+                } else {
+                  currentField += char;
+                }
+              }
+              fields.push(currentField.trim());
+              return fields;
+            };
+            
             // Search for license in CSV (skip header row)
             let foundRecord = null;
             for (let i = 1; i < lines.length; i++) {
-              const line = lines[i];
-              if (!line.trim()) continue;
+              const line = lines[i].trim();
+              if (!line) continue;
               
-              // Parse CSV line (handle quoted fields)
-              const fields = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(field => 
-                field.replace(/^"|"$/g, '').trim()
-              );
+              // Parse CSV line properly handling empty fields
+              const fields = parseCSVLine(line);
               
-              if (!fields || fields.length < 6) continue;
+              // Debug first parsed line to verify field indices
+              if (i === 1) {
+                console.log(`Sample parsed line: [${fields.map((f, idx) => `${idx}:"${f}"`).join(', ')}]`);
+              }
+              
+              // CSV format: LastName,FirstName,MiddleName,OriginalDate,LicNumber,LicType,EmployerLegalName
+              if (fields.length < 5) continue; // Need at least 5 fields to get license number
               
               const recordLicense = fields[4]?.trim().replace(/\s/g, '').toUpperCase();
               
               if (recordLicense === normalizedLicense) {
                 foundRecord = {
-                  lastName: fields[0],
-                  firstName: fields[1],
-                  middleName: fields[2],
-                  originalDate: fields[3],
-                  licNumber: fields[4],
-                  licType: fields[5],
+                  lastName: fields[0] || '',
+                  firstName: fields[1] || '',
+                  middleName: fields[2] || '',
+                  originalDate: fields[3] || '',
+                  licNumber: fields[4] || '',
+                  licType: fields[5] || '',
+                  employerLegalName: fields[6] || '',
                 };
                 console.log(`✅ License found in Arizona database!`, foundRecord);
                 break;
