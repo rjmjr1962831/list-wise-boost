@@ -1005,7 +1005,7 @@ export const ProfessionalCard = ({
               </div>
 
               {/* License Number Section */}
-              <div className="flex items-center gap-3 py-2">
+              <div className="space-y-1.5 py-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
                   <Shield className="h-4 w-4" />
                   <span>License #:</span>
@@ -1026,14 +1026,14 @@ export const ProfessionalCard = ({
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     </div>
                   ) : license ? (
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide">
+                    <div className="flex flex-col gap-1.5">
+                      <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide w-fit">
                         {license}
                       </Badge>
                       {isLicenseVerified ? (
                         <Badge 
                           variant="outline" 
-                          className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+                          className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 w-fit"
                           title="Verified from state license database"
                         >
                           <ShieldCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
@@ -1042,7 +1042,7 @@ export const ProfessionalCard = ({
                       ) : (
                         <Badge 
                           variant="outline" 
-                          className="gap-1.5 text-xs"
+                          className="gap-1.5 text-xs w-fit"
                           title="License on file"
                         >
                           <Shield className="h-3 w-3" />
@@ -1054,7 +1054,7 @@ export const ProfessionalCard = ({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-7 gap-1.5 text-xs"
+                      className="h-7 gap-1.5 text-xs w-fit"
                       onClick={handleVerifyLicense}
                       disabled={!licenseLookupUrl}
                     >
