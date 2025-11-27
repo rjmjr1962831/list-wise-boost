@@ -2,10 +2,22 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, PlayCircle, CheckCircle2, XCircle, PauseCircle, RotateCcw } from 'lucide-react';
+import { Loader2, PlayCircle, CheckCircle2, XCircle, PauseCircle, RotateCcw, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface CityCategory {
   cityId: string;
@@ -29,6 +41,9 @@ export const BulkMemo23Enricher = () => {
   const [progress, setProgress] = useState(0);
   const [currentJobId, setCurrentJobId] = useState<string | null>(null);
   const [pausedJobs, setPausedJobs] = useState<any[]>([]);
+  const [forceRefresh, setForceRefresh] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [estimatedCount, setEstimatedCount] = useState(0);
 
   // Load paused jobs on mount
   useEffect(() => {
@@ -217,7 +232,36 @@ export const BulkMemo23Enricher = () => {
     }
   };
 
-  const runBulkEnrichment = async () => {
+  const runBulkEnrichment = async (skipConfirmation = false) => {
+    // Check if we need to show confirmation dialog for force refresh
+    if (forceRefresh && !skipConfirmation) {
+      // Calculate estimate first
+      const { data: agentCombos } = await supabase
+        .from('professionals')
+        .select('city_id, category_id, zillow_profile_url, cities(name), categories(name)')
+        .eq('active', true)
+        .not('zillow_profile_url', 'is', null);
+      
+      const uniqueCombosMap = new Map<string, CityCategory>();
+      for (const agent of agentCombos || []) {
+        const key = `${agent.city_id}-${agent.category_id}`;
+        if (!agent.cities || !agent.categories) continue;
+        
+        if (!uniqueCombosMap.has(key)) {
+          uniqueCombosMap.set(key, {
+            cityId: agent.city_id,
+            cityName: (agent.cities as any).name,
+            categoryId: agent.category_id,
+            categoryName: (agent.categories as any).name
+          });
+        }
+      }
+      
+      setEstimatedCount(uniqueCombosMap.size);
+      setShowConfirmDialog(true);
+      return;
+    }
+
     setLoading(true);
     setPaused(false);
     setJobs([]);
@@ -225,27 +269,30 @@ export const BulkMemo23Enricher = () => {
     
     try {
       // Fetch only city-category combinations that have existing agents from agenscrape
-      // Prioritize those not enriched in the last 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
       const { data: agentCombos, error: combosError } = await supabase
         .from('professionals')
-        .select('city_id, category_id, zillow_data_fetched_at, cities(name), categories(name)')
-        .eq('active', true);
+        .select('city_id, category_id, zillow_data_fetched_at, zillow_profile_url, cities(name), categories(name)')
+        .eq('active', true)
+        .not('zillow_profile_url', 'is', null);
 
       if (combosError) {
         toast.error('Failed to load agent combinations');
         return;
       }
 
-      // Create unique city-category combinations that have agents needing enrichment
+      // Create unique city-category combinations
       const uniqueCombosMap = new Map<string, { combo: CityCategory, needsEnrichment: boolean }>();
       for (const agent of agentCombos || []) {
         const key = `${agent.city_id}-${agent.category_id}`;
         if (!agent.cities || !agent.categories) continue;
         
-        const needsEnrichment = !agent.zillow_data_fetched_at || 
+        // Force refresh: ignore date check, enrich everything with a Zillow URL
+        // Normal mode: only enrich if never fetched or stale
+        const needsEnrichment = forceRefresh || 
+          !agent.zillow_data_fetched_at || 
           new Date(agent.zillow_data_fetched_at) < thirtyDaysAgo;
         
         if (!uniqueCombosMap.has(key)) {
@@ -272,7 +319,9 @@ export const BulkMemo23Enricher = () => {
       const totalCombos = uniqueCombosMap.size;
       const skippedCombos = totalCombos - combinations.length;
 
-      if (skippedCombos > 0) {
+      if (forceRefresh) {
+        toast.info(`🔄 Force refresh: Processing ALL ${combinations.length} combinations`);
+      } else if (skippedCombos > 0) {
         toast.info(`⚡ Skipping ${skippedCombos} recently-enriched combinations. Processing ${combinations.length}.`);
       } else {
         toast.info(`Starting enrichment for ${combinations.length} city-category combinations`);
@@ -462,9 +511,34 @@ export const BulkMemo23Enricher = () => {
             </Alert>
           )}
 
+          <div className="flex items-center space-x-2 p-4 bg-muted rounded-lg">
+            <Checkbox 
+              id="force-refresh" 
+              checked={forceRefresh}
+              onCheckedChange={(checked) => setForceRefresh(checked === true)}
+              disabled={loading}
+            />
+            <Label 
+              htmlFor="force-refresh" 
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+            >
+              Force re-enrich ALL agents (ignore 30-day threshold)
+            </Label>
+          </div>
+
+          {forceRefresh && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                Force refresh will re-process ALL agents, even recently enriched ones. 
+                This may take 2+ hours and consume significant API credits. Use only to capture new data fields.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="flex gap-2">
             <Button 
-              onClick={runBulkEnrichment} 
+              onClick={() => runBulkEnrichment()} 
               disabled={loading}
               className="flex-1"
               size="lg"
@@ -558,6 +632,39 @@ export const BulkMemo23Enricher = () => {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Force Re-Enrich All Agents?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                This will re-process approximately <strong>{estimatedCount} city-category combinations</strong>, 
+                re-enriching ALL agents regardless of when they were last updated.
+              </p>
+              <p className="text-destructive font-medium">
+                ⚠️ Estimated time: {Math.round(estimatedCount * 10 / 60)} minutes
+              </p>
+              <p>
+                This operation will consume API credits and should only be used when you need to capture 
+                new data fields (like specialties, languages, social URLs) that weren't extracted previously.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                setShowConfirmDialog(false);
+                runBulkEnrichment(true);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Yes, Force Re-Enrich All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
