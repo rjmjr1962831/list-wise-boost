@@ -19,7 +19,7 @@ export const PhoenixMemo23Workflow = () => {
   const [loading, setLoading] = useState(false);
   const [jobs, setJobs] = useState<AgentJob[]>([]);
   const [progress, setProgress] = useState(0);
-  const [concurrency, setConcurrency] = useState(30);
+  const [concurrency, setConcurrency] = useState(3);
   const [selectedCity, setSelectedCity] = useState<string>('Phoenix');
   const [cities, setCities] = useState<Array<{id: string, name: string}>>([]);
 
@@ -110,68 +110,87 @@ export const PhoenixMemo23Workflow = () => {
       for (let i = 0; i < agents.length; i += batchSize) {
         const batch = agents.slice(i, i + batchSize);
         
-        // Process batch in parallel
-        const batchPromises = batch.map(async (agent) => {
-          const jobId = agent.id;
-          
-          // Skip if already successfully processed in this run
-          if (processedAgentIds.has(jobId)) {
-            console.log(`Skipping ${agent.name} - already processed successfully`);
-            setJobs(prev => prev.map(j => 
-              j.id === jobId 
-                ? { ...j, status: 'success' as const, message: 'Already processed' } 
-                : j
-            ));
-            return;
-          }
-          
-          // Update job status to running
-          setJobs(prev => prev.map(j => 
-            j.id === jobId ? { ...j, status: 'running' as const } : j
-          ));
-
-          try {
-            console.log(`Enriching ${agent.name}...`);
+          // Process batch in parallel
+          const batchPromises = batch.map(async (agent) => {
+            const jobId = agent.id;
             
-            // Call fetch-single-memo23-agent function
-            const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
-              body: { 
-                professionalId: agent.id
+            // Skip if already successfully processed in this run
+            if (processedAgentIds.has(jobId)) {
+              console.log(`Skipping ${agent.name} - already processed successfully`);
+              setJobs(prev => prev.map(j => 
+                j.id === jobId 
+                  ? { ...j, status: 'success' as const, message: 'Already processed' } 
+                  : j
+              ));
+              return;
+            }
+            
+            // Update job status to running
+            setJobs(prev => prev.map(j => 
+              j.id === jobId ? { ...j, status: 'running' as const } : j
+            ));
+
+            // Retry logic with exponential backoff
+            let retries = 3;
+            let delay = 1000;
+            
+            for (let attempt = 0; attempt < retries; attempt++) {
+              try {
+                console.log(`Enriching ${agent.name}... (attempt ${attempt + 1}/${retries})`);
+                
+                // Call fetch-single-memo23-agent function
+                const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
+                  body: { 
+                    professionalId: agent.id
+                  }
+                });
+
+                if (error) {
+                  // Check if it's a 503 error and we can retry
+                  if (error.message?.includes('503') && attempt < retries - 1) {
+                    console.log(`503 error, retrying in ${delay}ms...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // Exponential backoff
+                    continue;
+                  }
+                  throw error;
+                }
+
+                // Mark as successfully processed
+                processedAgentIds.add(jobId);
+                
+                // Update job status to success
+                setJobs(prev => prev.map(j => 
+                  j.id === jobId 
+                    ? { 
+                        ...j, 
+                        status: 'success' as const, 
+                        message: `Updated ${data?.updatedFields?.length || 0} fields` 
+                      } 
+                    : j
+                ));
+                
+                console.log(`✓ ${agent.name} enriched successfully`);
+                break; // Success, exit retry loop
+              } catch (error: any) {
+                if (attempt === retries - 1) {
+                  // Final attempt failed
+                  console.error(`Error enriching ${agent.name} after ${retries} attempts:`, error);
+                  
+                  // Update job status to error
+                  setJobs(prev => prev.map(j => 
+                    j.id === jobId 
+                      ? { 
+                          ...j, 
+                          status: 'error' as const, 
+                          message: error.message || 'Unknown error' 
+                        } 
+                      : j
+                  ));
+                }
               }
-            });
-
-            if (error) throw error;
-
-            // Mark as successfully processed
-            processedAgentIds.add(jobId);
-            
-            // Update job status to success
-            setJobs(prev => prev.map(j => 
-              j.id === jobId 
-                ? { 
-                    ...j, 
-                    status: 'success' as const, 
-                    message: `Updated ${data?.updatedFields?.length || 0} fields` 
-                  } 
-                : j
-            ));
-            
-            console.log(`✓ ${agent.name} enriched successfully`);
-          } catch (error: any) {
-            console.error(`Error enriching ${agent.name}:`, error);
-            
-            // Update job status to error
-            setJobs(prev => prev.map(j => 
-              j.id === jobId 
-                ? { 
-                    ...j, 
-                    status: 'error' as const, 
-                    message: error.message || 'Unknown error' 
-                  } 
-                : j
-            ));
-          }
-        });
+            }
+          });
 
         // Wait for batch to complete
         await Promise.all(batchPromises);
@@ -259,10 +278,10 @@ export const PhoenixMemo23Workflow = () => {
               disabled={loading}
               className="border rounded px-3 py-2"
             >
-              <option value="1">1 (Sequential)</option>
+              <option value="1">1 (Sequential - Safest)</option>
+              <option value="3">3 Sessions (Recommended)</option>
               <option value="5">5 Sessions</option>
-              <option value="10">10 Sessions</option>
-              <option value="20">20 Sessions</option>
+              <option value="10">10 Sessions (Risk of 503 errors)</option>
             </select>
           </div>
 
