@@ -5,15 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-interface LicenseRecord {
-  LastName: string;
-  FirstName: string;
-  MiddleName: string;
-  OriginalDate: string;
-  LicNumber: string;
-  LicType: string;
-  EmployerLegalName: string;
-}
+// LicenseRecord interface is no longer needed - we query the database directly
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -34,62 +26,31 @@ Deno.serve(async (req) => {
 
     console.log(`Verifying license ${licenseNumber} for professional ${professionalId}`);
 
-    // Fetch the CSV file from the public folder
-    // In production, this will be served from the CDN
-    const baseUrl = Deno.env.get('SUPABASE_URL')?.replace('/supabase', '') || '';
-    const csvUrl = `${baseUrl}/arizona-licenses.csv`;
-    
-    console.log(`Fetching CSV from: ${csvUrl}`);
-    const csvResponse = await fetch(csvUrl);
-    
-    if (!csvResponse.ok) {
-      console.error('Failed to fetch CSV file');
-      throw new Error('Failed to fetch license database');
-    }
+    // Normalize license number for database query (remove spaces, uppercase)
+    const normalizedLicense = licenseNumber.replace(/\s/g, '').toUpperCase();
+    console.log(`Querying database for normalized license: ${normalizedLicense}`);
 
-    const csvText = await csvResponse.text();
-    const lines = csvText.split('\n');
-    
-    // Skip header row
-    let foundRecord: LicenseRecord | null = null;
-    
-    for (let i = 1; i < lines.length; i++) {
-      const line = lines[i];
-      if (!line.trim()) continue;
-      
-      // Parse CSV line (handle quoted fields)
-      const fields = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(field => 
-        field.replace(/^"|"$/g, '').trim()
-      );
-      
-      if (!fields || fields.length < 5) continue;
-      
-      const recordLicense = fields[4]?.trim();
-      
-      // Check if license number matches (normalize by removing spaces and padding)
-      if (recordLicense && recordLicense.replace(/\s/g, '') === licenseNumber.replace(/\s/g, '')) {
-        foundRecord = {
-          LastName: fields[0],
-          FirstName: fields[1],
-          MiddleName: fields[2],
-          OriginalDate: fields[3],
-          LicNumber: fields[4],
-          LicType: fields[5],
-          EmployerLegalName: fields[6] || '',
-        };
-        break;
-      }
+    // Query the arizona_licenses table directly (indexed for fast lookup)
+    const { data: foundRecord, error: queryError } = await supabaseClient
+      .from('arizona_licenses')
+      .select('*')
+      .eq('license_number', normalizedLicense)
+      .maybeSingle();
+
+    if (queryError) {
+      console.error('Error querying Arizona licenses database:', queryError);
+      throw queryError;
     }
 
     if (foundRecord) {
-      console.log('License found in database:', foundRecord);
+      console.log('✅ License found in database:', foundRecord);
       
-      // Calculate years of experience from OriginalDate
-      const originalDate = new Date(foundRecord.OriginalDate);
+      // Calculate years of experience from original_date
+      const originalDate = new Date(foundRecord.original_date);
       const currentDate = new Date();
       const yearsExperience = currentDate.getFullYear() - originalDate.getFullYear();
       
-      console.log(`Calculated ${yearsExperience} years of experience from ${foundRecord.OriginalDate}`);
+      console.log(`Calculated ${yearsExperience} years of experience from ${foundRecord.original_date}`);
       
       // Update professional record with verified data
       const { data: professional, error: fetchError } = await supabaseClient
@@ -128,9 +89,9 @@ Deno.serve(async (req) => {
         JSON.stringify({
           verified: true,
           yearsExperience,
-          originalDate: foundRecord.OriginalDate,
-          licenseType: foundRecord.LicType,
-          employer: foundRecord.EmployerLegalName,
+          originalDate: foundRecord.original_date,
+          licenseType: foundRecord.license_type,
+          employer: foundRecord.employer_legal_name,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
