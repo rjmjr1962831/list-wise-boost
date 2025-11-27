@@ -202,6 +202,66 @@ export type Database = {
           },
         ]
       }
+      arizona_licenses: {
+        Row: {
+          created_at: string | null
+          employer_legal_name: string | null
+          employer_phone: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          license_number: string
+          license_type: string | null
+          mailing_address1: string | null
+          mailing_address2: string | null
+          mailing_city: string | null
+          mailing_county: string | null
+          mailing_state: string | null
+          mailing_zip: string | null
+          middle_name: string | null
+          original_date: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          employer_legal_name?: string | null
+          employer_phone?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          license_number: string
+          license_type?: string | null
+          mailing_address1?: string | null
+          mailing_address2?: string | null
+          mailing_city?: string | null
+          mailing_county?: string | null
+          mailing_state?: string | null
+          mailing_zip?: string | null
+          middle_name?: string | null
+          original_date?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          employer_legal_name?: string | null
+          employer_phone?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          license_number?: string
+          license_type?: string | null
+          mailing_address1?: string | null
+          mailing_address2?: string | null
+          mailing_city?: string | null
+          mailing_county?: string | null
+          mailing_state?: string | null
+          mailing_zip?: string | null
+          middle_name?: string | null
+          original_date?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       availability_slots: {
         Row: {
           active: boolean | null

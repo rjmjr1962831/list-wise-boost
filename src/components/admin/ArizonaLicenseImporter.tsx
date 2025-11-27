@@ -1,186 +1,154 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { Loader2, Upload, CheckCircle, Database } from 'lucide-react';
 
 export const ArizonaLicenseImporter = () => {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [progress, setProgress] = useState({ current: 0, total: 0, matched: 0, updated: 0 });
+  const [importing, setImporting] = useState(false);
+  const [progress, setProgress] = useState<{ imported: number; total: number; errors: number } | null>(null);
+  const [fileData, setFileData] = useState<string | null>(null);
 
-  const normalizeName = (name: string) => {
-    return name.toLowerCase().trim().replace(/[^a-z\s]/g, '');
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      setFileData(text);
+      const lines = text.split('\n').length - 1;
+      toast.success(`File loaded: ${file.name} (${lines.toLocaleString()} licenses, ${(file.size / 1024 / 1024).toFixed(2)} MB)`);
+    };
+    reader.onerror = () => {
+      toast.error('Failed to read file');
+    };
+    reader.readAsText(file);
   };
 
-  const calculateYearsExperience = (issueDate: string): number => {
-    const date = new Date(issueDate);
-    const today = new Date();
-    const years = (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
-    return Math.round(years);
-  };
+  const handleImport = async () => {
+    if (!fileData) {
+      toast.error('Please select a CSV file first');
+      return;
+    }
 
-  const formatAddress = (addr1: string, addr2: string, city: string, state: string, zip: string) => {
-    const parts = [addr1, addr2, city, state, zip].filter(p => p && p.trim());
-    return parts.join(', ');
-  };
-
-  const processLicenses = async () => {
-    setIsProcessing(true);
-    setProgress({ current: 0, total: 0, matched: 0, updated: 0 });
+    setImporting(true);
+    setProgress(null);
 
     try {
-      // Fetch Arizona professionals
-      const { data: professionals, error: profError } = await supabase
-        .from('professionals')
-        .select('id, name, cities!inner(state)')
-        .eq('cities.state', 'Arizona')
-        .eq('active', true);
+      console.log('Starting import to arizona_licenses table...');
+      
+      const { data, error } = await supabase.functions.invoke('import-arizona-licenses', {
+        body: { csvData: fileData }
+      });
 
-      if (profError) throw profError;
+      if (error) throw error;
 
-      if (!professionals || professionals.length === 0) {
-        toast.info('No Arizona professionals found in database');
-        return;
-      }
-
-      setProgress(prev => ({ ...prev, total: professionals.length }));
-
-      // Fetch CSV data
-      const response = await fetch('/arizona-licenses.csv');
-      const csvText = await response.text();
-      const lines = csvText.split('\n');
-      const headers = lines[0].split(',');
-
-      // Parse CSV into lookup map (new format with LicNumber column)
-      const licenseMap = new Map();
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue;
-
-        const values = line.split(',');
-        if (values.length < 13) continue;
-
-        const lastName = values[0]?.replace(/"/g, '').trim();
-        const firstName = values[1]?.replace(/"/g, '').trim();
-        const middleName = values[2]?.replace(/"/g, '').trim();
-        const fullName = `${firstName} ${middleName} ${lastName}`.replace(/\s+/g, ' ').trim();
-        const normalizedName = normalizeName(fullName);
-
-        const issueDate = values[3]?.replace(/"/g, '').trim();
-        const licNumber = values[4]?.replace(/"/g, '').trim(); // Actual license number
-        const phone = values[7]?.replace(/"/g, '').trim();
-        const addr1 = values[8]?.replace(/"/g, '').trim();
-        const addr2 = values[9]?.replace(/"/g, '').trim();
-        const city = values[10]?.replace(/"/g, '').trim();
-        const state = values[11]?.replace(/"/g, '').trim();
-        const zip = values[12]?.replace(/"/g, '').trim();
-
-        licenseMap.set(normalizedName, {
-          licenseNumber: licNumber,
-          issueDate,
-          phone,
-          address: formatAddress(addr1, addr2, city, state, zip),
-          yearsExperience: calculateYearsExperience(issueDate)
-        });
-      }
-
-      // Match and update professionals
-      let matched = 0;
-      let updated = 0;
-
-      for (let i = 0; i < professionals.length; i++) {
-        const prof = professionals[i];
-        const normalizedProfName = normalizeName(prof.name);
-
-        setProgress(prev => ({ ...prev, current: i + 1 }));
-
-        const licenseData = licenseMap.get(normalizedProfName);
-        if (licenseData) {
-          matched++;
-
-          const { error: updateError } = await supabase
-            .from('professionals')
-            .update({
-              license_number: licenseData.licenseNumber,
-              license_verified_at: new Date().toISOString(),
-              years_experience: licenseData.yearsExperience,
-              phone: licenseData.phone || undefined,
-              address: licenseData.address || undefined
-            })
-            .eq('id', prof.id);
-
-          if (updateError) {
-            console.error(`Failed to update ${prof.name}:`, updateError);
-          } else {
-            updated++;
-            setProgress(prev => ({ ...prev, matched, updated }));
-          }
-        }
-
-        // Add small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
-
-      toast.success(`Matched ${matched} professionals, updated ${updated} records`);
+      setProgress(data);
+      toast.success(
+        `Import complete! ${data.imported.toLocaleString()} licenses imported${data.errors > 0 ? `, ${data.errors} errors` : ''}`,
+        { duration: 5000 }
+      );
+      
+      console.log('Import results:', data);
     } catch (error: any) {
-      console.error('License import error:', error);
-      toast.error('Failed to import licenses: ' + error.message);
+      console.error('Import error:', error);
+      toast.error(`Import failed: ${error.message}`);
     } finally {
-      setIsProcessing(false);
+      setImporting(false);
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Arizona License Importer</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          <Database className="h-5 w-5" />
+          Arizona License Database Importer
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground">
-          This tool matches Arizona real estate professionals with the state license database and populates:
+          Import the Arizona real estate license CSV file into the <code className="bg-muted px-1 py-0.5 rounded">arizona_licenses</code> database table.
+          This enables instant license verification with indexed database queries instead of slow file parsing.
           <ul className="list-disc list-inside mt-2 space-y-1">
-            <li>License numbers</li>
-            <li>Years of experience (calculated from issue date)</li>
-            <li>Phone numbers</li>
-            <li>Office addresses</li>
-            <li>Verification status</li>
+            <li>221K+ license records stored in database</li>
+            <li>Fast indexed lookups by license number</li>
+            <li>Automatic years of experience calculation</li>
+            <li>One-time import, used forever</li>
           </ul>
         </div>
 
-        {isProcessing && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Processing {progress.current} of {progress.total}...</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span>Matched: {progress.matched}</span>
+        <div>
+          <label className="block mb-2 font-medium text-sm">
+            Select arizona-licenses.csv file
+          </label>
+          <input
+            type="file"
+            accept=".csv"
+            onChange={handleFileSelect}
+            disabled={importing}
+            className="block w-full text-sm text-muted-foreground
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-md file:border-0
+              file:text-sm file:font-semibold
+              file:bg-primary file:text-primary-foreground
+              hover:file:bg-primary/90
+              file:cursor-pointer cursor-pointer"
+          />
+        </div>
+
+        {fileData && !importing && (
+          <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 p-3 rounded-md">
+            <CheckCircle className="h-4 w-4" />
+            <span>File ready to import ({(fileData.length / 1024 / 1024).toFixed(2)} MB)</span>
+          </div>
+        )}
+
+        {progress && (
+          <div className="p-4 bg-muted rounded-lg space-y-2">
+            <div className="text-sm font-medium">Import Results:</div>
+            <div className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <span className="text-muted-foreground">Imported:</span>
+                <div className="font-bold text-lg text-green-600">{progress.imported.toLocaleString()}</div>
               </div>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-blue-500" />
-                <span>Updated: {progress.updated}</span>
+              <div>
+                <span className="text-muted-foreground">Total:</span>
+                <div className="font-bold text-lg">{progress.total.toLocaleString()}</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Errors:</span>
+                <div className="font-bold text-lg text-red-600">{progress.errors.toLocaleString()}</div>
               </div>
             </div>
           </div>
         )}
 
-        <Button 
-          onClick={processLicenses}
-          disabled={isProcessing}
+        <Button
+          onClick={handleImport}
+          disabled={!fileData || importing}
           className="w-full"
         >
-          {isProcessing ? (
+          {importing ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Processing...
+              Importing licenses to database...
             </>
           ) : (
-            'Import Arizona Licenses'
+            <>
+              <Upload className="mr-2 h-4 w-4" />
+              Import to Database
+            </>
           )}
         </Button>
+
+        {!progress && !importing && (
+          <p className="text-xs text-muted-foreground">
+            Note: This imports the CSV data once into the database. After importing, license verification will be instant via database queries.
+          </p>
+        )}
       </CardContent>
     </Card>
   );
