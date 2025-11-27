@@ -64,8 +64,8 @@ export function useExternalReviews({
       return resp as ExternalReviewsResult;
     },
     enabled: !!agentName && !!market,
-    staleTime: Infinity, // Never refetch automatically
-    gcTime: Infinity, // Keep in cache forever
+    staleTime: 1000 * 60 * 30, // 30 minutes - allows fresh data after enrichment
+    gcTime: 1000 * 60 * 60, // 1 hour - reasonable cache retention
   });
 
   return { 

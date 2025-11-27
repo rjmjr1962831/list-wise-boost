@@ -872,7 +872,7 @@ export const ProfessionalCard = ({
                   .map(pt => profileTypeMap[pt])
                   .filter(Boolean);
                 
-                const dbSpecialties = (professional as any).specialty || [];
+                const dbSpecialties = professional.specialties || [];
                 const parsedSpecialties = parsedProfInfo?.specialties || [];
                 
                 const profInfoArray = (professional as any).professional_information;
