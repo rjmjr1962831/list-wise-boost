@@ -378,8 +378,8 @@ serve(async (req) => {
         console.log('Arizona agent detected, verifying license against state database...');
         
         try {
-          // Fetch the Arizona license CSV from the public folder of the deployed site
-          const csvUrl = 'https://9cdb9be2-e152-4f82-8510-b202c71869c2.lovableproject.com/arizona-licenses.csv';
+          // Fetch the Arizona license CSV from Supabase Storage
+          const csvUrl = `${supabaseUrl}/storage/v1/object/public/professional-photos/arizona-licenses.csv`;
           console.log(`Fetching Arizona licenses from: ${csvUrl}`);
           
           const csvResponse = await fetch(csvUrl);
