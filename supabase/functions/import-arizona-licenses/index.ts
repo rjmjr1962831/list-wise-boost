@@ -29,8 +29,8 @@ Deno.serve(async (req) => {
     
     console.log(`Found ${lines.length - 1} license records to import`);
 
-    // Process in batches of 1000
-    const batchSize = 1000;
+    // Process in smaller batches to avoid CPU timeout
+    const batchSize = 500;
     let imported = 0;
     let skipped = 0;
     let errors = 0;
@@ -45,14 +45,24 @@ Deno.serve(async (req) => {
 
         const values = line.split(',').map((v: string) => v.trim().replace(/^"|"$/g, ''));
         
-        if (values.length < 8) continue; // Skip incomplete rows
+        if (values.length < 8) {
+          skipped++;
+          continue;
+        }
 
-        // Parse date from MM/DD/YYYY format
+        // Parse date from MM/DD/YYYY H:MM format (extract date part before space)
         let originalDate = null;
         if (values[3]) {
-          const [month, day, year] = values[3].split('/');
-          if (month && day && year) {
-            originalDate = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+          try {
+            const dateOnly = values[3].split(' ')[0]; // Get date part before space
+            const [month, day, year] = dateOnly.split('/');
+            if (month && day && year && year.length === 4) {
+              const m = month.padStart(2, '0');
+              const d = day.padStart(2, '0');
+              originalDate = `${year}-${m}-${d}`;
+            }
+          } catch (e) {
+            // Skip invalid dates
           }
         }
 
@@ -74,20 +84,20 @@ Deno.serve(async (req) => {
       }
 
       if (batch.length > 0) {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('arizona_licenses')
           .upsert(batch, { onConflict: 'license_number', ignoreDuplicates: true });
 
         if (error) {
-          console.error(`Error importing batch at line ${i}:`, error);
+          console.error(`Error importing batch starting at line ${i}:`, error.message);
           errors += batch.length;
         } else {
           imported += batch.length;
         }
       }
 
-      // Log progress every 10 batches
-      if (i % (batchSize * 10) === 0) {
+      // Log progress every 5 batches
+      if (i % (batchSize * 5) === 0) {
         console.log(`Progress: ${i}/${lines.length} lines processed`);
       }
     }
