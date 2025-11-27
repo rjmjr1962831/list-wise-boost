@@ -24,6 +24,7 @@ import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporte
 import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
 import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
 import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
+import { TestSpecialtyExtraction } from "@/components/admin/TestSpecialtyExtraction";
 import { BackfillScottsdaleRatings } from "@/components/admin/BackfillScottsdaleRatings";
 import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
 import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
@@ -352,6 +353,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="scraper-debug" className="space-y-4">
+            <TestSpecialtyExtraction />
             <TestProxyEnrichment />
             <BeauvaisEnricher />
             <ReplicateAgentPhoenix />
