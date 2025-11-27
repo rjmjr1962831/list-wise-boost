@@ -32,7 +32,7 @@ export function ExternalReviewsPreview({
     );
   }
 
-  // Filter reviews to only show those less than 6 months old
+  // Filter reviews to only show those less than 6 months old AND with valid ratings
   const sixMonthsAgo = new Date();
   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
@@ -40,7 +40,8 @@ export function ExternalReviewsPreview({
     .filter(r => {
       if (!r.reviewDate) return false;
       const reviewDate = new Date(r.reviewDate);
-      return reviewDate >= sixMonthsAgo;
+      const hasValidRating = r.rating && r.rating >= 1 && r.rating <= 5;
+      return reviewDate >= sixMonthsAgo && hasValidRating;
     })
     .slice(0, 3);
 

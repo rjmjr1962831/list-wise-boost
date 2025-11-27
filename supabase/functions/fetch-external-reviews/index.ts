@@ -195,14 +195,25 @@ serve(async (req) => {
       console.log(`✅ Have ${googleReviewCount} Google reviews, no need to supplement with Zillow`);
     }
 
+    // Filter out reviews without valid star ratings (must be 1-5 stars)
+    const validReviews = reviews.filter(review => {
+      const hasValidRating = review.rating && review.rating >= 1 && review.rating <= 5;
+      if (!hasValidRating) {
+        console.log(`⚠️ Filtered out review from ${review.source} - invalid rating: ${review.rating}`);
+      }
+      return hasValidRating;
+    });
+    
+    console.log(`Filtered ${reviews.length - validReviews.length} reviews with invalid ratings. Valid reviews: ${validReviews.length}`);
+
     // Store reviews in database if professionalId provided
-    if (professionalId && reviews.length > 0) {
+    if (professionalId && validReviews.length > 0) {
       try {
         const { error: updateError } = await supabase
           .from('professionals')
           .update({
             reviews_data: {
-              external_reviews: reviews,
+              external_reviews: validReviews,
               external_sources: sources,
               external_reviews_fetched_at: new Date().toISOString()
             }
@@ -212,7 +223,7 @@ serve(async (req) => {
         if (updateError) {
           console.error('Failed to store external reviews:', updateError);
         } else {
-          console.log(`Stored ${reviews.length} external reviews for professional ${professionalId}`);
+          console.log(`Stored ${validReviews.length} external reviews for professional ${professionalId}`);
         }
       } catch (storeError) {
         console.error('Error storing reviews in database:', storeError);
@@ -220,7 +231,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ reviews, sources }),
+      JSON.stringify({ reviews: validReviews, sources }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
