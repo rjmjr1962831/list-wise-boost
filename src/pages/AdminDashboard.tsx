@@ -47,7 +47,6 @@ import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueu
 import { ProxySettings } from "@/components/admin/ProxySettings";
 import SpecialtiesManager from "@/components/admin/SpecialtiesManager";
 import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
-import { SpecialtyEnricher } from "@/components/admin/SpecialtyEnricher";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -278,10 +277,6 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Proxy Settings
             </TabsTrigger>
-            <TabsTrigger value="specialty-enricher">
-              <Wand2 className="mr-2 h-4 w-4" />
-              Specialty Enricher
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -416,10 +411,6 @@ const AdminDashboard = () => {
 
           <TabsContent value="proxy-settings" className="space-y-4">
             <ProxySettings />
-          </TabsContent>
-
-          <TabsContent value="specialty-enricher" className="space-y-4">
-            <SpecialtyEnricher />
           </TabsContent>
         </Tabs>
       </div>
