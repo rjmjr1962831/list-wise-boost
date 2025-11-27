@@ -546,6 +546,46 @@ serve(async (req) => {
         }
       }
     }
+    
+    // ============================================
+    // TEAM VS INDIVIDUAL DETECTION
+    // ============================================
+    let detectedType = 'individual'; // Default to individual
+
+    // Store team_display_information if present
+    if (agentData.teamDisplayInformation) {
+      updateData.team_display_information = agentData.teamDisplayInformation;
+      
+      // Check if this is a team lead (has team members under them)
+      if (agentData.teamDisplayInformation.teamLeadInfo?.children?.length > 0) {
+        detectedType = 'team';
+        console.log(`🏢 Detected TEAM LEAD with ${agentData.teamDisplayInformation.teamLeadInfo.children.length} team members`);
+      }
+      
+      // Check if this is a team member (belongs to a team with a lead)
+      if (agentData.teamDisplayInformation.teamMemberInfo?.teamLead) {
+        detectedType = 'team';
+        const teamName = agentData.teamDisplayInformation.teamMemberInfo.teamName || 'unknown team';
+        console.log(`🏢 Detected TEAM MEMBER of "${teamName}"`);
+      }
+    }
+
+    // Fallback: Name/business name pattern detection
+    if (detectedType === 'individual') {
+      const teamPatterns = /\b(team|group|partners|associates|& co|realty group)\b/i;
+      const nameToCheck = agentData.name || professional.name || '';
+      const businessToCheck = agentData.businessName || '';
+      
+      if (teamPatterns.test(nameToCheck) || teamPatterns.test(businessToCheck)) {
+        detectedType = 'team';
+        console.log(`🏢 Detected TEAM from name pattern: "${nameToCheck}" / "${businessToCheck}"`);
+      }
+    }
+
+    // Set the type field
+    updateData.type = detectedType;
+    console.log(`📋 Agent type: ${detectedType}`);
+    
     if (agentData.professionalData) {
       updateData.professional_data = agentData.professionalData;
     }
