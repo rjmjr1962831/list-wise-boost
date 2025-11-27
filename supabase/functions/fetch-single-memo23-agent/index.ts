@@ -378,89 +378,29 @@ serve(async (req) => {
         console.log('Arizona agent detected, verifying license against state database...');
         
         try {
-          // Fetch the Arizona license CSV from Supabase Storage
-          const csvUrl = `${supabaseUrl}/storage/v1/object/public/professional-photos/arizona-licenses.csv`;
-          console.log(`Fetching Arizona licenses from: ${csvUrl}`);
+          // Normalize license number for comparison (remove spaces, make uppercase)
+          const normalizedLicense = updateData.license_number.replace(/\s/g, '').toUpperCase();
+          console.log(`Searching database for normalized license: ${normalizedLicense}`);
           
-          const csvResponse = await fetch(csvUrl);
-          
-          if (csvResponse.ok) {
-            const csvText = await csvResponse.text();
+          // Query the arizona_licenses table directly
+          const { data: licenseRecord, error: licenseError } = await supabase
+            .from('arizona_licenses')
+            .select('*')
+            .eq('license_number', normalizedLicense)
+            .maybeSingle();
+
+          if (licenseError) {
+            console.error('Error querying Arizona licenses database:', licenseError);
+          } else if (licenseRecord) {
+            console.log(`✅ License found in Arizona database!`, licenseRecord);
             
-            // Debug: Show first few characters to check encoding
-            console.log(`CSV starts with: ${csvText.substring(0, 100)}`);
-            
-            // Split lines and handle both Unix (\n) and Windows (\r\n) line endings
-            const lines = csvText.split(/\r?\n/);
-            console.log(`Total lines in CSV: ${lines.length}`);
-            
-            // Normalize license number for comparison (remove spaces, make uppercase)
-            const normalizedLicense = updateData.license_number.replace(/\s/g, '').toUpperCase();
-            console.log(`Searching for normalized license: ${normalizedLicense}`);
-            
-            // Helper function to parse CSV line properly handling empty fields
-            const parseCSVLine = (line: string): string[] => {
-              const fields: string[] = [];
-              let currentField = '';
-              let inQuotes = false;
-              
-              for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                
-                if (char === '"') {
-                  inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                  fields.push(currentField.trim());
-                  currentField = '';
-                } else {
-                  currentField += char;
-                }
-              }
-              fields.push(currentField.trim());
-              return fields;
-            };
-            
-            // Search for license in CSV (skip header row)
-            let foundRecord = null;
-            for (let i = 1; i < lines.length; i++) {
-              const line = lines[i].trim();
-              if (!line) continue;
-              
-              // Parse CSV line properly handling empty fields
-              const fields = parseCSVLine(line);
-              
-              // Debug first parsed line to verify field indices
-              if (i === 1) {
-                console.log(`Sample parsed line: [${fields.map((f, idx) => `${idx}:"${f}"`).join(', ')}]`);
-              }
-              
-              // CSV format: LastName,FirstName,MiddleName,OriginalDate,LicNumber,LicType,EmployerLegalName
-              if (fields.length < 5) continue; // Need at least 5 fields to get license number
-              
-              const recordLicense = fields[4]?.trim().replace(/\s/g, '').toUpperCase();
-              
-              if (recordLicense === normalizedLicense) {
-                foundRecord = {
-                  lastName: fields[0] || '',
-                  firstName: fields[1] || '',
-                  middleName: fields[2] || '',
-                  originalDate: fields[3] || '',
-                  licNumber: fields[4] || '',
-                  licType: fields[5] || '',
-                  employerLegalName: fields[6] || '',
-                };
-                console.log(`✅ License found in Arizona database!`, foundRecord);
-                break;
-              }
-            }
-            
-            if (foundRecord) {
-              // Calculate years_experience from OriginalDate
-              const issueDate = new Date(foundRecord.originalDate);
+            // Calculate years_experience from original_date
+            if (licenseRecord.original_date) {
+              const issueDate = new Date(licenseRecord.original_date);
               const currentDate = new Date();
               const yearsExperience = currentDate.getFullYear() - issueDate.getFullYear();
               
-              console.log(`Calculated ${yearsExperience} years of experience from ${foundRecord.originalDate}`);
+              console.log(`Calculated ${yearsExperience} years of experience from ${licenseRecord.original_date}`);
               
               // Update with verified data
               updateData.years_experience = yearsExperience;
@@ -472,13 +412,9 @@ serve(async (req) => {
                 updateData.badges = [...currentBadges, 'License Verified'];
                 console.log('Added "License Verified" badge');
               }
-            } else {
-              console.log('License not found in Arizona database');
             }
           } else {
-            console.warn(`Failed to fetch Arizona license CSV - Status: ${csvResponse.status} ${csvResponse.statusText}`);
-            const errorText = await csvResponse.text().catch(() => 'Unable to read response');
-            console.warn(`Response body: ${errorText.substring(0, 200)}`);
+            console.log('License not found in Arizona database');
           }
         } catch (licenseError) {
           console.error('Error verifying Arizona license:', licenseError);
