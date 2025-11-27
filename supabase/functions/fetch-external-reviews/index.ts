@@ -137,44 +137,51 @@ serve(async (req) => {
         if (professional?.zuid || professional?.zillow_profile_url) {
           console.log(`Fetching Zillow reviews for ${professional.name} (ZUID: ${professional.zuid})`);
           
-          // Call the fetch-apify-zillow-cheerio function to get Zillow reviews
-          const { data: zillowData, error: zillowError } = await supabase.functions.invoke(
-            'fetch-apify-zillow-cheerio',
-            {
-              body: {
-                zuid: professional.zuid,
-                agentName: professional.name,
-                location: location || undefined,
-              }
-            }
-          );
-
-          if (!zillowError && zillowData?.reviews && Array.isArray(zillowData.reviews)) {
-            const zillowReviews = zillowData.reviews;
-            console.log(`Retrieved ${zillowReviews.length} Zillow reviews`);
-            
-            // Calculate how many Zillow reviews we need to add
-            const neededCount = Math.min(3 - googleReviewCount, zillowReviews.length);
-            
-            // Add Zillow reviews to supplement Google reviews
-            for (let i = 0; i < neededCount; i++) {
-              const zr = zillowReviews[i];
-              reviews.push({
-                source: 'zillow',
-                reviewerName: zr.reviewerName || 'Zillow Reviewer',
-                reviewText: zr.reviewText || '',
-                rating: zr.rating || 0,
-                reviewDate: zr.reviewDate || '',
-                url: zillowData.profileUrl || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : undefined),
-              });
-            }
-            
-            if (neededCount > 0) {
-              sources.push('Zillow');
-              console.log(`✅ Added ${neededCount} Zillow reviews to supplement Google reviews. Total: ${reviews.length}`);
-            }
+          // Construct profile URL from ZUID or use existing zillow_profile_url
+          const profileUrl = professional.zillow_profile_url || 
+            (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null);
+          
+          if (!profileUrl) {
+            console.log('Could not construct Zillow profile URL');
           } else {
-            console.log('No Zillow reviews available or error fetching them');
+            // Call the fetch-apify-zillow-cheerio function to get Zillow reviews
+            const { data: zillowData, error: zillowError } = await supabase.functions.invoke(
+              'fetch-apify-zillow-cheerio',
+              {
+                body: {
+                  profileUrls: [profileUrl],
+                  professionalIds: [professionalId]
+                }
+              }
+            );
+
+            if (!zillowError && zillowData?.reviews && Array.isArray(zillowData.reviews)) {
+              const zillowReviews = zillowData.reviews;
+              console.log(`Retrieved ${zillowReviews.length} Zillow reviews`);
+              
+              // Calculate how many Zillow reviews we need to add
+              const neededCount = Math.min(3 - googleReviewCount, zillowReviews.length);
+              
+              // Add Zillow reviews to supplement Google reviews
+              for (let i = 0; i < neededCount; i++) {
+                const zr = zillowReviews[i];
+                reviews.push({
+                  source: 'zillow',
+                  reviewerName: zr.reviewerName || 'Zillow Reviewer',
+                  reviewText: zr.reviewText || '',
+                  rating: zr.rating || 0,
+                  reviewDate: zr.reviewDate || '',
+                  url: zillowData.profileUrl || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : undefined),
+                });
+              }
+              
+              if (neededCount > 0) {
+                sources.push('Zillow');
+                console.log(`✅ Added ${neededCount} Zillow reviews to supplement Google reviews. Total: ${reviews.length}`);
+              }
+            } else {
+              console.log('No Zillow reviews available or error fetching them');
+            }
           }
         } else {
           console.log('No Zillow ZUID or profile URL available for this professional');
