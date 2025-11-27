@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface ExternalReview {
-  source: 'google' | 'yelp' | 'facebook' | 'other';
+  source: 'google' | 'yelp' | 'facebook' | 'zillow' | 'other';
   reviewerName: string;
   reviewText: string;
   rating?: number;

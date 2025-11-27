@@ -63,7 +63,7 @@ export function ExternalReviewsPreview({
               <div className="flex items-center justify-between">
                 <div className="text-sm font-medium">
                   {r.reviewerName || 'Reviewer'}
-                  <span className="ml-2 text-xs text-muted-foreground">{r.source}</span>
+                  <span className="ml-2 text-xs text-muted-foreground capitalize">{r.source}</span>
                 </div>
                 {typeof r.rating === 'number' && r.rating > 0 && (
                   <div className="flex items-center gap-1 text-primary">
