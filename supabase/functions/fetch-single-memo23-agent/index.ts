@@ -378,13 +378,30 @@ serve(async (req) => {
         console.log('Arizona agent detected, verifying license against state database...');
         
         try {
-          // Fetch the Arizona license CSV
-          const baseUrl = supabaseUrl.replace('/supabase', '');
-          const csvUrl = `${baseUrl}/arizona-licenses.csv`;
-          console.log(`Fetching Arizona licenses from: ${csvUrl}`);
+          // Fetch the Arizona license CSV from the deployed site's public folder
+          // Try multiple possible URLs in case of different deployment configurations
+          const possibleUrls = [
+            'https://9cdb9be2-e152-4f82-8510-b202c71869c2.lovableproject.com/arizona-licenses.csv',
+            `${supabaseUrl.replace('https://bgdtekbhelormzbymkhh.supabase.co', 'https://9cdb9be2-e152-4f82-8510-b202c71869c2.lovableproject.com')}/arizona-licenses.csv`,
+          ];
           
-          const csvResponse = await fetch(csvUrl);
-          if (csvResponse.ok) {
+          let csvResponse = null;
+          let csvUrl = '';
+          
+          for (const url of possibleUrls) {
+            console.log(`Trying to fetch Arizona licenses from: ${url}`);
+            const response = await fetch(url);
+            if (response.ok) {
+              csvResponse = response;
+              csvUrl = url;
+              console.log(`✅ Successfully fetched CSV from: ${url}`);
+              break;
+            } else {
+              console.log(`❌ Failed to fetch from ${url}: ${response.status}`);
+            }
+          }
+          
+          if (csvResponse && csvResponse.ok) {
             const csvText = await csvResponse.text();
             const lines = csvText.split('\n');
             
@@ -443,7 +460,7 @@ serve(async (req) => {
               console.log('License not found in Arizona database');
             }
           } else {
-            console.warn(`Failed to fetch Arizona license CSV: ${csvResponse.status}`);
+            console.warn(`Failed to fetch Arizona license CSV from all URLs`);
           }
         } catch (licenseError) {
           console.error('Error verifying Arizona license:', licenseError);
