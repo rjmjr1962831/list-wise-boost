@@ -142,8 +142,9 @@ serve(async (req) => {
             (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null);
           
           if (!profileUrl) {
-            console.log('Could not construct Zillow profile URL');
+            console.log('❌ Could not construct Zillow profile URL - missing ZUID and zillow_profile_url');
           } else {
+            console.log(`📞 Calling fetch-apify-zillow-cheerio with profileUrls: [${profileUrl}]`);
             // Call the fetch-apify-zillow-cheerio function to get Zillow reviews
             const { data: zillowData, error: zillowError } = await supabase.functions.invoke(
               'fetch-apify-zillow-cheerio',
