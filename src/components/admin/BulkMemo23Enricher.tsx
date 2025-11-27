@@ -173,13 +173,19 @@ export const BulkMemo23Enricher = () => {
               : j
           ));
           
-          // Update database progress
+          // Update database progress with proper increment
+          const { data: currentJob } = await supabase
+            .from('enrichment_queue')
+            .select('successful_items')
+            .eq('id', queueJob.id)
+            .single();
+          
           await supabase
             .from('enrichment_queue')
             .update({ 
               current_index: i + 1,
               processed_items: i + 1,
-              successful_items: queueJob.successful_items + 1
+              successful_items: (currentJob?.successful_items || 0) + 1
             })
             .eq('id', queueJob.id);
 
@@ -194,12 +200,18 @@ export const BulkMemo23Enricher = () => {
               : j
           ));
 
+          const { data: currentJob } = await supabase
+            .from('enrichment_queue')
+            .select('failed_items')
+            .eq('id', queueJob.id)
+            .single();
+          
           await supabase
             .from('enrichment_queue')
             .update({ 
               current_index: i + 1,
               processed_items: i + 1,
-              failed_items: queueJob.failed_items + 1
+              failed_items: (currentJob?.failed_items || 0) + 1
             })
             .eq('id', queueJob.id);
         }
@@ -400,13 +412,19 @@ export const BulkMemo23Enricher = () => {
               : j
           ));
           
-          // Update database progress
+          // Update database progress with proper increment
+          const { data: currentJob } = await supabase
+            .from('enrichment_queue')
+            .select('successful_items')
+            .eq('id', queueJob.id)
+            .single();
+          
           await supabase
             .from('enrichment_queue')
             .update({ 
               current_index: i + 1,
               processed_items: i + 1,
-              successful_items: queueJob.successful_items + 1
+              successful_items: (currentJob?.successful_items || 0) + 1
             })
             .eq('id', queueJob.id);
           
@@ -425,12 +443,18 @@ export const BulkMemo23Enricher = () => {
               : j
           ));
 
+          const { data: currentJob } = await supabase
+            .from('enrichment_queue')
+            .select('failed_items')
+            .eq('id', queueJob.id)
+            .single();
+          
           await supabase
             .from('enrichment_queue')
             .update({ 
               current_index: i + 1,
               processed_items: i + 1,
-              failed_items: queueJob.failed_items + 1,
+              failed_items: (currentJob?.failed_items || 0) + 1,
               error_message: error.message
             })
             .eq('id', queueJob.id);
