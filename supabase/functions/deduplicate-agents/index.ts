@@ -45,17 +45,18 @@ serve(async (req) => {
     const identifierGroups = new Map<string, any[]>();
     
     allAgents?.forEach(agent => {
-      // Create unique identifier: use normalized zillow URL or zuid
+      // Create unique identifier: prefer zuid when available (strongest identity),
+      // fall back to normalized zillow_profile_url when zuid is missing
       let identifier = '';
       
-      if (agent.zillow_profile_url) {
+      if (agent.zuid) {
+        identifier = `zuid:${agent.zuid}`;
+      } else if (agent.zillow_profile_url) {
         // Normalize zillow URL: remove protocol, trailing slashes, convert to lowercase
         identifier = agent.zillow_profile_url
           .toLowerCase()
           .replace(/^https?:\/\//, '')
           .replace(/\/$/, '');
-      } else if (agent.zuid) {
-        identifier = `zuid:${agent.zuid}`;
       }
       
       if (identifier) {
