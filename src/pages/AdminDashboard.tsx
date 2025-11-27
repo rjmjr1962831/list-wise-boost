@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Bug, Zap, TrendingUp, Briefcase, Download, Image } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -14,31 +14,12 @@ import { PhotoGenerator } from "@/components/admin/PhotoGenerator";
 import { ZipCodeManager } from "@/components/admin/ZipCodeManager";
 import { ZipCodeDataConverter } from "@/components/admin/ZipCodeDataConverter";
 import { BioGenerator } from "@/components/admin/BioGenerator";
-import { LicenseLookupTester } from "@/components/admin/LicenseLookupTester";
 import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
-import { ZuidExtractor } from "@/components/admin/ZuidExtractor";
-import { BeauvaisEnricher } from "@/components/admin/BeauvaisEnricher";
 import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsManager";
-import { AgentStatsImporter } from "@/components/admin/AgentStatsImporter";
 import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporter";
 import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
-import { ZillowScraperDebug } from "@/components/admin/ZillowScraperDebug";
-import { SingleAgentMemo23 } from "@/components/admin/SingleAgentMemo23";
-import { TestSpecialtyExtraction } from "@/components/admin/TestSpecialtyExtraction";
-import { BackfillScottsdaleRatings } from "@/components/admin/BackfillScottsdaleRatings";
-import { BulkMemo23Enricher } from "@/components/admin/BulkMemo23Enricher";
-import { BulkPhoenixImporter } from "@/components/admin/BulkPhoenixImporter";
-import { PhoenixMemo23Workflow } from "@/components/admin/PhoenixMemo23Workflow";
-import { ScottsdaleEnricher } from "@/components/admin/ScottsdaleEnricher";
-import { PhoenixEnricher } from "@/components/admin/PhoenixEnricher";
-import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
-import { ProxyHealthDashboard } from "@/components/admin/ProxyHealthDashboard";
-import { ReplicateAgentPhoenix } from "@/components/admin/ReplicateAgentPhoenix";
-import { TestProxyEnrichment } from "@/components/admin/TestProxyEnrichment";
 import CitiesManager from "@/components/admin/CitiesManager";
-import { BulkEmailUpdater } from "@/components/admin/BulkEmailUpdater";
 import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
-import { PhoneNumberRestorer } from "@/components/admin/PhoneNumberRestorer";
 import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGenerator";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { LicenseVerifier } from "@/components/admin/LicenseVerifier";
@@ -203,14 +184,6 @@ const AdminDashboard = () => {
               <Wand2 className="mr-2 h-4 w-4" />
               AI Bios
             </TabsTrigger>
-            <TabsTrigger value="zuid-extractor">
-              <Link2 className="mr-2 h-4 w-4" />
-              ZUID
-            </TabsTrigger>
-            <TabsTrigger value="license-tester">
-              <FlaskConical className="mr-2 h-4 w-4" />
-              Test License
-            </TabsTrigger>
             <TabsTrigger value="az-licenses">
               <FlaskConical className="mr-2 h-4 w-4" />
               AZ Licenses
@@ -218,46 +191,6 @@ const AdminDashboard = () => {
             <TabsTrigger value="verify-licenses">
               <FlaskConical className="mr-2 h-4 w-4" />
               Verify Licenses
-            </TabsTrigger>
-            <TabsTrigger value="import-stats">
-              <Database className="mr-2 h-4 w-4" />
-              Import Stats
-            </TabsTrigger>
-            <TabsTrigger value="scraper-debug">
-              <Bug className="mr-2 h-4 w-4" />
-              Debug
-            </TabsTrigger>
-            <TabsTrigger value="bulk-enrich">
-              <Database className="mr-2 h-4 w-4" />
-              Bulk Enrich
-            </TabsTrigger>
-            <TabsTrigger value="bulk-phoenix">
-              <Zap className="mr-2 h-4 w-4" />
-              Bulk Phoenix
-            </TabsTrigger>
-            <TabsTrigger value="phoenix-memo23">
-              <Zap className="mr-2 h-4 w-4" />
-              Phoenix Memo23
-            </TabsTrigger>
-            <TabsTrigger value="progress-dashboard">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Progress Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="proxy-health">
-              <Database className="mr-2 h-4 w-4" />
-              Proxy Health
-            </TabsTrigger>
-            <TabsTrigger value="backfill">
-              <Zap className="mr-2 h-4 w-4" />
-              Backfill Ratings
-            </TabsTrigger>
-            <TabsTrigger value="email-updater">
-              <Database className="mr-2 h-4 w-4" />
-              Email Updater
-            </TabsTrigger>
-            <TabsTrigger value="phone-restorer">
-              <Database className="mr-2 h-4 w-4" />
-              Phone Restorer
             </TabsTrigger>
             <TabsTrigger value="verification-links">
               <Link2 className="mr-2 h-4 w-4" />
@@ -334,14 +267,6 @@ const AdminDashboard = () => {
             <BioGenerator />
           </TabsContent>
 
-          <TabsContent value="zuid-extractor" className="space-y-4">
-            <ZuidExtractor />
-          </TabsContent>
-
-          <TabsContent value="license-tester" className="space-y-4">
-            <LicenseLookupTester />
-          </TabsContent>
-
           <TabsContent value="az-licenses" className="space-y-4">
             <ArizonaLicenseImporter />
             <BulkStatsFetcher />
@@ -351,53 +276,6 @@ const AdminDashboard = () => {
             <LicenseVerifier />
             <LicenseVerificationReport />
             <Memo23FieldsExporter />
-          </TabsContent>
-
-          <TabsContent value="import-stats" className="space-y-4">
-            <AgentStatsImporter />
-          </TabsContent>
-
-          <TabsContent value="scraper-debug" className="space-y-4">
-            <TestSpecialtyExtraction />
-            <TestProxyEnrichment />
-            <BeauvaisEnricher />
-            <ReplicateAgentPhoenix />
-            <SingleAgentMemo23 />
-            <ZillowScraperDebug />
-          </TabsContent>
-
-          <TabsContent value="bulk-enrich" className="space-y-4">
-            <BulkMemo23Enricher />
-          </TabsContent>
-
-          <TabsContent value="bulk-phoenix" className="space-y-4">
-            <BulkPhoenixImporter />
-          </TabsContent>
-
-          <TabsContent value="phoenix-memo23" className="space-y-4">
-            <PhoenixEnricher />
-            <ScottsdaleEnricher />
-            <PhoenixMemo23Workflow />
-          </TabsContent>
-
-          <TabsContent value="progress-dashboard" className="space-y-4">
-            <EnrichmentProgressDashboard />
-          </TabsContent>
-
-          <TabsContent value="proxy-health" className="space-y-4">
-            <ProxyHealthDashboard />
-          </TabsContent>
-
-          <TabsContent value="backfill" className="space-y-4">
-            <BackfillScottsdaleRatings />
-          </TabsContent>
-
-          <TabsContent value="email-updater" className="space-y-4">
-            <BulkEmailUpdater />
-          </TabsContent>
-
-          <TabsContent value="phone-restorer" className="space-y-4">
-            <PhoneNumberRestorer />
           </TabsContent>
 
           <TabsContent value="verification-links" className="space-y-4">
