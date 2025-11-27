@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
 
     console.log('Starting Arizona licenses import...');
 
-    const { csvData } = await req.json();
+    const { csvData, startLine, endLine } = await req.json();
     
     if (!csvData) {
       throw new Error('CSV data is required');
@@ -51,7 +51,11 @@ Deno.serve(async (req) => {
     const lines = csvData.split('\n');
     const headers = lines[0].split(',').map((h: string) => h.trim().replace(/"/g, ''));
     
-    console.log(`Found ${lines.length - 1} license records to import`);
+    // Determine range to process
+    const firstLine = startLine || 1;
+    const lastLine = endLine || lines.length - 1;
+    
+    console.log(`Processing lines ${firstLine} to ${lastLine} (${lastLine - firstLine + 1} records)`);
 
     // Process in smaller batches to avoid CPU timeout
     const batchSize = 500;
@@ -59,9 +63,9 @@ Deno.serve(async (req) => {
     let skipped = 0;
     let errors = 0;
 
-    for (let i = 1; i < lines.length; i += batchSize) {
+    for (let i = firstLine; i <= lastLine; i += batchSize) {
       const batch = [];
-      const endIndex = Math.min(i + batchSize, lines.length);
+      const endIndex = Math.min(i + batchSize - 1, lastLine);
 
       for (let j = i; j < endIndex; j++) {
         const line = lines[j].trim();
@@ -122,8 +126,8 @@ Deno.serve(async (req) => {
       }
 
       // Log progress every 5 batches
-      if (i % (batchSize * 5) === 0) {
-        console.log(`Progress: ${i}/${lines.length} lines processed`);
+      if ((i - firstLine) % (batchSize * 5) === 0) {
+        console.log(`Progress: ${i - firstLine}/${lastLine - firstLine + 1} lines processed`);
       }
     }
 
@@ -135,7 +139,7 @@ Deno.serve(async (req) => {
         imported,
         skipped,
         errors,
-        total: lines.length - 1
+        total: lastLine - firstLine + 1
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

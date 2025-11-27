@@ -37,21 +37,56 @@ export const ArizonaLicenseImporter = () => {
     setProgress(null);
 
     try {
-      console.log('Starting import to arizona_licenses table...');
+      console.log('Starting chunked import to arizona_licenses table...');
       
-      const { data, error } = await supabase.functions.invoke('import-arizona-licenses', {
-        body: { csvData: fileData }
-      });
+      const lines = fileData.split('\n');
+      const totalLines = lines.length - 1; // Exclude header
+      const chunkSize = 50000;
+      const numChunks = Math.ceil(totalLines / chunkSize);
+      
+      let totalImported = 0;
+      let totalSkipped = 0;
+      let totalErrors = 0;
 
-      if (error) throw error;
+      for (let chunk = 0; chunk < numChunks; chunk++) {
+        const startLine = chunk * chunkSize + 1; // +1 to skip header
+        const endLine = Math.min((chunk + 1) * chunkSize, totalLines);
+        
+        console.log(`Processing chunk ${chunk + 1}/${numChunks} (lines ${startLine}-${endLine})...`);
+        
+        const { data, error } = await supabase.functions.invoke('import-arizona-licenses', {
+          body: { 
+            csvData: fileData,
+            startLine,
+            endLine
+          }
+        });
 
-      setProgress(data);
+        if (error) throw error;
+
+        totalImported += data.imported;
+        totalSkipped += data.skipped;
+        totalErrors += data.errors;
+
+        // Update progress after each chunk
+        setProgress({
+          imported: totalImported,
+          total: totalLines,
+          errors: totalErrors
+        });
+
+        toast.success(
+          `Chunk ${chunk + 1}/${numChunks} complete: ${data.imported.toLocaleString()} licenses`,
+          { duration: 2000 }
+        );
+      }
+
       toast.success(
-        `Import complete! ${data.imported.toLocaleString()} licenses imported${data.errors > 0 ? `, ${data.errors} errors` : ''}`,
+        `All chunks complete! ${totalImported.toLocaleString()} licenses imported${totalErrors > 0 ? `, ${totalErrors} errors` : ''}`,
         { duration: 5000 }
       );
       
-      console.log('Import results:', data);
+      console.log('Final import results:', { imported: totalImported, skipped: totalSkipped, errors: totalErrors, total: totalLines });
     } catch (error: any) {
       console.error('Import error:', error);
       toast.error(`Import failed: ${error.message}`);
