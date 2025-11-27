@@ -1030,7 +1030,7 @@ export const ProfessionalCard = ({
                       <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide w-fit">
                         {license}
                       </Badge>
-                      {isLicenseVerified ? (
+                      {isLicenseVerified && (
                         <Badge 
                           variant="outline" 
                           className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800 w-fit"
@@ -1038,15 +1038,6 @@ export const ProfessionalCard = ({
                         >
                           <ShieldCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
                           Verified
-                        </Badge>
-                      ) : (
-                        <Badge 
-                          variant="outline" 
-                          className="gap-1.5 text-xs w-fit"
-                          title="License on file"
-                        >
-                          <Shield className="h-3 w-3" />
-                          License on File
                         </Badge>
                       )}
                     </div>
