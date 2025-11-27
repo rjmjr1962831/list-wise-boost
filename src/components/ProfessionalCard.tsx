@@ -1001,9 +1001,14 @@ export const ProfessionalCard = ({
                         {license}
                       </Badge>
                       {isLicenseVerified && (
-                        <span title="Verified from state license database">
-                          <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        </span>
+                        <Badge 
+                          variant="outline" 
+                          className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
+                          title="Verified from state license database"
+                        >
+                          <ShieldCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
+                          Verified
+                        </Badge>
                       )}
                     </div>
                   ) : (
