@@ -71,6 +71,15 @@ serve(async (req) => {
       .filter(([_, agents]) => agents.length > 1);
 
     console.log(`📊 Found ${duplicates.length} agent groups with duplicates`);
+    console.log(`🔍 Total agents fetched: ${allAgents?.length || 0}`);
+    console.log(`🔍 Total unique identifiers: ${identifierGroups.size}`);
+    
+    if (identifierGroups.size > 0) {
+      const sampleEntries = Array.from(identifierGroups.entries()).slice(0, 3);
+      console.log('🔍 Sample identifier groups:', sampleEntries.map(([id, agents]) => 
+        `${id} → ${agents.length} agents`
+      ));
+    }
 
     const results = {
       total_groups: 0,
