@@ -651,6 +651,7 @@ export type Database = {
           email_verified_at: string | null
           encoded_zuid: string | null
           get_to_know_me: string | null
+          has_recent_review: boolean | null
           id: string
           image_url: string | null
           in_canada: boolean | null
@@ -658,6 +659,7 @@ export type Database = {
           is_top_agent: boolean | null
           license_number: string | null
           license_verified_at: string | null
+          most_recent_review_date: string | null
           name: string
           num_total_reviews: number | null
           og_image_url: string | null
@@ -717,6 +719,7 @@ export type Database = {
           email_verified_at?: string | null
           encoded_zuid?: string | null
           get_to_know_me?: string | null
+          has_recent_review?: boolean | null
           id?: string
           image_url?: string | null
           in_canada?: boolean | null
@@ -724,6 +727,7 @@ export type Database = {
           is_top_agent?: boolean | null
           license_number?: string | null
           license_verified_at?: string | null
+          most_recent_review_date?: string | null
           name: string
           num_total_reviews?: number | null
           og_image_url?: string | null
@@ -783,6 +787,7 @@ export type Database = {
           email_verified_at?: string | null
           encoded_zuid?: string | null
           get_to_know_me?: string | null
+          has_recent_review?: boolean | null
           id?: string
           image_url?: string | null
           in_canada?: boolean | null
@@ -790,6 +795,7 @@ export type Database = {
           is_top_agent?: boolean | null
           license_number?: string | null
           license_verified_at?: string | null
+          most_recent_review_date?: string | null
           name?: string
           num_total_reviews?: number | null
           og_image_url?: string | null
@@ -931,6 +937,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_recent_reviews: { Args: { reviews_data: Json }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
