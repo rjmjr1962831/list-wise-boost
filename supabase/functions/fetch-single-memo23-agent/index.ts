@@ -434,22 +434,74 @@ serve(async (req) => {
       // DO NOT store professional_information to avoid importing social media data
       // updateData.professional_information = agentData.professionalInformation;
       
-      // Extract specialties from professionalInformation
-      const specialtiesEntry = agentData.professionalInformation.find((info: any) => 
-        info.term === 'Specialties' || info.term === 'Areas of Focus'
-      );
-      if (specialtiesEntry?.detail && Array.isArray(specialtiesEntry.detail)) {
-        const specialties = specialtiesEntry.detail
-          .map((item: any) => {
-            if (typeof item === 'string') return item;
-            if (item.text) return item.text;
-            return null;
-          })
-          .filter(Boolean);
-        if (specialties.length > 0) {
-          updateData.specialty = specialties;
-          console.log(`Extracted ${specialties.length} specialties:`, specialties);
+      // PRIMARY SOURCE: Extract specialties from getToKnowMe.specialties (most reliable)
+      const specialties: string[] = [];
+      if (agentData.getToKnowMe?.specialties && Array.isArray(agentData.getToKnowMe.specialties)) {
+        agentData.getToKnowMe.specialties.forEach((spec: string) => {
+          if (spec && typeof spec === 'string' && !specialties.includes(spec.trim())) {
+            specialties.push(spec.trim());
+          }
+        });
+        console.log(`Extracted ${specialties.length} specialties from getToKnowMe:`, specialties);
+      }
+      
+      // Fallback: Extract specialties from professionalInformation
+      if (specialties.length === 0) {
+        const specialtiesEntry = agentData.professionalInformation.find((info: any) => 
+          info.term === 'Specialties' || info.term === 'Areas of Focus'
+        );
+        if (specialtiesEntry?.detail && Array.isArray(specialtiesEntry.detail)) {
+          specialtiesEntry.detail
+            .map((item: any) => {
+              if (typeof item === 'string') return item;
+              if (item.text) return item.text;
+              return null;
+            })
+            .filter(Boolean)
+            .forEach((spec: string) => {
+              if (!specialties.includes(spec)) specialties.push(spec);
+            });
+          console.log(`Extracted ${specialties.length} specialties from professionalInformation:`, specialties);
         }
+      }
+      
+      if (specialties.length > 0) {
+        updateData.specialty = specialties;
+      }
+      
+      // Extract languages from getToKnowMe.languages
+      if (agentData.getToKnowMe?.languages && Array.isArray(agentData.getToKnowMe.languages)) {
+        const languages = agentData.getToKnowMe.languages
+          .filter((lang: string) => lang && typeof lang === 'string')
+          .map((lang: string) => lang.trim());
+        if (languages.length > 0) {
+          console.log(`Extracted ${languages.length} languages:`, languages);
+          // Store in raw_scraper_data for now
+          if (!updateData.raw_scraper_data) updateData.raw_scraper_data = {};
+          updateData.raw_scraper_data.languages = languages;
+        }
+      }
+      
+      // Extract social URLs from getToKnowMe
+      const socialUrls: Record<string, string> = {};
+      if (agentData.getToKnowMe?.facebookUrl) socialUrls.facebook = agentData.getToKnowMe.facebookUrl;
+      if (agentData.getToKnowMe?.linkedInUrl) socialUrls.linkedin = agentData.getToKnowMe.linkedInUrl;
+      if (agentData.getToKnowMe?.xUrl) socialUrls.x = agentData.getToKnowMe.xUrl;
+      if (agentData.getToKnowMe?.instagramUrl) socialUrls.instagram = agentData.getToKnowMe.instagramUrl;
+      if (agentData.getToKnowMe?.youtubeUrl) socialUrls.youtube = agentData.getToKnowMe.youtubeUrl;
+      if (agentData.getToKnowMe?.pinterestUrl) socialUrls.pinterest = agentData.getToKnowMe.pinterestUrl;
+      
+      if (Object.keys(socialUrls).length > 0) {
+        console.log(`Extracted ${Object.keys(socialUrls).length} social URLs:`, Object.keys(socialUrls));
+        // Store in raw_scraper_data for now
+        if (!updateData.raw_scraper_data) updateData.raw_scraper_data = {};
+        updateData.raw_scraper_data.social_urls = socialUrls;
+      }
+      
+      // Extract website from getToKnowMe.websiteUrl (as backup if not already set)
+      if (!updateData.website && agentData.getToKnowMe?.websiteUrl) {
+        updateData.website = agentData.getToKnowMe.websiteUrl;
+        console.log(`Extracted website from getToKnowMe: ${updateData.website}`);
       }
       
       // Extract email from professionalInformation with filtering for personal emails
@@ -499,7 +551,13 @@ serve(async (req) => {
       updateData.professional_data = agentData.professionalData;
     }
     
-    // Extract years_experience from bio if not already set from license verification
+    // Extract years_experience from getToKnowMe.yearsInIndustry (most reliable)
+    if (!updateData.years_experience && agentData.getToKnowMe?.yearsInIndustry && typeof agentData.getToKnowMe.yearsInIndustry === 'number') {
+      updateData.years_experience = agentData.getToKnowMe.yearsInIndustry;
+      console.log(`✅ Extracted ${updateData.years_experience} years from getToKnowMe.yearsInIndustry`);
+    }
+    
+    // Extract years_experience from bio if not already set from license verification or yearsInIndustry
     if (!updateData.years_experience && agentData.getToKnowMe) {
       console.log('Attempting to extract years_experience from bio...');
       
