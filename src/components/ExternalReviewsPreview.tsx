@@ -3,6 +3,53 @@ import { useExternalReviews } from '@/hooks/useExternalReviews';
 import { Skeleton } from './ui/skeleton';
 import { useState } from 'react';
 
+// Helper function to format review dates without time
+function formatReviewDate(dateString: string): string {
+  try {
+    // Handle ISO format (2024-07-28T11:59:00)
+    if (dateString.includes('T')) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+    // Handle MM/DD/YYYY HH:MI:SS format
+    if (dateString.includes('/')) {
+      const datePart = dateString.split(' ')[0];
+      const [month, day, year] = datePart.split('/');
+      const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+    return dateString;
+  } catch {
+    return dateString;
+  }
+}
+
+// Helper function to parse review date for sorting
+function parseReviewDate(dateString?: string): number {
+  if (!dateString) return 0;
+  try {
+    if (dateString.includes('T')) {
+      return new Date(dateString).getTime();
+    }
+    if (dateString.includes('/')) {
+      const datePart = dateString.split(' ')[0];
+      const [month, day, year] = datePart.split('/');
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).getTime();
+    }
+    return 0;
+  } catch {
+    return 0;
+  }
+}
+
 export function ExternalReviewsPreview({
   agentName,
   company,
@@ -32,16 +79,17 @@ export function ExternalReviewsPreview({
     );
   }
 
-  // Filter reviews to only show those less than 6 months old AND with valid ratings
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
+  // Show all reviews with valid ratings and text, sorted newest first
   const recentReviews = (data?.reviews || [])
     .filter(r => {
-      if (!r.reviewDate) return false;
-      const reviewDate = new Date(r.reviewDate);
       const hasValidRating = r.rating && r.rating >= 1 && r.rating <= 5;
-      return reviewDate >= sixMonthsAgo && hasValidRating;
+      const hasReviewText = r.reviewText && r.reviewText.trim().length > 0;
+      return hasValidRating && hasReviewText;
+    })
+    .sort((a, b) => {
+      const dateA = parseReviewDate(a.reviewDate);
+      const dateB = parseReviewDate(b.reviewDate);
+      return dateB - dateA; // newest first
     })
     .slice(0, 3);
 
@@ -74,7 +122,7 @@ export function ExternalReviewsPreview({
                 )}
               </div>
               {r.reviewDate && (
-                <div className="text-xs text-muted-foreground mt-1">{r.reviewDate}</div>
+                <div className="text-xs text-muted-foreground mt-1">{formatReviewDate(r.reviewDate)}</div>
               )}
               <p 
                 className="mt-2 text-sm leading-relaxed"
