@@ -362,6 +362,97 @@ serve(async (req) => {
         updateData.license_number = agentData.agentLicenses[0].text;
       }
     }
+
+    // Verify Arizona license and calculate years_experience
+    if (updateData.license_number) {
+      console.log(`Checking license ${updateData.license_number} for verification...`);
+      
+      // Get city to check if it's Arizona
+      const { data: cityData } = await supabase
+        .from('cities')
+        .select('state')
+        .eq('id', professional.city_id)
+        .single();
+
+      if (cityData?.state === 'Arizona') {
+        console.log('Arizona agent detected, verifying license against state database...');
+        
+        try {
+          // Fetch the Arizona license CSV
+          const baseUrl = supabaseUrl.replace('/supabase', '');
+          const csvUrl = `${baseUrl}/arizona-licenses.csv`;
+          console.log(`Fetching Arizona licenses from: ${csvUrl}`);
+          
+          const csvResponse = await fetch(csvUrl);
+          if (csvResponse.ok) {
+            const csvText = await csvResponse.text();
+            const lines = csvText.split('\n');
+            
+            // Normalize license number for comparison (remove spaces, make uppercase)
+            const normalizedLicense = updateData.license_number.replace(/\s/g, '').toUpperCase();
+            console.log(`Searching for normalized license: ${normalizedLicense}`);
+            
+            // Search for license in CSV (skip header row)
+            let foundRecord = null;
+            for (let i = 1; i < lines.length; i++) {
+              const line = lines[i];
+              if (!line.trim()) continue;
+              
+              // Parse CSV line (handle quoted fields)
+              const fields = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(field => 
+                field.replace(/^"|"$/g, '').trim()
+              );
+              
+              if (!fields || fields.length < 6) continue;
+              
+              const recordLicense = fields[4]?.trim().replace(/\s/g, '').toUpperCase();
+              
+              if (recordLicense === normalizedLicense) {
+                foundRecord = {
+                  lastName: fields[0],
+                  firstName: fields[1],
+                  middleName: fields[2],
+                  originalDate: fields[3],
+                  licNumber: fields[4],
+                  licType: fields[5],
+                };
+                console.log(`✅ License found in Arizona database!`, foundRecord);
+                break;
+              }
+            }
+            
+            if (foundRecord) {
+              // Calculate years_experience from OriginalDate
+              const issueDate = new Date(foundRecord.originalDate);
+              const currentDate = new Date();
+              const yearsExperience = currentDate.getFullYear() - issueDate.getFullYear();
+              
+              console.log(`Calculated ${yearsExperience} years of experience from ${foundRecord.originalDate}`);
+              
+              // Update with verified data
+              updateData.years_experience = yearsExperience;
+              updateData.license_verified_at = new Date().toISOString();
+              
+              // Add "License Verified" badge if not already present
+              const currentBadges = professional.badges || [];
+              if (!currentBadges.includes('License Verified')) {
+                updateData.badges = [...currentBadges, 'License Verified'];
+                console.log('Added "License Verified" badge');
+              }
+            } else {
+              console.log('License not found in Arizona database');
+            }
+          } else {
+            console.warn(`Failed to fetch Arizona license CSV: ${csvResponse.status}`);
+          }
+        } catch (licenseError) {
+          console.error('Error verifying Arizona license:', licenseError);
+          // Don't fail the whole process if license verification fails
+        }
+      } else {
+        console.log(`Agent is not in Arizona (state: ${cityData?.state}), skipping license verification`);
+      }
+    }
     if (agentData.agentSalesStats) {
       updateData.agent_sales_stats = agentData.agentSalesStats;
       if (agentData.agentSalesStats.countAllTime) {
@@ -436,6 +527,75 @@ serve(async (req) => {
     if (agentData.professionalData) {
       updateData.professional_data = agentData.professionalData;
     }
+    
+    // Extract years_experience from bio if not already set from license verification
+    if (!updateData.years_experience && agentData.getToKnowMe) {
+      console.log('Attempting to extract years_experience from bio...');
+      
+      const bioText = typeof agentData.getToKnowMe === 'string' 
+        ? agentData.getToKnowMe 
+        : JSON.stringify(agentData.getToKnowMe);
+      
+      // Pattern 1: Direct year mentions like "15 years of experience", "over 20 years"
+      const directYearPatterns = [
+        /(\d+)\+?\s+years?\s+(?:of\s+)?(?:experience|in\s+(?:the\s+)?(?:business|industry|real\s+estate))/i,
+        /(?:over|more\s+than|nearly)\s+(\d+)\s+years?/i,
+      ];
+      
+      const foundYears: number[] = [];
+      
+      for (const pattern of directYearPatterns) {
+        const match = bioText.match(pattern);
+        if (match && match[1]) {
+          const years = parseInt(match[1], 10);
+          if (years > 0 && years <= 70) { // Sanity check
+            foundYears.push(years);
+            console.log(`Found direct years mention: ${years} years`);
+          }
+        }
+      }
+      
+      // Pattern 2: "Since YYYY" mentions
+      const sinceYearPatterns = [
+        /since\s+(\d{4})/i,
+        /starting\s+in\s+(\d{4})/i,
+        /began\s+in\s+(\d{4})/i,
+        /started\s+in\s+(\d{4})/i,
+      ];
+      
+      const currentYear = new Date().getFullYear();
+      for (const pattern of sinceYearPatterns) {
+        const match = bioText.match(pattern);
+        if (match && match[1]) {
+          const year = parseInt(match[1], 10);
+          if (year >= 1950 && year <= currentYear) {
+            const calculatedYears = currentYear - year;
+            foundYears.push(calculatedYears);
+            console.log(`Found "since ${year}" mention, calculated: ${calculatedYears} years`);
+          }
+        }
+      }
+      
+      // Use the highest value found (most conservative estimate)
+      if (foundYears.length > 0) {
+        const extractedYears = Math.max(...foundYears);
+        updateData.years_experience = extractedYears;
+        console.log(`✅ Extracted ${extractedYears} years of experience from bio`);
+        
+        // Update the DB with extracted years
+        const { error: yearsUpdateError } = await supabase
+          .from('professionals')
+          .update({ years_experience: extractedYears })
+          .eq('id', professionalId);
+          
+        if (yearsUpdateError) {
+          console.error('Failed to update years_experience:', yearsUpdateError);
+        }
+      } else {
+        console.log('No years_experience pattern found in bio');
+      }
+    }
+    
     // Rewrite bio if present to make it unique
     if (agentData.getToKnowMe) {
       try {
