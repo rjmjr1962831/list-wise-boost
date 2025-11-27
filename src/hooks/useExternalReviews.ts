@@ -39,11 +39,51 @@ export function useExternalReviews({
 
         if (!dbError && professional?.reviews_data) {
           const reviewsData = professional.reviews_data as any;
+          let allReviews: ExternalReview[] = [];
+          let sources: string[] = [];
+
+          // Check for cached external reviews (Google/Yelp)
           if (reviewsData.external_reviews && Array.isArray(reviewsData.external_reviews)) {
             console.log('Using cached external reviews from database');
+            allReviews = [...reviewsData.external_reviews];
+            sources = reviewsData.external_sources || ['google'];
+          }
+
+          // Also include Zillow reviews from database
+          if (reviewsData.zillow_reviews && Array.isArray(reviewsData.zillow_reviews)) {
+            console.log(`Including ${reviewsData.zillow_reviews.length} cached Zillow reviews from database`);
+            
+            const mappedZillowReviews: ExternalReview[] = reviewsData.zillow_reviews.map((zr: any) => {
+              // Get reviewer name: prefer firstName+lastName, fallback to screenName
+              let reviewerName = 'Zillow User';
+              if (zr.reviewer) {
+                if (zr.reviewer.firstName && zr.reviewer.lastName) {
+                  reviewerName = `${zr.reviewer.firstName} ${zr.reviewer.lastName}`;
+                } else if (zr.reviewer.screenName) {
+                  reviewerName = zr.reviewer.screenName;
+                }
+              }
+              
+              return {
+                source: 'zillow' as const,
+                reviewerName,
+                reviewText: zr.reviewComment || '',
+                rating: zr.rating,
+                reviewDate: zr.createDate, // Already in ISO format
+              };
+            });
+            
+            allReviews = [...allReviews, ...mappedZillowReviews];
+            if (!sources.includes('zillow')) {
+              sources.push('zillow');
+            }
+          }
+
+          // Return combined reviews if we found any
+          if (allReviews.length > 0) {
             return {
-              reviews: reviewsData.external_reviews,
-              sources: reviewsData.external_sources || ['google']
+              reviews: allReviews,
+              sources: sources
             } as ExternalReviewsResult;
           }
         }
