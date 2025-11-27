@@ -322,6 +322,15 @@ async function processAgent(
     // Extract specialties from multiple possible locations
     const specialties: string[] = [];
     
+    // PRIMARY SOURCE: Extract specialties from getToKnowMe.specialties (most reliable)
+    if (agent.getToKnowMe?.specialties && Array.isArray(agent.getToKnowMe.specialties)) {
+      agent.getToKnowMe.specialties.forEach((spec: string) => {
+        if (spec && typeof spec === 'string' && !specialties.includes(spec.trim())) {
+          specialties.push(spec.trim());
+        }
+      });
+    }
+    
     // Map Zillow profile types to human-readable specialties
     if (agent.profileTypes && Array.isArray(agent.profileTypes)) {
       const profileTypeMap: Record<string, string> = {
@@ -370,6 +379,33 @@ async function processAgent(
     
     if (specialties.length > 0) {
       memo23Data.specialty = specialties;
+    }
+    
+    // Extract languages from getToKnowMe.languages
+    if (agent.getToKnowMe?.languages && Array.isArray(agent.getToKnowMe.languages)) {
+      const languages = agent.getToKnowMe.languages
+        .filter((lang: string) => lang && typeof lang === 'string')
+        .map((lang: string) => lang.trim());
+      if (languages.length > 0) {
+        // Store in raw_scraper_data for now (no dedicated languages field in schema yet)
+        if (!memo23Data.raw_scraper_data) memo23Data.raw_scraper_data = {};
+        memo23Data.raw_scraper_data.languages = languages;
+      }
+    }
+    
+    // Extract social URLs from getToKnowMe
+    const socialUrls: Record<string, string> = {};
+    if (agent.getToKnowMe?.facebookUrl) socialUrls.facebook = agent.getToKnowMe.facebookUrl;
+    if (agent.getToKnowMe?.linkedInUrl) socialUrls.linkedin = agent.getToKnowMe.linkedInUrl;
+    if (agent.getToKnowMe?.xUrl) socialUrls.x = agent.getToKnowMe.xUrl;
+    if (agent.getToKnowMe?.instagramUrl) socialUrls.instagram = agent.getToKnowMe.instagramUrl;
+    if (agent.getToKnowMe?.youtubeUrl) socialUrls.youtube = agent.getToKnowMe.youtubeUrl;
+    if (agent.getToKnowMe?.pinterestUrl) socialUrls.pinterest = agent.getToKnowMe.pinterestUrl;
+    
+    if (Object.keys(socialUrls).length > 0) {
+      // Store in raw_scraper_data for now (no dedicated social fields in schema yet)
+      if (!memo23Data.raw_scraper_data) memo23Data.raw_scraper_data = {};
+      memo23Data.raw_scraper_data.social_urls = socialUrls;
     }
     
     // Extract email from multiple sources
@@ -445,8 +481,13 @@ async function processAgent(
       }
     }
     
-    // Extract website
-    if (agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+    // Extract website from getToKnowMe first (most reliable)
+    if (agent.getToKnowMe?.websiteUrl) {
+      memo23Data.website = agent.getToKnowMe.websiteUrl;
+    }
+    
+    // Fallback: Extract website from professionalInformation if not already set
+    if (!memo23Data.website && agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
       const websitesEntry = agent.professionalInformation.find((info: any) => info.term === 'Websites');
       if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
         const primaryWebsite = websitesEntry.links[0];
@@ -502,8 +543,10 @@ async function processAgent(
       }
     }
     
-    // Extract years experience
-    if (agent.yearsExperience !== undefined) {
+    // Extract years experience from getToKnowMe.yearsInIndustry (most reliable source)
+    if (agent.getToKnowMe?.yearsInIndustry && typeof agent.getToKnowMe.yearsInIndustry === 'number') {
+      memo23Data.years_experience = agent.getToKnowMe.yearsInIndustry;
+    } else if (agent.yearsExperience !== undefined) {
       memo23Data.years_experience = agent.yearsExperience;
     } else if (agent.professionalInformation?.yearsExperience !== undefined) {
       memo23Data.years_experience = agent.professionalInformation.yearsExperience;
