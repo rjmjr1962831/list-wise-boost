@@ -67,19 +67,20 @@ Deno.serve(async (req) => {
         }
 
         batch.push({
-          license_number: values[0],
-          last_name: values[1] || null,
-          first_name: values[2] || null,
+          last_name: values[0] || null,
+          first_name: values[1] || null,
+          middle_name: values[2] || null,
           original_date: originalDate,
-          license_type: values[4] || null,
-          employer_legal_name: values[5] || null,
-          employer_phone: values[6] || null,
-          mailing_address1: values[7] || null,
-          mailing_address2: values[8] || null,
-          mailing_city: values[9] || null,
-          mailing_state: values[10] || null,
-          mailing_zip: values[11] || null,
-          mailing_county: values[12] || null,
+          license_number: values[4]?.trim() || null,
+          license_type: values[5] || null,
+          employer_legal_name: values[6] || null,
+          employer_phone: values[7] || null,
+          mailing_address1: values[8] || null,
+          mailing_address2: values[9] || null,
+          mailing_city: values[10] || null,
+          mailing_state: values[11] || null,
+          mailing_zip: values[12] || null,
+          mailing_county: values[13] || null,
         });
       }
 
