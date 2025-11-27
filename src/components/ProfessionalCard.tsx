@@ -1030,7 +1030,7 @@ export const ProfessionalCard = ({
                       <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide">
                         {license}
                       </Badge>
-                      {isLicenseVerified && (
+                      {isLicenseVerified ? (
                         <Badge 
                           variant="outline" 
                           className="gap-1.5 text-xs bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
@@ -1038,6 +1038,15 @@ export const ProfessionalCard = ({
                         >
                           <ShieldCheck className="h-3 w-3 text-green-600 dark:text-green-400" />
                           Verified
+                        </Badge>
+                      ) : (
+                        <Badge 
+                          variant="outline" 
+                          className="gap-1.5 text-xs"
+                          title="License on file"
+                        >
+                          <Shield className="h-3 w-3" />
+                          License on File
                         </Badge>
                       )}
                     </div>
@@ -1139,7 +1148,7 @@ export const ProfessionalCard = ({
                             </div>
                             {value != null && Number(value) > 0 && (
                               <span title={key === 'totalSales' ? 'Verified from Zillow data' : 'Verified from license database'}>
-                                <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                               </span>
                             )}
                           </div>
@@ -1160,7 +1169,7 @@ export const ProfessionalCard = ({
                     title="Statistics verified from Zillow"
                   >
                     <CheckCircle2 className="h-3 w-3 text-green-600 dark:text-green-400" />
-                    Verified Stats
+                    Stats Verified
                   </Badge>
                 </div>
               )}
