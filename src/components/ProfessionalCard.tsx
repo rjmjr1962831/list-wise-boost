@@ -877,7 +877,10 @@ export const ProfessionalCard = ({
                 
                 const profInfoArray = (professional as any).professional_information;
                 const extractedSpecialties: string[] = [];
+                const extractedLanguages: string[] = [];
+                
                 if (Array.isArray(profInfoArray)) {
+                  // Extract specialties
                   const specialtiesEntry = profInfoArray.find((e: any) => 
                     e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
                   );
@@ -895,9 +898,33 @@ export const ProfessionalCard = ({
                       extractedSpecialties.push(rawData.trim());
                     }
                   }
+                  
+                  // Extract languages
+                  const languagesEntry = profInfoArray.find((e: any) => 
+                    e.term === 'Languages' || e.term === 'Languages spoken'
+                  );
+                  if (languagesEntry) {
+                    const rawData = languagesEntry.description || languagesEntry.lines;
+                    if (typeof rawData === 'string' && rawData.trim()) {
+                      // Split by comma and clean up, filtering out English if more than 1 language
+                      const langs = rawData.split(',').map(l => l.trim()).filter(Boolean);
+                      const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
+                      // If they list multiple languages including English, only show non-English
+                      // If English is the only language listed, don't show it
+                      if (nonEnglishLangs.length > 0) {
+                        nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
+                      }
+                    } else if (Array.isArray(rawData)) {
+                      const langs = rawData.map(l => typeof l === 'string' ? l.trim() : '').filter(Boolean);
+                      const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
+                      if (nonEnglishLangs.length > 0) {
+                        nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
+                      }
+                    }
+                  }
                 }
                 
-                const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties])];
+                const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])];
                 
                 if (allSpecialties.length === 0) return null;
                 
@@ -906,6 +933,9 @@ export const ProfessionalCard = ({
                     {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
                       const getSpecialtyIcon = (spec: string) => {
                         const lower = spec.toLowerCase();
+                        // Check if it's a language (from extractedLanguages)
+                        const commonLanguages = ['spanish', 'french', 'german', 'italian', 'portuguese', 'chinese', 'japanese', 'korean', 'arabic', 'russian', 'hindi', 'tagalog', 'vietnamese'];
+                        if (commonLanguages.some(lang => lower.includes(lang))) return Globe;
                         if (lower.includes('residential') || lower.includes('single family')) return Home;
                         if (lower.includes('commercial') || lower.includes('business')) return Building2;
                         if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
