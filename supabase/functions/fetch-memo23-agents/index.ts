@@ -524,8 +524,19 @@ async function processAgent(
       }
     }
     
-    if (agent.reviewsData && Array.isArray(agent.reviewsData) && agent.reviewsData.length > 0) {
-      memo23Data.reviews_data = agent.reviewsData;
+    // Extract Zillow reviews from memo23 - reviews are in reviewsData.reviews array
+    if (agent.reviewsData?.reviews && Array.isArray(agent.reviewsData.reviews) && agent.reviewsData.reviews.length > 0) {
+      console.log(`📝 Found ${agent.reviewsData.reviews.length} Zillow reviews from memo23`);
+      
+      // If there's existing reviews_data (with Google reviews), merge with it
+      // Otherwise create new structure
+      const existingReviewsData = existingRecord?.reviews_data || {};
+      
+      memo23Data.reviews_data = {
+        ...existingReviewsData,
+        zillow_reviews: agent.reviewsData.reviews,
+        zillow_reviews_fetched_at: new Date().toISOString()
+      };
     }
     
     // Extract sales data
