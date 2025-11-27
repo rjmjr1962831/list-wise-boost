@@ -476,7 +476,9 @@ serve(async (req) => {
               console.log('License not found in Arizona database');
             }
           } else {
-            console.warn(`Failed to fetch Arizona license CSV from all URLs`);
+            console.warn(`Failed to fetch Arizona license CSV - Status: ${csvResponse.status} ${csvResponse.statusText}`);
+            const errorText = await csvResponse.text().catch(() => 'Unable to read response');
+            console.warn(`Response body: ${errorText.substring(0, 200)}`);
           }
         } catch (licenseError) {
           console.error('Error verifying Arizona license:', licenseError);
