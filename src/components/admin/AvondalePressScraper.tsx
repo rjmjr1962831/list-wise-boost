@@ -42,7 +42,7 @@ export default function AvondalePressScraper() {
         return;
       }
 
-      // Fetch the 10 Avondale agents
+      // Fetch 2 Avondale agents for testing
       const { data: agents, error } = await supabase
         .from('professionals')
         .select('id, name, company, business_name, press_mentions')
@@ -50,7 +50,7 @@ export default function AvondalePressScraper() {
         .eq('category_id', category.id)
         .eq('active', true)
         .order('rank')
-        .limit(10);
+        .limit(2);
 
       if (error || !agents || agents.length === 0) {
         toast.error('No agents found in Avondale');
@@ -77,20 +77,49 @@ export default function AvondalePressScraper() {
         ));
 
         try {
-          // Call Claude-powered search-agent-press-claude function
-          const { data: pressData, error: pressError } = await supabase.functions.invoke('search-agent-press-claude', {
-            body: {
-              agentName: agent.name,
-              company: agent.company,
-              businessName: agent.business_name,
-              city: city.name,
-              state: city.state
+          // Add retry logic for rate limits
+          let retryCount = 0;
+          const maxRetries = 3;
+          let pressData = null;
+          let mentions = [];
+
+          while (retryCount <= maxRetries) {
+            const { data, error: pressError } = await supabase.functions.invoke('search-agent-press-claude', {
+              body: {
+                agentName: agent.name,
+                company: agent.company,
+                businessName: agent.business_name,
+                city: city.name,
+                state: city.state
+              }
+            });
+
+            // Check for rate limit error
+            if (pressError) {
+              const errorMessage = pressError.message || '';
+              if (errorMessage.includes('429') || errorMessage.includes('Rate limited') || errorMessage.includes('rate_limit')) {
+                retryCount++;
+                if (retryCount <= maxRetries) {
+                  const waitTime = 30000 * retryCount; // 30s, 60s, 90s
+                  console.log(`Rate limited on ${agent.name}, waiting ${waitTime/1000}s before retry ${retryCount}/${maxRetries}...`);
+                  setJobs(prev => prev.map(j => 
+                    j.id === agent.id 
+                      ? { ...j, message: `Rate limited, retrying in ${waitTime/1000}s...` }
+                      : j
+                  ));
+                  await new Promise(resolve => setTimeout(resolve, waitTime));
+                  continue;
+                } else {
+                  throw new Error('Max retries exceeded due to rate limiting');
+                }
+              }
+              throw pressError;
             }
-          });
 
-          if (pressError) throw pressError;
-
-          const mentions = pressData?.mentions || [];
+            pressData = data;
+            mentions = data?.mentions || [];
+            break;
+          }
           console.log(`Found ${mentions.length} press mentions for ${agent.name}`);
 
           // Update agent in database if mentions found
@@ -126,9 +155,9 @@ export default function AvondalePressScraper() {
 
         setProgress(((i + 1) / agents.length) * 100);
 
-        // Add 2 second delay between requests (except after last one)
+        // Add 15 second delay between requests to avoid rate limits
         if (i < agents.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 15000));
         }
       }
 

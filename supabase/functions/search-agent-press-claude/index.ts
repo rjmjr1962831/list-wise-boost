@@ -67,6 +67,15 @@ Return your findings as a JSON array with: title, source, url, snippet, date (YY
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Claude API error:', response.status, errorText);
+      
+      // Pass through rate limit errors with proper status code
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limited', details: errorText }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
         JSON.stringify({ error: 'Claude API request failed', details: errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
