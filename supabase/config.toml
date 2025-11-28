@@ -105,3 +105,6 @@ verify_jwt = false
 [functions.search-agent-press]
 verify_jwt = false
 
+[functions.search-agent-press-claude]
+verify_jwt = false
+
