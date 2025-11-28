@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Edit, Save, X } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Star, MapPin, Phone, Globe, Award, ChevronDown, ChevronUp, Shield, ShieldCheck, ExternalLink, Loader2, Info, Mail, Home, Building2, Users, TrendingUp, DollarSign, Key, Edit, Save, X, User, Newspaper, MessageSquare } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +55,11 @@ export const ProfessionalCard = ({
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  
+  // Collapsible bar states
+  const [bioOpen, setBioOpen] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [newsOpen, setNewsOpen] = useState(false);
   
   // Helper to strip HTML tags
   const stripHtml = (html: string): string => {
@@ -1190,58 +1196,55 @@ export const ProfessionalCard = ({
             </div>
 
 
-              {/* Bio Section - Use get_to_know_me from memo23 if available */}
-              {(() => {
-                // CRITICAL: Bio text MUST preserve line breaks - use whitespace-pre-line
-                const bioHtml = (professional as any).get_to_know_me as string | null;
-                const fallbackText = parsedProfInfo?.description || professional.description || '';
-                
-                if (isOwnProfile && isEditing) {
+              {/* 4 Collapsible Bars */}
+              <div className="space-y-3">
+                {/* Bar 1: From [firstname] - Bio */}
+                {(() => {
+                  const bioHtml = (professional as any).get_to_know_me;
+                  const description = (professional as any).description;
+                  const fallbackText = description;
+                  
+                  if (!bioHtml && !fallbackText && !isEditing) return null;
+                  
+                  const firstName = professional.name.split(' ')[0];
+                  
+                  if (isOwnProfile && isEditing) {
+                    return (
+                      <div className="border rounded-lg p-4">
+                        <label className="text-sm font-semibold mb-2 flex items-center gap-2">
+                          <Edit className="h-4 w-4" />
+                          Bio
+                        </label>
+                        <Textarea
+                          value={editedData.description}
+                          onChange={(e) => setEditedData({ ...editedData, description: e.target.value })}
+                          placeholder="Tell clients about yourself..."
+                          rows={6}
+                          className="whitespace-pre-line"
+                        />
+                      </div>
+                    );
+                  }
+                  
+                  const cleanText = stripHtml(bioHtml || fallbackText);
+                  const needsExpander = cleanText.length > 150;
+                  
                   return (
-                    <div className="border-t pt-3">
-                      <label className="text-sm font-semibold mb-2 flex items-center gap-2">
-                        <Edit className="h-4 w-4" />
-                        Bio
-                      </label>
-                      <Textarea
-                        value={editedData.description}
-                        onChange={(e) => setEditedData({ ...editedData, description: e.target.value })}
-                        placeholder="Tell clients about yourself..."
-                        rows={6}
-                        className="whitespace-pre-line"
-                      />
-                    </div>
-                  );
-                }
-                
-                if (!bioHtml && !fallbackText) return null;
-                
-                // Helper to strip HTML tags and decode entities
-                const stripHtml = (html: string): string => {
-                  // Remove HTML tags
-                  const withoutTags = html.replace(/<[^>]*>/g, '');
-                  // Decode common HTML entities
-                  const textarea = document.createElement('textarea');
-                  textarea.innerHTML = withoutTags;
-                  return textarea.value;
-                };
-                
-                // Helper to check if text is long enough to need truncation (>150 chars = roughly 3 lines)
-                const needsTruncation = (text: string) => text.length > 150;
-                
-                return (
-                  <div itemProp="description" className="border-t pt-3">
-                    <h4 className="text-sm font-semibold mb-2">From {professional.name}:</h4>
-                    {bioHtml ? (() => {
-                      const cleanText = stripHtml(bioHtml);
-                      const isTooLong = needsTruncation(cleanText);
-                      
-                      // CRITICAL: Always preserve line breaks in bios with whitespace-pre-line!
-                      return (
-                        <>
+                    <Collapsible open={bioOpen} onOpenChange={setBioOpen}>
+                      <CollapsibleTrigger className="w-full border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <User className="h-5 w-5 text-primary" />
+                            <span className="font-semibold text-sm">From {firstName}</span>
+                          </div>
+                          <ChevronDown className={cn("h-4 w-4 transition-transform", bioOpen && "rotate-180")} />
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="pt-3" forceMount>
+                        <div itemProp="description" className={cn(!bioOpen && "sr-only")}>
                           <div 
-                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
-                            style={!showFullDescription && isTooLong ? { 
+                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line px-3"
+                            style={!showFullDescription && needsExpander ? { 
                               display: '-webkit-box',
                               WebkitLineClamp: 3,
                               WebkitBoxOrient: 'vertical',
@@ -1250,54 +1253,201 @@ export const ProfessionalCard = ({
                           >
                             {cleanText}
                           </div>
-                          {isTooLong && (
+                          {needsExpander && bioOpen && (
                             <button
                               onClick={() => setShowFullDescription(!showFullDescription)}
-                              className="text-sm text-primary hover:underline mt-1 font-medium block"
+                              className="text-sm text-primary hover:underline mt-2 font-medium block px-3"
                             >
                               {showFullDescription ? 'less' : 'more'}
                             </button>
                           )}
-                        </>
-                      );
-                    })() : (() => {
-                      const cleanFallbackText = stripHtml(fallbackText);
-                      const isTooLong = needsTruncation(cleanFallbackText);
-                      
-                      // CRITICAL: Fallback text - preserve line breaks with whitespace-pre-line
-                      return (
-                        <>
-                          <div 
-                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
-                            style={!showFullDescription && isTooLong ? { 
-                              display: '-webkit-box',
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden'
-                            } : {}}
-                          >
-                            {cleanFallbackText}
-                          </div>
-                          {isTooLong && (
-                            <button
-                              onClick={() => setShowFullDescription(!showFullDescription)}
-                              className="text-sm text-primary hover:underline mt-1 font-medium block"
-                            >
-                              {showFullDescription ? 'less' : 'more'}
-                            </button>
-                          )}
-                        </>
-                      );
-                    })()}
-                  </div>
-                );
-              })()}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  );
+                })()}
 
-              {/* Contact Information Section */}
-              <div>
+                {/* Bar 2: Reviews */}
+                {professional.rating > 0 && (
+                  <Collapsible open={reviewsOpen} onOpenChange={setReviewsOpen}>
+                    <CollapsibleTrigger className="w-full border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Star className="h-5 w-5 text-primary fill-primary" />
+                          <span className="font-semibold text-sm">Reviews</span>
+                          <Badge variant="secondary" className="ml-1 text-xs">
+                            {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                          </Badge>
+                        </div>
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", reviewsOpen && "rotate-180")} />
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-3" forceMount>
+                      <div className={cn(!reviewsOpen && "sr-only", "px-3")}>
+                        <ExternalReviewsPreview 
+                          agentName={professional.name}
+                          professionalId={professional.id}
+                          company={professional.company} 
+                          market={professional.address || market}
+                          zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
+                          minimumRating={professional.rating || 4.0}
+                        />
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+
+                {/* Bar 3: News and Awards */}
+                {professional.name === "Joe Bourland" && (
+                  <Collapsible open={newsOpen} onOpenChange={setNewsOpen}>
+                    <CollapsibleTrigger className="w-full border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Newspaper className="h-5 w-5 text-primary" />
+                          <span className="font-semibold text-sm">News and Awards</span>
+                        </div>
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", newsOpen && "rotate-180")} />
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-3" forceMount>
+                      <div className={cn(!newsOpen && "sr-only", "px-3 space-y-4")} itemScope itemType="https://schema.org/Person">
+                        {/* Awards & Recognition Badges */}
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
+                          <div className="flex flex-wrap gap-2" itemProp="award">
+                            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                              <Award className="h-3 w-3 mr-1" />
+                              RealTrends Top 1% Nationwide
+                            </Badge>
+                            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                              <Award className="h-3 w-3 mr-1" />
+                              Arizona's Best Real Estate Agent 2023
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Press Mentions */}
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
+                          <div className="space-y-2">
+                            <div className="flex items-start gap-2 text-sm" itemProp="mentions">
+                              <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                              <div>
+                                <a 
+                                  href="https://www.wsj.com/real-estate/luxury-homes/arizona-luxury-market-2024" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline font-medium"
+                                >
+                                  Arizona Luxury Market Sees Record Growth
+                                </a>
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  Wall Street Journal • March 15, 2024
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-start gap-2 text-sm" itemProp="mentions">
+                              <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                              <div>
+                                <a 
+                                  href="https://www.phoenixbusinessjournal.com/top-agents-2024" 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline font-medium"
+                                >
+                                  Phoenix's Top Real Estate Agents
+                                </a>
+                                <div className="text-xs text-muted-foreground mt-0.5">
+                                  Phoenix Business Journal • January 10, 2024
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Professional Affiliations */}
+                        <div itemProp="memberOf" itemScope itemType="https://schema.org/Organization">
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Professional Memberships</p>
+                          <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                            <li itemProp="name">National Association of Realtors</li>
+                            <li itemProp="name">Arizona Association of Realtors</li>
+                            <li itemProp="name">West Valley Board of Realtors</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+
+                {/* Bar 4: Contact - Direct button to open modal */}
+                {!isEditing && (
+                  <button
+                    onClick={() => {
+                      trackEvent('contact_cta_click', {
+                        agent_name: professional.name,
+                        market: market,
+                        agent_type: agentType
+                      });
+                      
+                      if (onContactClick) {
+                        onContactClick();
+                      } else {
+                        setShowContactModal(true);
+                      }
+                    }}
+                    className="w-full border rounded-lg p-3 hover:bg-primary/10 transition-colors"
+                  >
+                    <div className="flex items-center justify-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                      <span className="font-semibold text-sm">Contact {professional.name.split(' ')[0]}</span>
+                    </div>
+                  </button>
+                )}
+
+                {/* Save/Cancel buttons when editing */}
+                {isOwnProfile && isEditing && (
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="default"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setPhotoFile(null);
+                        setPhotoPreview(null);
+                      }}
+                      disabled={saving}
+                      className="flex-1"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button
+                      size="default"
+                      onClick={handleSave}
+                      disabled={saving}
+                      className="flex-1"
+                    >
+                      {saving ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-1" />
+                          Save Changes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {/* Contact Information Links - Always visible */}
+              <div className="border-t pt-3">
                 <h4 className="sr-only">Contact Information</h4>
                 {isOwnProfile && isEditing ? (
-                  <div className="space-y-3 pt-3 border-t">
+                  <div className="space-y-3">
                     <div className="space-y-2">
                       <label className="text-sm font-medium flex items-center gap-2">
                         <Globe className="h-4 w-4" />
@@ -1349,7 +1499,7 @@ export const ProfessionalCard = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2 text-sm">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                   <div className="flex items-center gap-2">
                     <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <a
@@ -1357,10 +1507,8 @@ export const ProfessionalCard = ({
                         const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
                         let v = websiteSource.trim();
                         
-                        // If no website, return # to prevent navigation
                         if (!v) return '#';
                         
-                        // Fix common malformed patterns
                         if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
                         if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
                         if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
@@ -1432,185 +1580,6 @@ export const ProfessionalCard = ({
                   </div>
                 )}
               </div>
-
-
-              {/* Authority Profile Section - MOCKUP with Joe Bourland data */}
-              {professional.name === "Joe Bourland" && (
-                <div className="pt-4 border-t" itemScope itemType="https://schema.org/Person">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-semibold flex items-center gap-2">
-                      <Award className="h-4 w-4 text-primary" />
-                      Authority Profile
-                    </h4>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowFullDescription(!showFullDescription)}
-                      className="text-xs"
-                    >
-                      {showFullDescription ? (
-                        <>
-                          <ChevronUp className="h-3 w-3 mr-1" />
-                          Less
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-3 w-3 mr-1" />
-                          More
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* Awards & Recognition Badges */}
-                  <div className="mb-3">
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
-                    <div className="flex flex-wrap gap-2" itemProp="award">
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                        <Award className="h-3 w-3 mr-1" />
-                        RealTrends Top 1% Nationwide
-                      </Badge>
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                        <Award className="h-3 w-3 mr-1" />
-                        Arizona's Best Real Estate Agent 2023
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Collapsible Detailed Info */}
-                  {showFullDescription && (
-                    <div className="space-y-3 animate-accordion-down">
-                      {/* Media Mentions */}
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
-                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                          <a 
-                            href="https://www.wsj.com" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline flex items-center gap-1"
-                            itemProp="mentions"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Wall Street Journal
-                          </a>
-                        </div>
-                      </div>
-
-                      {/* Professional Affiliations */}
-                      <div itemProp="memberOf" itemScope itemType="https://schema.org/Organization">
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Professional Memberships</p>
-                        <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                          <li itemProp="name">National Association of Realtors</li>
-                          <li itemProp="name">Arizona Association of Realtors</li>
-                          <li itemProp="name">West Valley Board of Realtors</li>
-                        </ul>
-                      </div>
-
-                      {/* Community Involvement */}
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Community Leadership</p>
-                        <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                          <li itemProp="affiliation">Annual Winter Coat Drive - Organizer & Sponsor</li>
-                          <li itemProp="affiliation">Ronald McDonald House - Regular Supporter & Volunteer</li>
-                          <li itemProp="affiliation">Local Youth Sports Programs - Team Sponsor</li>
-                        </ul>
-                      </div>
-
-                      {/* Career Stats for LLM visibility */}
-                      <div className="pt-2 border-t">
-                        <p className="text-xs font-medium text-muted-foreground mb-2">Career Highlights</p>
-                        <div className="flex flex-wrap gap-4 text-sm">
-                          <div itemProp="hasOccupation" itemScope itemType="https://schema.org/Occupation">
-                            <span className="text-muted-foreground">Ranking:</span>
-                            <span className="font-semibold ml-1" itemProp="description">Top 1% Nationally</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Market:</span>
-                            <span className="font-semibold ml-1">West Valley Expert</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Known For:</span>
-                            <span className="font-semibold ml-1" itemProp="knowsAbout">Negotiation & Client Advocacy</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Contact Button or Save/Cancel when editing */}
-              <div className="pt-4 border-t">
-                {isOwnProfile && isEditing ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="default"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setPhotoFile(null);
-                        setPhotoPreview(null);
-                      }}
-                      disabled={saving}
-                      className="flex-1"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Cancel
-                    </Button>
-                    <Button
-                      size="default"
-                      onClick={handleSave}
-                      disabled={saving}
-                      className="flex-1"
-                    >
-                      {saving ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-1" />
-                          Save Changes
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                ) : (
-                  <Button 
-                    onClick={() => {
-                      trackEvent('contact_cta_click', {
-                        agent_name: professional.name,
-                        market: market,
-                        agent_type: agentType
-                      });
-                      
-                      if (onContactClick) {
-                        // Use parent's contact handling
-                        onContactClick();
-                      } else {
-                        // Fallback to local modal
-                        setShowContactModal(true);
-                      }
-                    }}
-                    className="w-full"
-                    variant="default"
-                  >
-                    Contact {professional.name.split(' ')[0]}
-                  </Button>
-                )}
-              </div>
-
-              {/* External reviews preview (Google/Yelp/Facebook) */}
-              <ExternalReviewsPreview 
-                agentName={professional.name}
-                professionalId={professional.id}
-                company={professional.company} 
-                market={professional.address || market}
-                zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
-                minimumRating={professional.rating || 4.0}
-              />
 
 
             </div>
