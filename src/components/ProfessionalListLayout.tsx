@@ -206,7 +206,7 @@ export const ProfessionalListLayout = ({
 
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-12 md:py-16">
-        <div className="max-w-4xl mx-auto space-y-6">
+        <div className="max-w-6xl mx-auto space-y-6">
           <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Back to Home
@@ -242,7 +242,7 @@ export const ProfessionalListLayout = ({
 
       {/* Main Content */}
       <section className="container mx-auto px-4 pb-20">
-        <div className="max-w-4xl mx-auto space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
           {children}
         </div>
       </section>
