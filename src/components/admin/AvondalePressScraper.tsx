@@ -45,7 +45,7 @@ export default function AvondalePressScraper() {
       // Fetch the 10 Avondale agents
       const { data: agents, error } = await supabase
         .from('professionals')
-        .select('id, name, press_mentions')
+        .select('id, name, company, business_name, press_mentions')
         .eq('city_id', city.id)
         .eq('category_id', category.id)
         .eq('active', true)
@@ -81,6 +81,8 @@ export default function AvondalePressScraper() {
           const { data: pressData, error: pressError } = await supabase.functions.invoke('search-agent-press', {
             body: {
               agentName: agent.name,
+              company: agent.company,
+              businessName: agent.business_name,
               city: city.name,
               state: city.state
             }
@@ -158,7 +160,7 @@ export default function AvondalePressScraper() {
       <CardHeader>
         <CardTitle>Avondale Press Scraper</CardTitle>
         <CardDescription>
-          Search for press mentions for the top 10 Avondale real estate agents using Apify Google Search
+          Search for press mentions for the top 10 Avondale real estate agents using 6 parallel targeted queries (major publications, industry press, local news, Google News, awards, interviews)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
