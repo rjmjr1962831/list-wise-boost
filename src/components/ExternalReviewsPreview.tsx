@@ -3,6 +3,30 @@ import { useExternalReviews } from '@/hooks/useExternalReviews';
 import { Skeleton } from './ui/skeleton';
 import { useState } from 'react';
 
+// Helper function to format relative time (e.g., "5 days ago")
+function formatRelativeTime(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return 'today';
+    if (diffDays === 1) return '1 day ago';
+    if (diffDays < 30) return `${diffDays} days ago`;
+    
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths === 1) return '1 month ago';
+    if (diffMonths < 12) return `${diffMonths} months ago`;
+    
+    const diffYears = Math.floor(diffMonths / 12);
+    if (diffYears === 1) return '1 year ago';
+    return `${diffYears} years ago`;
+  } catch {
+    return dateString;
+  }
+}
+
 // Helper function to format review dates without time
 function formatReviewDate(dateString: string): string {
   try {
@@ -99,7 +123,14 @@ export function ExternalReviewsPreview({
     <div className="mt-4 pt-4 border-t">
       <div className="flex items-center justify-between mb-3">
         <h4 className="text-lg font-semibold">Recent Reviews</h4>
-        <div className="text-xs text-muted-foreground">{data?.sources?.join(' • ')}</div>
+        <div className="flex flex-col items-end gap-1">
+          <div className="text-xs text-muted-foreground">{data?.sources?.join(' • ')}</div>
+          {data?.lastFetched && (
+            <div className="text-xs text-muted-foreground italic">
+              Updated {formatRelativeTime(data.lastFetched)}
+            </div>
+          )}
+        </div>
       </div>
       <div className="space-y-4">
         {recentReviews.map((r, idx) => {

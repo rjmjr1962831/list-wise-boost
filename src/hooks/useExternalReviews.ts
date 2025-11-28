@@ -13,6 +13,7 @@ export interface ExternalReview {
 export interface ExternalReviewsResult {
   reviews: ExternalReview[];
   sources: string[]; // e.g., ['google']
+  lastFetched?: string | null; // Timestamp of most recent fetch (external or zillow)
 }
 
 export function useExternalReviews({
@@ -41,6 +42,7 @@ export function useExternalReviews({
           const reviewsData = professional.reviews_data as any;
           let allReviews: ExternalReview[] = [];
           let sources: string[] = [];
+          let lastFetched: string | null = null;
 
           // Check for cached external reviews (Google/Yelp) WITH timestamp validation
           if (reviewsData.external_reviews && Array.isArray(reviewsData.external_reviews)) {
@@ -55,6 +57,7 @@ export function useExternalReviews({
               console.log('Using cached external reviews from database (fresh within 30 days)');
               allReviews = [...reviewsData.external_reviews];
               sources = reviewsData.external_sources || ['google'];
+              lastFetched = reviewsData.external_reviews_fetched_at;
             } else {
               console.log('Cached external reviews are stale (>30 days), will fetch fresh data');
             }
@@ -96,6 +99,11 @@ export function useExternalReviews({
               if (!sources.includes('zillow')) {
                 sources.push('zillow');
               }
+              // Use the most recent fetch timestamp
+              const zillowTimestamp = reviewsData.zillow_reviews_fetched_at;
+              if (!lastFetched || (zillowTimestamp && new Date(zillowTimestamp) > new Date(lastFetched))) {
+                lastFetched = zillowTimestamp;
+              }
             } else {
               console.log('Cached Zillow reviews are stale (>30 days), will fetch fresh data if needed');
             }
@@ -105,7 +113,8 @@ export function useExternalReviews({
           if (allReviews.length > 0) {
             return {
               reviews: allReviews,
-              sources: sources
+              sources: sources,
+              lastFetched: lastFetched
             } as ExternalReviewsResult;
           }
         }
