@@ -8,6 +8,7 @@ import { ProfessionalCard } from "./ProfessionalCard";
 import { CollapsibleHeader } from "./CollapsibleHeader";
 import { ListSection, Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { cn } from "@/lib/utils";
 
 interface CollapsibleListSectionProps {
   section: ListSection;
@@ -72,7 +73,15 @@ export const CollapsibleListSection = ({
       </CollapsibleHeader>
       
       {/* Content always in DOM for SEO, visibility controlled by CSS */}
-      <CollapsibleContent className="space-y-6">
+      <CollapsibleContent 
+        forceMount
+        className={cn(
+          "space-y-6 overflow-hidden",
+          "data-[state=closed]:h-0 data-[state=closed]:opacity-0",
+          "data-[state=open]:h-auto data-[state=open]:opacity-100",
+          "transition-all duration-200"
+        )}
+      >
         {section.items.map((professional) => (
           <div key={`${section.title}-${professional.rank}-${professional.id}`} id={`agent-${professional.id}`}>
             <ProfessionalCard 
