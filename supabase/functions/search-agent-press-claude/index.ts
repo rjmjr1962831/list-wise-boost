@@ -31,53 +31,10 @@ serve(async (req) => {
 
     console.log(`Searching press mentions for ${agentName} with Claude Web Search`);
 
-    // Construct search context
-    const searchContext = [
-      agentName,
-      businessName && `(${businessName})`,
-      company && `at ${company}`,
-      `in ${city}, ${state}`
-    ].filter(Boolean).join(' ');
+    // Simple natural language query
+    const query = `Show the web presence and press mentions for ${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''} real estate agent in ${state}.
 
-    // Create the prompt for Claude
-    const systemPrompt = `You are a press research assistant. Search the web to find legitimate press mentions, news articles, TV appearances, industry awards, and professional recognitions for real estate agents.
-
-Focus on:
-- Major publications (Wall Street Journal, Forbes, etc.)
-- Local and regional news outlets (Fox News, NBC affiliates, local papers)
-- Industry publications (Real Producers Magazine, Ranking Arizona, Inman News)
-- TV appearances (Today Show, local news segments)
-- Professional awards and recognitions (Top Producer, President's Circle, etc.)
-- Business publications and listings (BBB, business journals)
-
-Exclude:
-- Real estate listing sites (Zillow, Realtor.com, Redfin, Homes.com)
-- Generic agent directories
-- Social media posts (unless from news organizations)
-- Self-promotional content without third-party validation
-
-Return your findings as a JSON array with this structure:
-[
-  {
-    "title": "Brief descriptive title of the mention",
-    "source": "Publication or outlet name",
-    "url": "Direct URL to the article or mention",
-    "snippet": "Relevant excerpt or description (1-2 sentences)",
-    "date": "Publication date in YYYY-MM-DD format if available, or 'NA'",
-    "type": "category: 'tv_appearance', 'award', 'article', 'interview', or 'recognition'"
-  }
-]
-
-If you find no legitimate press mentions, return an empty array [].`;
-
-    const userPrompt = `Find all legitimate press mentions and media coverage for ${searchContext}.
-
-Search for:
-1. The agent's name: "${agentName}"
-${businessName ? `2. Their team name: "${businessName}"` : ''}
-${company ? `3. Their brokerage: "${company}"` : ''}
-
-Look for TV appearances, industry awards, news articles, professional recognitions, and features in reputable publications.`;
+Return your findings as a JSON array with: title, source, url, snippet, date (YYYY-MM-DD or 'NA'), type (tv_appearance, award, article, interview, or recognition). Exclude real estate listing sites like Zillow, Realtor.com, Redfin.`;
 
     // Call Claude with web search tool
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -90,11 +47,10 @@ Look for TV appearances, industry awards, news articles, professional recognitio
       body: JSON.stringify({
         model: 'claude-sonnet-4-5',
         max_tokens: 4096,
-        system: systemPrompt,
         messages: [
           {
             role: 'user',
-            content: userPrompt
+            content: query
           }
         ],
         tools: [
@@ -104,7 +60,7 @@ Look for TV appearances, industry awards, news articles, professional recognitio
             max_uses: 5
           }
         ],
-        tool_choice: { type: 'any' }
+        tool_choice: { type: 'auto' }
       }),
     });
 
