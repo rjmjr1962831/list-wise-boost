@@ -337,20 +337,21 @@ serve(async (req) => {
     if (agentData.ratings) {
       // Store the full ratings object for reference
       updateData.ratings = agentData.ratings;
-      // IMPORTANT: Preserve original rating/review count from getdataforme
-      // Only set these if they don't already exist (i.e., agent wasn't imported from agenscrape)
-      if (!professional.review_stars_rating && agentData.ratings.average !== undefined) {
+      
+      // ALWAYS update num_total_reviews and rating from memo23 when available
+      // This overrides agenscrape's initial values which are often 0
+      if (agentData.ratings.average !== undefined) {
         updateData.review_stars_rating = agentData.ratings.average;
         console.log(`Setting rating from memo23: ${agentData.ratings.average}`);
-      } else {
-        console.log(`Preserving existing rating: ${professional.review_stars_rating} (not overwriting with memo23 data)`);
       }
-      if (!professional.num_total_reviews && agentData.ratings.count !== undefined) {
+      
+      if (agentData.ratings.count !== undefined) {
         updateData.num_total_reviews = agentData.ratings.count;
         console.log(`Setting review count from memo23: ${agentData.ratings.count}`);
-      } else {
-        console.log(`Preserving existing review count: ${professional.num_total_reviews} (not overwriting with memo23 data)`);
       }
+    } else {
+      console.warn(`⚠️ memo23 returned NO ratings data for ${professional.name}`);
+      console.log(`   Available fields: ${Object.keys(agentData).join(', ')}`);
     }
     if (agentData.phoneNumbers) {
       updateData.phone_numbers = agentData.phoneNumbers;

@@ -210,7 +210,7 @@ serve(async (req) => {
                   .eq('zillow_profile_url', agent.zillow_profile_url)
                   .neq('id', agent.id) // Don't match self
                   .not('zillow_data_fetched_at', 'is', null)
-                  .not('professional_information', 'is', null)
+                  .not('ratings', 'is', null) // Check for actual enriched data
                   .limit(1)
                   .maybeSingle();
 
