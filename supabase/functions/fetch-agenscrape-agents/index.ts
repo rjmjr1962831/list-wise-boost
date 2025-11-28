@@ -35,7 +35,8 @@ serve(async (req) => {
     }
 
     const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN');
-    const PROXYSCRAPE_API_KEY = Deno.env.get('PROXYSCRAPE_API_KEY');
+    const PROXY_USERNAME = Deno.env.get('ROTATING_PROXY_USERNAME');
+    const PROXY_PASSWORD = Deno.env.get('ROTATING_PROXY_PASSWORD');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
@@ -43,8 +44,8 @@ serve(async (req) => {
       throw new Error('APIFY_API_TOKEN not configured');
     }
     
-    if (!PROXYSCRAPE_API_KEY) {
-      throw new Error('PROXYSCRAPE_API_KEY not configured');
+    if (!PROXY_USERNAME || !PROXY_PASSWORD) {
+      throw new Error('ROTATING_PROXY_USERNAME or ROTATING_PROXY_PASSWORD not configured');
     }
 
     console.log(`Starting getdataforme scraper for location: ${locationText || 'city lookup'}`);
@@ -115,9 +116,9 @@ serve(async (req) => {
       throw new Error('Could not determine city for import');
     }
 
-    // Construct ProxyScrape URL for US residential proxies
-    const proxyUrl = `http://rp.proxyscrape.com:6060?auth=${PROXYSCRAPE_API_KEY}&country=us&protocol=http`;
-    console.log('Using ProxyScrape for US residential proxies');
+    // Construct ProxyScrape URL with username:password authentication
+    const proxyUrl = `http://${PROXY_USERNAME}:${PROXY_PASSWORD}@rp.scrapegw.com:6060`;
+    console.log('Using ProxyScrape residential proxies (rp.scrapegw.com:6060)');
 
     // Start the Apify actor with proxy configuration
     const actorInput = {
@@ -244,25 +245,22 @@ serve(async (req) => {
         continue;
       }
 
-      // Filter for 4.9+ star ratings and 200+ reviews BEFORE importing
-      const rating = agent.reviewStarsRating || agent.rating || 0;
-      const reviewCount = agent.numTotalReviews || agent.reviews_count || 0;
+      // Filter for 4.9+ star ratings BEFORE importing
+      // Note: reviews_count is now null in agenscrape API response, so we skip that filter here
+      // and rely on memo23 enrichment to provide accurate review counts for final filtering
+      const rating = parseFloat(agent.rating) || 0;
+      const agentName = agent.name || agent.screenName || 'Unknown';
       
       if (rating < 4.9) {
-        console.log(`Skipping ${agent.fullName} - rating too low: ${rating} (need 4.9+)`);
+        console.log(`Skipping ${agentName} - rating too low: ${rating} (need 4.9+)`);
         continue;
       }
       
-      if (reviewCount < 80) {
-        console.log(`Skipping ${agent.fullName} - not enough reviews: ${reviewCount} (need 80+)`);
-        continue;
-      }
-      
-      console.log(`✅ ${agent.fullName} qualifies: ${rating}★ with ${reviewCount} reviews`);
+      console.log(`✅ ${agentName} qualifies with ${rating}★ rating (review count will be verified during memo23 enrichment)`);
 
       // Extract agent info from Apify response
-      // Handle both old and new field names from different scrapers
-      const profileUrl = agent.profileLink || agent.profile_url;
+      // Use new field names from agenscrape API (profile_url, image_url, name)
+      const profileUrl = agent.profile_url;
       
       if (!profileUrl) {
         console.log('Skipping agent without profile URL');
@@ -287,9 +285,9 @@ serve(async (req) => {
         : (agent.totalSales || agent.sales_count || agent.sold_in_last_year || 0);
 
       const professionalData = {
-        name: agent.fullName || agent.name || agent.screenName || 'Agent ' + nextRank,
+        name: agent.name || agent.screenName || 'Agent ' + nextRank,
         zillow_profile_url: profileUrl,
-        image_url: agent.profilePhotoSrc || agent.image_url || null,
+        image_url: agent.image_url || null,
         phone: agent.phoneNumber || agent.phoneNumbers?.business || agent.phoneNumbers?.cell || null,
         email: email,
         website: website,
