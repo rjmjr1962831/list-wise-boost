@@ -28,21 +28,23 @@ serve(async (req) => {
     console.log(`🔍 Searching press mentions for: ${agentName} (${city}, ${state})`);
 
     // Craft a detailed prompt for Perplexity to find press mentions
-    const searchPrompt = `Find news articles, press releases, and media coverage about real estate agent "${agentName}" in ${city}, ${state} (Arizona real estate market).
+    const searchPrompt = `Search the entire web for any news articles, press releases, interviews, or media coverage about real estate agent "${agentName}" who works in Arizona (Phoenix metro area, including ${city}, ${state}).
 
-Look for:
-- News features and interviews in major publications (Wall Street Journal, Arizona Republic/azcentral.com, Phoenix Business Journal)
-- Award announcements (top agent, best realtor, rankings)
-- Business journal profiles and spotlights
-- Local TV and newspaper coverage
-- Industry publication features (Inman, HousingWire, RealTrends)
-- Press releases about achievements or recognitions
+Include coverage from:
+- National publications (Wall Street Journal, New York Times, Bloomberg, Reuters, etc.)
+- Arizona/Phoenix regional news (Arizona Republic/azcentral.com, Phoenix Business Journal, etc.)
+- Industry publications (Inman, RealTrends, HousingWire, National Association of Realtors)
+- Local TV stations and newspapers (ABC15, Fox10, 12News, KTAR, etc.)
+- Press releases and award announcements
+- Business wire services and PR distribution platforms
 
-IMPORTANT: Only include legitimate news articles and press coverage. Exclude:
-- Real estate listing sites (Zillow, Realtor.com, etc.)
-- Social media posts (Facebook, LinkedIn, Instagram)
+Return ALL legitimate press mentions found from any credible news source. Do not limit search to specific domains.
+
+IMPORTANT: Exclude these types of sites:
+- Real estate listing sites (Zillow, Realtor.com, Redfin, Trulia, etc.)
+- Social media posts (Facebook, LinkedIn, Instagram, Twitter/X)
 - Brokerage profile pages
-- Review sites
+- Review sites (Yelp, Google reviews)
 
 Return ONLY a JSON array with this exact structure (no markdown, no code blocks):
 [
@@ -57,21 +59,24 @@ Return ONLY a JSON array with this exact structure (no markdown, no code blocks)
 
 If no press mentions found, return: []`;
 
-    // Priority news domains to search
-    const priorityDomains = [
-      'wsj.com',
-      'azcentral.com',
-      'bizjournals.com',
-      'abc15.com',
-      'fox10phoenix.com',
-      '12news.com',
-      'azfamily.com',
-      'ktar.com',
-      'inman.com',
-      'housingwire.com',
-      'realtrends.com',
-      'prnewswire.com',
-      'businesswire.com'
+    // Excluded domains (denylist mode)
+    const excludedDomainsFilter = [
+      '-zillow.com',
+      '-realtor.com',
+      '-redfin.com',
+      '-trulia.com',
+      '-homes.com',
+      '-facebook.com',
+      '-linkedin.com',
+      '-instagram.com',
+      '-twitter.com',
+      '-x.com',
+      '-yelp.com',
+      '-compass.com',
+      '-coldwellbanker.com',
+      '-century21.com',
+      '-remax.com',
+      '-kw.com'
     ];
 
     // Call Perplexity AI
@@ -98,8 +103,8 @@ If no press mentions found, return: []`;
         max_tokens: 2000,
         return_images: false,
         return_related_questions: false,
-        search_domain_filter: priorityDomains,
-        search_recency_filter: 'year'
+        search_domain_filter: excludedDomainsFilter
+        // No recency filter - search all time for press mentions
       }),
     });
 
@@ -115,6 +120,7 @@ If no press mentions found, return: []`;
 
     const data = await response.json();
     console.log(`📊 Perplexity response received`);
+    console.log(`🔍 Full response:`, JSON.stringify(data, null, 2));
 
     // Extract the content from Perplexity's response
     const content = data.choices?.[0]?.message?.content;
@@ -125,7 +131,7 @@ If no press mentions found, return: []`;
       });
     }
 
-    console.log(`📝 Raw content: ${content.substring(0, 200)}...`);
+    console.log(`📝 Raw content: ${content.substring(0, 500)}...`);
 
     // Parse the JSON response (handle markdown code blocks if present)
     let pressMentions = [];
