@@ -1263,72 +1263,70 @@ export const ProfessionalCard = ({
             </div>
 
 
-              {/* 4 Collapsible Bars - buttons in a horizontal row */}
-              <div>
-                {/* Button Row */}
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  {/* From [firstname] Button */}
-                  {(() => {
-                    const bioHtml = (professional as any).get_to_know_me;
-                    const description = (professional as any).description;
-                    const fallbackText = description;
-                    
-                    if (!bioHtml && !fallbackText && !isEditing) return null;
-                    
-                    const firstName = professional.name.split(' ')[0];
-                    
-                    return (
-                      <button
-                        onClick={() => setBioOpen(!bioOpen)}
-                        className="border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <User className="h-5 w-5 text-primary" />
-                            <span className="font-semibold text-sm">From {firstName}</span>
-                          </div>
-                          <ChevronDown className={cn("h-4 w-4 transition-transform", bioOpen && "rotate-180")} />
-                        </div>
-                      </button>
-                    );
-                  })()}
+              {/* 3 Collapsible Bars - buttons in horizontal row */}
+              <div className="grid grid-cols-3 gap-2">
+                {/* From [firstname] Button */}
+                {(() => {
+                  const bioHtml = (professional as any).get_to_know_me;
+                  const description = (professional as any).description;
+                  const fallbackText = description;
                   
-                  {/* Reviews Button */}
-                  {professional.rating > 0 && (
+                  if (!bioHtml && !fallbackText && !isEditing) return null;
+                  
+                  const firstName = professional.name.split(' ')[0];
+                  
+                  return (
                     <button
-                      onClick={() => setReviewsOpen(!reviewsOpen)}
+                      onClick={() => setBioOpen(!bioOpen)}
                       className="border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Star className="h-5 w-5 text-primary fill-primary" />
-                          <span className="font-semibold text-sm">Reviews</span>
-                          <Badge variant="secondary" className="ml-1 text-xs">
-                            {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                          </Badge>
+                          <User className="h-5 w-5 text-primary" />
+                          <span className="font-semibold text-sm">From {firstName}</span>
                         </div>
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", reviewsOpen && "rotate-180")} />
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", bioOpen && "rotate-180")} />
                       </div>
                     </button>
-                  )}
-                  
-                  {/* News and Awards Button */}
+                  );
+                })()}
+                
+                {/* Reviews Button */}
+                {professional.rating > 0 && (
                   <button
-                    onClick={() => setNewsOpen(!newsOpen)}
+                    onClick={() => setReviewsOpen(!reviewsOpen)}
                     className="border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Newspaper className="h-5 w-5 text-primary" />
-                        <span className="font-semibold text-sm">News and Awards</span>
+                        <Star className="h-5 w-5 text-primary fill-primary" />
+                        <span className="font-semibold text-sm">Reviews</span>
+                        <Badge variant="secondary" className="ml-1 text-xs">
+                          {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                        </Badge>
                       </div>
-                      <ChevronDown className={cn("h-4 w-4 transition-transform", newsOpen && "rotate-180")} />
+                      <ChevronDown className={cn("h-4 w-4 transition-transform", reviewsOpen && "rotate-180")} />
                     </div>
                   </button>
-                </div>
+                )}
                 
-                {/* Expanded Content Area */}
-                <div className="space-y-3">
+                {/* News and Awards Button */}
+                <button
+                  onClick={() => setNewsOpen(!newsOpen)}
+                  className="border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Newspaper className="h-5 w-5 text-primary" />
+                      <span className="font-semibold text-sm">News and Awards</span>
+                    </div>
+                    <ChevronDown className={cn("h-4 w-4 transition-transform", newsOpen && "rotate-180")} />
+                  </div>
+                </button>
+              </div>
+              
+              {/* Expanded Content Area */}
+              <div className="space-y-3 mt-3">
                 {/* Bar 1: From [firstname] - Bio */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
@@ -1519,7 +1517,6 @@ export const ProfessionalCard = ({
                 )}
               </div>
             </div>
-          </div>
           
           {/* Video Column - responsive width, only if video exists */}
           {hasVideo && videoId && !isEditing && (
