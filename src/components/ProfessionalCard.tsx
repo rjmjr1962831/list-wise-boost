@@ -1516,6 +1516,7 @@ export const ProfessionalCard = ({
                 company={professional.company} 
                 market={professional.address || market}
                 zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
+                minimumRating={professional.rating || 4.0}
               />
 
 
