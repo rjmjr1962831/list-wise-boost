@@ -86,17 +86,56 @@ serve(async (req) => {
       });
     }
 
-    // Fetch results
-    const resultsResponse = await fetch(`https://api.apify.com/v2/acts/apify~google-search-scraper/runs/${runId}/dataset/items`, {
+    // Get the dataset ID from the final status check
+    const finalStatusResponse = await fetch(`https://api.apify.com/v2/acts/apify~google-search-scraper/runs/${runId}`, {
       headers: { 'Authorization': `Bearer ${APIFY_API_TOKEN}` }
     });
 
+    if (!finalStatusResponse.ok) {
+      console.error(`❌ Failed to get final run status: ${finalStatusResponse.status}`);
+      return new Response(JSON.stringify({ mentions: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const finalStatusData = await finalStatusResponse.json();
+    const datasetId = finalStatusData.data.defaultDatasetId;
+    
+    if (!datasetId) {
+      console.error('❌ No dataset ID found in run data');
+      return new Response(JSON.stringify({ mentions: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    console.log(`📦 Fetching dataset ${datasetId}...`);
+
+    // Fetch results using the dataset ID
+    const resultsResponse = await fetch(
+      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}`
+    );
+
+    console.log(`📦 Dataset fetch response status: ${resultsResponse.status}`);
+
     if (!resultsResponse.ok) {
-      throw new Error('Failed to fetch Apify results');
+      const errorText = await resultsResponse.text();
+      console.error(`❌ Failed to fetch Apify dataset: ${resultsResponse.status} - ${errorText}`);
+      
+      // Return empty results instead of throwing - don't fail the whole enrichment
+      return new Response(JSON.stringify({ mentions: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
 
     const results = await resultsResponse.json();
-    console.log(`📊 Received ${results.length} raw search results`);
+    console.log(`📊 Received ${results?.length || 0} raw search results`);
+
+    if (!results || !Array.isArray(results) || results.length === 0) {
+      console.log('ℹ️ No search results returned from Apify');
+      return new Response(JSON.stringify({ mentions: [] }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
 
     // Filter and format results
     const excludedDomains = [
@@ -107,7 +146,7 @@ serve(async (req) => {
 
     const pressMentions = results
       .filter((result: any) => {
-        if (!result.url) return false;
+        if (!result || !result.url) return false;
         
         // Exclude irrelevant domains
         const urlLower = result.url.toLowerCase();
@@ -116,18 +155,27 @@ serve(async (req) => {
         }
         
         // Must have a title
-        if (!result.title || result.title.length < 10) return false;
+        if (!result.title || typeof result.title !== 'string' || result.title.length < 10) return false;
         
         return true;
       })
       .slice(0, 5) // Limit to top 5 mentions
-      .map((result: any) => ({
-        title: result.title,
-        source: new URL(result.url).hostname.replace('www.', ''),
-        url: result.url,
-        snippet: result.description || '',
-        date: new Date().toISOString().split('T')[0] // Default to today if no date found
-      }));
+      .map((result: any) => {
+        try {
+          const hostname = new URL(result.url).hostname.replace('www.', '');
+          return {
+            title: result.title,
+            source: hostname,
+            url: result.url,
+            snippet: result.description || '',
+            date: new Date().toISOString().split('T')[0]
+          };
+        } catch (error) {
+          console.error('Error parsing result URL:', result.url, error);
+          return null;
+        }
+      })
+      .filter(Boolean); // Remove any null entries from URL parsing errors
 
     console.log(`✅ Filtered to ${pressMentions.length} press mentions`);
 
