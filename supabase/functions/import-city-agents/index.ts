@@ -156,51 +156,51 @@ serve(async (req) => {
       try {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        console.log(`Filtering agents for ${MIN_RATING} stars and ${MIN_REVIEWS}+ reviews...`);
+        console.log(`Filtering agents for ${MIN_RATING} stars (will check reviews AFTER enrichment)...`);
 
-        // Filter and keep only qualifying agents
+        // Filter agents - ONLY by rating at this stage
+        // We'll check review count AFTER memo23 enrichment provides the real data
         const { data: allAgents } = await supabase
           .from('professionals')
-          .select('id, name, zillow_profile_url, review_stars_rating, num_total_reviews')
+          .select('id, name, zillow_profile_url, review_stars_rating, num_total_reviews, zillow_data_fetched_at')
           .eq('city_id', cityId)
           .eq('category_id', categoryId);
 
         if (allAgents) {
-          const qualifyingAgents = allAgents.filter(a => 
-            a.review_stars_rating && a.review_stars_rating >= MIN_RATING && // 4.9 or higher
-            a.num_total_reviews && a.num_total_reviews >= MIN_REVIEWS
+          // Step 1: Filter by rating only - agenscrape doesn't have review counts yet
+          const goodRatingAgents = allAgents.filter(a => 
+            a.review_stars_rating && a.review_stars_rating >= MIN_RATING // 4.9 or higher
           );
 
-          const nonQualifyingAgents = allAgents.filter(a => 
-            !a.review_stars_rating || a.review_stars_rating < MIN_RATING ||
-            !a.num_total_reviews || a.num_total_reviews < MIN_REVIEWS
+          // Deactivate agents with low ratings immediately (no need to enrich these)
+          const lowRatingAgents = allAgents.filter(a => 
+            !a.review_stars_rating || a.review_stars_rating < MIN_RATING
           );
 
-          console.log(`Qualifying agents: ${qualifyingAgents.length}, Non-qualifying: ${nonQualifyingAgents.length}`);
+          console.log(`Rating filter: ${goodRatingAgents.length} agents with ${MIN_RATING}+ stars, ${lowRatingAgents.length} with lower ratings`);
 
-          // Deactivate non-qualifying agents
-          if (nonQualifyingAgents.length > 0) {
+          if (lowRatingAgents.length > 0) {
             const { error: deactivateError } = await supabase
               .from('professionals')
               .update({ active: false })
-              .in('id', nonQualifyingAgents.map(a => a.id));
+              .in('id', lowRatingAgents.map(a => a.id));
 
             if (deactivateError) {
-              console.error('Error deactivating non-qualifying agents:', deactivateError);
+              console.error('Error deactivating low-rating agents:', deactivateError);
             } else {
-              console.log(`Deactivated ${nonQualifyingAgents.length} non-qualifying agents`);
+              console.log(`Deactivated ${lowRatingAgents.length} low-rating agents`);
             }
           }
 
-          // Enrich qualifying agents - check for existing data first
-          console.log(`Starting enrichment for ${qualifyingAgents.length} agents...`);
+          // Enrich all good-rating agents - we'll filter by reviews AFTER enrichment
+          console.log(`Starting enrichment for ${goodRatingAgents.length} agents with good ratings...`);
           
           let reusedCount = 0;
           let enrichedCount = 0;
           let error403Count = 0;
           let totalEnrichAttempts = 0;
           
-          for (const agent of qualifyingAgents) {
+          for (const agent of goodRatingAgents) {
             if (agent.zillow_profile_url) {
               try {
                 // Check if this agent already exists in another city with enriched data
@@ -276,7 +276,7 @@ serve(async (req) => {
                 } else {
                   // No existing data found, fetch from memo23
                   totalEnrichAttempts++;
-                  console.log(`📋 [${enrichedCount + 1}/${qualifyingAgents.length}] Enriching ${agent.name} with memo23...`);
+                  console.log(`📋 [${enrichedCount + 1}/${goodRatingAgents.length}] Enriching ${agent.name} with memo23...`);
                   console.log(`   Profile URL: ${agent.zillow_profile_url}`);
                   
                   const enrichStartTime = Date.now();
@@ -312,7 +312,7 @@ serve(async (req) => {
                           error403Rate: error403Rate.toFixed(1) + '%',
                           enrichedCount: enrichedCount,
                           reusedCount: reusedCount,
-                          remainingAgents: qualifyingAgents.length - (enrichedCount + reusedCount),
+                          remainingAgents: goodRatingAgents.length - (enrichedCount + reusedCount),
                           lastFailedAgent: agent.name
                         };
                         
@@ -379,7 +379,42 @@ serve(async (req) => {
             }
           }
           
-          console.log(`Enrichment completed: ${reusedCount} reused, ${enrichedCount} newly enriched`);
+          console.log(`Enrichment phase completed: ${reusedCount} reused, ${enrichedCount} newly enriched`);
+
+          // Step 2: NOW filter by review count using the enriched data
+          console.log(`Applying review count filter (${MIN_REVIEWS}+ reviews)...`);
+          
+          const { data: enrichedAgents } = await supabase
+            .from('professionals')
+            .select('id, name, num_total_reviews, zillow_data_fetched_at')
+            .eq('city_id', cityId)
+            .eq('category_id', categoryId)
+            .gte('review_stars_rating', MIN_RATING)
+            .not('zillow_data_fetched_at', 'is', null); // Only check enriched agents
+
+          if (enrichedAgents) {
+            const lowReviewAgents = enrichedAgents.filter(a => 
+              !a.num_total_reviews || a.num_total_reviews < MIN_REVIEWS
+            );
+
+            console.log(`Review filter: ${lowReviewAgents.length} agents have <${MIN_REVIEWS} reviews and will be deactivated`);
+
+            if (lowReviewAgents.length > 0) {
+              const { error: deactivateError } = await supabase
+                .from('professionals')
+                .update({ active: false })
+                .in('id', lowReviewAgents.map(a => a.id));
+
+              if (deactivateError) {
+                console.error('Error deactivating low-review agents:', deactivateError);
+              } else {
+                console.log(`✅ Deactivated ${lowReviewAgents.length} agents with <${MIN_REVIEWS} reviews`);
+              }
+            }
+
+            const finalCount = enrichedAgents.length - lowReviewAgents.length;
+            console.log(`🎉 Final result: ${finalCount} qualifying agents with ${MIN_RATING}+ stars and ${MIN_REVIEWS}+ reviews`);
+          }
         }
       } catch (bgError) {
         console.error('Background enrichment failed:', bgError);
