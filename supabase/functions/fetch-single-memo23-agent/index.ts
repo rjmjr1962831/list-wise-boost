@@ -825,6 +825,55 @@ serve(async (req) => {
       console.log(`✅ Stored ${agentData.reviewsData.reviews.length} Zillow reviews in reviews_data.zillow_reviews`);
     }
 
+    // Search for press mentions if none exist
+    if (!professional.press_mentions || (Array.isArray(professional.press_mentions) && professional.press_mentions.length === 0)) {
+      console.log(`🔍 Searching for press mentions for ${professional.name}...`);
+      
+      try {
+        // Get city name for search query
+        const { data: cityData } = await supabase
+          .from('cities')
+          .select('name, state')
+          .eq('id', professional.city_id)
+          .single();
+
+        if (cityData) {
+          const pressResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              agentName: professional.name,
+              city: cityData.name,
+              state: cityData.state
+            })
+          });
+
+          if (pressResponse.ok) {
+            const pressData = await pressResponse.json();
+            if (pressData.mentions && pressData.mentions.length > 0) {
+              updateData.press_mentions = pressData.mentions;
+              console.log(`📰 Found ${pressData.mentions.length} press mentions for ${professional.name}`);
+            } else {
+              console.log(`ℹ️ No press mentions found for ${professional.name}`);
+            }
+          } else {
+            console.warn(`⚠️ Press search returned ${pressResponse.status}`);
+          }
+        }
+        
+        // Add 2 second delay to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch (pressError) {
+        console.error('❌ Press search failed (non-fatal):', pressError);
+        // Don't fail the main enrichment if press search fails
+      }
+    } else {
+      console.log(`ℹ️ Agent already has ${professional.press_mentions?.length || 0} press mentions, skipping search`);
+    }
+
     // Update the professional record
     const { error: updateError } = await supabase
       .from('professionals')
