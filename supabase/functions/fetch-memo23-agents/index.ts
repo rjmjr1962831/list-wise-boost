@@ -104,13 +104,24 @@ serve(async (req) => {
       console.log(`  - ${p.name}: ${p.zillow_profile_url} (last fetch: ${p.zillow_data_fetched_at || 'NEVER'})`);
     });
 
+    // Get ProxyScrape API key for residential proxies
+    const PROXYSCRAPE_API_KEY = Deno.env.get('PROXYSCRAPE_API_KEY');
+    if (!PROXYSCRAPE_API_KEY) {
+      throw new Error('PROXYSCRAPE_API_KEY not configured');
+    }
+
+    const proxyUrl = `http://rp.proxyscrape.com:6060?auth=${PROXYSCRAPE_API_KEY}&country=us&protocol=http`;
+    console.log('Using ProxyScrape for US residential proxies');
+
     // Run memo23 actor with configurable concurrency
     const actorInput = {
       startUrls: agentUrls.map(url => ({ url })),
       maxConcurrency: maxConcurrency,
+      maxRequestRetries: 5,
+      requestHandlerTimeoutSecs: 180,
       proxyConfiguration: { 
-        useApifyProxy: true,
-        apifyProxyGroups: ['RESIDENTIAL']
+        useApifyProxy: false,
+        proxyUrls: [proxyUrl]
       }
     };
 
