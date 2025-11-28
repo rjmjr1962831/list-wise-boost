@@ -1434,8 +1434,8 @@ export const ProfessionalCard = ({
               </div>
 
 
-              {/* Authority Profile Section - MOCKUP with Frank Aazami data */}
-              {professional.name === "Frank Aazami" && (
+              {/* Authority Profile Section - MOCKUP with Joe Bourland data */}
+              {professional.name === "Joe Bourland" && (
                 <div className="pt-4 border-t" itemScope itemType="https://schema.org/Person">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-semibold flex items-center gap-2">
@@ -1468,15 +1468,11 @@ export const ProfessionalCard = ({
                     <div className="flex flex-wrap gap-2" itemProp="award">
                       <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                         <Award className="h-3 w-3 mr-1" />
-                        Phoenix Magazine Top Agent '18-'24
+                        RealTrends Top 1% Nationwide
                       </Badge>
                       <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                         <Award className="h-3 w-3 mr-1" />
-                        RE/MAX Hall of Fame
-                      </Badge>
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                        <Award className="h-3 w-3 mr-1" />
-                        Zillow Premier Agent
+                        Arizona's Best Real Estate Agent 2023
                       </Badge>
                     </div>
                   </div>
@@ -1489,34 +1485,14 @@ export const ProfessionalCard = ({
                         <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
                           <a 
-                            href="https://www.forbes.com" 
+                            href="https://www.wsj.com" 
                             target="_blank" 
                             rel="noopener noreferrer"
                             className="text-primary hover:underline flex items-center gap-1"
                             itemProp="mentions"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            Forbes
-                          </a>
-                          <a 
-                            href="https://www.azcentral.com" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline flex items-center gap-1"
-                            itemProp="mentions"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Arizona Republic
-                          </a>
-                          <a 
-                            href="https://www.bizjournals.com/phoenix" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline flex items-center gap-1"
-                            itemProp="mentions"
-                          >
-                            <ExternalLink className="h-3 w-3" />
-                            Phoenix Business Journal
+                            Wall Street Journal
                           </a>
                         </div>
                       </div>
@@ -1525,8 +1501,9 @@ export const ProfessionalCard = ({
                       <div itemProp="memberOf" itemScope itemType="https://schema.org/Organization">
                         <p className="text-xs font-medium text-muted-foreground mb-2">Professional Memberships</p>
                         <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                          <li itemProp="name">Luxury Home Council</li>
-                          <li itemProp="name">Institute for Luxury Home Marketing</li>
+                          <li itemProp="name">National Association of Realtors</li>
+                          <li itemProp="name">Arizona Association of Realtors</li>
+                          <li itemProp="name">West Valley Board of Realtors</li>
                         </ul>
                       </div>
 
@@ -1534,8 +1511,9 @@ export const ProfessionalCard = ({
                       <div>
                         <p className="text-xs font-medium text-muted-foreground mb-2">Community Leadership</p>
                         <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                          <li itemProp="affiliation">Phoenix Children's Hospital Foundation Board</li>
-                          <li itemProp="affiliation">Arizona Humane Society Supporter</li>
+                          <li itemProp="affiliation">Annual Winter Coat Drive - Organizer & Sponsor</li>
+                          <li itemProp="affiliation">Ronald McDonald House - Regular Supporter & Volunteer</li>
+                          <li itemProp="affiliation">Local Youth Sports Programs - Team Sponsor</li>
                         </ul>
                       </div>
 
@@ -1544,16 +1522,16 @@ export const ProfessionalCard = ({
                         <p className="text-xs font-medium text-muted-foreground mb-2">Career Highlights</p>
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div itemProp="hasOccupation" itemScope itemType="https://schema.org/Occupation">
-                            <span className="text-muted-foreground">Career Sales:</span>
-                            <span className="font-semibold ml-1" itemProp="estimatedSalary">$500M+</span>
+                            <span className="text-muted-foreground">Ranking:</span>
+                            <span className="font-semibold ml-1" itemProp="description">Top 1% Nationally</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Avg Sale Price:</span>
-                            <span className="font-semibold ml-1">$2.5M</span>
+                            <span className="text-muted-foreground">Market:</span>
+                            <span className="font-semibold ml-1">West Valley Expert</span>
                           </div>
                           <div>
-                            <span className="text-muted-foreground">Specialty:</span>
-                            <span className="font-semibold ml-1" itemProp="knowsAbout">Luxury Real Estate</span>
+                            <span className="text-muted-foreground">Known For:</span>
+                            <span className="font-semibold ml-1" itemProp="knowsAbout">Negotiation & Client Advocacy</span>
                           </div>
                         </div>
                       </div>
