@@ -273,6 +273,7 @@ serve(async (req) => {
     // DEBUG: Log what fields are in agentData
     console.log(`🔍 agentData top-level fields: ${Object.keys(agentData).join(', ')}`);
     console.log(`🔍 Has professionalInformation: ${!!agentData.professionalInformation}, type: ${typeof agentData.professionalInformation}, isArray: ${Array.isArray(agentData.professionalInformation)}`);
+    console.log(`🔍 Has emails field: ${!!agentData.emails}, type: ${typeof agentData.emails}, isArray: ${Array.isArray(agentData.emails)}, count: ${Array.isArray(agentData.emails) ? agentData.emails.length : 0}`);
     console.log(`🔍 Has email field: ${!!agentData.email}, value: ${agentData.email}`);
     console.log(`🔍 Has getToKnowMe: ${!!agentData.getToKnowMe}, type: ${typeof agentData.getToKnowMe}`);
     if (agentData.getToKnowMe && typeof agentData.getToKnowMe === 'object') {
@@ -452,13 +453,21 @@ serve(async (req) => {
 
     let extractedEmail = null;
     
-    // Try 1: Check top-level agentData.email (PRIMARY SOURCE)
-    if (agentData.email && typeof agentData.email === 'string' && agentData.email.includes('@')) {
+    // Try 1: Check top-level agentData.emails array (PRIMARY SOURCE - memo23 returns this)
+    if (agentData.emails && Array.isArray(agentData.emails) && agentData.emails.length > 0) {
+      // Find first non-generic email in the array, or use first email if all generic
+      const nonGenericEmail = agentData.emails.find((e: string) => e && e.includes('@') && !isGenericEmail(e));
+      extractedEmail = nonGenericEmail || agentData.emails[0];
+      console.log(`📧 Found email in emails array: ${extractedEmail} (selected from ${agentData.emails.length} emails)`);
+    }
+    
+    // Try 2: Check top-level agentData.email (singular)
+    if (!extractedEmail && agentData.email && typeof agentData.email === 'string' && agentData.email.includes('@')) {
       extractedEmail = agentData.email;
       console.log(`📧 Found email directly in agentData: ${extractedEmail}`);
     }
     
-    // Try 2: Check getToKnowMe.email
+    // Try 3: Check getToKnowMe.email
     if (!extractedEmail && agentData.getToKnowMe?.email && typeof agentData.getToKnowMe.email === 'string' && agentData.getToKnowMe.email.includes('@')) {
       extractedEmail = agentData.getToKnowMe.email;
       console.log(`📧 Found email in getToKnowMe: ${extractedEmail}`);
