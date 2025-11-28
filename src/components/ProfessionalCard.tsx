@@ -1281,10 +1281,7 @@ export const ProfessionalCard = ({
                       className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-1.5">
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <User className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                          <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">From {firstName}</span>
-                        </div>
+                        <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">From {firstName}</span>
                         <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", bioOpen && "rotate-180")} />
                       </div>
                     </button>
@@ -1297,8 +1294,8 @@ export const ProfessionalCard = ({
                     onClick={() => setReviewsOpen(!reviewsOpen)}
                     className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
                   >
-                    <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-1.5">
-                      <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mx-auto">
                         <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Reviews</span>
                         <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2">
                           {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
@@ -1315,10 +1312,7 @@ export const ProfessionalCard = ({
                   className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
                 >
                   <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-1.5">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                      <Newspaper className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
-                      <span className="font-semibold text-xs sm:text-sm text-center sm:text-left leading-tight">News<span className="hidden sm:inline"> and</span><span className="sm:hidden"><br /></span><span className="sm:inline"> Awards</span></span>
-                    </div>
+                    <span className="font-semibold text-xs sm:text-sm text-center sm:text-left leading-tight">News<span className="hidden sm:inline"> and</span><span className="sm:hidden"><br /></span><span className="sm:inline"> Awards</span></span>
                     <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", newsOpen && "rotate-180")} />
                   </div>
                 </button>
