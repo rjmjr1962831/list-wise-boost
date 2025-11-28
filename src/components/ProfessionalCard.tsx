@@ -1404,77 +1404,68 @@ export const ProfessionalCard = ({
                 {/* Bar 3: News and Awards */}
                 {newsOpen && (
                   <div className="border rounded-lg p-4 bg-background" itemScope itemType="https://schema.org/Person">
-                    {professional.name === "Joe Bourland" ? (
-                      <div className="space-y-4">
-                            {/* Awards & Recognition Badges */}
+                    {(() => {
+                      const pressMentions = (professional as any).press_mentions || [];
+                      
+                      if (pressMentions.length === 0) {
+                        return (
+                          <div className="text-sm text-muted-foreground text-center py-4">
+                            Press coverage coming soon
+                          </div>
+                        );
+                      }
+
+                      const awards = pressMentions.filter((m: any) => m.type === 'award');
+                      const pressItems = pressMentions.filter((m: any) => m.type === 'press');
+
+                      return (
+                        <div className="space-y-4">
+                          {/* Awards & Recognition */}
+                          {awards.length > 0 && (
                             <div>
                               <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
                               <div className="flex flex-wrap gap-2" itemProp="award">
-                                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                                  <Award className="h-3 w-3 mr-1" />
-                                  RealTrends Top 1% Nationwide
-                                </Badge>
-                                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                                  <Award className="h-3 w-3 mr-1" />
-                                  Arizona's Best Real Estate Agent 2023
-                                </Badge>
+                                {awards.map((award: any, idx: number) => (
+                                  <Badge key={idx} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                    <Award className="h-3 w-3 mr-1" />
+                                    {award.title}
+                                  </Badge>
+                                ))}
                               </div>
                             </div>
+                          )}
 
-                            {/* Press Mentions */}
+                          {/* Press Mentions */}
+                          {pressItems.length > 0 && (
                             <div>
                               <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
                               <div className="space-y-2">
-                                <div className="flex items-start gap-2 text-sm" itemProp="mentions">
-                                  <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                  <div>
-                                    <a 
-                                      href="https://www.wsj.com/real-estate/luxury-homes/arizona-luxury-market-2024" 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline font-medium"
-                                    >
-                                      Arizona Luxury Market Sees Record Growth
-                                    </a>
-                                    <div className="text-xs text-muted-foreground mt-0.5">
-                                      Wall Street Journal • March 15, 2024
+                                {pressItems.map((item: any, idx: number) => (
+                                  <div key={idx} className="flex items-start gap-2 text-sm" itemProp="mentions">
+                                    <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                    <div>
+                                      <a 
+                                        href={item.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline font-medium press-mention-click"
+                                        data-agent-name={professional.name}
+                                        data-source={item.source}
+                                      >
+                                        {item.title}
+                                      </a>
+                                      <div className="text-xs text-muted-foreground mt-0.5">
+                                        {item.source} • {item.date}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className="flex items-start gap-2 text-sm" itemProp="mentions">
-                                  <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                  <div>
-                                    <a 
-                                      href="https://www.phoenixbusinessjournal.com/top-agents-2024" 
-                                      target="_blank" 
-                                      rel="noopener noreferrer"
-                                      className="text-primary hover:underline font-medium"
-                                    >
-                                      Phoenix's Top Real Estate Agents
-                                    </a>
-                                    <div className="text-xs text-muted-foreground mt-0.5">
-                                      Phoenix Business Journal • January 10, 2024
-                                    </div>
-                                  </div>
-                                </div>
+                                ))}
                               </div>
                             </div>
-
-                            {/* Professional Affiliations */}
-                            <div itemProp="memberOf" itemScope itemType="https://schema.org/Organization">
-                              <p className="text-xs font-medium text-muted-foreground mb-2">Professional Memberships</p>
-                              <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                                <li itemProp="name">National Association of Realtors</li>
-                                <li itemProp="name">Arizona Association of Realtors</li>
-                                <li itemProp="name">West Valley Board of Realtors</li>
-                              </ul>
-                            </div>
-                      </div>
-                    ) : (
-                      <div className="text-sm text-muted-foreground text-center py-4">
-                        Press coverage coming soon
-                      </div>
-                    )}
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
                 

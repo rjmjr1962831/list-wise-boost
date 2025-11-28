@@ -666,6 +666,7 @@ export type Database = {
           past_sales: Json | null
           phone: string | null
           phone_numbers: Json | null
+          press_mentions: Json | null
           professional_data: Json | null
           professional_information: Json | null
           profile_image_id: string | null
@@ -734,6 +735,7 @@ export type Database = {
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
+          press_mentions?: Json | null
           professional_data?: Json | null
           professional_information?: Json | null
           profile_image_id?: string | null
@@ -802,6 +804,7 @@ export type Database = {
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
+          press_mentions?: Json | null
           professional_data?: Json | null
           professional_information?: Json | null
           profile_image_id?: string | null
