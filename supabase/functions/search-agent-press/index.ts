@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,165 +20,186 @@ serve(async (req) => {
       });
     }
 
-    const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN');
-    if (!APIFY_API_TOKEN) {
-      throw new Error('APIFY_API_TOKEN not configured');
+    const PERPLEXITY_API_KEY = Deno.env.get('PERPLEXITY_API_KEY');
+    if (!PERPLEXITY_API_KEY) {
+      throw new Error('PERPLEXITY_API_KEY not configured');
     }
 
-    // Construct search query - looking for press mentions, awards, features
-    const searchQuery = `"${agentName}" "${city}" ${state} real estate (award OR featured OR recognized OR "top agent" OR news)`;
-    console.log(`🔍 Searching press mentions: ${searchQuery}`);
+    console.log(`🔍 Searching press mentions for: ${agentName} (${city}, ${state})`);
 
-    // Start Apify actor run for Google Search
-    const actorInput = {
-      queries: searchQuery,
-      maxPagesPerQuery: 1,
-      resultsPerPage: 10,
-      languageCode: "en",
-      mobileResults: false,
-      includeUnfilteredResults: false
-    };
+    // Craft a detailed prompt for Perplexity to find press mentions
+    const searchPrompt = `Find news articles, press releases, and media coverage about real estate agent "${agentName}" in ${city}, ${state} (Arizona real estate market).
 
-    const runResponse = await fetch('https://api.apify.com/v2/acts/apify~google-search-scraper/runs', {
+Look for:
+- News features and interviews in major publications (Wall Street Journal, Arizona Republic/azcentral.com, Phoenix Business Journal)
+- Award announcements (top agent, best realtor, rankings)
+- Business journal profiles and spotlights
+- Local TV and newspaper coverage
+- Industry publication features (Inman, HousingWire, RealTrends)
+- Press releases about achievements or recognitions
+
+IMPORTANT: Only include legitimate news articles and press coverage. Exclude:
+- Real estate listing sites (Zillow, Realtor.com, etc.)
+- Social media posts (Facebook, LinkedIn, Instagram)
+- Brokerage profile pages
+- Review sites
+
+Return ONLY a JSON array with this exact structure (no markdown, no code blocks):
+[
+  {
+    "title": "Article title",
+    "source": "domain.com",
+    "url": "https://...",
+    "snippet": "Brief excerpt from article",
+    "date": "YYYY-MM-DD"
+  }
+]
+
+If no press mentions found, return: []`;
+
+    // Priority news domains to search
+    const priorityDomains = [
+      'wsj.com',
+      'azcentral.com',
+      'bizjournals.com',
+      'abc15.com',
+      'fox10phoenix.com',
+      '12news.com',
+      'azfamily.com',
+      'ktar.com',
+      'inman.com',
+      'housingwire.com',
+      'realtrends.com',
+      'prnewswire.com',
+      'businesswire.com'
+    ];
+
+    // Call Perplexity AI
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${APIFY_API_TOKEN}`,
+        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(actorInput)
+      body: JSON.stringify({
+        model: 'llama-3.1-sonar-small-128k-online',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a research assistant that finds press mentions and news articles. Always return valid JSON arrays only, with no markdown formatting or code blocks.'
+          },
+          {
+            role: 'user',
+            content: searchPrompt
+          }
+        ],
+        temperature: 0.2,
+        top_p: 0.9,
+        max_tokens: 2000,
+        return_images: false,
+        return_related_questions: false,
+        search_domain_filter: priorityDomains,
+        search_recency_filter: 'year'
+      }),
     });
 
-    if (!runResponse.ok) {
-      const errorText = await runResponse.text();
-      console.error('❌ Apify actor start failed:', runResponse.status, errorText);
-      throw new Error(`Apify actor start failed: ${runResponse.status}`);
-    }
-
-    const runData = await runResponse.json();
-    const runId = runData.data.id;
-    console.log(`✅ Apify run started: ${runId}`);
-
-    // Poll for completion (max 30 seconds)
-    let attempts = 0;
-    const maxAttempts = 15; // 30 seconds with 2s intervals
-    let runStatus = runData.data.status;
-
-    while (runStatus !== 'SUCCEEDED' && runStatus !== 'FAILED' && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      attempts++;
-
-      const statusResponse = await fetch(`https://api.apify.com/v2/acts/apify~google-search-scraper/runs/${runId}`, {
-        headers: { 'Authorization': `Bearer ${APIFY_API_TOKEN}` }
-      });
-
-      if (statusResponse.ok) {
-        const statusData = await statusResponse.json();
-        runStatus = statusData.data.status;
-        console.log(`⏳ Apify run status: ${runStatus} (attempt ${attempts}/${maxAttempts})`);
-      }
-    }
-
-    if (runStatus !== 'SUCCEEDED') {
-      console.error(`❌ Apify run failed or timed out: ${runStatus}`);
-      return new Response(JSON.stringify({ mentions: [] }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    // Get the dataset ID from the final status check
-    const finalStatusResponse = await fetch(`https://api.apify.com/v2/acts/apify~google-search-scraper/runs/${runId}`, {
-      headers: { 'Authorization': `Bearer ${APIFY_API_TOKEN}` }
-    });
-
-    if (!finalStatusResponse.ok) {
-      console.error(`❌ Failed to get final run status: ${finalStatusResponse.status}`);
-      return new Response(JSON.stringify({ mentions: [] }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const finalStatusData = await finalStatusResponse.json();
-    const datasetId = finalStatusData.data.defaultDatasetId;
-    
-    if (!datasetId) {
-      console.error('❌ No dataset ID found in run data');
-      return new Response(JSON.stringify({ mentions: [] }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    console.log(`📦 Fetching dataset ${datasetId}...`);
-
-    // Fetch results using the dataset ID
-    const resultsResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}`
-    );
-
-    console.log(`📦 Dataset fetch response status: ${resultsResponse.status}`);
-
-    if (!resultsResponse.ok) {
-      const errorText = await resultsResponse.text();
-      console.error(`❌ Failed to fetch Apify dataset: ${resultsResponse.status} - ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Perplexity API error:', response.status, errorText);
       
-      // Return empty results instead of throwing - don't fail the whole enrichment
+      // Return empty results instead of failing
       return new Response(JSON.stringify({ mentions: [] }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    const results = await resultsResponse.json();
-    console.log(`📊 Received ${results?.length || 0} raw search results`);
+    const data = await response.json();
+    console.log(`📊 Perplexity response received`);
 
-    if (!results || !Array.isArray(results) || results.length === 0) {
-      console.log('ℹ️ No search results returned from Apify');
+    // Extract the content from Perplexity's response
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) {
+      console.log('ℹ️ No content in Perplexity response');
       return new Response(JSON.stringify({ mentions: [] }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Filter and format results
+    console.log(`📝 Raw content: ${content.substring(0, 200)}...`);
+
+    // Parse the JSON response (handle markdown code blocks if present)
+    let pressMentions = [];
+    try {
+      // Remove markdown code blocks if present
+      let jsonStr = content.trim();
+      if (jsonStr.startsWith('```')) {
+        // Extract JSON from markdown code block
+        const match = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (match) {
+          jsonStr = match[1].trim();
+        }
+      }
+
+      pressMentions = JSON.parse(jsonStr);
+      
+      if (!Array.isArray(pressMentions)) {
+        console.error('❌ Response is not an array');
+        pressMentions = [];
+      }
+    } catch (parseError) {
+      console.error('❌ Failed to parse Perplexity response as JSON:', parseError);
+      console.error('Content was:', content);
+      pressMentions = [];
+    }
+
+    // Additional filtering and validation
     const excludedDomains = [
       'zillow.com', 'realtor.com', 'facebook.com', 'linkedin.com', 
       'instagram.com', 'twitter.com', 'x.com', 'yelp.com', 'redfin.com',
-      'homes.com', 'trulia.com'
+      'homes.com', 'trulia.com', 'compass.com', 'coldwellbanker.com',
+      'century21.com', 'remax.com', 'kw.com'
     ];
 
-    const pressMentions = results
-      .filter((result: any) => {
-        if (!result || !result.url) return false;
+    const validatedMentions = pressMentions
+      .filter((mention: any) => {
+        // Must have required fields
+        if (!mention.url || !mention.title) return false;
         
-        // Exclude irrelevant domains
-        const urlLower = result.url.toLowerCase();
-        if (excludedDomains.some(domain => urlLower.includes(domain))) {
+        // Check URL validity
+        try {
+          const url = new URL(mention.url);
+          const hostname = url.hostname.toLowerCase();
+          
+          // Exclude unwanted domains
+          if (excludedDomains.some(domain => hostname.includes(domain))) {
+            return false;
+          }
+          
+          return true;
+        } catch {
           return false;
         }
-        
-        // Must have a title
-        if (!result.title || typeof result.title !== 'string' || result.title.length < 10) return false;
-        
-        return true;
       })
-      .slice(0, 5) // Limit to top 5 mentions
-      .map((result: any) => {
+      .slice(0, 5) // Limit to top 5
+      .map((mention: any) => {
         try {
-          const hostname = new URL(result.url).hostname.replace('www.', '');
+          const hostname = new URL(mention.url).hostname.replace('www.', '');
           return {
-            title: result.title,
-            source: hostname,
-            url: result.url,
-            snippet: result.description || '',
-            date: new Date().toISOString().split('T')[0]
+            title: mention.title,
+            source: mention.source || hostname,
+            url: mention.url,
+            snippet: mention.snippet || '',
+            date: mention.date || new Date().toISOString().split('T')[0]
           };
-        } catch (error) {
-          console.error('Error parsing result URL:', result.url, error);
+        } catch {
           return null;
         }
       })
-      .filter(Boolean); // Remove any null entries from URL parsing errors
+      .filter(Boolean);
 
-    console.log(`✅ Filtered to ${pressMentions.length} press mentions`);
+    console.log(`✅ Found ${validatedMentions.length} valid press mentions`);
 
-    return new Response(JSON.stringify({ mentions: pressMentions }), {
+    return new Response(JSON.stringify({ mentions: validatedMentions }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
