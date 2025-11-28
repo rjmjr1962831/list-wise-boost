@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle2, Phone, Mail, Globe, Award, Copy, ExternalLink } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { toast as sonnerToast } from "sonner";
 
 interface Professional {
