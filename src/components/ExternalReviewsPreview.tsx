@@ -80,12 +80,14 @@ export function ExternalReviewsPreview({
   market,
   zillowProfileUrl,
   professionalId,
+  minimumRating = 4.0,
 }: {
   agentName: string;
   company?: string | null;
   market?: string | null;
   zillowProfileUrl?: string | null;
   professionalId?: string;
+  minimumRating?: number;
 }) {
   const { data, loading } = useExternalReviews({ agentName, company, market, professionalId });
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
@@ -104,11 +106,13 @@ export function ExternalReviewsPreview({
   }
 
   // Show all reviews with valid ratings and text, sorted newest first
+  // Filter out reviews below the agent's overall rating to maintain reputation
   const recentReviews = (data?.reviews || [])
     .filter(r => {
       const hasValidRating = r.rating && r.rating >= 1 && r.rating <= 5;
       const hasReviewText = r.reviewText && r.reviewText.trim().length > 0;
-      return hasValidRating && hasReviewText;
+      const meetsMinimumRating = r.rating && r.rating >= minimumRating;
+      return hasValidRating && hasReviewText && meetsMinimumRating;
     })
     .sort((a, b) => {
       const dateA = parseReviewDate(a.reviewDate);
