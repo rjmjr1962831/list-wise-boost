@@ -1534,6 +1534,7 @@ export const ProfessionalCard = ({
             </div>
           )}
         </div>
+      </div>
       </CardContent>
 
       {!onContactClick && (
