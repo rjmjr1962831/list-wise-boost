@@ -609,6 +609,13 @@ export const ProfessionalCard = ({
     }
   }, [professional.id, professional.name, professional.years_experience, parsedProfInfo?.description]);
 
+  // Extract video info for responsive layout (after parsedProfInfo is available)
+  const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
+  const hasVideo = !!(videoUrl);
+  const videoId = videoUrl && (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be'))
+    ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
+    : null;
+
   const handleWebsiteClick = (e: React.MouseEvent) => {
     e.preventDefault();
 
@@ -753,7 +760,7 @@ export const ProfessionalCard = ({
       itemType={`https://schema.org/${schemaType}`}
     >
       <CardContent className="pt-6">
-        <div className="flex flex-col md:flex-row gap-6">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
           {/* Photo with specialties below */}
           <div className="flex-shrink-0">
             <div className="relative">
@@ -963,10 +970,10 @@ export const ProfessionalCard = ({
             )}
           </div>
 
-          {/* Content */}
-          <div className="flex-1 space-y-4">
-            {/* Header section with relative positioning for video placement */}
-            <div className="relative">
+          {/* Content - flexible with min-w-0 to prevent overflow */}
+          <div className="flex-1 min-w-0 space-y-4">
+            {/* Header section */}
+            <div className="space-y-2">
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
@@ -1165,8 +1172,8 @@ export const ProfessionalCard = ({
                 </div>
               )}
 
-              {/* Video in upper-right blank space or edit field */}
-              {isOwnProfile && isEditing ? (
+              {/* Video URL edit field - only in editing mode */}
+              {isOwnProfile && isEditing && (
                 <div className="space-y-2 mb-4">
                   <label className="text-sm font-medium flex items-center gap-2">
                     <Edit className="h-4 w-4" />
@@ -1179,27 +1186,7 @@ export const ProfessionalCard = ({
                     className="max-w-md"
                   />
                 </div>
-              ) : (parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url) && (() => {
-                const videoUrl = parsedProfInfo?.videoUrl || (professional as any).sidebar_video_url;
-                const videoId = videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')
-                  ? videoUrl.split('v=')[1]?.split('&')[0] || videoUrl.split('/').pop()?.split('?')[0]
-                  : null;
-                
-                return videoId ? (
-                  <div className="hidden md:block absolute right-8 top-6">
-                    <iframe
-                      width="360"
-                      height="202"
-                      src={`https://www.youtube.com/embed/${videoId}`}
-                      title="Agent video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="rounded-lg shadow-md"
-                    />
-                  </div>
-                ) : null;
-              })()}
+              )}
             </div>
 
 
@@ -1522,6 +1509,22 @@ export const ProfessionalCard = ({
 
             </div>
           </div>
+          
+          {/* Video Column - responsive width, only if video exists */}
+          {hasVideo && videoId && !isEditing && (
+            <div className="flex-shrink-0 w-full md:w-auto order-first md:order-last mt-4 md:mt-0">
+              <div className="aspect-video w-full md:w-64 lg:w-80 xl:w-[360px]">
+                <iframe 
+                  className="w-full h-full rounded-lg shadow-md"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="Agent video"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
 
