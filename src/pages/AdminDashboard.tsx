@@ -32,6 +32,7 @@ import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
 import { BulkZillowReviewsFetcher } from "@/components/admin/BulkZillowReviewsFetcher";
 import { MesaDataFixer } from "@/components/admin/MesaDataFixer";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
+import AvondalePressScraper from "@/components/admin/AvondalePressScraper";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -226,6 +227,10 @@ const AdminDashboard = () => {
               <Home className="mr-2 h-4 w-4" />
               Zillow Reviews
             </TabsTrigger>
+            <TabsTrigger value="avondale-press">
+              <FileText className="mr-2 h-4 w-4" />
+              Avondale Press
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -318,6 +323,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="zillow-reviews" className="space-y-4">
             <BulkZillowReviewsFetcher />
+          </TabsContent>
+
+          <TabsContent value="avondale-press" className="space-y-4">
+            <AvondalePressScraper />
           </TabsContent>
         </Tabs>
       </div>
