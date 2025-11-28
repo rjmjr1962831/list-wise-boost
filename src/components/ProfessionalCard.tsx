@@ -1004,6 +1004,73 @@ export const ProfessionalCard = ({
                      <p className="text-lg text-muted-foreground" itemProp="affiliation">
                        {professional.company}
                      </p>
+                     
+                     {/* Contact Info - Vertical under name */}
+                     <div className="mt-2 space-y-1 text-sm">
+                       <div className="flex items-center gap-2">
+                         <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                         <a
+                           href={(() => {
+                             const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
+                             let v = websiteSource.trim();
+                             
+                             if (!v) return '#';
+                             
+                             if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
+                             if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
+                             if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
+                             if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+                             return v;
+                           })()}
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           className="text-primary hover:underline agent-profile-link"
+                           itemProp="url"
+                           onClick={handleWebsiteClick}
+                         >
+                           {parsedProfInfo?.websiteUrl || professional.website || 'NA'}
+                         </a>
+                       </div>
+                       
+                       <div className="flex items-center gap-2">
+                         <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                         {(() => {
+                           const emailDisplay = parsedProfInfo?.email || professional.email;
+                           if (emailDisplay) {
+                             return (
+                               <a 
+                                 href={`mailto:${emailDisplay}`} 
+                                 className="text-primary hover:underline" 
+                                 itemProp="email"
+                               >
+                                 {emailDisplay}
+                               </a>
+                             );
+                           }
+                           return <span className="text-muted-foreground">NA</span>;
+                         })()}
+                       </div>
+                       
+                       <div className="flex items-center gap-2">
+                         <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                         {(() => {
+                           const phoneDisplay = parsedProfInfo?.phone || professional.phone;
+                           if (phoneDisplay) {
+                             return (
+                               <a 
+                                 href={`tel:${phoneDisplay}`} 
+                                 className="text-primary hover:underline contact-agent-button" 
+                                 itemProp="telephone"
+                                 onClick={handlePhoneClick}
+                               >
+                                 {phoneDisplay}
+                               </a>
+                             );
+                           }
+                           return <span className="text-muted-foreground">NA</span>;
+                         })()}
+                       </div>
+                     </div>
                    </div>
                 {professional.verified && (
                   <Badge 
@@ -1231,7 +1298,7 @@ export const ProfessionalCard = ({
                   
                   return (
                     <Collapsible open={bioOpen} onOpenChange={setBioOpen}>
-                      <CollapsibleTrigger className="w-full border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                      <CollapsibleTrigger className="w-full border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <User className="h-5 w-5 text-primary" />
@@ -1270,7 +1337,7 @@ export const ProfessionalCard = ({
                 {/* Bar 2: Reviews */}
                 {professional.rating > 0 && (
                   <Collapsible open={reviewsOpen} onOpenChange={setReviewsOpen}>
-                    <CollapsibleTrigger className="w-full border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                    <CollapsibleTrigger className="w-full border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Star className="h-5 w-5 text-primary fill-primary" />
@@ -1298,9 +1365,8 @@ export const ProfessionalCard = ({
                 )}
 
                 {/* Bar 3: News and Awards */}
-                {professional.name === "Joe Bourland" && (
-                  <Collapsible open={newsOpen} onOpenChange={setNewsOpen}>
-                    <CollapsibleTrigger className="w-full border rounded-lg p-3 hover:bg-muted/50 transition-colors">
+                <Collapsible open={newsOpen} onOpenChange={setNewsOpen}>
+                  <CollapsibleTrigger className="w-full border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Newspaper className="h-5 w-5 text-primary" />
@@ -1311,98 +1377,81 @@ export const ProfessionalCard = ({
                     </CollapsibleTrigger>
                     <CollapsibleContent className="pt-3" forceMount>
                       <div className={cn(!newsOpen && "sr-only", "px-3 space-y-4")} itemScope itemType="https://schema.org/Person">
-                        {/* Awards & Recognition Badges */}
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
-                          <div className="flex flex-wrap gap-2" itemProp="award">
-                            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                              <Award className="h-3 w-3 mr-1" />
-                              RealTrends Top 1% Nationwide
-                            </Badge>
-                            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                              <Award className="h-3 w-3 mr-1" />
-                              Arizona's Best Real Estate Agent 2023
-                            </Badge>
-                          </div>
-                        </div>
+                        {professional.name === "Joe Bourland" ? (
+                          <>
+                            {/* Awards & Recognition Badges */}
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
+                              <div className="flex flex-wrap gap-2" itemProp="award">
+                                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                  <Award className="h-3 w-3 mr-1" />
+                                  RealTrends Top 1% Nationwide
+                                </Badge>
+                                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                                  <Award className="h-3 w-3 mr-1" />
+                                  Arizona's Best Real Estate Agent 2023
+                                </Badge>
+                              </div>
+                            </div>
 
-                        {/* Press Mentions */}
-                        <div>
-                          <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
-                          <div className="space-y-2">
-                            <div className="flex items-start gap-2 text-sm" itemProp="mentions">
-                              <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                              <div>
-                                <a 
-                                  href="https://www.wsj.com/real-estate/luxury-homes/arizona-luxury-market-2024" 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline font-medium"
-                                >
-                                  Arizona Luxury Market Sees Record Growth
-                                </a>
-                                <div className="text-xs text-muted-foreground mt-0.5">
-                                  Wall Street Journal • March 15, 2024
+                            {/* Press Mentions */}
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
+                              <div className="space-y-2">
+                                <div className="flex items-start gap-2 text-sm" itemProp="mentions">
+                                  <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <a 
+                                      href="https://www.wsj.com/real-estate/luxury-homes/arizona-luxury-market-2024" 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline font-medium"
+                                    >
+                                      Arizona Luxury Market Sees Record Growth
+                                    </a>
+                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                      Wall Street Journal • March 15, 2024
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-start gap-2 text-sm" itemProp="mentions">
+                                  <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                  <div>
+                                    <a 
+                                      href="https://www.phoenixbusinessjournal.com/top-agents-2024" 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:underline font-medium"
+                                    >
+                                      Phoenix's Top Real Estate Agents
+                                    </a>
+                                    <div className="text-xs text-muted-foreground mt-0.5">
+                                      Phoenix Business Journal • January 10, 2024
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-start gap-2 text-sm" itemProp="mentions">
-                              <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                              <div>
-                                <a 
-                                  href="https://www.phoenixbusinessjournal.com/top-agents-2024" 
-                                  target="_blank" 
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline font-medium"
-                                >
-                                  Phoenix's Top Real Estate Agents
-                                </a>
-                                <div className="text-xs text-muted-foreground mt-0.5">
-                                  Phoenix Business Journal • January 10, 2024
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
 
-                        {/* Professional Affiliations */}
-                        <div itemProp="memberOf" itemScope itemType="https://schema.org/Organization">
-                          <p className="text-xs font-medium text-muted-foreground mb-2">Professional Memberships</p>
-                          <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
-                            <li itemProp="name">National Association of Realtors</li>
-                            <li itemProp="name">Arizona Association of Realtors</li>
-                            <li itemProp="name">West Valley Board of Realtors</li>
-                          </ul>
-                        </div>
+                            {/* Professional Affiliations */}
+                            <div itemProp="memberOf" itemScope itemType="https://schema.org/Organization">
+                              <p className="text-xs font-medium text-muted-foreground mb-2">Professional Memberships</p>
+                              <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                                <li itemProp="name">National Association of Realtors</li>
+                                <li itemProp="name">Arizona Association of Realtors</li>
+                                <li itemProp="name">West Valley Board of Realtors</li>
+                              </ul>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="text-sm text-muted-foreground text-center py-4">
+                            Press coverage coming soon
+                          </div>
+                        )}
                       </div>
                     </CollapsibleContent>
                   </Collapsible>
-                )}
 
-                {/* Bar 4: Contact - Direct button to open modal */}
-                {!isEditing && (
-                  <button
-                    onClick={() => {
-                      trackEvent('contact_cta_click', {
-                        agent_name: professional.name,
-                        market: market,
-                        agent_type: agentType
-                      });
-                      
-                      if (onContactClick) {
-                        onContactClick();
-                      } else {
-                        setShowContactModal(true);
-                      }
-                    }}
-                    className="w-full border rounded-lg p-3 hover:bg-primary/10 transition-colors"
-                  >
-                    <div className="flex items-center justify-center gap-2">
-                      <MessageSquare className="h-5 w-5 text-primary" />
-                      <span className="font-semibold text-sm">Contact {professional.name.split(' ')[0]}</span>
-                    </div>
-                  </button>
-                )}
 
                 {/* Save/Cancel buttons when editing */}
                 {isOwnProfile && isEditing && (
@@ -1443,143 +1492,6 @@ export const ProfessionalCard = ({
                 )}
               </div>
 
-              {/* Contact Information Links - Always visible */}
-              <div className="border-t pt-3">
-                <h4 className="sr-only">Contact Information</h4>
-                {isOwnProfile && isEditing ? (
-                  <div className="space-y-3">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Globe className="h-4 w-4" />
-                        Website
-                      </label>
-                      <Input
-                        value={editedData.website}
-                        onChange={(e) => setEditedData({ ...editedData, website: e.target.value })}
-                        placeholder="https://yourwebsite.com"
-                        className="max-w-md"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        Phone Number
-                      </label>
-                      <Input
-                        value={editedData.phone}
-                        onChange={(e) => setEditedData({ ...editedData, phone: e.target.value })}
-                        placeholder="(555) 123-4567"
-                        className="max-w-md"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <Mail className="h-4 w-4" />
-                        Email
-                      </label>
-                      <Input
-                        value={editedData.email}
-                        onChange={(e) => setEditedData({ ...editedData, email: e.target.value })}
-                        placeholder="your@email.com"
-                        type="email"
-                        className="max-w-md"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4" />
-                        Zillow Profile URL
-                      </label>
-                      <Input
-                        value={editedData.zillow_profile_url}
-                        onChange={(e) => setEditedData({ ...editedData, zillow_profile_url: e.target.value })}
-                        placeholder="https://www.zillow.com/profile/..."
-                        className="max-w-md"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <a
-                      href={(() => {
-                        const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
-                        let v = websiteSource.trim();
-                        
-                        if (!v) return '#';
-                        
-                        if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
-                        if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
-                        if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
-                        if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
-                        return v;
-                      })()}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline agent-profile-link"
-                      itemProp="url"
-                      onClick={handleWebsiteClick}
-                    >
-                      Visit {professional.name.split(' ')[0]}'s Website
-                    </a>
-                  </div>
-                  {(() => {
-                    const phoneDisplay = parsedProfInfo?.phone || professional.phone;
-                    if (!phoneDisplay) return null;
-                    return (
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <a 
-                          href={`tel:${phoneDisplay}`} 
-                          className="text-primary hover:underline contact-agent-button" 
-                          itemProp="telephone"
-                          onClick={handlePhoneClick}
-                        >
-                          {phoneDisplay}
-                        </a>
-                      </div>
-                    );
-                  })()}
-                   {(() => {
-                     const emailDisplay = parsedProfInfo?.email || professional.email;
-                     if (!emailDisplay) return null;
-                     return (
-                       <div className="flex items-center gap-2">
-                         <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                         <a 
-                           href={`mailto:${emailDisplay}`} 
-                           className="text-primary hover:underline" 
-                           itemProp="email"
-                         >
-                           Email
-                         </a>
-                       </div>
-                     );
-                   })()}
-                   {professional.zuid && (
-                     <div className="flex items-center gap-2">
-                       <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                       <a
-                         href={`https://www.zillow.com/profile/${professional.zuid}`}
-                         target="_blank"
-                         rel="noopener noreferrer"
-                         className="text-primary hover:underline agent-profile-link"
-                         onClick={() =>
-                           trackEvent('press_mention_click', {
-                             agent_name: professional.name,
-                             market: professional.address || '',
-                             source: 'Zillow Profile',
-                           })
-                         }
-                       >
-                         Zillow Profile
-                       </a>
-                     </div>
-                    )}
-                  </div>
-                )}
-              </div>
 
 
             </div>

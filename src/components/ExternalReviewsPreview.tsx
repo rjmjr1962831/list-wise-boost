@@ -124,10 +124,9 @@ export function ExternalReviewsPreview({
   if (recentReviews.length === 0) return null;
 
   return (
-    <div className="mt-4 pt-4 border-t">
+    <div>
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-lg font-semibold">Recent Reviews</h4>
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-end gap-1 ml-auto">
           <div className="text-xs text-muted-foreground">{data?.sources?.join(' • ')}</div>
           {data?.lastFetched && (
             <div className="text-xs text-muted-foreground italic">
