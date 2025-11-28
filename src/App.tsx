@@ -2,6 +2,7 @@ import { Suspense, lazy } from "react";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -40,9 +41,10 @@ const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const queryClient = new QueryClient();
 
 const App = () => (
-  <BrowserRouter>
-    <QueryClientProvider client={queryClient}>
-      <RateLimitGuard>
+  <HelmetProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <RateLimitGuard>
         <Sonner />
         <div className="flex flex-col min-h-screen">
             <Header />
@@ -96,9 +98,10 @@ const App = () => (
             </main>
             <Footer />
           </div>
-      </RateLimitGuard>
-    </QueryClientProvider>
-  </BrowserRouter>
+        </RateLimitGuard>
+      </QueryClientProvider>
+    </BrowserRouter>
+  </HelmetProvider>
 );
 
 export default App;
