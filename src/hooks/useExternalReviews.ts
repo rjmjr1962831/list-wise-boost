@@ -42,40 +42,62 @@ export function useExternalReviews({
           let allReviews: ExternalReview[] = [];
           let sources: string[] = [];
 
-          // Check for cached external reviews (Google/Yelp)
+          // Check for cached external reviews (Google/Yelp) WITH timestamp validation
           if (reviewsData.external_reviews && Array.isArray(reviewsData.external_reviews)) {
-            console.log('Using cached external reviews from database');
-            allReviews = [...reviewsData.external_reviews];
-            sources = reviewsData.external_sources || ['google'];
+            const fetchedAt = reviewsData.external_reviews_fetched_at 
+              ? new Date(reviewsData.external_reviews_fetched_at)
+              : null;
+            
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            if (fetchedAt && fetchedAt > thirtyDaysAgo) {
+              console.log('Using cached external reviews from database (fresh within 30 days)');
+              allReviews = [...reviewsData.external_reviews];
+              sources = reviewsData.external_sources || ['google'];
+            } else {
+              console.log('Cached external reviews are stale (>30 days), will fetch fresh data');
+            }
           }
 
-          // Also include Zillow reviews from database
+          // Also include Zillow reviews from database WITH timestamp validation
           if (reviewsData.zillow_reviews && Array.isArray(reviewsData.zillow_reviews)) {
-            console.log(`Including ${reviewsData.zillow_reviews.length} cached Zillow reviews from database`);
+            const zillowFetchedAt = reviewsData.zillow_reviews_fetched_at
+              ? new Date(reviewsData.zillow_reviews_fetched_at)
+              : null;
             
-            const mappedZillowReviews: ExternalReview[] = reviewsData.zillow_reviews.map((zr: any) => {
-              // Get reviewer name: prefer firstName+lastName, fallback to screenName
-              let reviewerName = 'Zillow User';
-              if (zr.reviewer) {
-                if (zr.reviewer.firstName && zr.reviewer.lastName) {
-                  reviewerName = `${zr.reviewer.firstName} ${zr.reviewer.lastName}`;
-                } else if (zr.reviewer.screenName) {
-                  reviewerName = zr.reviewer.screenName;
-                }
-              }
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+            if (zillowFetchedAt && zillowFetchedAt > thirtyDaysAgo) {
+              console.log(`Including ${reviewsData.zillow_reviews.length} cached Zillow reviews from database (fresh within 30 days)`);
               
-              return {
-                source: 'zillow' as const,
-                reviewerName,
-                reviewText: zr.reviewComment || '',
-                rating: zr.rating,
-                reviewDate: zr.createDate, // Already in ISO format
-              };
-            });
-            
-            allReviews = [...allReviews, ...mappedZillowReviews];
-            if (!sources.includes('zillow')) {
-              sources.push('zillow');
+              const mappedZillowReviews: ExternalReview[] = reviewsData.zillow_reviews.map((zr: any) => {
+                // Get reviewer name: prefer firstName+lastName, fallback to screenName
+                let reviewerName = 'Zillow User';
+                if (zr.reviewer) {
+                  if (zr.reviewer.firstName && zr.reviewer.lastName) {
+                    reviewerName = `${zr.reviewer.firstName} ${zr.reviewer.lastName}`;
+                  } else if (zr.reviewer.screenName) {
+                    reviewerName = zr.reviewer.screenName;
+                  }
+                }
+                
+                return {
+                  source: 'zillow' as const,
+                  reviewerName,
+                  reviewText: zr.reviewComment || '',
+                  rating: zr.rating,
+                  reviewDate: zr.createDate, // Already in ISO format
+                };
+              });
+              
+              allReviews = [...allReviews, ...mappedZillowReviews];
+              if (!sources.includes('zillow')) {
+                sources.push('zillow');
+              }
+            } else {
+              console.log('Cached Zillow reviews are stale (>30 days), will fetch fresh data if needed');
             }
           }
 
@@ -104,8 +126,8 @@ export function useExternalReviews({
       return resp as ExternalReviewsResult;
     },
     enabled: !!agentName && !!market,
-    staleTime: 1000 * 60 * 30, // 30 minutes - allows fresh data after enrichment
-    gcTime: 1000 * 60 * 60, // 1 hour - reasonable cache retention
+    staleTime: 1000 * 60 * 60 * 24 * 30, // 30 days - matches database cache policy
+    gcTime: 1000 * 60 * 60 * 24 * 31, // 31 days - slightly longer retention
   });
 
   return { 
