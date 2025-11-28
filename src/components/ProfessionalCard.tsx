@@ -1515,24 +1515,24 @@ export const ProfessionalCard = ({
                     </Button>
                   </div>
                 )}
+                
+                {/* Video below collapsible bars */}
+                {hasVideo && videoId && !isEditing && (
+                  <div className="mt-4">
+                    <div className="aspect-video w-full max-w-3xl mx-auto">
+                      <iframe 
+                        className="w-full h-full rounded-lg shadow-md"
+                        src={`https://www.youtube.com/embed/${videoId}`}
+                        title="Agent video"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
-          
-          {/* Video Column - responsive width, only if video exists */}
-          {hasVideo && videoId && !isEditing && (
-            <div className="flex-shrink-0 w-full md:w-auto order-first md:order-last mt-4 md:mt-0 md:ml-6">
-              <div className="aspect-video w-full md:w-[345px] lg:w-[430px] xl:w-[500px]">
-                <iframe 
-                  className="w-full h-full rounded-lg shadow-md"
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title="Agent video"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          )}
         </div>
       </div>
       </CardContent>
