@@ -270,6 +270,15 @@ serve(async (req) => {
       zillow_data_fetched_at: new Date().toISOString(),
     };
     
+    // DEBUG: Log what fields are in agentData
+    console.log(`🔍 agentData top-level fields: ${Object.keys(agentData).join(', ')}`);
+    console.log(`🔍 Has professionalInformation: ${!!agentData.professionalInformation}, type: ${typeof agentData.professionalInformation}, isArray: ${Array.isArray(agentData.professionalInformation)}`);
+    console.log(`🔍 Has email field: ${!!agentData.email}, value: ${agentData.email}`);
+    console.log(`🔍 Has getToKnowMe: ${!!agentData.getToKnowMe}, type: ${typeof agentData.getToKnowMe}`);
+    if (agentData.getToKnowMe && typeof agentData.getToKnowMe === 'object') {
+      console.log(`🔍 getToKnowMe fields: ${Object.keys(agentData.getToKnowMe).join(', ')}`);
+    }
+    
     if (agentData.name) updateData.name = agentData.name;
     if (agentData.screenName) updateData.screen_name = agentData.screenName;
     if (agentData.encodedZuid) {
@@ -435,6 +444,12 @@ serve(async (req) => {
       // DO NOT store professional_information to avoid importing social media data
       // updateData.professional_information = agentData.professionalInformation;
       
+      // LOG: Debug what professionalInformation contains
+      console.log(`📋 professionalInformation has ${agentData.professionalInformation.length} entries`);
+      agentData.professionalInformation.forEach((info: any, idx: number) => {
+        console.log(`  [${idx}] term: "${info.term}", has detail: ${!!info.detail}, has links: ${!!info.links}`);
+      });
+      
       // PRIMARY SOURCE: Extract specialties from getToKnowMe.specialties (most reliable)
       const specialties: string[] = [];
       if (agentData.getToKnowMe?.specialties && Array.isArray(agentData.getToKnowMe.specialties)) {
@@ -505,31 +520,56 @@ serve(async (req) => {
         console.log(`Extracted website from getToKnowMe: ${updateData.website}`);
       }
       
-      // Extract email from professionalInformation with filtering for personal emails
+      // Extract email from multiple possible locations
       const genericPrefixes = ['info@', 'contact@', 'hello@', 'support@', 'sales@', 'admin@', 'office@', 'team@'];
       const isGenericEmail = (email: string) => {
         const lower = email.toLowerCase();
         return genericPrefixes.some(prefix => lower.startsWith(prefix));
       };
 
+      // Try 1: Check professionalInformation for Email term
       const emailEntry = agentData.professionalInformation.find((info: any) => 
-        info.term === 'Email' || info.term === 'Contact Email'
+        info.term === 'Email' || info.term === 'Contact Email' || info.term === 'email'
       );
       
       let extractedEmail = null;
       if (emailEntry?.detail) {
+        console.log(`📧 Found email entry in professionalInformation, detail type: ${typeof emailEntry.detail}`);
         const emailValue = Array.isArray(emailEntry.detail) ? emailEntry.detail[0] : emailEntry.detail;
         if (typeof emailValue === 'string' && emailValue.includes('@')) {
           extractedEmail = emailValue;
         } else if (emailValue?.text && emailValue.text.includes('@')) {
           extractedEmail = emailValue.text;
+        } else if (emailValue?.link && emailValue.link.includes('@')) {
+          extractedEmail = emailValue.link.replace('mailto:', '');
         }
-        
+      } else {
+        console.log(`⚠️ No email entry found in professionalInformation`);
+      }
+      
+      // Try 2: Check if email is directly in agentData
+      if (!extractedEmail && agentData.email && typeof agentData.email === 'string' && agentData.email.includes('@')) {
+        extractedEmail = agentData.email;
+        console.log(`📧 Found email directly in agentData: ${extractedEmail}`);
+      }
+      
+      // Try 3: Check getToKnowMe for email
+      if (!extractedEmail && agentData.getToKnowMe?.email && typeof agentData.getToKnowMe.email === 'string' && agentData.getToKnowMe.email.includes('@')) {
+        extractedEmail = agentData.getToKnowMe.email;
+        console.log(`📧 Found email in getToKnowMe: ${extractedEmail}`);
+      }
+      
+      // Apply the email if found and it meets our criteria
+      if (extractedEmail) {
         // Only use the email if it's not generic, or if we don't have any email yet
-        if (extractedEmail && (!isGenericEmail(extractedEmail) || !updateData.email)) {
+        if (!isGenericEmail(extractedEmail) || !professional.email) {
           updateData.email = extractedEmail;
-          console.log(`Extracted email from professionalInformation: ${extractedEmail}${isGenericEmail(extractedEmail) ? ' (generic)' : ' (personal)'}`);
+          console.log(`✅ Extracted email: ${extractedEmail}${isGenericEmail(extractedEmail) ? ' (generic)' : ' (personal)'}`);
+        } else {
+          console.log(`⚠️ Skipped generic email: ${extractedEmail}`);
         }
+      } else {
+        console.log(`❌ No email found in memo23 data`);
       }
       
       // Extract website from professionalInformation
