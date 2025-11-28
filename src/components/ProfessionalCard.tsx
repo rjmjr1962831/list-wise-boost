@@ -1163,7 +1163,7 @@ export const ProfessionalCard = ({
 
 
               {/* Statistics */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 py-3 border-y">
+              <div className="grid grid-cols-2 gap-3 py-3 border-y">
               {(() => {
                   const statFromObj = (obj: any, path: string) => {
                     try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
@@ -1197,7 +1197,7 @@ export const ProfessionalCard = ({
                   };
 
                   return Object.entries(displayStats).map(([key, value]) => (
-                    <div key={key} className={cn("text-center md:text-left", key === 'totalSales' && "hidden md:block")}>
+                    <div key={key} className="text-center md:text-left">
                       {isOwnProfile && isEditing ? (
                         <div className="space-y-1">
                           <Input
@@ -1263,8 +1263,8 @@ export const ProfessionalCard = ({
             </div>
 
 
-              {/* 4 Collapsible Bars */}
-              <div className="space-y-3">
+              {/* 4 Collapsible Bars - in a horizontal row */}
+              <div className="flex flex-wrap gap-2 relative">
                 {/* Bar 1: From [firstname] - Bio */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
@@ -1298,7 +1298,7 @@ export const ProfessionalCard = ({
                   
                   return (
                     <Collapsible open={bioOpen} onOpenChange={setBioOpen}>
-                      <CollapsibleTrigger className="w-full border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
+                      <CollapsibleTrigger className="flex-1 min-w-[200px] border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <User className="h-5 w-5 text-primary" />
@@ -1307,10 +1307,10 @@ export const ProfessionalCard = ({
                           <ChevronDown className={cn("h-4 w-4 transition-transform", bioOpen && "rotate-180")} />
                         </div>
                       </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-3" forceMount>
+                      <CollapsibleContent className="pt-3 absolute z-10 bg-background border rounded-lg shadow-lg mt-1 p-4 left-0 right-0" forceMount>
                         <div itemProp="description" className={cn(!bioOpen && "sr-only")}>
                           <div 
-                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line px-3"
+                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
                             style={!showFullDescription && needsExpander ? { 
                               display: '-webkit-box',
                               WebkitLineClamp: 3,
@@ -1323,7 +1323,7 @@ export const ProfessionalCard = ({
                           {needsExpander && bioOpen && (
                             <button
                               onClick={() => setShowFullDescription(!showFullDescription)}
-                              className="text-sm text-primary hover:underline mt-2 font-medium block px-3"
+                              className="text-sm text-primary hover:underline mt-2 font-medium"
                             >
                               {showFullDescription ? 'less' : 'more'}
                             </button>
@@ -1337,7 +1337,7 @@ export const ProfessionalCard = ({
                 {/* Bar 2: Reviews */}
                 {professional.rating > 0 && (
                   <Collapsible open={reviewsOpen} onOpenChange={setReviewsOpen}>
-                    <CollapsibleTrigger className="w-full border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
+                    <CollapsibleTrigger className="flex-1 min-w-[200px] border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Star className="h-5 w-5 text-primary fill-primary" />
@@ -1349,8 +1349,8 @@ export const ProfessionalCard = ({
                         <ChevronDown className={cn("h-4 w-4 transition-transform", reviewsOpen && "rotate-180")} />
                       </div>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-3" forceMount>
-                      <div className={cn(!reviewsOpen && "sr-only", "px-3")}>
+                    <CollapsibleContent className="pt-3 absolute z-10 bg-background border rounded-lg shadow-lg mt-1 p-4 left-0 right-0" forceMount>
+                      <div className={cn(!reviewsOpen && "sr-only")}>
                         <ExternalReviewsPreview 
                           agentName={professional.name}
                           professionalId={professional.id}
@@ -1366,7 +1366,7 @@ export const ProfessionalCard = ({
 
                 {/* Bar 3: News and Awards */}
                 <Collapsible open={newsOpen} onOpenChange={setNewsOpen}>
-                  <CollapsibleTrigger className="w-full border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
+                  <CollapsibleTrigger className="flex-1 min-w-[200px] border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Newspaper className="h-5 w-5 text-primary" />
@@ -1375,8 +1375,8 @@ export const ProfessionalCard = ({
                         <ChevronDown className={cn("h-4 w-4 transition-transform", newsOpen && "rotate-180")} />
                       </div>
                     </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-3" forceMount>
-                      <div className={cn(!newsOpen && "sr-only", "px-3 space-y-4")} itemScope itemType="https://schema.org/Person">
+                    <CollapsibleContent className="pt-3 absolute z-10 bg-background border rounded-lg shadow-lg mt-1 p-4 left-0 right-0" forceMount>
+                      <div className={cn(!newsOpen && "sr-only", "space-y-4")} itemScope itemType="https://schema.org/Person">
                         {professional.name === "Joe Bourland" ? (
                           <>
                             {/* Awards & Recognition Badges */}
@@ -1499,8 +1499,8 @@ export const ProfessionalCard = ({
           
           {/* Video Column - responsive width, only if video exists */}
           {hasVideo && videoId && !isEditing && (
-            <div className="flex-shrink-0 w-full md:w-auto order-first md:order-last mt-4 md:mt-0">
-              <div className="aspect-video w-full md:w-96 lg:w-[480px] xl:w-[560px]">
+            <div className="flex-shrink-0 w-full md:w-auto order-first md:order-last mt-4 md:mt-0 md:ml-6">
+              <div className="aspect-video w-full md:w-[345px] lg:w-[430px] xl:w-[500px]">
                 <iframe 
                   className="w-full h-full rounded-lg shadow-md"
                   src={`https://www.youtube.com/embed/${videoId}`}
