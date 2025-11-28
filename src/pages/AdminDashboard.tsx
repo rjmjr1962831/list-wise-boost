@@ -30,6 +30,7 @@ import { ProxySettings } from "@/components/admin/ProxySettings";
 import SpecialtiesManager from "@/components/admin/SpecialtiesManager";
 import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
 import { BulkZillowReviewsFetcher } from "@/components/admin/BulkZillowReviewsFetcher";
+import { MesaDataFixer } from "@/components/admin/MesaDataFixer";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -208,6 +209,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Enrichment Queue
             </TabsTrigger>
+            <TabsTrigger value="mesa-fixer">
+              <Zap className="mr-2 h-4 w-4" />
+              Mesa Fixer
+            </TabsTrigger>
             <TabsTrigger value="proxy-settings">
               <Database className="mr-2 h-4 w-4" />
               Proxy Settings
@@ -292,6 +297,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="enrichment-queue" className="space-y-4">
             <ContactEnrichmentQueue />
+          </TabsContent>
+
+          <TabsContent value="mesa-fixer" className="space-y-4">
+            <MesaDataFixer />
           </TabsContent>
 
           <TabsContent value="proxy-settings" className="space-y-4">
