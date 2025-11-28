@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.queue-city-for-enrichment]
+verify_jwt = false
+
 [functions.og-image-proxy]
 verify_jwt = false
 
