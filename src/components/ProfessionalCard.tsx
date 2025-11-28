@@ -1263,8 +1263,72 @@ export const ProfessionalCard = ({
             </div>
 
 
-              {/* 4 Collapsible Bars - in a horizontal row */}
-              <div className="flex flex-wrap gap-2 relative">
+              {/* 4 Collapsible Bars - buttons in a horizontal row */}
+              <div>
+                {/* Button Row */}
+                <div className="grid grid-cols-3 gap-2 mb-3">
+                  {/* From [firstname] Button */}
+                  {(() => {
+                    const bioHtml = (professional as any).get_to_know_me;
+                    const description = (professional as any).description;
+                    const fallbackText = description;
+                    
+                    if (!bioHtml && !fallbackText && !isEditing) return null;
+                    
+                    const firstName = professional.name.split(' ')[0];
+                    
+                    return (
+                      <button
+                        onClick={() => setBioOpen(!bioOpen)}
+                        className="border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <User className="h-5 w-5 text-primary" />
+                            <span className="font-semibold text-sm">From {firstName}</span>
+                          </div>
+                          <ChevronDown className={cn("h-4 w-4 transition-transform", bioOpen && "rotate-180")} />
+                        </div>
+                      </button>
+                    );
+                  })()}
+                  
+                  {/* Reviews Button */}
+                  {professional.rating > 0 && (
+                    <button
+                      onClick={() => setReviewsOpen(!reviewsOpen)}
+                      className="border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Star className="h-5 w-5 text-primary fill-primary" />
+                          <span className="font-semibold text-sm">Reviews</span>
+                          <Badge variant="secondary" className="ml-1 text-xs">
+                            {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                          </Badge>
+                        </div>
+                        <ChevronDown className={cn("h-4 w-4 transition-transform", reviewsOpen && "rotate-180")} />
+                      </div>
+                    </button>
+                  )}
+                  
+                  {/* News and Awards Button */}
+                  <button
+                    onClick={() => setNewsOpen(!newsOpen)}
+                    className="border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Newspaper className="h-5 w-5 text-primary" />
+                        <span className="font-semibold text-sm">News and Awards</span>
+                      </div>
+                      <ChevronDown className={cn("h-4 w-4 transition-transform", newsOpen && "rotate-180")} />
+                    </div>
+                  </button>
+                </div>
+                
+                {/* Expanded Content Area */}
+                <div className="space-y-3">
                 {/* Bar 1: From [firstname] - Bio */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
@@ -1293,92 +1357,57 @@ export const ProfessionalCard = ({
                     );
                   }
                   
+                  if (!bioOpen) return null;
+                  
                   const cleanText = stripHtml(bioHtml || fallbackText);
                   const needsExpander = cleanText.length > 150;
                   
                   return (
-                    <Collapsible open={bioOpen} onOpenChange={setBioOpen}>
-                      <CollapsibleTrigger className="flex-1 min-w-[200px] border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <User className="h-5 w-5 text-primary" />
-                            <span className="font-semibold text-sm">From {firstName}</span>
-                          </div>
-                          <ChevronDown className={cn("h-4 w-4 transition-transform", bioOpen && "rotate-180")} />
+                    <div className="border rounded-lg p-4 bg-background">
+                      <div itemProp="description">
+                        <div 
+                          className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
+                          style={!showFullDescription && needsExpander ? { 
+                            display: '-webkit-box',
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          } : {}}
+                        >
+                          {cleanText}
                         </div>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-3 absolute z-10 bg-background border rounded-lg shadow-lg mt-1 p-4 left-0 right-0" forceMount>
-                        <div itemProp="description" className={cn(!bioOpen && "sr-only")}>
-                          <div 
-                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
-                            style={!showFullDescription && needsExpander ? { 
-                              display: '-webkit-box',
-                              WebkitLineClamp: 3,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden'
-                            } : {}}
+                        {needsExpander && (
+                          <button
+                            onClick={() => setShowFullDescription(!showFullDescription)}
+                            className="text-sm text-primary hover:underline mt-2 font-medium"
                           >
-                            {cleanText}
-                          </div>
-                          {needsExpander && bioOpen && (
-                            <button
-                              onClick={() => setShowFullDescription(!showFullDescription)}
-                              className="text-sm text-primary hover:underline mt-2 font-medium"
-                            >
-                              {showFullDescription ? 'less' : 'more'}
-                            </button>
-                          )}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                            {showFullDescription ? 'less' : 'more'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   );
                 })()}
 
                 {/* Bar 2: Reviews */}
-                {professional.rating > 0 && (
-                  <Collapsible open={reviewsOpen} onOpenChange={setReviewsOpen}>
-                    <CollapsibleTrigger className="flex-1 min-w-[200px] border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Star className="h-5 w-5 text-primary fill-primary" />
-                          <span className="font-semibold text-sm">Reviews</span>
-                          <Badge variant="secondary" className="ml-1 text-xs">
-                            {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                          </Badge>
-                        </div>
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", reviewsOpen && "rotate-180")} />
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-3 absolute z-10 bg-background border rounded-lg shadow-lg mt-1 p-4 left-0 right-0" forceMount>
-                      <div className={cn(!reviewsOpen && "sr-only")}>
-                        <ExternalReviewsPreview 
-                          agentName={professional.name}
-                          professionalId={professional.id}
-                          company={professional.company} 
-                          market={professional.address || market}
-                          zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
-                          minimumRating={professional.rating || 4.0}
-                        />
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
+                {professional.rating > 0 && reviewsOpen && (
+                  <div className="border rounded-lg p-4 bg-background">
+                    <ExternalReviewsPreview 
+                      agentName={professional.name}
+                      professionalId={professional.id}
+                      company={professional.company} 
+                      market={professional.address || market}
+                      zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
+                      minimumRating={professional.rating || 4.0}
+                    />
+                  </div>
                 )}
 
                 {/* Bar 3: News and Awards */}
-                <Collapsible open={newsOpen} onOpenChange={setNewsOpen}>
-                  <CollapsibleTrigger className="flex-1 min-w-[200px] border rounded-lg p-3 bg-accent/30 hover:bg-accent/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Newspaper className="h-5 w-5 text-primary" />
-                          <span className="font-semibold text-sm">News and Awards</span>
-                        </div>
-                        <ChevronDown className={cn("h-4 w-4 transition-transform", newsOpen && "rotate-180")} />
-                      </div>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pt-3 absolute z-10 bg-background border rounded-lg shadow-lg mt-1 p-4 left-0 right-0" forceMount>
-                      <div className={cn(!newsOpen && "sr-only", "space-y-4")} itemScope itemType="https://schema.org/Person">
-                        {professional.name === "Joe Bourland" ? (
-                          <>
+                {newsOpen && (
+                  <div className="border rounded-lg p-4 bg-background" itemScope itemType="https://schema.org/Person">
+                    {professional.name === "Joe Bourland" ? (
+                      <div className="space-y-4">
                             {/* Awards & Recognition Badges */}
                             <div>
                               <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
@@ -1442,17 +1471,15 @@ export const ProfessionalCard = ({
                                 <li itemProp="name">West Valley Board of Realtors</li>
                               </ul>
                             </div>
-                          </>
-                        ) : (
-                          <div className="text-sm text-muted-foreground text-center py-4">
-                            Press coverage coming soon
-                          </div>
-                        )}
                       </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-
-
+                    ) : (
+                      <div className="text-sm text-muted-foreground text-center py-4">
+                        Press coverage coming soon
+                      </div>
+                    )}
+                  </div>
+                )}
+                
                 {/* Save/Cancel buttons when editing */}
                 {isOwnProfile && isEditing && (
                   <div className="flex gap-2 pt-2">
@@ -1491,9 +1518,6 @@ export const ProfessionalCard = ({
                   </div>
                 )}
               </div>
-
-
-
             </div>
           </div>
           
