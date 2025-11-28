@@ -1299,7 +1299,6 @@ export const ProfessionalCard = ({
                   >
                     <div className="flex flex-col sm:flex-row items-center justify-center sm:justify-between gap-1">
                       <div className="flex items-center gap-1 sm:gap-2">
-                        <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary fill-primary flex-shrink-0" />
                         <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Reviews</span>
                         <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2">
                           {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
