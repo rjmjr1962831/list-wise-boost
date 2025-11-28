@@ -46,13 +46,13 @@ serve(async (req) => {
 
     const proxyscrapeApiKey = Deno.env.get('PROXYSCRAPE_API_KEY');
     
-    // Build Proxyscrape proxy URL with API key
+    // Build ProxyScrape proxy URL with correct format (matching agenscrape)
     const proxyUrl = proxyscrapeApiKey
-      ? `http://customer-${proxyscrapeApiKey}:@proxy.proxyscrape.com:6060`
+      ? `http://rp.proxyscrape.com:6060?auth=${proxyscrapeApiKey}&country=us&protocol=http`
       : null;
     
     if (proxyUrl) {
-      console.log('Using Proxyscrape residential proxy');
+      console.log('Using ProxyScrape for US residential proxies');
     } else {
       console.warn('PROXYSCRAPE_API_KEY not configured, using Apify proxy');
     }
