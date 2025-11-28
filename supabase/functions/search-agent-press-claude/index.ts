@@ -101,17 +101,7 @@ Look for TV appearances, industry awards, news articles, professional recognitio
           {
             type: 'web_search_20250305',
             name: 'web_search',
-            max_uses: 5,
-            allowed_domains: [
-              'today.com', 'nbc.com', 'nbcnews.com',
-              'fox10phoenix.com', 'azfamily.com', 'abc15.com',
-              'wsj.com', 'forbes.com', 'nytimes.com',
-              'realproducersmag.com', 'realproducers.com',
-              'rankingarizona.com', 'azbiggmedia.com',
-              'inman.com', 'housingwire.com',
-              'bizjournals.com', 'azcentral.com',
-              'bbb.org', 'phoenixbusinessjournal.com'
-            ]
+            max_uses: 5
           }
         ],
         tool_choice: { type: 'any' }
