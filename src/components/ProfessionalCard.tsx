@@ -1434,6 +1434,134 @@ export const ProfessionalCard = ({
               </div>
 
 
+              {/* Authority Profile Section - MOCKUP with Frank Aazami data */}
+              {professional.name === "Frank Aazami" && (
+                <div className="pt-4 border-t" itemScope itemType="https://schema.org/Person">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold flex items-center gap-2">
+                      <Award className="h-4 w-4 text-primary" />
+                      Authority Profile
+                    </h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowFullDescription(!showFullDescription)}
+                      className="text-xs"
+                    >
+                      {showFullDescription ? (
+                        <>
+                          <ChevronUp className="h-3 w-3 mr-1" />
+                          Less
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3 mr-1" />
+                          More
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {/* Awards & Recognition Badges */}
+                  <div className="mb-3">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
+                    <div className="flex flex-wrap gap-2" itemProp="award">
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                        <Award className="h-3 w-3 mr-1" />
+                        Phoenix Magazine Top Agent '18-'24
+                      </Badge>
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                        <Award className="h-3 w-3 mr-1" />
+                        RE/MAX Hall of Fame
+                      </Badge>
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
+                        <Award className="h-3 w-3 mr-1" />
+                        Zillow Premier Agent
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Collapsible Detailed Info */}
+                  {showFullDescription && (
+                    <div className="space-y-3 animate-accordion-down">
+                      {/* Media Mentions */}
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                          <a 
+                            href="https://www.forbes.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline flex items-center gap-1"
+                            itemProp="mentions"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Forbes
+                          </a>
+                          <a 
+                            href="https://www.azcentral.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline flex items-center gap-1"
+                            itemProp="mentions"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Arizona Republic
+                          </a>
+                          <a 
+                            href="https://www.bizjournals.com/phoenix" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline flex items-center gap-1"
+                            itemProp="mentions"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            Phoenix Business Journal
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Professional Affiliations */}
+                      <div itemProp="memberOf" itemScope itemType="https://schema.org/Organization">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Professional Memberships</p>
+                        <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                          <li itemProp="name">Luxury Home Council</li>
+                          <li itemProp="name">Institute for Luxury Home Marketing</li>
+                        </ul>
+                      </div>
+
+                      {/* Community Involvement */}
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Community Leadership</p>
+                        <ul className="text-sm space-y-1 list-disc list-inside text-muted-foreground">
+                          <li itemProp="affiliation">Phoenix Children's Hospital Foundation Board</li>
+                          <li itemProp="affiliation">Arizona Humane Society Supporter</li>
+                        </ul>
+                      </div>
+
+                      {/* Career Stats for LLM visibility */}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs font-medium text-muted-foreground mb-2">Career Highlights</p>
+                        <div className="flex flex-wrap gap-4 text-sm">
+                          <div itemProp="hasOccupation" itemScope itemType="https://schema.org/Occupation">
+                            <span className="text-muted-foreground">Career Sales:</span>
+                            <span className="font-semibold ml-1" itemProp="estimatedSalary">$500M+</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Avg Sale Price:</span>
+                            <span className="font-semibold ml-1">$2.5M</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Specialty:</span>
+                            <span className="font-semibold ml-1" itemProp="knowsAbout">Luxury Real Estate</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Contact Button or Save/Cancel when editing */}
               <div className="pt-4 border-t">
                 {isOwnProfile && isEditing ? (
