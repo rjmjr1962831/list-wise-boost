@@ -31,6 +31,7 @@ import SpecialtiesManager from "@/components/admin/SpecialtiesManager";
 import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
 import { BulkZillowReviewsFetcher } from "@/components/admin/BulkZillowReviewsFetcher";
 import { MesaDataFixer } from "@/components/admin/MesaDataFixer";
+import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -205,6 +206,10 @@ const AdminDashboard = () => {
               <Download className="mr-2 h-4 w-4" />
               CRM Export
             </TabsTrigger>
+            <TabsTrigger value="enrichment-progress">
+              <Zap className="mr-2 h-4 w-4" />
+              Enrichment Progress
+            </TabsTrigger>
             <TabsTrigger value="enrichment-queue">
               <Zap className="mr-2 h-4 w-4" />
               Enrichment Queue
@@ -293,6 +298,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="crm-export" className="space-y-4">
             <CRMExportGenerator />
+          </TabsContent>
+
+          <TabsContent value="enrichment-progress" className="space-y-4">
+            <EnrichmentProgressDashboard />
           </TabsContent>
 
           <TabsContent value="enrichment-queue" className="space-y-4">
