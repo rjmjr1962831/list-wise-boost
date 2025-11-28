@@ -261,16 +261,23 @@ export default function DynamicCategoryList() {
           professionalsData = [...(beauvaisData || []), ...(otherAgents || [])];
         } else {
           // Standard query for other cities
-          const { data, error } = await supabase
+          // For Mesa, don't require has_recent_review as review data is being refreshed
+          let query = supabase
             .from('professionals')
             .select('*')
             .eq('city_id', cityData.id)
             .eq('category_id', categoryData.id)
             .eq('active', true)
-            .eq('has_recent_review', true)
             .not('professional_information', 'is', null)
             .gte('review_stars_rating', 4.8)
-            .gte('num_total_reviews', 100)
+            .gte('num_total_reviews', 100);
+          
+          // Only require recent reviews for non-Mesa cities
+          if (cityData.slug !== 'mesa') {
+            query = query.eq('has_recent_review', true);
+          }
+          
+          const { data, error } = await query
             .order('rank')
             .limit(10);
           
