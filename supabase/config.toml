@@ -102,3 +102,6 @@ verify_jwt = false
 [functions.bulk-fetch-zillow-reviews]
 verify_jwt = false
 
+[functions.search-agent-press]
+verify_jwt = false
+
