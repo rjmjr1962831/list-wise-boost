@@ -15,18 +15,7 @@ import { LogOut, User as UserIcon, Shield } from "lucide-react";
 import { toast } from "sonner";
 
 export const Header = () => {
-  // Safe navigation hook that handles potential context issues
-  let navigate: ReturnType<typeof useNavigate> | null = null;
-  try {
-    navigate = useNavigate();
-  } catch (error) {
-    console.error('Router context not available:', error);
-    // Fallback to window.location for navigation
-    navigate = ((path: string) => {
-      window.location.href = path;
-    }) as any;
-  }
-  
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
