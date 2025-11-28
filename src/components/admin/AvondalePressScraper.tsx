@@ -77,8 +77,8 @@ export default function AvondalePressScraper() {
         ));
 
         try {
-          // Call search-agent-press function
-          const { data: pressData, error: pressError } = await supabase.functions.invoke('search-agent-press', {
+          // Call Claude-powered search-agent-press-claude function
+          const { data: pressData, error: pressError } = await supabase.functions.invoke('search-agent-press-claude', {
             body: {
               agentName: agent.name,
               company: agent.company,
@@ -160,7 +160,7 @@ export default function AvondalePressScraper() {
       <CardHeader>
         <CardTitle>Avondale Press Scraper</CardTitle>
         <CardDescription>
-          Search for press mentions for the top 10 Avondale real estate agents using 6 parallel targeted queries (major publications, industry press, local news, Google News, awards, interviews)
+          Search for press mentions for the top 10 Avondale real estate agents using Claude's intelligent web search (TV appearances, awards, major publications, local news, industry press)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
