@@ -18,7 +18,7 @@ export const TestAvondaleEnrichment = () => {
     setLog([]);
     
     try {
-      addLog("🚀 Starting direct enrichment test for 2 Avondale agents...");
+      addLog("🚀 Starting streaming enrichment test for Avondale (2 agents max)...");
 
       // Step 1: Get Avondale city
       const { data: city } = await supabase
@@ -33,60 +33,39 @@ export const TestAvondaleEnrichment = () => {
       }
       addLog(`✅ Found city: ${city.name}`);
 
-      // Step 2: Find 2 existing agents
-      addLog("🔍 Finding 2 existing Avondale agents...");
-      const { data: agents, error: agentsError } = await supabase
-        .from('professionals')
+      // Step 2: Get real estate agents category
+      const { data: category } = await supabase
+        .from('categories')
         .select('id, name')
-        .eq('city_id', city.id)
-        .eq('active', true)
-        .order('updated_at', { ascending: true })
-        .limit(2);
+        .eq('slug', 'top10realestateagents')
+        .single();
 
-      if (agentsError) throw agentsError;
-      if (!agents || agents.length === 0) {
-        throw new Error("No agents found in Avondale");
+      if (!category) {
+        throw new Error("Real estate agents category not found");
       }
-      addLog(`✅ Found ${agents.length} agents: ${agents.map(a => a.name).join(', ')}`);
+      addLog(`✅ Found category: ${category.name}`);
 
-      // Step 3: Queue agents directly
-      addLog("📝 Queueing agents for enrichment...");
-      const queueItems = agents.map(agent => ({
-        professional_id: agent.id,
-        status: 'pending',
-        reason: 'test-enrichment'
-      }));
-
-      const { error: queueError } = await supabase
-        .from('contact_enrichment_queue')
-        .upsert(queueItems, { onConflict: 'professional_id' });
-
-      if (queueError) throw queueError;
-      addLog(`✅ Queued ${agents.length} agents`);
-
-      // Step 4: Trigger enrichment processor
-      addLog("🔄 Starting Claude enrichment pipeline...");
-      const { data: enrichResult, error: enrichError } = await supabase.functions.invoke(
-        'process-contact-enrichment-queue',
+      // Step 3: Start streaming enrichment pipeline
+      addLog("🔄 Starting streaming enrichment (agenscrape→memo23→claude)...");
+      addLog("This will discover agents and enrich them concurrently as they're found.");
+      
+      const { data: result, error: enrichError } = await supabase.functions.invoke(
+        'streaming-city-enrichment',
         {
           body: {
-            batchSize: 2,
-            concurrency: 1
+            cityId: city.id,
+            categoryId: category.id,
+            maxResults: 2  // Limit to 2 agents for testing
           }
         }
       );
 
       if (enrichError) throw enrichError;
       
-      addLog(`✅ Enrichment complete!`);
-      addLog(`📊 Results: ${enrichResult.succeeded} succeeded, ${enrichResult.failed} failed`);
-      
-      // Show agent details
-      if (enrichResult.agents) {
-        enrichResult.agents.forEach((agent: any) => {
-          addLog(`   - ${agent.name}: ${agent.status}`);
-        });
-      }
+      addLog(`✅ Streaming enrichment complete!`);
+      addLog(`📊 Results: ${result.succeeded}/${result.processed} agents fully enriched`);
+      addLog(`   - Succeeded: ${result.succeeded}`);
+      addLog(`   - Failed: ${result.failed}`);
 
       toast.success("Test complete! Check logs for details.");
 
@@ -104,10 +83,10 @@ export const TestAvondaleEnrichment = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <TestTube className="h-5 w-5" />
-          Test Avondale Enrichment (2 Agents)
+          Test Streaming Enrichment (2 Agents)
         </CardTitle>
         <CardDescription>
-          Import 2 Avondale agents and run full Claude enrichment pipeline
+          Streams agents from agenscrape → memo23 → claude with 10 concurrent workers
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -124,7 +103,7 @@ export const TestAvondaleEnrichment = () => {
           ) : (
             <>
               <TestTube className="mr-2 h-4 w-4" />
-              Run 2-Agent Test
+              Run Streaming Test
             </>
           )}
         </Button>
