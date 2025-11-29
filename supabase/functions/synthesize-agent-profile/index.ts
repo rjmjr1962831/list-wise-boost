@@ -96,7 +96,8 @@ Rules:
                         description: { type: 'string' },
                         year: { type: 'number' },
                         credibility: { type: 'number', description: 'Score 1-10' },
-                        source: { type: 'string' }
+                        source: { type: 'string' },
+                        source_url: { type: 'string', description: 'URL of the source if available' }
                       },
                       required: ['title', 'description', 'credibility']
                     }

@@ -1015,32 +1015,33 @@ export const ProfessionalCard = ({
                        {professional.company}
                      </p>
                      
-                     {/* Contact Info - Vertical under name */}
-                     <div className="mt-2 space-y-1 text-sm">
-                       <div className="flex items-center gap-2">
-                         <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                         <a
-                           href={(() => {
-                             const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
-                             let v = websiteSource.trim();
-                             
-                             if (!v) return '#';
-                             
-                             if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
-                             if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
-                             if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
-                             if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
-                             return v;
-                           })()}
-                           target="_blank"
-                           rel="noopener noreferrer"
-                           className="text-primary hover:underline agent-profile-link"
-                           itemProp="url"
-                           onClick={handleWebsiteClick}
-                         >
-                           {parsedProfInfo?.websiteUrl || professional.website || 'NA'}
-                         </a>
-                       </div>
+                      {/* Contact Info - Vertical under name */}
+                      <h4 className="sr-only">Contact Information</h4>
+                      <div className="mt-2 space-y-1 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Globe className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <a
+                            href={(() => {
+                              const websiteSource = parsedProfInfo?.websiteUrl || professional.website || '';
+                              let v = websiteSource.trim();
+                              
+                              if (!v) return '#';
+                              
+                              if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
+                              if (/^https\/\//i.test(v)) v = v.replace(/^https\/\//i, 'https://');
+                              if (/^http\/\//i.test(v)) v = v.replace(/^http\/\//i, 'http://');
+                              if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+                              return v;
+                            })()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline agent-profile-link"
+                            itemProp="url"
+                            onClick={handleWebsiteClick}
+                          >
+                            {parsedProfInfo?.websiteUrl || professional.website || 'NA'}
+                          </a>
+                        </div>
                        
                        <div className="flex items-center gap-2">
                          <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -1428,34 +1429,34 @@ export const ProfessionalCard = ({
                             </div>
                           )}
 
-                          {/* Press Mentions */}
-                          {pressItems.length > 0 && (
-                            <div>
-                              <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
-                              <div className="space-y-2">
-                                {pressItems.map((item: any, idx: number) => (
-                                  <div key={idx} className="flex items-start gap-2 text-sm" itemProp="mentions">
-                                    <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                    <div>
-                                      <a 
-                                        href={item.url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="text-primary hover:underline font-medium press-mention-click"
-                                        data-agent-name={professional.name}
-                                        data-source={item.source}
-                                      >
-                                        {item.title}
-                                      </a>
-                                      <div className="text-xs text-muted-foreground mt-0.5">
-                                        {item.source} • {item.date}
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                           {/* Press Mentions */}
+                           {pressItems.length > 0 && (
+                             <div>
+                               <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
+                               <div className="space-y-2">
+                                 {pressItems.map((item: any, idx: number) => (
+                                   <div key={idx} className="flex items-start gap-2 text-sm" itemProp="mentions">
+                                     <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                     <div>
+                                       <a 
+                                         href={item.url} 
+                                         target="_blank" 
+                                         rel="noopener noreferrer"
+                                         className="text-primary hover:underline font-medium press-mention-click"
+                                         data-agent-name={professional.name}
+                                         data-source={item.source}
+                                       >
+                                         {item.title}
+                                       </a>
+                                       <cite className="text-xs text-muted-foreground mt-0.5 not-italic block">
+                                         {item.source} • {item.date}
+                                       </cite>
+                                     </div>
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
                         </div>
                       );
                     })()}
@@ -1484,7 +1485,18 @@ export const ProfessionalCard = ({
                                   <p className="text-xs text-muted-foreground mt-1">Year: {achievement.year}</p>
                                 )}
                                 {achievement.source && (
-                                  <p className="text-xs text-muted-foreground">Source: {achievement.source}</p>
+                                  <cite className="text-xs text-muted-foreground block mt-1 not-italic">
+                                    Source: {achievement.source_url ? (
+                                      <a 
+                                        href={achievement.source_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline"
+                                      >
+                                        {achievement.source}
+                                      </a>
+                                    ) : achievement.source}
+                                  </cite>
                                 )}
                               </div>
                               {achievement.credibility >= 8 && (
@@ -1559,6 +1571,50 @@ export const ProfessionalCard = ({
                             )}
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Verified Profiles Section */}
+                {(() => {
+                  const hasWebsite = professional.website;
+                  const hasZillow = (professional as any).zillow_profile_url;
+                  if (!hasWebsite && !hasZillow) return null;
+                  
+                  return (
+                    <div className="border rounded-lg p-4 bg-background">
+                      <h4 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                        <ExternalLink className="h-4 w-4" />
+                        Verified Profiles
+                      </h4>
+                      <div className="flex flex-wrap gap-3">
+                        {hasWebsite && (
+                          <a 
+                            href={(() => {
+                              let v = professional.website?.trim() || '';
+                              if (!v) return '#';
+                              if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
+                              if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+                              return v;
+                            })()} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+                          >
+                            <Globe className="h-4 w-4" /> Official Website
+                          </a>
+                        )}
+                        {hasZillow && (
+                          <a 
+                            href={(professional as any).zillow_profile_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
+                          >
+                            <ExternalLink className="h-4 w-4" /> Zillow
+                          </a>
+                        )}
                       </div>
                     </div>
                   );

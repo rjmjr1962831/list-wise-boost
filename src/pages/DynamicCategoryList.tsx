@@ -801,47 +801,55 @@ export default function DynamicCategoryList() {
       "description": `AI and human curated list of the top 10 ${category.plural_name.toLowerCase()} in ${city.name}, ${city.state}. Qualified with 4.8+ star ratings and 100+ verified reviews.`,
       "url": `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`,
       "numberOfItems": allProfessionals.length,
-      "itemListElement": allProfessionals.slice(0, 10).map((agent, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "item": {
-          "@type": "RealEstateAgent",
-          "@id": `https://top10lists.us/agent/${agent.id}`,
-          "name": agent.name,
-          "description": agent.description || `Professional ${category.name.toLowerCase()} serving ${city.name}, ${city.state}`,
-          "email": agent.email || undefined,
-          "telephone": agent.phone || undefined,
-          "url": agent.website || undefined,
-          "image": agent.image || undefined,
-          "address": agent.address ? {
-            "@type": "PostalAddress",
-            "streetAddress": agent.address,
-            "addressLocality": city.name,
-            "addressRegion": city.state
-          } : undefined,
-          "areaServed": {
-            "@type": "City",
-            "name": city.name,
-            "containedInPlace": {
-              "@type": "State",
-              "name": city.state
-            }
-          },
-          "knowsAbout": agent.specialties || [],
-          "aggregateRating": agent.rating > 0 ? {
-            "@type": "AggregateRating",
-            "ratingValue": agent.rating,
-            "reviewCount": agent.reviews,
-            "bestRating": 5,
-            "worstRating": 1
-          } : undefined,
-          "yearsInOperation": agent.stats?.yearsExperience || undefined,
-          "memberOf": agent.company ? {
-            "@type": "Organization",
-            "name": agent.company
-          } : undefined
-        }
-      }))
+      "itemListElement": allProfessionals.slice(0, 10).map((agent, index) => {
+        const agentData = agent as any;
+        return {
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "RealEstateAgent",
+            "@id": `https://top10lists.us/agent/${agent.id}`,
+            "name": agent.name,
+            "description": agent.description || `Professional ${category.name.toLowerCase()} serving ${city.name}, ${city.state}`,
+            "email": agent.email || undefined,
+            "telephone": agent.phone || undefined,
+            "url": agent.website || undefined,
+            "image": agent.image || undefined,
+            "address": agent.address ? {
+              "@type": "PostalAddress",
+              "streetAddress": agent.address,
+              "addressLocality": city.name,
+              "addressRegion": city.state
+            } : undefined,
+            "areaServed": {
+              "@type": "City",
+              "name": city.name,
+              "containedInPlace": {
+                "@type": "State",
+                "name": city.state
+              }
+            },
+            "knowsAbout": agent.specialties || [],
+            "award": agentData.notable_achievements?.map((a: any) => a.title) || [],
+            "sameAs": [
+              agentData.zillow_profile_url,
+              agent.website
+            ].filter(Boolean),
+            "aggregateRating": agent.rating > 0 ? {
+              "@type": "AggregateRating",
+              "ratingValue": agent.rating,
+              "reviewCount": agent.reviews,
+              "bestRating": 5,
+              "worstRating": 1
+            } : undefined,
+            "yearsInOperation": agent.stats?.yearsExperience || undefined,
+            "memberOf": agent.company ? {
+              "@type": "Organization",
+              "name": agent.company
+            } : undefined
+          }
+        };
+      })
     };
 
     // Inject structured data into document head
@@ -856,6 +864,16 @@ export default function DynamicCategoryList() {
     }
     
     script.textContent = JSON.stringify(structuredData);
+
+    // Add canonical URL
+    const canonicalUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
+    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.rel = 'canonical';
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.href = canonicalUrl;
 
     return () => {
       const existingScript = document.getElementById(scriptId);
