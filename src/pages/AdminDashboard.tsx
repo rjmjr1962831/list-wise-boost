@@ -36,6 +36,7 @@ import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichme
 import AvondalePressScraper from "@/components/admin/AvondalePressScraper";
 import ManualProfileEnricher from "@/components/admin/ManualProfileEnricher";
 import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
+import { TestAvondaleEnrichment } from "@/components/admin/TestAvondaleEnrichment";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -246,6 +247,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Full Enrichment
             </TabsTrigger>
+            <TabsTrigger value="test-avondale">
+              <FlaskConical className="mr-2 h-4 w-4" />
+              Test Avondale
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -354,6 +359,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="full-enrichment" className="space-y-4">
             <FullEnrichmentPipeline />
+          </TabsContent>
+
+          <TabsContent value="test-avondale" className="space-y-4">
+            <TestAvondaleEnrichment />
           </TabsContent>
         </Tabs>
       </div>
