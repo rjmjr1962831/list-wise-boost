@@ -111,6 +111,7 @@ async function createOrUpdatePerson(prospect: any, fieldMapping: Record<string, 
 
   // Add custom fields
   if (fieldMapping.supabase_id) personData[fieldMapping.supabase_id] = prospect.id;
+  if (fieldMapping.company && prospect.company) personData[fieldMapping.company] = prospect.company;
   if (fieldMapping.zillow_position && prospect.zillow_position) personData[fieldMapping.zillow_position] = prospect.zillow_position;
   if (fieldMapping.zillow_page && prospect.zillow_page) personData[fieldMapping.zillow_page] = prospect.zillow_page;
   if (fieldMapping.agents_ahead && prospect.agents_ahead) personData[fieldMapping.agents_ahead] = prospect.agents_ahead;
