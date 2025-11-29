@@ -16,11 +16,11 @@ serve(async (req) => {
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const apifyApiKey = Deno.env.get('APIFY_API_KEY');
+    const apifyApiToken = Deno.env.get('APIFY_API_TOKEN');
     const proxyUsername = Deno.env.get('ROTATING_PROXY_USERNAME');
     const proxyPassword = Deno.env.get('ROTATING_PROXY_PASSWORD');
     
-    if (!apifyApiKey) throw new Error('APIFY_API_KEY not configured');
+    if (!apifyApiToken) throw new Error('APIFY_API_TOKEN not configured');
     if (!proxyUsername || !proxyPassword) throw new Error('ProxyScrape credentials not configured');
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -50,30 +50,46 @@ serve(async (req) => {
     // Configure ProxyScrape proxy (same as working architecture)
     const proxyUrl = `http://${proxyUsername}:${proxyPassword}@rp.scrapegw.com:6060`;
     
+    // Prepare actor input matching working function
+    const actorInput = {
+      search_query: searchLocation,
+      category: "real-estate-agents",
+      locationText: searchLocation,
+      name: "",
+      language: "English",
+      specialty: "",
+      maxResults: 500,
+      startPage: 1,
+      proxy: {
+        useApifyProxy: false,
+        proxyUrls: [proxyUrl]
+      }
+    };
+    
+    console.log('Starting Apify actor with input:', JSON.stringify(actorInput, null, 2));
+    
     // Start Apify actor (using getdataforme~zillow-real-state-agents-scraper)
     const actorStartResponse = await fetch(
-      `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs?token=${apifyApiKey}`,
+      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          locationText: searchLocation,
-          maxItems: 500,
-          proxy: {
-            useApifyProxy: false,
-            proxyUrls: [proxyUrl]
-          }
-        }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apifyApiToken}`
+        },
+        body: JSON.stringify(actorInput),
       }
     );
 
     if (!actorStartResponse.ok) {
+      const errorText = await actorStartResponse.text();
+      console.error('Apify actor start failed:', errorText);
       throw new Error(`Failed to start Apify actor: ${actorStartResponse.statusText}`);
     }
 
     const { data: runData } = await actorStartResponse.json();
     const runId = runData.id;
-    console.log(`Apify run started: ${runId}`);
+    console.log(`✅ Apify run started: ${runId}`);
 
     // Poll for completion (max 10 minutes)
     let runStatus = 'RUNNING';
@@ -84,14 +100,19 @@ serve(async (req) => {
       await new Promise(resolve => setTimeout(resolve, 5000));
       
       const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs/${runId}?token=${apifyApiKey}`
+        `https://api.apify.com/v2/actor-runs/${runId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${apifyApiToken}`
+          }
+        }
       );
       
       const statusData = await statusResponse.json();
       runStatus = statusData.data.status;
       attempts++;
       
-      console.log(`Poll attempt ${attempts}: ${runStatus}`);
+      console.log(`📊 Poll attempt ${attempts}/${maxAttempts}: ${runStatus}`);
     }
 
     if (runStatus !== 'SUCCEEDED') {
@@ -100,11 +121,16 @@ serve(async (req) => {
 
     // Fetch results
     const resultsResponse = await fetch(
-      `https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs/${runId}/dataset/items?token=${apifyApiKey}`
+      `https://api.apify.com/v2/actor-runs/${runId}/dataset/items`,
+      {
+        headers: {
+          'Authorization': `Bearer ${apifyApiToken}`
+        }
+      }
     );
 
     const agents = await resultsResponse.json();
-    console.log(`Retrieved ${agents.length} agents from Apify`);
+    console.log(`✅ Retrieved ${agents.length} agents from Apify`);
 
     // Process and update rankings
     let updated = 0;
