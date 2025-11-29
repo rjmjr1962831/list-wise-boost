@@ -31,30 +31,40 @@ serve(async (req) => {
       throw new Error('Prospect not found');
     }
 
-    // Prepare HubSpot contact data
-    const hubspotData = {
-      properties: {
-        email: prospect.email,
-        firstname: prospect.name.split(' ')[0] || prospect.name,
-        lastname: prospect.name.split(' ').slice(1).join(' ') || '',
-        phone: prospect.phone || '',
-        company: prospect.company || '',
-        city: prospect.city || '',
-        state: prospect.state || '',
-        
-        // Custom Zillow properties
-        supabase_id: prospect.id,
-        zillow_position: prospect.zillow_position?.toString() || '',
-        zillow_page: prospect.zillow_page?.toString() || '',
-        agents_ahead: prospect.agents_ahead?.toString() || '',
-        zillow_total_agents: prospect.zillow_total_agents?.toString() || '',
-        zillow_rating: prospect.zillow_rating?.toString() || '',
-        zillow_reviews: prospect.zillow_reviews?.toString() || '',
-        zillow_profile_url: prospect.zillow_profile_url || '',
-        prospect_status: prospect.status || 'new',
-        email_snippet: prospect.email_snippet || '',
-      }
+    // Prepare HubSpot contact data - build properties dynamically
+    const properties: Record<string, any> = {
+      email: prospect.email,
+      firstname: prospect.name.split(' ')[0] || prospect.name,
+      lastname: prospect.name.split(' ').slice(1).join(' ') || '',
+      supabase_id: prospect.id,
+      prospect_status: prospect.status || 'new',
     };
+
+    // Optional string fields - only add if they have values
+    if (prospect.phone) properties.phone = prospect.phone;
+    if (prospect.company) properties.company = prospect.company;
+    if (prospect.city) properties.city = prospect.city;
+    if (prospect.state) properties.state = prospect.state;
+    if (prospect.zillow_profile_url) properties.zillow_profile_url = prospect.zillow_profile_url;
+    if (prospect.zillow_profile_id) properties.zillow_profile_id = prospect.zillow_profile_id;
+    if (prospect.zillow_photo_url) properties.zillow_photo_url = prospect.zillow_photo_url;
+    if (prospect.zillow_sales_volume) properties.zillow_sales_volume = prospect.zillow_sales_volume;
+    if (prospect.email_snippet) properties.email_snippet = prospect.email_snippet;
+    if (prospect.notes) properties.notes = prospect.notes;
+
+    // Number fields - only add if they have actual values (HubSpot rejects empty strings for number fields)
+    if (prospect.zillow_position != null) properties.zillow_position = prospect.zillow_position;
+    if (prospect.zillow_page != null) properties.zillow_page = prospect.zillow_page;
+    if (prospect.agents_ahead != null) properties.agents_ahead = prospect.agents_ahead;
+    if (prospect.zillow_total_agents != null) properties.zillow_total_agents = prospect.zillow_total_agents;
+    if (prospect.zillow_rating != null) properties.zillow_rating = Number(prospect.zillow_rating);
+    if (prospect.zillow_reviews != null) properties.zillow_reviews = prospect.zillow_reviews;
+    if (prospect.zillow_sales_count != null) properties.zillow_sales_count = prospect.zillow_sales_count;
+
+    // Date field - format as ISO string for HubSpot
+    if (prospect.zillow_scraped_at) properties.zillow_scraped_at = prospect.zillow_scraped_at;
+
+    const hubspotData = { properties };
 
     const hubspotApiKey = Deno.env.get('HUBSPOT_API_KEY');
 
