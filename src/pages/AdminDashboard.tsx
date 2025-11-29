@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -33,6 +33,7 @@ import { BulkZillowReviewsFetcher } from "@/components/admin/BulkZillowReviewsFe
 import { MesaDataFixer } from "@/components/admin/MesaDataFixer";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 import AvondalePressScraper from "@/components/admin/AvondalePressScraper";
+import ManualProfileEnricher from "@/components/admin/ManualProfileEnricher";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -231,6 +232,10 @@ const AdminDashboard = () => {
               <FileText className="mr-2 h-4 w-4" />
               Avondale Press
             </TabsTrigger>
+            <TabsTrigger value="enrich-profiles">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Enrich Profiles
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -327,6 +332,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="avondale-press" className="space-y-4">
             <AvondalePressScraper />
+          </TabsContent>
+
+          <TabsContent value="enrich-profiles" className="space-y-4">
+            <ManualProfileEnricher />
           </TabsContent>
         </Tabs>
       </div>
