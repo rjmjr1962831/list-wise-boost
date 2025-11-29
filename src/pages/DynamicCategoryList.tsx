@@ -1022,48 +1022,16 @@ export default function DynamicCategoryList() {
     );
   }
 
-  // Take first 10 qualifying professionals, then split into Individual Agents and Teams & Groups
+  // Take first 10 qualifying professionals
   const topTenProfessionals = filteredProfessionals.slice(0, 10);
-  
-  const individualProfessionals = topTenProfessionals.filter(p => {
-    // Check database type field or detect from name/company
-    const dbType = (p as any).type;
-    if (dbType === 'individual') return true;
-    if (dbType === 'team') return false;
-    // Fallback: detect from name
-    const nameChecks = p.name.toLowerCase();
-    const isTeam = nameChecks.includes('team') || 
-                   nameChecks.includes('group') || 
-                   nameChecks.includes('& ');
-    return !isTeam;
-  });
-  
-  const teamProfessionals = topTenProfessionals.filter(p => {
-    // Check database type field or detect from name/company
-    const dbType = (p as any).type;
-    if (dbType === 'team') return true;
-    if (dbType === 'individual') return false;
-    // Fallback: detect from name
-    const nameChecks = p.name.toLowerCase();
-    const isTeam = nameChecks.includes('team') || 
-                   nameChecks.includes('group') || 
-                   nameChecks.includes('& ');
-    return isTeam;
-  });
 
   const sections: ListSection[] = [
-    ...(individualProfessionals.length > 0 ? [{
-      title: "Individual Agents",
-      description: `Top individual ${category.plural_name.toLowerCase()} in ${formatCityName(city)}`,
-      items: individualProfessionals,
+    {
+      title: "",
+      description: "",
+      items: topTenProfessionals,
       accentColor: "primary" as const
-    }] : []),
-    ...(teamProfessionals.length > 0 ? [{
-      title: "Teams & Groups",
-      description: `Leading real estate teams in ${formatCityName(city)}`,
-      items: teamProfessionals,
-      accentColor: "sunset-orange" as const
-    }] : [])
+    }
   ];
 
   const metadata = {
