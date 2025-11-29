@@ -75,9 +75,16 @@ export function EnrichmentPipelineStatus() {
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 10000); // Refresh every 10s
+    
+    // Poll every 5 seconds when there's active processing or pending items
+    const interval = setInterval(() => {
+      if (stats.processing > 0 || stats.pending > 0) {
+        fetchStatus();
+      }
+    }, 5000);
+    
     return () => clearInterval(interval);
-  }, []);
+  }, [stats.processing, stats.pending]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -119,7 +126,15 @@ export function EnrichmentPipelineStatus() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Enrichment Pipeline Status</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          Enrichment Pipeline Status
+          {(stats.processing > 0 || stats.pending > 0) && (
+            <Badge variant="outline" className="ml-2">
+              <Clock className="mr-1 h-3 w-3 animate-pulse" />
+              Live (5s refresh)
+            </Badge>
+          )}
+        </CardTitle>
         <CardDescription>Real-time status of agent data enrichment</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
