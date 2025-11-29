@@ -29,16 +29,16 @@ export const EnrichmentCostControls = () => {
   };
 
   const estimateCredits = () => {
-    const baseCreditsPerAgent = 10; // 5 for bio rewrite + 5 for synthesis
+    const baseCreditsPerAgent = 2; // 1 for bio + 1 for synthesis
     let creditsPerAgent = baseCreditsPerAgent;
 
-    if (options.skipGenericBios) creditsPerAgent -= 2.5; // Save ~25% on bio rewrites
-    if (options.skipIfNoPress) creditsPerAgent -= 2.5; // Save ~25% on synthesis
-    if (options.skipRecentlyEnriched) creditsPerAgent *= 0.3; // Only ~30% need re-enrichment
+    if (options.skipGenericBios) creditsPerAgent -= 0.5;
+    if (options.skipIfNoPress) creditsPerAgent -= 0.5;
+    if (options.skipRecentlyEnriched) creditsPerAgent *= 0.5;
 
     return {
       withoutOptimization: baseCreditsPerAgent,
-      withOptimization: creditsPerAgent.toFixed(1),
+      withOptimization: Math.max(0.1, creditsPerAgent).toFixed(1),
       savingsPercent: ((1 - creditsPerAgent / baseCreditsPerAgent) * 100).toFixed(0)
     };
   };
