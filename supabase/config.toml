@@ -111,3 +111,6 @@ verify_jwt = false
 [functions.synthesize-agent-profile]
 verify_jwt = true
 
+[functions.streaming-city-enrichment]
+verify_jwt = false
+
