@@ -147,6 +147,7 @@ export default function DynamicCategoryList() {
   const [isGeneratingData, setIsGeneratingData] = useState(false);
   const [minLoadingComplete, setMinLoadingComplete] = useState(false);
   const [reviewsReady, setReviewsReady] = useState(false);
+  const [importComplete, setImportComplete] = useState(false);
   const [city, setCity] = useState<City | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [allProfessionals, setAllProfessionals] = useState<Professional[]>([]);
@@ -156,25 +157,6 @@ export default function DynamicCategoryList() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-
-  // Set minimum loading timer to show counter animation
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMinLoadingComplete(true);
-    }, 2000); // Show counter for at least 2 seconds
-    
-    // Force hard refresh on mobile to prevent stale cached content
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const hasRefreshed = sessionStorage.getItem('page-refreshed');
-    
-    if (isMobile && !hasRefreshed) {
-      console.log('🔄 Mobile detected - forcing hard refresh to clear cache');
-      sessionStorage.setItem('page-refreshed', 'true');
-      window.location.reload();
-    }
-
-    return () => clearTimeout(timer);
-  }, []);
 
   // Fetch city and category data
   useEffect(() => {
@@ -560,6 +542,10 @@ export default function DynamicCategoryList() {
 
     // Use import-city-agents for all cities (handles agenscrape + memo23 enrichment)
     console.log('Using import-city-agents for', cityData.name);
+    
+    // Start polling for agents immediately
+    startPollingForAgents(cityData.id, categoryData.id);
+    
     const { data, error } = await supabase.functions.invoke('import-city-agents', {
       body: {
         cityId: cityData.id,
@@ -572,14 +558,59 @@ export default function DynamicCategoryList() {
       toast.error('Import Failed', {
         description: error.message || 'Failed to import agents'
       });
+      setImportComplete(true); // Stop showing interstitial on error
     } else {
       console.log('Import result:', data);
       if (data?.success) {
         toast.success('Import Complete', {
           description: `${data.agenscrapeImported} profiles, ${data.memo23Enriched} enriched`
         });
+        // Polling will detect the agents and set importComplete
       }
     }
+  };
+
+  // Poll database to check if agents have been imported
+  const startPollingForAgents = (cityId: string, categoryId: string) => {
+    console.log('🔄 Starting to poll for imported agents...');
+    
+    const pollInterval = setInterval(async () => {
+      console.log('📊 Checking for agents in database...');
+      
+      const { data: agents, error } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('city_id', cityId)
+        .eq('category_id', categoryId)
+        .eq('active', true)
+        .limit(1);
+      
+      if (error) {
+        console.error('Poll error:', error);
+        return;
+      }
+      
+      if (agents && agents.length > 0) {
+        console.log('✅ Agents found! Import complete.');
+        setImportComplete(true);
+        clearInterval(pollInterval);
+        
+        // Refresh the page to load the agents
+        window.location.reload();
+      }
+    }, 3000); // Poll every 3 seconds
+    
+    // Stop polling after 2 minutes max
+    setTimeout(() => {
+      clearInterval(pollInterval);
+      if (!importComplete) {
+        console.warn('⏱️ Polling timeout - stopping after 2 minutes');
+        setImportComplete(true);
+        toast.error('Import taking longer than expected', {
+          description: 'Please refresh the page manually'
+        });
+      }
+    }, 120000);
   };
 
   // Check if quiz has been completed for real estate agents category
@@ -834,7 +865,7 @@ export default function DynamicCategoryList() {
     };
   }, [city, category, allProfessionals]);
 
-  if (loading || (isGeneratingData && !minLoadingComplete) || !reviewsReady) {
+  if (loading || (isGeneratingData && !importComplete) || !reviewsReady) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
         <div className="flex flex-col items-center gap-8 text-center max-w-2xl">
