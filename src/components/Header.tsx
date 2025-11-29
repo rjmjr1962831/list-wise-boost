@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User as UserIcon, Shield } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -56,7 +56,9 @@ export const Header = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    toast.success("Logged out successfully");
+    toast({
+      title: "Logged out successfully",
+    });
     navigate("/");
   };
 
