@@ -6,11 +6,14 @@ import { toast } from "sonner";
 import { Loader2, TestTube } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 export const TestAvondaleEnrichment = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   const [forceReEnrich, setForceReEnrich] = useState(true);
+  const [concurrency, setConcurrency] = useState(3);
+  const [delaySeconds, setDelaySeconds] = useState(2);
 
   const addLog = (message: string) => {
     setLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
@@ -50,10 +53,16 @@ export const TestAvondaleEnrichment = () => {
 
       // Step 3: Start streaming enrichment pipeline
       addLog("🔄 Starting streaming enrichment (agenscrape→memo23→claude)...");
+      addLog(`⚙️ Settings: ${concurrency} workers, ${delaySeconds}s delay between agents`);
       addLog("This will discover agents and enrich them concurrently as they're found.");
       if (forceReEnrich) {
         addLog("⚡ Force re-enrich enabled: existing agents will be re-enriched");
       }
+      
+      // Estimate time (very rough approximation)
+      const estimatedTimePerAgent = 30 + (delaySeconds * concurrency); // ~30s per agent + delays
+      const estimatedTotalMinutes = Math.ceil((2 * estimatedTimePerAgent) / 60);
+      addLog(`⏱️ Estimated time: ~${estimatedTotalMinutes} minutes`);
       
       const { data: result, error: enrichError } = await supabase.functions.invoke(
         'streaming-city-enrichment',
@@ -62,7 +71,9 @@ export const TestAvondaleEnrichment = () => {
             cityId: city.id,
             categoryId: category.id,
             maxResults: 2,  // Limit to 2 agents for testing
-            forceReEnrich: forceReEnrich
+            forceReEnrich: forceReEnrich,
+            concurrency: concurrency,
+            delayMs: delaySeconds * 1000
           }
         }
       );
@@ -93,10 +104,52 @@ export const TestAvondaleEnrichment = () => {
           Test Streaming Enrichment (2 Agents)
         </CardTitle>
         <CardDescription>
-          Streams agents from agenscrape → memo23 → claude with 10 concurrent workers
+          Test the enrichment pipeline with configurable concurrency and delays
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="space-y-4 rounded-lg border p-4">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">
+                Concurrency: {concurrency} workers
+              </Label>
+            </div>
+            <Slider
+              value={[concurrency]}
+              onValueChange={(value) => setConcurrency(value[0])}
+              min={1}
+              max={5}
+              step={1}
+              disabled={isRunning}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              Number of agents processed simultaneously
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">
+                Delay: {delaySeconds}s between agents
+              </Label>
+            </div>
+            <Slider
+              value={[delaySeconds]}
+              onValueChange={(value) => setDelaySeconds(value[0])}
+              min={0}
+              max={5}
+              step={1}
+              disabled={isRunning}
+              className="w-full"
+            />
+            <p className="text-xs text-muted-foreground">
+              Wait time before processing each agent
+            </p>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div className="space-y-0.5">
             <Label htmlFor="force-reenrich" className="text-sm font-medium">

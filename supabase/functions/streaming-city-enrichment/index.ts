@@ -6,9 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const CONCURRENCY = 10;
+const CONCURRENCY = 3; // Reduced from 10 to avoid rate limits
 const MIN_REVIEWS = 100;
 const MIN_RATING = 4.8;
+const DEFAULT_DELAY_MS = 2000; // 2 second delay between agents
+const MAX_RETRIES = 3; // Max retry attempts for 429 errors
 
 // State name to abbreviation mapper
 const stateAbbreviations: Record<string, string> = {
@@ -55,13 +57,21 @@ serve(async (req) => {
   }
 
   try {
-    const { cityId, categoryId, maxResults = 200, forceReEnrich = false } = await req.json();
+    const { 
+      cityId, 
+      categoryId, 
+      maxResults = 200, 
+      forceReEnrich = false,
+      concurrency = CONCURRENCY,
+      delayMs = DEFAULT_DELAY_MS
+    } = await req.json();
 
     if (!cityId || !categoryId) {
       throw new Error('cityId and categoryId are required');
     }
 
     console.log(`🔄 Force re-enrich mode: ${forceReEnrich ? 'ENABLED' : 'DISABLED'}`);
+    console.log(`⚙️ Concurrency: ${concurrency} workers, Delay: ${delayMs}ms between agents`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -151,11 +161,41 @@ serve(async (req) => {
     let totalSucceeded = 0;
     let totalFailed = 0;
 
+    // Retry helper with exponential backoff
+    const retryWithBackoff = async <T>(
+      fn: () => Promise<T>,
+      operation: string,
+      maxRetries = MAX_RETRIES
+    ): Promise<T> => {
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          return await fn();
+        } catch (error: any) {
+          const is429 = error.message?.includes('429') || error.message?.includes('Rate limit');
+          
+          if (is429 && attempt < maxRetries) {
+            const backoffMs = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+            console.log(`⏱️ [Retry] ${operation} hit rate limit, waiting ${backoffMs}ms before retry ${attempt}/${maxRetries}...`);
+            await new Promise(resolve => setTimeout(resolve, backoffMs));
+            continue;
+          }
+          
+          throw error;
+        }
+      }
+      throw new Error(`${operation} failed after ${maxRetries} retries`);
+    };
+
     // Process a single agent through the full pipeline
     const processAgentPipeline = async (agent: AgentData) => {
       try {
         const agentName = agent.name || agent.screenName || 'Unknown';
         console.log(`🔄 [Worker] Processing ${agentName}...`);
+        
+        // Add delay before processing to avoid overwhelming APIs
+        if (delayMs > 0) {
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
 
         // Check if agent exists globally
         const { data: existing } = await supabase
@@ -251,16 +291,17 @@ serve(async (req) => {
           console.log(`✅ [Worker] ${agentName} created and linked`);
         }
 
-        // Step 2: memo23 enrichment
+        // Step 2: memo23 enrichment with retry
         console.log(`📊 [Worker] Running memo23 enrichment for ${agentName}...`);
-        const { error: memo23Error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
-          body: { professionalId }
-        });
+        await retryWithBackoff(async () => {
+          const { error: memo23Error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
+            body: { professionalId }
+          });
 
-        if (memo23Error) {
-          console.error(`❌ [Worker] memo23 failed for ${agentName}:`, memo23Error);
-          throw new Error(`memo23 enrichment failed: ${memo23Error.message}`);
-        }
+          if (memo23Error) {
+            throw new Error(`memo23 enrichment failed: ${memo23Error.message}`);
+          }
+        }, `memo23 for ${agentName}`);
 
         // Step 3: Check qualification
         const { data: enriched } = await supabase
@@ -280,21 +321,27 @@ serve(async (req) => {
 
         console.log(`✅ [Worker] ${agentName} qualified: ${enriched.num_total_reviews} reviews, ${enriched.review_stars_rating}★`);
 
-        // Step 4: Press research
+        // Step 4: Press research with retry
         console.log(`📰 [Worker] Running press research for ${agentName}...`);
-        const { error: pressError } = await supabase.functions.invoke('search-agent-press-claude', {
-          body: {
-            agentName: agentName,
-            company: agent.company || agent.businessName,
-            businessName: agent.businessName,
-            city: city.name,
-            state: city.state,
-            professionalId
-          }
-        });
+        try {
+          await retryWithBackoff(async () => {
+            const { error: pressError } = await supabase.functions.invoke('search-agent-press-claude', {
+              body: {
+                agentName: agentName,
+                company: agent.company || agent.businessName,
+                businessName: agent.businessName,
+                city: city.name,
+                state: city.state,
+                professionalId
+              }
+            });
 
-        if (pressError) {
-          console.error(`⚠️ [Worker] Press research failed for ${agentName}:`, pressError);
+            if (pressError) {
+              throw new Error(`Press research failed: ${pressError.message}`);
+            }
+          }, `press research for ${agentName}`);
+        } catch (pressError: any) {
+          console.error(`⚠️ [Worker] Press research failed for ${agentName} after retries:`, pressError);
           // Don't throw - press research is optional
         }
 
@@ -310,7 +357,7 @@ serve(async (req) => {
     };
 
     // Main streaming loop
-    console.log(`🔄 Starting streaming pipeline with ${CONCURRENCY} concurrent workers...`);
+    console.log(`🔄 Starting streaming pipeline with ${concurrency} concurrent workers...`);
 
     while (apifyRunning || workerQueue.length > 0 || activeWorkers.size > 0) {
       // Poll Apify for new items
@@ -369,7 +416,7 @@ serve(async (req) => {
       }
 
       // Spawn workers up to concurrency limit
-      while (workerQueue.length > 0 && activeWorkers.size < CONCURRENCY) {
+      while (workerQueue.length > 0 && activeWorkers.size < concurrency) {
         const agent = workerQueue.shift()!;
         const workerPromise = processAgentPipeline(agent);
         activeWorkers.add(workerPromise);
