@@ -974,6 +974,81 @@ export type Database = {
           },
         ]
       }
+      prospects: {
+        Row: {
+          agents_ahead: number | null
+          city: string | null
+          company: string | null
+          created_at: string
+          email: string
+          email_snippet: string | null
+          hubspot_contact_id: string | null
+          hubspot_last_error: string | null
+          hubspot_synced: boolean | null
+          hubspot_synced_at: string | null
+          id: string
+          name: string
+          phone: string | null
+          state: string | null
+          status: Database["public"]["Enums"]["prospect_status"] | null
+          updated_at: string
+          zillow_page: number | null
+          zillow_position: number | null
+          zillow_profile_url: string | null
+          zillow_rating: number | null
+          zillow_reviews: number | null
+          zillow_total_agents: number | null
+        }
+        Insert: {
+          agents_ahead?: number | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email: string
+          email_snippet?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_last_error?: string | null
+          hubspot_synced?: boolean | null
+          hubspot_synced_at?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"] | null
+          updated_at?: string
+          zillow_page?: number | null
+          zillow_position?: number | null
+          zillow_profile_url?: string | null
+          zillow_rating?: number | null
+          zillow_reviews?: number | null
+          zillow_total_agents?: number | null
+        }
+        Update: {
+          agents_ahead?: number | null
+          city?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string
+          email_snippet?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_last_error?: string | null
+          hubspot_synced?: boolean | null
+          hubspot_synced_at?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          state?: string | null
+          status?: Database["public"]["Enums"]["prospect_status"] | null
+          updated_at?: string
+          zillow_page?: number | null
+          zillow_position?: number | null
+          zillow_profile_url?: string | null
+          zillow_rating?: number | null
+          zillow_reviews?: number | null
+          zillow_total_agents?: number | null
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           created_at: string
@@ -1074,6 +1149,12 @@ export type Database = {
     Enums: {
       app_role: "admin" | "editor" | "viewer"
       claim_status: "unclaimed" | "pending" | "approved" | "rejected"
+      prospect_status:
+        | "new"
+        | "contacted"
+        | "interested"
+        | "customer"
+        | "declined"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1203,6 +1284,13 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "editor", "viewer"],
       claim_status: ["unclaimed", "pending", "approved", "rejected"],
+      prospect_status: [
+        "new",
+        "contacted",
+        "interested",
+        "customer",
+        "declined",
+      ],
     },
   },
 } as const

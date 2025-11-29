@@ -117,3 +117,12 @@ verify_jwt = false
 [functions.process-email-verification-queue]
 verify_jwt = false
 
+[functions.sync-to-hubspot]
+verify_jwt = false
+
+[functions.hubspot-webhook]
+verify_jwt = false
+
+[functions.bulk-sync-hubspot]
+verify_jwt = false
+
