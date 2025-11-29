@@ -40,6 +40,8 @@ import { TestAvondaleEnrichment } from "@/components/admin/TestAvondaleEnrichmen
 import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResultsDashboard";
 import { StopEnrichmentButton } from "@/components/admin/StopEnrichmentButton";
 import { EnrichmentCostControls } from "@/components/admin/EnrichmentCostControls";
+import { BeauvaisScottsdaleSetup } from "@/components/admin/BeauvaisScottsdaleSetup";
+import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineStatus";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -263,6 +265,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Results Dashboard
             </TabsTrigger>
+            <TabsTrigger value="pipeline-status">
+              <Zap className="mr-2 h-4 w-4" />
+              Pipeline Status
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -379,6 +385,11 @@ const AdminDashboard = () => {
 
           <TabsContent value="results-dashboard" className="space-y-4">
             <EnrichmentResultsDashboard />
+          </TabsContent>
+
+          <TabsContent value="pipeline-status" className="space-y-4">
+            <BeauvaisScottsdaleSetup />
+            <EnrichmentPipelineStatus />
           </TabsContent>
         </Tabs>
       </div>
