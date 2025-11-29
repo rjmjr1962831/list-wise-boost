@@ -1887,49 +1887,6 @@ export const ProfessionalCard = ({
                   );
                 })()}
                 
-                {/* Verified Profiles Section */}
-                {(() => {
-                  const hasWebsite = professional.website;
-                  const hasZillow = (professional as any).zillow_profile_url;
-                  if (!hasWebsite && !hasZillow) return null;
-                  
-                  return (
-                    <div className="border rounded-lg p-4 bg-background">
-                      <h4 className="font-semibold text-sm flex items-center gap-2 mb-3">
-                        <ExternalLink className="h-4 w-4" />
-                        Verified Profiles
-                      </h4>
-                      <div className="flex flex-wrap gap-3">
-                        {hasWebsite && (
-                          <a 
-                            href={(() => {
-                              let v = professional.website?.trim() || '';
-                              if (!v) return '#';
-                              if (/^https?:\/\/https?:\/\//i.test(v)) v = v.replace(/^https?:\/\/https?:\/\//i, 'https://');
-                              if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
-                              return v;
-                            })()} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
-                          >
-                            <Globe className="h-4 w-4" /> Official Website
-                          </a>
-                        )}
-                        {hasZillow && (
-                          <a 
-                            href={(professional as any).zillow_profile_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-sm text-primary hover:underline"
-                          >
-                            <ExternalLink className="h-4 w-4" /> Zillow
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
                 
                 {/* Save/Cancel buttons when editing */}
                 {isOwnProfile && isEditing && (
