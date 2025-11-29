@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 export const TestAvondaleEnrichment = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
-  const [forceReEnrich, setForceReEnrich] = useState(false);
+  const [forceReEnrich, setForceReEnrich] = useState(true);
 
   const addLog = (message: string) => {
     setLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
