@@ -1505,8 +1505,11 @@ export const ProfessionalCard = ({
                   <div className="border rounded-lg p-4 bg-background" itemScope itemType="https://schema.org/Person">
                     {(() => {
                       const pressMentions = (professional as any).press_mentions || [];
+                      const achievements = (professional as any).notable_achievements || [];
+                      const publications = (professional as any).publications || [];
                       
-                      if (pressMentions.length === 0) {
+                      // Only show empty state if ALL enrichment data is missing
+                      if (pressMentions.length === 0 && achievements.length === 0 && publications.length === 0) {
                         return (
                           <div className="text-sm text-muted-foreground text-center py-4">
                             Press coverage coming soon
@@ -1519,6 +1522,50 @@ export const ProfessionalCard = ({
 
                       return (
                         <div className="space-y-4">
+                          {/* Notable Achievements */}
+                          {achievements.length > 0 && (
+                            <div>
+                              <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                                <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                                Notable Achievements
+                              </p>
+                              <div className="space-y-3">
+                                {achievements.map((achievement: any, idx: number) => (
+                                  <div key={idx} className="border-l-2 border-yellow-600 dark:border-yellow-400 pl-3">
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div className="flex-1">
+                                        <p className="font-semibold text-sm">{achievement.title}</p>
+                                        <p className="text-xs text-muted-foreground mt-1">{achievement.description}</p>
+                                        {achievement.year && (
+                                          <p className="text-xs text-muted-foreground mt-1">Year: {achievement.year}</p>
+                                        )}
+                                        {achievement.source && (
+                                          <cite className="text-xs text-muted-foreground block mt-1 not-italic">
+                                            Source: {achievement.source_url ? (
+                                              <a 
+                                                href={achievement.source_url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="text-primary hover:underline"
+                                              >
+                                                {achievement.source}
+                                              </a>
+                                            ) : achievement.source}
+                                          </cite>
+                                        )}
+                                      </div>
+                                      {achievement.credibility >= 8 && (
+                                        <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs flex-shrink-0">
+                                          High Credibility
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
                           {/* Awards & Recognition */}
                           {awards.length > 0 && (
                             <div>
@@ -1562,98 +1609,45 @@ export const ProfessionalCard = ({
                                </div>
                              </div>
                            )}
+
+                           {/* Publications */}
+                           {publications.length > 0 && (
+                             <div>
+                               <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
+                                 <Newspaper className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                 Published Works
+                               </p>
+                               <div className="space-y-3">
+                                 {publications.map((pub: any, idx: number) => (
+                                   <div key={idx} className="border-l-2 border-blue-600 dark:border-blue-400 pl-3">
+                                     <p className="font-semibold text-sm">{pub.title}</p>
+                                     <p className="text-xs text-muted-foreground mt-1">
+                                       {pub.type} {pub.publisher && `— ${pub.publisher}`}
+                                     </p>
+                                     {pub.year && (
+                                       <p className="text-xs text-muted-foreground">Published: {pub.year}</p>
+                                     )}
+                                     {pub.url && (
+                                       <a 
+                                         href={pub.url} 
+                                         target="_blank" 
+                                         rel="noopener noreferrer"
+                                         className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-1"
+                                       >
+                                         View Publication <ExternalLink className="h-3 w-3" />
+                                       </a>
+                                     )}
+                                   </div>
+                                 ))}
+                               </div>
+                             </div>
+                           )}
                         </div>
                       );
                     })()}
                   </div>
                 )}
                 
-                {/* Notable Achievements Section */}
-                {(() => {
-                  const achievements = (professional as any).notable_achievements;
-                  if (!achievements || !Array.isArray(achievements) || achievements.length === 0) return null;
-                  
-                  return (
-                    <div className="border rounded-lg p-4 bg-gradient-to-br from-yellow-50/50 to-orange-50/50 dark:from-yellow-950/20 dark:to-orange-950/20">
-                      <h4 className="font-semibold text-sm flex items-center gap-2 mb-3">
-                        <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-                        Notable Achievements
-                      </h4>
-                      <div className="space-y-3">
-                        {achievements.map((achievement: any, idx: number) => (
-                          <div key={idx} className="border-l-2 border-yellow-600 dark:border-yellow-400 pl-3">
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
-                                <p className="font-semibold text-sm">{achievement.title}</p>
-                                <p className="text-xs text-muted-foreground mt-1">{achievement.description}</p>
-                                {achievement.year && (
-                                  <p className="text-xs text-muted-foreground mt-1">Year: {achievement.year}</p>
-                                )}
-                                {achievement.source && (
-                                  <cite className="text-xs text-muted-foreground block mt-1 not-italic">
-                                    Source: {achievement.source_url ? (
-                                      <a 
-                                        href={achievement.source_url} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="text-primary hover:underline"
-                                      >
-                                        {achievement.source}
-                                      </a>
-                                    ) : achievement.source}
-                                  </cite>
-                                )}
-                              </div>
-                              {achievement.credibility >= 8 && (
-                                <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs flex-shrink-0">
-                                  High Credibility
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-                
-                {/* Publications Section */}
-                {(() => {
-                  const publications = (professional as any).publications;
-                  if (!publications || !Array.isArray(publications) || publications.length === 0) return null;
-                  
-                  return (
-                    <div className="border rounded-lg p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20">
-                      <h4 className="font-semibold text-sm flex items-center gap-2 mb-3">
-                        <Newspaper className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                        Published Works
-                      </h4>
-                      <div className="space-y-3">
-                        {publications.map((pub: any, idx: number) => (
-                          <div key={idx} className="border-l-2 border-blue-600 dark:border-blue-400 pl-3">
-                            <p className="font-semibold text-sm">{pub.title}</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {pub.type} {pub.publisher && `— ${pub.publisher}`}
-                            </p>
-                            {pub.year && (
-                              <p className="text-xs text-muted-foreground">Published: {pub.year}</p>
-                            )}
-                            {pub.url && (
-                              <a 
-                                href={pub.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-1"
-                              >
-                                View Publication <ExternalLink className="h-3 w-3" />
-                              </a>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
                 
                 {/* Community & Leadership Section */}
                 {(() => {
