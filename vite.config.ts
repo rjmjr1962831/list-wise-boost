@@ -14,9 +14,22 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ["react", "react-dom", "react-dom/client", "react/jsx-runtime"],
+    dedupe: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+    ],
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react-dom/client", "react-router-dom"],
+    include: [
+      "react",
+      "react-dom",
+      "react-dom/client",
+      "react-router-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime",
+    ],
   },
 }));
