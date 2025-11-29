@@ -42,7 +42,7 @@ export default function AvondalePressScraper() {
         return;
       }
 
-      // Fetch 2 Avondale agents for testing
+      // Fetch all 10 Avondale agents
       const { data: agents, error } = await supabase
         .from('professionals')
         .select('id, name, company, business_name, press_mentions')
@@ -50,7 +50,7 @@ export default function AvondalePressScraper() {
         .eq('category_id', category.id)
         .eq('active', true)
         .order('rank')
-        .limit(2);
+        .limit(10);
 
       if (error || !agents || agents.length === 0) {
         toast.error('No agents found in Avondale');
