@@ -21,51 +21,75 @@ async function processAgent(supabase: any, item: any) {
 
     console.log(`🔄 Processing ${item.professionals?.name}...`);
 
-    // Call fetch-single-memo23-agent
-    const { data: enrichData, error: enrichError } = await supabase.functions.invoke(
+    // Step 1: memo23 enrichment
+    const { error: enrichError } = await supabase.functions.invoke(
       'fetch-single-memo23-agent',
       { body: { professionalId: item.professional_id } }
     );
 
     if (enrichError) {
-      throw new Error(enrichError.message);
+      throw new Error(`memo23 failed: ${enrichError.message}`);
+    }
+    console.log(`✅ memo23 complete for ${item.professionals?.name}`);
+
+    // Step 2: Check review count qualification
+    const { data: agent } = await supabase
+      .from('professionals')
+      .select('num_total_reviews, name, company, business_name, city_id')
+      .eq('id', item.professional_id)
+      .single();
+
+    if (!agent?.num_total_reviews || agent.num_total_reviews < 100) {
+      console.log(`⚠️ ${agent?.name} has ${agent?.num_total_reviews || 0} reviews - deactivating`);
+      await supabase.from('professionals')
+        .update({ active: false })
+        .eq('id', item.professional_id);
+      
+      await supabase.from('contact_enrichment_queue')
+        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .eq('id', item.id);
+      
+      return { name: agent?.name, status: 'deactivated', reason: 'low_reviews', success: true };
     }
 
+    // Step 3: Press research with Perplexity (auto-triggers synthesis)
+    console.log(`📰 Running Perplexity press search for ${agent.name}...`);
+    
+    const { data: cityData } = await supabase
+      .from('cities')
+      .select('name, state')
+      .eq('id', agent.city_id)
+      .single();
+
+    await supabase.functions.invoke('search-agent-press', {
+      body: {
+        agentName: agent.name,
+        company: agent.company,
+        businessName: agent.business_name,
+        city: cityData?.name,
+        state: cityData?.state,
+        professionalId: item.professional_id
+      }
+    });
+
+    console.log(`✅ Full enrichment complete for ${agent.name}`);
+
     // Mark as completed
-    await supabase
-      .from('contact_enrichment_queue')
-      .update({ 
-        status: 'completed',
-        completed_at: new Date().toISOString()
-      })
+    await supabase.from('contact_enrichment_queue')
+      .update({ status: 'completed', completed_at: new Date().toISOString() })
       .eq('id', item.id);
 
-    console.log(`✅ Completed ${item.professionals?.name}`);
-    return {
-      name: item.professionals?.name,
-      status: 'completed',
-      success: true
-    };
+    return { name: agent.name, status: 'completed', success: true };
 
   } catch (error: any) {
     console.error(`❌ Failed ${item.professionals?.name}:`, error.message);
     
-    // Mark as failed if max attempts reached, otherwise back to pending
     const newStatus = item.attempts + 1 >= 3 ? 'failed' : 'pending';
-    await supabase
-      .from('contact_enrichment_queue')
-      .update({ 
-        status: newStatus,
-        error_message: error.message
-      })
+    await supabase.from('contact_enrichment_queue')
+      .update({ status: newStatus, error_message: error.message })
       .eq('id', item.id);
 
-    return {
-      name: item.professionals?.name,
-      status: newStatus,
-      error: error.message,
-      success: false
-    };
+    return { name: item.professionals?.name, status: newStatus, error: error.message, success: false };
   }
 }
 
@@ -161,6 +185,27 @@ serve(async (req) => {
     }
 
     console.log(`📊 All batches complete: ${results.succeeded} succeeded, ${results.failed} failed`);
+
+    // Check for remaining items and self-continue
+    const { count: remainingCount } = await supabase
+      .from('contact_enrichment_queue')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .lt('attempts', 3);
+
+    if (remainingCount && remainingCount > 0) {
+      console.log(`🔄 ${remainingCount} items remaining, triggering next batch...`);
+      
+      // Fire-and-forget: trigger next batch
+      fetch(`${supabaseUrl}/functions/v1/process-contact-enrichment-queue`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ batchSize, concurrency })
+      }).catch(err => console.log('Next batch triggered'));
+    }
 
     return new Response(
       JSON.stringify(results),
