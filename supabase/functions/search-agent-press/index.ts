@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { agentName, company, businessName, city, state } = await req.json();
+    const { agentName, company, businessName, city, state, professionalId } = await req.json();
     
     if (!agentName) {
       return new Response(JSON.stringify({ error: 'Agent name is required' }), {
@@ -227,6 +227,35 @@ serve(async (req) => {
 
     console.log(`✅ Found ${validatedMentions.length} unique validated press mentions`);
     validatedMentions.forEach((m: any) => console.log(`   - ${m.source}: ${m.title}`));
+
+    // Trigger profile synthesis if professionalId provided
+    if (professionalId && validatedMentions.length > 0) {
+      console.log(`🔄 Triggering profile synthesis for professional ${professionalId}...`);
+      
+      const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+      const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+      
+      if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+        try {
+          const synthesisResponse = await fetch(`${SUPABASE_URL}/functions/v1/synthesize-agent-profile`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ professionalId })
+          });
+          
+          if (synthesisResponse.ok) {
+            console.log(`✅ Profile synthesis triggered successfully`);
+          } else {
+            console.error(`⚠️ Profile synthesis failed:`, synthesisResponse.status);
+          }
+        } catch (error) {
+          console.error(`⚠️ Error triggering synthesis:`, error);
+        }
+      }
+    }
 
     return new Response(JSON.stringify({ mentions: validatedMentions }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

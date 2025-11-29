@@ -571,6 +571,7 @@ serve(async (req) => {
       if (agentData.getToKnowMe?.instagramUrl) socialUrls.instagram = agentData.getToKnowMe.instagramUrl;
       if (agentData.getToKnowMe?.youtubeUrl) socialUrls.youtube = agentData.getToKnowMe.youtubeUrl;
       if (agentData.getToKnowMe?.pinterestUrl) socialUrls.pinterest = agentData.getToKnowMe.pinterestUrl;
+      if (agentData.getToKnowMe?.tiktokUrl) socialUrls.tiktok = agentData.getToKnowMe.tiktokUrl;
       
       if (Object.keys(socialUrls).length > 0) {
         console.log(`Extracted ${Object.keys(socialUrls).length} social URLs:`, Object.keys(socialUrls));
@@ -838,7 +839,7 @@ serve(async (req) => {
           .single();
 
         if (cityData) {
-          const pressResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press-claude`, {
+          const pressResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${supabaseKey}`,
@@ -849,7 +850,8 @@ serve(async (req) => {
               company: updateData.company || '',
               businessName: updateData.business_name || '',
               city: cityData.name,
-              state: cityData.state
+              state: cityData.state,
+              professionalId: professionalId
             })
           });
 
