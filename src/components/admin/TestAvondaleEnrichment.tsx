@@ -33,15 +33,27 @@ export const TestAvondaleEnrichment = () => {
       }
       addLog(`✅ Found city: ${city.name}`);
 
-      // Step 2: Import 2 agents
+      // Step 2: Get real estate agents category
+      const { data: category } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('slug', 'top10realestateagents')
+        .single();
+
+      if (!category) {
+        throw new Error("Real estate agents category not found");
+      }
+      addLog(`✅ Found category: ${category.name}`);
+
+      // Step 3: Import 2 agents
       addLog("📥 Importing 2 agents via import-city-agents...");
       const { data: importResult, error: importError } = await supabase.functions.invoke(
         'import-city-agents',
         {
           body: {
             cityId: city.id,
-            categorySlug: 'top10realestateagents',
-            limit: 2
+            categoryId: category.id,
+            maxResults: 2
           }
         }
       );
