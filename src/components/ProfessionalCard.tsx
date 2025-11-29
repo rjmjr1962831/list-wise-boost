@@ -812,184 +812,186 @@ export const ProfessionalCard = ({
               </div>
             )}
             
-            {/* Specialties editor or display */}
-            {isOwnProfile && isEditing ? (
-              <div className="mt-4 space-y-3 w-full">
-                <h4 className="text-sm font-semibold">Specialties</h4>
-                
-                {/* Available specialties */}
-                <div className="flex flex-wrap gap-2">
-                  {availableSpecialties.map((specialty) => {
-                    const isSelected = editedData.specialty.includes(specialty);
-                    return (
-                      <Badge
-                        key={specialty}
-                        variant={isSelected ? 'default' : 'outline'}
-                        className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
-                        onClick={() => toggleSpecialty(specialty)}
-                      >
-                        {specialty}
-                        {isSelected && <X className="h-3 w-3 ml-1" />}
-                      </Badge>
-                    );
-                  })}
-                </div>
-
-                {/* Add custom specialty */}
-                <div className="flex gap-2">
-                  <Input
-                    value={newSpecialty}
-                    onChange={(e) => setNewSpecialty(e.target.value)}
-                    placeholder="Add custom specialty..."
-                    className="text-sm"
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addCustomSpecialty();
-                      }
-                    }}
-                  />
-                  <Button
-                    type="button"
-                    onClick={addCustomSpecialty}
-                    disabled={!newSpecialty.trim()}
-                    variant="outline"
-                    size="sm"
-                  >
-                    Add
-                  </Button>
-                </div>
-
-                {/* Selected specialties preview */}
-                {editedData.specialty.length > 0 && (
-                  <div className="p-3 bg-muted/30 rounded-lg">
-                    <p className="text-xs text-muted-foreground mb-2">Selected ({editedData.specialty.length}):</p>
-                    <div className="flex flex-wrap gap-2">
-                      {editedData.specialty.map((specialty: string) => (
+            {/* Specialties editor or display - Hidden on mobile, shown on desktop */}
+            <div className="hidden md:block">
+              {isOwnProfile && isEditing ? (
+                <div className="mt-4 space-y-3 w-full">
+                  <h4 className="text-sm font-semibold">Specialties</h4>
+                  
+                  {/* Available specialties */}
+                  <div className="flex flex-wrap gap-2">
+                    {availableSpecialties.map((specialty) => {
+                      const isSelected = editedData.specialty.includes(specialty);
+                      return (
                         <Badge
                           key={specialty}
-                          variant="secondary"
-                          className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground text-xs"
+                          variant={isSelected ? 'default' : 'outline'}
+                          className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
                           onClick={() => toggleSpecialty(specialty)}
                         >
                           {specialty}
-                          <X className="h-3 w-3 ml-1" />
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              /* Display specialties */
-              (() => {
-                const profileTypeMap: Record<string, string> = {
-                  'consumer': 'Buyer Representation',
-                  'agent': 'Full-Service Agent',
-                  'renter': 'Rental Specialist',
-                  'showcaseBuyer': 'Luxury Homes',
-                  'peeps': 'Client Reviews',
-                  'listing': 'Listing Specialist',
-                  'foreclosure': 'Foreclosure Expert',
-                  'newConstruction': 'New Construction',
-                  'relocation': 'Relocation Services',
-                  'investment': 'Investment Properties'
-                };
-                
-                const profileTypes = ((professional as any).profile_types || []) as string[];
-                const mappedProfileTypes = profileTypes
-                  .map(pt => profileTypeMap[pt])
-                  .filter(Boolean);
-                
-                const dbSpecialties = professional.specialties || [];
-                const parsedSpecialties = parsedProfInfo?.specialties || [];
-                
-                const profInfoArray = (professional as any).professional_information;
-                const extractedSpecialties: string[] = [];
-                const extractedLanguages: string[] = [];
-                
-                if (Array.isArray(profInfoArray)) {
-                  // Extract specialties
-                  const specialtiesEntry = profInfoArray.find((e: any) => 
-                    e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
-                  );
-                  if (specialtiesEntry) {
-                    const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
-                    if (Array.isArray(rawData)) {
-                      rawData.forEach((item: any) => {
-                        if (typeof item === 'string' && item.trim()) {
-                          extractedSpecialties.push(item.trim());
-                        } else if (item?.text) {
-                          extractedSpecialties.push(item.text);
-                        }
-                      });
-                    } else if (typeof rawData === 'string' && rawData.trim()) {
-                      extractedSpecialties.push(rawData.trim());
-                    }
-                  }
-                  
-                  // Extract languages
-                  const languagesEntry = profInfoArray.find((e: any) => 
-                    e.term === 'Languages' || e.term === 'Languages spoken'
-                  );
-                  if (languagesEntry) {
-                    const rawData = languagesEntry.description || languagesEntry.lines;
-                    if (typeof rawData === 'string' && rawData.trim()) {
-                      // Split by comma and clean up, filtering out English if more than 1 language
-                      const langs = rawData.split(',').map(l => l.trim()).filter(Boolean);
-                      const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
-                      // If they list multiple languages including English, only show non-English
-                      // If English is the only language listed, don't show it
-                      if (nonEnglishLangs.length > 0) {
-                        nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
-                      }
-                    } else if (Array.isArray(rawData)) {
-                      const langs = rawData.map(l => typeof l === 'string' ? l.trim() : '').filter(Boolean);
-                      const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
-                      if (nonEnglishLangs.length > 0) {
-                        nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
-                      }
-                    }
-                  }
-                }
-                
-                const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])];
-                
-                if (allSpecialties.length === 0) return null;
-                
-                return (
-                  <div className="mt-3 space-y-1.5 flex flex-col items-center">
-                    {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
-                      const getSpecialtyIcon = (spec: string) => {
-                        const lower = spec.toLowerCase();
-                        // Check if it's a language (from extractedLanguages)
-                        const commonLanguages = ['spanish', 'french', 'german', 'italian', 'portuguese', 'chinese', 'japanese', 'korean', 'arabic', 'russian', 'hindi', 'tagalog', 'vietnamese'];
-                        if (commonLanguages.some(lang => lower.includes(lang))) return Globe;
-                        if (lower.includes('residential') || lower.includes('single family')) return Home;
-                        if (lower.includes('commercial') || lower.includes('business')) return Building2;
-                        if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
-                        if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
-                        if (lower.includes('first') || lower.includes('buyer')) return Key;
-                        if (lower.includes('relocation')) return Users;
-                        return Award;
-                      };
-                      const Icon = getSpecialtyIcon(specialty);
-                      return (
-                        <Badge 
-                          key={idx} 
-                          variant="secondary" 
-                          className="text-xs w-full justify-start gap-1.5"
-                          itemProp="knowsAbout"
-                        >
-                          <Icon className="h-3 w-3" />
-                          {specialty}
+                          {isSelected && <X className="h-3 w-3 ml-1" />}
                         </Badge>
                       );
                     })}
                   </div>
-                );
-              })()
-            )}
+
+                  {/* Add custom specialty */}
+                  <div className="flex gap-2">
+                    <Input
+                      value={newSpecialty}
+                      onChange={(e) => setNewSpecialty(e.target.value)}
+                      placeholder="Add custom specialty..."
+                      className="text-sm"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addCustomSpecialty();
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      onClick={addCustomSpecialty}
+                      disabled={!newSpecialty.trim()}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Add
+                    </Button>
+                  </div>
+
+                  {/* Selected specialties preview */}
+                  {editedData.specialty.length > 0 && (
+                    <div className="p-3 bg-muted/30 rounded-lg">
+                      <p className="text-xs text-muted-foreground mb-2">Selected ({editedData.specialty.length}):</p>
+                      <div className="flex flex-wrap gap-2">
+                        {editedData.specialty.map((specialty: string) => (
+                          <Badge
+                            key={specialty}
+                            variant="secondary"
+                            className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground text-xs"
+                            onClick={() => toggleSpecialty(specialty)}
+                          >
+                            {specialty}
+                            <X className="h-3 w-3 ml-1" />
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Display specialties */
+                (() => {
+                  const profileTypeMap: Record<string, string> = {
+                    'consumer': 'Buyer Representation',
+                    'agent': 'Full-Service Agent',
+                    'renter': 'Rental Specialist',
+                    'showcaseBuyer': 'Luxury Homes',
+                    'peeps': 'Client Reviews',
+                    'listing': 'Listing Specialist',
+                    'foreclosure': 'Foreclosure Expert',
+                    'newConstruction': 'New Construction',
+                    'relocation': 'Relocation Services',
+                    'investment': 'Investment Properties'
+                  };
+                  
+                  const profileTypes = ((professional as any).profile_types || []) as string[];
+                  const mappedProfileTypes = profileTypes
+                    .map(pt => profileTypeMap[pt])
+                    .filter(Boolean);
+                  
+                  const dbSpecialties = professional.specialties || [];
+                  const parsedSpecialties = parsedProfInfo?.specialties || [];
+                  
+                  const profInfoArray = (professional as any).professional_information;
+                  const extractedSpecialties: string[] = [];
+                  const extractedLanguages: string[] = [];
+                  
+                  if (Array.isArray(profInfoArray)) {
+                    // Extract specialties
+                    const specialtiesEntry = profInfoArray.find((e: any) => 
+                      e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
+                    );
+                    if (specialtiesEntry) {
+                      const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
+                      if (Array.isArray(rawData)) {
+                        rawData.forEach((item: any) => {
+                          if (typeof item === 'string' && item.trim()) {
+                            extractedSpecialties.push(item.trim());
+                          } else if (item?.text) {
+                            extractedSpecialties.push(item.text);
+                          }
+                        });
+                      } else if (typeof rawData === 'string' && rawData.trim()) {
+                        extractedSpecialties.push(rawData.trim());
+                      }
+                    }
+                    
+                    // Extract languages
+                    const languagesEntry = profInfoArray.find((e: any) => 
+                      e.term === 'Languages' || e.term === 'Languages spoken'
+                    );
+                    if (languagesEntry) {
+                      const rawData = languagesEntry.description || languagesEntry.lines;
+                      if (typeof rawData === 'string' && rawData.trim()) {
+                        // Split by comma and clean up, filtering out English if more than 1 language
+                        const langs = rawData.split(',').map(l => l.trim()).filter(Boolean);
+                        const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
+                        // If they list multiple languages including English, only show non-English
+                        // If English is the only language listed, don't show it
+                        if (nonEnglishLangs.length > 0) {
+                          nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
+                        }
+                      } else if (Array.isArray(rawData)) {
+                        const langs = rawData.map(l => typeof l === 'string' ? l.trim() : '').filter(Boolean);
+                        const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
+                        if (nonEnglishLangs.length > 0) {
+                          nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
+                        }
+                      }
+                    }
+                  }
+                  
+                  const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])];
+                  
+                  if (allSpecialties.length === 0) return null;
+                  
+                  return (
+                    <div className="mt-3 space-y-1.5 flex flex-col items-center">
+                      {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
+                        const getSpecialtyIcon = (spec: string) => {
+                          const lower = spec.toLowerCase();
+                          // Check if it's a language (from extractedLanguages)
+                          const commonLanguages = ['spanish', 'french', 'german', 'italian', 'portuguese', 'chinese', 'japanese', 'korean', 'arabic', 'russian', 'hindi', 'tagalog', 'vietnamese'];
+                          if (commonLanguages.some(lang => lower.includes(lang))) return Globe;
+                          if (lower.includes('residential') || lower.includes('single family')) return Home;
+                          if (lower.includes('commercial') || lower.includes('business')) return Building2;
+                          if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
+                          if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
+                          if (lower.includes('first') || lower.includes('buyer')) return Key;
+                          if (lower.includes('relocation')) return Users;
+                          return Award;
+                        };
+                        const Icon = getSpecialtyIcon(specialty);
+                        return (
+                          <Badge 
+                            key={idx} 
+                            variant="secondary" 
+                            className="text-xs w-full justify-start gap-1.5"
+                            itemProp="knowsAbout"
+                          >
+                            <Icon className="h-3 w-3" />
+                            {specialty}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  );
+                })()
+              )}
+            </div>
           </div>
 
           {/* Content - flexible with min-w-0 to prevent overflow */}
@@ -1367,6 +1369,187 @@ export const ProfessionalCard = ({
                   </div>
                 );
               })()}
+
+              {/* Specialties on mobile only - shown under years experience */}
+              <div className="block md:hidden mt-4">
+                {isOwnProfile && isEditing ? (
+                  <div className="space-y-3 w-full">
+                    <h4 className="text-sm font-semibold">Specialties</h4>
+                    
+                    {/* Available specialties */}
+                    <div className="flex flex-wrap gap-2">
+                      {availableSpecialties.map((specialty) => {
+                        const isSelected = editedData.specialty.includes(specialty);
+                        return (
+                          <Badge
+                            key={specialty}
+                            variant={isSelected ? 'default' : 'outline'}
+                            className="cursor-pointer hover:opacity-80 transition-opacity text-xs"
+                            onClick={() => toggleSpecialty(specialty)}
+                          >
+                            {specialty}
+                            {isSelected && <X className="h-3 w-3 ml-1" />}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+
+                    {/* Add custom specialty */}
+                    <div className="flex gap-2">
+                      <Input
+                        value={newSpecialty}
+                        onChange={(e) => setNewSpecialty(e.target.value)}
+                        placeholder="Add custom specialty..."
+                        className="text-sm"
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            addCustomSpecialty();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        onClick={addCustomSpecialty}
+                        disabled={!newSpecialty.trim()}
+                        variant="outline"
+                        size="sm"
+                      >
+                        Add
+                      </Button>
+                    </div>
+
+                    {/* Selected specialties preview */}
+                    {editedData.specialty.length > 0 && (
+                      <div className="p-3 bg-muted/30 rounded-lg">
+                        <p className="text-xs text-muted-foreground mb-2">Selected ({editedData.specialty.length}):</p>
+                        <div className="flex flex-wrap gap-2">
+                          {editedData.specialty.map((specialty: string) => (
+                            <Badge
+                              key={specialty}
+                              variant="secondary"
+                              className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground text-xs"
+                              onClick={() => toggleSpecialty(specialty)}
+                            >
+                              {specialty}
+                              <X className="h-3 w-3 ml-1" />
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Display specialties */
+                  (() => {
+                    const profileTypeMap: Record<string, string> = {
+                      'consumer': 'Buyer Representation',
+                      'agent': 'Full-Service Agent',
+                      'renter': 'Rental Specialist',
+                      'showcaseBuyer': 'Luxury Homes',
+                      'peeps': 'Client Reviews',
+                      'listing': 'Listing Specialist',
+                      'foreclosure': 'Foreclosure Expert',
+                      'newConstruction': 'New Construction',
+                      'relocation': 'Relocation Services',
+                      'investment': 'Investment Properties'
+                    };
+                    
+                    const profileTypes = ((professional as any).profile_types || []) as string[];
+                    const mappedProfileTypes = profileTypes
+                      .map(pt => profileTypeMap[pt])
+                      .filter(Boolean);
+                    
+                    const dbSpecialties = professional.specialties || [];
+                    const parsedSpecialties = parsedProfInfo?.specialties || [];
+                    
+                    const profInfoArray = (professional as any).professional_information;
+                    const extractedSpecialties: string[] = [];
+                    const extractedLanguages: string[] = [];
+                    
+                    if (Array.isArray(profInfoArray)) {
+                      // Extract specialties
+                      const specialtiesEntry = profInfoArray.find((e: any) => 
+                        e.term === 'Specialties' || e.term === 'Areas of Focus' || e.term === 'Service areas'
+                      );
+                      if (specialtiesEntry) {
+                        const rawData = specialtiesEntry.detail || specialtiesEntry.lines || specialtiesEntry.description;
+                        if (Array.isArray(rawData)) {
+                          rawData.forEach((item: any) => {
+                            if (typeof item === 'string' && item.trim()) {
+                              extractedSpecialties.push(item.trim());
+                            } else if (item?.text) {
+                              extractedSpecialties.push(item.text);
+                            }
+                          });
+                        } else if (typeof rawData === 'string' && rawData.trim()) {
+                          extractedSpecialties.push(rawData.trim());
+                        }
+                      }
+                      
+                      // Extract languages
+                      const languagesEntry = profInfoArray.find((e: any) => 
+                        e.term === 'Languages' || e.term === 'Languages spoken'
+                      );
+                      if (languagesEntry) {
+                        const rawData = languagesEntry.description || languagesEntry.lines;
+                        if (typeof rawData === 'string' && rawData.trim()) {
+                          // Split by comma and clean up, filtering out English if more than 1 language
+                          const langs = rawData.split(',').map(l => l.trim()).filter(Boolean);
+                          const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
+                          // If they list multiple languages including English, only show non-English
+                          // If English is the only language listed, don't show it
+                          if (nonEnglishLangs.length > 0) {
+                            nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
+                          }
+                        } else if (Array.isArray(rawData)) {
+                          const langs = rawData.map(l => typeof l === 'string' ? l.trim() : '').filter(Boolean);
+                          const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
+                          if (nonEnglishLangs.length > 0) {
+                            nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
+                          }
+                        }
+                      }
+                    }
+                    
+                    const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])];
+                    
+                    if (allSpecialties.length === 0) return null;
+                    
+                    return (
+                      <div className="space-y-1.5 flex flex-col items-center w-full">
+                        {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
+                          const getSpecialtyIcon = (spec: string) => {
+                            const lower = spec.toLowerCase();
+                            // Check if it's a language (from extractedLanguages)
+                            const commonLanguages = ['spanish', 'french', 'german', 'italian', 'portuguese', 'chinese', 'japanese', 'korean', 'arabic', 'russian', 'hindi', 'tagalog', 'vietnamese'];
+                            if (commonLanguages.some(lang => lower.includes(lang))) return Globe;
+                            if (lower.includes('residential') || lower.includes('single family')) return Home;
+                            if (lower.includes('commercial') || lower.includes('business')) return Building2;
+                            if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
+                            if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
+                            if (lower.includes('first') || lower.includes('buyer')) return Key;
+                            if (lower.includes('relocation')) return Users;
+                            return Award;
+                          };
+                          const Icon = getSpecialtyIcon(specialty);
+                          return (
+                            <Badge 
+                              key={idx} 
+                              variant="secondary" 
+                              className="text-xs w-full justify-start gap-1.5"
+                              itemProp="knowsAbout"
+                            >
+                              <Icon className="h-3 w-3" />
+                              {specialty}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()
+                )}
+              </div>
 
               {/* Data Source Indicator */}
               {liveStats && (
