@@ -257,6 +257,8 @@ export default function DynamicCategoryList() {
           .gte('professionals.review_stars_rating', 4.8)
           .gte('professionals.num_total_reviews', 100);
 
+        console.log(`🔍 Qualified pool query returned ${qualifiedPool?.length || 0} rows for ${cityData.name}`);
+
         if (poolError) {
           console.error('Error fetching qualified pool:', poolError);
         }
@@ -626,7 +628,6 @@ export default function DynamicCategoryList() {
         .eq('city_id', cityId)
         .eq('category_id', categoryId)
         .eq('active', true)
-        .not('professional_information', 'is', null)
         .gte('review_stars_rating', 4.8)
         .gte('num_total_reviews', 100)
         .limit(1);
