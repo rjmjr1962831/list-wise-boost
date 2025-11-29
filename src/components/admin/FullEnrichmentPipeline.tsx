@@ -181,7 +181,7 @@ export default function FullEnrichmentPipeline() {
         throw error;
       }
 
-      // Handle dry run response
+      // Handle different response types
       if (data.dryRun) {
         addLog(`✅ DRY RUN complete - No actual imports made`);
         addLog(`📊 Estimated results:`);
@@ -196,6 +196,26 @@ export default function FullEnrichmentPipeline() {
         setCurrentPhase("Dry Run Complete");
         
         toast.success(`Dry run complete! Would import ~${data.wouldImport} agents using ~${data.totalCredits} credits`);
+      } else if (data.alreadyMet) {
+        // Target already reached - no import needed
+        addLog(`✅ ${city?.name} already has ${data.count} qualified agents linked`);
+        addLog(`🎯 Target was ${targetAgents} agents - already met!`);
+        addLog(`📦 Checking for agents that still need enrichment...`);
+        
+        setProgress(100);
+        setCurrentPhase("Already Complete");
+        
+        toast.info(`${city?.name} already has ${data.count} qualified agents - no import needed`);
+      } else if (data.cached) {
+        // Using cached data
+        addLog(`✅ Using ${data.count} cached agents from database`);
+        addLog(`📅 Last updated: ${data.message?.match(/\d+ days ago/)?.[0] || 'recently'}`);
+        addLog(`💾 Fresh data available - no import needed`);
+        
+        setProgress(100);
+        setCurrentPhase("Using Cached Data");
+        
+        toast.success(`Using ${data.count} cached agents - data is fresh`);
       } else {
         // Normal execution path
         addLog(`✅ Import phase complete: ${data.imported || 0} agents imported`);
