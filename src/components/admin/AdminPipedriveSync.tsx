@@ -56,7 +56,7 @@ export default function AdminPipedriveSync() {
     setIsSyncing(true);
     try {
       const { data, error } = await supabase.functions.invoke('bulk-sync-pipedrive', {
-        body: { limit: 100 },
+        body: { limit: 5 },
       });
 
       if (error) throw error;
