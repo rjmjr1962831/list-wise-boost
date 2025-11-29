@@ -61,6 +61,10 @@ export const ProfessionalCard = ({
   const [reviewsOpen, setReviewsOpen] = useState(false);
   const [newsOpen, setNewsOpen] = useState(false);
   
+  // Press enrichment states
+  const [enrichingPress, setEnrichingPress] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  
   // Helper to strip HTML tags
   const stripHtml = (html: string): string => {
     if (!html) return '';
@@ -130,12 +134,24 @@ export const ProfessionalCard = ({
   // Use external control if provided, otherwise use local state
   const isContactModalOpen = externalShowContactModal !== undefined ? externalShowContactModal : showContactModal;
 
-  // Check if current user owns this profile
+  // Check if current user owns this profile and check admin role
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
       console.log('Current user:', user?.email, 'Professional email:', professional.email);
+      
+      // Check if user is admin
+      if (user) {
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        setIsAdmin(!!roleData);
+      }
     };
     checkAuth();
   }, []);
@@ -1507,12 +1523,106 @@ export const ProfessionalCard = ({
                       const pressMentions = (professional as any).press_mentions || [];
                       const achievements = (professional as any).notable_achievements || [];
                       const publications = (professional as any).publications || [];
+                      const profileLastSynthesized = (professional as any).profile_last_synthesized_at;
+                      
+                      // Handler for manual press enrichment
+                      const handleFindPress = async () => {
+                        if (enrichingPress) return;
+                        
+                        setEnrichingPress(true);
+                        try {
+                          const { data, error } = await supabase.functions.invoke('search-agent-press-claude', {
+                            body: {
+                              agentName: professional.name,
+                              company: professional.company,
+                              city: market?.split(',')[0]?.trim() || '',
+                              state: 'AZ',
+                              professionalId: professional.id,
+                              skipIfNoPress: false
+                            }
+                          });
+                          
+                          if (error) throw error;
+                          
+                          // Sync enrichment data across all cities for this agent
+                          // Find all records with same zuid or name
+                          const { data: allRecords } = await supabase
+                            .from('professionals')
+                            .select('id')
+                            .or(`zuid.eq.${professional.zuid},name.eq.${professional.name}`)
+                            .neq('id', professional.id);
+                          
+                          if (allRecords && allRecords.length > 0) {
+                            // Update all other records with the enrichment data
+                            const updatePromises = allRecords.map(record => 
+                              supabase
+                                .from('professionals')
+                                .update({
+                                  press_mentions: data.pressMentions || [],
+                                  profile_last_synthesized_at: new Date().toISOString()
+                                })
+                                .eq('id', record.id)
+                            );
+                            
+                            await Promise.all(updatePromises);
+                            toast.success(`Updated ${allRecords.length + 1} records across cities`);
+                          } else {
+                            toast.success('Press enrichment complete');
+                          }
+                          
+                          // Reload the page to show updated data
+                          window.location.reload();
+                        } catch (error: any) {
+                          console.error('Press enrichment error:', error);
+                          toast.error(error.message || 'Failed to enrich press mentions');
+                        } finally {
+                          setEnrichingPress(false);
+                        }
+                      };
                       
                       // Only show empty state if ALL enrichment data is missing
                       if (pressMentions.length === 0 && achievements.length === 0 && publications.length === 0) {
                         return (
-                          <div className="text-sm text-muted-foreground text-center py-4">
-                            Press coverage coming soon
+                          <div className="space-y-3">
+                            <div className="text-sm text-muted-foreground text-center py-4">
+                              Press coverage coming soon
+                            </div>
+                            
+                            {/* Manual Press Enrichment Button (Admin only) */}
+                            {isAdmin && (
+                              <div className="border-t pt-3 flex flex-col items-center gap-2">
+                                {profileLastSynthesized && (
+                                  <p className="text-xs text-muted-foreground">
+                                    Last searched: {format(new Date(profileLastSynthesized), 'MMM d, yyyy')}
+                                  </p>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleFindPress}
+                                  disabled={enrichingPress}
+                                  className="gap-2"
+                                >
+                                  {enrichingPress ? (
+                                    <>
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      Searching (30-60s)...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Newspaper className="h-4 w-4" />
+                                      Find Press Mentions
+                                    </>
+                                  )}
+                                </Button>
+                                {enrichingPress && (
+                                  <p className="text-xs text-muted-foreground text-center">
+                                    This will search web sources for press mentions.<br/>
+                                    Updates all records for this agent across cities.
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           </div>
                         );
                       }
@@ -1640,13 +1750,98 @@ export const ProfessionalCard = ({
                                    </div>
                                  ))}
                                </div>
-                             </div>
-                           )}
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
+                              </div>
+                             )}
+                             
+                             {/* Manual Press Enrichment Button (Admin only) - also show when data exists */}
+                             {isAdmin && (
+                               <div className="border-t mt-4 pt-3 flex flex-col items-center gap-2">
+                                 {(professional as any).profile_last_synthesized_at && (
+                                   <p className="text-xs text-muted-foreground">
+                                     Last searched: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}
+                                   </p>
+                                 )}
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={async () => {
+                                     if (enrichingPress) return;
+                                     
+                                     setEnrichingPress(true);
+                                     try {
+                                       const { data, error } = await supabase.functions.invoke('search-agent-press-claude', {
+                                         body: {
+                                           agentName: professional.name,
+                                           company: professional.company,
+                                           city: market?.split(',')[0]?.trim() || '',
+                                           state: 'AZ',
+                                           professionalId: professional.id,
+                                           skipIfNoPress: false
+                                         }
+                                       });
+                                       
+                                       if (error) throw error;
+                                       
+                                       // Sync enrichment data across all cities for this agent
+                                       const { data: allRecords } = await supabase
+                                         .from('professionals')
+                                         .select('id')
+                                         .or(`zuid.eq.${professional.zuid},name.eq.${professional.name}`)
+                                         .neq('id', professional.id);
+                                       
+                                       if (allRecords && allRecords.length > 0) {
+                                         const updatePromises = allRecords.map(record => 
+                                           supabase
+                                             .from('professionals')
+                                             .update({
+                                               press_mentions: data.pressMentions || [],
+                                               profile_last_synthesized_at: new Date().toISOString()
+                                             })
+                                             .eq('id', record.id)
+                                         );
+                                         
+                                         await Promise.all(updatePromises);
+                                         toast.success(`Updated ${allRecords.length + 1} records across cities`);
+                                       } else {
+                                         toast.success('Press enrichment complete');
+                                       }
+                                       
+                                       window.location.reload();
+                                     } catch (error: any) {
+                                       console.error('Press enrichment error:', error);
+                                       toast.error(error.message || 'Failed to enrich press mentions');
+                                     } finally {
+                                       setEnrichingPress(false);
+                                     }
+                                   }}
+                                   disabled={enrichingPress}
+                                   className="gap-2"
+                                 >
+                                   {enrichingPress ? (
+                                     <>
+                                       <Loader2 className="h-4 w-4 animate-spin" />
+                                       Searching (30-60s)...
+                                     </>
+                                   ) : (
+                                     <>
+                                       <Newspaper className="h-4 w-4" />
+                                       Refresh Press Mentions
+                                     </>
+                                   )}
+                                 </Button>
+                                 {enrichingPress && (
+                                   <p className="text-xs text-muted-foreground text-center">
+                                     This will search web sources for press mentions.<br/>
+                                     Updates all records for this agent across cities.
+                                   </p>
+                                 )}
+                               </div>
+                             )}
+                           </div>
+                         );
+                       })()}
+                     </div>
+                   )}
                 
                 
                 {/* Community & Leadership Section */}
