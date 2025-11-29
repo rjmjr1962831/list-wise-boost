@@ -221,9 +221,9 @@ serve(async (req) => {
     console.log(`Raw Apify response:`, JSON.stringify(agents, null, 2));
     console.log(`Retrieved ${agents.length} agent profile URLs`);
 
-    // Get next rank using REST API
-    const existingProsResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/professionals?city_id=eq.${finalCityId}&category_id=eq.${categoryId}&select=rank&order=rank.desc&limit=1`,
+    // Get next rank for this city using professional_cities junction table
+    const cityRankResponse = await fetch(
+      `${SUPABASE_URL}/rest/v1/professional_cities?city_id=eq.${finalCityId}&select=rank&order=rank.desc&limit=1`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY!,
@@ -232,8 +232,8 @@ serve(async (req) => {
       }
     );
 
-    const existingPros = await existingProsResponse.json();
-    let nextRank = existingPros && existingPros.length > 0 ? existingPros[0].rank + 1 : 1;
+    const cityRanks = await cityRankResponse.json();
+    let nextRank = cityRanks && cityRanks.length > 0 ? cityRanks[0].rank + 1 : 1;
 
     // Insert agents into database (just profile URLs for now)
     const insertedAgents = [];
@@ -284,6 +284,72 @@ serve(async (req) => {
         ? parseInt(agent.team_sales_last_12_months) 
         : (agent.totalSales || agent.sales_count || agent.sold_in_last_year || 0);
 
+      // Check if agent exists GLOBALLY (regardless of city)
+      const checkGlobalResponse = await fetch(
+        `${SUPABASE_URL}/rest/v1/professionals?zillow_profile_url=eq.${encodeURIComponent(profileUrl)}&select=id,name,city_id&limit=1`,
+        {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+        }
+      );
+
+      if (checkGlobalResponse.ok) {
+        const existingAgents = await checkGlobalResponse.json();
+        if (existingAgents && existingAgents.length > 0) {
+          const existingId = existingAgents[0].id;
+          const existingName = existingAgents[0].name;
+          
+          // Check if already linked to THIS city
+          const cityLinkCheck = await fetch(
+            `${SUPABASE_URL}/rest/v1/professional_cities?professional_id=eq.${existingId}&city_id=eq.${finalCityId}&select=id`,
+            {
+              headers: {
+                'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              },
+            }
+          );
+          
+          const cityLinks = await cityLinkCheck.json();
+          
+          if (!cityLinks || cityLinks.length === 0) {
+            // Add city association WITHOUT re-enriching
+            const linkResponse = await fetch(
+              `${SUPABASE_URL}/rest/v1/professional_cities`,
+              {
+                method: 'POST',
+                headers: {
+                  'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+                  'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                  'Content-Type': 'application/json',
+                  'Prefer': 'return=representation',
+                },
+                body: JSON.stringify({
+                  professional_id: existingId,
+                  city_id: finalCityId,
+                  rank: nextRank++,
+                  active: true
+                }),
+              }
+            );
+            
+            if (linkResponse.ok) {
+              console.log(`✅ Added ${existingName} to this city (reusing existing record, no re-enrichment needed)`);
+            } else {
+              const error = await linkResponse.text();
+              console.error(`Error linking agent to city:`, error);
+            }
+          } else {
+            console.log(`⏭️ Skipping ${existingName} - already linked to this city`);
+          }
+          
+          continue; // Skip to next agent - no need to create new professional record
+        }
+      }
+
+      // Agent doesn't exist - create new professional record
       const professionalData = {
         name: agent.name || agent.screenName || 'Agent ' + nextRank,
         zillow_profile_url: profileUrl,
@@ -298,31 +364,12 @@ serve(async (req) => {
         review_stars_rating: rating || null,
         current_listings: agent.currentListings || agent.for_sale_count || 0,
         total_sales: salesCount,
-        city_id: finalCityId,
+        city_id: finalCityId, // Keep for backward compatibility
         category_id: categoryId,
-        rank: nextRank++,
+        rank: nextRank, // Keep for backward compatibility
         type: 'individual',
         active: true,
       };
-
-      // Check if agent already exists by zillow_profile_url
-      const checkExistingResponse = await fetch(
-        `${SUPABASE_URL}/rest/v1/professionals?zillow_profile_url=eq.${encodeURIComponent(profileUrl)}&city_id=eq.${finalCityId}&category_id=eq.${categoryId}&select=id,name&limit=1`,
-        {
-          headers: {
-            'apikey': SUPABASE_SERVICE_ROLE_KEY!,
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-        }
-      );
-
-      if (checkExistingResponse.ok) {
-        const existingAgents = await checkExistingResponse.json();
-        if (existingAgents && existingAgents.length > 0) {
-          console.log(`⏭️ Skipping ${professionalData.name} - already exists (ID: ${existingAgents[0].id})`);
-          continue;
-        }
-      }
 
       const insertResponse = await fetch(
         `${SUPABASE_URL}/rest/v1/professionals`,
@@ -340,8 +387,33 @@ serve(async (req) => {
 
       if (insertResponse.ok) {
         const [inserted] = await insertResponse.json();
+        
+        // Create junction table entry linking agent to city
+        const linkResponse = await fetch(
+          `${SUPABASE_URL}/rest/v1/professional_cities`,
+          {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_SERVICE_ROLE_KEY!,
+              'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              professional_id: inserted.id,
+              city_id: finalCityId,
+              rank: nextRank++,
+              active: true
+            }),
+          }
+        );
+        
+        if (!linkResponse.ok) {
+          const linkError = await linkResponse.text();
+          console.error(`Error linking agent to city:`, linkError);
+        }
+        
         insertedAgents.push(inserted);
-        console.log(`Inserted agent with profile: ${profileUrl}`);
+        console.log(`✅ Created new professional record and linked to city: ${profileUrl}`);
         
         // Trigger background email verification if email exists
         if (email && inserted.id) {

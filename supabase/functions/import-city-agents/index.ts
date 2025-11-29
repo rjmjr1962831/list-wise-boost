@@ -172,7 +172,7 @@ serve(async (req) => {
         // We'll check review count AFTER memo23 enrichment provides the real data
         const { data: allAgents } = await supabase
           .from('professionals')
-          .select('id, name, zillow_profile_url, review_stars_rating, num_total_reviews, zillow_data_fetched_at')
+          .select('id, name, zillow_profile_url, review_stars_rating, num_total_reviews, zillow_data_fetched_at, professional_information')
           .eq('city_id', cityId)
           .eq('category_id', categoryId);
 
@@ -213,85 +213,10 @@ serve(async (req) => {
           for (const agent of goodRatingAgents) {
             if (agent.zillow_profile_url) {
               try {
-                // Check if this agent already exists in another city with enriched data
-                const { data: existingAgent } = await supabase
-                  .from('professionals')
-                  .select('*')
-                  .eq('zillow_profile_url', agent.zillow_profile_url)
-                  .neq('id', agent.id) // Don't match self
-                  .not('zillow_data_fetched_at', 'is', null)
-                  .not('ratings', 'is', null) // Check for actual enriched data
-                  .limit(1)
-                  .maybeSingle();
-
-                if (existingAgent) {
-                  console.log(`Reusing enriched data for ${agent.name} from existing record`);
-                  
-                  // Copy ALL enriched fields from existing agent (including synthesis)
-                  const { error: updateError } = await supabase
-                    .from('professionals')
-                    .update({
-                      professional_information: existingAgent.professional_information,
-                      agent_sales_stats: existingAgent.agent_sales_stats,
-                      agent_licenses: existingAgent.agent_licenses,
-                      business_address: existingAgent.business_address,
-                      phone_numbers: existingAgent.phone_numbers,
-                      reviews_data: existingAgent.reviews_data,
-                      ratings: existingAgent.ratings,
-                      get_to_know_me: existingAgent.get_to_know_me,
-                      sidebar_video_url: existingAgent.sidebar_video_url,
-                      years_experience: existingAgent.years_experience,
-                      email: existingAgent.email,
-                      phone: existingAgent.phone,
-                      website: existingAgent.website,
-                      company: existingAgent.company,
-                      title: existingAgent.title,
-                      specialty: existingAgent.specialty,
-                      image_url: existingAgent.image_url,
-                      // NEW: Copy synthesis fields too
-                      press_mentions: existingAgent.press_mentions,
-                      notable_achievements: existingAgent.notable_achievements,
-                      publications: existingAgent.publications,
-                      community_roles: existingAgent.community_roles,
-                      synthesized_bio: existingAgent.synthesized_bio,
-                      profile_last_synthesized_at: existingAgent.profile_last_synthesized_at,
-                      zillow_data_fetched_at: new Date().toISOString()
-                    })
-                    .eq('id', agent.id);
-
-                  if (updateError) {
-                    console.error(`Failed to copy data for ${agent.name}:`, updateError);
-                  } else {
-                    reusedCount++;
-                    
-                    // If reviews are stale or missing, fetch fresh ones
-                    const reviewsAge = existingAgent.reviews_data?.fetched_at 
-                      ? Date.now() - new Date(existingAgent.reviews_data.fetched_at).getTime()
-                      : Infinity;
-                    
-                    if (reviewsAge > THIRTY_DAYS_MS) {
-                      console.log(`Reviews are stale for ${agent.name}, fetching fresh reviews...`);
-                      try {
-                        const reviewsResult = await supabase.functions.invoke('fetch-external-reviews', {
-                          body: {
-                            agentName: agent.name,
-                            company: existingAgent.company || '',
-                            location: `${city?.name}, ${city?.state}`,
-                            professionalId: agent.id
-                          }
-                        });
-                        
-                        if (!reviewsResult.error) {
-                          const reviewData = reviewsResult.data || {};
-                          console.log(`✅ Refreshed reviews: ${reviewData.reviews?.length || 0} from ${reviewData.sources?.join(', ') || 'unknown'}`);
-                        }
-                      } catch (reviewError) {
-                        console.warn(`⚠️ Failed to refresh reviews:`, reviewError);
-                      }
-                    }
-                  }
-                } else {
-                  // No existing data found, fetch from memo23
+                // With junction table, agents should already be unique globally
+                // No need to check for duplicates - fetch-agenscrape-agents handles that
+                // Just enrich agents that need it
+                if (!agent.zillow_data_fetched_at || !agent.professional_information) {
                   totalEnrichAttempts++;
                   console.log(`📋 [${enrichedCount + 1}/${goodRatingAgents.length}] Enriching ${agent.name} with memo23...`);
                   console.log(`   Profile URL: ${agent.zillow_profile_url}`);
