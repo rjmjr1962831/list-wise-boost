@@ -28,7 +28,7 @@ serve(async (req) => {
   }
 
   try {
-    const { locationText, cityId, categoryId, maxResults = 50 } = await req.json();
+    const { locationText, cityId, categoryId, maxResults = 200 } = await req.json();
     
     if (!categoryId || !cityId) {
       throw new Error('cityId and categoryId are required');
