@@ -337,7 +337,7 @@ export default function DynamicCategoryList() {
               console.log(`⚠️ Beauvais-Real-Estate not found in DB results for ${cityData.name}, injecting stub card`);
               const stub: DBProfessional = {
                 id: 'beauvais-stub',
-                name: 'Beauvais Real Estate',
+                name: 'Dina and Mark Beauvais',
                 title: 'Real Estate Team',
                 category_id: categoryData.id,
                 city_id: cityData.id,

@@ -64,7 +64,8 @@ export function BeauvaisScottsdaleSetup() {
       const { error: insertError } = await supabase
         .from('professionals')
         .insert({
-          name: 'Beauvais Real Estate',
+          name: 'Dina and Mark Beauvais',
+          company: 'Beauvais Real Estate',
           city_id: scottsdale.id,
           category_id: category.id,
           rank: 1,
@@ -88,9 +89,9 @@ export function BeauvaisScottsdaleSetup() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Beauvais Real Estate - Scottsdale</CardTitle>
+        <CardTitle>Dina and Mark Beauvais - Scottsdale</CardTitle>
         <CardDescription>
-          Ensure Beauvais Real Estate is listed as rank #1 in Scottsdale
+          Ensure Dina and Mark Beauvais (Beauvais Real Estate) is listed as rank #1 in Scottsdale
         </CardDescription>
       </CardHeader>
       <CardContent>

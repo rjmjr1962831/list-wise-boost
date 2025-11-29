@@ -87,9 +87,9 @@ export function BeauvaisEnricher() {
 
   return (
     <div className="p-4 border rounded-lg">
-      <h3 className="text-lg font-semibold mb-2">Beauvais Real Estate Enrichment</h3>
+      <h3 className="text-lg font-semibold mb-2">Dina and Mark Beauvais Enrichment</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Fetch full profile data from Zillow for Beauvais Real Estate (Scottsdale - Always Rank #1)
+        Fetch full profile data from Zillow for Dina and Mark Beauvais / Beauvais Real Estate (Scottsdale - Always Rank #1)
       </p>
       {beauvaisInfo && (
         <div className="text-xs text-muted-foreground mb-2">
@@ -101,7 +101,7 @@ export function BeauvaisEnricher() {
         disabled={isEnriching}
       >
         {isEnriching && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isEnriching ? 'Enriching...' : 'Enrich Beauvais Profile'}
+        {isEnriching ? 'Enriching...' : 'Enrich Dina & Mark Beauvais Profile'}
       </Button>
     </div>
   );
