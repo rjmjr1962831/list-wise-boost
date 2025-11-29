@@ -142,7 +142,7 @@ serve(async (req) => {
       const position = i + 1;
       const page = Math.ceil(position / 20); // Zillow shows 20 agents per page
       
-      const zillowUrl = agent.url || agent.profileUrl || agent.agentUrl;
+      const zillowUrl = agent.profile_url || agent.url || agent.profileUrl;
       if (!zillowUrl) {
         console.log(`Agent at position ${position} has no URL, skipping`);
         notFound++;
