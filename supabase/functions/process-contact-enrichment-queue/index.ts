@@ -29,30 +29,30 @@ async function processAgent(
       })
       .eq('id', item.id);
 
-    // Check if agent was recently enriched (within 15 days)
+    // Check if agent was recently enriched (within 15 days) - skip memo23 but continue to synthesis
+    let skipMemo23 = false;
     if (options.skipRecentlyEnriched) {
       const { data: agent } = await supabase
         .from('professionals')
-        .select('zillow_data_fetched_at')
+        .select('zillow_data_fetched_at, profile_last_synthesized_at')
         .eq('id', item.professional_id)
         .single();
       
       if (agent?.zillow_data_fetched_at) {
         const daysSinceEnrichment = (Date.now() - new Date(agent.zillow_data_fetched_at).getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceEnrichment < 15) {
-          console.log(`⏭️ [SKIP] ${item.professionals?.name} enriched ${daysSinceEnrichment.toFixed(1)} days ago`);
-          await supabase.from('contact_enrichment_queue')
-            .update({ status: 'completed', completed_at: new Date().toISOString() })
-            .eq('id', item.id);
-          return { name: item.professionals?.name, status: 'skipped', reason: 'recently_enriched', success: true };
+          console.log(`⏭️ [SKIP MEMO23] ${item.professionals?.name} enriched ${daysSinceEnrichment.toFixed(1)} days ago - will proceed to synthesis`);
+          skipMemo23 = true;
         }
       }
     }
 
     console.log(`🔄 [MEMO23] Processing ${item.professionals?.name}...`);
 
-    // Step 1: memo23 enrichment
-    if (options.dryRun) {
+    // Step 1: memo23 enrichment (skip if recently enriched)
+    if (skipMemo23) {
+      console.log(`⏭️ [SKIP MEMO23] Skipping for ${item.professionals?.name}`);
+    } else if (options.dryRun) {
       console.log(`[DRY RUN] Would call memo23 for ${item.professional_id}`);
     } else {
       const { error: enrichError } = await supabase.functions.invoke(
@@ -63,9 +63,8 @@ async function processAgent(
       if (enrichError) {
         throw new Error(`memo23 failed: ${enrichError.message}`);
       }
+      console.log(`✅ [MEMO23] Complete for ${item.professionals?.name}`);
     }
-
-    console.log(`✅ [MEMO23] Complete for ${item.professionals?.name}`);
 
     // Step 2: Check review count qualification
     const { data: agent } = await supabase
