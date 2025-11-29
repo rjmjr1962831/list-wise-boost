@@ -17,12 +17,17 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const apifyApiKey = Deno.env.get('APIFY_API_KEY');
+    const apifyApiToken = Deno.env.get('APIFY_API_TOKEN');
+    const proxyUsername = Deno.env.get('ROTATING_PROXY_USERNAME');
+    const proxyPassword = Deno.env.get('ROTATING_PROXY_PASSWORD');
     // Hardcoded to use the known working memo23 actor
     const apifyActorId = 'memo23~apify-zillow-agents-cheerio';
     
-    if (!apifyApiKey) {
-      throw new Error('APIFY_API_KEY not configured');
+    if (!apifyApiToken) {
+      throw new Error('APIFY_API_TOKEN not configured');
+    }
+    if (!proxyUsername || !proxyPassword) {
+      throw new Error('ProxyScrape credentials not configured');
     }
     
     console.log(`Using Apify actor: ${apifyActorId}`);
@@ -48,24 +53,31 @@ serve(async (req) => {
 
     console.log(`Created scrape job: ${job.id}`);
 
-    // Start Apify actor run (synchronous)
+    // Configure ProxyScrape proxy
+    const proxyUrl = `http://${proxyUsername}:${proxyPassword}@rp.scrapegw.com:6060`;
+    
+    // Start Apify actor run (async with polling to avoid timeout)
     const apifyInput = {
       startUrls: [{
         url: `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase()}-${state.toLowerCase()}/`
       }],
       maxItems: 100,
-      proxyConfiguration: {
-        useApifyProxy: true
+      proxy: {
+        useApifyProxy: false,
+        proxyUrls: [proxyUrl]
       }
     };
 
-    console.log('Starting Apify actor with input:', apifyInput);
+    console.log('Starting Apify actor with input:', JSON.stringify(apifyInput, null, 2));
 
     const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${apifyActorId}/run-sync-get-dataset-items?token=${apifyApiKey}`,
+      `https://api.apify.com/v2/acts/${apifyActorId}/runs`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apifyApiToken}`
+        },
         body: JSON.stringify(apifyInput),
       }
     );
@@ -76,17 +88,61 @@ serve(async (req) => {
       throw new Error(`Apify API error: ${runResponse.statusText}`);
     }
 
-    const agents = await runResponse.json();
-    console.log(`Apify returned ${agents.length} agents`);
+    const { data: runData } = await runResponse.json();
+    const runId = runData.id;
+    console.log(`✅ Apify run started: ${runId}`);
 
-    // Update scrape job with Apify run details
-    const runId = runResponse.headers.get('x-apify-run-id') || 'unknown';
+    // Update scrape job with run ID
     await supabase
       .from('scrape_jobs')
-      .update({ 
-        apify_run_id: runId,
-        agents_found: agents.length 
-      })
+      .update({ apify_run_id: runId })
+      .eq('id', job.id);
+
+    // Poll for completion (max 5 minutes for prospects scrape)
+    let runStatus = 'RUNNING';
+    const maxAttempts = 60;
+    let attempts = 0;
+
+    while (runStatus === 'RUNNING' && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      
+      const statusResponse = await fetch(
+        `https://api.apify.com/v2/actor-runs/${runId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${apifyApiToken}`
+          }
+        }
+      );
+      
+      const statusData = await statusResponse.json();
+      runStatus = statusData.data.status;
+      attempts++;
+      
+      console.log(`📊 Poll attempt ${attempts}/${maxAttempts}: ${runStatus}`);
+    }
+
+    if (runStatus !== 'SUCCEEDED') {
+      throw new Error(`Apify run failed or timed out. Status: ${runStatus}`);
+    }
+
+    // Fetch results
+    const resultsResponse = await fetch(
+      `https://api.apify.com/v2/actor-runs/${runId}/dataset/items`,
+      {
+        headers: {
+          'Authorization': `Bearer ${apifyApiToken}`
+        }
+      }
+    );
+
+    const agents = await resultsResponse.json();
+    console.log(`✅ Retrieved ${agents.length} agents from Apify`);
+
+    // Update scrape job with agents found
+    await supabase
+      .from('scrape_jobs')
+      .update({ agents_found: agents.length })
       .eq('id', job.id);
 
     const totalAgents = agents.length;
