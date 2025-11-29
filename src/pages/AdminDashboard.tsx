@@ -41,6 +41,7 @@ import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResults
 import { StopEnrichmentButton } from "@/components/admin/StopEnrichmentButton";
 import { EnrichmentCostControls } from "@/components/admin/EnrichmentCostControls";
 import { BeauvaisScottsdaleSetup } from "@/components/admin/BeauvaisScottsdaleSetup";
+import { BeauvaisEnricher } from "@/components/admin/BeauvaisEnricher";
 import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineStatus";
 
 const AdminDashboard = () => {
@@ -389,6 +390,7 @@ const AdminDashboard = () => {
 
           <TabsContent value="pipeline-status" className="space-y-4">
             <BeauvaisScottsdaleSetup />
+            <BeauvaisEnricher />
             <EnrichmentPipelineStatus />
           </TabsContent>
         </Tabs>
