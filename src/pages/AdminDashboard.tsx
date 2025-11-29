@@ -48,6 +48,7 @@ import { QueuedEmailVerifier } from "@/components/admin/QueuedEmailVerifier";
 import { AdminHubSpotSync } from "@/components/admin/AdminHubSpotSync";
 import { AdminZillowScraper } from "@/components/admin/AdminZillowScraper";
 import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
+import { AdminRankingCapture } from "@/components/admin/AdminRankingCapture";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -295,6 +296,10 @@ const AdminDashboard = () => {
               <Users className="mr-2 h-4 w-4" />
               Prospects
             </TabsTrigger>
+            <TabsTrigger value="ranking-capture">
+              <Home className="mr-2 h-4 w-4" />
+              Ranking Capture
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -437,6 +442,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="prospects" className="space-y-4">
             <AdminProspectsManager />
+          </TabsContent>
+
+          <TabsContent value="ranking-capture" className="space-y-4">
+            <AdminRankingCapture />
           </TabsContent>
         </Tabs>
       </div>
