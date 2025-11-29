@@ -114,3 +114,6 @@ verify_jwt = true
 [functions.streaming-city-enrichment]
 verify_jwt = false
 
+[functions.process-email-verification-queue]
+verify_jwt = false
+
