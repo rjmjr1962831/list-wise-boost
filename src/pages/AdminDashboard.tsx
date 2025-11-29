@@ -32,6 +32,7 @@ import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
 import { BulkZillowReviewsFetcher } from "@/components/admin/BulkZillowReviewsFetcher";
 import { MesaDataFixer } from "@/components/admin/MesaDataFixer";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
+import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
 import AvondalePressScraper from "@/components/admin/AvondalePressScraper";
 import ManualProfileEnricher from "@/components/admin/ManualProfileEnricher";
 import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
@@ -217,6 +218,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Enrichment Queue
             </TabsTrigger>
+            <TabsTrigger value="realtime-enrichment">
+              <Zap className="mr-2 h-4 w-4" />
+              Realtime Pipeline
+            </TabsTrigger>
             <TabsTrigger value="mesa-fixer">
               <Zap className="mr-2 h-4 w-4" />
               Mesa Fixer
@@ -321,6 +326,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="enrichment-queue" className="space-y-4">
             <ContactEnrichmentQueue />
+          </TabsContent>
+
+          <TabsContent value="realtime-enrichment" className="space-y-4">
+            <RealtimeEnrichmentDashboard />
           </TabsContent>
 
           <TabsContent value="mesa-fixer" className="space-y-4">
