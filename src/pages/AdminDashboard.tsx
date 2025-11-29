@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image, Sparkles } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image, Sparkles, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -43,6 +43,7 @@ import { EnrichmentCostControls } from "@/components/admin/EnrichmentCostControl
 import { BeauvaisScottsdaleSetup } from "@/components/admin/BeauvaisScottsdaleSetup";
 import { BeauvaisEnricher } from "@/components/admin/BeauvaisEnricher";
 import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineStatus";
+import { BulkEmailVerifier } from "@/components/admin/BulkEmailVerifier";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -270,6 +271,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Pipeline Status
             </TabsTrigger>
+            <TabsTrigger value="email-verifier">
+              <ShieldCheck className="mr-2 h-4 w-4" />
+              Email Verifier
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -392,6 +397,10 @@ const AdminDashboard = () => {
             <BeauvaisScottsdaleSetup />
             <BeauvaisEnricher />
             <EnrichmentPipelineStatus />
+          </TabsContent>
+
+          <TabsContent value="email-verifier" className="space-y-4">
+            <BulkEmailVerifier />
           </TabsContent>
         </Tabs>
       </div>
