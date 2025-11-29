@@ -63,15 +63,17 @@ serve(async (req) => {
 
     try {
       // Call Clearout API
-      const clearoutResponse = await fetch(
-        `https://api.clearout.io/v2/email_verify/instant?email=${encodeURIComponent(queueItem.email)}&timeout=10`,
-        {
-          headers: {
-            'Authorization': clearoutApiKey,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      const clearoutResponse = await fetch('https://api.clearout.io/v2/email_verify/instant', {
+        method: 'POST',
+        headers: {
+          'Authorization': clearoutApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: queueItem.email,
+          timeout: 10,
+        }),
+      });
 
       const clearoutData = await clearoutResponse.json();
       console.log(`Clearout response for ${queueItem.email}:`, clearoutData);
