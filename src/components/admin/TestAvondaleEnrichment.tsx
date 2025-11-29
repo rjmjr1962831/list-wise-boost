@@ -18,7 +18,7 @@ export const TestAvondaleEnrichment = () => {
     setLog([]);
     
     try {
-      addLog("🚀 Starting 2-agent test for Avondale with Claude enrichment...");
+      addLog("🚀 Starting direct enrichment test for 2 Avondale agents...");
 
       // Step 1: Get Avondale city
       const { data: city } = await supabase
@@ -33,37 +33,36 @@ export const TestAvondaleEnrichment = () => {
       }
       addLog(`✅ Found city: ${city.name}`);
 
-      // Step 2: Get real estate agents category
-      const { data: category } = await supabase
-        .from('categories')
+      // Step 2: Find 2 existing agents
+      addLog("🔍 Finding 2 existing Avondale agents...");
+      const { data: agents, error: agentsError } = await supabase
+        .from('professionals')
         .select('id, name')
-        .eq('slug', 'top10realestateagents')
-        .single();
+        .eq('city_id', city.id)
+        .eq('active', true)
+        .order('updated_at', { ascending: true })
+        .limit(2);
 
-      if (!category) {
-        throw new Error("Real estate agents category not found");
+      if (agentsError) throw agentsError;
+      if (!agents || agents.length === 0) {
+        throw new Error("No agents found in Avondale");
       }
-      addLog(`✅ Found category: ${category.name}`);
+      addLog(`✅ Found ${agents.length} agents: ${agents.map(a => a.name).join(', ')}`);
 
-      // Step 3: Import 2 agents
-      addLog("📥 Importing 2 agents via import-city-agents...");
-      const { data: importResult, error: importError } = await supabase.functions.invoke(
-        'import-city-agents',
-        {
-          body: {
-            cityId: city.id,
-            categoryId: category.id,
-            maxResults: 2
-          }
-        }
-      );
+      // Step 3: Queue agents directly
+      addLog("📝 Queueing agents for enrichment...");
+      const queueItems = agents.map(agent => ({
+        professional_id: agent.id,
+        status: 'pending',
+        reason: 'test-enrichment'
+      }));
 
-      if (importError) throw importError;
-      addLog(`✅ Import complete: ${importResult?.queued || 0} agents queued`);
+      const { error: queueError } = await supabase
+        .from('contact_enrichment_queue')
+        .upsert(queueItems, { onConflict: 'professional_id' });
 
-      // Step 3: Wait 3 seconds for queue to populate
-      addLog("⏳ Waiting 3s for queue setup...");
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      if (queueError) throw queueError;
+      addLog(`✅ Queued ${agents.length} agents`);
 
       // Step 4: Trigger enrichment processor
       addLog("🔄 Starting Claude enrichment pipeline...");
