@@ -402,7 +402,7 @@ export type Database = {
           {
             foreignKeyName: "contact_enrichment_queue_professional_id_fkey"
             columns: ["professional_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },

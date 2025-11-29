@@ -96,28 +96,26 @@ serve(async (req) => {
       console.log('Force refresh requested, skipping cache check');
     }
 
-    // Loop until we have enough qualifying agents
+    // Loop until we have enough imported agents (enrichment happens during loop)
     let totalImported = 0;
+    let totalQueued = 0;
     let attempts = 0;
     const maxAttempts = 10;
     
     while (attempts < maxAttempts) {
       attempts++;
       
-      // Check how many qualifying agents we currently have
+      // Check how many agents we currently have linked to this city
       const { count: currentCount } = await supabase
-        .from('professionals')
+        .from('professional_cities')
         .select('*', { count: 'exact', head: true })
         .eq('city_id', cityId)
-        .eq('category_id', categoryId)
-        .eq('active', true)
-        .gte('review_stars_rating', MIN_RATING)
-        .gte('num_total_reviews', MIN_REVIEWS);
+        .eq('active', true);
 
-      console.log(`Attempt ${attempts}: Currently have ${currentCount || 0}/${targetAgents} qualifying agents`);
+      console.log(`Attempt ${attempts}: Currently have ${currentCount || 0}/${targetAgents} agents imported`);
 
       if (currentCount && currentCount >= targetAgents) {
-        console.log(`Target reached! Have ${currentCount} qualifying agents.`);
+        console.log(`Target reached! Have ${currentCount} agents imported.`);
         break;
       }
 
@@ -152,54 +150,61 @@ serve(async (req) => {
       }
 
       const agenscrapeData = agenscrapeResult.data;
-      totalImported += agenscrapeData?.imported || 0;
-      console.log(`Batch ${attempts} completed: ${agenscrapeData?.imported || 0} agents imported (${totalImported} total)`);
+      const batchImported = agenscrapeData?.imported || 0;
+      totalImported += batchImported;
+      console.log(`Batch ${attempts} completed: ${batchImported} agents imported (${totalImported} total)`);
+      
+      // IMMEDIATELY queue newly imported agents for enrichment (via professional_cities junction)
+      console.log('Queuing newly imported agents for enrichment...');
+      
+      const { data: agentsToEnrich } = await supabase
+        .from('professionals')
+        .select('id, name')
+        .in('id', (
+          await supabase
+            .from('professional_cities')
+            .select('professional_id')
+            .eq('city_id', cityId)
+            .eq('active', true)
+        ).data?.map(pc => pc.professional_id) || [])
+        .eq('category_id', categoryId)
+        .eq('active', true)
+        .is('zillow_data_fetched_at', null);
+
+      if (agentsToEnrich && agentsToEnrich.length > 0) {
+        console.log(`Queuing ${agentsToEnrich.length} unenriched agents...`);
+        
+        // Insert into enrichment queue with unique constraint
+        const queueItems = agentsToEnrich.map(agent => ({
+          professional_id: agent.id,
+          status: 'pending',
+          reason: 'auto-import'
+        }));
+        
+        const { error: queueError } = await supabase
+          .from('contact_enrichment_queue')
+          .upsert(queueItems, { onConflict: 'professional_id' });
+
+        if (queueError) {
+          console.error('Error queuing agents:', queueError);
+        } else {
+          totalQueued += agentsToEnrich.length;
+          console.log(`✅ Queued ${agentsToEnrich.length} agents for enrichment (${totalQueued} total queued)`);
+          
+          // Fire-and-forget: trigger queue processor with high concurrency
+          supabase.functions.invoke('process-contact-enrichment-queue', {
+            body: { batchSize: 100, concurrency: 10 }
+          }).catch(err => console.log('Queue processor triggered'));
+        }
+      } else {
+        console.log('No new agents need enrichment in this batch');
+      }
       
       // Small delay before next batch
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
     
-    console.log(`Import phase complete: ${totalImported} total agents imported across ${attempts} batches`);
-
-    // Queue all unenriched agents for background enrichment
-    console.log('Queuing agents for enrichment...');
-    
-    const { data: agentsToEnrich } = await supabase
-      .from('professionals')
-      .select('id, name')
-      .eq('city_id', cityId)
-      .eq('category_id', categoryId)
-      .eq('active', true)
-      .gte('review_stars_rating', MIN_RATING)
-      .is('zillow_data_fetched_at', null);
-
-    if (agentsToEnrich && agentsToEnrich.length > 0) {
-      console.log(`Queuing ${agentsToEnrich.length} agents for enrichment...`);
-      
-      // Insert into enrichment queue
-      const queueItems = agentsToEnrich.map(agent => ({
-        professional_id: agent.id,
-        status: 'pending',
-        reason: 'auto-import'
-      }));
-      
-      const { error: queueError } = await supabase
-        .from('contact_enrichment_queue')
-        .upsert(queueItems, { onConflict: 'professional_id' });
-
-      if (queueError) {
-        console.error('Error queuing agents:', queueError);
-      } else {
-        console.log(`✅ Queued ${agentsToEnrich.length} agents for enrichment`);
-        
-        // Fire-and-forget: trigger queue processor with concurrency 10
-        supabase.functions.invoke('process-contact-enrichment-queue', {
-          body: { batchSize: 100, concurrency: 10 }
-        }).catch(err => console.log('Queue processor triggered'));
-      }
-    } else {
-      console.log('No agents need enrichment');
-    }
+    console.log(`Import phase complete: ${totalImported} total agents imported, ${totalQueued} queued for enrichment`);
 
     // Return immediately with import summary
     return new Response(
@@ -207,8 +212,8 @@ serve(async (req) => {
         success: true,
         cached: false,
         imported: totalImported,
-        queued: agentsToEnrich?.length || 0,
-        message: `Successfully imported ${totalImported} agents. ${agentsToEnrich?.length || 0} agents queued for automatic enrichment with memo23, Perplexity press research, and profile synthesis.`
+        queued: totalQueued,
+        message: `Successfully imported ${totalImported} agents. ${totalQueued} agents queued for automatic enrichment with memo23, Perplexity press research, and profile synthesis.`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
