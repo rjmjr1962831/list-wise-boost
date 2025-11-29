@@ -38,6 +38,7 @@ import ManualProfileEnricher from "@/components/admin/ManualProfileEnricher";
 import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
 import { TestAvondaleEnrichment } from "@/components/admin/TestAvondaleEnrichment";
 import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResultsDashboard";
+import { StopEnrichmentButton } from "@/components/admin/StopEnrichmentButton";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -123,7 +124,11 @@ const AdminDashboard = () => {
         </div>
 
         <div className="mb-6 p-4 bg-card rounded-lg border">
-          <h2 className="text-lg font-semibold mb-2">Download Files</h2>
+          <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
+          <div className="flex gap-2 mb-4">
+            <StopEnrichmentButton />
+          </div>
+          <h2 className="text-lg font-semibold mb-2 mt-4">Download Files</h2>
           <div className="flex gap-2">
             <a 
               href="/newly-added-cities-enriched.csv" 
