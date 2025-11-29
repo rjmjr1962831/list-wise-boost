@@ -301,11 +301,38 @@ export default function FullEnrichmentPipeline() {
     }
   };
 
-  const enrichAllCities = async () => {
-    if (!confirm(`This will queue enrichment for ALL qualified agents across ALL Arizona cities. Continue?`)) {
+  const enrichPhoenixMetro = async () => {
+    const phoenixMetroCities = [
+      'Phoenix', 'Scottsdale', 'Tempe', 'Mesa', 'Chandler', 'Gilbert', 
+      'Glendale', 'Peoria', 'Surprise', 'Avondale', 'Goodyear', 'Buckeye',
+      'Queen Creek', 'Fountain Hills', 'Paradise Valley', 'Cave Creek'
+    ];
+
+    const metroCities = cities.filter(city => 
+      phoenixMetroCities.some(metro => city.name.toLowerCase().includes(metro.toLowerCase()))
+    );
+
+    if (metroCities.length === 0) {
+      toast.error("No Phoenix metro cities found");
       return;
     }
 
+    if (!confirm(`This will queue enrichment for ${metroCities.length} Phoenix metro area cities. Continue?`)) {
+      return;
+    }
+
+    await enrichCities(metroCities, 'Phoenix Metro');
+  };
+
+  const enrichAllCities = async () => {
+    if (!confirm(`This will queue enrichment for ALL ${cities.length} Arizona cities. Continue?`)) {
+      return;
+    }
+
+    await enrichCities(cities, 'All Arizona');
+  };
+
+  const enrichCities = async (citiesToEnrich: City[], region: string) => {
     setIsRunning(true);
     setStatusLog([]);
     setProgress(0);
@@ -321,17 +348,17 @@ export default function FullEnrichmentPipeline() {
         throw new Error("Real Estate Agent category not found");
       }
 
-      addLog(`🚀 Starting batch enrichment for all Arizona cities`);
+      addLog(`🚀 Starting batch enrichment for ${region} (${citiesToEnrich.length} cities)`);
       addLog(`💰 Using cost controls: ${skipRecentlyEnriched ? 'skip recent' : ''} ${skipGenericBios ? 'skip generic' : ''} ${skipIfNoPress ? 'skip no press' : ''}`);
       if (dryRun) addLog(`⚠️ DRY RUN MODE - No AI calls will be made`);
 
-      setCurrentPhase("Queuing All Cities");
+      setCurrentPhase("Queuing Cities");
       setProgress(10);
 
       let totalQueued = 0;
       let citiesProcessed = 0;
 
-      for (const city of cities) {
+      for (const city of citiesToEnrich) {
         addLog(`📍 Processing ${city.name}, ${city.state}...`);
         
         const { data, error } = await supabase.functions.invoke("import-city-agents", {
@@ -592,16 +619,27 @@ export default function FullEnrichmentPipeline() {
             </Button>
           </div>
 
-          <Button
-            onClick={enrichAllCities}
-            disabled={isRunning || cities.length === 0}
-            variant="secondary"
-            className="w-full"
-            size="lg"
-          >
-            <Zap className="mr-2 h-4 w-4" />
-            Enrich All Cities ({cities.length} cities)
-          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={enrichPhoenixMetro}
+              disabled={isRunning || cities.length === 0}
+              variant="secondary"
+              size="lg"
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              Phoenix Metro
+            </Button>
+
+            <Button
+              onClick={enrichAllCities}
+              disabled={isRunning || cities.length === 0}
+              variant="outline"
+              size="lg"
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              All AZ Cities
+            </Button>
+          </div>
         </div>
 
         {isRunning && (
