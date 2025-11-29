@@ -9,17 +9,18 @@ const corsHeaders = {
 // Helper function to process a single agent
 async function processAgent(supabase: any, item: any) {
   try {
-    // Mark as processing
+    // Mark as processing - starting with memo23
     await supabase
       .from('contact_enrichment_queue')
       .update({ 
         status: 'processing',
+        stage: 'memo23',
         started_at: new Date().toISOString(),
         attempts: item.attempts + 1
       })
       .eq('id', item.id);
 
-    console.log(`🔄 Processing ${item.professionals?.name}...`);
+    console.log(`🔄 [MEMO23] Processing ${item.professionals?.name}...`);
 
     // Step 1: memo23 enrichment
     const { error: enrichError } = await supabase.functions.invoke(
@@ -30,7 +31,7 @@ async function processAgent(supabase: any, item: any) {
     if (enrichError) {
       throw new Error(`memo23 failed: ${enrichError.message}`);
     }
-    console.log(`✅ memo23 complete for ${item.professionals?.name}`);
+    console.log(`✅ [MEMO23] Complete for ${item.professionals?.name}`);
 
     // Step 2: Check review count qualification
     const { data: agent } = await supabase
@@ -46,14 +47,23 @@ async function processAgent(supabase: any, item: any) {
         .eq('id', item.professional_id);
       
       await supabase.from('contact_enrichment_queue')
-        .update({ status: 'completed', completed_at: new Date().toISOString() })
+        .update({ 
+          status: 'completed', 
+          stage: 'completed',
+          completed_at: new Date().toISOString() 
+        })
         .eq('id', item.id);
       
       return { name: agent?.name, status: 'deactivated', reason: 'low_reviews', success: true };
     }
 
     // Step 3: Press research with Perplexity (auto-triggers synthesis)
-    console.log(`📰 Running Perplexity press search for ${agent.name}...`);
+    await supabase
+      .from('contact_enrichment_queue')
+      .update({ stage: 'press_research' })
+      .eq('id', item.id);
+
+    console.log(`📰 [PRESS] Running Perplexity press search for ${agent.name}...`);
     
     const { data: cityData } = await supabase
       .from('cities')
@@ -72,11 +82,23 @@ async function processAgent(supabase: any, item: any) {
       }
     });
 
-    console.log(`✅ Full enrichment complete for ${agent.name}`);
+    console.log(`✅ [PRESS] Complete for ${agent.name}`);
+
+    // Update to synthesis stage
+    await supabase
+      .from('contact_enrichment_queue')
+      .update({ stage: 'synthesis' })
+      .eq('id', item.id);
+
+    console.log(`🤖 [SYNTHESIS] Auto-triggered for ${agent.name}`);
 
     // Mark as completed
     await supabase.from('contact_enrichment_queue')
-      .update({ status: 'completed', completed_at: new Date().toISOString() })
+      .update({ 
+        status: 'completed', 
+        stage: 'completed',
+        completed_at: new Date().toISOString() 
+      })
       .eq('id', item.id);
 
     return { name: agent.name, status: 'completed', success: true };

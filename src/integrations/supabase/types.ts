@@ -365,6 +365,7 @@ export type Database = {
           max_attempts: number
           professional_id: string
           reason: string
+          stage: string | null
           started_at: string | null
           status: string
           updated_at: string
@@ -378,6 +379,7 @@ export type Database = {
           max_attempts?: number
           professional_id: string
           reason: string
+          stage?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
@@ -391,6 +393,7 @@ export type Database = {
           max_attempts?: number
           professional_id?: string
           reason?: string
+          stage?: string | null
           started_at?: string | null
           status?: string
           updated_at?: string
