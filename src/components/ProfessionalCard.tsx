@@ -1384,6 +1384,23 @@ export const ProfessionalCard = ({
               )}
             </div>
 
+              {/* Synthesized Bio Display (if available, show above buttons) */}
+              {(() => {
+                const synthesizedBio = (professional as any).synthesized_bio;
+                if (!synthesizedBio || isEditing) return null;
+                
+                return (
+                  <div className="border rounded-lg p-4 bg-primary/5 mt-4">
+                    <h4 className="sr-only">Professional Summary</h4>
+                    <p className="text-sm text-foreground whitespace-pre-line">{synthesizedBio}</p>
+                    {(professional as any).profile_last_synthesized_at && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Profile synthesized: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* 3 Collapsible Bars - buttons in horizontal row */}
               <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -1910,24 +1927,6 @@ export const ProfessionalCard = ({
                           </a>
                         )}
                       </div>
-                    </div>
-                  );
-                })()}
-                
-                {/* Synthesized Bio Display (if available, show instead of raw) */}
-                {(() => {
-                  const synthesizedBio = (professional as any).synthesized_bio;
-                  if (!synthesizedBio || isEditing) return null;
-                  
-                  return (
-                    <div className="border rounded-lg p-4 bg-primary/5">
-                      <h4 className="sr-only">Professional Summary</h4>
-                      <p className="text-sm text-foreground whitespace-pre-line">{synthesizedBio}</p>
-                      {(professional as any).profile_last_synthesized_at && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Profile synthesized: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}
-                        </p>
-                      )}
                     </div>
                   );
                 })()}
