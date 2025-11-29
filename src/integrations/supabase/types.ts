@@ -988,15 +988,21 @@ export type Database = {
           hubspot_synced_at: string | null
           id: string
           name: string
+          notes: string | null
           phone: string | null
           state: string | null
           status: Database["public"]["Enums"]["prospect_status"] | null
           updated_at: string
           zillow_page: number | null
+          zillow_photo_url: string | null
           zillow_position: number | null
+          zillow_profile_id: string | null
           zillow_profile_url: string | null
           zillow_rating: number | null
           zillow_reviews: number | null
+          zillow_sales_count: number | null
+          zillow_sales_volume: string | null
+          zillow_scraped_at: string | null
           zillow_total_agents: number | null
         }
         Insert: {
@@ -1012,15 +1018,21 @@ export type Database = {
           hubspot_synced_at?: string | null
           id?: string
           name: string
+          notes?: string | null
           phone?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["prospect_status"] | null
           updated_at?: string
           zillow_page?: number | null
+          zillow_photo_url?: string | null
           zillow_position?: number | null
+          zillow_profile_id?: string | null
           zillow_profile_url?: string | null
           zillow_rating?: number | null
           zillow_reviews?: number | null
+          zillow_sales_count?: number | null
+          zillow_sales_volume?: string | null
+          zillow_scraped_at?: string | null
           zillow_total_agents?: number | null
         }
         Update: {
@@ -1036,15 +1048,21 @@ export type Database = {
           hubspot_synced_at?: string | null
           id?: string
           name?: string
+          notes?: string | null
           phone?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["prospect_status"] | null
           updated_at?: string
           zillow_page?: number | null
+          zillow_photo_url?: string | null
           zillow_position?: number | null
+          zillow_profile_id?: string | null
           zillow_profile_url?: string | null
           zillow_rating?: number | null
           zillow_reviews?: number | null
+          zillow_sales_count?: number | null
+          zillow_sales_volume?: string | null
+          zillow_scraped_at?: string | null
           zillow_total_agents?: number | null
         }
         Relationships: []
@@ -1073,6 +1091,48 @@ export type Database = {
           request_count?: number
           updated_at?: string
           window_start?: string
+        }
+        Relationships: []
+      }
+      scrape_jobs: {
+        Row: {
+          agents_found: number | null
+          agents_saved: number | null
+          apify_run_id: string | null
+          city: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          started_at: string | null
+          state: string
+          status: string
+        }
+        Insert: {
+          agents_found?: number | null
+          agents_saved?: number | null
+          apify_run_id?: string | null
+          city: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          started_at?: string | null
+          state: string
+          status?: string
+        }
+        Update: {
+          agents_found?: number | null
+          agents_saved?: number | null
+          apify_run_id?: string | null
+          city?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          started_at?: string | null
+          state?: string
+          status?: string
         }
         Relationships: []
       }

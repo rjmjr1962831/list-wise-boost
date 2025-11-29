@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.scrape-zillow-agents]
+verify_jwt = false
+
 [functions.queue-city-for-enrichment]
 verify_jwt = false
 
