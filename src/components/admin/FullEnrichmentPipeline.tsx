@@ -125,32 +125,51 @@ export default function FullEnrichmentPipeline() {
         throw error;
       }
 
-      addLog(`✅ Import phase complete: ${data.agenscrapeImported || 0} agents imported`);
-      setProgress(30);
-      
-      setCurrentPhase("Phase 2: Enriching");
-      addLog(`📋 Enriching agent profiles with memo23...`);
-      addLog(`⚙️ Smart deduplication active - reusing existing enriched data`);
-      
-      // Poll for enrichment progress
-      await pollEnrichmentProgress(selectedCityId, category.id);
-      
-      if (fullEnrichment) {
-        setCurrentPhase("Phase 3: Press & Synthesis");
-        addLog(`📰 Running press research & profile synthesis...`);
-        setProgress(70);
+      // Handle dry run response
+      if (data.dryRun) {
+        addLog(`✅ DRY RUN complete - No actual imports made`);
+        addLog(`📊 Estimated results:`);
+        addLog(`   • Would import: ~${data.wouldImport} agents`);
+        addLog(`   • Would queue: ~${data.wouldQueue} for enrichment`);
+        addLog(`   • Credits per agent: ${data.creditsPerAgent} (${data.savingsPercent}% savings)`);
+        addLog(`   • Total credits: ~${data.totalCredits}`);
+        addLog(``);
+        addLog(`💡 Remove "Dry Run" toggle to execute actual import`);
         
-        // Wait for synthesis to complete
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        setProgress(100);
+        setCurrentPhase("Dry Run Complete");
         
-        addLog(`✅ Press research & synthesis complete`);
+        toast.success(`Dry run complete! Would import ~${data.wouldImport} agents using ~${data.totalCredits} credits`);
+      } else {
+        // Normal execution path
+        addLog(`✅ Import phase complete: ${data.imported || 0} agents imported`);
+        addLog(`📋 Queued ${data.queued || 0} agents for enrichment`);
+        setProgress(30);
+        
+        setCurrentPhase("Phase 2: Enriching");
+        addLog(`📋 Enriching agent profiles with memo23...`);
+        addLog(`⚙️ Smart deduplication active - reusing existing enriched data`);
+        
+        // Poll for enrichment progress
+        await pollEnrichmentProgress(selectedCityId, category.id);
+        
+        if (fullEnrichment) {
+          setCurrentPhase("Phase 3: Press & Synthesis");
+          addLog(`📰 Running press research & profile synthesis...`);
+          setProgress(70);
+          
+          // Wait for synthesis to complete
+          await new Promise(resolve => setTimeout(resolve, 10000));
+          
+          addLog(`✅ Press research & synthesis complete`);
+        }
+        
+        setProgress(100);
+        setCurrentPhase("Complete");
+        addLog(`🎉 Enrichment complete for ${city?.name}!`);
+        
+        toast.success(`Full enrichment complete for ${city?.name}!`);
       }
-      
-      setProgress(100);
-      setCurrentPhase("Complete");
-      addLog(`🎉 Enrichment complete for ${city?.name}!`);
-      
-      toast.success(`Full enrichment complete for ${city?.name}!`);
     } catch (error: any) {
       console.error("Enrichment error:", error);
       addLog(`❌ Error: ${error.message}`);
