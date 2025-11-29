@@ -5,10 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Target, MapPin } from "lucide-react";
+import { Loader2, Target, MapPin, Building2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 
 export function AdminRankingCapture() {
   const [loading, setLoading] = useState(false);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{
+    current: number;
+    total: number;
+    currentCity: string;
+  } | null>(null);
   const [city, setCity] = useState("");
   const { toast } = useToast();
 
@@ -48,6 +55,34 @@ export function AdminRankingCapture() {
     }
   };
 
+  const handleBulkCapture = async () => {
+    setBulkLoading(true);
+    setBulkProgress({ current: 0, total: 17, currentCity: "Starting..." });
+    
+    try {
+      const { data, error } = await supabase.functions.invoke("bulk-capture-phoenix-rankings");
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Bulk capture complete!",
+        description: `Updated ${data.summary.totalUpdated} agents across ${data.summary.totalCities} cities. ${data.summary.totalFailed} cities failed.`,
+      });
+
+      setBulkProgress(null);
+    } catch (error: any) {
+      console.error("Bulk capture error:", error);
+      toast({
+        title: "Bulk capture failed",
+        description: error.message || "Unknown error occurred",
+        variant: "destructive",
+      });
+      setBulkProgress(null);
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
   const quickCities = [
     "Phoenix, AZ",
     "Scottsdale, AZ",
@@ -73,6 +108,46 @@ export function AdminRankingCapture() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Bulk Phoenix Metro Capture */}
+          <div className="space-y-3 p-4 bg-primary/5 rounded-lg border border-primary/20">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label className="text-base font-semibold">Phoenix Metro Bulk Capture</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Capture rankings for all 17 Phoenix metro area cities
+                </p>
+              </div>
+              <Button
+                onClick={handleBulkCapture}
+                disabled={bulkLoading || loading}
+                size="lg"
+                className="gap-2"
+              >
+                {bulkLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Running...
+                  </>
+                ) : (
+                  <>
+                    <Building2 className="h-4 w-4" />
+                    Run Phoenix Metro
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            {bulkProgress && (
+              <div className="space-y-2 pt-2">
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>Processing: {bulkProgress.currentCity}</span>
+                  <span>{bulkProgress.current} / {bulkProgress.total}</span>
+                </div>
+                <Progress value={(bulkProgress.current / bulkProgress.total) * 100} />
+              </div>
+            )}
+          </div>
+
           {/* Quick City Buttons */}
           <div>
             <Label className="mb-3 block">Quick Capture Arizona Cities</Label>
