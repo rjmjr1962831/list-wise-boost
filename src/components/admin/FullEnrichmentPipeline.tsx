@@ -26,6 +26,13 @@ export default function FullEnrichmentPipeline() {
   const [currentPhase, setCurrentPhase] = useState("");
   const [progress, setProgress] = useState(0);
   const [statusLog, setStatusLog] = useState<string[]>([]);
+  const [queueStats, setQueueStats] = useState({
+    pending: 0,
+    processing: 0,
+    completed: 0,
+    failed: 0,
+    total: 0
+  });
   
   // Cost control options (defaults to enabled)
   const [dryRun, setDryRun] = useState(false);
@@ -36,6 +43,35 @@ export default function FullEnrichmentPipeline() {
   useEffect(() => {
     fetchCities();
   }, []);
+
+  useEffect(() => {
+    let channel: any;
+
+    if (isRunning && !dryRun) {
+      loadQueueStats();
+      
+      channel = supabase
+        .channel('queue-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'contact_enrichment_queue'
+          },
+          () => {
+            loadQueueStats();
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
+  }, [isRunning, dryRun]);
 
   const fetchCities = async () => {
     const { data, error } = await supabase
@@ -50,6 +86,26 @@ export default function FullEnrichmentPipeline() {
       toast.error("Failed to load cities");
     } else {
       setCities(data || []);
+    }
+  };
+
+  const loadQueueStats = async () => {
+    const { data, error } = await supabase
+      .from('contact_enrichment_queue')
+      .select('status')
+      .order('created_at', { ascending: false })
+      .limit(500);
+
+    if (!error && data) {
+      const stats = {
+        pending: data.filter(i => i.status === 'pending').length,
+        processing: data.filter(i => i.status === 'processing').length,
+        completed: data.filter(i => i.status === 'completed').length,
+        failed: data.filter(i => i.status === 'failed').length,
+        total: 0
+      };
+      stats.total = stats.pending + stats.processing + stats.completed + stats.failed;
+      setQueueStats(stats);
     }
   };
 
@@ -356,12 +412,43 @@ export default function FullEnrichmentPipeline() {
         </Button>
 
         {isRunning && (
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm text-muted-foreground">
-              <span>{currentPhase}</span>
-              <span>{progress}%</span>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm text-muted-foreground">
+                <span>{currentPhase}</span>
+                <span>{progress}%</span>
+              </div>
+              <Progress value={progress} className="w-full" />
             </div>
-            <Progress value={progress} className="w-full" />
+
+            {!dryRun && queueStats.total > 0 && (
+              <div className="grid grid-cols-4 gap-3 p-4 bg-muted/50 rounded-lg border border-border">
+                <div className="text-center space-y-1">
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-500">
+                    {queueStats.pending}
+                  </div>
+                  <div className="text-xs text-muted-foreground font-medium">Pending</div>
+                </div>
+                <div className="text-center space-y-1">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {queueStats.processing}
+                  </div>
+                  <div className="text-xs text-muted-foreground font-medium">Processing</div>
+                </div>
+                <div className="text-center space-y-1">
+                  <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    {queueStats.completed}
+                  </div>
+                  <div className="text-xs text-muted-foreground font-medium">Completed</div>
+                </div>
+                <div className="text-center space-y-1">
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                    {queueStats.failed}
+                  </div>
+                  <div className="text-xs text-muted-foreground font-medium">Failed</div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
