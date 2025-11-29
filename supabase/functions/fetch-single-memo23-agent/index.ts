@@ -798,26 +798,61 @@ serve(async (req) => {
         } else {
           console.log('Sending bio to rewrite-bio function, length:', originalBio.length);
 
-          const rewriteResponse = await fetch(`${supabaseUrl}/functions/v1/rewrite-bio`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': supabaseKey,
-              'Authorization': `Bearer ${supabaseKey}`,
-            },
-            body: JSON.stringify({ originalBio, skipIfGeneric: true }),
-          });
-
+          // Retry logic for rewrite-bio with exponential backoff
           let rewrittenBio: string | null = null;
+          let lastError: Error | null = null;
+          const maxRetries = 3;
 
-          if (rewriteResponse.ok) {
-            const rewriteData = await rewriteResponse.json();
-            if (rewriteData?.rewrittenBio && typeof rewriteData.rewrittenBio === 'string') {
-              console.log('Bio rewritten successfully');
-              rewrittenBio = rewriteData.rewrittenBio;
+          for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+              const rewriteResponse = await fetch(`${supabaseUrl}/functions/v1/rewrite-bio`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': supabaseKey,
+                  'Authorization': `Bearer ${supabaseKey}`,
+                },
+                body: JSON.stringify({ originalBio, skipIfGeneric: true }),
+              });
+
+              if (rewriteResponse.ok) {
+                const rewriteData = await rewriteResponse.json();
+                if (rewriteData?.rewrittenBio && typeof rewriteData.rewrittenBio === 'string') {
+                  console.log('Bio rewritten successfully');
+                  rewrittenBio = rewriteData.rewrittenBio;
+                  break; // Success, exit retry loop
+                }
+              } else if (rewriteResponse.status === 429) {
+                const errorText = await rewriteResponse.text();
+                console.warn(`⏱️ Bio rewrite rate limited (429) on attempt ${attempt}/${maxRetries}`);
+                lastError = new Error(`Rate limit: ${errorText}`);
+                
+                if (attempt < maxRetries) {
+                  const backoffMs = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
+                  console.log(`Waiting ${backoffMs}ms before retry...`);
+                  await new Promise(resolve => setTimeout(resolve, backoffMs));
+                  continue;
+                }
+              } else {
+                const errorText = await rewriteResponse.text();
+                console.error('Bio rewrite HTTP error:', rewriteResponse.status, errorText);
+                lastError = new Error(`HTTP ${rewriteResponse.status}: ${errorText}`);
+                break; // Non-retryable error
+              }
+            } catch (fetchError: any) {
+              console.error(`Bio rewrite fetch error on attempt ${attempt}:`, fetchError);
+              lastError = fetchError;
+              
+              if (attempt < maxRetries) {
+                const backoffMs = Math.pow(2, attempt) * 1000;
+                await new Promise(resolve => setTimeout(resolve, backoffMs));
+                continue;
+              }
             }
-          } else {
-            console.error('Bio rewrite HTTP error:', rewriteResponse.status, await rewriteResponse.text());
+          }
+
+          if (!rewrittenBio && lastError) {
+            console.error('Bio rewrite failed after all retries:', lastError.message);
           }
 
           const finalBio = rewrittenBio || originalBio;
