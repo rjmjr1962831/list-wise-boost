@@ -203,6 +203,17 @@ serve(async (req) => {
           await new Promise(resolve => setTimeout(resolve, delayMs));
         }
 
+        // DRY RUN MODE: Only log what would happen
+        if (dryRun) {
+          console.log(`🔧 [DRY RUN] Would process ${agentName}`);
+          console.log(`🔧 [DRY RUN] Would check if agent exists in database`);
+          console.log(`🔧 [DRY RUN] Would run memo23 enrichment`);
+          console.log(`🔧 [DRY RUN] Would check qualification (${MIN_REVIEWS}+ reviews, ${MIN_RATING}+ rating)`);
+          console.log(`🔧 [DRY RUN] Would run press research via Claude`);
+          totalSucceeded++;
+          return;
+        }
+
         // Check if agent exists globally
         const { data: existing } = await supabase
           .from('professionals')
@@ -403,6 +414,12 @@ serve(async (req) => {
               }
               
               offset += items.length;
+              
+              // Stop Apify early if we have enough agents queued
+              if (processedUrls.size >= maxResults * 2) {
+                apifyRunning = false;
+                console.log(`⏹️ Queued enough agents (${processedUrls.size}), stopping Apify polling`);
+              }
             }
           }
         } catch (error) {
@@ -430,10 +447,23 @@ serve(async (req) => {
 
       // Spawn workers up to concurrency limit
       while (workerQueue.length > 0 && activeWorkers.size < concurrency) {
+        // CHECK: Stop if we've reached maxResults limit
+        if (totalProcessed + activeWorkers.size >= maxResults) {
+          console.log(`⏹️ Reached maxResults limit (${maxResults}), stopping worker spawn...`);
+          workerQueue.length = 0; // Clear remaining queue
+          break;
+        }
+        
         const agent = workerQueue.shift()!;
         const workerPromise = processAgentPipeline(agent);
         activeWorkers.add(workerPromise);
         workerPromise.finally(() => activeWorkers.delete(workerPromise));
+      }
+
+      // Early exit if we've reached maxResults and all workers are done
+      if (totalProcessed >= maxResults && activeWorkers.size === 0) {
+        console.log(`✅ Reached maxResults (${maxResults}), exiting early`);
+        break;
       }
 
       // Log progress
