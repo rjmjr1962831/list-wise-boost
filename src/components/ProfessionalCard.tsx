@@ -1065,13 +1065,13 @@ export const ProfessionalCard = ({
                            const emailDisplay = parsedProfInfo?.email || professional.email;
                            if (emailDisplay) {
                              return (
-                               <a 
-                                 href={`mailto:${emailDisplay}`} 
-                                 className="text-primary hover:underline" 
-                                 itemProp="email"
-                               >
-                                 {emailDisplay}
-                               </a>
+                                <a 
+                                  href={`mailto:${emailDisplay}`} 
+                                  className="text-primary hover:underline" 
+                                  itemProp="email"
+                                >
+                                  Direct Email
+                                </a>
                              );
                            }
                            return <span className="text-muted-foreground">NA</span>;
