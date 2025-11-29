@@ -838,7 +838,7 @@ serve(async (req) => {
           .single();
 
         if (cityData) {
-          const pressResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press`, {
+          const pressResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press-claude`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${supabaseKey}`,
@@ -846,6 +846,8 @@ serve(async (req) => {
             },
             body: JSON.stringify({
               agentName: professional.name,
+              company: updateData.company || '',
+              businessName: updateData.business_name || '',
               city: cityData.name,
               state: cityData.state
             })
