@@ -155,9 +155,9 @@ export default function AvondalePressScraper() {
 
         setProgress(((i + 1) / agents.length) * 100);
 
-        // Add 15 second delay between requests to avoid rate limits
+        // Add 8 second delay between requests (Haiku is faster and uses fewer tokens)
         if (i < agents.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 15000));
+          await new Promise(resolve => setTimeout(resolve, 8000));
         }
       }
 

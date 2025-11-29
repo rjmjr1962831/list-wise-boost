@@ -45,8 +45,8 @@ Return your findings as a JSON array with: title, source, url, snippet, date (YY
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 4096,
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 1500,
         messages: [
           {
             role: 'user',
@@ -57,7 +57,7 @@ Return your findings as a JSON array with: title, source, url, snippet, date (YY
           {
             type: 'web_search_20250305',
             name: 'web_search',
-            max_uses: 5
+            max_uses: 2
           }
         ],
         tool_choice: { type: 'auto' }
