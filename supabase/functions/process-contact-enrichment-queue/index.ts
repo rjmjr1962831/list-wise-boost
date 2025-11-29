@@ -152,7 +152,17 @@ async function processAgent(
     if (options.dryRun) {
       console.log(`[DRY RUN] Would synthesize profile for ${agent.name}`);
     } else {
-      console.log(`🤖 [SYNTHESIS] Auto-triggered for ${agent.name}`);
+      console.log(`🤖 [SYNTHESIS] Running for ${agent.name}...`);
+      
+      const { error: synthesisError } = await supabase.functions.invoke('synthesize-agent-profile', {
+        body: { professionalId: item.professional_id }
+      });
+      
+      if (synthesisError) {
+        console.error(`⚠️ Synthesis failed for ${agent.name}:`, synthesisError.message);
+      } else {
+        console.log(`✅ [SYNTHESIS] Complete for ${agent.name}`);
+      }
     }
 
     // Mark as completed
