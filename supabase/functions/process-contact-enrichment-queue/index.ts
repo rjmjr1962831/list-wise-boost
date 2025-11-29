@@ -190,14 +190,14 @@ serve(async (req) => {
       dryRun = false,
       skipRecentlyEnriched = true,
       skipGenericBios = true,
-      skipIfNoPress = true
+      skipIfNoPress = false  // Changed: Always run synthesis to extract achievements
     } = await req.json().catch(() => ({ 
       batchSize: 100, 
       concurrency: 10,
       dryRun: false,
       skipRecentlyEnriched: true,
       skipGenericBios: true,
-      skipIfNoPress: true
+      skipIfNoPress: false  // Changed: Always run synthesis
     }));
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
