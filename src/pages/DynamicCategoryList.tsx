@@ -59,6 +59,10 @@ interface DBProfessional {
   professional_information: any | null;
   get_to_know_me: string | null;
   agent_sales_stats: any | null;
+  notable_achievements: any | null;
+  press_mentions: any | null;
+  synthesized_bio: string | null;
+  publications: any | null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -130,6 +134,10 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     ratings: dbProf.ratings || undefined,
     get_to_know_me: (dbProf as any).get_to_know_me || undefined,
     agent_sales_stats: (dbProf as any).agent_sales_stats || undefined,
+    notable_achievements: (dbProf as any).notable_achievements || undefined,
+    press_mentions: (dbProf as any).press_mentions || undefined,
+    synthesized_bio: (dbProf as any).synthesized_bio || undefined,
+    publications: (dbProf as any).publications || undefined,
   };
 
   return enriched;
