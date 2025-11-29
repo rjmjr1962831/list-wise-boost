@@ -45,6 +45,7 @@ import { BeauvaisEnricher } from "@/components/admin/BeauvaisEnricher";
 import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineStatus";
 import { BulkEmailVerifier } from "@/components/admin/BulkEmailVerifier";
 import { QueuedEmailVerifier } from "@/components/admin/QueuedEmailVerifier";
+import { AdminHubSpotSync } from "@/components/admin/AdminHubSpotSync";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -280,6 +281,10 @@ const AdminDashboard = () => {
               <Clock className="mr-2 h-4 w-4" />
               Queue Verifier
             </TabsTrigger>
+            <TabsTrigger value="hubspot-sync">
+              <Database className="mr-2 h-4 w-4" />
+              HubSpot Sync
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -410,6 +415,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="queued-verifier" className="space-y-4">
             <QueuedEmailVerifier />
+          </TabsContent>
+
+          <TabsContent value="hubspot-sync" className="space-y-4">
+            <AdminHubSpotSync />
           </TabsContent>
         </Tabs>
       </div>
