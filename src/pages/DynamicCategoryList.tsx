@@ -262,21 +262,45 @@ export default function DynamicCategoryList() {
           console.error('Error fetching professionals:', profsError);
         }
 
-        // If no professionals found, auto-generate them
+        // If no professionals found, try fallback for unenriched but qualified agents
         if (!professionalsData || professionalsData.length === 0) {
-          console.log('No professionals found, auto-generating...');
+          console.log('No enriched professionals found, checking for fallback candidates...');
           
-          // Set flag to show loading animation
-          setIsGeneratingData(true);
-          setLoading(true);
+          // Fallback: Get agents with good ratings/reviews but missing enrichment
+          const { data: fallbackData, error: fallbackError } = await supabase
+            .from('professionals')
+            .select('*')
+            .eq('city_id', cityData.id)
+            .eq('category_id', categoryData.id)
+            .eq('active', true)
+            .gte('review_stars_rating', 4.8)
+            .gte('num_total_reviews', 100)
+            .order('num_total_reviews', { ascending: false })
+            .limit(10);
           
-          // Run import in background without blocking
-          generateAndInsertProfessionals(cityWithCamelCase, categoryData);
-          
-          // The polling mechanism below will detect when agents are ready
-          // Don't wait for reviews - render immediately
-          setReviewsReady(true);
-        } else {
+          if (fallbackData && fallbackData.length > 0) {
+            console.log(`✅ Found ${fallbackData.length} fallback agents (pending enrichment)`);
+            professionalsData = fallbackData;
+            toast.info('Showing agents pending full enrichment', {
+              description: 'Enhanced profiles will be available soon'
+            });
+          } else {
+            console.log('No fallback candidates found, auto-generating...');
+            
+            // Set flag to show loading animation
+            setIsGeneratingData(true);
+            setLoading(true);
+            
+            // Run import in background without blocking
+            generateAndInsertProfessionals(cityWithCamelCase, categoryData);
+            
+            // The polling mechanism below will detect when agents are ready
+            // Don't wait for reviews - render immediately
+            setReviewsReady(true);
+          }
+        }
+        
+        if (professionalsData && professionalsData.length > 0) {
           // Start from DB professionals
           let baseProfessionals: DBProfessional[] = professionalsData;
 
@@ -583,6 +607,9 @@ export default function DynamicCategoryList() {
         .eq('city_id', cityId)
         .eq('category_id', categoryId)
         .eq('active', true)
+        .not('professional_information', 'is', null)
+        .gte('review_stars_rating', 4.8)
+        .gte('num_total_reviews', 100)
         .limit(1);
       
       if (error) {
