@@ -45,23 +45,32 @@ export function BeauvaisScottsdaleSetup() {
         .single();
 
       if (existing) {
-        // Update rank to 1 if needed
-        if (existing.rank !== 1) {
-          const { error: updateError } = await supabase
-            .from('professionals')
-            .update({ rank: 1 })
-            .eq('id', existing.id);
+        // Update rank to 1 and mark as brand builder
+        const { error: updateError } = await supabase
+          .from('professionals')
+          .update({ rank: 1, is_brand_builder: true })
+          .eq('id', existing.id);
 
-          if (updateError) throw updateError;
-          toast.success("Beauvais Real Estate updated to rank #1 in Scottsdale");
-        } else {
-          toast.info("Beauvais Real Estate already exists as rank #1 in Scottsdale");
-        }
+        if (updateError) throw updateError;
+
+        // Ensure professional_cities record exists
+        const { error: cityLinkError } = await supabase
+          .from('professional_cities')
+          .upsert({
+            professional_id: existing.id,
+            city_id: scottsdale.id,
+            rank: 1,
+            active: true
+          }, { onConflict: 'professional_id,city_id' });
+
+        if (cityLinkError) throw cityLinkError;
+
+        toast.success("Beauvais Real Estate updated to rank #1 in Scottsdale");
         return;
       }
 
       // Create new professional
-      const { error: insertError } = await supabase
+      const { data: newProfessional, error: insertError } = await supabase
         .from('professionals')
         .insert({
           name: 'Dina and Mark Beauvais',
@@ -71,11 +80,26 @@ export function BeauvaisScottsdaleSetup() {
           rank: 1,
           type: 'established',
           active: true,
+          is_brand_builder: true,
           zillow_profile_url: 'https://www.zillow.com/profile/Beauvais-Real-Estate',
           website: 'https://beauvaisrealestate.com',
-        });
+        })
+        .select('id')
+        .single();
 
       if (insertError) throw insertError;
+
+      // Add to professional_cities table
+      const { error: cityLinkError } = await supabase
+        .from('professional_cities')
+        .upsert({
+          professional_id: newProfessional.id,
+          city_id: scottsdale.id,
+          rank: 1,
+          active: true
+        }, { onConflict: 'professional_id,city_id' });
+
+      if (cityLinkError) throw cityLinkError;
 
       toast.success("✅ Beauvais Real Estate added to Scottsdale as rank #1");
     } catch (error: any) {
