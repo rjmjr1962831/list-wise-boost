@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { agentName, company, businessName, city, state } = await req.json();
+    const { agentName, company, businessName, city, state, professionalId } = await req.json();
 
     if (!agentName) {
       return new Response(
@@ -19,6 +20,11 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    
+    // Initialize Supabase client for synthesis integration
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!anthropicApiKey) {
@@ -112,13 +118,17 @@ Look for references to achievements even if cited by secondary sources.`;
     const data = await response.json();
     console.log('Claude response received');
 
-    // Extract press mentions from Claude's response
+    // Extract press mentions from Claude's response AND capture full research text
     const mentions: any[] = [];
+    let fullResearchText = '';
     
     // Look through the content blocks for text responses
     if (data.content) {
       for (const block of data.content) {
         if (block.type === 'text' && block.text) {
+          // Capture all text for synthesis
+          fullResearchText += block.text + '\n\n';
+          
           try {
             // Try to extract JSON from the text
             const jsonMatch = block.text.match(/\[[\s\S]*\]/);
@@ -163,6 +173,48 @@ Look for references to achievements even if cited by secondary sources.`;
       .slice(0, 10); // Top 10 mentions
 
     console.log(`Found ${finalMentions.length} press mentions for ${agentName}`);
+
+    // Auto-trigger profile synthesis if professionalId provided
+    if (professionalId && fullResearchText.trim()) {
+      console.log(`🔄 Auto-triggering profile synthesis for ${agentName}...`);
+      
+      try {
+        // Call synthesize-agent-profile in background (don't await to avoid blocking response)
+        supabase.functions.invoke('synthesize-agent-profile', {
+          body: {
+            professionalId,
+            rawResearch: `# Press Research for ${agentName}
+
+## Context
+Agent: ${agentName}
+${company ? `Company: ${company}` : ''}
+${businessName ? `Business: ${businessName}` : ''}
+Location: ${city}, ${state}
+
+## Research Results
+${fullResearchText}
+
+## Press Mentions Found
+${JSON.stringify(finalMentions, null, 2)}`
+          }
+        }).then(({ data: synthData, error: synthError }) => {
+          if (synthError) {
+            console.error('❌ Profile synthesis failed:', synthError);
+          } else {
+            console.log('✅ Profile synthesis completed successfully');
+          }
+        }).catch(err => {
+          console.error('❌ Profile synthesis error:', err);
+        });
+      } catch (synthError) {
+        console.error('❌ Failed to trigger synthesis:', synthError);
+        // Don't block the response on synthesis failure
+      }
+    } else if (professionalId && !fullResearchText.trim()) {
+      console.log('⚠️ No research text captured for synthesis');
+    } else {
+      console.log('ℹ️ No professionalId provided, skipping auto-synthesis');
+    }
 
     return new Response(
       JSON.stringify({ mentions: finalMentions }),
