@@ -49,6 +49,8 @@ import { AdminHubSpotSync } from "@/components/admin/AdminHubSpotSync";
 import { AdminZillowScraper } from "@/components/admin/AdminZillowScraper";
 import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
 import { AdminRankingCapture } from "@/components/admin/AdminRankingCapture";
+import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
+import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -300,6 +302,14 @@ const AdminDashboard = () => {
               <Home className="mr-2 h-4 w-4" />
               Ranking Capture
             </TabsTrigger>
+            <TabsTrigger value="pipedrive-sync">
+              <Database className="mr-2 h-4 w-4" />
+              Pipedrive Sync
+            </TabsTrigger>
+            <TabsTrigger value="pipedrive-fields">
+              <Database className="mr-2 h-4 w-4" />
+              Pipedrive Fields
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -446,6 +456,14 @@ const AdminDashboard = () => {
 
           <TabsContent value="ranking-capture" className="space-y-4">
             <AdminRankingCapture />
+          </TabsContent>
+
+          <TabsContent value="pipedrive-sync" className="space-y-4">
+            <AdminPipedriveSync />
+          </TabsContent>
+
+          <TabsContent value="pipedrive-fields" className="space-y-4">
+            <AdminPipedriveFields />
           </TabsContent>
         </Tabs>
       </div>

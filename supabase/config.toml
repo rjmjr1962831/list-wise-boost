@@ -132,3 +132,6 @@ verify_jwt = false
 [functions.capture-zillow-rankings]
 verify_jwt = false
 
+[functions.pipedrive-webhook]
+verify_jwt = false
+
