@@ -1387,7 +1387,7 @@ export const ProfessionalCard = ({
                       className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex flex-col items-center justify-center gap-1.5">
-                        <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">From {firstName}</span>
+                        <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">About {firstName}</span>
                         <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", bioOpen && "rotate-180")} />
                       </div>
                     </button>
