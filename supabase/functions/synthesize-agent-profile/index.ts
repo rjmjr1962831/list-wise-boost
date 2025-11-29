@@ -12,9 +12,10 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId, rawResearch, skipIfNoPress = true } = await req.json();
+    const { professionalId, rawResearch, skipIfNoPress = false } = await req.json();
 
-    // Cost-saving measure #2: Skip if no meaningful press mentions
+    // Note: skipIfNoPress is now false by default to ensure achievements are always extracted
+    // Even without press research, we can extract achievements from existing bio data
     if (skipIfNoPress && (!rawResearch || rawResearch.trim().length < 100)) {
       console.log('⏭️ Skipping synthesis - no substantial press research found');
       return new Response(
@@ -49,16 +50,25 @@ serve(async (req) => {
 
     if (fetchError) throw fetchError;
 
-    // Prepare context for AI
+    // Prepare context for AI - gather all available data sources
     const context = {
       name: professional.name,
       existingBio: professional.get_to_know_me || professional.description,
       existingPressData: professional.press_mentions || [],
       rawResearch: rawResearch || '',
-      professionalInformation: professional.professional_information || {}
+      professionalInformation: professional.professional_information || {},
+      // Additional data that might contain achievements
+      yearsExperience: professional.years_experience,
+      badges: professional.badges || [],
+      specialty: professional.specialty || [],
+      reviewCount: professional.num_total_reviews,
+      rating: professional.review_stars_rating
     };
 
     console.log('📝 Synthesizing profile for:', professional.name);
+    console.log(`   Bio length: ${(context.existingBio || '').length} chars`);
+    console.log(`   Press mentions: ${context.existingPressData.length}`);
+    console.log(`   Raw research: ${context.rawResearch.length} chars`);
 
     // Call Lovable AI with tool calling for structured extraction
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -72,19 +82,22 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a professional profile synthesizer. Your job is to extract structured data from raw research and existing profile data.
+            content: `You are a professional profile synthesizer. Your job is to extract structured data from existing profile data, press research, and any available information.
 
-Rules:
+CRITICAL RULES:
 1. Convert all first-person language to third-person
-2. Focus on verifiable achievements with sources
-3. Rank achievements by credibility (1-10)
-4. Deduplicate information across sources
-5. Extract only factual, concrete information
-6. Keep descriptions concise but informative`
+2. ALWAYS extract achievements from existing bio data, even without press research
+3. Look for: awards, certifications, sales milestones, years of experience, specializations
+4. Rank achievements by credibility (1-10): existing bio = 5-7, press mentions = 8-10
+5. Deduplicate information across sources
+6. Extract only factual, concrete information
+7. Keep descriptions concise but informative
+
+IMPORTANT: Even if no press research is provided, you MUST extract achievements from the existing bio and profile data.`
           },
           {
             role: 'user',
-            content: `Synthesize this agent profile:\n\nName: ${context.name}\n\nExisting Bio:\n${context.existingBio}\n\nRaw Research:\n${context.rawResearch}\n\nExisting Press:\n${JSON.stringify(context.existingPressData, null, 2)}\n\nExtract: bio summary (third-person), top 5 notable achievements, publications, community roles`
+            content: `Synthesize this agent profile:\n\nName: ${context.name}\n\nExisting Bio:\n${context.existingBio || 'No bio available'}\n\nProfile Information:\n${JSON.stringify(context.professionalInformation, null, 2)}\n\nYears Experience: ${context.yearsExperience || 'Unknown'}\nBadges: ${context.badges.join(', ') || 'None'}\nSpecialties: ${context.specialty.join(', ') || 'None'}\nReviews: ${context.reviewCount || 0} reviews (${context.rating || 0} stars)\n\nRaw Press Research:\n${context.rawResearch || 'No press research available'}\n\nExisting Press Mentions:\n${JSON.stringify(context.existingPressData, null, 2)}\n\nIMPORTANT: Extract achievements from ALL available data above. Look for sales records, awards, certifications, specializations, and experience milestones in the bio and profile data.`
           }
         ],
         tools: [
