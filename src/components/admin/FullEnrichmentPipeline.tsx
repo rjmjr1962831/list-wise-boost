@@ -255,6 +255,52 @@ export default function FullEnrichmentPipeline() {
     }
   };
 
+  const retryStuckItems = async () => {
+    try {
+      addLog(`🔄 Resetting stuck items and restarting queue...`);
+      
+      // Reset stuck items
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const { data: resetItems } = await supabase
+        .from('contact_enrichment_queue')
+        .update({ 
+          status: 'pending', 
+          stage: 'queued',
+          started_at: null 
+        })
+        .eq('status', 'processing')
+        .lt('started_at', fiveMinutesAgo)
+        .select('id');
+
+      if (resetItems && resetItems.length > 0) {
+        addLog(`✅ Reset ${resetItems.length} stuck items`);
+        toast.success(`Reset ${resetItems.length} stuck items`);
+      } else {
+        addLog(`ℹ️ No stuck items found`);
+        toast.info("No stuck items found");
+      }
+
+      // Trigger queue processor
+      await supabase.functions.invoke('process-contact-enrichment-queue', {
+        body: {
+          batchSize: targetAgents,
+          concurrency: 10,
+          dryRun,
+          skipRecentlyEnriched,
+          skipGenericBios,
+          skipIfNoPress
+        }
+      });
+
+      addLog(`🚀 Queue processor triggered`);
+      loadQueueStats(); // Refresh stats
+    } catch (error: any) {
+      console.error("Error resetting stuck items:", error);
+      addLog(`❌ Error: ${error.message}`);
+      toast.error("Failed to reset stuck items");
+    }
+  };
+
   const pollEnrichmentProgress = async (cityId: string, categoryId: string) => {
     let attempts = 0;
     const maxAttempts = 30; // 5 minutes max
@@ -412,24 +458,36 @@ export default function FullEnrichmentPipeline() {
           </Label>
         </div>
 
-        <Button
-          onClick={runEnrichment}
-          disabled={isRunning || !selectedCityId}
-          className="w-full"
-          size="lg"
-        >
-          {isRunning ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {currentPhase}...
-            </>
-          ) : (
-            <>
-              <Zap className="mr-2 h-4 w-4" />
-              Run {fullEnrichment ? "Full" : "Standard"} Enrichment
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={runEnrichment}
+            disabled={isRunning || !selectedCityId}
+            className="flex-1"
+            size="lg"
+          >
+            {isRunning ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {currentPhase}...
+              </>
+            ) : (
+              <>
+                <Zap className="mr-2 h-4 w-4" />
+                Run {fullEnrichment ? "Full" : "Standard"} Enrichment
+              </>
+            )}
+          </Button>
+          
+          <Button
+            onClick={retryStuckItems}
+            disabled={isRunning}
+            variant="outline"
+            size="lg"
+          >
+            <AlertCircle className="mr-2 h-4 w-4" />
+            Retry Stuck
+          </Button>
+        </div>
 
         {isRunning && (
           <div className="space-y-4">
