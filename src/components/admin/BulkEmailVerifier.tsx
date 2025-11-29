@@ -168,12 +168,12 @@ export const BulkEmailVerifier = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Filter by city:</label>
-              <Select value={citySlug} onValueChange={setCitySlug} disabled={loading}>
+              <Select value={citySlug || "all"} onValueChange={(val) => setCitySlug(val === "all" ? "" : val)} disabled={loading}>
                 <SelectTrigger>
                   <SelectValue placeholder="All cities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All cities</SelectItem>
+                  <SelectItem value="all">All cities</SelectItem>
                   {cities.map(city => (
                     <SelectItem key={city.slug} value={city.slug}>
                       {city.name}
