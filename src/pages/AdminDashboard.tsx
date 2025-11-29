@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image, Sparkles, ShieldCheck } from "lucide-react";
+import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image, Sparkles, ShieldCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
@@ -44,6 +44,7 @@ import { BeauvaisScottsdaleSetup } from "@/components/admin/BeauvaisScottsdaleSe
 import { BeauvaisEnricher } from "@/components/admin/BeauvaisEnricher";
 import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineStatus";
 import { BulkEmailVerifier } from "@/components/admin/BulkEmailVerifier";
+import { QueuedEmailVerifier } from "@/components/admin/QueuedEmailVerifier";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -275,6 +276,10 @@ const AdminDashboard = () => {
               <ShieldCheck className="mr-2 h-4 w-4" />
               Email Verifier
             </TabsTrigger>
+            <TabsTrigger value="queued-verifier">
+              <Clock className="mr-2 h-4 w-4" />
+              Queue Verifier
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -401,6 +406,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="email-verifier" className="space-y-4">
             <BulkEmailVerifier />
+          </TabsContent>
+
+          <TabsContent value="queued-verifier" className="space-y-4">
+            <QueuedEmailVerifier />
           </TabsContent>
         </Tabs>
       </div>

@@ -438,6 +438,65 @@ export type Database = {
         }
         Relationships: []
       }
+      email_verification_queue: {
+        Row: {
+          attempts: number | null
+          completed_at: string | null
+          created_at: string | null
+          delay_seconds: number | null
+          email: string
+          error_message: string | null
+          id: string
+          max_attempts: number | null
+          name: string
+          priority: number | null
+          professional_id: string
+          started_at: string | null
+          status: string
+          verification_result: Json | null
+        }
+        Insert: {
+          attempts?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          delay_seconds?: number | null
+          email: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number | null
+          name: string
+          priority?: number | null
+          professional_id: string
+          started_at?: string | null
+          status?: string
+          verification_result?: Json | null
+        }
+        Update: {
+          attempts?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          delay_seconds?: number | null
+          email?: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number | null
+          name?: string
+          priority?: number | null
+          professional_id?: string
+          started_at?: string | null
+          status?: string
+          verification_result?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_verification_queue_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enrichment_queue: {
         Row: {
           category_id: string | null
