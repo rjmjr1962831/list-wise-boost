@@ -18,10 +18,13 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const apifyApiKey = Deno.env.get('APIFY_API_KEY');
+    const apifyActorId = Deno.env.get('APIFY_ACTOR_ID') || 'memo23~apify-zillow-agents-cheerio';
     
     if (!apifyApiKey) {
       throw new Error('APIFY_API_KEY not configured');
     }
+    
+    console.log(`Using Apify actor: ${apifyActorId}`);
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -45,16 +48,20 @@ serve(async (req) => {
     console.log(`Created scrape job: ${job.id}`);
 
     // Start Apify actor run (synchronous)
-    const actorId = 'getdataforme/zillow-real-state-agents-scraper';
     const apifyInput = {
-      location: `${city}, ${state}`,
-      maxResults: 100,
+      startUrls: [{
+        url: `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase()}-${state.toLowerCase()}/`
+      }],
+      maxItems: 100,
+      proxyConfiguration: {
+        useApifyProxy: true
+      }
     };
 
     console.log('Starting Apify actor with input:', apifyInput);
 
     const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apifyApiKey}`,
+      `https://api.apify.com/v2/acts/${apifyActorId}/run-sync-get-dataset-items?token=${apifyApiKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,35 +99,31 @@ serve(async (req) => {
       const zillowPage = Math.ceil(zillowPosition / 15);
       const agentsAhead = zillowPosition - 1;
 
-      // Extract profile ID from URL
-      const profileMatch = agent.profileUrl?.match(/\/profile\/([^\/]+)/);
-      const profileId = profileMatch ? profileMatch[1] : null;
+      // Extract profile ID from URL (memo23 format)
+      const profileUrl = agent.url || agent.profileUrl || '';
+      const profileMatch = profileUrl.match(/\/profile\/([^\/]+)/);
+      const profileId = profileMatch ? profileMatch[1] : `${city}-${state}-${i}`;
 
-      if (!profileId) {
-        console.warn(`No profile ID found for agent at position ${zillowPosition}`);
-        continue;
-      }
-
-      // Prepare prospect data
+      // Prepare prospect data (memo23 actor format)
       const prospectData = {
         zillow_profile_id: profileId,
-        name: agent.name || 'Unknown',
+        name: agent.name || agent.fullName || 'Unknown',
         email: agent.email || null,
-        phone: agent.phone || null,
-        company: agent.brokerageName || null,
+        phone: agent.phone || agent.phoneNumber || null,
+        company: agent.companyName || agent.brokerageName || null,
         city,
         state,
-        zillow_profile_url: agent.profileUrl || null,
+        zillow_profile_url: profileUrl || null,
         zillow_position: zillowPosition,
         zillow_page: zillowPage,
         agents_ahead: agentsAhead,
         zillow_total_agents: totalAgents,
-        zillow_rating: agent.rating || null,
-        zillow_reviews: agent.reviewCount || null,
+        zillow_rating: agent.rating || agent.reviewStars || null,
+        zillow_reviews: agent.reviewCount || agent.numberOfReviews || null,
         zillow_scraped_at: new Date().toISOString(),
-        zillow_sales_count: agent.salesCount || null,
+        zillow_sales_count: agent.salesLast12Months || agent.transactionCount || null,
         zillow_sales_volume: agent.salesVolume || null,
-        zillow_photo_url: agent.photoUrl || null,
+        zillow_photo_url: agent.photo || agent.photoUrl || agent.imageUrl || null,
         hubspot_synced: false,
         status: 'new',
       };
