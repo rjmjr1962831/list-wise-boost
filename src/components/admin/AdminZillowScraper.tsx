@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -103,6 +103,32 @@ export function AdminZillowScraper() {
 
   return (
     <div className="space-y-6">
+      {/* Integration Status */}
+      <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+        <CardContent className="pt-6">
+          <div className="flex items-start gap-3">
+            <CheckCircle2 className="w-6 h-6 text-green-600 flex-shrink-0 mt-1" />
+            <div className="space-y-2">
+              <h3 className="font-semibold text-lg">Pipedrive Integration Active</h3>
+              <p className="text-sm text-muted-foreground">
+                All scraped agents (rating ≥4.9) are automatically added to the <strong>prospects</strong> table for immediate Pipedrive sync. Each prospect includes Zillow position, page, ratings, sales data, and contact info.
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  const tab = document.querySelector('[value="pipedrive-sync"]') as HTMLElement;
+                  tab?.click();
+                }}
+                className="mt-2"
+              >
+                Go to Pipedrive Sync →
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card className="p-6">
