@@ -58,16 +58,16 @@ export default function FullEnrichmentPipeline() {
   };
 
   const estimateCredits = () => {
-    const baseCreditsPerAgent = 10;
+    const baseCreditsPerAgent = 2; // 1 for bio + 1 for synthesis
     let creditsPerAgent = baseCreditsPerAgent;
 
-    if (skipGenericBios) creditsPerAgent -= 2.5;
-    if (skipIfNoPress) creditsPerAgent -= 2.5;
-    if (skipRecentlyEnriched) creditsPerAgent *= 0.3;
+    if (skipGenericBios) creditsPerAgent -= 0.5;
+    if (skipIfNoPress) creditsPerAgent -= 0.5;
+    if (skipRecentlyEnriched) creditsPerAgent *= 0.5;
 
     return {
-      perAgent: creditsPerAgent.toFixed(1),
-      total: (creditsPerAgent * targetAgents).toFixed(0),
+      perAgent: Math.max(0.1, creditsPerAgent).toFixed(1),
+      total: (Math.max(0.1, creditsPerAgent) * targetAgents).toFixed(0),
       savings: ((1 - creditsPerAgent / baseCreditsPerAgent) * 100).toFixed(0)
     };
   };
