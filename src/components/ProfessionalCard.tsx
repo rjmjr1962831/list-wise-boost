@@ -1055,7 +1055,7 @@ export const ProfessionalCard = ({
                             itemProp="url"
                             onClick={handleWebsiteClick}
                           >
-                            {parsedProfInfo?.websiteUrl || professional.website || 'NA'}
+                            Official Website
                           </a>
                         </div>
                        
