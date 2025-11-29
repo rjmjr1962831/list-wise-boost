@@ -1,3 +1,4 @@
+// Force rebuild - React import fix
 import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
