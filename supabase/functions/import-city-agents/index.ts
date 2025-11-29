@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-const MIN_AGENTS_REQUIRED = 50; // Target 50 agents per city
 const MIN_REVIEWS = 100; // Require 100+ reviews
 const MIN_RATING = 4.8; // Require 4.8+ rating
 
@@ -17,7 +16,14 @@ serve(async (req) => {
   }
 
   try {
-    const { cityId, categoryId, maxResults = 50, forceRefresh = false } = await req.json();
+    const { 
+      cityId, 
+      categoryId, 
+      maxResults = 50, 
+      forceRefresh = false,
+      fullEnrichment = false,  // NEW: enables full pipeline with press + synthesis
+      maxQualifiedAgents = 999  // NEW: target number of qualified agents (effectively unlimited)
+    } = await req.json();
 
     if (!cityId || !categoryId) {
       throw new Error('cityId and categoryId are required');
@@ -42,6 +48,10 @@ serve(async (req) => {
 
     console.log(`Import request for ${city?.name}, ${city?.state} - ${category?.name}`);
 
+    // Determine target based on mode
+    const targetAgents = fullEnrichment ? maxQualifiedAgents : 50;
+    console.log(`Target: ${targetAgents} qualified agents (fullEnrichment: ${fullEnrichment})`);
+
     // Check if we have sufficient cached data (unless force refresh)
     if (!forceRefresh) {
       const { data: existingAgents, count } = await supabase
@@ -57,7 +67,7 @@ serve(async (req) => {
       console.log(`Found ${count || 0} qualifying agents in database`);
 
       // Check if we have enough agents and if they're fresh
-      if (count && count >= MIN_AGENTS_REQUIRED && existingAgents && existingAgents.length > 0) {
+      if (count && count >= targetAgents && existingAgents && existingAgents.length > 0) {
         // Find the oldest fetch date
         const oldestFetchDate = existingAgents
           .map(a => a.zillow_data_fetched_at ? new Date(a.zillow_data_fetched_at).getTime() : 0)
@@ -80,7 +90,7 @@ serve(async (req) => {
           console.log(`Data is stale (${Math.floor(ageInMs / (24 * 60 * 60 * 1000))} days old), refreshing...`);
         }
       } else {
-        console.log(`Insufficient qualifying agents (need ${MIN_AGENTS_REQUIRED}, have ${count || 0})`);
+        console.log(`Insufficient qualifying agents (need ${targetAgents}, have ${count || 0})`);
       }
     } else {
       console.log('Force refresh requested, skipping cache check');
@@ -104,9 +114,9 @@ serve(async (req) => {
         .gte('review_stars_rating', MIN_RATING)
         .gte('num_total_reviews', MIN_REVIEWS);
 
-      console.log(`Attempt ${attempts}: Currently have ${currentCount || 0}/${MIN_AGENTS_REQUIRED} qualifying agents`);
+      console.log(`Attempt ${attempts}: Currently have ${currentCount || 0}/${targetAgents} qualifying agents`);
 
-      if (currentCount && currentCount >= MIN_AGENTS_REQUIRED) {
+      if (currentCount && currentCount >= targetAgents) {
         console.log(`Target reached! Have ${currentCount} qualifying agents.`);
         break;
       }
@@ -217,7 +227,7 @@ serve(async (req) => {
                 if (existingAgent) {
                   console.log(`Reusing enriched data for ${agent.name} from existing record`);
                   
-                  // Copy enriched fields from existing agent
+                  // Copy ALL enriched fields from existing agent (including synthesis)
                   const { error: updateError } = await supabase
                     .from('professionals')
                     .update({
@@ -238,6 +248,13 @@ serve(async (req) => {
                       title: existingAgent.title,
                       specialty: existingAgent.specialty,
                       image_url: existingAgent.image_url,
+                      // NEW: Copy synthesis fields too
+                      press_mentions: existingAgent.press_mentions,
+                      notable_achievements: existingAgent.notable_achievements,
+                      publications: existingAgent.publications,
+                      community_roles: existingAgent.community_roles,
+                      synthesized_bio: existingAgent.synthesized_bio,
+                      profile_last_synthesized_at: existingAgent.profile_last_synthesized_at,
                       zillow_data_fetched_at: new Date().toISOString()
                     })
                     .eq('id', agent.id);
@@ -415,6 +432,57 @@ serve(async (req) => {
             const finalCount = enrichedAgents.length - lowReviewAgents.length;
             console.log(`🎉 Final result: ${finalCount} qualifying agents with ${MIN_RATING}+ stars and ${MIN_REVIEWS}+ reviews`);
           }
+
+          // Phase 3: Press Research + Auto-Synthesis (only if fullEnrichment enabled)
+          if (fullEnrichment) {
+            console.log('🔍 Starting Phase 3: Press Research & Profile Synthesis...');
+            
+            // Get agents that need synthesis (no synthesized_bio yet, but are enriched and active)
+            const { data: agentsNeedingSynthesis } = await supabase
+              .from('professionals')
+              .select('id, name, company, business_name')
+              .eq('city_id', cityId)
+              .eq('category_id', categoryId)
+              .eq('active', true)
+              .is('synthesized_bio', null)  // Only agents without synthesis
+              .not('zillow_data_fetched_at', 'is', null)  // Must be enriched first
+              .gte('review_stars_rating', MIN_RATING)
+              .gte('num_total_reviews', MIN_REVIEWS);
+
+            console.log(`Found ${agentsNeedingSynthesis?.length || 0} agents needing press research & synthesis`);
+
+            if (agentsNeedingSynthesis && agentsNeedingSynthesis.length > 0) {
+              for (const agent of agentsNeedingSynthesis) {
+                try {
+                  console.log(`📰 [${agentsNeedingSynthesis.indexOf(agent) + 1}/${agentsNeedingSynthesis.length}] Running press search for ${agent.name}...`);
+                  
+                  const pressResult = await supabase.functions.invoke('search-agent-press-claude', {
+                    body: {
+                      agentName: agent.name,
+                      company: agent.company,
+                      businessName: agent.business_name,
+                      city: city?.name,
+                      state: city?.state,
+                      professionalId: agent.id  // Triggers auto-synthesis
+                    }
+                  });
+
+                  if (pressResult.error) {
+                    console.error(`❌ Press search failed for ${agent.name}:`, pressResult.error);
+                  } else {
+                    console.log(`✅ Press search completed for ${agent.name}`);
+                  }
+                  
+                  // Rate limit: 5 seconds between Claude calls to avoid rate limits
+                  await new Promise(resolve => setTimeout(resolve, 5000));
+                } catch (pressError) {
+                  console.error(`Failed to process press search for ${agent.name}:`, pressError);
+                }
+              }
+              
+              console.log(`🎉 Phase 3 complete: Processed ${agentsNeedingSynthesis.length} agents for press & synthesis`);
+            }
+          }
         }
       } catch (bgError) {
         console.error('Background enrichment failed:', bgError);
@@ -429,7 +497,11 @@ serve(async (req) => {
         success: true,
         agenscrapeImported: totalImported,
         attempts: attempts,
-        message: `Imported ${totalImported} agents with agenscrape across ${attempts} batches. Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews. Enriching with memo23 in background (reusing existing enriched data where possible).`
+        fullEnrichment: fullEnrichment,
+        targetAgents: targetAgents,
+        message: fullEnrichment 
+          ? `Imported ${totalImported} agents. Target: ${targetAgents}. Running full enrichment (memo23 + press + synthesis) in background.`
+          : `Imported ${totalImported} agents with agenscrape across ${attempts} batches. Filtering for ${MIN_RATING}★ ratings and ${MIN_REVIEWS}+ reviews. Enriching with memo23 in background (reusing existing enriched data where possible).`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
