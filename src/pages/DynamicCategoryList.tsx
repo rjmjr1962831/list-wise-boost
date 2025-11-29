@@ -242,6 +242,7 @@ export default function DynamicCategoryList() {
         console.log(`Found ${brandBuilderProfs.length} Brand Builders for ${cityData.name}`);
 
         // Fetch qualified pool for random selection
+        // FIXED: Removed professional_information requirement to include agents with notable_achievements
         const { data: qualifiedPool, error: poolError } = await supabase
           .from('professional_cities')
           .select(`
@@ -253,7 +254,6 @@ export default function DynamicCategoryList() {
           .eq('professionals.category_id', categoryData.id)
           .eq('professionals.active', true)
           .eq('professionals.is_brand_builder', false)
-          .not('professionals.professional_information', 'is', null)
           .gte('professionals.review_stars_rating', 4.8)
           .gte('professionals.num_total_reviews', 100);
 

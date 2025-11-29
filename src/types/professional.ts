@@ -43,6 +43,10 @@ export interface Professional {
   years_experience?: number; // Years in business
   zillow_data_fetched_at?: string; // Timestamp of last Zillow data fetch
   get_to_know_me?: string; // Rewritten bio from Zillow's getToKnowMe
+  notable_achievements?: any[]; // Enriched achievements from press research
+  press_mentions?: any[]; // Media mentions and press coverage
+  synthesized_bio?: string; // AI-generated bio from enrichment
+  publications?: any[]; // Articles and publications
 }
 
 export interface ListSection {
