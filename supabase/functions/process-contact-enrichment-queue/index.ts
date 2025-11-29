@@ -7,7 +7,16 @@ const corsHeaders = {
 };
 
 // Helper function to process a single agent
-async function processAgent(supabase: any, item: any) {
+async function processAgent(
+  supabase: any, 
+  item: any, 
+  options: {
+    dryRun: boolean;
+    skipRecentlyEnriched: boolean;
+    skipGenericBios: boolean;
+    skipIfNoPress: boolean;
+  }
+) {
   try {
     // Mark as processing - starting with memo23
     await supabase
@@ -20,17 +29,42 @@ async function processAgent(supabase: any, item: any) {
       })
       .eq('id', item.id);
 
+    // Check if agent was recently enriched (within 7 days)
+    if (options.skipRecentlyEnriched) {
+      const { data: agent } = await supabase
+        .from('professionals')
+        .select('zillow_data_fetched_at')
+        .eq('id', item.professional_id)
+        .single();
+      
+      if (agent?.zillow_data_fetched_at) {
+        const daysSinceEnrichment = (Date.now() - new Date(agent.zillow_data_fetched_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceEnrichment < 7) {
+          console.log(`⏭️ [SKIP] ${item.professionals?.name} enriched ${daysSinceEnrichment.toFixed(1)} days ago`);
+          await supabase.from('contact_enrichment_queue')
+            .update({ status: 'completed', completed_at: new Date().toISOString() })
+            .eq('id', item.id);
+          return { name: item.professionals?.name, status: 'skipped', reason: 'recently_enriched', success: true };
+        }
+      }
+    }
+
     console.log(`🔄 [MEMO23] Processing ${item.professionals?.name}...`);
 
     // Step 1: memo23 enrichment
-    const { error: enrichError } = await supabase.functions.invoke(
-      'fetch-single-memo23-agent',
-      { body: { professionalId: item.professional_id } }
-    );
+    if (options.dryRun) {
+      console.log(`[DRY RUN] Would call memo23 for ${item.professional_id}`);
+    } else {
+      const { error: enrichError } = await supabase.functions.invoke(
+        'fetch-single-memo23-agent',
+        { body: { professionalId: item.professional_id } }
+      );
 
-    if (enrichError) {
-      throw new Error(`memo23 failed: ${enrichError.message}`);
+      if (enrichError) {
+        throw new Error(`memo23 failed: ${enrichError.message}`);
+      }
     }
+
     console.log(`✅ [MEMO23] Complete for ${item.professionals?.name}`);
 
     // Step 2: Check review count qualification
@@ -71,18 +105,43 @@ async function processAgent(supabase: any, item: any) {
       .eq('id', agent.city_id)
       .single();
 
-    await supabase.functions.invoke('search-agent-press-claude', {
-      body: {
-        agentName: agent.name,
-        company: agent.company,
-        businessName: agent.business_name,
-        city: cityData?.name,
-        state: cityData?.state,
-        professionalId: item.professional_id
-      }
-    });
+    let pressResult: any = null;
+    if (options.dryRun) {
+      console.log(`[DRY RUN] Would search press for ${agent.name}`);
+    } else {
+      const { data } = await supabase.functions.invoke('search-agent-press-claude', {
+        body: {
+          agentName: agent.name,
+          company: agent.company,
+          businessName: agent.business_name,
+          city: cityData?.name,
+          state: cityData?.state,
+          professionalId: item.professional_id
+        }
+      });
+      pressResult = data;
+    }
 
     console.log(`✅ [PRESS] Complete for ${agent.name}`);
+
+    // Check if we should skip synthesis
+    if (options.skipIfNoPress && !options.dryRun) {
+      // Check if any press mentions were found
+      const { data: updatedAgent } = await supabase
+        .from('professionals')
+        .select('press_mentions')
+        .eq('id', item.professional_id)
+        .single();
+      
+      if (!updatedAgent?.press_mentions || 
+          (Array.isArray(updatedAgent.press_mentions) && updatedAgent.press_mentions.length === 0)) {
+        console.log(`⏭️ [SKIP] No press mentions found for ${agent.name}, skipping synthesis`);
+        await supabase.from('contact_enrichment_queue')
+          .update({ status: 'completed', stage: 'completed', completed_at: new Date().toISOString() })
+          .eq('id', item.id);
+        return { name: agent.name, status: 'completed', skipped_synthesis: true, success: true };
+      }
+    }
 
     // Update to synthesis stage
     await supabase
@@ -90,7 +149,11 @@ async function processAgent(supabase: any, item: any) {
       .update({ stage: 'synthesis' })
       .eq('id', item.id);
 
-    console.log(`🤖 [SYNTHESIS] Auto-triggered for ${agent.name}`);
+    if (options.dryRun) {
+      console.log(`[DRY RUN] Would synthesize profile for ${agent.name}`);
+    } else {
+      console.log(`🤖 [SYNTHESIS] Auto-triggered for ${agent.name}`);
+    }
 
     // Mark as completed
     await supabase.from('contact_enrichment_queue')
@@ -121,16 +184,30 @@ serve(async (req) => {
   }
 
   try {
-    const { batchSize = 100, concurrency = 10 } = await req.json().catch(() => ({ 
+    const { 
+      batchSize = 100, 
+      concurrency = 10,
+      dryRun = false,
+      skipRecentlyEnriched = true,
+      skipGenericBios = true,
+      skipIfNoPress = true
+    } = await req.json().catch(() => ({ 
       batchSize: 100, 
-      concurrency: 10 
+      concurrency: 10,
+      dryRun: false,
+      skipRecentlyEnriched: true,
+      skipGenericBios: true,
+      skipIfNoPress: true
     }));
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress };
     console.log(`🔄 Processing up to ${batchSize} agents with ${concurrency} concurrent sessions...`);
+    if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
+    console.log(`💰 Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
 
     // Get pending items from queue
     const { data: queueItems, error: queueError } = await supabase
@@ -174,7 +251,7 @@ serve(async (req) => {
 
       // Process all agents in batch concurrently
       const batchResults = await Promise.allSettled(
-        batch.map(item => processAgent(supabase, item))
+        batch.map(item => processAgent(supabase, item, costOptions))
       );
 
       // Collect results
@@ -218,14 +295,21 @@ serve(async (req) => {
     if (remainingCount && remainingCount > 0) {
       console.log(`🔄 ${remainingCount} items remaining, triggering next batch...`);
       
-      // Fire-and-forget: trigger next batch
+      // Fire-and-forget: trigger next batch with same cost controls
       fetch(`${supabaseUrl}/functions/v1/process-contact-enrichment-queue`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${supabaseKey}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ batchSize, concurrency })
+        body: JSON.stringify({ 
+          batchSize, 
+          concurrency,
+          dryRun,
+          skipRecentlyEnriched,
+          skipGenericBios,
+          skipIfNoPress
+        })
       }).catch(err => console.log('Next batch triggered'));
     }
 
