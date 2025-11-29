@@ -11,13 +11,37 @@ serve(async (req) => {
   }
 
   try {
-    const { originalBio } = await req.json();
+    const { originalBio, skipIfGeneric = true } = await req.json();
 
     if (!originalBio || typeof originalBio !== 'string') {
       return new Response(
         JSON.stringify({ error: 'originalBio is required and must be a string' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Check if bio appears generic/templated (cost-saving measure #1)
+    if (skipIfGeneric) {
+      const bioLower = originalBio.toLowerCase();
+      const genericPatterns = [
+        'lorem ipsum',
+        'sample text',
+        'placeholder',
+        'your bio here',
+        'edit this',
+        'add your information'
+      ];
+      
+      const isGeneric = genericPatterns.some(pattern => bioLower.includes(pattern));
+      const isTooShort = originalBio.trim().length < 50;
+      
+      if (isGeneric || isTooShort) {
+        console.log(`Skipping bio rewrite - ${isGeneric ? 'generic content' : 'too short'} (${originalBio.length} chars)`);
+        return new Response(
+          JSON.stringify({ rewrittenBio: originalBio, skipped: true, reason: isGeneric ? 'generic' : 'too_short' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");

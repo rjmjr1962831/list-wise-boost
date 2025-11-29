@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { agentName, company, businessName, city, state, professionalId } = await req.json();
+    const { agentName, company, businessName, city, state, professionalId, dryRun = false } = await req.json();
 
     if (!agentName) {
       return new Response(
@@ -175,7 +175,7 @@ Look for references to achievements even if cited by secondary sources.`;
     console.log(`Found ${finalMentions.length} press mentions for ${agentName}`);
 
     // Auto-trigger profile synthesis if professionalId provided
-    if (professionalId && fullResearchText.trim()) {
+    if (professionalId && fullResearchText.trim() && !dryRun) {
       console.log(`🔄 Auto-triggering profile synthesis for ${agentName}...`);
       
       try {
@@ -183,6 +183,7 @@ Look for references to achievements even if cited by secondary sources.`;
         supabase.functions.invoke('synthesize-agent-profile', {
           body: {
             professionalId,
+            skipIfNoPress: true,
             rawResearch: `# Press Research for ${agentName}
 
 ## Context
@@ -210,6 +211,8 @@ ${JSON.stringify(finalMentions, null, 2)}`
         console.error('❌ Failed to trigger synthesis:', synthError);
         // Don't block the response on synthesis failure
       }
+    } else if (dryRun) {
+      console.log('🔧 DRY RUN: Would trigger synthesis for', agentName);
     } else if (professionalId && !fullResearchText.trim()) {
       console.log('⚠️ No research text captured for synthesis');
     } else {
