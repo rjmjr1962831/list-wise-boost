@@ -98,7 +98,8 @@ export default function AvondalePressScraper() {
                 company: agent.company,
                 businessName: agent.business_name,
                 city: city.name,
-                state: city.state
+                state: city.state,
+                professionalId: agent.id // Enable auto-synthesis
               }
             });
 
