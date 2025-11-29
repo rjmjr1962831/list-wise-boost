@@ -46,6 +46,8 @@ import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineS
 import { BulkEmailVerifier } from "@/components/admin/BulkEmailVerifier";
 import { QueuedEmailVerifier } from "@/components/admin/QueuedEmailVerifier";
 import { AdminHubSpotSync } from "@/components/admin/AdminHubSpotSync";
+import { AdminZillowScraper } from "@/components/admin/AdminZillowScraper";
+import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -285,6 +287,14 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               HubSpot Sync
             </TabsTrigger>
+            <TabsTrigger value="zillow-scraper">
+              <Home className="mr-2 h-4 w-4" />
+              Zillow Scraper
+            </TabsTrigger>
+            <TabsTrigger value="prospects">
+              <Users className="mr-2 h-4 w-4" />
+              Prospects
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -419,6 +429,14 @@ const AdminDashboard = () => {
 
           <TabsContent value="hubspot-sync" className="space-y-4">
             <AdminHubSpotSync />
+          </TabsContent>
+
+          <TabsContent value="zillow-scraper" className="space-y-4">
+            <AdminZillowScraper />
+          </TabsContent>
+
+          <TabsContent value="prospects" className="space-y-4">
+            <AdminProspectsManager />
           </TabsContent>
         </Tabs>
       </div>
