@@ -12,11 +12,14 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId } = await req.json();
+    const { professionalId, dryRun = false, skipRecentlyEnriched = true } = await req.json();
 
     if (!professionalId) {
       throw new Error('professionalId is required');
     }
+
+    console.log(`🔧 Dry run mode: ${dryRun ? 'ENABLED (no AI calls)' : 'DISABLED'}`);
+    console.log(`📅 Skip recently enriched: ${skipRecentlyEnriched ? 'ENABLED' : 'DISABLED'}`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -35,6 +38,25 @@ serve(async (req) => {
 
     if (!professional.zillow_profile_url) {
       throw new Error('No Zillow profile URL found for this professional');
+    }
+
+    // Cost-saving measure #4: Skip if recently enriched (within 7 days)
+    if (skipRecentlyEnriched && professional.zillow_data_fetched_at) {
+      const lastEnriched = new Date(professional.zillow_data_fetched_at);
+      const daysSinceEnrichment = (Date.now() - lastEnriched.getTime()) / (1000 * 60 * 60 * 24);
+      
+      if (daysSinceEnrichment < 7) {
+        console.log(`⏭️ Skipping ${professional.name} - enriched ${daysSinceEnrichment.toFixed(1)} days ago`);
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            skipped: true, 
+            reason: 'recently_enriched',
+            daysSinceEnrichment: daysSinceEnrichment.toFixed(1)
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     console.log(`Fetching memo23 data for: ${professional.name} - ${professional.zillow_profile_url}`);
@@ -769,6 +791,10 @@ serve(async (req) => {
           const fallbackBio = typeof sourceBio === 'string' ? sourceBio : JSON.stringify(sourceBio ?? '');
           updateData.get_to_know_me = fallbackBio;
           updateData.description = fallbackBio;
+        } else if (dryRun) {
+          console.log('🔧 DRY RUN: Would call rewrite-bio for bio of length:', originalBio.length);
+          updateData.get_to_know_me = originalBio;
+          updateData.description = originalBio;
         } else {
           console.log('Sending bio to rewrite-bio function, length:', originalBio.length);
 
@@ -779,7 +805,7 @@ serve(async (req) => {
               'apikey': supabaseKey,
               'Authorization': `Bearer ${supabaseKey}`,
             },
-            body: JSON.stringify({ originalBio }),
+            body: JSON.stringify({ originalBio, skipIfGeneric: true }),
           });
 
           let rewrittenBio: string | null = null;

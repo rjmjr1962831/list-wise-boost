@@ -12,7 +12,20 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId, rawResearch } = await req.json();
+    const { professionalId, rawResearch, skipIfNoPress = true } = await req.json();
+
+    // Cost-saving measure #2: Skip if no meaningful press mentions
+    if (skipIfNoPress && (!rawResearch || rawResearch.trim().length < 100)) {
+      console.log('⏭️ Skipping synthesis - no substantial press research found');
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          skipped: true, 
+          reason: 'no_press_mentions'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (!professionalId) {
       throw new Error('professionalId is required');
