@@ -209,6 +209,23 @@ serve(async (req) => {
     if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
     console.log(`💰 Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
 
+    // Automatic timeout recovery: Reset stuck processing items (>5 minutes old)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { data: stuckItems } = await supabase
+      .from('contact_enrichment_queue')
+      .update({ 
+        status: 'pending', 
+        stage: 'queued',
+        started_at: null 
+      })
+      .eq('status', 'processing')
+      .lt('started_at', fiveMinutesAgo)
+      .select('id');
+
+    if (stuckItems && stuckItems.length > 0) {
+      console.log(`🔄 Reset ${stuckItems.length} stuck items back to pending`);
+    }
+
     // Get pending items from queue
     const { data: queueItems, error: queueError } = await supabase
       .from('contact_enrichment_queue')
