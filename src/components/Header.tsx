@@ -18,14 +18,8 @@ export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   
-  // Safely get navigate - handles case where router context isn't ready
-  let navigate;
-  try {
-    navigate = useNavigate();
-  } catch (e) {
-    console.error('Router context not available:', e);
-    navigate = () => {}; // Fallback no-op function
-  }
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     // Get initial session
