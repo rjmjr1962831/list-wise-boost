@@ -34,6 +34,7 @@ import { MesaDataFixer } from "@/components/admin/MesaDataFixer";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 import AvondalePressScraper from "@/components/admin/AvondalePressScraper";
 import ManualProfileEnricher from "@/components/admin/ManualProfileEnricher";
+import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -236,6 +237,10 @@ const AdminDashboard = () => {
               <Sparkles className="mr-2 h-4 w-4" />
               Enrich Profiles
             </TabsTrigger>
+            <TabsTrigger value="full-enrichment">
+              <Zap className="mr-2 h-4 w-4" />
+              Full Enrichment
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -336,6 +341,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="enrich-profiles" className="space-y-4">
             <ManualProfileEnricher />
+          </TabsContent>
+
+          <TabsContent value="full-enrichment" className="space-y-4">
+            <FullEnrichmentPipeline />
           </TabsContent>
         </Tabs>
       </div>
