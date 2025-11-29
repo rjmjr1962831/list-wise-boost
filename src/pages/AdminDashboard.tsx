@@ -51,6 +51,7 @@ import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager"
 import { AdminRankingCapture } from "@/components/admin/AdminRankingCapture";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
+import AdminTestProspects from "@/components/admin/AdminTestProspects";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -310,6 +311,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Pipedrive Fields
             </TabsTrigger>
+            <TabsTrigger value="test-prospects">
+              <Users className="mr-2 h-4 w-4" />
+              Test Prospects
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="categories" className="space-y-4">
@@ -464,6 +469,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="pipedrive-fields" className="space-y-4">
             <AdminPipedriveFields />
+          </TabsContent>
+
+          <TabsContent value="test-prospects" className="space-y-4">
+            <AdminTestProspects />
           </TabsContent>
         </Tabs>
       </div>
