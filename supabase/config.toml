@@ -108,3 +108,6 @@ verify_jwt = false
 [functions.search-agent-press-claude]
 verify_jwt = false
 
+[functions.synthesize-agent-profile]
+verify_jwt = true
+
