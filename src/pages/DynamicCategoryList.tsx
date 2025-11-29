@@ -231,8 +231,7 @@ export default function DynamicCategoryList() {
           .eq('active', true)
           .eq('professionals.category_id', categoryData.id)
           .eq('professionals.active', true)
-          .eq('professionals.is_brand_builder', true)
-          .not('professionals.professional_information', 'is', null);
+          .eq('professionals.is_brand_builder', true);
 
         if (brandError) {
           console.error('Error fetching brand builders:', brandError);
