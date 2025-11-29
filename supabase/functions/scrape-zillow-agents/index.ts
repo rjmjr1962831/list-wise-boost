@@ -18,7 +18,8 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const apifyApiKey = Deno.env.get('APIFY_API_KEY');
-    const apifyActorId = Deno.env.get('APIFY_ACTOR_ID') || 'memo23~apify-zillow-agents-cheerio';
+    // Hardcoded to use the known working memo23 actor
+    const apifyActorId = 'memo23~apify-zillow-agents-cheerio';
     
     if (!apifyApiKey) {
       throw new Error('APIFY_API_KEY not configured');
