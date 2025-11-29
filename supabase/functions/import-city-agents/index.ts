@@ -162,8 +162,18 @@ serve(async (req) => {
       console.log(`Attempt ${attempts}: Currently have ${currentCount || 0}/${targetAgents} agents imported`);
 
       if (currentCount && currentCount >= targetAgents) {
-        console.log(`Target reached! Have ${currentCount} agents imported.`);
-        break;
+        console.log(`✅ Target already met! City has ${currentCount} agents linked (target: ${targetAgents})`);
+        
+        // Return immediately with "already met" flag
+        return new Response(
+          JSON.stringify({
+            success: true,
+            alreadyMet: true,
+            count: currentCount,
+            message: `${city?.name} already has ${currentCount} qualified agents linked (target: ${targetAgents}). No import needed.`
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       // Run getdataforme agenscrape to get more agents
