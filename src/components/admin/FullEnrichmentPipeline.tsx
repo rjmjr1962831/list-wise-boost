@@ -26,6 +26,12 @@ export default function FullEnrichmentPipeline() {
   const [currentPhase, setCurrentPhase] = useState("");
   const [progress, setProgress] = useState(0);
   const [statusLog, setStatusLog] = useState<string[]>([]);
+  
+  // Cost control options (defaults to enabled)
+  const [dryRun, setDryRun] = useState(false);
+  const [skipRecentlyEnriched, setSkipRecentlyEnriched] = useState(true);
+  const [skipGenericBios, setSkipGenericBios] = useState(true);
+  const [skipIfNoPress, setSkipIfNoPress] = useState(true);
 
   useEffect(() => {
     fetchCities();
@@ -51,6 +57,21 @@ export default function FullEnrichmentPipeline() {
     setStatusLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
   };
 
+  const estimateCredits = () => {
+    const baseCreditsPerAgent = 10;
+    let creditsPerAgent = baseCreditsPerAgent;
+
+    if (skipGenericBios) creditsPerAgent -= 2.5;
+    if (skipIfNoPress) creditsPerAgent -= 2.5;
+    if (skipRecentlyEnriched) creditsPerAgent *= 0.3;
+
+    return {
+      perAgent: creditsPerAgent.toFixed(1),
+      total: (creditsPerAgent * targetAgents).toFixed(0),
+      savings: ((1 - creditsPerAgent / baseCreditsPerAgent) * 100).toFixed(0)
+    };
+  };
+
   const runEnrichment = async () => {
     if (!selectedCityId) {
       toast.error("Please select a city");
@@ -74,13 +95,17 @@ export default function FullEnrichmentPipeline() {
       }
 
       const city = cities.find(c => c.id === selectedCityId);
+      const credits = estimateCredits();
+      
       addLog(`🚀 Starting ${fullEnrichment ? 'FULL' : 'standard'} enrichment for ${city?.name}, ${city?.state}`);
       addLog(`🎯 Target: ${targetAgents} qualified agents`);
+      addLog(`💰 Estimated cost: ${credits.total} credits (${credits.perAgent} per agent, ${credits.savings}% savings)`);
+      if (dryRun) addLog(`⚠️ DRY RUN MODE - No AI calls will be made`);
       
       setCurrentPhase("Phase 1: Import");
       setProgress(10);
 
-      // Call import-city-agents with full enrichment enabled
+      // Call import-city-agents with cost controls
       const { data, error } = await supabase.functions.invoke("import-city-agents", {
         body: {
           cityId: selectedCityId,
@@ -88,7 +113,11 @@ export default function FullEnrichmentPipeline() {
           maxResults: 100,
           forceRefresh: true,
           fullEnrichment: fullEnrichment,
-          maxQualifiedAgents: targetAgents
+          maxQualifiedAgents: targetAgents,
+          dryRun,
+          skipRecentlyEnriched,
+          skipGenericBios,
+          skipIfNoPress
         }
       });
 
@@ -213,6 +242,66 @@ export default function FullEnrichmentPipeline() {
             <p className="text-xs text-muted-foreground">
               System will import until it reaches this many agents with 4.8★+ rating and 100+ reviews
             </p>
+          </div>
+        </div>
+
+        <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
+          <div className="flex items-center justify-between">
+            <Label className="text-base font-semibold">Cost Controls</Label>
+            <div className="text-sm text-muted-foreground">
+              Est: <span className="font-mono font-semibold">{estimateCredits().total}</span> credits 
+              <span className="text-green-600 ml-2">({estimateCredits().savings}% savings)</span>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="dry-run"
+                checked={dryRun}
+                onCheckedChange={setDryRun}
+                disabled={isRunning}
+              />
+              <Label htmlFor="dry-run" className="cursor-pointer text-sm">
+                Dry Run (zero cost, logs only)
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="skip-recent"
+                checked={skipRecentlyEnriched}
+                onCheckedChange={setSkipRecentlyEnriched}
+                disabled={isRunning}
+              />
+              <Label htmlFor="skip-recent" className="cursor-pointer text-sm">
+                Skip Recently Enriched (saves ~70%)
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="skip-generic"
+                checked={skipGenericBios}
+                onCheckedChange={setSkipGenericBios}
+                disabled={isRunning}
+              />
+              <Label htmlFor="skip-generic" className="cursor-pointer text-sm">
+                Skip Generic Bio Rewrites (saves ~25%)
+              </Label>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Switch
+                id="skip-no-press"
+                checked={skipIfNoPress}
+                onCheckedChange={setSkipIfNoPress}
+                disabled={isRunning}
+              />
+              <Label htmlFor="skip-no-press" className="cursor-pointer text-sm">
+                Skip Synthesis Without Press (saves ~25%)
+              </Label>
+            </div>
           </div>
         </div>
 

@@ -21,8 +21,13 @@ serve(async (req) => {
       categoryId, 
       maxResults = 200, 
       forceRefresh = false,
-      fullEnrichment = false,  // NEW: enables full pipeline with press + synthesis
-      maxQualifiedAgents = 999  // NEW: target number of qualified agents (effectively unlimited)
+      fullEnrichment = false,
+      maxQualifiedAgents = 999,
+      // Cost control options
+      dryRun = false,
+      skipRecentlyEnriched = true,
+      skipGenericBios = true,
+      skipIfNoPress = true
     } = await req.json();
 
     if (!cityId || !categoryId) {
@@ -191,9 +196,16 @@ serve(async (req) => {
           totalQueued += agentsToEnrich.length;
           console.log(`✅ Queued ${agentsToEnrich.length} agents for enrichment (${totalQueued} total queued)`);
           
-          // Fire-and-forget: trigger queue processor with high concurrency
+          // Fire-and-forget: trigger queue processor with cost controls
           supabase.functions.invoke('process-contact-enrichment-queue', {
-            body: { batchSize: 100, concurrency: 10 }
+            body: { 
+              batchSize: 100, 
+              concurrency: 10,
+              dryRun,
+              skipRecentlyEnriched,
+              skipGenericBios,
+              skipIfNoPress
+            }
           }).catch(err => console.log('Queue processor triggered'));
         }
       } else {
