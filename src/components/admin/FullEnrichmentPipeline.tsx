@@ -301,6 +301,108 @@ export default function FullEnrichmentPipeline() {
     }
   };
 
+  const enrichAllCities = async () => {
+    if (!confirm(`This will queue enrichment for ALL qualified agents across ALL Arizona cities. Continue?`)) {
+      return;
+    }
+
+    setIsRunning(true);
+    setStatusLog([]);
+    setProgress(0);
+
+    try {
+      const { data: category } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", "top10realestateagents")
+        .single();
+
+      if (!category) {
+        throw new Error("Real Estate Agent category not found");
+      }
+
+      addLog(`🚀 Starting batch enrichment for all Arizona cities`);
+      addLog(`💰 Using cost controls: ${skipRecentlyEnriched ? 'skip recent' : ''} ${skipGenericBios ? 'skip generic' : ''} ${skipIfNoPress ? 'skip no press' : ''}`);
+      if (dryRun) addLog(`⚠️ DRY RUN MODE - No AI calls will be made`);
+
+      setCurrentPhase("Queuing All Cities");
+      setProgress(10);
+
+      let totalQueued = 0;
+      let citiesProcessed = 0;
+
+      for (const city of cities) {
+        addLog(`📍 Processing ${city.name}, ${city.state}...`);
+        
+        const { data, error } = await supabase.functions.invoke("import-city-agents", {
+          body: {
+            cityId: city.id,
+            categoryId: category.id,
+            maxResults: 100,
+            forceRefresh: false,
+            fullEnrichment: fullEnrichment,
+            maxQualifiedAgents: 200,
+            dryRun,
+            skipRecentlyEnriched,
+            skipGenericBios,
+            skipIfNoPress
+          }
+        });
+
+        if (error) {
+          addLog(`❌ Error processing ${city.name}: ${error.message}`);
+        } else if (data.queued) {
+          totalQueued += data.queued;
+          addLog(`✅ ${city.name}: queued ${data.queued} agents`);
+        } else {
+          addLog(`ℹ️ ${city.name}: ${data.message || 'no new agents to queue'}`);
+        }
+
+        citiesProcessed++;
+        setProgress(10 + (citiesProcessed / cities.length) * 40);
+
+        // Small delay between cities to avoid overwhelming the system
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      addLog(`📊 Batch queue complete: ${totalQueued} agents queued across ${citiesProcessed} cities`);
+      setProgress(60);
+
+      if (totalQueued > 0 && !dryRun) {
+        setCurrentPhase("Processing Queue");
+        addLog(`🔄 Starting queue processor...`);
+        
+        // Trigger the queue processor
+        await supabase.functions.invoke('process-contact-enrichment-queue', {
+          body: {
+            batchSize: 100,
+            concurrency: 10,
+            dryRun,
+            skipRecentlyEnriched,
+            skipGenericBios,
+            skipIfNoPress
+          }
+        });
+
+        addLog(`✅ Queue processor started`);
+        setProgress(100);
+        setCurrentPhase("Complete");
+        toast.success(`Queued ${totalQueued} agents for enrichment`);
+      } else {
+        setProgress(100);
+        setCurrentPhase("Complete");
+        toast.info(dryRun ? "Dry run complete" : "No new agents to enrich");
+      }
+
+    } catch (error: any) {
+      console.error("Batch enrichment error:", error);
+      addLog(`❌ Error: ${error.message}`);
+      toast.error(error.message || "Batch enrichment failed");
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   const pollEnrichmentProgress = async (cityId: string, categoryId: string) => {
     let attempts = 0;
     const maxAttempts = 30; // 5 minutes max
@@ -458,34 +560,47 @@ export default function FullEnrichmentPipeline() {
           </Label>
         </div>
 
-        <div className="flex gap-2">
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              onClick={runEnrichment}
+              disabled={isRunning || !selectedCityId}
+              className="flex-1"
+              size="lg"
+            >
+              {isRunning ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {currentPhase}...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-4 w-4" />
+                  Run {fullEnrichment ? "Full" : "Standard"} Enrichment
+                </>
+              )}
+            </Button>
+            
+            <Button
+              onClick={retryStuckItems}
+              disabled={isRunning}
+              variant="outline"
+              size="lg"
+            >
+              <AlertCircle className="mr-2 h-4 w-4" />
+              Retry Stuck
+            </Button>
+          </div>
+
           <Button
-            onClick={runEnrichment}
-            disabled={isRunning || !selectedCityId}
-            className="flex-1"
+            onClick={enrichAllCities}
+            disabled={isRunning || cities.length === 0}
+            variant="secondary"
+            className="w-full"
             size="lg"
           >
-            {isRunning ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {currentPhase}...
-              </>
-            ) : (
-              <>
-                <Zap className="mr-2 h-4 w-4" />
-                Run {fullEnrichment ? "Full" : "Standard"} Enrichment
-              </>
-            )}
-          </Button>
-          
-          <Button
-            onClick={retryStuckItems}
-            disabled={isRunning}
-            variant="outline"
-            size="lg"
-          >
-            <AlertCircle className="mr-2 h-4 w-4" />
-            Retry Stuck
+            <Zap className="mr-2 h-4 w-4" />
+            Enrich All Cities ({cities.length} cities)
           </Button>
         </div>
 
