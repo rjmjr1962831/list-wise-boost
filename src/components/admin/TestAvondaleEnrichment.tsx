@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, TestTube } from "lucide-react";
+import { Loader2, TestTube, DollarSign, AlertCircle } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
@@ -14,12 +14,46 @@ export const TestAvondaleEnrichment = () => {
   const [forceReEnrich, setForceReEnrich] = useState(true);
   const [concurrency, setConcurrency] = useState(3);
   const [delaySeconds, setDelaySeconds] = useState(2);
+  
+  // Cost control options
+  const [dryRun, setDryRun] = useState(false);
+  const [skipRecentlyEnriched, setSkipRecentlyEnriched] = useState(true);
+  const [skipGenericBios, setSkipGenericBios] = useState(true);
+  const [skipIfNoPress, setSkipIfNoPress] = useState(true);
 
   const addLog = (message: string) => {
     setLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
   };
 
+  const estimateCredits = () => {
+    const agentCount = 2; // Test uses 2 agents
+    let creditsPerAgent = 4; // Base: rewrite-bio (1) + search-press (1) + synthesize (2)
+    
+    if (dryRun) return 0;
+    if (skipGenericBios) creditsPerAgent -= 0.5; // ~50% skip bio rewrites
+    if (skipIfNoPress) creditsPerAgent -= 1; // Skip synthesis when no press
+    if (skipRecentlyEnriched) return Math.round(agentCount * 0.3 * creditsPerAgent); // Only ~30% need enrichment
+    
+    return Math.round(agentCount * creditsPerAgent);
+  };
+
   const runTest = async () => {
+    const estimatedCredits = estimateCredits();
+    
+    if (!dryRun && estimatedCredits > 0) {
+      const proceed = window.confirm(
+        `This will use approximately ${estimatedCredits} credits.\n\n` +
+        `Settings:\n` +
+        `- Concurrency: ${concurrency} workers\n` +
+        `- Delay: ${delaySeconds}s between agents\n` +
+        `- Skip recently enriched: ${skipRecentlyEnriched ? 'Yes' : 'No'}\n` +
+        `- Skip generic bios: ${skipGenericBios ? 'Yes' : 'No'}\n` +
+        `- Skip synthesis without press: ${skipIfNoPress ? 'Yes' : 'No'}\n\n` +
+        `Proceed?`
+      );
+      
+      if (!proceed) return;
+    }
     setIsRunning(true);
     setLog([]);
     
@@ -73,7 +107,12 @@ export const TestAvondaleEnrichment = () => {
             maxResults: 2,  // Limit to 2 agents for testing
             forceReEnrich: forceReEnrich,
             concurrency: concurrency,
-            delayMs: delaySeconds * 1000
+            delayMs: delaySeconds * 1000,
+            // Cost control flags
+            dryRun,
+            skipRecentlyEnriched,
+            skipGenericBios,
+            skipIfNoPress
           }
         }
       );
@@ -108,6 +147,80 @@ export const TestAvondaleEnrichment = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Cost Estimation */}
+        <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+          <div className="flex items-center gap-2 mb-2">
+            <DollarSign className="h-4 w-4 text-primary" />
+            <span className="font-medium">Estimated Cost</span>
+          </div>
+          <div className="text-2xl font-bold text-primary">
+            {dryRun ? '0' : estimateCredits()} credits
+          </div>
+          {dryRun && (
+            <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+              <AlertCircle className="h-3 w-3" />
+              <span>Dry run mode - no credits will be used</span>
+            </div>
+          )}
+        </div>
+
+        {/* Cost Controls */}
+        <div className="space-y-3 p-4 bg-muted/30 rounded-lg border">
+          <h4 className="font-medium text-sm">Cost Controls</h4>
+          
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="dry-run">Dry Run Mode</Label>
+              <p className="text-xs text-muted-foreground">Log what would happen (0 credits)</p>
+            </div>
+            <Switch
+              id="dry-run"
+              checked={dryRun}
+              onCheckedChange={setDryRun}
+              disabled={isRunning}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="skip-recent">Skip Recently Enriched</Label>
+              <p className="text-xs text-muted-foreground">Skip agents enriched within 7 days</p>
+            </div>
+            <Switch
+              id="skip-recent"
+              checked={skipRecentlyEnriched}
+              onCheckedChange={setSkipRecentlyEnriched}
+              disabled={isRunning}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="skip-generic">Skip Generic Bio Rewrites</Label>
+              <p className="text-xs text-muted-foreground">Don't rewrite short/templated bios</p>
+            </div>
+            <Switch
+              id="skip-generic"
+              checked={skipGenericBios}
+              onCheckedChange={setSkipGenericBios}
+              disabled={isRunning}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="skip-no-press">Skip Synthesis Without Press</Label>
+              <p className="text-xs text-muted-foreground">Don't synthesize when no press found</p>
+            </div>
+            <Switch
+              id="skip-no-press"
+              checked={skipIfNoPress}
+              onCheckedChange={setSkipIfNoPress}
+              disabled={isRunning}
+            />
+          </div>
+        </div>
+
         <div className="space-y-4 rounded-lg border p-4">
           <div className="space-y-3">
             <div className="flex items-center justify-between">

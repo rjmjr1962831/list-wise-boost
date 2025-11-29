@@ -12,7 +12,12 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId, dryRun = false, skipRecentlyEnriched = true } = await req.json();
+    const { 
+      professionalId, 
+      dryRun = false, 
+      skipRecentlyEnriched = true,
+      skipGenericBios = true
+    } = await req.json();
 
     if (!professionalId) {
       throw new Error('professionalId is required');
@@ -812,7 +817,7 @@ serve(async (req) => {
                   'apikey': supabaseKey,
                   'Authorization': `Bearer ${supabaseKey}`,
                 },
-                body: JSON.stringify({ originalBio, skipIfGeneric: true }),
+                body: JSON.stringify({ originalBio, skipIfGeneric: skipGenericBios }),
               });
 
               if (rewriteResponse.ok) {

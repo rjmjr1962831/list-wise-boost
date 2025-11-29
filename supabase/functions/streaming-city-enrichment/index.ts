@@ -63,7 +63,12 @@ serve(async (req) => {
       maxResults = 200, 
       forceReEnrich = false,
       concurrency = CONCURRENCY,
-      delayMs = DEFAULT_DELAY_MS
+      delayMs = DEFAULT_DELAY_MS,
+      // Cost control flags
+      dryRun = false,
+      skipRecentlyEnriched = true,
+      skipGenericBios = true,
+      skipIfNoPress = true
     } = await req.json();
 
     if (!cityId || !categoryId) {
@@ -72,6 +77,7 @@ serve(async (req) => {
 
     console.log(`🔄 Force re-enrich mode: ${forceReEnrich ? 'ENABLED' : 'DISABLED'}`);
     console.log(`⚙️ Concurrency: ${concurrency} workers, Delay: ${delayMs}ms between agents`);
+    console.log(`💰 Cost controls: dryRun=${dryRun}, skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -295,7 +301,12 @@ serve(async (req) => {
         console.log(`📊 [Worker] Running memo23 enrichment for ${agentName}...`);
         await retryWithBackoff(async () => {
           const { error: memo23Error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
-            body: { professionalId }
+            body: { 
+              professionalId,
+              dryRun,
+              skipRecentlyEnriched,
+              skipGenericBios
+            }
           });
 
           if (memo23Error) {
@@ -332,7 +343,9 @@ serve(async (req) => {
                 businessName: agent.businessName,
                 city: city.name,
                 state: city.state,
-                professionalId
+                professionalId,
+                dryRun,
+                skipIfNoPress
               }
             });
 
