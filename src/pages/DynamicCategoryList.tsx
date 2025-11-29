@@ -212,51 +212,62 @@ export default function DynamicCategoryList() {
         let professionalsData: any[] = [];
         let profsError = null;
         
-        if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
-          // Fetch Beauvais first (special case)
-          const { data: beauvaisData, error: beauvaisError } = await supabase
-            .from('professionals')
-            .select('*')
-            .eq('city_id', cityData.id)
-            .eq('category_id', categoryData.id)
-            .eq('active', true)
-            .not('professional_information', 'is', null)
-            .ilike('zillow_profile_url', '%beauvais%')
-            .limit(1);
-          
-          // Fetch other qualified agents (excluding Beauvais)
-          const { data: otherAgents, error: otherError } = await supabase
-            .from('professionals')
-            .select('*')
-            .eq('city_id', cityData.id)
-            .eq('category_id', categoryData.id)
-            .eq('active', true)
-            .not('professional_information', 'is', null)
-            .gte('review_stars_rating', 4.8)
-            .gte('num_total_reviews', 100)
-            .not('zillow_profile_url', 'ilike', '%beauvais%')
-            .order('rank')
-            .limit(9);
-          
-          profsError = beauvaisError || otherError;
-          professionalsData = [...(beauvaisData || []), ...(otherAgents || [])];
-        } else {
-          // Standard query for other cities
-          const { data, error } = await supabase
-            .from('professionals')
-            .select('*')
-            .eq('city_id', cityData.id)
-            .eq('category_id', categoryData.id)
-            .eq('active', true)
-            .not('professional_information', 'is', null)
-            .gte('review_stars_rating', 4.8)
-            .gte('num_total_reviews', 100)
-            .order('rank')
-            .limit(10);
-          
-          professionalsData = data || [];
-          profsError = error;
+        // Fetch Brand Builders first (always shown)
+        const { data: brandBuilders, error: brandError } = await supabase
+          .from('professional_cities')
+          .select(`
+            rank,
+            professionals!inner(*)
+          `)
+          .eq('city_id', cityData.id)
+          .eq('active', true)
+          .eq('professionals.category_id', categoryData.id)
+          .eq('professionals.active', true)
+          .eq('professionals.is_brand_builder', true)
+          .not('professionals.professional_information', 'is', null);
+
+        if (brandError) {
+          console.error('Error fetching brand builders:', brandError);
         }
+
+        const brandBuilderProfs = (brandBuilders || []).map((pc: any) => pc.professionals);
+        console.log(`Found ${brandBuilderProfs.length} Brand Builders for ${cityData.name}`);
+
+        // Fetch qualified pool for random selection
+        const { data: qualifiedPool, error: poolError } = await supabase
+          .from('professional_cities')
+          .select(`
+            rank,
+            professionals!inner(*)
+          `)
+          .eq('city_id', cityData.id)
+          .eq('active', true)
+          .eq('professionals.category_id', categoryData.id)
+          .eq('professionals.active', true)
+          .eq('professionals.is_brand_builder', false)
+          .not('professionals.professional_information', 'is', null)
+          .gte('professionals.review_stars_rating', 4.8)
+          .gte('professionals.num_total_reviews', 100);
+
+        if (poolError) {
+          console.error('Error fetching qualified pool:', poolError);
+        }
+
+        const qualifiedProfs = (qualifiedPool || []).map((pc: any) => pc.professionals);
+        console.log(`Found ${qualifiedProfs.length} qualified non-Brand Builder agents`);
+
+        // Random selection: shuffle and pick to fill remaining slots
+        const spotsRemaining = Math.max(0, 10 - brandBuilderProfs.length);
+        const shuffled = qualifiedProfs.sort(() => Math.random() - 0.5);
+        const randomPicks = shuffled.slice(0, spotsRemaining);
+
+        // Combine: Brand Builders + random picks
+        professionalsData = [...brandBuilderProfs, ...randomPicks];
+        
+        console.log(`Final list: ${brandBuilderProfs.length} Brand Builders + ${randomPicks.length} random = ${professionalsData.length} total`);
+
+        // Reset error since we handled both queries
+        profsError = brandError || poolError;
 
         if (profsError) {
           console.error('Error fetching professionals:', profsError);

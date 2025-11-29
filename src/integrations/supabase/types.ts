@@ -539,6 +539,48 @@ export type Database = {
         }
         Relationships: []
       }
+      professional_cities: {
+        Row: {
+          active: boolean
+          city_id: string
+          created_at: string | null
+          id: string
+          professional_id: string
+          rank: number
+        }
+        Insert: {
+          active?: boolean
+          city_id: string
+          created_at?: string | null
+          id?: string
+          professional_id: string
+          rank?: number
+        }
+        Update: {
+          active?: boolean
+          city_id?: string
+          created_at?: string | null
+          id?: string
+          professional_id?: string
+          rank?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_cities_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_cities_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professional_claims: {
         Row: {
           admin_notes: string | null
@@ -656,6 +698,7 @@ export type Database = {
           id: string
           image_url: string | null
           in_canada: boolean | null
+          is_brand_builder: boolean | null
           is_premier_agent: boolean | null
           is_top_agent: boolean | null
           license_number: string | null
@@ -730,6 +773,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_canada?: boolean | null
+          is_brand_builder?: boolean | null
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
           license_number?: string | null
@@ -804,6 +848,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_canada?: boolean | null
+          is_brand_builder?: boolean | null
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
           license_number?: string | null

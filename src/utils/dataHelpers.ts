@@ -79,33 +79,42 @@ export async function getProfessionalsByCityAndCategory(
   cityId: string,
   categoryId: string
 ): Promise<{ established: Professional[]; emerging: Professional[] }> {
+  // Query through professional_cities junction table
   const { data, error } = await supabase
-    .from('professionals')
-    .select('*')
+    .from('professional_cities')
+    .select(`
+      rank,
+      professionals!inner(*)
+    `)
     .eq('city_id', cityId)
-    .eq('category_id', categoryId)
     .eq('active', true)
+    .eq('professionals.category_id', categoryId)
+    .eq('professionals.active', true)
     .order('rank', { ascending: true });
 
   if (error || !data) {
+    console.error('Error fetching professionals:', error);
     return { established: [], emerging: [] };
   }
 
-  const professionals = data.map(p => ({
-    id: p.id,
-    name: p.name,
-    title: p.title,
-    image: p.image_url,
-    yearsExperience: p.years_experience,
-    specialty: p.specialty,
-    phone: p.phone,
-    email: p.email,
-    website: p.website,
-    description: p.description,
-    badges: p.badges,
-    rank: p.rank,
-    type: p.type as 'established' | 'emerging',
-  }));
+  const professionals = data.map((pc: any) => {
+    const p = pc.professionals;
+    return {
+      id: p.id,
+      name: p.name,
+      title: p.title,
+      image: p.image_url,
+      yearsExperience: p.years_experience,
+      specialty: p.specialty,
+      phone: p.phone,
+      email: p.email,
+      website: p.website,
+      description: p.description,
+      badges: p.badges,
+      rank: pc.rank, // Use rank from junction table
+      type: p.type as 'established' | 'emerging',
+    };
+  });
 
   return {
     established: professionals.filter(p => p.type === 'established'),
@@ -153,23 +162,28 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getCategoriesForCity(cityId: string): Promise<{ category: Category; count: number }[]> {
+  // Query through professional_cities junction table
   const { data, error } = await supabase
-    .from('professionals')
-    .select('category_id, categories(*)')
+    .from('professional_cities')
+    .select(`
+      professionals!inner(category_id, categories(*))
+    `)
     .eq('city_id', cityId)
-    .eq('active', true);
+    .eq('active', true)
+    .eq('professionals.active', true);
 
   if (error || !data) return [];
 
   const categoryCountMap = new Map<string, { category: any; count: number }>();
 
-  data.forEach(item => {
-    if (item.categories) {
-      const catId = item.category_id;
+  data.forEach((item: any) => {
+    const prof = item.professionals;
+    if (prof?.categories) {
+      const catId = prof.category_id;
       if (categoryCountMap.has(catId)) {
         categoryCountMap.get(catId)!.count++;
       } else {
-        categoryCountMap.set(catId, { category: item.categories, count: 1 });
+        categoryCountMap.set(catId, { category: prof.categories, count: 1 });
       }
     }
   });
