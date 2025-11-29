@@ -17,11 +17,13 @@ export default function AvondalePressScraper() {
   const [isRunning, setIsRunning] = useState(false);
   const [jobs, setJobs] = useState<AgentJob[]>([]);
   const [progress, setProgress] = useState(0);
+  const [shouldStop, setShouldStop] = useState(false);
 
   const runPressScraper = async () => {
     setIsRunning(true);
     setJobs([]);
     setProgress(0);
+    setShouldStop(false);
 
     try {
       // Get Avondale city and category IDs
@@ -162,6 +164,13 @@ export default function AvondalePressScraper() {
 
       // Split agents into batches and process each batch in parallel
       for (let i = 0; i < agents.length; i += BATCH_SIZE) {
+        // Check if user requested stop
+        if (shouldStop) {
+          console.log('Process stopped by user');
+          toast.info('Press scraping stopped');
+          break;
+        }
+
         const batch = agents.slice(i, i + BATCH_SIZE);
         console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.map(a => a.name).join(', ')}`);
         
@@ -169,20 +178,28 @@ export default function AvondalePressScraper() {
         await Promise.allSettled(batch.map(agent => processAgent(agent)));
 
         // Add delay between batches (except after the last batch)
-        if (i + BATCH_SIZE < agents.length) {
+        if (i + BATCH_SIZE < agents.length && !shouldStop) {
           console.log(`Waiting ${BATCH_DELAY / 1000}s before next batch...`);
           await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
         }
       }
 
-      toast.success('Press scraping complete!');
+      if (!shouldStop) {
+        toast.success('Press scraping complete!');
+      }
 
     } catch (error) {
       console.error('Press scraper error:', error);
       toast.error('Failed to run press scraper');
     } finally {
       setIsRunning(false);
+      setShouldStop(false);
     }
+  };
+
+  const stopProcess = () => {
+    setShouldStop(true);
+    toast.info('Stopping after current batch...');
   };
 
   const getStatusIcon = (status: AgentJob['status']) => {
@@ -207,20 +224,31 @@ export default function AvondalePressScraper() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <Button 
-          onClick={runPressScraper} 
-          disabled={isRunning}
-          className="w-full"
-        >
-          {isRunning ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Scraping... {Math.round(progress)}%
-            </>
-          ) : (
-            'Start Press Search'
+        <div className="flex gap-2">
+          <Button 
+            onClick={runPressScraper} 
+            disabled={isRunning}
+            className="flex-1"
+          >
+            {isRunning ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Scraping... {Math.round(progress)}%
+              </>
+            ) : (
+              'Start Press Search'
+            )}
+          </Button>
+          {isRunning && (
+            <Button 
+              onClick={stopProcess}
+              variant="destructive"
+              disabled={shouldStop}
+            >
+              {shouldStop ? 'Stopping...' : 'Stop'}
+            </Button>
           )}
-        </Button>
+        </div>
 
         {jobs.length > 0 && (
           <div className="space-y-2">
