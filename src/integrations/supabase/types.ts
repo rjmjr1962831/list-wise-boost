@@ -804,6 +804,11 @@ export type Database = {
           years_experience: number | null
           zillow_data_fetched_at: string | null
           zillow_profile_url: string | null
+          zillow_rank_captured_at: string | null
+          zillow_search_city: string | null
+          zillow_search_page: number | null
+          zillow_search_position: number | null
+          zillow_search_total: number | null
           zip_code: string | null
           zuid: string | null
         }
@@ -879,6 +884,11 @@ export type Database = {
           years_experience?: number | null
           zillow_data_fetched_at?: string | null
           zillow_profile_url?: string | null
+          zillow_rank_captured_at?: string | null
+          zillow_search_city?: string | null
+          zillow_search_page?: number | null
+          zillow_search_position?: number | null
+          zillow_search_total?: number | null
           zip_code?: string | null
           zuid?: string | null
         }
@@ -954,6 +964,11 @@ export type Database = {
           years_experience?: number | null
           zillow_data_fetched_at?: string | null
           zillow_profile_url?: string | null
+          zillow_rank_captured_at?: string | null
+          zillow_search_city?: string | null
+          zillow_search_page?: number | null
+          zillow_search_position?: number | null
+          zillow_search_total?: number | null
           zip_code?: string | null
           zuid?: string | null
         }

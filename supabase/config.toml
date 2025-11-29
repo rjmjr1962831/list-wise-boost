@@ -129,3 +129,6 @@ verify_jwt = false
 [functions.bulk-sync-hubspot]
 verify_jwt = false
 
+[functions.capture-zillow-rankings]
+verify_jwt = false
+
