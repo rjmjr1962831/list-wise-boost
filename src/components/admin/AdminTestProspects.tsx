@@ -1,69 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2 } from 'lucide-react';
+import { Users, Database, Trash2, AlertCircle } from 'lucide-react';
 
 export default function AdminTestProspects() {
-  const [isAdding, setIsAdding] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [proCount, setProCount] = useState(0);
+  const [prospectCount, setProspectCount] = useState(0);
   const { toast } = useToast();
 
-  const handleAddTestProspects = async () => {
-    setIsAdding(true);
+  useEffect(() => {
+    fetchCounts();
+  }, []);
+
+  const fetchCounts = async () => {
+    const { count: pros } = await supabase
+      .from('professionals')
+      .select('*', { count: 'exact', head: true })
+      .not('email', 'is', null);
+    
+    const { count: prospects } = await supabase
+      .from('prospects')
+      .select('*', { count: 'exact', head: true });
+
+    setProCount(pros || 0);
+    setProspectCount(prospects || 0);
+  };
+
+  const handleCopyFromProfessionals = async () => {
+    if (!confirm(`Copy up to 5 agents from professionals to prospects?`)) {
+      return;
+    }
+
+    setIsCopying(true);
     try {
-      const testProspects = [
-        {
-          name: 'John Smith',
-          email: 'john.smith@example.com',
-          phone: '602-555-0101',
-          company: 'ABC Realty',
-          city: 'Phoenix',
-          state: 'AZ',
-        },
-        {
-          name: 'Sarah Johnson',
-          email: 'sarah.j@example.com',
-          phone: '480-555-0102',
-          company: 'Desert Properties',
-          city: 'Scottsdale',
-          state: 'AZ',
-        },
-        {
-          name: 'Mike Williams',
-          email: 'mike.w@example.com',
-          phone: '623-555-0103',
-          company: 'Valley Homes',
-          city: 'Glendale',
-          state: 'AZ',
-        },
-        {
-          name: 'Emily Davis',
-          email: 'emily.d@example.com',
-          phone: '602-555-0104',
-          company: 'Metro Realty',
-          city: 'Tempe',
-          state: 'AZ',
-        },
-        {
-          name: 'Robert Brown',
-          email: 'robert.b@example.com',
-          phone: '480-555-0105',
-          company: 'Arizona Estates',
-          city: 'Mesa',
-          state: 'AZ',
-        },
-      ];
+      // Get first 5 professionals with email
+      const { data: professionals, error: fetchError } = await supabase
+        .from('professionals')
+        .select('*')
+        .not('email', 'is', null)
+        .limit(5);
 
-      const { error } = await supabase.from('prospects').insert(testProspects);
+      if (fetchError) throw fetchError;
+      if (!professionals || professionals.length === 0) {
+        toast({
+          title: 'No Data',
+          description: 'No professionals found with email addresses',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      if (error) throw error;
+      // Map to prospects format
+      const prospects = professionals.map(pro => ({
+        name: pro.name,
+        email: pro.email,
+        phone: pro.phone,
+        company: pro.company,
+        city: null,
+        state: null,
+        zillow_profile_url: pro.zillow_profile_url,
+        zillow_rating: pro.review_stars_rating,
+        zillow_reviews: pro.num_total_reviews,
+      }));
+
+      const { error: insertError } = await supabase.from('prospects').insert(prospects);
+
+      if (insertError) throw insertError;
 
       toast({
-        title: 'Test Prospects Added',
-        description: `${testProspects.length} test prospects added successfully`,
+        title: 'Agents Copied',
+        description: `${prospects.length} agents copied to prospects`,
       });
+      
+      fetchCounts();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -71,7 +84,7 @@ export default function AdminTestProspects() {
         variant: 'destructive',
       });
     } finally {
-      setIsAdding(false);
+      setIsCopying(false);
     }
   };
 
@@ -90,6 +103,8 @@ export default function AdminTestProspects() {
         title: 'Prospects Cleared',
         description: 'All prospects have been deleted',
       });
+      
+      fetchCounts();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -104,44 +119,81 @@ export default function AdminTestProspects() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-2">Test Prospects</h2>
+        <h2 className="text-2xl font-bold mb-2">Populate Prospects</h2>
         <p className="text-muted-foreground">
-          Add or clear test prospects for Pipedrive sync testing
+          Prospects are real estate agents to be synced with Pipedrive
         </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Database className="w-5 h-5 text-muted-foreground" />
+              <span className="text-sm font-medium">Professionals</span>
+            </div>
+            <p className="text-3xl font-bold">{proCount}</p>
+            <p className="text-sm text-muted-foreground mt-1">agents in database</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="w-5 h-5 text-muted-foreground" />
+              <span className="text-sm font-medium">Prospects</span>
+            </div>
+            <p className="text-3xl font-bold">{prospectCount}</p>
+            <p className="text-sm text-muted-foreground mt-1">ready for sync</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Quick Add Test Data</CardTitle>
+          <CardTitle>Copy Agents from Professionals</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Add 5 sample prospects with basic information (no Zillow data)
+            Copy up to 5 agents from your professionals table to test Pipedrive sync
           </p>
-          <div className="flex gap-2">
-            <Button onClick={handleAddTestProspects} disabled={isAdding}>
-              <Plus className="w-4 h-4 mr-2" />
-              {isAdding ? 'Adding...' : 'Add 5 Test Prospects'}
-            </Button>
-            <Button 
-              onClick={handleClearProspects} 
-              disabled={isClearing}
-              variant="destructive"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              {isClearing ? 'Clearing...' : 'Clear All Prospects'}
-            </Button>
+          <Button onClick={handleCopyFromProfessionals} disabled={isCopying}>
+            <Users className="w-4 h-4 mr-2" />
+            {isCopying ? 'Copying...' : 'Copy 5 Agents to Prospects'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card className="border-yellow-500/50 bg-yellow-500/5">
+        <CardContent className="pt-6">
+          <div className="flex gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="space-y-2">
+              <p className="font-medium">For Production Use</p>
+              <p className="text-sm text-muted-foreground">
+                Use the <strong>Zillow Scraper</strong> tab to scrape agents with full Zillow ranking data (position, page, ratings, etc.) or the <strong>Prospects</strong> tab to view and manage all prospects.
+              </p>
+            </div>
           </div>
-          <div className="text-sm text-muted-foreground space-y-1 border-l-2 border-border pl-3">
-            <p><strong>Test prospects include:</strong></p>
-            <ul className="list-disc list-inside space-y-0.5">
-              <li>John Smith - ABC Realty, Phoenix</li>
-              <li>Sarah Johnson - Desert Properties, Scottsdale</li>
-              <li>Mike Williams - Valley Homes, Glendale</li>
-              <li>Emily Davis - Metro Realty, Tempe</li>
-              <li>Robert Brown - Arizona Estates, Mesa</li>
-            </ul>
-          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Clear all prospects from the database. This cannot be undone.
+          </p>
+          <Button 
+            onClick={handleClearProspects} 
+            disabled={isClearing}
+            variant="destructive"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            {isClearing ? 'Clearing...' : 'Clear All Prospects'}
+          </Button>
         </CardContent>
       </Card>
     </div>
