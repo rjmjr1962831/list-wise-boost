@@ -4,10 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2, TestTube } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export const TestAvondaleEnrichment = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [log, setLog] = useState<string[]>([]);
+  const [forceReEnrich, setForceReEnrich] = useState(false);
 
   const addLog = (message: string) => {
     setLog(prev => [...prev, `${new Date().toLocaleTimeString()}: ${message}`]);
@@ -48,6 +51,9 @@ export const TestAvondaleEnrichment = () => {
       // Step 3: Start streaming enrichment pipeline
       addLog("🔄 Starting streaming enrichment (agenscrape→memo23→claude)...");
       addLog("This will discover agents and enrich them concurrently as they're found.");
+      if (forceReEnrich) {
+        addLog("⚡ Force re-enrich enabled: existing agents will be re-enriched");
+      }
       
       const { data: result, error: enrichError } = await supabase.functions.invoke(
         'streaming-city-enrichment',
@@ -55,7 +61,8 @@ export const TestAvondaleEnrichment = () => {
           body: {
             cityId: city.id,
             categoryId: category.id,
-            maxResults: 2  // Limit to 2 agents for testing
+            maxResults: 2,  // Limit to 2 agents for testing
+            forceReEnrich: forceReEnrich
           }
         }
       );
@@ -90,6 +97,23 @@ export const TestAvondaleEnrichment = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="space-y-0.5">
+            <Label htmlFor="force-reenrich" className="text-sm font-medium">
+              Force Re-enrich
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              Re-run enrichment on existing agents
+            </p>
+          </div>
+          <Switch
+            id="force-reenrich"
+            checked={forceReEnrich}
+            onCheckedChange={setForceReEnrich}
+            disabled={isRunning}
+          />
+        </div>
+
         <Button 
           onClick={runTest} 
           disabled={isRunning}

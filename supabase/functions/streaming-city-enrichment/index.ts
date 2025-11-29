@@ -55,11 +55,13 @@ serve(async (req) => {
   }
 
   try {
-    const { cityId, categoryId, maxResults = 200 } = await req.json();
+    const { cityId, categoryId, maxResults = 200, forceReEnrich = false } = await req.json();
 
     if (!cityId || !categoryId) {
       throw new Error('cityId and categoryId are required');
     }
+
+    console.log(`🔄 Force re-enrich mode: ${forceReEnrich ? 'ENABLED' : 'DISABLED'}`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -173,23 +175,27 @@ serve(async (req) => {
             .eq('city_id', cityId)
             .single();
 
-          if (cityLink) {
+          if (cityLink && !forceReEnrich) {
             console.log(`⏭️ [Worker] ${agentName} already in this city, skipping`);
             return;
           }
 
-          // Link to city
-          await supabase
-            .from('professional_cities')
-            .insert({
-              professional_id: existing.id,
-              city_id: cityId,
-              rank: nextRank++,
-              active: true
-            });
+          if (cityLink) {
+            console.log(`🔄 [Worker] ${agentName} already in city, but force re-enrich enabled`);
+          } else {
+            // Link to city
+            await supabase
+              .from('professional_cities')
+              .insert({
+                professional_id: existing.id,
+                city_id: cityId,
+                rank: nextRank++,
+                active: true
+              });
+            console.log(`🔗 [Worker] ${agentName} linked to city`);
+          }
 
           professionalId = existing.id;
-          console.log(`🔗 [Worker] ${agentName} linked to city`);
         } else {
           // Create new professional
           const rating = parseFloat(agent.rating || '0');
