@@ -24,7 +24,8 @@ export const TestAvondaleEnrichment = () => {
       const { data: city } = await supabase
         .from('cities')
         .select('id, name')
-        .eq('slug', 'avondale-az')
+        .eq('slug', 'avondale')
+        .eq('state', 'Arizona')
         .single();
 
       if (!city) {
