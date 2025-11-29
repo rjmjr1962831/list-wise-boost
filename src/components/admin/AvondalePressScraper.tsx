@@ -67,10 +67,13 @@ export default function AvondalePressScraper() {
       }));
       setJobs(initialJobs);
 
-      // Process agents sequentially with delay
-      for (let i = 0; i < agents.length; i++) {
-        const agent = agents[i];
-        
+      // Process agents in parallel batches of 3
+      const BATCH_SIZE = 3;
+      const BATCH_DELAY = 8000; // 8 seconds between batches
+      let completedCount = 0;
+
+      // Helper function to process a single agent
+      const processAgent = async (agent: typeof agents[0]) => {
         // Update status to running
         setJobs(prev => prev.map(j => 
           j.id === agent.id ? { ...j, status: 'running' } : j
@@ -153,11 +156,22 @@ export default function AvondalePressScraper() {
           ));
         }
 
-        setProgress(((i + 1) / agents.length) * 100);
+        completedCount++;
+        setProgress((completedCount / agents.length) * 100);
+      };
 
-        // Add 8 second delay between requests (Haiku is faster and uses fewer tokens)
-        if (i < agents.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 8000));
+      // Split agents into batches and process each batch in parallel
+      for (let i = 0; i < agents.length; i += BATCH_SIZE) {
+        const batch = agents.slice(i, i + BATCH_SIZE);
+        console.log(`Processing batch ${Math.floor(i / BATCH_SIZE) + 1}: ${batch.map(a => a.name).join(', ')}`);
+        
+        // Process all agents in this batch simultaneously
+        await Promise.allSettled(batch.map(agent => processAgent(agent)));
+
+        // Add delay between batches (except after the last batch)
+        if (i + BATCH_SIZE < agents.length) {
+          console.log(`Waiting ${BATCH_DELAY / 1000}s before next batch...`);
+          await new Promise(resolve => setTimeout(resolve, BATCH_DELAY));
         }
       }
 
