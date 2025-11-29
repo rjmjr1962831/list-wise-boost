@@ -1,23 +1,29 @@
-import React from "react";
+import { useTheme } from "next-themes";
+import { Toaster as Sonner } from "sonner";
 
-type Message = string | { title?: string; description?: string };
+type ToasterProps = React.ComponentProps<typeof Sonner>;
 
-// Minimal no-op Toaster to avoid runtime hook issues
-export function Toaster() {
-  return null;
-}
+const Toaster = ({ ...props }: ToasterProps) => {
+  const { theme = "system" } = useTheme();
 
-function baseToast(msg: Message) {
-  if (typeof msg === "string") {
-    console.log("toast:", msg);
-  } else {
-    console.log("toast:", msg.title ?? "", msg.description ?? "");
-  }
-}
+  return (
+    <Sonner
+      theme={theme as ToasterProps["theme"]}
+      className="toaster group"
+      toastOptions={{
+        classNames: {
+          toast:
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+          description: "group-[.toast]:text-muted-foreground",
+          actionButton:
+            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
+          cancelButton:
+            "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
+        },
+      }}
+      {...props}
+    />
+  );
+};
 
-const success = (msg: Message) => baseToast(msg);
-const error = (msg: Message) => baseToast(msg);
-const info = (msg: Message) => baseToast(msg);
-const warning = (msg: Message) => baseToast(msg);
-
-export const toast = Object.assign(baseToast, { success, error, info, warning });
+export { Toaster };
