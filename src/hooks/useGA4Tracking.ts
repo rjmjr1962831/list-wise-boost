@@ -9,7 +9,6 @@ declare global {
 
 // GA4 event parameters for tracking user interactions
 export interface GA4EventParams {
-  agent_name?: string;
   market?: string;
   agent_type?: string;
   destination_url?: string;
@@ -31,6 +30,8 @@ export interface GA4EventParams {
   platform?: string;
   // Neighborhood selection tracking
   neighborhoods_count?: string | number;
+  // Social link tracking
+  agent_name?: string;
 }
 
 export const useGA4Tracking = () => {
