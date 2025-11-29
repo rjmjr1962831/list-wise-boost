@@ -29,14 +29,40 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Searching press mentions for ${agentName} with Claude Web Search`);
+    console.log(`Searching press mentions for ${agentName} with Claude Web Search (Enhanced)`);
 
-    // Simple natural language query
-    const query = `Show the web presence and press mentions for ${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''} real estate agent in ${state}.
+    // Comprehensive system prompt to guide Claude
+    const systemPrompt = `You are a research assistant finding press mentions and web presence for real estate professionals.
 
-Return your findings as a JSON array with: title, source, url, snippet, date (YYYY-MM-DD or 'NA'), type (tv_appearance, award, article, interview, or recognition). Exclude real estate listing sites like Zillow, Realtor.com, Redfin.`;
+Search multiple angles to build a comprehensive profile:
+- Agent name + company/team name variations
+- Industry awards (Wall Street Journal Real Trends Top 250, America's Best Real Estate Agents, Inc 500, local awards)
+- Local TV news appearances (Fox, ABC, NBC, CBS affiliates)
+- Podcasts (guest appearances, hosted shows)
+- Industry publications (Inman, HousingWire, Real Producer Magazine, Ranking Arizona)
+- Speaking engagements, coaching, conferences
+- Business achievements and recognition
 
-    // Call Claude with web search tool
+Important: The Wall Street Journal rankings and similar lists are often cited by OTHER sources (like real estate websites, local news, industry blogs), so search for references to these achievements even if the original source is paywalled.
+
+Exclude generic real estate listing sites (Zillow agent profiles, Realtor.com, Redfin profiles) - we want PRESS and RECOGNITION, not just profiles.
+
+Return your findings as a JSON array with: title, source, url, snippet, date (YYYY-MM-DD or 'NA'), type (tv_appearance, award, article, interview, podcast, speaking_engagement, or recognition).`;
+
+    // Enhanced user query with city context
+    const userQuery = `Find the complete web presence and press mentions for ${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''}, a real estate professional in ${city}, ${state}.
+
+Search for:
+1. Industry awards and rankings (WSJ Real Trends, local "Top Agent" lists, Inc 500)
+2. TV/radio appearances on local news stations
+3. Podcast interviews or hosted shows
+4. Articles in real estate industry publications
+5. Speaking engagements at conferences or events
+6. Any other press coverage or recognition
+
+Look for references to achievements even if cited by secondary sources.`;
+
+    // Call Claude with enhanced configuration
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -45,19 +71,20 @@ Return your findings as a JSON array with: title, source, url, snippet, date (YY
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
-        max_tokens: 1500,
+        model: 'claude-sonnet-4-5',  // Upgraded from haiku for better research
+        max_tokens: 5000,             // Increased from 1500 for comprehensive results
+        system: systemPrompt,
         messages: [
           {
             role: 'user',
-            content: query
+            content: userQuery
           }
         ],
         tools: [
           {
             type: 'web_search_20250305',
             name: 'web_search',
-            max_uses: 2
+            max_uses: 6  // Increased from 2 for multi-angle searching
           }
         ],
         tool_choice: { type: 'auto' }

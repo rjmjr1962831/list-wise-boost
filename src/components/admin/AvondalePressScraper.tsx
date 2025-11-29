@@ -18,12 +18,14 @@ export default function AvondalePressScraper() {
   const [jobs, setJobs] = useState<AgentJob[]>([]);
   const [progress, setProgress] = useState(0);
   const [shouldStop, setShouldStop] = useState(false);
+  const [testMode, setTestMode] = useState(false);
 
-  const runPressScraper = async () => {
+  const runPressScraper = async (isTest: boolean = false) => {
     setIsRunning(true);
     setJobs([]);
     setProgress(0);
     setShouldStop(false);
+    setTestMode(isTest);
 
     try {
       // Get Avondale city and category IDs
@@ -44,7 +46,8 @@ export default function AvondalePressScraper() {
         return;
       }
 
-      // Fetch all 10 Avondale agents
+      // Fetch agents (2 for test, 10 for full run)
+      const agentLimit = isTest ? 2 : 10;
       const { data: agents, error } = await supabase
         .from('professionals')
         .select('id, name, company, business_name, press_mentions')
@@ -52,7 +55,7 @@ export default function AvondalePressScraper() {
         .eq('category_id', category.id)
         .eq('active', true)
         .order('rank')
-        .limit(10);
+        .limit(agentLimit);
 
       if (error || !agents || agents.length === 0) {
         toast.error('No agents found in Avondale');
@@ -71,7 +74,7 @@ export default function AvondalePressScraper() {
 
       // Process agents in parallel batches of 3
       const BATCH_SIZE = 3;
-      const BATCH_DELAY = 8000; // 8 seconds between batches
+      const BATCH_DELAY = 12000; // 12 seconds between batches (increased for Sonnet)
       let completedCount = 0;
 
       // Helper function to process a single agent
@@ -218,25 +221,40 @@ export default function AvondalePressScraper() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Avondale Press Scraper</CardTitle>
+        <CardTitle>Avondale Press Scraper (Enhanced)</CardTitle>
         <CardDescription>
-          Search for press mentions for the top 10 Avondale real estate agents using Claude's intelligent web search (TV appearances, awards, major publications, local news, industry press)
+          Search for press mentions using Claude Sonnet with 6 web searches per agent (TV, awards, WSJ rankings, podcasts, speaking, industry press). Test with 2 agents first (~2 min) or run full batch of 10 (~6-8 min).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
           <Button 
-            onClick={runPressScraper} 
+            onClick={() => runPressScraper(true)} 
+            disabled={isRunning}
+            variant="outline"
+            className="flex-1"
+          >
+            {isRunning && testMode ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Testing... {Math.round(progress)}%
+              </>
+            ) : (
+              'Test Run (2 Agents)'
+            )}
+          </Button>
+          <Button 
+            onClick={() => runPressScraper(false)} 
             disabled={isRunning}
             className="flex-1"
           >
-            {isRunning ? (
+            {isRunning && !testMode ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Scraping... {Math.round(progress)}%
               </>
             ) : (
-              'Start Press Search'
+              'Full Run (10 Agents)'
             )}
           </Button>
           {isRunning && (
