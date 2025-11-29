@@ -57,13 +57,13 @@ async function processAgent(supabase: any, item: any) {
       return { name: agent?.name, status: 'deactivated', reason: 'low_reviews', success: true };
     }
 
-    // Step 3: Press research with Perplexity (auto-triggers synthesis)
+    // Step 3: Press research with Claude (auto-triggers synthesis)
     await supabase
       .from('contact_enrichment_queue')
       .update({ stage: 'press_research' })
       .eq('id', item.id);
 
-    console.log(`📰 [PRESS] Running Perplexity press search for ${agent.name}...`);
+    console.log(`📰 [PRESS] Running Claude web search for ${agent.name}...`);
     
     const { data: cityData } = await supabase
       .from('cities')
@@ -71,7 +71,7 @@ async function processAgent(supabase: any, item: any) {
       .eq('id', agent.city_id)
       .single();
 
-    await supabase.functions.invoke('search-agent-press', {
+    await supabase.functions.invoke('search-agent-press-claude', {
       body: {
         agentName: agent.name,
         company: agent.company,
