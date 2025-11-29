@@ -17,5 +17,5 @@ export function generatePageTitle(city: City, categoryName: string): string {
 }
 
 export function generateMetaDescription(city: City, categoryName: string): string {
-  return `Discover the best ${categoryName.toLowerCase()} in ${city.name}, ${city.state}. Expert-vetted professionals with verified reviews and ratings.`;
+  return `After thorough research and analysis, we think these are some of the best ${categoryName.toLowerCase()} in ${city.name}, ${city.state}. Expert-vetted professionals with verified reviews and ratings.`;
 }
