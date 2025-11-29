@@ -45,12 +45,12 @@ serve(async (req) => {
       throw new Error('No Zillow profile URL found for this professional');
     }
 
-    // Cost-saving measure #4: Skip if recently enriched (within 7 days)
+    // Cost-saving measure #4: Skip if recently enriched (within 15 days)
     if (skipRecentlyEnriched && professional.zillow_data_fetched_at) {
       const lastEnriched = new Date(professional.zillow_data_fetched_at);
       const daysSinceEnrichment = (Date.now() - lastEnriched.getTime()) / (1000 * 60 * 60 * 24);
       
-      if (daysSinceEnrichment < 7) {
+      if (daysSinceEnrichment < 15) {
         console.log(`⏭️ Skipping ${professional.name} - enriched ${daysSinceEnrichment.toFixed(1)} days ago`);
         return new Response(
           JSON.stringify({ 
