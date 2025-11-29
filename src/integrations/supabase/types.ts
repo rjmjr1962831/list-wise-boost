@@ -601,6 +601,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pipedrive_field_mapping: {
+        Row: {
+          created_at: string | null
+          field_name: string
+          id: string
+          pipedrive_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          field_name: string
+          id?: string
+          pipedrive_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          field_name?: string
+          id?: string
+          pipedrive_key?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       professional_cities: {
         Row: {
           active: boolean
@@ -1005,6 +1029,10 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          pipedrive_last_error: string | null
+          pipedrive_person_id: number | null
+          pipedrive_synced: boolean | null
+          pipedrive_synced_at: string | null
           state: string | null
           status: Database["public"]["Enums"]["prospect_status"] | null
           updated_at: string
@@ -1035,6 +1063,10 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          pipedrive_last_error?: string | null
+          pipedrive_person_id?: number | null
+          pipedrive_synced?: boolean | null
+          pipedrive_synced_at?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["prospect_status"] | null
           updated_at?: string
@@ -1065,6 +1097,10 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          pipedrive_last_error?: string | null
+          pipedrive_person_id?: number | null
+          pipedrive_synced?: boolean | null
+          pipedrive_synced_at?: string | null
           state?: string | null
           status?: Database["public"]["Enums"]["prospect_status"] | null
           updated_at?: string
