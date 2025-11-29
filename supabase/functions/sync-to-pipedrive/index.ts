@@ -58,6 +58,48 @@ async function searchPersonByEmail(email: string): Promise<number | null> {
   return null;
 }
 
+async function searchOrganizationByName(name: string): Promise<number | null> {
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/organizations/search?term=${encodeURIComponent(name)}&api_token=${PIPEDRIVE_API_TOKEN}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (data.success && data.data?.items?.length > 0) {
+    return data.data.items[0].item.id;
+  }
+  return null;
+}
+
+async function createOrganization(name: string): Promise<number> {
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/organizations?api_token=${PIPEDRIVE_API_TOKEN}`;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name }),
+  });
+
+  const data = await response.json();
+
+  if (!data.success) {
+    throw new Error(`Failed to create organization: ${JSON.stringify(data)}`);
+  }
+
+  return data.data.id;
+}
+
+async function findOrCreateOrganization(companyName: string): Promise<number> {
+  // Search for existing organization
+  let orgId = await searchOrganizationByName(companyName);
+
+  // Create if not found
+  if (!orgId) {
+    orgId = await createOrganization(companyName);
+  }
+
+  return orgId;
+}
+
 async function createPerson(prospect: Prospect, fieldMapping: Record<string, string>): Promise<number> {
   const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
 
@@ -66,6 +108,12 @@ async function createPerson(prospect: Prospect, fieldMapping: Record<string, str
     email: prospect.email ? [{ value: prospect.email, primary: true }] : undefined,
     phone: prospect.phone ? [{ value: prospect.phone, primary: true }] : undefined,
   };
+
+  // Link to organization if company exists
+  if (prospect.company) {
+    const orgId = await findOrCreateOrganization(prospect.company);
+    personData.org_id = orgId;
+  }
 
   // Add custom fields
   if (fieldMapping.supabase_id) personData[fieldMapping.supabase_id] = prospect.id;
@@ -101,6 +149,12 @@ async function updatePerson(personId: number, prospect: Prospect, fieldMapping: 
     email: prospect.email ? [{ value: prospect.email, primary: true }] : undefined,
     phone: prospect.phone ? [{ value: prospect.phone, primary: true }] : undefined,
   };
+
+  // Link to organization if company exists
+  if (prospect.company) {
+    const orgId = await findOrCreateOrganization(prospect.company);
+    personData.org_id = orgId;
+  }
 
   // Add custom fields
   if (fieldMapping.supabase_id) personData[fieldMapping.supabase_id] = prospect.id;
