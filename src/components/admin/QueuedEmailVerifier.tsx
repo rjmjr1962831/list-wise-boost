@@ -39,7 +39,7 @@ export const QueuedEmailVerifier = () => {
   const [stats, setStats] = useState<QueueStats>({ total: 0, pending: 0, processing: 0, completed: 0, failed: 0 });
   const [recentItems, setRecentItems] = useState<QueueItem[]>([]);
   const [limit, setLimit] = useState(20);
-  const [delaySeconds, setDelaySeconds] = useState(2);
+  const [delaySeconds, setDelaySeconds] = useState(3);
   const [citySlug, setCitySlug] = useState<string>('');
   const [cities, setCities] = useState<Array<{ name: string; slug: string }>>([]);
   const [unverifiedCount, setUnverifiedCount] = useState<number>(0);
@@ -387,11 +387,11 @@ export const QueuedEmailVerifier = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All cities</SelectItem>
-                  {cities.map(city => (
-                    <SelectItem key={city.slug} value={city.slug}>
-                      {city.name}
-                    </SelectItem>
-                  ))}
+              {cities.map((city, index) => (
+                <SelectItem key={`${city.slug}-${index}`} value={city.slug}>
+                  {city.name}
+                </SelectItem>
+              ))}
                 </SelectContent>
               </Select>
             </div>
