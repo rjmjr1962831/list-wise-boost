@@ -1257,101 +1257,116 @@ export const ProfessionalCard = ({
                   )}
               </div>
 
-              {/* Rating - only show if real data exists */}
-              {professional.rating > 0 ? (
-                <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
-                  <div className="flex items-center gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-5 w-5 ${
-                          i < Math.floor(professional.rating)
-                            ? "fill-primary text-primary"
-                            : "text-muted"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-semibold" itemProp="ratingValue">{professional.rating}</span>
-                  <span className="text-muted-foreground">(<span itemProp="reviewCount">{professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
-                  <meta itemProp="bestRating" content="5" />
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Info className="h-4 w-4" />
-                  <span className="text-sm">Rating not yet available</span>
-                </div>
-              )}
-
-
-              {/* Statistics */}
-              <div className="grid grid-cols-2 gap-3 py-3 border-y">
+              {/* Rating & Statistics Combined */}
               {(() => {
-                  const statFromObj = (obj: any, path: string) => {
-                    try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
-                  };
+                const statFromObj = (obj: any, path: string) => {
+                  try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
+                };
 
-                  const toNum = (v: any) => {
-                    const n = Number(v);
-                    return Number.isFinite(n) ? n : null;
-                  };
+                const toNum = (v: any) => {
+                  const n = Number(v);
+                  return Number.isFinite(n) ? n : null;
+                };
 
-                  const agentStats = (professional as any).agent_sales_stats;
+                const agentStats = (professional as any).agent_sales_stats;
 
-                  const totalSales =
-                    toNum(professional.total_sales) ??
-                    toNum(statFromObj(agentStats, 'countAllTime')) ??
-                    toNum(statFromObj(agentStats, 'countLastYear')) ??
-                    toNum(statFromObj(professional, 'stats.totalSales')) ??
-                    toNum(statFromObj(professional, 'stats.sold')) ??
-                    toNum((liveStats as any)?.totalSales) ??
-                    toNum((liveStats as any)?.total_sales) ??
-                    toNum((liveStats as any)?.sold);
+                const totalSales =
+                  toNum(professional.total_sales) ??
+                  toNum(statFromObj(agentStats, 'countAllTime')) ??
+                  toNum(statFromObj(agentStats, 'countLastYear')) ??
+                  toNum(statFromObj(professional, 'stats.totalSales')) ??
+                  toNum(statFromObj(professional, 'stats.sold')) ??
+                  toNum((liveStats as any)?.totalSales) ??
+                  toNum((liveStats as any)?.total_sales) ??
+                  toNum((liveStats as any)?.sold);
 
-                  // Use extracted years if available, otherwise fall back to stored value
-                  const yearsExperience = extractedYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
-                  const hasLicenseVerifiedBadge = ((professional as any).badges || []).includes('License Verified');
+                // Use extracted years if available, otherwise fall back to stored value
+                const yearsExperience = extractedYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
 
-                  const displayStats = { totalSales, yearsExperience } as const;
-                  const labels: Record<string, string> = {
-                    totalSales: 'Total Sales',
-                    yearsExperience: 'Years Experience'
-                  };
-
-                  return Object.entries(displayStats).map(([key, value]) => (
-                    <div key={key} className="text-center md:text-left">
-                      {isOwnProfile && isEditing ? (
-                        <div className="space-y-1">
-                          <Input
-                            type="number"
-                            value={key === 'totalSales' ? editedData.total_sales : editedData.years_experience}
-                            onChange={(e) => setEditedData({ 
-                              ...editedData, 
-                              [key === 'totalSales' ? 'total_sales' : 'years_experience']: parseInt(e.target.value) || 0 
-                            })}
-                            className="h-8 w-24"
-                          />
-                          <div className="text-xs text-muted-foreground">{labels[key]}</div>
+                return (
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-2">
+                    {/* Rating */}
+                    {professional.rating > 0 ? (
+                      <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
+                        <div className="flex items-center gap-1">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`h-5 w-5 ${
+                                i < Math.floor(professional.rating)
+                                  ? "fill-primary text-primary"
+                                  : "text-muted"
+                              }`}
+                            />
+                          ))}
                         </div>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2 justify-center md:justify-start">
-                            <div className="text-2xl font-bold text-primary">
-                              {(value == null || Number(value) <= 0) ? 'NA' : Number(value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                            </div>
-                            {value != null && Number(value) > 0 && (
-                              <span title={key === 'totalSales' ? 'Verified from Zillow data' : 'Verified from license database'}>
-                                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                              </span>
-                            )}
-                          </div>
-                          <div className="text-xs text-muted-foreground">{labels[key]}</div>
-                        </>
-                      )}
-                    </div>
-                  ));
-                })()}
-              </div>
+                        <span className="font-semibold" itemProp="ratingValue">{professional.rating}</span>
+                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
+                        <meta itemProp="bestRating" content="5" />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Info className="h-4 w-4" />
+                        <span className="text-sm">Rating not yet available</span>
+                      </div>
+                    )}
+
+                    {/* Total Sales */}
+                    {isOwnProfile && isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          value={editedData.total_sales}
+                          onChange={(e) => setEditedData({ ...editedData, total_sales: parseInt(e.target.value) || 0 })}
+                          className="h-8 w-24"
+                        />
+                        <span className="text-xs text-muted-foreground">Total Sales</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-lg font-bold text-primary">
+                            {(totalSales == null || Number(totalSales) <= 0) ? 'NA' : Number(totalSales).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                          </span>
+                          {totalSales != null && Number(totalSales) > 0 && (
+                            <span title="Verified from Zillow data">
+                              <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">Total Sales</span>
+                      </div>
+                    )}
+
+                    {/* Years Experience */}
+                    {isOwnProfile && isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          value={editedData.years_experience}
+                          onChange={(e) => setEditedData({ ...editedData, years_experience: parseInt(e.target.value) || 0 })}
+                          className="h-8 w-24"
+                        />
+                        <span className="text-xs text-muted-foreground">Years Experience</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-lg font-bold text-primary">
+                            {(yearsExperience == null || Number(yearsExperience) <= 0) ? 'NA' : Number(yearsExperience).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                          </span>
+                          {yearsExperience != null && Number(yearsExperience) > 0 && (
+                            <span title="Verified from license database">
+                              <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground">Years Experience</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Data Source Indicator */}
               {liveStats && (
@@ -1390,7 +1405,7 @@ export const ProfessionalCard = ({
                 if (!synthesizedBio || isEditing) return null;
                 
                 return (
-                  <div className="border rounded-lg p-4 bg-primary/5 mt-4">
+                  <div className="border rounded-lg p-4 bg-primary/5 mt-3">
                     <h4 className="sr-only">Professional Summary</h4>
                     <p className="text-sm text-foreground whitespace-pre-line">{synthesizedBio}</p>
                     {(professional as any).profile_last_synthesized_at && (
@@ -1403,7 +1418,7 @@ export const ProfessionalCard = ({
               })()}
 
               {/* 3 Collapsible Bars - buttons in horizontal row */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3">
                 {/* From [firstname] Button */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
