@@ -52,6 +52,48 @@ serve(async (req) => {
       .single();
 
     console.log(`Import request for ${city?.name}, ${city?.state} - ${category?.name}`);
+    
+    // DRY RUN MODE: Return estimates without doing any actual work
+    if (dryRun) {
+      console.log('🔍 DRY RUN MODE - Estimating what would happen...');
+      
+      // Estimate how many agents would be imported
+      const estimatedImport = Math.min(maxResults, maxQualifiedAgents);
+      
+      // Calculate estimated credits using new formula
+      const baseCreditsPerAgent = 2; // 1 for bio + 1 for synthesis
+      let creditsPerAgent = baseCreditsPerAgent;
+      
+      if (skipGenericBios) creditsPerAgent -= 0.5;
+      if (skipIfNoPress) creditsPerAgent -= 0.5;
+      if (skipRecentlyEnriched) creditsPerAgent *= 0.5;
+      
+      const estimatedCredits = Math.max(0.1, creditsPerAgent);
+      const totalCredits = (estimatedCredits * estimatedImport).toFixed(1);
+      const savingsPercent = ((1 - creditsPerAgent / baseCreditsPerAgent) * 100).toFixed(0);
+      
+      console.log(`📊 DRY RUN RESULTS:
+        - Would import: ~${estimatedImport} agents
+        - Would queue: ~${estimatedImport} for enrichment
+        - Estimated credits: ${estimatedCredits} per agent (${savingsPercent}% savings)
+        - Total credits: ~${totalCredits}
+        - Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          dryRun: true,
+          cached: false,
+          wouldImport: estimatedImport,
+          wouldQueue: estimatedImport,
+          creditsPerAgent: parseFloat(estimatedCredits.toFixed(1)),
+          totalCredits: parseFloat(totalCredits),
+          savingsPercent: parseInt(savingsPercent),
+          message: `DRY RUN: Would import ~${estimatedImport} agents and queue for enrichment. Est. ${totalCredits} credits (${savingsPercent}% savings with cost controls).`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Determine target based on mode
     const targetAgents = maxQualifiedAgents; // Always get all agents
