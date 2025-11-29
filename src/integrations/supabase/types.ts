@@ -642,6 +642,7 @@ export type Database = {
           claim_status: Database["public"]["Enums"]["claim_status"]
           claimed_at: string | null
           claimed_by: string | null
+          community_roles: Json | null
           company: string | null
           cpd_user_pronouns: string | null
           created_at: string
@@ -661,6 +662,7 @@ export type Database = {
           license_verified_at: string | null
           most_recent_review_date: string | null
           name: string
+          notable_achievements: Json | null
           num_total_reviews: number | null
           og_image_url: string | null
           past_sales: Json | null
@@ -670,8 +672,10 @@ export type Database = {
           professional_data: Json | null
           professional_information: Json | null
           profile_image_id: string | null
+          profile_last_synthesized_at: string | null
           profile_type_ids: Json | null
           profile_types: Json | null
+          publications: Json | null
           rank: number
           ratings: Json | null
           raw_scraper_data: Json | null
@@ -682,6 +686,7 @@ export type Database = {
           screen_name: string | null
           sidebar_video_url: string | null
           specialty: string[] | null
+          synthesized_bio: string | null
           team_display_information: Json | null
           title: string | null
           total_sales: number | null
@@ -711,6 +716,7 @@ export type Database = {
           claim_status?: Database["public"]["Enums"]["claim_status"]
           claimed_at?: string | null
           claimed_by?: string | null
+          community_roles?: Json | null
           company?: string | null
           cpd_user_pronouns?: string | null
           created_at?: string
@@ -730,6 +736,7 @@ export type Database = {
           license_verified_at?: string | null
           most_recent_review_date?: string | null
           name: string
+          notable_achievements?: Json | null
           num_total_reviews?: number | null
           og_image_url?: string | null
           past_sales?: Json | null
@@ -739,8 +746,10 @@ export type Database = {
           professional_data?: Json | null
           professional_information?: Json | null
           profile_image_id?: string | null
+          profile_last_synthesized_at?: string | null
           profile_type_ids?: Json | null
           profile_types?: Json | null
+          publications?: Json | null
           rank: number
           ratings?: Json | null
           raw_scraper_data?: Json | null
@@ -751,6 +760,7 @@ export type Database = {
           screen_name?: string | null
           sidebar_video_url?: string | null
           specialty?: string[] | null
+          synthesized_bio?: string | null
           team_display_information?: Json | null
           title?: string | null
           total_sales?: number | null
@@ -780,6 +790,7 @@ export type Database = {
           claim_status?: Database["public"]["Enums"]["claim_status"]
           claimed_at?: string | null
           claimed_by?: string | null
+          community_roles?: Json | null
           company?: string | null
           cpd_user_pronouns?: string | null
           created_at?: string
@@ -799,6 +810,7 @@ export type Database = {
           license_verified_at?: string | null
           most_recent_review_date?: string | null
           name?: string
+          notable_achievements?: Json | null
           num_total_reviews?: number | null
           og_image_url?: string | null
           past_sales?: Json | null
@@ -808,8 +820,10 @@ export type Database = {
           professional_data?: Json | null
           professional_information?: Json | null
           profile_image_id?: string | null
+          profile_last_synthesized_at?: string | null
           profile_type_ids?: Json | null
           profile_types?: Json | null
+          publications?: Json | null
           rank?: number
           ratings?: Json | null
           raw_scraper_data?: Json | null
@@ -820,6 +834,7 @@ export type Database = {
           screen_name?: string | null
           sidebar_video_url?: string | null
           specialty?: string[] | null
+          synthesized_bio?: string | null
           team_display_information?: Json | null
           title?: string | null
           total_sales?: number | null

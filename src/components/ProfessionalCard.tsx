@@ -1462,6 +1462,126 @@ export const ProfessionalCard = ({
                   </div>
                 )}
                 
+                {/* Notable Achievements Section */}
+                {(() => {
+                  const achievements = (professional as any).notable_achievements;
+                  if (!achievements || !Array.isArray(achievements) || achievements.length === 0) return null;
+                  
+                  return (
+                    <div className="border rounded-lg p-4 bg-gradient-to-br from-yellow-50/50 to-orange-50/50 dark:from-yellow-950/20 dark:to-orange-950/20">
+                      <h4 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                        <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                        Notable Achievements
+                      </h4>
+                      <div className="space-y-3">
+                        {achievements.map((achievement: any, idx: number) => (
+                          <div key={idx} className="border-l-2 border-yellow-600 dark:border-yellow-400 pl-3">
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex-1">
+                                <p className="font-semibold text-sm">{achievement.title}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{achievement.description}</p>
+                                {achievement.year && (
+                                  <p className="text-xs text-muted-foreground mt-1">Year: {achievement.year}</p>
+                                )}
+                                {achievement.source && (
+                                  <p className="text-xs text-muted-foreground">Source: {achievement.source}</p>
+                                )}
+                              </div>
+                              {achievement.credibility >= 8 && (
+                                <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs flex-shrink-0">
+                                  High Credibility
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Publications Section */}
+                {(() => {
+                  const publications = (professional as any).publications;
+                  if (!publications || !Array.isArray(publications) || publications.length === 0) return null;
+                  
+                  return (
+                    <div className="border rounded-lg p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                      <h4 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                        <Newspaper className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                        Published Works
+                      </h4>
+                      <div className="space-y-3">
+                        {publications.map((pub: any, idx: number) => (
+                          <div key={idx} className="border-l-2 border-blue-600 dark:border-blue-400 pl-3">
+                            <p className="font-semibold text-sm">{pub.title}</p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {pub.type} {pub.publisher && `— ${pub.publisher}`}
+                            </p>
+                            {pub.year && (
+                              <p className="text-xs text-muted-foreground">Published: {pub.year}</p>
+                            )}
+                            {pub.url && (
+                              <a 
+                                href={pub.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-1"
+                              >
+                                View Publication <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Community & Leadership Section */}
+                {(() => {
+                  const communityRoles = (professional as any).community_roles;
+                  if (!communityRoles || !Array.isArray(communityRoles) || communityRoles.length === 0) return null;
+                  
+                  return (
+                    <div className="border rounded-lg p-4 bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20">
+                      <h4 className="font-semibold text-sm flex items-center gap-2 mb-3">
+                        <Users className="h-4 w-4 text-green-600 dark:text-green-400" />
+                        Community & Leadership
+                      </h4>
+                      <div className="space-y-3">
+                        {communityRoles.map((role: any, idx: number) => (
+                          <div key={idx} className="border-l-2 border-green-600 dark:border-green-400 pl-3">
+                            <p className="font-semibold text-sm">{role.organization}</p>
+                            <p className="text-xs text-primary mt-1">{role.role}</p>
+                            {role.description && (
+                              <p className="text-xs text-muted-foreground mt-1">{role.description}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+                
+                {/* Synthesized Bio Display (if available, show instead of raw) */}
+                {(() => {
+                  const synthesizedBio = (professional as any).synthesized_bio;
+                  if (!synthesizedBio || isEditing) return null;
+                  
+                  return (
+                    <div className="border rounded-lg p-4 bg-primary/5">
+                      <h4 className="sr-only">Professional Summary</h4>
+                      <p className="text-sm text-foreground whitespace-pre-line">{synthesizedBio}</p>
+                      {(professional as any).profile_last_synthesized_at && (
+                        <p className="text-xs text-muted-foreground mt-2">
+                          Profile synthesized: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}
+                        </p>
+                      )}
+                    </div>
+                  );
+                })()}
+                
                 {/* Save/Cancel buttons when editing */}
                 {isOwnProfile && isEditing && (
                   <div className="flex gap-2 pt-2">
