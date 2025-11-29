@@ -20,8 +20,8 @@ serve(async (req) => {
     const apifyApiToken = Deno.env.get('APIFY_API_TOKEN');
     const proxyUsername = Deno.env.get('ROTATING_PROXY_USERNAME');
     const proxyPassword = Deno.env.get('ROTATING_PROXY_PASSWORD');
-    // Hardcoded to use the known working memo23 actor
-    const apifyActorId = 'memo23~apify-zillow-agents-cheerio';
+    // Use the working getdataforme actor
+    const actorId = 'getdataforme~zillow-real-state-agents-scraper';
     
     if (!apifyApiToken) {
       throw new Error('APIFY_API_TOKEN not configured');
@@ -30,7 +30,7 @@ serve(async (req) => {
       throw new Error('ProxyScrape credentials not configured');
     }
     
-    console.log(`Using Apify actor: ${apifyActorId}`);
+    console.log(`Using Apify actor: ${actorId}`);
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -56,12 +56,16 @@ serve(async (req) => {
     // Configure ProxyScrape proxy
     const proxyUrl = `http://${proxyUsername}:${proxyPassword}@rp.scrapegw.com:6060`;
     
-    // Start Apify actor run (async with polling to avoid timeout)
+    // Start Apify actor run with getdataforme input format
     const apifyInput = {
-      startUrls: [{
-        url: `https://www.zillow.com/professionals/real-estate-agent-reviews/${city.toLowerCase()}-${state.toLowerCase()}/`
-      }],
-      maxItems: 100,
+      search_query: `${city} ${state}`,
+      category: "real-estate-agents",
+      locationText: `${city} ${state}`,
+      name: "",
+      language: "English",
+      specialty: "",
+      maxResults: 100,
+      startPage: 1,
       proxy: {
         useApifyProxy: false,
         proxyUrls: [proxyUrl]
@@ -71,7 +75,7 @@ serve(async (req) => {
     console.log('Starting Apify actor with input:', JSON.stringify(apifyInput, null, 2));
 
     const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${apifyActorId}/runs`,
+      `https://api.apify.com/v2/acts/${actorId}/runs`,
       {
         method: 'POST',
         headers: { 
@@ -136,8 +140,15 @@ serve(async (req) => {
       }
     );
 
-    const agents = await resultsResponse.json();
-    console.log(`✅ Retrieved ${agents.length} agents from Apify`);
+    const rawAgents = await resultsResponse.json();
+    
+    // Filter for agents with rating 4.9 or above (per custom knowledge rule)
+    const agents = rawAgents.filter((agent: any) => {
+      const rating = agent.rating || agent.reviewStars || 0;
+      return rating >= 4.9;
+    });
+    
+    console.log(`✅ Retrieved ${rawAgents.length} agents, ${agents.length} with rating ≥4.9`);
 
     // Update scrape job with agents found
     await supabase
@@ -156,15 +167,15 @@ serve(async (req) => {
       const zillowPage = Math.ceil(zillowPosition / 15);
       const agentsAhead = zillowPosition - 1;
 
-      // Extract profile ID from URL (memo23 format)
-      const profileUrl = agent.url || agent.profileUrl || '';
+      // Extract profile ID from URL (getdataforme format)
+      const profileUrl = agent.profile_url || '';
       const profileMatch = profileUrl.match(/\/profile\/([^\/]+)/);
       const profileId = profileMatch ? profileMatch[1] : `${city}-${state}-${i}`;
 
-      // Prepare prospect data (memo23 actor format)
+      // Prepare prospect data (getdataforme actor format)
       const prospectData = {
         zillow_profile_id: profileId,
-        name: agent.name || agent.fullName || 'Unknown',
+        name: agent.name || agent.screenName || 'Unknown',
         email: agent.email || null,
         phone: agent.phone || agent.phoneNumber || null,
         company: agent.companyName || agent.brokerageName || null,
@@ -180,7 +191,7 @@ serve(async (req) => {
         zillow_scraped_at: new Date().toISOString(),
         zillow_sales_count: agent.salesLast12Months || agent.transactionCount || null,
         zillow_sales_volume: agent.salesVolume || null,
-        zillow_photo_url: agent.photo || agent.photoUrl || agent.imageUrl || null,
+        zillow_photo_url: agent.image_url || agent.photoUrl || null,
         hubspot_synced: false,
         status: 'new',
       };
