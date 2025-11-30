@@ -383,6 +383,36 @@ export default function FullEnrichmentPipeline() {
     }
   };
 
+  const crossLinkMetroAgents = async () => {
+    try {
+      setIsRunning(true);
+      setStatusLog([]);
+      addLog('🔗 Starting cross-link of metro agents to empty cities...');
+
+      const { data, error } = await supabase.functions.invoke('cross-link-metro-agents');
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.success) {
+        addLog(`✅ Successfully linked ${data.total_linked} agents to ${data.cities_processed} cities`);
+        data.results.forEach((result: any) => {
+          addLog(`   • ${result.city}: ${result.linked} agents from ${result.metro}`);
+        });
+        toast.success(`Linked ${data.total_linked} agents to empty cities!`);
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+    } catch (error: any) {
+      console.error("Error cross-linking metro agents:", error);
+      addLog(`❌ Error: ${error.message}`);
+      toast.error("Failed to cross-link metro agents");
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   const enrichCities = async (citiesToEnrich: City[], region: string) => {
     setIsRunning(true);
     setStatusLog([]);
@@ -689,6 +719,17 @@ export default function FullEnrichmentPipeline() {
             >
               <Zap className="mr-2 h-4 w-4" />
               Empty Cities Only
+            </Button>
+
+            <Button
+              onClick={crossLinkMetroAgents}
+              disabled={isRunning}
+              variant="outline"
+              size="lg"
+              className="col-span-3"
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              Cross-Link Metro Agents to Empty Cities
             </Button>
 
             <Button
