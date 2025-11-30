@@ -66,15 +66,24 @@ async function processAgent(
       console.log(`✅ [MEMO23] Complete for ${item.professionals?.name}`);
     }
 
-    // Step 2: Check review count qualification
+    // Step 2: Check review count and experience qualification
     const { data: agent } = await supabase
       .from('professionals')
-      .select('num_total_reviews, name, company, business_name, city_id')
+      .select('num_total_reviews, years_experience, name, company, business_name, city_id')
       .eq('id', item.professional_id)
       .single();
 
-    if (!agent?.num_total_reviews || agent.num_total_reviews < 100) {
-      console.log(`⚠️ ${agent?.name} has ${agent?.num_total_reviews || 0} reviews - deactivating`);
+    // Deactivate if agent doesn't meet quality thresholds
+    const hasEnoughReviews = agent?.num_total_reviews && agent.num_total_reviews >= 50;
+    const hasEnoughExperience = agent?.years_experience && agent.years_experience >= 10;
+    
+    if (!hasEnoughReviews || !hasEnoughExperience) {
+      const reasons = [];
+      if (!hasEnoughReviews) reasons.push(`${agent?.num_total_reviews || 0} reviews (min: 50)`);
+      if (!hasEnoughExperience) reasons.push(`${agent?.years_experience || 0} years exp (min: 10)`);
+      
+      console.log(`⚠️ ${agent?.name} - ${reasons.join(', ')} - deactivating`);
+      
       await supabase.from('professionals')
         .update({ active: false })
         .eq('id', item.professional_id);
@@ -87,7 +96,7 @@ async function processAgent(
         })
         .eq('id', item.id);
       
-      return { name: agent?.name, status: 'deactivated', reason: 'low_reviews', success: true };
+      return { name: agent?.name, status: 'deactivated', reason: reasons.join(', '), success: true };
     }
 
     // Step 3: Press research with Claude (auto-triggers synthesis)
