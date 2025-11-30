@@ -66,10 +66,10 @@ async function verifEmailWithRetry(
           },
           body: JSON.stringify({
             email: email,
-            timeout: 10,
+            timeout: 30,
           }),
         },
-        15000 // 15 second timeout
+        45000 // 45 second timeout
       );
 
       // Check for 524 Cloudflare timeout (server took too long)
@@ -266,7 +266,9 @@ serve(async (req) => {
           console.log(`Clearout response for ${agent.email}:`, data);
 
           const status = data.status?.toLowerCase() || 'unknown';
-          const safeSend = data.safe_to_send === true;
+          // Accept both 'yes' and 'risky' as valid for sending
+          const safeToSendValue = data.safe_to_send;
+          const safeSend = safeToSendValue === 'yes' || safeToSendValue === 'risky';
           const score = data.email_quality_score;
 
           results.push({
@@ -288,7 +290,7 @@ serve(async (req) => {
                 email_verified_at: new Date().toISOString(),
                 email_verification_data: {
                   status,
-                  safe_to_send: safeSend,
+                  safe_to_send: safeToSendValue,
                   quality_score: score,
                   verified_by: 'clearout',
                   verified_at: new Date().toISOString(),
@@ -298,10 +300,10 @@ serve(async (req) => {
               .eq('id', agent.id);
 
             if (updateError) {
-              console.error(`Error updating ${agent.name}:`, updateError);
+              console.error(`❌ Error updating ${agent.name}:`, updateError);
             } else {
               verified++;
-              console.log(`✓ Verified: ${agent.email}`);
+              console.log(`✅ Verified: ${agent.email}`);
             }
           } else if (status === 'invalid') {
             invalid++;

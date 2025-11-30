@@ -71,7 +71,7 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           email: queueItem.email,
-          timeout: 10,
+          timeout: 30,
         }),
       });
 
@@ -107,13 +107,16 @@ serve(async (req) => {
       // Parse the nested Clearout response
       if (clearoutData.status === 'success' && clearoutData.data) {
         status = clearoutData.data.status || 'unknown';
-        safeToSend = clearoutData.data.safe_to_send === 'yes';
+        // Accept both 'yes' and 'risky' as valid for sending
+        const safeToSendValue = clearoutData.data.safe_to_send;
+        safeToSend = safeToSendValue === 'yes' || safeToSendValue === 'risky';
       } else if (clearoutData.status === 'failed') {
         status = 'failed';
       } else {
         // Fallback for direct status in response (old format)
         status = clearoutData.status || 'unknown';
-        safeToSend = clearoutData.safe_to_send === 'yes';
+        const safeToSendValue = clearoutData.safe_to_send;
+        safeToSend = safeToSendValue === 'yes' || safeToSendValue === 'risky';
       }
 
       // Update queue item as completed
@@ -129,14 +132,18 @@ serve(async (req) => {
 
       // If valid, update professional record
       if (status === 'valid' && safeToSend) {
-        await supabaseClient
+        const { error: updateError } = await supabaseClient
           .from('professionals')
           .update({
             email_verified_at: new Date().toISOString()
           })
           .eq('id', queueItem.professional_id);
 
-        console.log(`✅ Verified email for ${queueItem.name}: ${queueItem.email}`);
+        if (updateError) {
+          console.error(`❌ Failed to update professional ${queueItem.name}: ${updateError.message}`);
+        } else {
+          console.log(`✅ Verified email for ${queueItem.name}: ${queueItem.email}`);
+        }
       } else {
         console.log(`⚠️ Email not verified for ${queueItem.name}: ${queueItem.email} (${status})`);
       }
