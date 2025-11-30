@@ -39,6 +39,7 @@ const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
 const PaymentComingSoon = lazy(() => import("./pages/PaymentComingSoon"));
 const About = lazy(() => import("./pages/About"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
+const ProfileView = lazy(() => import("./pages/ProfileView"));
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,8 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
+                    {/* Magic link profile route */}
+                    <Route path="/profile/:token" element={<ProfileView />} />
                     {/* Catch-all 404 route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

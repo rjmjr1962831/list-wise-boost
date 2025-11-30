@@ -134,6 +134,7 @@ async function createOrUpdatePerson(
     // Core IDs & URLs
     supabase_id: professional.id,
     card_url: cardUrl,
+    profile_link: professional.profile_link, // Magic link for agent profile access
     
     // Professional Details
     years_experience: professional.years_experience,

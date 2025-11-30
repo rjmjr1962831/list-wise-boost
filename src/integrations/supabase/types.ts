@@ -844,6 +844,7 @@ export type Database = {
           professional_information: Json | null
           profile_image_id: string | null
           profile_last_synthesized_at: string | null
+          profile_link: string | null
           profile_type_ids: Json | null
           profile_types: Json | null
           publications: Json | null
@@ -925,6 +926,7 @@ export type Database = {
           professional_information?: Json | null
           profile_image_id?: string | null
           profile_last_synthesized_at?: string | null
+          profile_link?: string | null
           profile_type_ids?: Json | null
           profile_types?: Json | null
           publications?: Json | null
@@ -1006,6 +1008,7 @@ export type Database = {
           professional_information?: Json | null
           profile_image_id?: string | null
           profile_last_synthesized_at?: string | null
+          profile_link?: string | null
           profile_type_ids?: Json | null
           profile_types?: Json | null
           publications?: Json | null
