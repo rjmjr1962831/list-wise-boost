@@ -1,6 +1,15 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+  BreadcrumbPage,
+} from "@/components/ui/breadcrumb";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { useEffect } from "react";
 import { CheckCircle2, Scale, TrendingUp, Award, Clock, AlertCircle, HelpCircle } from "lucide-react";
@@ -70,6 +79,31 @@ const RankingMethodology = () => {
     }
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://top10lists.us"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "About",
+        "item": "https://top10lists.us/about"
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Selection Methodology",
+        "item": "https://top10lists.us/about/ranking-methodology"
+      }
+    ]
+  };
+
   return (
     <>
       <Helmet>
@@ -115,18 +149,33 @@ const RankingMethodology = () => {
         <script type="application/ld+json">
           {JSON.stringify(methodologyPageSchema)}
         </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbSchema)}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Breadcrumbs */}
         <div className="container mx-auto px-4 pt-6">
-          <nav className="text-sm text-muted-foreground">
-            <a href="/" className="hover:text-primary">Home</a>
-            <span className="mx-2">/</span>
-            <a href="/about" className="hover:text-primary">About</a>
-            <span className="mx-2">/</span>
-            <span className="text-foreground">Selection Methodology</span>
-          </nav>
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/">Home</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/about">About</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Methodology</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
         </div>
 
         {/* Hero Section */}
