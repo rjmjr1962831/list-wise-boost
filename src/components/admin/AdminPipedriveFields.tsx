@@ -16,11 +16,14 @@ const FIELD_NAMES = [
   { name: 'zillow_reviews', label: 'Zillow Reviews' },
   { name: 'zillow_profile_url', label: 'Zillow Profile URL' },
   { name: 'prospect_status', label: 'Prospect Status' },
+  { name: 'email_verified', label: 'Email Verified' },
 ];
 
 export default function AdminPipedriveFields() {
   const [fields, setFields] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [isFetchingFields, setIsFetchingFields] = useState(false);
+  const [availableFields, setAvailableFields] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,6 +68,31 @@ export default function AdminPipedriveFields() {
     }
   };
 
+  const fetchPipedriveFields = async () => {
+    setIsFetchingFields(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('list-pipedrive-fields');
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setAvailableFields(data.fields);
+        toast({ 
+          title: 'Fields fetched!', 
+          description: `Found ${data.fields.length} custom fields` 
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Fetch Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsFetchingFields(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -81,6 +109,14 @@ export default function AdminPipedriveFields() {
             Enter the Pipedrive API keys for each custom field. Find these in Pipedrive:
             Settings → Data fields → Person → Click field → Copy API key.
           </p>
+          <Button 
+            variant="outline" 
+            onClick={fetchPipedriveFields}
+            disabled={isFetchingFields}
+            className="mt-2"
+          >
+            {isFetchingFields ? 'Fetching...' : 'Fetch Available Fields from Pipedrive'}
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -105,6 +141,32 @@ export default function AdminPipedriveFields() {
         </CardContent>
       </Card>
 
+      {availableFields.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Available Pipedrive Fields</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Copy the key from below to paste into the field mapping above
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {availableFields.map((field) => (
+                <div key={field.key} className="p-3 border rounded-lg">
+                  <div className="font-semibold">{field.name}</div>
+                  <div className="text-sm text-muted-foreground">
+                    Key: <code className="bg-muted px-2 py-1 rounded">{field.key}</code>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Type: {field.field_type}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle>Setup Instructions</CardTitle>
@@ -125,6 +187,7 @@ export default function AdminPipedriveFields() {
               <li>Zillow Reviews (Number)</li>
               <li>Zillow Profile URL (Text)</li>
               <li>Prospect Status (Single option: new, contacted, interested, customer, declined)</li>
+              <li>Email Verified (Single option: YES, NO)</li>
             </ul>
           </div>
 
