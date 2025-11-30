@@ -23,6 +23,7 @@ import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
 import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
 import { MagicLinkGenerator } from '@/components/admin/MagicLinkGenerator';
+import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -182,6 +183,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Magic Links
             </TabsTrigger>
+            <TabsTrigger value="bulk-synthesis">
+              <Zap className="mr-2 h-4 w-4" />
+              Profile Synthesis
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -237,6 +242,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="magic-links" className="space-y-4">
             <MagicLinkGenerator />
+          </TabsContent>
+
+          <TabsContent value="bulk-synthesis" className="space-y-4">
+            <BulkProfileSynthesizer />
           </TabsContent>
         </Tabs>
       </div>
