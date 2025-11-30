@@ -42,6 +42,9 @@ interface DBProfessional {
   press_mentions: any | null;
   synthesized_bio: string | null;
   publications: any | null;
+  social_linkedin: string | null;
+  social_facebook: string | null;
+  social_instagram: string | null;
 }
 
 interface City {
@@ -128,6 +131,9 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     press_mentions: (dbProf as any).press_mentions || undefined,
     synthesized_bio: (dbProf as any).synthesized_bio || undefined,
     publications: (dbProf as any).publications || undefined,
+    social_linkedin: dbProf.social_linkedin || undefined,
+    social_facebook: dbProf.social_facebook || undefined,
+    social_instagram: dbProf.social_instagram || undefined,
   };
 
   return enriched;
@@ -270,14 +276,48 @@ export default function AgentProfile() {
             ...(professional.rating > 0 && {
               "aggregateRating": {
                 "@type": "AggregateRating",
-                "ratingValue": professional.rating,
-                "reviewCount": professional.reviews,
-                "bestRating": 5
+                "ratingValue": professional.rating.toString(),
+                "reviewCount": professional.reviews.toString(),
+                "bestRating": "5"
               }
             }),
             ...(professional.phone && { "telephone": professional.phone }),
             ...(professional.email && { "email": professional.email }),
-            ...(professional.website && { "url": professional.website })
+            ...(professional.license_number && { "license": professional.license_number }),
+            "areaServed": {
+              "@type": "State",
+              "name": city.state
+            },
+            ...(professional.specialties && professional.specialties.length > 0 && {
+              "knowsAbout": [
+                `${city.state} real estate`,
+                ...professional.specialties
+              ]
+            }),
+            ...((professional as any).notable_achievements && 
+              Array.isArray((professional as any).notable_achievements) && 
+              (professional as any).notable_achievements.length > 0 && {
+              "award": (professional as any).notable_achievements
+                .filter((a: any) => a?.title || a?.text)
+                .map((a: any) => a.title || a.text)
+                .slice(0, 5)
+            }),
+            ...((() => {
+              const sameAs: string[] = [];
+              if ((professional as any).zillow_profile_url) {
+                sameAs.push((professional as any).zillow_profile_url);
+              }
+              if ((professional as any).social_linkedin) {
+                sameAs.push((professional as any).social_linkedin);
+              }
+              if ((professional as any).social_facebook) {
+                sameAs.push((professional as any).social_facebook);
+              }
+              if ((professional as any).social_instagram) {
+                sameAs.push((professional as any).social_instagram);
+              }
+              return sameAs.length > 0 ? { "sameAs": sameAs } : {};
+            })())
           })}
         </script>
       </Helmet>
