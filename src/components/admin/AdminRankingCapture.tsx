@@ -57,19 +57,75 @@ export function AdminRankingCapture() {
 
   const handleBulkCapture = async () => {
     setBulkLoading(true);
-    setBulkProgress({ current: 0, total: 17, currentCity: "Starting..." });
+    setBulkProgress({ current: 0, total: 17, currentCity: "Connecting..." });
     
     try {
-      const { data, error } = await supabase.functions.invoke("bulk-capture-phoenix-rankings");
+      // Get the WebSocket URL
+      const projectRef = 'bgdtekbhelormzbymkhh';
+      const wsUrl = `wss://${projectRef}.supabase.co/functions/v1/bulk-capture-phoenix-rankings`;
+      
+      console.log('Connecting to WebSocket:', wsUrl);
+      const ws = new WebSocket(wsUrl);
 
-      if (error) throw error;
+      ws.onopen = () => {
+        console.log('✅ WebSocket connected');
+        setBulkProgress({ current: 0, total: 17, currentCity: "Starting capture..." });
+      };
 
-      toast({
-        title: "✅ Bulk capture complete!",
-        description: `Updated ${data.summary.totalUpdated} agents across ${data.summary.totalCities} cities. ${data.summary.totalFailed} cities failed.`,
-      });
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        console.log('📨 WebSocket message:', message);
 
-      setBulkProgress(null);
+        if (message.type === 'started') {
+          setBulkProgress({ 
+            current: 0, 
+            total: message.totalCities, 
+            currentCity: "Processing cities..." 
+          });
+        } else if (message.type === 'progress') {
+          setBulkProgress({
+            current: message.current,
+            total: message.total,
+            currentCity: `Processing ${message.currentCity}...`
+          });
+        } else if (message.type === 'city_complete') {
+          console.log(`✅ ${message.city}: ${message.status}`);
+        } else if (message.type === 'complete') {
+          toast({
+            title: "✅ Bulk capture complete!",
+            description: `Updated ${message.summary.totalUpdated} agents across ${message.summary.totalCities} cities. ${message.summary.totalFailed} cities failed.`,
+          });
+          setBulkProgress(null);
+          setBulkLoading(false);
+          ws.close();
+        } else if (message.type === 'error') {
+          toast({
+            title: "Bulk capture failed",
+            description: message.error,
+            variant: "destructive",
+          });
+          setBulkProgress(null);
+          setBulkLoading(false);
+          ws.close();
+        }
+      };
+
+      ws.onerror = (error) => {
+        console.error('❌ WebSocket error:', error);
+        toast({
+          title: "Connection failed",
+          description: "Failed to connect to ranking capture service",
+          variant: "destructive",
+        });
+        setBulkProgress(null);
+        setBulkLoading(false);
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket connection closed');
+        setBulkLoading(false);
+      };
+
     } catch (error: any) {
       console.error("Bulk capture error:", error);
       toast({
@@ -78,7 +134,6 @@ export function AdminRankingCapture() {
         variant: "destructive",
       });
       setBulkProgress(null);
-    } finally {
       setBulkLoading(false);
     }
   };
