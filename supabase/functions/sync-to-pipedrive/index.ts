@@ -115,18 +115,29 @@ async function createPerson(prospect: Prospect, fieldMapping: Record<string, str
     personData.org_id = orgId;
   }
 
-  // Add custom fields
-  if (fieldMapping.supabase_id) personData[fieldMapping.supabase_id] = prospect.id;
-  if (fieldMapping.company && prospect.company) personData[fieldMapping.company] = prospect.company;
-  if (fieldMapping.zillow_position && prospect.zillow_position) personData[fieldMapping.zillow_position] = prospect.zillow_position;
-  if (fieldMapping.zillow_page && prospect.zillow_page) personData[fieldMapping.zillow_page] = prospect.zillow_page;
-  if (fieldMapping.agents_ahead && prospect.agents_ahead) personData[fieldMapping.agents_ahead] = prospect.agents_ahead;
-  if (fieldMapping.zillow_total_agents && prospect.zillow_total_agents) personData[fieldMapping.zillow_total_agents] = prospect.zillow_total_agents;
-  if (fieldMapping.zillow_rating && prospect.zillow_rating) personData[fieldMapping.zillow_rating] = prospect.zillow_rating;
-  if (fieldMapping.zillow_reviews && prospect.zillow_reviews) personData[fieldMapping.zillow_reviews] = prospect.zillow_reviews;
-  if (fieldMapping.zillow_profile_url && prospect.zillow_profile_url) personData[fieldMapping.zillow_profile_url] = prospect.zillow_profile_url;
-  if (fieldMapping.prospect_status && prospect.status) personData[fieldMapping.prospect_status] = prospect.status;
-  if (fieldMapping.card_url && cardUrl) personData[fieldMapping.card_url] = cardUrl;
+  // DYNAMIC FIELD MAPPING - Build complete field data object
+  const dynamicFields: Record<string, any> = {
+    supabase_id: prospect.id,
+    company: prospect.company,
+    zillow_position: prospect.zillow_position,
+    zillow_page: prospect.zillow_page,
+    agents_ahead: prospect.agents_ahead,
+    zillow_total_agents: prospect.zillow_total_agents,
+    zillow_rating: prospect.zillow_rating,
+    zillow_reviews: prospect.zillow_reviews,
+    zillow_profile_url: prospect.zillow_profile_url,
+    prospect_status: prospect.status,
+    card_url: cardUrl,
+    city_name: prospect.city,
+    state: prospect.state,
+  };
+
+  // Apply all mapped fields dynamically - only sync fields that have a mapping
+  for (const [fieldName, value] of Object.entries(dynamicFields)) {
+    if (fieldMapping[fieldName] && value !== null && value !== undefined) {
+      personData[fieldMapping[fieldName]] = value;
+    }
+  }
 
   const response = await fetch(url, {
     method: "POST",
@@ -158,18 +169,29 @@ async function updatePerson(personId: number, prospect: Prospect, fieldMapping: 
     personData.org_id = orgId;
   }
 
-  // Add custom fields
-  if (fieldMapping.supabase_id) personData[fieldMapping.supabase_id] = prospect.id;
-  if (fieldMapping.company && prospect.company) personData[fieldMapping.company] = prospect.company;
-  if (fieldMapping.zillow_position && prospect.zillow_position) personData[fieldMapping.zillow_position] = prospect.zillow_position;
-  if (fieldMapping.zillow_page && prospect.zillow_page) personData[fieldMapping.zillow_page] = prospect.zillow_page;
-  if (fieldMapping.agents_ahead && prospect.agents_ahead) personData[fieldMapping.agents_ahead] = prospect.agents_ahead;
-  if (fieldMapping.zillow_total_agents && prospect.zillow_total_agents) personData[fieldMapping.zillow_total_agents] = prospect.zillow_total_agents;
-  if (fieldMapping.zillow_rating && prospect.zillow_rating) personData[fieldMapping.zillow_rating] = prospect.zillow_rating;
-  if (fieldMapping.zillow_reviews && prospect.zillow_reviews) personData[fieldMapping.zillow_reviews] = prospect.zillow_reviews;
-  if (fieldMapping.zillow_profile_url && prospect.zillow_profile_url) personData[fieldMapping.zillow_profile_url] = prospect.zillow_profile_url;
-  if (fieldMapping.prospect_status && prospect.status) personData[fieldMapping.prospect_status] = prospect.status;
-  if (fieldMapping.card_url && cardUrl) personData[fieldMapping.card_url] = cardUrl;
+  // DYNAMIC FIELD MAPPING - Build complete field data object
+  const dynamicFields: Record<string, any> = {
+    supabase_id: prospect.id,
+    company: prospect.company,
+    zillow_position: prospect.zillow_position,
+    zillow_page: prospect.zillow_page,
+    agents_ahead: prospect.agents_ahead,
+    zillow_total_agents: prospect.zillow_total_agents,
+    zillow_rating: prospect.zillow_rating,
+    zillow_reviews: prospect.zillow_reviews,
+    zillow_profile_url: prospect.zillow_profile_url,
+    prospect_status: prospect.status,
+    card_url: cardUrl,
+    city_name: prospect.city,
+    state: prospect.state,
+  };
+
+  // Apply all mapped fields dynamically - only sync fields that have a mapping
+  for (const [fieldName, value] of Object.entries(dynamicFields)) {
+    if (fieldMapping[fieldName] && value !== null && value !== undefined) {
+      personData[fieldMapping[fieldName]] = value;
+    }
+  }
 
   const response = await fetch(url, {
     method: "PUT",

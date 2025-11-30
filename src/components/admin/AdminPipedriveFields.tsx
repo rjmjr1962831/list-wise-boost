@@ -7,7 +7,32 @@ import { useToast } from '@/hooks/use-toast';
 import { Save } from 'lucide-react';
 
 const FIELD_NAMES = [
+  // Core IDs & Status
   { name: 'supabase_id', label: 'Supabase ID' },
+  { name: 'prospect_status', label: 'Prospect Status' },
+  
+  // Professional Details
+  { name: 'years_experience', label: 'Years Experience' },
+  { name: 'current_listings', label: 'Current Listings' },
+  { name: 'total_sales', label: 'Total Sales' },
+  { name: 'license_number', label: 'License Number' },
+  { name: 'business_name', label: 'Business/Brokerage Name' },
+  { name: 'specialty', label: 'Specialties' },
+  { name: 'website', label: 'Website' },
+  { name: 'rank', label: 'Top10Lists Rank' },
+  { name: 'synthesized_bio', label: 'Bio' },
+  
+  // Badges & Status
+  { name: 'is_top_agent', label: 'Is Top Agent' },
+  { name: 'is_premier_agent', label: 'Is Premier Agent' },
+  { name: 'is_brand_builder', label: 'Is Brand Builder' },
+  { name: 'email_verified', label: 'Email Verified' },
+  
+  // Location
+  { name: 'city_name', label: 'City' },
+  { name: 'state', label: 'State' },
+  
+  // Zillow Data
   { name: 'zillow_position', label: 'Zillow Position' },
   { name: 'zillow_page', label: 'Zillow Page' },
   { name: 'agents_ahead', label: 'Agents Ahead' },
@@ -15,8 +40,9 @@ const FIELD_NAMES = [
   { name: 'zillow_rating', label: 'Zillow Rating' },
   { name: 'zillow_reviews', label: 'Zillow Reviews' },
   { name: 'zillow_profile_url', label: 'Zillow Profile URL' },
-  { name: 'prospect_status', label: 'Prospect Status' },
-  { name: 'email_verified', label: 'Email Verified' },
+  
+  // URLs
+  { name: 'card_url', label: 'Top10Lists Card URL' },
 ];
 
 export default function AdminPipedriveFields() {
@@ -177,8 +203,23 @@ export default function AdminPipedriveFields() {
             <p className="text-sm text-muted-foreground">
               Go to Settings → Data fields → Person and create these custom fields:
             </p>
-            <ul className="list-disc list-inside text-sm text-muted-foreground mt-2">
+            <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
               <li>Supabase ID (Text)</li>
+              <li>Years Experience (Number)</li>
+              <li>Current Listings (Number)</li>
+              <li>Total Sales (Number)</li>
+              <li>License Number (Text)</li>
+              <li>Business/Brokerage Name (Text)</li>
+              <li>Specialties (Text - comma-separated)</li>
+              <li>Website (Text)</li>
+              <li>Top10Lists Rank (Number)</li>
+              <li>Bio (Text - long)</li>
+              <li>Is Top Agent (Single option: YES, NO)</li>
+              <li>Is Premier Agent (Single option: YES, NO)</li>
+              <li>Is Brand Builder (Single option: YES, NO)</li>
+              <li>Email Verified (Single option: YES, NO)</li>
+              <li>City (Text)</li>
+              <li>State (Text)</li>
               <li>Zillow Position (Number)</li>
               <li>Zillow Page (Number)</li>
               <li>Agents Ahead (Number)</li>
@@ -186,8 +227,8 @@ export default function AdminPipedriveFields() {
               <li>Zillow Rating (Number)</li>
               <li>Zillow Reviews (Number)</li>
               <li>Zillow Profile URL (Text)</li>
+              <li>Top10Lists Card URL (Text)</li>
               <li>Prospect Status (Single option: new, contacted, interested, customer, declined)</li>
-              <li>Email Verified (Single option: YES, NO)</li>
             </ul>
           </div>
 
