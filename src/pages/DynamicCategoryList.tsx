@@ -969,7 +969,7 @@ export default function DynamicCategoryList() {
       { name: 'Home', path: '/' },
       { name: city.state, path: `/${city.state_slug}` },
       { name: city.name, path: `/${city.state_slug}/${city.slug}` },
-      { name: category.plural_name }
+      { name: `Top 10 ${category.plural_name}` }
     ],
     location: {
       city: city.name,
@@ -987,6 +987,38 @@ export default function DynamicCategoryList() {
   const cityCoords = getCityCoordinates(city.slug);
   const pageUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
   const ogImageUrl = `https://top10lists.us/og-${city.slug}.png`;
+
+  // BreadcrumbList schema for SEO
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://top10lists.us"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": city.state,
+        "item": `https://top10lists.us/${city.state_slug}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": city.name,
+        "item": `https://top10lists.us/${city.state_slug}/${city.slug}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": `Top 10 ${category.plural_name}`,
+        "item": pageUrl
+      }
+    ]
+  };
 
   // Enhanced JSON-LD schema for city page
   const collectionPageSchema = {
@@ -1090,6 +1122,9 @@ export default function DynamicCategoryList() {
         {/* JSON-LD Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify(collectionPageSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(breadcrumbSchema)}
         </script>
       </Helmet>
       
