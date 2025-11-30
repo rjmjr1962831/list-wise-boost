@@ -1,8 +1,9 @@
 import { Helmet } from "react-helmet-async";
 import { Card, CardContent } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { useEffect } from "react";
-import { CheckCircle2, Scale, TrendingUp, Award, Clock, AlertCircle } from "lucide-react";
+import { CheckCircle2, Scale, TrendingUp, Award, Clock, AlertCircle, HelpCircle } from "lucide-react";
 
 const RankingMethodology = () => {
   const { trackEvent } = useGA4Tracking();
@@ -548,6 +549,123 @@ const RankingMethodology = () => {
                     </div>
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <HelpCircle className="h-8 w-8 text-primary" />
+                <h2 className="text-3xl font-bold">Frequently Asked Questions</h2>
+              </div>
+              <p className="text-muted-foreground">
+                Common questions about our selection process and methodology
+              </p>
+            </div>
+
+            <Card>
+              <CardContent className="p-6">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="item-1">
+                    <AccordionTrigger className="text-left">
+                      Can I apply to be listed in the directory?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      No. Top10Lists.us is an invitation-only directory. We do not accept applications, paid placements, or advertising. Agents are identified through our continuous monitoring of performance data across multiple authoritative sources. If your verified metrics meet our selection criteria, you may be considered for an invitation through our editorial review process.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-2">
+                    <AccordionTrigger className="text-left">
+                      How do I get invited to the directory?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Our team continuously monitors agent performance data from Google Business, Zillow, Realtor.com, Redfin, and press outlets. When an agent's verified metrics meet all three selection criteria (50+ reviews, 4.8+ rating, 6+ years experience), they become eligible for invitation consideration. Final selection involves editorial review to ensure directory quality and appropriate market coverage.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-3">
+                    <AccordionTrigger className="text-left">
+                      Does meeting the criteria guarantee inclusion?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      No. Meeting our selection criteria makes an agent eligible for invitation consideration, but does not guarantee inclusion. We conduct editorial review of all eligible candidates to ensure directory quality and appropriate geographic market coverage across Arizona.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-4">
+                    <AccordionTrigger className="text-left">
+                      Can I pay to be listed or ranked higher?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Absolutely not. We do not accept any paid placements, advertising, or sponsorships that would influence rankings or directory inclusion. All rankings are based entirely on objective, verified performance data from independent sources. This policy ensures our directory remains a trusted resource for consumers seeking elite real estate professionals.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-5">
+                    <AccordionTrigger className="text-left">
+                      What happens if I'm removed from the directory?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      If an agent's performance metrics fall below our selection criteria, they are immediately removed from the directory. There is no grace period or appeal process for data-driven removals. However, if an agent's metrics return to meeting our criteria through continued strong performance, they may be reconsidered for future invitation.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-6">
+                    <AccordionTrigger className="text-left">
+                      How often are rankings updated?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Rankings are updated daily through automated data collection and verification processes. We continuously monitor all data sources (reviews, transactions, press mentions, license status) to ensure rankings reflect the most current verified performance data. Freshness multipliers are applied to prioritize agents with recent, consistent activity.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-7">
+                    <AccordionTrigger className="text-left">
+                      What data sources do you use?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      We aggregate data from multiple authoritative sources with differential weighting:
+                      <ul className="list-disc list-inside mt-2 space-y-1 ml-2">
+                        <li><strong>Reviews:</strong> Google Business (weight: 10), Zillow (8), Realtor.com (6), Redfin (5)</li>
+                        <li><strong>Transactions:</strong> Redfin (weight: 9), Zillow (8), Realtor.com (7), Home.com (5)</li>
+                        <li><strong>Experience:</strong> State License Board (weight: 10), First Recorded Transaction (9), Realtor.com (8), Zillow (7)</li>
+                        <li><strong>Press:</strong> Tier 1-4 sources scored 5-10 based on credibility</li>
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-8">
+                    <AccordionTrigger className="text-left">
+                      How can I update my profile information?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      If you are an invited agent in our directory and need to update your profile information, please contact us at support@top10lists.us with your verification details. Note that all performance data (reviews, transactions, experience) is pulled directly from authoritative third-party sources and cannot be manually edited.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-9">
+                    <AccordionTrigger className="text-left">
+                      Why don't I see certain agents in the directory?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Agents not appearing in our directory either: (1) have not yet met all three selection criteria, (2) have not been selected through our editorial review process, or (3) previously met criteria but performance has fallen below thresholds and they were removed. Our directory represents the top tier of Arizona real estate professionals based on verified, multi-source performance data.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-10">
+                    <AccordionTrigger className="text-left">
+                      How is this different from other agent directories?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      Unlike most directories that accept paid listings or self-submissions, Top10Lists.us is invitation-only and requires verified performance across multiple independent data sources. We use differential source weighting, temporal decay functions, and daily monitoring to ensure rankings reflect current, verified performance. No pay-to-play, no advertising, no applications—only data-driven selection of elite professionals.
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </CardContent>
             </Card>
           </div>
