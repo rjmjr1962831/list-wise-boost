@@ -5,14 +5,9 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // Force cache invalidation with unique build timestamp
-  define: {
-    __BUILD_TIMESTAMP__: JSON.stringify(Date.now()),
-  },
   server: {
     host: "::",
     port: 8080,
-    force: true, // Force re-optimization on server start
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
@@ -40,7 +35,6 @@ export default defineConfig(({ mode }) => ({
     ],
   },
   optimizeDeps: {
-    force: true, // Force re-bundling every time
     include: [
       "react",
       "react-dom",
