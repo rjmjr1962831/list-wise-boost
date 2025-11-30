@@ -5,8 +5,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Target, MapPin, Building2 } from "lucide-react";
+import { Loader2, Target, MapPin, Building2, CheckCircle2, XCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+
+interface CityResult {
+  city: string;
+  status: 'success' | 'failed';
+  updated?: number;
+  notFound?: number;
+  error?: string;
+}
 
 export function AdminRankingCapture() {
   const [loading, setLoading] = useState(false);
@@ -16,6 +25,7 @@ export function AdminRankingCapture() {
     total: number;
     currentCity: string;
   } | null>(null);
+  const [liveResults, setLiveResults] = useState<CityResult[]>([]);
   const [city, setCity] = useState("");
   const { toast } = useToast();
 
@@ -58,6 +68,7 @@ export function AdminRankingCapture() {
   const handleBulkCapture = async () => {
     setBulkLoading(true);
     setBulkProgress({ current: 0, total: 17, currentCity: "Connecting..." });
+    setLiveResults([]); // Clear previous results
     
     try {
       // Get the WebSocket URL
@@ -90,6 +101,15 @@ export function AdminRankingCapture() {
           });
         } else if (message.type === 'city_complete') {
           console.log(`✅ ${message.city}: ${message.status}`);
+          
+          // Add to live results
+          setLiveResults(prev => [...prev, {
+            city: message.city,
+            status: message.status,
+            updated: message.updated,
+            notFound: message.notFound,
+            error: message.error
+          }]);
         } else if (message.type === 'complete') {
           toast({
             title: "✅ Bulk capture complete!",
@@ -202,6 +222,65 @@ export function AdminRankingCapture() {
               </div>
             )}
           </div>
+
+          {/* Live Results Log */}
+          {(liveResults.length > 0 || bulkLoading) && (
+            <div className="space-y-3 p-4 bg-muted/50 rounded-lg border">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-semibold">Live Results</Label>
+                <span className="text-sm text-muted-foreground">
+                  {liveResults.length} / {bulkProgress?.total || 17} completed
+                </span>
+              </div>
+              
+              <ScrollArea className="h-[300px] w-full rounded-md border bg-background p-4">
+                <div className="space-y-2">
+                  {liveResults.map((result, idx) => (
+                    <div 
+                      key={idx}
+                      className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        {result.status === 'success' ? (
+                          <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                        )}
+                        <div>
+                          <p className="font-medium">{result.city}</p>
+                          {result.status === 'success' ? (
+                            <p className="text-sm text-muted-foreground">
+                              {result.updated} updated, {result.notFound} not found
+                            </p>
+                          ) : (
+                            <p className="text-sm text-red-600">
+                              {result.error || 'Failed to capture'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                          result.status === 'success' 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-red-100 text-red-700'
+                        }`}>
+                          {result.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {liveResults.length === 0 && bulkLoading && (
+                    <div className="text-center text-muted-foreground py-8">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
+                      <p className="text-sm">Waiting for results...</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
 
           {/* Quick City Buttons */}
           <div>
