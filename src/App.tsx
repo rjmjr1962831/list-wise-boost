@@ -40,6 +40,7 @@ const PaymentComingSoon = lazy(() => import("./pages/PaymentComingSoon"));
 const About = lazy(() => import("./pages/About"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
+const AgentProfile = lazy(() => import("./pages/AgentProfile"));
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Dynamic city and category routes */}
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
+                    <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
