@@ -25,7 +25,7 @@ serve(async (req) => {
     // Fetch all active professionals without profile_link
     let query = supabase
       .from('professionals')
-      .select('id, name, email, pipedrive_person_id')
+      .select('id, name, email')
       .eq('active', true)
       .is('profile_link', null);
 
@@ -70,7 +70,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             professional_id: professional.id,
-            pipedrive_person_id: sync_to_pipedrive ? professional.pipedrive_person_id : null
+            pipedrive_person_id: null // Professionals table doesn't store Pipedrive IDs
           })
         });
 
