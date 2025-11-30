@@ -22,6 +22,7 @@ import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSyn
 import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
 import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
+import { MagicLinkGenerator } from '@/components/admin/MagicLinkGenerator';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -177,6 +178,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Email Verification
             </TabsTrigger>
+            <TabsTrigger value="magic-links">
+              <Database className="mr-2 h-4 w-4" />
+              Magic Links
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -228,6 +233,10 @@ const AdminDashboard = () => {
             <EmailVerificationBackfill />
             <QueuedEmailVerifier />
             <BulkEmailVerifier />
+          </TabsContent>
+
+          <TabsContent value="magic-links" className="space-y-4">
+            <MagicLinkGenerator />
           </TabsContent>
         </Tabs>
       </div>
