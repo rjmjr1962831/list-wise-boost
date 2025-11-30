@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  STATIC SITEMAP (Manually Updated)
+  This sitemap is manually updated and cached by CDN for fast delivery.
+  
+  For real-time updates based on database content, use the dynamic sitemap:
+  https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap
+  
+  Both sitemaps are declared in robots.txt for maximum SEO coverage.
+  See SITEMAP_SETUP.md for full documentation.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Homepage -->
   <url>
