@@ -129,26 +129,44 @@ async function createOrUpdatePerson(
     personData.org_id = orgId;
   }
 
-  // Add custom fields with card URL
-  if (fieldMapping.card_url) {
-    personData[fieldMapping.card_url] = cardUrl;
-  }
-  if (fieldMapping.supabase_id) {
-    personData[fieldMapping.supabase_id] = professional.id;
-  }
-  if (fieldMapping.zillow_profile_url && professional.zillow_profile_url) {
-    personData[fieldMapping.zillow_profile_url] = professional.zillow_profile_url;
-  }
-  if (fieldMapping.zillow_rating && professional.review_stars_rating) {
-    personData[fieldMapping.zillow_rating] = professional.review_stars_rating;
-  }
-  if (fieldMapping.zillow_reviews && professional.num_total_reviews) {
-    personData[fieldMapping.zillow_reviews] = professional.num_total_reviews;
-  }
-  
-  // Add email verified status
-  if (fieldMapping.email_verified) {
-    personData[fieldMapping.email_verified] = professional.email_verified_at ? 'YES' : 'NO';
+  // DYNAMIC FIELD MAPPING - Build complete field data object
+  const dynamicFields: Record<string, any> = {
+    // Core IDs & URLs
+    supabase_id: professional.id,
+    card_url: cardUrl,
+    
+    // Professional Details
+    years_experience: professional.years_experience,
+    current_listings: professional.current_listings,
+    total_sales: professional.total_sales,
+    license_number: professional.license_number,
+    business_name: professional.business_name || professional.company,
+    specialty: Array.isArray(professional.specialty) ? professional.specialty.join(', ') : professional.specialty,
+    website: professional.website,
+    rank: professional.rank,
+    synthesized_bio: professional.synthesized_bio || professional.description,
+    
+    // Badges (convert boolean to YES/NO)
+    is_top_agent: professional.is_top_agent ? 'YES' : 'NO',
+    is_premier_agent: professional.is_premier_agent ? 'YES' : 'NO',
+    is_brand_builder: professional.is_brand_builder ? 'YES' : 'NO',
+    email_verified: professional.email_verified_at ? 'YES' : 'NO',
+    
+    // Location
+    city_name: city?.name,
+    state: city?.state,
+    
+    // Zillow Data
+    zillow_profile_url: professional.zillow_profile_url,
+    zillow_rating: professional.review_stars_rating,
+    zillow_reviews: professional.num_total_reviews,
+  };
+
+  // Apply all mapped fields dynamically - only sync fields that have a mapping
+  for (const [fieldName, value] of Object.entries(dynamicFields)) {
+    if (fieldMapping[fieldName] && value !== null && value !== undefined) {
+      personData[fieldMapping[fieldName]] = value;
+    }
   }
 
   let url: string;
