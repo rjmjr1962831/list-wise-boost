@@ -40,6 +40,7 @@ export const QueuedEmailVerifier = () => {
   const [recentItems, setRecentItems] = useState<QueueItem[]>([]);
   const [limit, setLimit] = useState(20);
   const [delaySeconds, setDelaySeconds] = useState(3);
+  const [concurrency, setConcurrency] = useState(5);
   const [citySlug, setCitySlug] = useState<string>('');
   const [cities, setCities] = useState<Array<{ name: string; slug: string }>>([]);
   const [unverifiedCount, setUnverifiedCount] = useState<number>(0);
@@ -202,7 +203,9 @@ export const QueuedEmailVerifier = () => {
 
   const processQueue = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('process-email-verification-queue');
+      const { data, error } = await supabase.functions.invoke('process-email-verification-queue', {
+        body: { concurrency }
+      });
 
       if (error) throw error;
 
@@ -220,6 +223,11 @@ export const QueuedEmailVerifier = () => {
           }
         }, 30000);
         return false;
+      }
+
+      // Show success for concurrent processing
+      if (data.processed > 1) {
+        toast.success(`Processed ${data.processed} emails: ${data.successful} successful, ${data.errors} errors`);
       }
 
       return true;
@@ -308,14 +316,14 @@ export const QueuedEmailVerifier = () => {
             Queue-Based Email Verifier
           </CardTitle>
           <CardDescription>
-            Process emails one at a time with configurable delays • {unverifiedCount} unverified emails
+            Process {concurrency} emails in parallel with configurable delays • {unverifiedCount} unverified emails
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertDescription>
-              Queue-based processing avoids rate limits by processing emails sequentially with delays.
-              Configure delay between requests (recommended: 2-5 seconds). Cost: ~$0.02 per verification.
+              Concurrent processing verifies {concurrency} emails in parallel with atomic queue locking to prevent duplicates.
+              Configure concurrency (1-10) and delay between batches. Cost: ~$0.02 per verification.
             </AlertDescription>
           </Alert>
 
@@ -352,7 +360,7 @@ export const QueuedEmailVerifier = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Emails to add:</label>
               <input
@@ -361,6 +369,19 @@ export const QueuedEmailVerifier = () => {
                 max="500"
                 value={limit}
                 onChange={(e) => setLimit(Math.max(1, parseInt(e.target.value) || 1))}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                disabled={loading || processing}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Concurrency:</label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={concurrency}
+                onChange={(e) => setConcurrency(Math.max(1, Math.min(10, parseInt(e.target.value) || 1)))}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 disabled={loading || processing}
               />
