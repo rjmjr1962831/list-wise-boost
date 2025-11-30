@@ -332,6 +332,57 @@ export default function FullEnrichmentPipeline() {
     await enrichCities(cities, 'All Arizona');
   };
 
+  const enrichEmptyCitiesOnly = async () => {
+    try {
+      setIsRunning(true);
+      addLog('🔍 Finding cities with 0 agents...');
+      
+      const { data: category } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", "top10realestateagents")
+        .single();
+
+      if (!category) {
+        throw new Error("Real Estate Agent category not found");
+      }
+
+      // Get count of agents per city
+      const { data: agentCounts } = await supabase
+        .from('professional_cities')
+        .select('city_id, professionals!inner(id, category_id)')
+        .eq('active', true)
+        .eq('professionals.category_id', category.id);
+
+      // Create a set of city IDs that have agents
+      const citiesWithAgents = new Set(agentCounts?.map(ac => ac.city_id) || []);
+
+      // Filter to cities with 0 agents
+      const emptyCities = cities.filter(city => !citiesWithAgents.has(city.id));
+
+      if (emptyCities.length === 0) {
+        toast.info("All cities already have agents!");
+        setIsRunning(false);
+        return;
+      }
+
+      addLog(`📍 Found ${emptyCities.length} cities with 0 agents`);
+      emptyCities.forEach(city => addLog(`   • ${city.name}`));
+
+      if (!confirm(`This will populate ${emptyCities.length} cities with 0 agents. Continue?`)) {
+        setIsRunning(false);
+        return;
+      }
+
+      await enrichCities(emptyCities, 'Empty Cities');
+    } catch (error: any) {
+      console.error("Error finding empty cities:", error);
+      addLog(`❌ Error: ${error.message}`);
+      toast.error("Failed to find empty cities");
+      setIsRunning(false);
+    }
+  };
+
   const enrichCities = async (citiesToEnrich: City[], region: string) => {
     setIsRunning(true);
     setStatusLog([]);
@@ -510,7 +561,7 @@ export default function FullEnrichmentPipeline() {
               className="mt-2"
             />
             <p className="text-xs text-muted-foreground">
-              System will import until it reaches this many agents with 4.8★+ rating and 100+ reviews
+              System will import until it reaches this many agents with 4.8★+ rating and 50+ reviews
             </p>
           </div>
         </div>
@@ -619,7 +670,7 @@ export default function FullEnrichmentPipeline() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               onClick={enrichPhoenixMetro}
               disabled={isRunning || cities.length === 0}
@@ -628,6 +679,16 @@ export default function FullEnrichmentPipeline() {
             >
               <Zap className="mr-2 h-4 w-4" />
               Phoenix Metro
+            </Button>
+
+            <Button
+              onClick={enrichEmptyCitiesOnly}
+              disabled={isRunning || cities.length === 0}
+              variant="secondary"
+              size="lg"
+            >
+              <Zap className="mr-2 h-4 w-4" />
+              Empty Cities Only
             </Button>
 
             <Button
