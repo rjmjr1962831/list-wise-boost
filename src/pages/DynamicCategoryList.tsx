@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Navigate, useSearchParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalListLayout } from '@/components/ProfessionalListLayout';
 import { CollapsibleListSection } from '@/components/CollapsibleListSection';
@@ -142,6 +143,24 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
 
   return enriched;
 }
+
+// City geo coordinates for SEO
+const getCityCoordinates = (citySlug: string): { position: string; icbm: string } => {
+  const coordinates: Record<string, { position: string; icbm: string }> = {
+    'phoenix': { position: '33.4484;-112.0740', icbm: '33.4484, -112.0740' },
+    'scottsdale': { position: '33.4942;-111.9261', icbm: '33.4942, -111.9261' },
+    'tucson': { position: '32.2226;-110.9747', icbm: '32.2226, -110.9747' },
+    'mesa': { position: '33.4152;-111.8315', icbm: '33.4152, -111.8315' },
+    'chandler': { position: '33.3062;-111.8413', icbm: '33.3062, -111.8413' },
+    'gilbert': { position: '33.3528;-111.7890', icbm: '33.3528, -111.7890' },
+    'glendale': { position: '33.5387;-112.1860', icbm: '33.5387, -112.1860' },
+    'tempe': { position: '33.4255;-111.9400', icbm: '33.4255, -111.9400' },
+    'peoria': { position: '33.5806;-112.2374', icbm: '33.5806, -112.2374' },
+    'surprise': { position: '33.6292;-112.3680', icbm: '33.6292, -112.3680' },
+  };
+  
+  return coordinates[citySlug] || { position: '34.0489;-111.0937', icbm: '34.0489, -111.0937' }; // Default to Arizona center
+};
 
 export default function DynamicCategoryList() {
   const { stateSlug, citySlug, categorySlug } = useParams<{ 
@@ -835,99 +854,8 @@ export default function DynamicCategoryList() {
     return () => clearInterval(interval);
   }, [city, category, allProfessionals.length]);
 
-
-  // Generate structured data for LLM/SEO
-  useEffect(() => {
-    if (!city || !category || allProfessionals.length === 0) return;
-
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "name": `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
-      "description": `AI and human curated list of the top 10 ${category.plural_name.toLowerCase()} in ${city.name}, ${city.state}. Qualified with 4.8+ star ratings and 100+ verified reviews.`,
-      "url": `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`,
-      "numberOfItems": allProfessionals.length,
-      "itemListElement": allProfessionals.slice(0, 10).map((agent, index) => {
-        const agentData = agent as any;
-        return {
-          "@type": "ListItem",
-          "position": index + 1,
-          "item": {
-            "@type": "RealEstateAgent",
-            "@id": `https://top10lists.us/agent/${agent.id}`,
-            "name": agent.name,
-            "description": agent.description || `Professional ${category.name.toLowerCase()} serving ${city.name}, ${city.state}`,
-            "email": agent.email || undefined,
-            "telephone": agent.phone || undefined,
-            "url": agent.website || undefined,
-            "image": agent.image || undefined,
-            "address": agent.address ? {
-              "@type": "PostalAddress",
-              "streetAddress": agent.address,
-              "addressLocality": city.name,
-              "addressRegion": city.state
-            } : undefined,
-            "areaServed": {
-              "@type": "City",
-              "name": city.name,
-              "containedInPlace": {
-                "@type": "State",
-                "name": city.state
-              }
-            },
-            "knowsAbout": agent.specialties || [],
-            "award": agentData.notable_achievements?.map((a: any) => a.title) || [],
-            "sameAs": [
-              agentData.zillow_profile_url,
-              agent.website
-            ].filter(Boolean),
-            "aggregateRating": agent.rating > 0 ? {
-              "@type": "AggregateRating",
-              "ratingValue": agent.rating,
-              "reviewCount": agent.reviews,
-              "bestRating": 5,
-              "worstRating": 1
-            } : undefined,
-            "yearsInOperation": agent.stats?.yearsExperience || undefined,
-            "memberOf": agent.company ? {
-              "@type": "Organization",
-              "name": agent.company
-            } : undefined
-          }
-        };
-      })
-    };
-
-    // Inject structured data into document head
-    const scriptId = 'structured-data-jsonld';
-    let script = document.getElementById(scriptId) as HTMLScriptElement;
-    
-    if (!script) {
-      script = document.createElement('script');
-      script.id = scriptId;
-      script.type = 'application/ld+json';
-      document.head.appendChild(script);
-    }
-    
-    script.textContent = JSON.stringify(structuredData);
-
-    // Add canonical URL
-    const canonicalUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
-    let canonicalLink = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (!canonicalLink) {
-      canonicalLink = document.createElement('link');
-      canonicalLink.rel = 'canonical';
-      document.head.appendChild(canonicalLink);
-    }
-    canonicalLink.href = canonicalUrl;
-
-    return () => {
-      const existingScript = document.getElementById(scriptId);
-      if (existingScript) {
-        existingScript.remove();
-      }
-    };
-  }, [city, category, allProfessionals]);
+  // Note: Structured data and canonical URLs are now handled by Helmet above
+  // Old manual DOM injection removed to prevent duplicates
 
   if (loading || (isGeneratingData && !importComplete) || !reviewsReady) {
     return (
@@ -1055,8 +983,116 @@ export default function DynamicCategoryList() {
     }
   };
 
+  // Get city coordinates for geo tags
+  const cityCoords = getCityCoordinates(city.slug);
+  const pageUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
+  const ogImageUrl = `https://top10lists.us/og-${city.slug}.png`;
+
+  // Enhanced JSON-LD schema for city page
+  const collectionPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
+    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, Arizona. All agents are data-verified with 50+ reviews, 4.8+ ratings, and 6+ years experience.`,
+    "url": pageUrl,
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Top10Lists.us",
+      "url": "https://top10lists.us"
+    },
+    "about": {
+      "@type": "Place",
+      "name": city.name,
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": city.name,
+        "addressRegion": city.state_slug.toUpperCase(),
+        "addressCountry": "US"
+      }
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": `Top ${category.plural_name} in ${city.name}`,
+      "description": "Curated list of elite, data-verified agents",
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "numberOfItems": Math.min(topTenProfessionals.length, 10),
+      "itemListElement": topTenProfessionals.slice(0, 10).map((agent, index) => {
+        const agentData = agent as any;
+        return {
+          "@type": "ListItem",
+          "position": index + 1,
+          "item": {
+            "@type": "RealEstateAgent",
+            "name": agent.name,
+            "description": agent.description || `Elite ${category.name.toLowerCase()} serving ${city.name}, ${city.state}`,
+            "url": agent.website || undefined,
+            "image": agent.image !== '/api/placeholder/400/400' ? agent.image : undefined,
+            "areaServed": {
+              "@type": "City",
+              "name": city.name
+            },
+            "aggregateRating": agent.rating > 0 ? {
+              "@type": "AggregateRating",
+              "ratingValue": agent.rating,
+              "reviewCount": agent.reviews,
+              "bestRating": 5,
+              "worstRating": 1
+            } : undefined,
+            "knowsAbout": agent.specialties || []
+          }
+        };
+      })
+    }
+  };
+
   return (
     <>
+      <Helmet>
+        {/* Primary Meta Tags */}
+        <title>{metadata.title}</title>
+        <meta name="description" content={metadata.description} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={pageUrl} />
+        
+        {/* Topic Hints for LLMs */}
+        <meta name="subject" content={`${city.name} ${category.plural_name}`} />
+        <meta name="topic" content={`${city.name} Real Estate`} />
+        <meta name="classification" content="Business/Real Estate" />
+        <meta name="coverage" content={`${city.name}, ${city.state}, United States`} />
+        
+        {/* Open Graph Tags */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()}`} />
+        <meta property="og:description" content={`${city.name}'s elite ${category.plural_name.toLowerCase()}. Invitation-only. Data-verified.`} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Top10Lists.us" />
+        <meta property="og:locale" content="en_US" />
+        
+        {/* Twitter Card Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={pageUrl} />
+        <meta name="twitter:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()}`} />
+        <meta name="twitter:description" content={`${city.name}'s elite agents. Invitation-only. Data-verified.`} />
+        <meta name="twitter:image" content={ogImageUrl} />
+        
+        {/* Geo Tags - City-Specific */}
+        <meta name="geo.region" content={`US-${city.state_slug.toUpperCase()}`} />
+        <meta name="geo.placename" content={`${city.name}, ${city.state}`} />
+        <meta name="geo.position" content={cityCoords.position} />
+        <meta name="ICBM" content={cityCoords.icbm} />
+        
+        {/* Author/Publisher */}
+        <meta name="author" content="Top10Lists.us" />
+        
+        {/* JSON-LD Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(collectionPageSchema)}
+        </script>
+      </Helmet>
+      
       {categorySlug === 'top10realestateagents' && city && (
         <RealEstateAgentQuizModal
           open={showQuiz}
