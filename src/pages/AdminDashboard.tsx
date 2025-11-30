@@ -19,6 +19,9 @@ import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager"
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
 import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
+import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
+import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
+import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -170,6 +173,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Pipeline Status
             </TabsTrigger>
+            <TabsTrigger value="email-verification">
+              <Database className="mr-2 h-4 w-4" />
+              Email Verification
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -215,6 +222,12 @@ const AdminDashboard = () => {
 
           <TabsContent value="pipeline-status" className="space-y-4">
             <EnrichmentPipelineStatus />
+          </TabsContent>
+
+          <TabsContent value="email-verification" className="space-y-4">
+            <EmailVerificationBackfill />
+            <QueuedEmailVerifier />
+            <BulkEmailVerifier />
           </TabsContent>
         </Tabs>
       </div>
