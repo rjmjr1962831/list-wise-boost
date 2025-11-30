@@ -610,6 +610,38 @@ export type Database = {
           },
         ]
       }
+      funnel_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_name: string
+          id: string
+          professional_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_name: string
+          id?: string
+          professional_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_name?: string
+          id?: string
+          professional_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "funnel_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketing_content: {
         Row: {
           created_at: string
@@ -710,6 +742,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pricing_plans: {
+        Row: {
+          cities_included: number | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          is_featured: boolean | null
+          name: string
+          price_annual: number | null
+          price_monthly: number | null
+          slug: string
+          updated_at: string | null
+        }
+        Insert: {
+          cities_included?: number | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name: string
+          price_annual?: number | null
+          price_monthly?: number | null
+          slug: string
+          updated_at?: string | null
+        }
+        Update: {
+          cities_included?: number | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_featured?: boolean | null
+          name?: string
+          price_annual?: number | null
+          price_monthly?: number | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       professional_cities: {
         Row: {
@@ -851,6 +931,7 @@ export type Database = {
           business_address: Json | null
           business_name: string | null
           category_id: string
+          certifications: Json | null
           city_id: string
           claim_notes: string | null
           claim_status: Database["public"]["Enums"]["claim_status"]
@@ -865,14 +946,18 @@ export type Database = {
           email: string | null
           email_verified_at: string | null
           encoded_zuid: string | null
+          funnel_completed_at: string | null
+          funnel_status: string | null
           get_to_know_me: string | null
           has_recent_review: boolean | null
+          headline: string | null
           id: string
           image_url: string | null
           in_canada: boolean | null
           is_brand_builder: boolean | null
           is_premier_agent: boolean | null
           is_top_agent: boolean | null
+          languages: Json | null
           license_number: string | null
           license_verified_at: string | null
           most_recent_review_date: string | null
@@ -900,8 +985,12 @@ export type Database = {
           reviews_data: Json | null
           reviews_text: string | null
           screen_name: string | null
+          service_areas: Json | null
           sidebar_video_url: string | null
           skip_pipedrive_sync: boolean | null
+          social_facebook: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
           specialty: string[] | null
           synthesized_bio: string | null
           team_display_information: Json | null
@@ -933,6 +1022,7 @@ export type Database = {
           business_address?: Json | null
           business_name?: string | null
           category_id: string
+          certifications?: Json | null
           city_id: string
           claim_notes?: string | null
           claim_status?: Database["public"]["Enums"]["claim_status"]
@@ -947,14 +1037,18 @@ export type Database = {
           email?: string | null
           email_verified_at?: string | null
           encoded_zuid?: string | null
+          funnel_completed_at?: string | null
+          funnel_status?: string | null
           get_to_know_me?: string | null
           has_recent_review?: boolean | null
+          headline?: string | null
           id?: string
           image_url?: string | null
           in_canada?: boolean | null
           is_brand_builder?: boolean | null
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
+          languages?: Json | null
           license_number?: string | null
           license_verified_at?: string | null
           most_recent_review_date?: string | null
@@ -982,8 +1076,12 @@ export type Database = {
           reviews_data?: Json | null
           reviews_text?: string | null
           screen_name?: string | null
+          service_areas?: Json | null
           sidebar_video_url?: string | null
           skip_pipedrive_sync?: boolean | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
@@ -1015,6 +1113,7 @@ export type Database = {
           business_address?: Json | null
           business_name?: string | null
           category_id?: string
+          certifications?: Json | null
           city_id?: string
           claim_notes?: string | null
           claim_status?: Database["public"]["Enums"]["claim_status"]
@@ -1029,14 +1128,18 @@ export type Database = {
           email?: string | null
           email_verified_at?: string | null
           encoded_zuid?: string | null
+          funnel_completed_at?: string | null
+          funnel_status?: string | null
           get_to_know_me?: string | null
           has_recent_review?: boolean | null
+          headline?: string | null
           id?: string
           image_url?: string | null
           in_canada?: boolean | null
           is_brand_builder?: boolean | null
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
+          languages?: Json | null
           license_number?: string | null
           license_verified_at?: string | null
           most_recent_review_date?: string | null
@@ -1064,8 +1167,12 @@ export type Database = {
           reviews_data?: Json | null
           reviews_text?: string | null
           screen_name?: string | null
+          service_areas?: Json | null
           sidebar_video_url?: string | null
           skip_pipedrive_sync?: boolean | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null

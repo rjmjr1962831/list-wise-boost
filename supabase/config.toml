@@ -159,4 +159,13 @@ verify_jwt = false
 [functions.process-pipedrive-sync-queue]
 verify_jwt = false
 
+[functions.validate-profile-token]
+verify_jwt = false
+
+[functions.update-prospect-profile]
+verify_jwt = false
+
+[functions.track-profile-event]
+verify_jwt = false
+
 

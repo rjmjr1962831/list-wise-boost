@@ -42,6 +42,13 @@ const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
 const AgentProfile = lazy(() => import("./pages/AgentProfile"));
 
+// Agent funnel pages
+const WelcomeInterstitial = lazy(() => import("./pages/profile/WelcomeInterstitial"));
+const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
+const PricingInterstitial = lazy(() => import("./pages/profile/PricingInterstitial"));
+const SelectionPlaceholder = lazy(() => import("./pages/profile/SelectionPlaceholder"));
+const ScheduleCall = lazy(() => import("./pages/profile/ScheduleCall"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -95,8 +102,14 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
-                    {/* Magic link profile route */}
-                    <Route path="/profile/:token" element={<ProfileView />} />
+                    {/* Agent funnel routes */}
+                    <Route path="/profile/:token" element={<WelcomeInterstitial />} />
+                    <Route path="/profile/:token/edit" element={<EditProfile />} />
+                    <Route path="/profile/:token/pricing" element={<PricingInterstitial />} />
+                    <Route path="/profile/:token/select" element={<SelectionPlaceholder />} />
+                    <Route path="/profile/:token/schedule" element={<ScheduleCall />} />
+                    {/* Legacy profile view route */}
+                    <Route path="/profile-view/:token" element={<ProfileView />} />
                     {/* Catch-all 404 route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
