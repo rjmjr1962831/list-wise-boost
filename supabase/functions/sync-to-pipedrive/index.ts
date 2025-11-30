@@ -100,7 +100,7 @@ async function findOrCreateOrganization(companyName: string): Promise<number> {
   return orgId;
 }
 
-async function createPerson(prospect: Prospect, fieldMapping: Record<string, string>): Promise<number> {
+async function createPerson(prospect: Prospect, fieldMapping: Record<string, string>, cardUrl?: string): Promise<number> {
   const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const personData: Record<string, any> = {
@@ -126,6 +126,7 @@ async function createPerson(prospect: Prospect, fieldMapping: Record<string, str
   if (fieldMapping.zillow_reviews && prospect.zillow_reviews) personData[fieldMapping.zillow_reviews] = prospect.zillow_reviews;
   if (fieldMapping.zillow_profile_url && prospect.zillow_profile_url) personData[fieldMapping.zillow_profile_url] = prospect.zillow_profile_url;
   if (fieldMapping.prospect_status && prospect.status) personData[fieldMapping.prospect_status] = prospect.status;
+  if (fieldMapping.card_url && cardUrl) personData[fieldMapping.card_url] = cardUrl;
 
   const response = await fetch(url, {
     method: "POST",
@@ -142,7 +143,7 @@ async function createPerson(prospect: Prospect, fieldMapping: Record<string, str
   return data.data.id;
 }
 
-async function updatePerson(personId: number, prospect: Prospect, fieldMapping: Record<string, string>): Promise<void> {
+async function updatePerson(personId: number, prospect: Prospect, fieldMapping: Record<string, string>, cardUrl?: string): Promise<void> {
   const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons/${personId}?api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const personData: Record<string, any> = {
@@ -168,6 +169,7 @@ async function updatePerson(personId: number, prospect: Prospect, fieldMapping: 
   if (fieldMapping.zillow_reviews && prospect.zillow_reviews) personData[fieldMapping.zillow_reviews] = prospect.zillow_reviews;
   if (fieldMapping.zillow_profile_url && prospect.zillow_profile_url) personData[fieldMapping.zillow_profile_url] = prospect.zillow_profile_url;
   if (fieldMapping.prospect_status && prospect.status) personData[fieldMapping.prospect_status] = prospect.status;
+  if (fieldMapping.card_url && cardUrl) personData[fieldMapping.card_url] = cardUrl;
 
   const response = await fetch(url, {
     method: "PUT",
@@ -185,6 +187,37 @@ async function updatePerson(personId: number, prospect: Prospect, fieldMapping: 
 async function syncProspect(prospect: Prospect): Promise<{ personId: number; action: string }> {
   const fieldMapping = await getFieldMapping();
 
+  // Check if this prospect is also a professional (has a card)
+  let cardUrl: string | undefined;
+  if (prospect.email) {
+    const { data: professional } = await supabase
+      .from("professionals")
+      .select("id")
+      .eq("email", prospect.email)
+      .eq("active", true)
+      .single();
+
+    if (professional) {
+      // Generate card URL
+      const { data: city } = await supabase
+        .from("cities")
+        .select("slug")
+        .eq("id", professional.city_id)
+        .single();
+
+      const { data: category } = await supabase
+        .from("categories")
+        .select("slug")
+        .eq("id", professional.category_id)
+        .single();
+
+      if (city && category) {
+        const slug = prospect.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        cardUrl = `https://top10lists.us/${city.slug}/${category.slug}/${slug}`;
+      }
+    }
+  }
+
   let personId = prospect.pipedrive_person_id;
   let action = "updated";
 
@@ -194,10 +227,10 @@ async function syncProspect(prospect: Prospect): Promise<{ personId: number; act
   }
 
   if (personId) {
-    await updatePerson(personId, prospect, fieldMapping);
+    await updatePerson(personId, prospect, fieldMapping, cardUrl);
     action = "updated";
   } else {
-    personId = await createPerson(prospect, fieldMapping);
+    personId = await createPerson(prospect, fieldMapping, cardUrl);
     action = "created";
   }
 

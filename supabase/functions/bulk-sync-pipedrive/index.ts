@@ -97,6 +97,37 @@ async function createOrUpdatePerson(prospect: any, fieldMapping: Record<string, 
     personId = await searchPersonByEmail(prospect.email);
   }
 
+  // Check if this prospect is also a professional (has a card)
+  let cardUrl: string | undefined;
+  if (prospect.email) {
+    const { data: professional } = await supabase
+      .from("professionals")
+      .select("id, city_id, category_id, name")
+      .eq("email", prospect.email)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (professional) {
+      // Generate card URL
+      const { data: city } = await supabase
+        .from("cities")
+        .select("slug")
+        .eq("id", professional.city_id)
+        .maybeSingle();
+
+      const { data: category } = await supabase
+        .from("categories")
+        .select("slug")
+        .eq("id", professional.category_id)
+        .maybeSingle();
+
+      if (city && category) {
+        const slug = professional.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        cardUrl = `https://top10lists.us/${city.slug}/${category.slug}/${slug}`;
+      }
+    }
+  }
+
   const personData: Record<string, any> = {
     name: prospect.name,
     email: prospect.email ? [{ value: prospect.email, primary: true }] : undefined,
@@ -120,6 +151,7 @@ async function createOrUpdatePerson(prospect: any, fieldMapping: Record<string, 
   if (fieldMapping.zillow_reviews && prospect.zillow_reviews) personData[fieldMapping.zillow_reviews] = prospect.zillow_reviews;
   if (fieldMapping.zillow_profile_url && prospect.zillow_profile_url) personData[fieldMapping.zillow_profile_url] = prospect.zillow_profile_url;
   if (fieldMapping.prospect_status && prospect.status) personData[fieldMapping.prospect_status] = prospect.status;
+  if (fieldMapping.card_url && cardUrl) personData[fieldMapping.card_url] = cardUrl;
 
   let url: string;
   let method: string;
