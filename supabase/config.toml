@@ -156,4 +156,7 @@ verify_jwt = false
 [functions.list-pipedrive-fields]
 verify_jwt = false
 
+[functions.process-pipedrive-sync-queue]
+verify_jwt = false
+
 
