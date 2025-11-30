@@ -54,7 +54,61 @@ serve(async (req) => {
       );
     }
 
-    // Find prospect by pipedrive_person_id
+    const email = current?.email?.[0]?.value;
+    if (!email) {
+      return new Response(
+        JSON.stringify({ success: false, error: "No email in payload" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Get field mapping
+    const fieldMapping = await getFieldMapping();
+
+    // Try to find professional by email first
+    const { data: professional, error: profError } = await supabase
+      .from("professionals")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    if (professional && !profError) {
+      console.log("Updating professional from Pipedrive webhook");
+      
+      // Build update object for professional
+      const profUpdates: Record<string, any> = {
+        skip_pipedrive_sync: true, // Prevent sync loop
+      };
+
+      // Map basic fields
+      if (current?.name) profUpdates.name = current.name;
+      if (current?.phone?.[0]?.value) profUpdates.phone = current.phone[0].value;
+
+      // Map custom fields back to professional columns
+      for (const [pipedriveKey, fieldName] of Object.entries(fieldMapping)) {
+        if (current?.[pipedriveKey] !== undefined) {
+          if (["current_listings", "total_sales", "license_number", "rank", 
+               "synthesized_bio", "is_top_agent", "is_premier_agent"].includes(fieldName)) {
+            profUpdates[fieldName] = current[pipedriveKey];
+          }
+        }
+      }
+
+      // Update professional in Supabase
+      const { error: updateError } = await supabase
+        .from("professionals")
+        .update(profUpdates)
+        .eq("id", professional.id);
+
+      if (updateError) throw updateError;
+
+      return new Response(
+        JSON.stringify({ success: true, message: "Professional updated from Pipedrive" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // If not a professional, try prospect
     let { data: prospect, error: findError } = await supabase
       .from("prospects")
       .select("id")
@@ -62,34 +116,23 @@ serve(async (req) => {
       .single();
 
     if (findError || !prospect) {
-      // Try to find by email
-      const email = current?.email?.[0]?.value;
-      if (email) {
-        const { data: prospectByEmail, error: emailError } = await supabase
-          .from("prospects")
-          .select("id")
-          .eq("email", email)
-          .single();
+      // Try to find prospect by email
+      const { data: prospectByEmail, error: emailError } = await supabase
+        .from("prospects")
+        .select("id")
+        .eq("email", email)
+        .single();
 
-        if (emailError || !prospectByEmail) {
-          return new Response(
-            JSON.stringify({ success: true, message: "Prospect not found in Supabase" }),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-        prospect = prospectByEmail;
-      } else {
+      if (emailError || !prospectByEmail) {
         return new Response(
-          JSON.stringify({ success: true, message: "Prospect not found in Supabase" }),
+          JSON.stringify({ success: true, message: "Record not found in Supabase" }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+      prospect = prospectByEmail;
     }
 
-    // Get field mapping
-    const fieldMapping = await getFieldMapping();
-
-    // Build update object
+    // Build update object for prospect
     const updates: Record<string, any> = {
       pipedrive_person_id: personId,
       pipedrive_synced: true,

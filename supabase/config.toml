@@ -144,6 +144,10 @@ verify_jwt = false
 [functions.sync-professionals-to-pipedrive]
 verify_jwt = false
 
+[functions.sync-single-professional]
+verify_jwt = false
+
 [functions.list-pipedrive-fields]
 verify_jwt = false
+
 

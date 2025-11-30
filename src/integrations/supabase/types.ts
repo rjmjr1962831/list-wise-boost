@@ -856,6 +856,7 @@ export type Database = {
           reviews_text: string | null
           screen_name: string | null
           sidebar_video_url: string | null
+          skip_pipedrive_sync: boolean | null
           specialty: string[] | null
           synthesized_bio: string | null
           team_display_information: Json | null
@@ -936,6 +937,7 @@ export type Database = {
           reviews_text?: string | null
           screen_name?: string | null
           sidebar_video_url?: string | null
+          skip_pipedrive_sync?: boolean | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
@@ -1016,6 +1018,7 @@ export type Database = {
           reviews_text?: string | null
           screen_name?: string | null
           sidebar_video_url?: string | null
+          skip_pipedrive_sync?: boolean | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null

@@ -18,6 +18,7 @@ import { AdminHubSpotSync } from "@/components/admin/AdminHubSpotSync";
 import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
+import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -184,6 +185,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
+            <AdminPipedriveAutoSync />
             <AdminPipedriveSync />
           </TabsContent>
 
