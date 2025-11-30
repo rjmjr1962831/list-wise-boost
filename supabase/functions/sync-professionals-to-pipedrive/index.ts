@@ -153,6 +153,9 @@ async function createOrUpdatePerson(
     is_brand_builder: professional.is_brand_builder ? 'YES' : 'NO',
     email_verified: professional.email_verified_at ? 'YES' : 'NO',
     
+    // Status
+    active_status: professional.active ? 'Active' : 'Inactive',
+    
     // Location
     city_name: city?.name,
     state: city?.state,
@@ -161,6 +164,8 @@ async function createOrUpdatePerson(
     zillow_profile_url: professional.zillow_profile_url,
     zillow_rating: professional.review_stars_rating,
     zillow_reviews: professional.num_total_reviews,
+    zillow_page: professional.zillow_search_page,
+    zillow_position: professional.zillow_search_position,
   };
 
   // Apply all mapped fields dynamically - only sync fields that have a mapping
