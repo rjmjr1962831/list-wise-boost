@@ -4,9 +4,9 @@
     "version": "1.0",
     "last_updated": "November 2025",
     "total_metros": 2,
-    "total_other_cities": 18,
-    "total_cities": 50,
-    "total_neighborhoods": 504,
+    "total_other_cities": 27,
+    "total_cities": 59,
+    "total_neighborhoods": 513,
     "coverage": "Complete statewide coverage: Phoenix MSA, Tucson MSA, and all other major Arizona cities"
   },
   "metros": [
@@ -2360,8 +2360,8 @@
   "other_cities": {
     "category": "Other Major Arizona Cities",
     "description": "Major cities outside Phoenix and Tucson metro areas",
-    "total_population": 657370,
-    "cities_count": 18,
+    "total_population": 877170,
+    "cities_count": 27,
     "cities": [
       {
         "city": "Flagstaff",
@@ -3479,6 +3479,216 @@
             "name": "North Winslow",
             "zip_codes": [
               "86047"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "Coolidge",
+        "population": 14200,
+        "county": "Pinal",
+        "region": "Central Arizona",
+        "neighborhoods": [
+          {
+            "name": "Downtown Coolidge",
+            "zip_codes": [
+              "85128"
+            ]
+          },
+          {
+            "name": "Central Coolidge",
+            "zip_codes": [
+              "85128"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "El Mirage",
+        "population": 36000,
+        "county": "Maricopa",
+        "region": "Phoenix Metro - West Valley",
+        "neighborhoods": [
+          {
+            "name": "Downtown El Mirage",
+            "zip_codes": [
+              "85335"
+            ]
+          },
+          {
+            "name": "El Mirage Estates",
+            "zip_codes": [
+              "85335"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "Florence",
+        "population": 27000,
+        "county": "Pinal",
+        "region": "Central Arizona",
+        "neighborhoods": [
+          {
+            "name": "Historic Downtown Florence",
+            "zip_codes": [
+              "85132"
+            ]
+          },
+          {
+            "name": "Florence South",
+            "zip_codes": [
+              "85132"
+            ]
+          },
+          {
+            "name": "Anthem at Merrill Ranch",
+            "zip_codes": [
+              "85132"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "Gila Bend",
+        "population": 1900,
+        "county": "Maricopa",
+        "region": "Southwest Arizona",
+        "neighborhoods": [
+          {
+            "name": "Downtown Gila Bend",
+            "zip_codes": [
+              "85337"
+            ]
+          },
+          {
+            "name": "Gila Bend North",
+            "zip_codes": [
+              "85337"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "Maricopa",
+        "population": 61000,
+        "county": "Pinal",
+        "region": "Central Arizona",
+        "neighborhoods": [
+          {
+            "name": "Province",
+            "zip_codes": [
+              "85138"
+            ]
+          },
+          {
+            "name": "Rancho El Dorado",
+            "zip_codes": [
+              "85139"
+            ]
+          },
+          {
+            "name": "Maricopa Town Center",
+            "zip_codes": [
+              "85138"
+            ]
+          },
+          {
+            "name": "Cobblestone Farms",
+            "zip_codes": [
+              "85139"
+            ]
+          },
+          {
+            "name": "The Villages at Rancho El Dorado",
+            "zip_codes": [
+              "85139"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "Tolleson",
+        "population": 7500,
+        "county": "Maricopa",
+        "region": "Phoenix Metro - West Valley",
+        "neighborhoods": [
+          {
+            "name": "Downtown Tolleson",
+            "zip_codes": [
+              "85353"
+            ]
+          },
+          {
+            "name": "Tolleson Industrial",
+            "zip_codes": [
+              "85353"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "West Valley",
+        "population": 50000,
+        "county": "Maricopa",
+        "region": "Phoenix Metro - West Valley",
+        "neighborhoods": [
+          {
+            "name": "West Valley Central",
+            "zip_codes": [
+              "85323"
+            ]
+          },
+          {
+            "name": "West Valley North",
+            "zip_codes": [
+              "85323"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "Wickenburg",
+        "population": 8000,
+        "county": "Maricopa",
+        "region": "Northwest Arizona",
+        "neighborhoods": [
+          {
+            "name": "Downtown Wickenburg",
+            "zip_codes": [
+              "85390"
+            ]
+          },
+          {
+            "name": "Wickenburg Ranch",
+            "zip_codes": [
+              "85390"
+            ]
+          },
+          {
+            "name": "Historic District",
+            "zip_codes": [
+              "85390"
+            ]
+          }
+        ]
+      },
+      {
+        "city": "Youngtown",
+        "population": 7200,
+        "county": "Maricopa",
+        "region": "Phoenix Metro - West Valley",
+        "neighborhoods": [
+          {
+            "name": "Youngtown Center",
+            "zip_codes": [
+              "85363"
+            ]
+          },
+          {
+            "name": "Youngtown West",
+            "zip_codes": [
+              "85363"
             ]
           }
         ]
