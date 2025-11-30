@@ -40,13 +40,17 @@ async function fetchWithTimeout(
   }
 }
 
+// Global rate limit tracking
+let lastRateLimitTime = 0;
+const MIN_WAIT_AFTER_RATE_LIMIT = 10000; // Wait 10s after any rate limit
+
 // Exponential backoff retry for Clearout API call
 async function verifEmailWithRetry(
   email: string,
   clearoutApiKey: string,
   maxRetries: number = 3
 ): Promise<{ data: any, error: any, attempts: number }> {
-  const delays = [2000, 4000, 8000]; // Exponential backoff delays
+  const delays = [3000, 8000, 15000]; // Longer delays for Clearout - 3s, 8s, 15s
   
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
@@ -68,23 +72,50 @@ async function verifEmailWithRetry(
         15000 // 15 second timeout
       );
 
+      // Check for 524 Cloudflare timeout (server took too long)
+      if (response.status === 524) {
+        console.warn(`⚠️ 524 Timeout from Clearout for ${email} (attempt ${attempt})`);
+        if (attempt < maxRetries) {
+          const delay = delays[attempt - 1] * 2 || 10000; // Longer delays for 524
+          console.log(`⏳ Waiting ${delay}ms before retry due to 524...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          continue; // Retry
+        }
+        return { 
+          data: null, 
+          error: { message: '524 Timeout - Clearout server overloaded', isTimeout: true, isRateLimit: false },
+          attempts: attempt
+        };
+      }
+
       if (!response.ok) {
         const errorText = await response.text();
         
         // Check for rate limit
         if (response.status === 429 || errorText.includes('1030')) {
           console.warn(`⚠️ Rate limit hit for ${email}`);
+          lastRateLimitTime = Date.now();
           
-          // Try to parse "try calling after" time
-          const match = errorText.match(/try calling after (\d+)/);
-          if (match) {
-            const waitSeconds = parseInt(match[1], 10);
-            console.log(`⏳ Waiting ${waitSeconds} seconds due to rate limit...`);
-            await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
-            continue; // Retry after waiting
+          // Try multiple patterns for rate limit wait time
+          const patterns = [
+            /try calling after (\d+)/i,           // "try calling after 30"
+            /wait (\d+) seconds/i,                 // "wait 30 seconds"
+            /retry after (\d+)/i,                  // "retry after 30"
+            /(\d+)\s*seconds?/i                    // Generic "30 seconds"
+          ];
+
+          let waitSeconds = 30; // Default to 30 seconds if can't parse
+          for (const pattern of patterns) {
+            const match = errorText.match(pattern);
+            if (match) {
+              waitSeconds = parseInt(match[1], 10);
+              break;
+            }
           }
-          
-          throw new Error(`Rate limited: ${errorText}`);
+
+          console.log(`⏳ Rate limited - waiting ${waitSeconds} seconds...`);
+          await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+          continue; // Retry after waiting
         }
         
         throw new Error(`API error: ${response.status} - ${errorText}`);
@@ -296,8 +327,18 @@ serve(async (req) => {
       
       // Pause between batches (except for the last batch)
       if (batchEnd < agentList.length) {
-        console.log(`⏸️ Pausing 10 seconds before next batch...`);
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        const BATCH_PAUSE = 15000; // 15 seconds between batches
+        
+        // Extra wait if we hit a rate limit recently
+        const timeSinceRateLimit = Date.now() - lastRateLimitTime;
+        if (timeSinceRateLimit < MIN_WAIT_AFTER_RATE_LIMIT) {
+          const extraWait = MIN_WAIT_AFTER_RATE_LIMIT - timeSinceRateLimit;
+          console.log(`⏸️ Extra ${Math.round(extraWait/1000)}s wait due to recent rate limit`);
+          await new Promise(resolve => setTimeout(resolve, extraWait));
+        }
+        
+        console.log(`⏸️ Pausing 15 seconds before next batch...`);
+        await new Promise(resolve => setTimeout(resolve, BATCH_PAUSE));
       }
     }
 
