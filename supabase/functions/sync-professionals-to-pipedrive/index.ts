@@ -145,6 +145,11 @@ async function createOrUpdatePerson(
   if (fieldMapping.zillow_reviews && professional.num_total_reviews) {
     personData[fieldMapping.zillow_reviews] = professional.num_total_reviews;
   }
+  
+  // Add email verified status
+  if (fieldMapping.email_verified) {
+    personData[fieldMapping.email_verified] = professional.email_verified_at ? 'YES' : 'NO';
+  }
 
   let url: string;
   let method: string;
