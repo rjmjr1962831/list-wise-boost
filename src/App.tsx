@@ -38,6 +38,7 @@ const AgentSetup = lazy(() => import("./pages/AgentSetup"));
 const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
 const PaymentComingSoon = lazy(() => import("./pages/PaymentComingSoon"));
 const About = lazy(() => import("./pages/About"));
+const RankingMethodology = lazy(() => import("./pages/RankingMethodology"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
 const AgentProfile = lazy(() => import("./pages/AgentProfile"));
@@ -69,6 +70,7 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/about" element={<About />} />
+                    <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Dynamic city and category routes */}
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />

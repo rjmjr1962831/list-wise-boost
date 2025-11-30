@@ -2,6 +2,7 @@ import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { CheckCircle2, Bot, MapPin } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { Helmet } from "react-helmet-async";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -14,9 +15,118 @@ const Index = () => {
   ];
 
   if (import.meta.env.DEV) console.info('[Index] Rendering Arizona-focused homepage');
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Top10Lists.us",
+    "alternateName": "Top 10 Lists",
+    "url": "https://top10lists.us",
+    "description": "Premium curated directory of top-performing real estate agents in Arizona. Multi-source verified rankings based on reviews, transactions, and press coverage.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://top10lists.us/search?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  };
+
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Top10Lists.us",
+    "url": "https://top10lists.us",
+    "logo": "https://top10lists.us/logo.png",
+    "description": "Premium curated directory of top-performing real estate agents in Arizona",
+    "areaServed": {
+      "@type": "State",
+      "name": "Arizona",
+      "containedInPlace": {
+        "@type": "Country",
+        "name": "United States"
+      }
+    },
+    "knowsAbout": [
+      "Real Estate",
+      "Real Estate Agents",
+      "Arizona Real Estate Market",
+      "Phoenix Real Estate",
+      "Scottsdale Real Estate",
+      "Agent Rankings",
+      "Real Estate Reviews",
+      "Top Realtors"
+    ],
+    "slogan": "Arizona's Most Trusted Agent Directory",
+    "foundingDate": "2024"
+  };
+
+  const datasetSchema = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "name": "Top10Lists.us Agent Rankings",
+    "description": "Curated rankings of top real estate agents in Arizona based on multi-source verified data including reviews from Google, Zillow, Realtor.com, and Redfin, transaction history, press coverage, and verified experience.",
+    "url": "https://top10lists.us",
+    "license": "https://top10lists.us/terms",
+    "creator": {
+      "@type": "Organization",
+      "name": "Top10Lists.us",
+      "url": "https://top10lists.us"
+    },
+    "dateModified": new Date().toISOString().split('T')[0],
+    "temporalCoverage": "Daily updates",
+    "spatialCoverage": {
+      "@type": "Place",
+      "name": "Arizona, United States"
+    },
+    "keywords": [
+      "real estate agents",
+      "Arizona realtors",
+      "top agents Phoenix",
+      "best realtors Scottsdale",
+      "agent rankings",
+      "realtor reviews"
+    ],
+    "variableMeasured": [
+      {
+        "@type": "PropertyValue",
+        "name": "Review Score",
+        "description": "Weighted average rating from Google (weight 10), Zillow (8), Realtor.com (6), Redfin (5)"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Transaction Volume",
+        "description": "Historical transaction count from MLS-connected sources"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Press Credibility Score",
+        "description": "Media mentions and awards scored 5-10 by source tier"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Years Experience",
+        "description": "Verified market tenure from state license records or transaction history"
+      }
+    ],
+    "measurementTechnique": "Multi-source data aggregation with differential source weighting, temporal decay functions, and daily automated verification"
+  };
   
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+    <>
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(websiteSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(organizationSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(datasetSchema)}
+        </script>
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
       {/* Hero Section */}
       <section className="container mx-auto px-4 pt-16 pb-12">
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-8">
@@ -170,7 +280,8 @@ const Index = () => {
           </p>
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 };
 
