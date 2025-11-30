@@ -36,17 +36,17 @@ serve(async (req) => {
 
     console.log("Pipedrive webhook received:", JSON.stringify(payload, null, 2));
 
-    const { meta, current, previous } = payload;
+    const { meta, data, previous } = payload;
 
     // Only process person updates
-    if (meta?.object !== "person") {
+    if (meta?.entity !== "person") {
       return new Response(
         JSON.stringify({ success: true, message: "Ignored non-person event" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const personId = current?.id;
+    const personId = data?.id;
     if (!personId) {
       return new Response(
         JSON.stringify({ success: false, error: "No person ID in payload" }),
@@ -54,7 +54,7 @@ serve(async (req) => {
       );
     }
 
-    const email = current?.email?.[0]?.value;
+    const email = data?.email?.[0]?.value;
     if (!email) {
       return new Response(
         JSON.stringify({ success: false, error: "No email in payload" }),
@@ -81,15 +81,15 @@ serve(async (req) => {
       };
 
       // Map basic fields
-      if (current?.name) profUpdates.name = current.name;
-      if (current?.phone?.[0]?.value) profUpdates.phone = current.phone[0].value;
+      if (data?.name) profUpdates.name = data.name;
+      if (data?.phone?.[0]?.value) profUpdates.phone = data.phone[0].value;
 
       // Map custom fields back to professional columns
       for (const [pipedriveKey, fieldName] of Object.entries(fieldMapping)) {
-        if (current?.[pipedriveKey] !== undefined) {
+        if (data?.[pipedriveKey] !== undefined) {
           if (["current_listings", "total_sales", "license_number", "rank", 
                "synthesized_bio", "is_top_agent", "is_premier_agent"].includes(fieldName)) {
-            profUpdates[fieldName] = current[pipedriveKey];
+            profUpdates[fieldName] = data[pipedriveKey];
           }
         }
       }
@@ -102,8 +102,10 @@ serve(async (req) => {
 
       if (updateError) throw updateError;
 
+      console.log(`✅ Professional ${professional.id} updated from Pipedrive:`, profUpdates);
+
       return new Response(
-        JSON.stringify({ success: true, message: "Professional updated from Pipedrive" }),
+        JSON.stringify({ success: true, message: "Professional updated from Pipedrive", updates: profUpdates }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -140,19 +142,19 @@ serve(async (req) => {
     };
 
     // Map Pipedrive fields back to Supabase
-    if (current?.name) updates.name = current.name;
-    if (current?.email?.[0]?.value) updates.email = current.email[0].value;
-    if (current?.phone?.[0]?.value) updates.phone = current.phone[0].value;
+    if (data?.name) updates.name = data.name;
+    if (data?.email?.[0]?.value) updates.email = data.email[0].value;
+    if (data?.phone?.[0]?.value) updates.phone = data.phone[0].value;
 
     // Map custom fields
     for (const [pipedriveKey, fieldName] of Object.entries(fieldMapping)) {
-      if (current?.[pipedriveKey] !== undefined) {
+      if (data?.[pipedriveKey] !== undefined) {
         if (fieldName === "prospect_status") {
-          updates.status = current[pipedriveKey];
+          updates.status = data[pipedriveKey];
         } else if (fieldName === "supabase_id") {
           // Don't update supabase_id
         } else {
-          updates[fieldName] = current[pipedriveKey];
+          updates[fieldName] = data[pipedriveKey];
         }
       }
     }
