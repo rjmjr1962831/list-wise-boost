@@ -1895,12 +1895,28 @@ export const ProfessionalCard = ({
                           {awards.length > 0 && (
                             <div>
                               <p className="text-xs font-medium text-muted-foreground mb-2">Awards & Recognition</p>
-                              <div className="flex flex-wrap gap-2" itemProp="award">
+                              <div className="space-y-2">
                                 {awards.map((award: any, idx: number) => (
-                                  <Badge key={idx} variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                                    <Award className="h-3 w-3 mr-1" />
-                                    {award.title}
-                                  </Badge>
+                                  <div key={idx} className="flex items-start gap-2" itemProp="award">
+                                    <Award className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                    <div className="flex-1">
+                                      <a 
+                                        href={award.url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-primary hover:underline font-medium text-sm"
+                                      >
+                                        {award.title}
+                                      </a>
+                                      {(award.date || award.source) && (
+                                        <cite className="text-xs text-muted-foreground mt-0.5 not-italic block">
+                                          {award.source && award.source}
+                                          {award.source && award.date && ' • '}
+                                          {award.date && award.date}
+                                        </cite>
+                                      )}
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
                             </div>
