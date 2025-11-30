@@ -104,15 +104,16 @@ serve(async (req) => {
       let status = 'unknown';
       let safeToSend = false;
 
-      if (clearoutData.status === 'valid') {
-        status = 'valid';
-        safeToSend = clearoutData.safe_to_send || false;
-      } else if (clearoutData.status === 'invalid') {
-        status = 'invalid';
-      } else if (clearoutData.status === 'catch_all') {
-        status = 'catch_all';
-      } else if (clearoutData.status === 'unknown') {
-        status = 'unknown';
+      // Parse the nested Clearout response
+      if (clearoutData.status === 'success' && clearoutData.data) {
+        status = clearoutData.data.status || 'unknown';
+        safeToSend = clearoutData.data.safe_to_send === 'yes';
+      } else if (clearoutData.status === 'failed') {
+        status = 'failed';
+      } else {
+        // Fallback for direct status in response (old format)
+        status = clearoutData.status || 'unknown';
+        safeToSend = clearoutData.safe_to_send === 'yes';
       }
 
       // Update queue item as completed
