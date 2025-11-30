@@ -117,7 +117,7 @@ export default function AdminPipedriveSync() {
     setIsSyncingProfessionals(true);
     try {
       const { data, error } = await supabase.functions.invoke('sync-professionals-to-pipedrive', {
-        body: { limit: 50 },
+        body: { limit: 500 }, // Sync all active professionals at once
       });
 
       if (error) throw error;
