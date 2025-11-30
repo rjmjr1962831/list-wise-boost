@@ -50,7 +50,7 @@ const Index = () => {
             </div>
             <h3 className="text-lg font-semibold">Verified Rankings</h3>
             <p className="text-sm text-muted-foreground">
-              Based on real reviews and track record
+              Comprehensive Analysis
             </p>
           </div>
 
