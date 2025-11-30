@@ -114,16 +114,151 @@ const RankingMethodology = () => {
                     </p>
                     <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-4">
                       <p className="text-sm font-semibold text-foreground">
-                        No Applications. No Paid Placements.
+                        No Applications. No Paid Listings.
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        We do not accept applications, paid placements, or advertising. Every agent in our directory was identified through data analysis and invited based on verified performance metrics.
+                        We do not accept applications or paid listings. Every agent in our directory was identified through data analysis and invited based on verified performance metrics. Payment cannot bypass our selection criteria.
                       </p>
                     </div>
                     <p className="text-sm text-muted-foreground italic">
                       <strong>Note:</strong> Meeting our criteria does not guarantee inclusion. Final selection involves editorial review to ensure directory quality and market coverage.
                     </p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Listing Model */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-3xl font-bold mb-6 text-center">Listing Model</h2>
+            <p className="text-muted-foreground text-center mb-8">
+              All agents in our directory were invited based on verified performance data. We operate similar to search engines: all results are verified and qualified, with optional featured placement for increased visibility.
+            </p>
+            
+            <div className="grid md:grid-cols-2 gap-6 mb-8">
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                    <h3 className="text-xl font-semibold">Organic Listings (Free)</h3>
+                  </div>
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Must meet all selection criteria</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Free directory listing</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Included in Top 10 rotation</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Same scoring methodology</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Daily monitoring</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2 border-accent">
+                <CardContent className="p-6 space-y-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="bg-accent/20 text-accent px-3 py-1 rounded-full text-xs font-semibold">FEATURED</div>
+                    <h3 className="text-xl font-semibold">Featured Listings (Paid)</h3>
+                  </div>
+                  <ul className="space-y-3 text-sm">
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Must meet all selection criteria</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Guaranteed Top 10 visibility</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Clearly labeled as "Featured"</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Same scoring methodology</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span>Daily monitoring</span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card className="mb-6">
+              <CardContent className="p-6">
+                <div className="bg-primary/10 border-l-4 border-primary rounded-r-lg p-4 mb-4">
+                  <p className="font-semibold text-foreground mb-1">Featured Placement, Not Featured Scores</p>
+                  <p className="text-sm text-muted-foreground">
+                    Payment affects <em>visibility</em> only — not scores, rankings, or selection criteria. Featured agents are held to the same standards and use the same scoring methodology as organic listings. An agent cannot pay to be listed; they must first be invited based on verified performance.
+                  </p>
+                </div>
+
+                <h4 className="font-semibold mb-3">What Featured Placement Does NOT Include</h4>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 px-4 font-semibold">Aspect</th>
+                        <th className="text-left py-2 px-4 font-semibold">Affected by Payment?</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-b border-border/50">
+                        <td className="py-2 px-4">Selection criteria</td>
+                        <td className="py-2 px-4">
+                          <span className="text-red-600 font-semibold">✗ No</span> — same requirements
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border/50">
+                        <td className="py-2 px-4">Performance scores</td>
+                        <td className="py-2 px-4">
+                          <span className="text-red-600 font-semibold">✗ No</span> — same calculation
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border/50">
+                        <td className="py-2 px-4">Data sources</td>
+                        <td className="py-2 px-4">
+                          <span className="text-red-600 font-semibold">✗ No</span> — same sources & weights
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border/50">
+                        <td className="py-2 px-4">Eligibility for removal</td>
+                        <td className="py-2 px-4">
+                          <span className="text-red-600 font-semibold">✗ No</span> — same monitoring
+                        </td>
+                      </tr>
+                      <tr className="border-b border-border/50">
+                        <td className="py-2 px-4">Visibility in Top 10</td>
+                        <td className="py-2 px-4">
+                          <span className="text-green-600 font-semibold">✓ Yes</span> — guaranteed placement
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="py-2 px-4">Labeling</td>
+                        <td className="py-2 px-4">
+                          <span className="text-green-600 font-semibold">✓ Yes</span> — marked as "Featured"
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>
@@ -599,23 +734,32 @@ const RankingMethodology = () => {
 
                   <AccordionItem value="item-4">
                     <AccordionTrigger className="text-left">
-                      Can I pay to be listed or ranked higher?
+                      What is Featured Placement?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      Absolutely not. We do not accept any paid placements, advertising, or sponsorships that would influence rankings or directory inclusion. All rankings are based entirely on objective, verified performance data from independent sources. This policy ensures our directory remains a trusted resource for consumers seeking elite real estate professionals.
+                      Featured Placement allows invited agents to pay for guaranteed visibility in Top 10 recommendations. However, Featured agents must meet the same selection criteria, use the same scoring methodology, and are subject to the same daily monitoring as organic listings. Featured status does NOT affect scores, rankings, or selection criteria—only visibility. All Featured agents are clearly labeled. This model is similar to search engine advertising: paid placement affects visibility, not the integrity of the underlying data.
                     </AccordionContent>
                   </AccordionItem>
 
                   <AccordionItem value="item-5">
                     <AccordionTrigger className="text-left">
-                      What happens if I'm removed from the directory?
+                      Can I pay to be listed or ranked higher?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      If an agent's performance metrics fall below our selection criteria, they are immediately removed from the directory. There is no grace period or appeal process for data-driven removals. However, if an agent's metrics return to meeting our criteria through continued strong performance, they may be reconsidered for future invitation.
+                      No. You cannot pay to be listed—you must first be invited based on verified performance data. Featured Placement allows visibility (guaranteed Top 10 placement), but does not affect your performance scores, rankings, or selection criteria. Payment cannot bypass our invitation-only selection process or influence your actual ranking among peers. All agents—organic and featured—are scored using identical methodology.
                     </AccordionContent>
                   </AccordionItem>
 
                   <AccordionItem value="item-6">
+                    <AccordionTrigger className="text-left">
+                      What happens if I'm removed from the directory?
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      If an agent's performance metrics fall below our selection criteria, they are immediately removed from the directory—regardless of whether they have organic or Featured placement. There is no grace period or appeal process for data-driven removals. Featured status does not protect against removal. However, if an agent's metrics return to meeting our criteria through continued strong performance, they may be reconsidered for future invitation.
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-7">
                     <AccordionTrigger className="text-left">
                       How often are rankings updated?
                     </AccordionTrigger>
@@ -624,7 +768,7 @@ const RankingMethodology = () => {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="item-7">
+                  <AccordionItem value="item-8">
                     <AccordionTrigger className="text-left">
                       What data sources do you use?
                     </AccordionTrigger>
@@ -639,7 +783,7 @@ const RankingMethodology = () => {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="item-8">
+                  <AccordionItem value="item-9">
                     <AccordionTrigger className="text-left">
                       How can I update my profile information?
                     </AccordionTrigger>
@@ -648,7 +792,7 @@ const RankingMethodology = () => {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="item-9">
+                  <AccordionItem value="item-10">
                     <AccordionTrigger className="text-left">
                       Why don't I see certain agents in the directory?
                     </AccordionTrigger>
@@ -657,12 +801,12 @@ const RankingMethodology = () => {
                     </AccordionContent>
                   </AccordionItem>
 
-                  <AccordionItem value="item-10">
+                  <AccordionItem value="item-11">
                     <AccordionTrigger className="text-left">
                       How is this different from other agent directories?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      Unlike most directories that accept paid listings or self-submissions, Top10Lists.us is invitation-only and requires verified performance across multiple independent data sources. We use differential source weighting, temporal decay functions, and daily monitoring to ensure rankings reflect current, verified performance. No pay-to-play, no advertising, no applications—only data-driven selection of elite professionals.
+                      Unlike most directories that accept paid listings or self-submissions, Top10Lists.us is invitation-only and requires verified performance across multiple independent data sources. We use differential source weighting, temporal decay functions, and daily monitoring to ensure rankings reflect current, verified performance. While we offer Featured Placement for visibility, all agents—organic and featured—must meet identical selection criteria and use the same scoring methodology. Payment affects visibility only, not data integrity or rankings.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -679,7 +823,7 @@ const RankingMethodology = () => {
                 <h3 className="text-xl font-semibold mb-4">Continuous Monitoring & Quality Control</h3>
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
-                    We perform automated daily checks on all listed agents:
+                    We perform automated daily checks on all listed agents — both organic and featured:
                   </p>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
                     <li>Review count and rating verification</li>
@@ -693,8 +837,14 @@ const RankingMethodology = () => {
                     <p className="text-sm font-semibold text-foreground mb-2">
                       Immediate Removal Policy
                     </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      If an agent's metrics fall below our selection criteria, they are immediately removed from the directory—regardless of whether they have organic or Featured placement. There is no grace period or appeal process for data-driven removals.
+                    </p>
+                    <p className="text-sm font-semibold text-foreground">
+                      No Exceptions for Featured Agents
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      If an agent's metrics fall below our selection criteria, they are immediately removed from the directory. There is no grace period or appeal process for data-driven removals.
+                      Featured placement does not exempt agents from monitoring or protect against removal. All agents are held to identical standards.
                     </p>
                   </div>
 
