@@ -135,3 +135,9 @@ verify_jwt = false
 [functions.pipedrive-webhook]
 verify_jwt = false
 
+[functions.bulk-capture-phoenix-rankings]
+verify_jwt = false
+
+[functions.sync-professionals-to-pipedrive]
+verify_jwt = false
+
