@@ -161,7 +161,22 @@ export const Top10SearchForm = () => {
         return;
       }
 
-      // Check if professionals exist for this city
+      // First check if there are cross-linked agents via professional_cities
+      const { data: linkedProfs, error: linkedError } = await supabase
+        .from('professional_cities')
+        .select('id')
+        .eq('city_id', cityData.id)
+        .eq('active', true)
+        .limit(1);
+
+      // If linked agents exist, navigate directly without import
+      if (!linkedError && linkedProfs && linkedProfs.length > 0) {
+        const url = `/${cityData.state_slug}/${cityData.slug}/${categoryData.slug}`;
+        navigate(url);
+        return;
+      }
+
+      // Check if professionals exist directly for this city
       const { data: professionalsData, error: profsError } = await supabase
         .from('professionals')
         .select('id')
