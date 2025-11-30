@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
@@ -18,8 +18,9 @@ import { Logo } from "@/components/brand/Logo";
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  
+  const location = useLocation();
   const navigate = useNavigate();
+  const isHomePage = location.pathname === '/';
 
 
   useEffect(() => {
@@ -72,15 +73,26 @@ export const Header = () => {
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
-            <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              About
-            </Link>
-            {!user && (
-              <Link to="/agent-setup">
-                <Button variant="default" size="sm">
-                  For Agents
-                </Button>
+            {isHomePage && !user ? (
+              <Link 
+                to="/agent-onboarding" 
+                className="text-sm text-slate-400 hover:text-blue-500 transition-colors"
+              >
+                Are you an agent?
               </Link>
+            ) : (
+              <>
+                <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  About
+                </Link>
+                {!user && (
+                  <Link to="/agent-setup">
+                    <Button variant="default" size="sm">
+                      For Agents
+                    </Button>
+                  </Link>
+                )}
+              </>
             )}
             {user ? (
               <DropdownMenu>
