@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User as UserIcon, Shield } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { Logo } from "@/components/brand/Logo";
 
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -66,13 +67,8 @@ export const Header = () => {
     <header className="border-b bg-background/80 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">T10</span>
-            </div>
-            <span className="text-xl font-bold">
-              Top<span className="text-2xl">10</span>Lists.us
-            </span>
+          <Link to="/" className="flex items-center">
+            <Logo className="h-12" />
           </Link>
           
           <nav className="hidden md:flex items-center gap-6">
