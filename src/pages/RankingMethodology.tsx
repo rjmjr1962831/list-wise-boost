@@ -16,20 +16,20 @@ const RankingMethodology = () => {
   const howToSchema = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    "name": "Top10Lists.us Agent Ranking Methodology",
-    "description": "A rigorous, multi-source methodology for identifying and ranking premium real estate agents in Arizona based on verified performance data.",
+    "name": "Top10Lists.us Agent Selection Methodology",
+    "description": "A rigorous, invitation-only methodology for identifying elite real estate agents in Arizona based on multi-source verified performance data.",
     "step": [
       {
         "@type": "HowToStep",
         "position": 1,
         "name": "Data Collection",
-        "text": "Aggregate agent data from multiple authoritative sources including Google Business, Zillow, Realtor.com, Redfin, Home.com, and press outlets."
+        "text": "Continuously monitor agent performance data from multiple authoritative sources including Google Business, Zillow, Realtor.com, Redfin, Home.com, and press outlets."
       },
       {
         "@type": "HowToStep",
         "position": 2,
-        "name": "Qualification Screening",
-        "text": "Apply three mandatory qualification gates: minimum 50 unique reviewers, minimum 4.8 weighted average rating, and minimum 6 years market experience."
+        "name": "Criteria Screening",
+        "text": "Identify agents meeting selection criteria: minimum 50 unique reviewers, minimum 4.8 weighted average rating, and minimum 6 years verified market experience."
       },
       {
         "@type": "HowToStep",
@@ -40,20 +40,20 @@ const RankingMethodology = () => {
       {
         "@type": "HowToStep",
         "position": 4,
-        "name": "Temporal Adjustment",
-        "text": "Apply freshness multipliers ranging from 1.3x (0-6 months) to 0.5x (3+ years) to prioritize recent performance."
+        "name": "Temporal Analysis",
+        "text": "Apply freshness multipliers ranging from 1.3x (0-6 months) to 0.5x (3+ years) to prioritize agents with consistent recent performance."
       },
       {
         "@type": "HowToStep",
         "position": 5,
-        "name": "Composite Scoring",
-        "text": "Calculate final ranking score using weighted components: reviews (35%), transactions (25%), press (15%), experience (10%), response rate (10%), recency (5%)."
+        "name": "Editorial Review",
+        "text": "Conduct editorial review of eligible candidates to ensure directory quality and appropriate market coverage before extending invitations."
       },
       {
         "@type": "HowToStep",
         "position": 6,
-        "name": "Daily Monitoring",
-        "text": "Perform daily qualification checks with immediate delisting upon any gate failure."
+        "name": "Continuous Monitoring",
+        "text": "Perform daily checks on all listed agents with immediate removal if performance falls below selection criteria."
       }
     ]
   };
@@ -61,10 +61,10 @@ const RankingMethodology = () => {
   return (
     <>
       <Helmet>
-        <title>Ranking Methodology - Top10Lists.us</title>
+        <title>Selection Methodology | Top10Lists.us</title>
         <meta 
           name="description" 
-          content="Multi-source data aggregation methodology for ranking top real estate agents in Arizona. Learn how we verify performance data and calculate rankings." 
+          content="Learn how Top10Lists.us identifies and invites Arizona's elite real estate agents to our exclusive directory using multi-source data analysis and rigorous selection criteria." 
         />
         <link rel="canonical" href="https://top10lists.us/about/ranking-methodology" />
         <script type="application/ld+json">
@@ -80,18 +80,21 @@ const RankingMethodology = () => {
             <span className="mx-2">/</span>
             <a href="/about" className="hover:text-primary">About</a>
             <span className="mx-2">/</span>
-            <span className="text-foreground">Ranking Methodology</span>
+            <span className="text-foreground">Selection Methodology</span>
           </nav>
         </div>
 
         {/* Hero Section */}
         <section className="container mx-auto px-4 pt-12 pb-8">
           <div className="max-w-4xl mx-auto text-center space-y-4">
+            <div className="inline-block bg-accent/20 text-accent px-4 py-1.5 rounded-full text-sm font-semibold uppercase tracking-wide mb-2">
+              Invitation Only
+            </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-              Ranking Methodology
+              Selection Methodology
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Multi-source data aggregation for identifying Arizona's top real estate agents
+              How we identify and invite Arizona's elite real estate agents using multi-source verified data and rigorous selection criteria.
             </p>
           </div>
         </section>
@@ -104,16 +107,21 @@ const RankingMethodology = () => {
                 <div className="flex items-start gap-3">
                   <Scale className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <h2 className="text-2xl font-bold mb-3">Our Approach</h2>
+                    <h2 className="text-2xl font-bold mb-3">Overview</h2>
                     <p className="text-muted-foreground leading-relaxed mb-4">
-                      Top10Lists.us uses a rigorous, multi-source methodology to identify and rank elite real estate agents. 
-                      We do not accept paid placements or advertising. All agents are evaluated using objective criteria from verified data sources.
+                      Top10Lists.us is an <strong>invitation-only</strong> directory of elite real estate agents in Arizona. Agents cannot apply or pay to be listed. We identify top performers through rigorous multi-source data analysis and extend invitations to agents who demonstrate exceptional, verified performance.
                     </p>
-                    <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                    <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-4">
                       <p className="text-sm font-semibold text-foreground">
-                        Core Principle: No pay-to-play. Rankings are based entirely on verifiable performance data.
+                        No Applications. No Paid Placements.
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        We do not accept applications, paid placements, or advertising. Every agent in our directory was identified through data analysis and invited based on verified performance metrics.
                       </p>
                     </div>
+                    <p className="text-sm text-muted-foreground italic">
+                      <strong>Note:</strong> Meeting our criteria does not guarantee inclusion. Final selection involves editorial review to ensure directory quality and market coverage.
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -121,12 +129,12 @@ const RankingMethodology = () => {
           </div>
         </section>
 
-        {/* Qualification Gates */}
+        {/* Selection Criteria */}
         <section className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold mb-6 text-center">Qualification Gates</h2>
+            <h2 className="text-3xl font-bold mb-6 text-center">Selection Criteria</h2>
             <p className="text-muted-foreground text-center mb-8">
-              All agents must meet these requirements to appear in our directory. Failure of any gate results in immediate delisting.
+              To be considered for invitation, agents must demonstrate exceptional performance across all criteria. Agents who fall below these thresholds are removed from the directory immediately.
             </p>
             
             <div className="grid md:grid-cols-3 gap-6">
@@ -196,7 +204,7 @@ const RankingMethodology = () => {
                       <tr className="border-b border-border/50">
                         <td className="py-2 px-4">Google Business</td>
                         <td className="py-2 px-4 font-semibold text-primary">10</td>
-                        <td className="py-2 px-4 text-sm text-muted-foreground">Primary authority</td>
+                        <td className="py-2 px-4 text-sm text-muted-foreground">Primary authority, hardest to manipulate</td>
                       </tr>
                       <tr className="border-b border-border/50">
                         <td className="py-2 px-4">Zillow</td>
@@ -462,6 +470,9 @@ const RankingMethodology = () => {
             <Card>
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold mb-4">Final Ranking Formula</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Invited agents are ranked using a weighted formula that balances multiple performance factors:
+                </p>
                 
                 <div className="bg-muted/50 rounded-lg p-6 mb-6 font-mono text-sm">
                   <div className="space-y-1">
@@ -547,15 +558,25 @@ const RankingMethodology = () => {
           <div className="max-w-4xl mx-auto">
             <Card>
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-4">Daily Monitoring & Quality Control</h3>
+                <h3 className="text-xl font-semibold mb-4">Continuous Monitoring & Quality Control</h3>
                 <div className="space-y-4">
                   <p className="text-muted-foreground">
-                    All rankings are subject to daily automated verification checks. Agents are immediately delisted upon failure of any qualification gate.
+                    We perform automated daily checks on all listed agents:
                   </p>
+                  <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4">
+                    <li>Review count and rating verification</li>
+                    <li>Transaction volume updates</li>
+                    <li>License status validation</li>
+                    <li>Press mention monitoring</li>
+                    <li>Recency of activity checks</li>
+                  </ul>
                   
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-                    <p className="text-sm font-semibold text-foreground">
-                      No grace period: Qualification failures result in immediate removal from rankings.
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mt-4">
+                    <p className="text-sm font-semibold text-foreground mb-2">
+                      Immediate Removal Policy
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      If an agent's metrics fall below our selection criteria, they are immediately removed from the directory. There is no grace period or appeal process for data-driven removals.
                     </p>
                   </div>
 
