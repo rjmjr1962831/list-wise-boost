@@ -28,6 +28,78 @@ const PHOENIX_METRO_CITIES = [
   "Anthem, AZ"
 ];
 
+// Invoke with timeout wrapper
+async function invokeCaptureWithTimeout(
+  supabase: any, 
+  cityName: string, 
+  timeoutMs: number = 90000, // 90 seconds
+  maxRetries: number = 2
+): Promise<{ data: any, error: any, timedOut: boolean }> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    console.log(`🔄 Attempt ${attempt}/${maxRetries} for ${cityName}`);
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      
+      const invokePromise = supabase.functions.invoke('capture-zillow-rankings', {
+        body: { cityName }
+      });
+      
+      const result = await Promise.race([
+        invokePromise,
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Function invoke timeout')), timeoutMs)
+        )
+      ]);
+      
+      clearTimeout(timeoutId);
+      return { ...result, timedOut: false };
+      
+    } catch (error) {
+      const isTimeout = error instanceof Error && error.message.includes('timeout');
+      console.error(`❌ Attempt ${attempt} for ${cityName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      if (isTimeout && attempt < maxRetries) {
+        console.log(`⏳ Timeout on attempt ${attempt}, retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5s before retry
+        continue;
+      }
+      
+      return { 
+        data: null, 
+        error: { message: error instanceof Error ? error.message : 'Unknown error' },
+        timedOut: isTimeout
+      };
+    }
+  }
+  
+  return { 
+    data: null, 
+    error: { message: 'Max retries exceeded' },
+    timedOut: true
+  };
+}
+
+// Check if city was already captured recently (within last hour)
+async function isCityRecentlyCaptured(supabase: any, cityName: string): Promise<boolean> {
+  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  
+  const { data, error } = await supabase
+    .from('professionals')
+    .select('id')
+    .eq('zillow_search_city', cityName)
+    .gte('zillow_rank_captured_at', oneHourAgo)
+    .limit(1);
+  
+  if (error) {
+    console.error(`Error checking if ${cityName} was captured:`, error);
+    return false;
+  }
+  
+  return data && data.length > 0;
+}
+
 // Process cities in background
 async function processCitiesInBackground(sessionId: string, supabase: any) {
   console.log(`🚀 Starting background processing for session ${sessionId}`);
@@ -37,6 +109,32 @@ async function processCitiesInBackground(sessionId: string, supabase: any) {
   for (let i = 0; i < PHOENIX_METRO_CITIES.length; i++) {
     const cityName = PHOENIX_METRO_CITIES[i];
     console.log(`\n[${i + 1}/${PHOENIX_METRO_CITIES.length}] Processing ${cityName}...`);
+    
+    // Check if already captured recently
+    const alreadyCaptured = await isCityRecentlyCaptured(supabase, cityName);
+    if (alreadyCaptured) {
+      console.log(`⏭️ Skipping ${cityName} - already captured recently`);
+      const cityResult = {
+        city: cityName,
+        status: 'skipped',
+        updated: 0,
+        notFound: 0,
+        error: 'Already captured within last hour',
+        timestamp: new Date().toISOString()
+      };
+      results.push(cityResult);
+      
+      await supabase
+        .from('bulk_capture_progress')
+        .update({
+          current_city: cityName,
+          current_index: i,
+          results: results
+        })
+        .eq('session_id', sessionId);
+      
+      continue;
+    }
     
     // Update progress
     await supabase
@@ -49,13 +147,11 @@ async function processCitiesInBackground(sessionId: string, supabase: any) {
       .eq('session_id', sessionId);
 
     try {
-      const { data, error } = await supabase.functions.invoke('capture-zillow-rankings', {
-        body: { cityName }
-      });
+      const { data, error, timedOut } = await invokeCaptureWithTimeout(supabase, cityName);
 
       const cityResult = {
         city: cityName,
-        status: error ? 'failed' : 'success',
+        status: error ? (timedOut ? 'timeout' : 'failed') : 'success',
         updated: data?.stats?.updated || 0,
         notFound: data?.stats?.notFound || 0,
         error: error?.message || null,
@@ -74,7 +170,7 @@ async function processCitiesInBackground(sessionId: string, supabase: any) {
 
       console.log(`✅ ${cityName}: ${cityResult.status}`);
 
-      // Reduced delay from 10s to 5s to avoid timeouts
+      // Wait between cities
       if (i < PHOENIX_METRO_CITIES.length - 1) {
         console.log('⏱️ Waiting 5 seconds before next city...');
         await new Promise(resolve => setTimeout(resolve, 5000));
