@@ -1,13 +1,28 @@
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { Star, StarHalf, Award } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { GradientButton } from "@/components/brand/GradientButton";
 const Index = () => {
   const navigate = useNavigate();
   if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
-  return <div className="min-h-screen bg-gradient-to-b from-background to-secondary/30">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 pt-8 pb-12">
+  return <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      {/* Hero Section with Brand Messaging */}
+      <section className="container mx-auto px-4 pt-12 pb-8">
+        <div className="max-w-4xl mx-auto text-center space-y-6 mb-8">
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Get Found by AI
+            </span>
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground font-medium">
+            Be the Answer, Not a Link
+          </p>
+          <p className="text-lg text-body-text max-w-2xl mx-auto">
+            When AI recommends, you're on the list. We're the AI-optimized directory 
+            that helps consumers find the top 10 professionals in every major U.S. city.
+          </p>
+        </div>
+        
         <div className="max-w-4xl mx-auto">
           <Top10SearchForm />
         </div>
@@ -16,9 +31,12 @@ const Index = () => {
       {/* Agent CTA Section */}
       <section className="container mx-auto px-4 pb-12">
         <div className="max-w-4xl mx-auto text-center">
-          <Button onClick={() => navigate('/agent-onboarding')} size="lg" className="text-lg py-6 px-8">
+          <GradientButton 
+            onClick={() => navigate('/agent-onboarding')} 
+            className="text-lg py-6 px-8"
+          >
             Are you a top-performing agent?
-          </Button>
+          </GradientButton>
         </div>
       </section>
 
