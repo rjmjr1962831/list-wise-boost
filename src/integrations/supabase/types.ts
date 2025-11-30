@@ -289,6 +289,48 @@ export type Database = {
         }
         Relationships: []
       }
+      bulk_capture_progress: {
+        Row: {
+          completed_at: string | null
+          current_city: string | null
+          current_index: number | null
+          error_message: string | null
+          id: string
+          results: Json | null
+          session_id: string
+          started_at: string | null
+          status: string
+          total_cities: number
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          current_city?: string | null
+          current_index?: number | null
+          error_message?: string | null
+          id?: string
+          results?: Json | null
+          session_id: string
+          started_at?: string | null
+          status?: string
+          total_cities: number
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          current_city?: string | null
+          current_index?: number | null
+          error_message?: string | null
+          id?: string
+          results?: Json | null
+          session_id?: string
+          started_at?: string | null
+          status?: string
+          total_cities?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           active: boolean
