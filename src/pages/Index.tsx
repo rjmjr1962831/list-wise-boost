@@ -138,6 +138,54 @@ const Index = () => {
         </div>
       </section>
 
+      {/* How We Select */}
+      <section className="container mx-auto px-4 py-16 bg-muted/30">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
+            How We Select the Top 10
+          </h2>
+          
+          <div className="prose prose-lg max-w-none space-y-6">
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              We analyze thousands of data points — reviews, sales history, and client satisfaction — to identify the top performers in each Arizona market.
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-6 my-8">
+              <Card>
+                <CardContent className="p-6 space-y-3">
+                  <h3 className="text-lg font-semibold">Reviews & Ratings</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Minimum 4.8★ rating across multiple platforms with at least 100 verified reviews
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6 space-y-3">
+                  <h3 className="text-lg font-semibold">Track Record</h3>
+                  <p className="text-sm text-muted-foreground">
+                    5+ years in business with proven sales history and market expertise
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6 space-y-3">
+                  <h3 className="text-lg font-semibold">No Pay-to-Play</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Rankings are data-driven. Agents can't buy their way onto the list
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <p className="text-base text-muted-foreground leading-relaxed italic border-l-4 border-primary pl-4">
+              Real estate professionals can <Link to="/agent-onboarding" className="text-primary hover:underline">verify their profile</Link> for accuracy.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonial */}
       <section className="container mx-auto px-4 py-16">
         <div className="max-w-3xl mx-auto text-center">
