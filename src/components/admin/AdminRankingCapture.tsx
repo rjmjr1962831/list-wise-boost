@@ -67,89 +67,104 @@ export function AdminRankingCapture() {
 
   const handleBulkCapture = async () => {
     setBulkLoading(true);
-    setBulkProgress({ current: 0, total: 17, currentCity: "Connecting..." });
-    setLiveResults([]); // Clear previous results
+    setBulkProgress({ current: 0, total: 17, currentCity: "Starting..." });
+    setLiveResults([]);
     
     try {
-      // Get the WebSocket URL
-      const projectRef = 'bgdtekbhelormzbymkhh';
-      const wsUrl = `wss://${projectRef}.supabase.co/functions/v1/bulk-capture-phoenix-rankings`;
+      console.log('🚀 Starting bulk capture...');
       
-      console.log('Connecting to WebSocket:', wsUrl);
-      const ws = new WebSocket(wsUrl);
+      // Start the bulk capture
+      const { data: startData, error: startError } = await supabase.functions.invoke(
+        'bulk-capture-phoenix-rankings',
+        { method: 'POST' }
+      );
 
-      ws.onopen = () => {
-        console.log('✅ WebSocket connected');
-        setBulkProgress({ current: 0, total: 17, currentCity: "Starting capture..." });
-      };
+      if (startError) throw startError;
 
-      ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        console.log('📨 WebSocket message:', message);
+      const sessionId = startData.sessionId;
+      console.log('✅ Bulk capture started with session:', sessionId);
 
-        if (message.type === 'started') {
-          setBulkProgress({ 
-            current: 0, 
-            total: message.totalCities, 
-            currentCity: "Processing cities..." 
-          });
-        } else if (message.type === 'progress') {
+      toast({
+        title: "Bulk capture started",
+        description: "Processing 17 Phoenix metro cities...",
+      });
+
+      // Poll for progress every 2 seconds
+      const pollInterval = setInterval(async () => {
+        try {
+          const { data: progressData, error: progressError } = await supabase.functions.invoke(
+            `bulk-capture-phoenix-rankings?sessionId=${sessionId}`,
+            { method: 'GET' }
+          );
+
+          if (progressError) {
+            console.error('Error polling progress:', progressError);
+            return;
+          }
+
+          console.log('📊 Progress update:', progressData);
+
+          // Update UI with current progress
           setBulkProgress({
-            current: message.current,
-            total: message.total,
-            currentCity: `Processing ${message.currentCity}...`
+            current: progressData.current_index + 1,
+            total: progressData.total_cities,
+            currentCity: progressData.current_city || 'Processing...'
           });
-        } else if (message.type === 'city_complete') {
-          console.log(`✅ ${message.city}: ${message.status}`);
-          
-          // Add to live results
-          setLiveResults(prev => [...prev, {
-            city: message.city,
-            status: message.status,
-            updated: message.updated,
-            notFound: message.notFound,
-            error: message.error
-          }]);
-        } else if (message.type === 'complete') {
+
+          // Update results
+          if (progressData.results && Array.isArray(progressData.results)) {
+            setLiveResults(progressData.results.map((r: any) => ({
+              city: r.city,
+              status: r.status,
+              updated: r.updated,
+              notFound: r.notFound,
+              error: r.error
+            })));
+          }
+
+          // Check if completed
+          if (progressData.status === 'completed') {
+            clearInterval(pollInterval);
+            
+            const totalUpdated = progressData.results.reduce((sum: number, r: any) => 
+              sum + (r.updated || 0), 0
+            );
+            const totalFailed = progressData.results.filter((r: any) => 
+              r.status === 'failed'
+            ).length;
+
+            toast({
+              title: "✅ Bulk capture complete!",
+              description: `Updated ${totalUpdated} agents across ${progressData.total_cities} cities. ${totalFailed} cities failed.`,
+            });
+            
+            setBulkProgress(null);
+            setBulkLoading(false);
+          }
+
+        } catch (pollError) {
+          console.error('Polling error:', pollError);
+        }
+      }, 2000); // Poll every 2 seconds
+
+      // Safety timeout after 10 minutes
+      setTimeout(() => {
+        clearInterval(pollInterval);
+        if (bulkLoading) {
           toast({
-            title: "✅ Bulk capture complete!",
-            description: `Updated ${message.summary.totalUpdated} agents across ${message.summary.totalCities} cities. ${message.summary.totalFailed} cities failed.`,
-          });
-          setBulkProgress(null);
-          setBulkLoading(false);
-          ws.close();
-        } else if (message.type === 'error') {
-          toast({
-            title: "Bulk capture failed",
-            description: message.error,
+            title: "Process timeout",
+            description: "Bulk capture may still be running. Check logs for details.",
             variant: "destructive",
           });
-          setBulkProgress(null);
           setBulkLoading(false);
-          ws.close();
+          setBulkProgress(null);
         }
-      };
-
-      ws.onerror = (error) => {
-        console.error('❌ WebSocket error:', error);
-        toast({
-          title: "Connection failed",
-          description: "Failed to connect to ranking capture service",
-          variant: "destructive",
-        });
-        setBulkProgress(null);
-        setBulkLoading(false);
-      };
-
-      ws.onclose = () => {
-        console.log('WebSocket connection closed');
-        setBulkLoading(false);
-      };
+      }, 600000); // 10 minutes
 
     } catch (error: any) {
       console.error("Bulk capture error:", error);
       toast({
-        title: "Bulk capture failed",
+        title: "Failed to start bulk capture",
         description: error.message || "Unknown error occurred",
         variant: "destructive",
       });
