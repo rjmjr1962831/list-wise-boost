@@ -8,75 +8,89 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Tidal Shift Brand Colors */
-    --indigo: 234 45% 21%;
-    --aqua: 186 100% 50%;
-    --beige: 42 60% 90%;
-    --graphite: 0 0% 23%;
+    /* Top10Lists Brand Colors */
+    --primary-blue: 217 91% 60%;      /* #3B82F6 */
+    --accent-cyan: 189 94% 43%;        /* #06B6D4 */
+    --deep-dark: 222 47% 11%;          /* #0F172A */
+    --dark-slate: 217 33% 17%;         /* #1E293B */
     
+    /* Neutral Colors */
+    --light-gray: 210 40% 98%;         /* #F8FAFC */
+    --border-gray: 214 32% 91%;        /* #E2E8F0 */
+    --muted-text: 215 16% 47%;         /* #64748B */
+    --body-text: 215 19% 35%;          /* #475569 */
+    
+    /* Status Colors */
+    --success-green: 160 84% 39%;      /* #10B981 */
+    --warning-amber: 38 92% 50%;       /* #F59E0B */
+    --error-red: 0 84% 60%;            /* #EF4444 */
+    
+    /* Semantic Token Mapping */
     --background: 0 0% 100%;
-    --foreground: 234 45% 21%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 234 45% 21%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 234 45% 21%;
-    --primary: 234 45% 21%;
-    --primary-foreground: 42 60% 90%;
-    --secondary: 42 60% 90%;
-    --secondary-foreground: 234 45% 21%;
-    --muted: 42 60% 95%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 186 100% 50%;
-    --accent-foreground: 234 45% 21%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 214 32% 91%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 189 94% 43%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 186 100% 50%;
-    --radius: 0.5rem;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+    --radius: 0.75rem;
 
-    /* Legacy Arizona colors (kept for gradual migration) */
+    /* Legacy Arizona colors (deprecated - use Top10Lists colors) */
     --terracotta: 14 80% 58%;
     --turquoise: 180 65% 55%;
     --sunset-orange: 25 95% 60%;
     --desert-sand: 35 45% 75%;
     --cactus-green: 145 40% 50%;
-
-    /* Tidal Shift Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(234 45% 21%), hsl(186 100% 50%));
-    --gradient-wave: linear-gradient(135deg, hsl(186 100% 50%), hsl(234 45% 21%));
-    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(42 60% 98%));
-    --shadow-soft: 0 2px 8px hsl(234 45% 21% / 0.08);
-    --shadow-medium: 0 4px 16px hsl(234 45% 21% / 0.12);
-    --shadow-aqua: 0 8px 24px hsl(186 100% 50% / 0.15);
-  }
-
-  .dark {
-    /* Tidal Shift Dark Mode */
+    
+    /* Legacy Tidal Shift (deprecated - use Top10Lists colors) */
     --indigo: 234 45% 21%;
     --aqua: 186 100% 50%;
     --beige: 42 60% 90%;
     --graphite: 0 0% 23%;
-    
-    --background: 234 45% 8%;
-    --foreground: 42 60% 90%;
-    --card: 234 45% 12%;
-    --card-foreground: 42 60% 90%;
-    --popover: 234 45% 12%;
-    --popover-foreground: 42 60% 90%;
-    --primary: 186 100% 50%;
-    --primary-foreground: 234 45% 21%;
-    --secondary: 234 45% 18%;
-    --secondary-foreground: 42 60% 90%;
-    --muted: 234 45% 15%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 186 100% 50%;
-    --accent-foreground: 234 45% 8%;
+
+    /* Top10Lists Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(189 94% 43%));
+    --gradient-hero: linear-gradient(135deg, hsl(217 91% 60%), hsl(189 94% 43%));
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 100%), hsl(210 40% 98%));
+    --shadow-soft: 0 1px 3px hsl(222 47% 11% / 0.1);
+    --shadow-medium: 0 4px 14px hsl(217 91% 60% / 0.25);
+    --shadow-card: 0 1px 3px hsl(222 47% 11% / 0.1);
+    --shadow-card-hover: 0 10px 30px hsl(217 91% 60% / 0.15);
+  }
+
+  .dark {
+    /* Top10Lists Dark Mode */
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
+    --card: 217 33% 17%;
+    --card-foreground: 210 40% 98%;
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 215 25% 27%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 189 94% 43%;
+    --accent-foreground: 0 0% 100%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 0 0% 98%;
-    --border: 234 30% 20%;
-    --input: 234 30% 20%;
-    --ring: 186 100% 50%;
+    --border: 215 25% 27%;
+    --input: 215 25% 27%;
+    --ring: 217 91% 60%;
   }
 }
 
@@ -86,49 +100,50 @@ All colors MUST be HSL.
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Neue Haas Grotesk', system-ui, -apple-system, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 400;
   }
   
-  h1, h2, h3, .font-serif, .quote, .tagline {
-    font-family: 'Playfair Display', 'Freight Display Pro', Georgia, serif;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-weight: 600;
   }
 }
 
-/* Tidal Shift Visual Motifs */
+/* Top10Lists Brand Components */
 @layer components {
-  .ripple-effect {
-    position: relative;
-    overflow: hidden;
+  .gradient-button {
+    @apply bg-gradient-to-br from-primary to-accent text-white font-semibold px-6 py-3 rounded-lg;
+    box-shadow: 0 4px 14px hsl(217 91% 60% / 0.25);
+    transition: transform 0.2s, box-shadow 0.2s;
   }
   
-  .ripple-effect::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(0, 240, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
+  .gradient-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px hsl(217 91% 60% / 0.35);
   }
   
-  .ripple-effect:hover::after {
-    width: 300px;
-    height: 300px;
+  .card-branded {
+    @apply bg-card border border-border rounded-xl shadow-card;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   }
   
-  .wave-divider {
-    position: relative;
-    overflow: hidden;
+  .card-branded:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+  
+  .rank-badge {
+    @apply inline-flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-accent text-white font-bold text-lg;
+    box-shadow: 0 4px 12px hsl(217 91% 60% / 0.3);
   }
   
   .citation-badge {
-    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full bg-aqua/10 border border-aqua/30 text-sm font-medium;
+    @apply inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/30 text-sm font-medium;
   }
   
   .verified-badge {
-    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-aqua to-indigo text-white text-xs font-semibold shadow-lg;
+    @apply inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent text-white text-xs font-semibold shadow-lg;
   }
 }

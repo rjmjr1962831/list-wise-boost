@@ -20,6 +20,16 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
+          50: '#EFF6FF',
+          100: '#DBEAFE',
+          200: '#BFDBFE',
+          300: '#93C5FD',
+          400: '#60A5FA',
+          500: '#3B82F6',
+          600: '#2563EB',
+          700: '#1D4ED8',
+          800: '#1E40AF',
+          900: '#1E3A8A',
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
@@ -36,6 +46,9 @@ export default {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
+          400: '#22D3EE',
+          500: '#06B6D4',
+          600: '#0891B2',
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
@@ -57,12 +70,23 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-        // Tidal Shift Brand Colors
+        slate: {
+          50: '#F8FAFC',
+          100: '#F1F5F9',
+          200: '#E2E8F0',
+          300: '#CBD5E1',
+          400: '#94A3B8',
+          500: '#64748B',
+          600: '#475569',
+          700: '#334155',
+          800: '#1E293B',
+          900: '#0F172A',
+        },
+        // Legacy colors (deprecated - use primary/accent/slate instead)
         indigo: "hsl(var(--indigo))",
         aqua: "hsl(var(--aqua))",
         beige: "hsl(var(--beige))",
         graphite: "hsl(var(--graphite))",
-        // Legacy Arizona colors
         terracotta: "hsl(var(--terracotta))",
         turquoise: "hsl(var(--turquoise))",
         "sunset-orange": "hsl(var(--sunset-orange))",
@@ -70,8 +94,13 @@ export default {
         "cactus-green": "hsl(var(--cactus-green))",
       },
       fontFamily: {
-        sans: ['Inter', 'Neue Haas Grotesk', 'system-ui', 'sans-serif'],
-        serif: ['Playfair Display', 'Freight Display Pro', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+      },
+      fontWeight: {
+        normal: '400',
+        medium: '500',
+        semibold: '600',
+        bold: '700',
       },
       borderRadius: {
         lg: "var(--radius)",
