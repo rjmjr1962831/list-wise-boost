@@ -152,11 +152,20 @@ serve(async (req) => {
       // Find and update existing professional by zillow_profile_url
       const { data: existingAgent } = await supabase
         .from('professionals')
-        .select('id, name')
+        .select('id, name, zillow_rank_captured_at')
         .eq('zillow_profile_url', zillowUrl)
         .single();
 
       if (existingAgent) {
+        // Skip if already captured within last 24 hours
+        if (existingAgent.zillow_rank_captured_at) {
+          const capturedAt = new Date(existingAgent.zillow_rank_captured_at);
+          const hoursSinceCaptured = (Date.now() - capturedAt.getTime()) / (1000 * 60 * 60);
+          if (hoursSinceCaptured < 24) {
+            console.log(`⏭️ Skipping ${existingAgent.name} - already captured ${hoursSinceCaptured.toFixed(1)}h ago`);
+            continue;
+          }
+        }
         const { error: updateError } = await supabase
           .from('professionals')
           .update({
