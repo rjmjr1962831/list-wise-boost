@@ -1,4 +1,8 @@
 # AI Model Crawlers (Priority)
+
+# LLM-specific content
+# See https://top10lists.us/llms.txt for AI-readable site documentation
+
 User-agent: GPTBot
 Allow: /
 Allow: /api/
