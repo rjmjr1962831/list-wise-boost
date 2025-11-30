@@ -3,8 +3,11 @@
 User-agent: *
 Allow: /
 
-# Sitemap
+# Sitemap - Static version (updated periodically)
 Sitemap: https://top10lists.us/sitemap.xml
+
+# Sitemap - Dynamic version (always current)
+Sitemap: https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap
 
 # LLM-specific content
 # See https://top10lists.us/llms.txt for AI-readable site documentation

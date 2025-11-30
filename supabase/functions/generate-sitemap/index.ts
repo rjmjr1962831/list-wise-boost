@@ -65,18 +65,31 @@ Deno.serve(async (req) => {
   </url>
 `;
 
-    // Add API endpoints for AI discovery (for major cities)
-    const majorCities = ['phoenix', 'scottsdale', 'gilbert', 'mesa'];
-    majorCities.forEach(city => {
-      sitemap += `  
-  <!-- API Endpoint for ${city} -->
-  <url>
-    <loc>${apiBaseUrl}/agents-search-api?city=${city}</loc>
+    // Add API endpoints for AI discovery - dynamically for cities with agents
+    sitemap += `
+  <!-- API Endpoints for AI Discovery -->
+`;
+    
+    // Get cities that have agents (either direct or via professional_cities)
+    const { data: citiesWithAgents, error: agentsError } = await supabase
+      .rpc('get_cities_with_agents');
+    
+    // Fallback: if RPC doesn't exist, use major cities
+    const apiCities = agentsError 
+      ? cities?.filter(c => ['phoenix', 'scottsdale', 'gilbert', 'mesa', 'chandler', 'tempe', 'glendale', 'peoria'].includes(c.slug))
+      : citiesWithAgents;
+    
+    if (apiCities && Array.isArray(apiCities)) {
+      for (const city of apiCities.slice(0, 20)) { // Limit to top 20 cities for API discovery
+        const citySlug = city.slug || city;
+        sitemap += `  <url>
+    <loc>${apiBaseUrl}/agents-search-api?city=${citySlug}</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 `;
-    });
+      }
+    }
 
     // Add dynamic city + category pages
     sitemap += `
