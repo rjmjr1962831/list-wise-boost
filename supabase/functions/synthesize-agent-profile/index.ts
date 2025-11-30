@@ -92,8 +92,9 @@ CRITICAL RULES:
 5. Deduplicate information across sources
 6. Extract only factual, concrete information
 7. Keep descriptions concise but informative
+8. **ALWAYS INCLUDE DATES**: Extract year or full date (YYYY or MM/DD/YYYY) for EVERY achievement, award, publication, or community role
 
-IMPORTANT: Even if no press research is provided, you MUST extract achievements from the existing bio and profile data.`
+IMPORTANT: Even if no press research is provided, you MUST extract achievements from the existing bio and profile data. ALWAYS try to find and include dates for all items.`
           },
           {
             role: 'user',
@@ -120,12 +121,12 @@ IMPORTANT: Even if no press research is provided, you MUST extract achievements 
                       properties: {
                         title: { type: 'string' },
                         description: { type: 'string' },
-                        year: { type: 'number' },
+                        date: { type: 'string', description: 'Date or year (YYYY or MM/DD/YYYY format). ALWAYS include if available.' },
                         credibility: { type: 'number', description: 'Score 1-10' },
                         source: { type: 'string' },
                         source_url: { type: 'string', description: 'URL of the source if available' }
                       },
-                      required: ['title', 'description', 'credibility']
+                      required: ['title', 'description', 'credibility', 'date']
                     }
                   },
                   publications: {
@@ -136,7 +137,7 @@ IMPORTANT: Even if no press research is provided, you MUST extract achievements 
                         title: { type: 'string' },
                         type: { type: 'string', description: 'book, article, etc.' },
                         publisher: { type: 'string' },
-                        year: { type: 'number' },
+                        date: { type: 'string', description: 'Date or year (YYYY or MM/DD/YYYY format)' },
                         url: { type: 'string' }
                       },
                       required: ['title', 'type']

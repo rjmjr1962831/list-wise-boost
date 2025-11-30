@@ -1858,27 +1858,30 @@ export const ProfessionalCard = ({
                                 {achievements.map((achievement: any, idx: number) => (
                                   <div key={idx} className="border-l-2 border-yellow-600 dark:border-yellow-400 pl-3">
                                     <div className="flex items-start justify-between gap-2">
-                                      <div className="flex-1">
-                                        <p className="font-semibold text-sm">{achievement.title}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">{achievement.description}</p>
-                                        {achievement.year && (
-                                          <p className="text-xs text-muted-foreground mt-1">Year: {achievement.year}</p>
-                                        )}
-                                        {achievement.source && (
-                                          <cite className="text-xs text-muted-foreground block mt-1 not-italic">
-                                            Source: {achievement.source_url ? (
-                                              <a 
-                                                href={achievement.source_url} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="text-primary hover:underline"
-                                              >
-                                                {achievement.source}
-                                              </a>
-                                            ) : achievement.source}
-                                          </cite>
-                                        )}
-                                      </div>
+                                       <div className="flex-1">
+                                         <p className="font-semibold text-sm">{achievement.title}</p>
+                                         <p className="text-xs text-muted-foreground mt-1">{achievement.description}</p>
+                                         {(achievement.source || achievement.date || achievement.year) && (
+                                           <cite className="text-xs text-muted-foreground block mt-1 not-italic">
+                                             {achievement.source && (
+                                               <>
+                                                 {achievement.source_url ? (
+                                                   <a 
+                                                     href={achievement.source_url} 
+                                                     target="_blank" 
+                                                     rel="noopener noreferrer"
+                                                     className="text-primary hover:underline"
+                                                   >
+                                                     {achievement.source}
+                                                   </a>
+                                                 ) : achievement.source}
+                                               </>
+                                             )}
+                                             {achievement.source && (achievement.date || achievement.year) && ' • '}
+                                             {achievement.date || (achievement.year && `${achievement.year}`)}
+                                           </cite>
+                                         )}
+                                       </div>
                                       {achievement.credibility >= 8 && (
                                         <Badge variant="secondary" className="bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 text-xs flex-shrink-0">
                                           High Credibility
