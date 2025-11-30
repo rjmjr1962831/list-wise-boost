@@ -3,55 +3,21 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Tag, Users, FileText, Home, Wand2, FlaskConical, MapPin, UserPlus, Link2, Database, Zap, Briefcase, Download, Image, Sparkles, ShieldCheck, Clock } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download } from "lucide-react";
 import { toast } from "sonner";
-import CategoriesManager from "@/components/admin/CategoriesManager";
-import ProfessionalsManager from "@/components/admin/ProfessionalsManager";
-import { MarketingContentManager } from "@/components/admin/MarketingContentManager";
-import { ZillowAgentImporter } from "@/components/admin/ZillowAgentImporter";
-import { AgenScrapeImporter } from "@/components/admin/AgenScrapeImporter";
-import { PhotoGenerator } from "@/components/admin/PhotoGenerator";
-import { ZipCodeManager } from "@/components/admin/ZipCodeManager";
-import { ZipCodeDataConverter } from "@/components/admin/ZipCodeDataConverter";
-import { BioGenerator } from "@/components/admin/BioGenerator";
-import { ManualAgentAdder } from "@/components/admin/ManualAgentAdder";
-import { AgentApplicationsManager } from "@/components/admin/AgentApplicationsManager";
-import { ArizonaLicenseImporter } from "@/components/admin/ArizonaLicenseImporter";
-import { BulkStatsFetcher } from "@/components/admin/BulkStatsFetcher";
-import CitiesManager from "@/components/admin/CitiesManager";
-import { AgentDeduplicator } from "@/components/admin/AgentDeduplicator";
-import { VerificationLinkGenerator } from "@/components/admin/VerificationLinkGenerator";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
-import { LicenseVerifier } from "@/components/admin/LicenseVerifier";
-import { LicenseVerificationReport } from "@/components/admin/LicenseVerificationReport";
-import { Memo23FieldsExporter } from "@/components/admin/Memo23FieldsExporter";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
-import { ProxySettings } from "@/components/admin/ProxySettings";
-import SpecialtiesManager from "@/components/admin/SpecialtiesManager";
-import { OGImageGenerator } from "@/components/admin/OGImageGenerator";
-import { BulkZillowReviewsFetcher } from "@/components/admin/BulkZillowReviewsFetcher";
-import { MesaDataFixer } from "@/components/admin/MesaDataFixer";
 import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
-import AvondalePressScraper from "@/components/admin/AvondalePressScraper";
-import ManualProfileEnricher from "@/components/admin/ManualProfileEnricher";
 import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
-import { TestAvondaleEnrichment } from "@/components/admin/TestAvondaleEnrichment";
 import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResultsDashboard";
 import { StopEnrichmentButton } from "@/components/admin/StopEnrichmentButton";
 import { EnrichmentCostControls } from "@/components/admin/EnrichmentCostControls";
-import { BeauvaisScottsdaleSetup } from "@/components/admin/BeauvaisScottsdaleSetup";
-import { BeauvaisEnricher } from "@/components/admin/BeauvaisEnricher";
 import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineStatus";
-import { BulkEmailVerifier } from "@/components/admin/BulkEmailVerifier";
-import { QueuedEmailVerifier } from "@/components/admin/QueuedEmailVerifier";
 import { AdminHubSpotSync } from "@/components/admin/AdminHubSpotSync";
-import { AdminZillowScraper } from "@/components/admin/AdminZillowScraper";
 import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
-import { AdminRankingCapture } from "@/components/admin/AdminRankingCapture";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
-import AdminTestProspects from "@/components/admin/AdminTestProspects";
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -125,10 +91,6 @@ const AdminDashboard = () => {
               <Briefcase className="mr-2 h-4 w-4" />
               CRM
             </Button>
-            <Button onClick={() => navigate("/og-preview")} variant="outline">
-              <Image className="mr-2 h-4 w-4" />
-              OG Preview
-            </Button>
             <Button onClick={handleLogout} variant="outline">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
@@ -161,75 +123,27 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="categories" className="space-y-6">
+        <Tabs defaultValue="prospects" className="space-y-6">
           <TabsList className="inline-flex w-full max-w-7xl h-auto flex-wrap gap-1 p-2">
-            <TabsTrigger value="categories">
-              <Tag className="mr-2 h-4 w-4" />
-              Categories
-            </TabsTrigger>
-            <TabsTrigger value="specialties">
-              <Tag className="mr-2 h-4 w-4" />
-              Specialties
-            </TabsTrigger>
-            <TabsTrigger value="professionals">
+            <TabsTrigger value="prospects">
               <Users className="mr-2 h-4 w-4" />
-              Professionals
+              Prospects
             </TabsTrigger>
-            <TabsTrigger value="applications">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Applications
-            </TabsTrigger>
-            <TabsTrigger value="add-agent">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Add Agent
-            </TabsTrigger>
-            <TabsTrigger value="marketing">
-              <FileText className="mr-2 h-4 w-4" />
-              Marketing
-            </TabsTrigger>
-            <TabsTrigger value="zillow">
-              <Home className="mr-2 h-4 w-4" />
-              Zillow
-            </TabsTrigger>
-            <TabsTrigger value="agenscrape">
+            <TabsTrigger value="hubspot-sync">
               <Database className="mr-2 h-4 w-4" />
-              AgenScrape
-            </TabsTrigger>
-            <TabsTrigger value="photos">
-              <Wand2 className="mr-2 h-4 w-4" />
-              AI Photos
-            </TabsTrigger>
-            <TabsTrigger value="og-images">
-              <Image className="mr-2 h-4 w-4" />
-              OG Images
-            </TabsTrigger>
-            <TabsTrigger value="zip-codes">
-              <MapPin className="mr-2 h-4 w-4" />
-              Zip Codes
-            </TabsTrigger>
-            <TabsTrigger value="bio-generator">
-              <Wand2 className="mr-2 h-4 w-4" />
-              AI Bios
-            </TabsTrigger>
-            <TabsTrigger value="az-licenses">
-              <FlaskConical className="mr-2 h-4 w-4" />
-              AZ Licenses
-            </TabsTrigger>
-            <TabsTrigger value="verify-licenses">
-              <FlaskConical className="mr-2 h-4 w-4" />
-              Verify Licenses
-            </TabsTrigger>
-            <TabsTrigger value="verification-links">
-              <Link2 className="mr-2 h-4 w-4" />
-              Verification Links
-            </TabsTrigger>
-            <TabsTrigger value="deduplicator">
-              <Users className="mr-2 h-4 w-4" />
-              Deduplicator
+              HubSpot Sync
             </TabsTrigger>
             <TabsTrigger value="crm-export">
               <Download className="mr-2 h-4 w-4" />
               CRM Export
+            </TabsTrigger>
+            <TabsTrigger value="pipedrive-sync">
+              <Database className="mr-2 h-4 w-4" />
+              Pipedrive Sync
+            </TabsTrigger>
+            <TabsTrigger value="pipedrive-fields">
+              <Database className="mr-2 h-4 w-4" />
+              Pipedrive Fields
             </TabsTrigger>
             <TabsTrigger value="enrichment-progress">
               <Zap className="mr-2 h-4 w-4" />
@@ -243,33 +157,9 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Realtime Pipeline
             </TabsTrigger>
-            <TabsTrigger value="mesa-fixer">
-              <Zap className="mr-2 h-4 w-4" />
-              Mesa Fixer
-            </TabsTrigger>
-            <TabsTrigger value="proxy-settings">
-              <Database className="mr-2 h-4 w-4" />
-              Proxy Settings
-            </TabsTrigger>
-            <TabsTrigger value="zillow-reviews">
-              <Home className="mr-2 h-4 w-4" />
-              Zillow Reviews
-            </TabsTrigger>
-            <TabsTrigger value="avondale-press">
-              <FileText className="mr-2 h-4 w-4" />
-              Avondale Press
-            </TabsTrigger>
-            <TabsTrigger value="enrich-profiles">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Enrich Profiles
-            </TabsTrigger>
             <TabsTrigger value="full-enrichment">
               <Zap className="mr-2 h-4 w-4" />
               Full Enrichment
-            </TabsTrigger>
-            <TabsTrigger value="test-avondale">
-              <FlaskConical className="mr-2 h-4 w-4" />
-              Test Avondale
             </TabsTrigger>
             <TabsTrigger value="results-dashboard">
               <Zap className="mr-2 h-4 w-4" />
@@ -279,114 +169,26 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Pipeline Status
             </TabsTrigger>
-            <TabsTrigger value="email-verifier">
-              <ShieldCheck className="mr-2 h-4 w-4" />
-              Email Verifier
-            </TabsTrigger>
-            <TabsTrigger value="queued-verifier">
-              <Clock className="mr-2 h-4 w-4" />
-              Queue Verifier
-            </TabsTrigger>
-            <TabsTrigger value="hubspot-sync">
-              <Database className="mr-2 h-4 w-4" />
-              HubSpot Sync
-            </TabsTrigger>
-            <TabsTrigger value="zillow-scraper">
-              <Home className="mr-2 h-4 w-4" />
-              Zillow Scraper
-            </TabsTrigger>
-            <TabsTrigger value="prospects">
-              <Users className="mr-2 h-4 w-4" />
-              Prospects
-            </TabsTrigger>
-            <TabsTrigger value="ranking-capture">
-              <Home className="mr-2 h-4 w-4" />
-              Ranking Capture
-            </TabsTrigger>
-            <TabsTrigger value="pipedrive-sync">
-              <Database className="mr-2 h-4 w-4" />
-              Pipedrive Sync
-            </TabsTrigger>
-            <TabsTrigger value="pipedrive-fields">
-              <Database className="mr-2 h-4 w-4" />
-              Pipedrive Fields
-            </TabsTrigger>
-            <TabsTrigger value="test-prospects">
-              <Users className="mr-2 h-4 w-4" />
-              Test Prospects
-            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="categories" className="space-y-4">
-            <CategoriesManager />
+          <TabsContent value="prospects" className="space-y-4">
+            <AdminProspectsManager />
           </TabsContent>
 
-          <TabsContent value="specialties" className="space-y-4">
-            <SpecialtiesManager />
-          </TabsContent>
-
-          <TabsContent value="professionals" className="space-y-4">
-            <ProfessionalsManager />
-          </TabsContent>
-
-          <TabsContent value="applications" className="space-y-4">
-            <AgentApplicationsManager />
-          </TabsContent>
-
-          <TabsContent value="add-agent" className="space-y-4">
-            <ManualAgentAdder />
-          </TabsContent>
-
-          <TabsContent value="marketing" className="space-y-4">
-            <MarketingContentManager />
-          </TabsContent>
-
-          <TabsContent value="zillow" className="space-y-4">
-            <ZillowAgentImporter />
-          </TabsContent>
-
-          <TabsContent value="agenscrape" className="space-y-4">
-            <AgenScrapeImporter />
-          </TabsContent>
-
-          <TabsContent value="photos" className="space-y-4">
-            <PhotoGenerator />
-          </TabsContent>
-
-          <TabsContent value="og-images" className="space-y-4">
-            <OGImageGenerator />
-          </TabsContent>
-
-          <TabsContent value="zip-codes" className="space-y-4">
-            <ZipCodeDataConverter />
-            <ZipCodeManager />
-          </TabsContent>
-
-          <TabsContent value="bio-generator" className="space-y-4">
-            <BioGenerator />
-          </TabsContent>
-
-          <TabsContent value="az-licenses" className="space-y-4">
-            <ArizonaLicenseImporter />
-            <BulkStatsFetcher />
-          </TabsContent>
-
-          <TabsContent value="verify-licenses" className="space-y-4">
-            <LicenseVerifier />
-            <LicenseVerificationReport />
-            <Memo23FieldsExporter />
-          </TabsContent>
-
-          <TabsContent value="verification-links" className="space-y-4">
-            <VerificationLinkGenerator />
-          </TabsContent>
-
-          <TabsContent value="deduplicator" className="space-y-4">
-            <AgentDeduplicator />
+          <TabsContent value="hubspot-sync" className="space-y-4">
+            <AdminHubSpotSync />
           </TabsContent>
 
           <TabsContent value="crm-export" className="space-y-4">
             <CRMExportGenerator />
+          </TabsContent>
+
+          <TabsContent value="pipedrive-sync" className="space-y-4">
+            <AdminPipedriveSync />
+          </TabsContent>
+
+          <TabsContent value="pipedrive-fields" className="space-y-4">
+            <AdminPipedriveFields />
           </TabsContent>
 
           <TabsContent value="enrichment-progress" className="space-y-4">
@@ -401,32 +203,8 @@ const AdminDashboard = () => {
             <RealtimeEnrichmentDashboard />
           </TabsContent>
 
-          <TabsContent value="mesa-fixer" className="space-y-4">
-            <MesaDataFixer />
-          </TabsContent>
-
-          <TabsContent value="proxy-settings" className="space-y-4">
-            <ProxySettings />
-          </TabsContent>
-
-          <TabsContent value="zillow-reviews" className="space-y-4">
-            <BulkZillowReviewsFetcher />
-          </TabsContent>
-
-          <TabsContent value="avondale-press" className="space-y-4">
-            <AvondalePressScraper />
-          </TabsContent>
-
-          <TabsContent value="enrich-profiles" className="space-y-4">
-            <ManualProfileEnricher />
-          </TabsContent>
-
           <TabsContent value="full-enrichment" className="space-y-4">
             <FullEnrichmentPipeline />
-          </TabsContent>
-
-          <TabsContent value="test-avondale" className="space-y-4">
-            <TestAvondaleEnrichment />
           </TabsContent>
 
           <TabsContent value="results-dashboard" className="space-y-4">
@@ -434,45 +212,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="pipeline-status" className="space-y-4">
-            <BeauvaisScottsdaleSetup />
-            <BeauvaisEnricher />
             <EnrichmentPipelineStatus />
-          </TabsContent>
-
-          <TabsContent value="email-verifier" className="space-y-4">
-            <BulkEmailVerifier />
-          </TabsContent>
-
-          <TabsContent value="queued-verifier" className="space-y-4">
-            <QueuedEmailVerifier />
-          </TabsContent>
-
-          <TabsContent value="hubspot-sync" className="space-y-4">
-            <AdminHubSpotSync />
-          </TabsContent>
-
-          <TabsContent value="zillow-scraper" className="space-y-4">
-            <AdminZillowScraper />
-          </TabsContent>
-
-          <TabsContent value="prospects" className="space-y-4">
-            <AdminProspectsManager />
-          </TabsContent>
-
-          <TabsContent value="ranking-capture" className="space-y-4">
-            <AdminRankingCapture />
-          </TabsContent>
-
-          <TabsContent value="pipedrive-sync" className="space-y-4">
-            <AdminPipedriveSync />
-          </TabsContent>
-
-          <TabsContent value="pipedrive-fields" className="space-y-4">
-            <AdminPipedriveFields />
-          </TabsContent>
-
-          <TabsContent value="test-prospects" className="space-y-4">
-            <AdminTestProspects />
           </TabsContent>
         </Tabs>
       </div>
