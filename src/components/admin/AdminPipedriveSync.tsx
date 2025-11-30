@@ -12,8 +12,13 @@ export default function AdminPipedriveSync() {
     unsynced: 0,
     errors: 0,
   });
+  const [professionalStats, setProfessionalStats] = useState({
+    total: 0,
+    synced: 0,
+  });
   const [recentErrors, setRecentErrors] = useState<any[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isSyncingProfessionals, setIsSyncingProfessionals] = useState(false);
   const { toast } = useToast();
 
   const fetchStats = async () => {
@@ -39,11 +44,22 @@ export default function AdminPipedriveSync() {
       .order('updated_at', { ascending: false })
       .limit(10);
 
+    // Fetch professional stats
+    const { count: profTotal } = await supabase
+      .from('professionals')
+      .select('*', { count: 'exact', head: true })
+      .eq('active', true)
+      .not('email', 'is', null);
+
     setStats({
       total: total || 0,
       synced: synced || 0,
       unsynced: (total || 0) - (synced || 0),
       errors: errors || 0,
+    });
+    setProfessionalStats({
+      total: profTotal || 0,
+      synced: 0, // We don't track this separately for professionals
     });
     setRecentErrors(errorProspects || []);
   };
@@ -94,6 +110,32 @@ export default function AdminPipedriveSync() {
         description: error.message,
         variant: 'destructive',
       });
+    }
+  };
+
+  const handleSyncProfessionals = async () => {
+    setIsSyncingProfessionals(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('sync-professionals-to-pipedrive', {
+        body: { limit: 50 },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Professionals Sync Complete',
+        description: `Created: ${data.created}, Updated: ${data.updated}, Errors: ${data.errors}`,
+      });
+
+      fetchStats();
+    } catch (error: any) {
+      toast({
+        title: 'Sync Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSyncingProfessionals(false);
     }
   };
 
@@ -156,18 +198,39 @@ export default function AdminPipedriveSync() {
         </Card>
       </div>
 
-      {/* Sync Button */}
+      {/* Prospects Sync Button */}
       <Card>
         <CardHeader>
-          <CardTitle>Bulk Sync</CardTitle>
+          <CardTitle>Bulk Sync Prospects</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            Sync up to 100 unsynced prospects to Pipedrive.
+            Sync up to 100 unsynced prospects (leads) to Pipedrive.
           </p>
           <Button onClick={handleBulkSync} disabled={isSyncing}>
             <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? 'Syncing...' : `Sync ${stats.unsynced} Prospects`}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Professionals Sync Button */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Sync Professionals with Card URLs</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            Sync active professionals (agents with profile cards) to Pipedrive. This will populate the Card URL field for each agent.
+          </p>
+          <div className="mb-4">
+            <p className="text-sm">
+              <strong>{professionalStats.total}</strong> active professionals with email addresses
+            </p>
+          </div>
+          <Button onClick={handleSyncProfessionals} disabled={isSyncingProfessionals}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${isSyncingProfessionals ? 'animate-spin' : ''}`} />
+            {isSyncingProfessionals ? 'Syncing...' : `Sync ${professionalStats.total} Professionals`}
           </Button>
         </CardContent>
       </Card>
