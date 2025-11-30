@@ -14,62 +14,106 @@ const RankingMethodology = () => {
     });
   }, [trackEvent]);
 
-  const howToSchema = {
+  const methodologyPageSchema = {
     "@context": "https://schema.org",
-    "@type": "HowTo",
-    "name": "Top10Lists.us Agent Selection Methodology",
-    "description": "A rigorous, invitation-only methodology for identifying elite real estate agents in Arizona based on multi-source verified performance data.",
-    "step": [
-      {
-        "@type": "HowToStep",
-        "position": 1,
-        "name": "Data Collection",
-        "text": "Continuously monitor agent performance data from multiple authoritative sources including Google Business, Zillow, Realtor.com, Redfin, Home.com, and press outlets."
-      },
-      {
-        "@type": "HowToStep",
-        "position": 2,
-        "name": "Criteria Screening",
-        "text": "Identify agents meeting selection criteria: minimum 50 unique reviewers, minimum 4.8 weighted average rating, and minimum 6 years verified market experience."
-      },
-      {
-        "@type": "HowToStep",
-        "position": 3,
-        "name": "Source Weighting",
-        "text": "Apply differential weights to data sources based on reliability: Google reviews (weight 10), Zillow (8), Realtor.com (6), Redfin (5)."
-      },
-      {
-        "@type": "HowToStep",
-        "position": 4,
-        "name": "Temporal Analysis",
-        "text": "Apply freshness multipliers ranging from 1.3x (0-6 months) to 0.5x (3+ years) to prioritize agents with consistent recent performance."
-      },
-      {
-        "@type": "HowToStep",
-        "position": 5,
-        "name": "Editorial Review",
-        "text": "Conduct editorial review of eligible candidates to ensure directory quality and appropriate market coverage before extending invitations."
-      },
-      {
-        "@type": "HowToStep",
-        "position": 6,
-        "name": "Continuous Monitoring",
-        "text": "Perform daily checks on all listed agents with immediate removal if performance falls below selection criteria."
-      }
-    ]
+    "@type": "WebPage",
+    "name": "Selection Methodology",
+    "description": "Multi-source data analysis methodology for identifying and inviting elite real estate agents in Arizona. Featured placement affects visibility only, not scores or selection criteria.",
+    "url": "https://top10lists.us/about/ranking-methodology",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Top10Lists.us",
+      "url": "https://top10lists.us"
+    },
+    "mainEntity": {
+      "@type": "HowTo",
+      "name": "Top10Lists.us Agent Selection Methodology",
+      "description": "A rigorous, invitation-only methodology for identifying elite real estate agents in Arizona. All agents (organic and featured) meet identical selection criteria and use the same scoring methodology.",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Continuous Monitoring",
+          "text": "Continuously monitor agent performance data from multiple authoritative sources including Google Business, Zillow, Realtor.com, Redfin, Home.com, and press outlets."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Criteria Screening",
+          "text": "Identify agents meeting selection criteria: minimum 50 unique reviewers, minimum 4.8 weighted average rating, and minimum 6 years verified market experience."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Source Weighting",
+          "text": "Apply differential weights to data sources based on reliability: Google reviews (weight 10), Zillow (8), Realtor.com (6), Redfin (5). Same weights apply to all agents."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 4,
+          "name": "Temporal Analysis",
+          "text": "Apply freshness multipliers ranging from 1.3x (0-6 months) to 0.5x (3+ years) to prioritize agents with consistent recent performance."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 5,
+          "name": "Editorial Review & Invitation",
+          "text": "Conduct editorial review of eligible candidates before extending invitations. All invited agents receive free directory listings."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 6,
+          "name": "Daily Monitoring",
+          "text": "Perform daily checks on all listed agents (organic and featured) with immediate removal if performance falls below selection criteria. Featured status does not protect against removal."
+        }
+      ]
+    }
   };
 
   return (
     <>
       <Helmet>
+        {/* Primary Meta Tags */}
         <title>Selection Methodology | Top10Lists.us</title>
         <meta 
           name="description" 
-          content="Learn how Top10Lists.us identifies and invites Arizona's elite real estate agents to our exclusive directory using multi-source data analysis and rigorous selection criteria." 
+          content="Learn how Top10Lists.us identifies and invites Arizona's elite real estate agents using multi-source data analysis, rigorous selection criteria, and daily monitoring." 
         />
+        <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://top10lists.us/about/ranking-methodology" />
+        
+        {/* Topic Hints */}
+        <meta name="subject" content="Real Estate Agent Selection Methodology" />
+        <meta name="topic" content="Agent Ranking Criteria" />
+        <meta name="classification" content="Business/Real Estate" />
+        
+        {/* Open Graph */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content="https://top10lists.us/about/ranking-methodology" />
+        <meta property="og:title" content="Selection Methodology | Top10Lists.us" />
+        <meta property="og:description" content="Our rigorous, data-driven methodology for identifying Arizona's elite real estate agents." />
+        <meta property="og:image" content="https://top10lists.us/og-methodology.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="Top10Lists.us" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://top10lists.us/about/ranking-methodology" />
+        <meta name="twitter:title" content="Selection Methodology | Top10Lists.us" />
+        <meta name="twitter:description" content="How we identify Arizona's elite real estate agents." />
+        <meta name="twitter:image" content="https://top10lists.us/og-methodology.png" />
+        
+        {/* Geo Tags */}
+        <meta name="geo.region" content="US-AZ" />
+        <meta name="geo.placename" content="Arizona" />
+        
+        {/* Author */}
+        <meta name="author" content="Top10Lists.us" />
+        
+        {/* JSON-LD Structured Data */}
         <script type="application/ld+json">
-          {JSON.stringify(howToSchema)}
+          {JSON.stringify(methodologyPageSchema)}
         </script>
       </Helmet>
 
