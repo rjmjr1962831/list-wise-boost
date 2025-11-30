@@ -5,17 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const Index = () => {
   const navigate = useNavigate();
-  
-  const arizonaCities = [
-    { name: "Phoenix", slug: "phoenix" },
-    { name: "Scottsdale", slug: "scottsdale" },
-    { name: "Mesa", slug: "mesa" },
-    { name: "Chandler", slug: "chandler" },
-    { name: "Gilbert", slug: "gilbert" },
-    { name: "Tempe", slug: "tempe" },
-    { name: "Glendale", slug: "glendale" },
-    { name: "Peoria", slug: "peoria" },
-  ];
 
   const featuredCities = [
     { name: "Phoenix", slug: "phoenix", avgReviews: 127 },
@@ -47,22 +36,6 @@ const Index = () => {
         
         <div className="max-w-4xl mx-auto mb-6">
           <Top10SearchForm />
-        </div>
-
-        {/* Popular Cities */}
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm text-muted-foreground mb-3">Popular:</p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {arizonaCities.map((city) => (
-              <Link
-                key={city.slug}
-                to={`/az/${city.slug}/top10realestateagents`}
-                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-              >
-                {city.name}
-              </Link>
-            ))}
-          </div>
         </div>
       </section>
 
