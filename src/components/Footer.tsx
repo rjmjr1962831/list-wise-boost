@@ -1,11 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 
 export const Footer = () => {
-  const location = useLocation();
-  const isHomePage = location.pathname === '/';
-  
   return (
     <footer className="bg-gradient-to-br from-slate-900 to-slate-800 text-white mt-auto">
       <div className="container mx-auto px-4 py-12">
@@ -72,28 +69,9 @@ export const Footer = () => {
           </div>
         </div>
 
-        {/* Agent CTA - Subtle (only on homepage) */}
-        {isHomePage && (
-          <div className="mt-8 pt-8 border-t border-slate-700">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <p className="text-sm text-slate-400">
-                &copy; {new Date().getFullYear()} Top<span className="font-semibold">10</span>Lists.us. All rights reserved.
-              </p>
-              <Link 
-                to="/agent-onboarding" 
-                className="text-sm text-slate-400 hover:text-blue-400 transition-colors"
-              >
-                Real estate professional? Check if you're ranked →
-              </Link>
-            </div>
-          </div>
-        )}
-        
-        {!isHomePage && (
-          <div className="mt-8 pt-8 border-t border-slate-700 text-center text-sm text-slate-400">
-            <p>&copy; {new Date().getFullYear()} Top<span className="font-semibold">10</span>Lists.us. All rights reserved.</p>
-          </div>
-        )}
+        <div className="mt-8 pt-8 border-t border-slate-700 text-center text-sm text-slate-400">
+          <p>&copy; {new Date().getFullYear()} Top<span className="font-semibold">10</span>Lists.us. All rights reserved.</p>
+        </div>
       </div>
     </footer>
   );
