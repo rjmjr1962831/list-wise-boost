@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
+declare const EdgeRuntime: any;
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -178,18 +180,20 @@ serve(async (req) => {
         throw insertError;
       }
 
-      // Start background processing (don't await - let it run in background)
-      processCitiesInBackground(sessionId, supabase).catch(err => {
-        console.error('Background processing error:', err);
-        supabase
-          .from('bulk_capture_progress')
-          .update({
-            status: 'failed',
-            error_message: err.message,
-            completed_at: new Date().toISOString()
-          })
-          .eq('session_id', sessionId);
-      });
+      // Start background processing with EdgeRuntime.waitUntil to keep function alive
+      EdgeRuntime.waitUntil(
+        processCitiesInBackground(sessionId, supabase).catch(err => {
+          console.error('Background processing error:', err);
+          supabase
+            .from('bulk_capture_progress')
+            .update({
+              status: 'failed',
+              error_message: err.message,
+              completed_at: new Date().toISOString()
+            })
+            .eq('session_id', sessionId);
+        })
+      );
 
       // Return immediately with session ID
       return new Response(
