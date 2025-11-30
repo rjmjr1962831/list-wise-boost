@@ -69,8 +69,23 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-slate-700 text-center text-sm text-slate-400">
-          <p>&copy; {new Date().getFullYear()} Top<span className="font-semibold">10</span>Lists.us. All rights reserved.</p>
+        <div className="mt-8 pt-8 border-t border-slate-700 space-y-6">
+          {/* Subtle Agent Note */}
+          <div className="text-center py-4 border-t border-slate-600">
+            <p className="text-sm text-slate-400">
+              Real estate professional?{" "}
+              <Link 
+                to="/agent-onboarding" 
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Check if you're ranked →
+              </Link>
+            </p>
+          </div>
+
+          <div className="text-center text-sm text-slate-400">
+            <p>&copy; {new Date().getFullYear()} Top<span className="font-semibold">10</span>Lists.us. All rights reserved.</p>
+          </div>
         </div>
       </div>
     </footer>

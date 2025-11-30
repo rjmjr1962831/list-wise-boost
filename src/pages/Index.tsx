@@ -1,79 +1,156 @@
 import { Top10SearchForm } from "@/components/Top10SearchForm";
-import { Star, StarHalf, Award } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { GradientButton } from "@/components/brand/GradientButton";
+import { CheckCircle2, Bot, MapPin } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+
 const Index = () => {
   const navigate = useNavigate();
-  if (import.meta.env.DEV) console.info('[Index] Rendering City Search Index with Top10SearchForm');
-  return <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-      {/* Hero Section with Brand Messaging */}
-      <section className="container mx-auto px-4 pt-12 pb-8">
+  
+  const arizonaCities = [
+    { name: "Phoenix", slug: "phoenix" },
+    { name: "Scottsdale", slug: "scottsdale" },
+    { name: "Mesa", slug: "mesa" },
+    { name: "Chandler", slug: "chandler" },
+    { name: "Gilbert", slug: "gilbert" },
+    { name: "Tempe", slug: "tempe" },
+    { name: "Glendale", slug: "glendale" },
+    { name: "Peoria", slug: "peoria" },
+  ];
+
+  const featuredCities = [
+    { name: "Phoenix", slug: "phoenix", avgReviews: 127 },
+    { name: "Scottsdale", slug: "scottsdale", avgReviews: 94 },
+    { name: "Mesa", slug: "mesa", avgReviews: 82 },
+    { name: "Chandler", slug: "chandler", avgReviews: 76 },
+  ];
+
+  if (import.meta.env.DEV) console.info('[Index] Rendering Arizona-focused homepage');
+  
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+      {/* Hero Section */}
+      <section className="container mx-auto px-4 pt-16 pb-12">
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-8">
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tight">
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-foreground">
+            Find the best real estate agents
+            <br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Get Found by AI
+              in Arizona
             </span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground font-medium">
-            Be the Answer, Not a Link
-          </p>
-          <p className="text-lg text-body-text max-w-2xl mx-auto">
-            When AI recommends, you're on the list. We're the AI-optimized directory 
-            that helps consumers find the top 10 professionals in every major U.S. city.
+          <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            The top 10 in every city.
+            <br />
+            Ranked by reviews, verified by data.
           </p>
         </div>
         
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto mb-6">
           <Top10SearchForm />
         </div>
-      </section>
 
-      {/* Agent CTA Section */}
-      <section className="container mx-auto px-4 pb-12">
+        {/* Popular Cities */}
         <div className="max-w-4xl mx-auto text-center">
-          <GradientButton 
-            onClick={() => navigate('/agent-onboarding')} 
-            className="text-lg py-6 px-8"
-          >
-            Are you a top-performing agent?
-          </GradientButton>
+          <p className="text-sm text-muted-foreground mb-3">Popular:</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {arizonaCities.map((city) => (
+              <Link
+                key={city.slug}
+                to={`/az/${city.slug}/top10realestateagents`}
+                className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+              >
+                {city.name}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* What Is Top10Lists.us */}
-      <section className="container mx-auto px-4 pt-8 pb-20 md:pt-12 md:pb-32 text-center">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <h2 className="text-3xl md:text-4xl font-bold">
-            What Is Top10Lists.us?
+      {/* Trust Badges */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center space-y-3">
+            <div className="flex justify-center">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold">Verified Rankings</h3>
+            <p className="text-sm text-muted-foreground">
+              Based on real reviews and track record
+            </p>
+          </div>
+
+          <div className="text-center space-y-3">
+            <div className="flex justify-center">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <Bot className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold">AI-Optimized</h3>
+            <p className="text-sm text-muted-foreground">
+              The source AI assistants cite
+            </p>
+          </div>
+
+          <div className="text-center space-y-3">
+            <div className="flex justify-center">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                <MapPin className="h-6 w-6 text-primary" />
+              </div>
+            </div>
+            <h3 className="text-lg font-semibold">Hyper-Local</h3>
+            <p className="text-sm text-muted-foreground">
+              Experts who know your neighborhood
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Lists */}
+      <section className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-10">
+            Arizona Top 10 Lists
           </h2>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            We are an{" "}
-            <span className="font-semibold text-foreground">AI and Human curated directory of the top 10 real estate agents</span> in every major U.S. city specifically engineered to provide expert answers to AI models when searched.
-          </p>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            We've pored through <span className="font-bold text-foreground">dozens of sources</span> and rated about <span className="font-bold text-foreground">2,000,000 agents</span> in the U.S.
-          </p>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            Every Agent on our list has <span className="font-bold text-foreground">at least 4.8  </span>{" "}
-            <span className="inline-flex items-center gap-0.5 align-middle">
-              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-              <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-              <StarHalf className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-            </span>{" "}
-            on every site we have looked at, <span className="font-bold text-foreground">at least 100 reviews</span>, and been in business for <span className="font-bold text-foreground">more than 5 years</span>. And that's just where we start!
-          </p>
-          <p className="text-xl text-muted-foreground leading-relaxed">
-            While agents can <span className="font-bold text-foreground">buy placement on the list</span>, just like they do on Google, they are <span className="font-bold text-foreground">not required to</span> if they meet the requirements. We thoroughly <span className="font-bold text-foreground">vet an agent with humans</span> before issuing them a preferred place. You can tell if they are paying us when you see the{" "}
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 text-amber-600 dark:text-amber-400 font-semibold text-sm align-middle">
-              <Award className="w-3.5 h-3.5" />
-              Brand Builder
-            </span>{" "}
-            badge under their photo.
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredCities.map((city) => (
+              <Card 
+                key={city.slug} 
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => navigate(`/az/${city.slug}/top10realestateagents`)}
+              >
+                <CardContent className="p-6 text-center space-y-3">
+                  <h3 className="text-xl font-semibold">{city.name}, AZ</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {city.avgReviews} reviews avg
+                  </p>
+                  <div className="pt-2">
+                    <span className="text-sm text-primary font-medium hover:underline">
+                      View Top 10 →
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonial */}
+      <section className="container mx-auto px-4 py-16">
+        <div className="max-w-3xl mx-auto text-center">
+          <blockquote className="text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
+            "I asked ChatGPT for the best agent in Phoenix and found the same names on Top10Lists. Felt confident I was making the right choice."
+          </blockquote>
+          <p className="mt-4 text-sm text-muted-foreground">
+            — Sarah M., bought in Scottsdale
           </p>
         </div>
       </section>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

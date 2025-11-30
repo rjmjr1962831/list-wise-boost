@@ -76,10 +76,11 @@ export const Header = () => {
               About
             </Link>
             {!user && (
-              <Link to="/agent-setup">
-                <Button variant="default" size="sm">
-                  For Agents
-                </Button>
+              <Link 
+                to="/agent-onboarding" 
+                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+              >
+                Are you an agent?
               </Link>
             )}
             {user ? (
