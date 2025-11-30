@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.create-pipedrive-fields]
+verify_jwt = true
+
 [functions.scrape-zillow-agents]
 verify_jwt = false
 
