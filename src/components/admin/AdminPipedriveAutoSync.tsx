@@ -219,6 +219,7 @@ export function AdminPipedriveAutoSync() {
             <li>Failed syncs retry with exponential backoff (2, 4, 8 minutes)</li>
             <li>Pipedrive webhook updates Supabase records bidirectionally</li>
             <li>Loop prevention via skip_pipedrive_sync flag</li>
+            <li>📧 Email alerts sent to contentforms@top10lists.us for permanent failures</li>
           </ul>
         </div>
       </CardContent>
