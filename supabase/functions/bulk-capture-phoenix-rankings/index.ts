@@ -26,233 +26,199 @@ const PHOENIX_METRO_CITIES = [
   "Anthem, AZ"
 ];
 
+// Process cities in background
+async function processCitiesInBackground(sessionId: string, supabase: any) {
+  console.log(`🚀 Starting background processing for session ${sessionId}`);
+  
+  const results: any[] = [];
+  
+  for (let i = 0; i < PHOENIX_METRO_CITIES.length; i++) {
+    const cityName = PHOENIX_METRO_CITIES[i];
+    console.log(`\n[${i + 1}/${PHOENIX_METRO_CITIES.length}] Processing ${cityName}...`);
+    
+    // Update progress
+    await supabase
+      .from('bulk_capture_progress')
+      .update({
+        current_city: cityName,
+        current_index: i,
+        status: 'running'
+      })
+      .eq('session_id', sessionId);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('capture-zillow-rankings', {
+        body: { cityName }
+      });
+
+      const cityResult = {
+        city: cityName,
+        status: error ? 'failed' : 'success',
+        updated: data?.stats?.updated || 0,
+        notFound: data?.stats?.notFound || 0,
+        error: error?.message || null,
+        timestamp: new Date().toISOString()
+      };
+
+      results.push(cityResult);
+
+      // Update results in database
+      await supabase
+        .from('bulk_capture_progress')
+        .update({
+          results: results
+        })
+        .eq('session_id', sessionId);
+
+      console.log(`✅ ${cityName}: ${cityResult.status}`);
+
+      // Reduced delay from 10s to 5s to avoid timeouts
+      if (i < PHOENIX_METRO_CITIES.length - 1) {
+        console.log('⏱️ Waiting 5 seconds before next city...');
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+
+    } catch (error) {
+      console.error(`❌ Exception processing ${cityName}:`, error);
+      const cityResult = {
+        city: cityName,
+        status: 'failed',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      };
+      results.push(cityResult);
+      
+      await supabase
+        .from('bulk_capture_progress')
+        .update({
+          results: results
+        })
+        .eq('session_id', sessionId);
+    }
+  }
+
+  // Mark as completed
+  await supabase
+    .from('bulk_capture_progress')
+    .update({
+      status: 'completed',
+      completed_at: new Date().toISOString()
+    })
+    .eq('session_id', sessionId);
+
+  console.log(`✅ Background processing complete for session ${sessionId}`);
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Check if this is a WebSocket upgrade request
-  const upgrade = req.headers.get("upgrade") || "";
-  if (upgrade.toLowerCase() === "websocket") {
-    const { socket, response } = Deno.upgradeWebSocket(req);
+  const url = new URL(req.url);
+  const path = url.pathname;
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  // GET request - check progress for a session
+  if (req.method === 'GET') {
+    const sessionId = url.searchParams.get('sessionId');
     
-    socket.onopen = async () => {
-      console.log('WebSocket connection opened');
-      
-      try {
-        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-        const supabase = createClient(supabaseUrl, supabaseKey);
-
-        console.log('🚀 Starting bulk Phoenix metro ranking capture');
-        socket.send(JSON.stringify({
-          type: 'started',
-          totalCities: PHOENIX_METRO_CITIES.length
-        }));
-
-        const results = [];
-        let totalUpdated = 0;
-        let totalNotFound = 0;
-        let totalFailed = 0;
-
-        for (let i = 0; i < PHOENIX_METRO_CITIES.length; i++) {
-          const cityName = PHOENIX_METRO_CITIES[i];
-          console.log(`\n[${i + 1}/${PHOENIX_METRO_CITIES.length}] Processing ${cityName}...`);
-          
-          // Send progress update
-          socket.send(JSON.stringify({
-            type: 'progress',
-            current: i + 1,
-            total: PHOENIX_METRO_CITIES.length,
-            currentCity: cityName,
-            status: 'processing'
-          }));
-
-          try {
-            const { data, error } = await supabase.functions.invoke('capture-zillow-rankings', {
-              body: { cityName }
-            });
-
-            if (error) {
-              console.error(`❌ Failed to capture ${cityName}:`, error);
-              results.push({
-                city: cityName,
-                status: 'failed',
-                error: error.message
-              });
-              totalFailed++;
-              
-              socket.send(JSON.stringify({
-                type: 'city_complete',
-                city: cityName,
-                status: 'failed',
-                error: error.message
-              }));
-            } else {
-              console.log(`✅ Completed ${cityName}: ${data.stats.updated} updated, ${data.stats.notFound} not found`);
-              results.push({
-                city: cityName,
-                status: 'success',
-                updated: data.stats.updated,
-                notFound: data.stats.notFound,
-                totalFound: data.stats.totalFound
-              });
-              totalUpdated += data.stats.updated;
-              totalNotFound += data.stats.notFound;
-              
-              socket.send(JSON.stringify({
-                type: 'city_complete',
-                city: cityName,
-                status: 'success',
-                updated: data.stats.updated,
-                notFound: data.stats.notFound
-              }));
-            }
-
-            // Add delay between cities
-            if (i < PHOENIX_METRO_CITIES.length - 1) {
-              console.log('⏱️ Waiting 10 seconds before next city...');
-              await new Promise(resolve => setTimeout(resolve, 10000));
-            }
-
-          } catch (error) {
-            console.error(`❌ Exception processing ${cityName}:`, error);
-            results.push({
-              city: cityName,
-              status: 'failed',
-              error: error instanceof Error ? error.message : 'Unknown error'
-            });
-            totalFailed++;
-            
-            socket.send(JSON.stringify({
-              type: 'city_complete',
-              city: cityName,
-              status: 'failed',
-              error: error instanceof Error ? error.message : 'Unknown error'
-            }));
-          }
-        }
-
-        console.log('\n✅ Bulk capture complete!');
-        
-        // Send completion message
-        socket.send(JSON.stringify({
-          type: 'complete',
-          summary: {
-            totalCities: PHOENIX_METRO_CITIES.length,
-            totalUpdated,
-            totalNotFound,
-            totalFailed
-          },
-          results
-        }));
-
-      } catch (error) {
-        console.error('Error in bulk capture:', error);
-        socket.send(JSON.stringify({
-          type: 'error',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }));
-      }
-    };
-
-    socket.onerror = (e) => console.error('WebSocket error:', e);
-    socket.onclose = () => console.log('WebSocket connection closed');
-
-    return response;
-  }
-
-  // Fallback to regular HTTP request
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    console.log('🚀 Starting bulk Phoenix metro ranking capture');
-    console.log(`📍 Processing ${PHOENIX_METRO_CITIES.length} cities`);
-
-    const results = [];
-    let totalUpdated = 0;
-    let totalNotFound = 0;
-    let totalFailed = 0;
-
-    for (let i = 0; i < PHOENIX_METRO_CITIES.length; i++) {
-      const cityName = PHOENIX_METRO_CITIES[i];
-      console.log(`\n[${i + 1}/${PHOENIX_METRO_CITIES.length}] Processing ${cityName}...`);
-
-      try {
-        // Call the single city capture function
-        const { data, error } = await supabase.functions.invoke('capture-zillow-rankings', {
-          body: { cityName }
-        });
-
-        if (error) {
-          console.error(`❌ Failed to capture ${cityName}:`, error);
-          results.push({
-            city: cityName,
-            status: 'failed',
-            error: error.message
-          });
-          totalFailed++;
-        } else {
-          console.log(`✅ Completed ${cityName}: ${data.stats.updated} updated, ${data.stats.notFound} not found`);
-          results.push({
-            city: cityName,
-            status: 'success',
-            updated: data.stats.updated,
-            notFound: data.stats.notFound,
-            totalFound: data.stats.totalFound
-          });
-          totalUpdated += data.stats.updated;
-          totalNotFound += data.stats.notFound;
-        }
-
-        // Add delay between cities to avoid rate limiting
-        if (i < PHOENIX_METRO_CITIES.length - 1) {
-          console.log('⏱️ Waiting 10 seconds before next city...');
-          await new Promise(resolve => setTimeout(resolve, 10000));
-        }
-
-      } catch (error) {
-        console.error(`❌ Exception processing ${cityName}:`, error);
-        results.push({
-          city: cityName,
-          status: 'failed',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-        totalFailed++;
-      }
+    if (!sessionId) {
+      return new Response(
+        JSON.stringify({ error: 'Missing sessionId parameter' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    console.log('\n✅ Bulk capture complete!');
-    console.log(`📊 Summary: ${totalUpdated} updated, ${totalNotFound} not found, ${totalFailed} failed`);
+    try {
+      const { data, error } = await supabase
+        .from('bulk_capture_progress')
+        .select('*')
+        .eq('session_id', sessionId)
+        .single();
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: 'Bulk Phoenix metro ranking capture complete',
-        summary: {
-          totalCities: PHOENIX_METRO_CITIES.length,
-          totalUpdated,
-          totalNotFound,
-          totalFailed
-        },
-        results
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+      if (error) throw error;
 
-  } catch (error) {
-    console.error('Error in bulk-capture-phoenix-rankings:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+      return new Response(
+        JSON.stringify(data),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (error) {
+      console.error('Error fetching progress:', error);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch progress' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
   }
+
+  // POST request - start bulk capture
+  if (req.method === 'POST') {
+    try {
+      // Generate unique session ID
+      const sessionId = crypto.randomUUID();
+      
+      console.log(`🚀 Starting bulk capture with session ${sessionId}`);
+      
+      // Create progress record
+      const { error: insertError } = await supabase
+        .from('bulk_capture_progress')
+        .insert({
+          session_id: sessionId,
+          status: 'running',
+          total_cities: PHOENIX_METRO_CITIES.length,
+          current_index: 0,
+          results: []
+        });
+
+      if (insertError) {
+        console.error('Failed to create progress record:', insertError);
+        throw insertError;
+      }
+
+      // Start background processing (don't await - let it run in background)
+      processCitiesInBackground(sessionId, supabase).catch(err => {
+        console.error('Background processing error:', err);
+        supabase
+          .from('bulk_capture_progress')
+          .update({
+            status: 'failed',
+            error_message: err.message,
+            completed_at: new Date().toISOString()
+          })
+          .eq('session_id', sessionId);
+      });
+
+      // Return immediately with session ID
+      return new Response(
+        JSON.stringify({
+          success: true,
+          sessionId,
+          message: 'Bulk capture started',
+          totalCities: PHOENIX_METRO_CITIES.length
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+    } catch (error) {
+      console.error('Error starting bulk capture:', error);
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error' 
+        }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+  }
+
+  return new Response(
+    JSON.stringify({ error: 'Method not allowed' }),
+    { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
 });
