@@ -15,6 +15,7 @@ interface QueueStats {
   processing: number;
   completed: number;
   failed: number;
+  failedVerifications: number;
 }
 
 interface QueueItem {
@@ -36,7 +37,7 @@ interface QueueItem {
 export const QueuedEmailVerifier = () => {
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [stats, setStats] = useState<QueueStats>({ total: 0, pending: 0, processing: 0, completed: 0, failed: 0 });
+  const [stats, setStats] = useState<QueueStats>({ total: 0, pending: 0, processing: 0, completed: 0, failed: 0, failedVerifications: 0 });
   const [recentItems, setRecentItems] = useState<QueueItem[]>([]);
   const [limit, setLimit] = useState(20);
   const [delaySeconds, setDelaySeconds] = useState(3);
@@ -119,12 +120,24 @@ export const QueuedEmailVerifier = () => {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'failed');
 
+    // Count completed items with failed verification results
+    const { data: failedVerifications } = await supabase
+      .from('email_verification_queue')
+      .select('verification_result', { count: 'exact', head: false })
+      .eq('status', 'completed')
+      .not('verification_result', 'is', null);
+
+    const failedVerificationCount = failedVerifications?.filter(
+      (item: any) => item.verification_result?.status === 'failed'
+    ).length || 0;
+
     setStats({
       total: total || 0,
       pending: pending || 0,
       processing: processing || 0,
       completed: completed || 0,
       failed: failed || 0,
+      failedVerifications: failedVerificationCount,
     });
   };
 
@@ -288,6 +301,59 @@ export const QueuedEmailVerifier = () => {
     }
   };
 
+  const resetFailedVerifications = async () => {
+    if (!confirm(`Reset ${stats.failedVerifications} failed verifications back to pending? They will be re-processed with the corrected timeout.`)) return;
+
+    setLoading(true);
+    try {
+      // First get the items to reset
+      const { data: itemsToReset } = await supabase
+        .from('email_verification_queue')
+        .select('id, verification_result')
+        .eq('status', 'completed')
+        .not('verification_result', 'is', null);
+
+      if (!itemsToReset) {
+        toast.info('No failed verifications found');
+        return;
+      }
+
+      // Filter for failed verification results
+      const failedIds = itemsToReset
+        .filter((item: any) => item.verification_result?.status === 'failed')
+        .map((item: any) => item.id);
+
+      if (failedIds.length === 0) {
+        toast.info('No failed verifications found');
+        return;
+      }
+
+      // Reset them to pending
+      const { error } = await supabase
+        .from('email_verification_queue')
+        .update({
+          status: 'pending',
+          attempts: 0,
+          error_message: null,
+          started_at: null,
+          completed_at: null,
+          verification_result: null
+        })
+        .in('id', failedIds);
+
+      if (error) throw error;
+
+      toast.success(`Reset ${failedIds.length} failed verifications to pending`);
+      fetchStats();
+      fetchRecentItems();
+    } catch (error: any) {
+      console.error('Error resetting failed verifications:', error);
+      toast.error(`Failed to reset: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (item: QueueItem) => {
     switch (item.status) {
       case 'pending':
@@ -327,7 +393,7 @@ export const QueuedEmailVerifier = () => {
             </AlertDescription>
           </Alert>
 
-          <div className="grid grid-cols-5 gap-4 text-sm">
+          <div className="grid grid-cols-6 gap-4 text-sm">
             <div className="text-center p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
               <div className="text-2xl font-bold">{stats.total}</div>
               <div className="text-muted-foreground">Total</div>
@@ -347,6 +413,10 @@ export const QueuedEmailVerifier = () => {
             <div className="text-center p-3 bg-red-50 dark:bg-red-950 rounded-lg">
               <div className="text-2xl font-bold">{stats.failed}</div>
               <div className="text-muted-foreground">Failed</div>
+            </div>
+            <div className="text-center p-3 bg-orange-50 dark:bg-orange-950 rounded-lg">
+              <div className="text-2xl font-bold">{stats.failedVerifications}</div>
+              <div className="text-muted-foreground">Failed Results</div>
             </div>
           </div>
 
@@ -474,6 +544,27 @@ export const QueuedEmailVerifier = () => {
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>
+
+          {stats.failedVerifications > 0 && (
+            <Alert className="border-orange-500">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="flex items-center justify-between">
+                  <span>
+                    {stats.failedVerifications} completed items have failed verification results (likely timeout errors)
+                  </span>
+                  <Button 
+                    onClick={resetFailedVerifications}
+                    disabled={loading || processing}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Reset Failed to Pending
+                  </Button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
 
           {recentItems.length > 0 && (
             <div className="space-y-2">
