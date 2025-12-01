@@ -58,15 +58,10 @@ serve(async (req) => {
     let hasMore = true;
 
     while (hasMore) {
-      const url = `${baseUrl}/persons?limit=${limit}&start=${start}`;
+      const url = `${baseUrl}/persons?limit=${limit}&start=${start}&api_token=${PIPEDRIVE_API_TOKEN}`;
       console.log(`📥 Fetching persons: start=${start}`);
 
-      const response = await fetch(url, {
-        headers: {
-          'Authorization': `Bearer ${PIPEDRIVE_API_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`Pipedrive API error: ${response.statusText}`);
