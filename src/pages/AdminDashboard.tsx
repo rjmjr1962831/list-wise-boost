@@ -24,6 +24,7 @@ import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationB
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
 import { MagicLinkGenerator } from '@/components/admin/MagicLinkGenerator';
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
+import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -187,6 +188,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Profile Synthesis
             </TabsTrigger>
+            <TabsTrigger value="bulk-press">
+              <Zap className="mr-2 h-4 w-4" />
+              Bulk Press Enrichment
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -246,6 +251,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="bulk-synthesis" className="space-y-4">
             <BulkProfileSynthesizer />
+          </TabsContent>
+
+          <TabsContent value="bulk-press" className="space-y-4">
+            <BulkPressEnricher />
           </TabsContent>
         </Tabs>
       </div>

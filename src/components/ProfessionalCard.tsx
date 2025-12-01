@@ -1769,15 +1769,35 @@ export const ProfessionalCard = ({
                           
                           if (allRecords && allRecords.length > 0) {
                             // Update all other records with the enrichment data
-                            const updatePromises = allRecords.map(record => 
-                              supabase
+                            const updatePromises = allRecords.map(async (record) => {
+                              // Merge new mentions with existing ones
+                              const { data: existingData } = await supabase
+                                .from('professionals')
+                                .select('press_mentions')
+                                .eq('id', record.id)
+                                .single();
+                              
+                              const existingMentions = Array.isArray(existingData?.press_mentions) 
+                                ? existingData.press_mentions 
+                                : [];
+                              const newMentions = data.pressMentions || [];
+                              const mergedMentions = [...existingMentions];
+                              
+                              // Add new mentions only if they don't exist (dedupe by URL)
+                              newMentions.forEach((mention: any) => {
+                                if (!mergedMentions.some((m: any) => m.url === mention.url)) {
+                                  mergedMentions.push(mention);
+                                }
+                              });
+                              
+                              return supabase
                                 .from('professionals')
                                 .update({
-                                  press_mentions: data.pressMentions || [],
+                                  press_mentions: mergedMentions,
                                   profile_last_synthesized_at: new Date().toISOString()
                                 })
-                                .eq('id', record.id)
-                            );
+                                .eq('id', record.id);
+                            });
                             
                             await Promise.all(updatePromises);
                             toast.success(`Updated ${allRecords.length + 1} records across cities`);
@@ -2024,15 +2044,35 @@ export const ProfessionalCard = ({
                                          .neq('id', professional.id);
                                        
                                        if (allRecords && allRecords.length > 0) {
-                                         const updatePromises = allRecords.map(record => 
-                                           supabase
+                                         const updatePromises = allRecords.map(async (record) => {
+                                           // Merge new mentions with existing ones
+                                           const { data: existingData } = await supabase
+                                             .from('professionals')
+                                             .select('press_mentions')
+                                             .eq('id', record.id)
+                                             .single();
+                                           
+                                           const existingMentions = Array.isArray(existingData?.press_mentions) 
+                                             ? existingData.press_mentions 
+                                             : [];
+                                           const newMentions = data.pressMentions || [];
+                                           const mergedMentions = [...existingMentions];
+                                           
+                                           // Add new mentions only if they don't exist (dedupe by URL)
+                                           newMentions.forEach((mention: any) => {
+                                             if (!mergedMentions.some((m: any) => m.url === mention.url)) {
+                                               mergedMentions.push(mention);
+                                             }
+                                           });
+                                           
+                                           return supabase
                                              .from('professionals')
                                              .update({
-                                               press_mentions: data.pressMentions || [],
+                                               press_mentions: mergedMentions,
                                                profile_last_synthesized_at: new Date().toISOString()
                                              })
-                                             .eq('id', record.id)
-                                         );
+                                             .eq('id', record.id);
+                                         });
                                          
                                          await Promise.all(updatePromises);
                                          toast.success(`Updated ${allRecords.length + 1} records across cities`);
