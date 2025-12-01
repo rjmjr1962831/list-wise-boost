@@ -14,11 +14,44 @@ interface FieldResult {
 
 export function AdminPipedriveFieldCreator() {
   const [isCreating, setIsCreating] = useState(false);
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
   const [results, setResults] = useState<{
     created: FieldResult[];
     failed: FieldResult[];
   } | null>(null);
   const { toast } = useToast();
+
+  const handleCleanupInvalidMappings = async () => {
+    setIsCleaningUp(true);
+    try {
+      // Delete mappings that don't correspond to valid Pipedrive fields
+      const invalidFields = [
+        'current_listings', 'total_sales', 'license_number', 'rank',
+        'synthesized_bio', 'is_top_agent', 'is_premier_agent', 'city_name', 'state'
+      ];
+
+      const { error } = await supabase
+        .from('pipedrive_field_mapping')
+        .delete()
+        .in('field_name', invalidFields);
+
+      if (error) throw error;
+
+      toast({
+        title: "Cleanup Complete",
+        description: `Removed ${invalidFields.length} invalid field mappings`,
+      });
+    } catch (error) {
+      console.error("Error cleaning up mappings:", error);
+      toast({
+        title: "Cleanup Error",
+        description: error instanceof Error ? error.message : "Failed to clean up mappings",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCleaningUp(false);
+    }
+  };
 
   const handleCreateFields = async () => {
     setIsCreating(true);
@@ -63,28 +96,49 @@ export function AdminPipedriveFieldCreator() {
       <CardContent className="space-y-4">
         <Alert>
           <AlertDescription>
-            This will create 9 custom fields in Pipedrive: current_listings, total_sales, license_number, 
+            This will create 10 custom fields in Pipedrive: profile_link, current_listings, total_sales, license_number, 
             rank, synthesized_bio, is_top_agent, is_premier_agent, city_name, and state.
           </AlertDescription>
         </Alert>
 
-        <Button
-          onClick={handleCreateFields}
-          disabled={isCreating}
-          className="w-full"
-        >
-          {isCreating ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Fields...
-            </>
-          ) : (
-            <>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Create Missing Fields in Pipedrive
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleCleanupInvalidMappings}
+            disabled={isCleaningUp || isCreating}
+            variant="outline"
+            className="flex-1"
+          >
+            {isCleaningUp ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Cleaning Up...
+              </>
+            ) : (
+              <>
+                <XCircle className="mr-2 h-4 w-4" />
+                Clean Up Invalid Mappings
+              </>
+            )}
+          </Button>
+
+          <Button
+            onClick={handleCreateFields}
+            disabled={isCreating || isCleaningUp}
+            className="flex-1"
+          >
+            {isCreating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating Fields...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Create Missing Fields
+              </>
+            )}
+          </Button>
+        </div>
 
         {results && (
           <div className="space-y-4 mt-6">
