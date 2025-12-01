@@ -73,14 +73,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
-                    <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* Coming Soon route for non-Arizona cities */}
-                    <Route path="/coming-soon/:stateSlug/:citySlug" element={<CityComingSoon />} />
-                    {/* Dynamic city and category routes */}
-                    <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
-                    <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
-                    <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminDashboard />} />
@@ -90,6 +83,7 @@ const App = () => (
                     {/* Static pages */}
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
                     <Route path="/book-appointment-robert" element={<BookAppointment />} />
@@ -117,6 +111,12 @@ const App = () => (
                     <Route path="/profile/:token/schedule" element={<ScheduleCall />} />
                     {/* Legacy profile view route */}
                     <Route path="/profile-view/:token" element={<ProfileView />} />
+                    {/* Coming Soon route for non-Arizona cities */}
+                    <Route path="/coming-soon/:stateSlug/:citySlug" element={<CityComingSoon />} />
+                    {/* Dynamic city and category routes - MUST BE LAST before catch-all */}
+                    <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
+                    <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
+                    <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
                     {/* Catch-all 404 route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
