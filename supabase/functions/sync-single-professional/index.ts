@@ -27,7 +27,7 @@ async function getFieldMapping(): Promise<Record<string, string>> {
   return mapping;
 }
 
-async function searchPersonByEmail(email: string): Promise<number | null> {
+async function searchPersonByEmail(email: string): Promise<{ personId: number | null; duplicates: number[] }> {
   const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=email&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const response = await fetch(url);
@@ -39,12 +39,51 @@ async function searchPersonByEmail(email: string): Promise<number | null> {
   // person object itself or wrapped under an "item" key depending on account.
   const items = data?.data?.items;
   if (data.success && Array.isArray(items) && items.length > 0) {
-    const first = items[0];
-    const personId = first?.item?.id ?? first?.id;
-    return typeof personId === "number" ? personId : null;
+    // Get all person IDs
+    const allIds = items
+      .map((item: any) => item?.item?.id ?? item?.id)
+      .filter((id: any) => typeof id === "number");
+
+    if (allIds.length === 0) {
+      return { personId: null, duplicates: [] };
+    }
+
+    // Return the oldest (first) and mark rest as duplicates
+    const [personId, ...duplicates] = allIds;
+    
+    if (duplicates.length > 0) {
+      console.log(`⚠️ Found ${duplicates.length} duplicate(s) for ${email}, will use ID ${personId}`);
+    }
+
+    return { personId, duplicates };
   }
 
-  return null;
+  return { personId: null, duplicates: [] };
+}
+
+async function deleteDuplicates(duplicateIds: number[]): Promise<void> {
+  if (duplicateIds.length === 0) return;
+
+  console.log(`🗑️ Deleting ${duplicateIds.length} duplicate contact(s)...`);
+  
+  for (const id of duplicateIds) {
+    try {
+      const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${id}?api_token=${PIPEDRIVE_API_TOKEN}`;
+      const response = await fetch(url, { method: "DELETE" });
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log(`✅ Deleted duplicate contact ID ${id}`);
+      } else {
+        console.error(`❌ Failed to delete duplicate ID ${id}:`, result);
+      }
+    } catch (err) {
+      console.error(`Error deleting duplicate ID ${id}:`, err);
+    }
+    
+    // Rate limit: 250ms between deletes
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
 }
 
 serve(async (req) => {
@@ -101,8 +140,15 @@ serve(async (req) => {
     const categorySlug = category.slug;
     const cardUrl = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`;
 
-    // Search for existing person
-    let personId = await searchPersonByEmail(professional.email);
+    // Search for existing person and handle duplicates
+    const { personId: foundPersonId, duplicates } = await searchPersonByEmail(professional.email);
+    
+    // Delete any duplicates before proceeding
+    if (duplicates.length > 0) {
+      await deleteDuplicates(duplicates);
+    }
+    
+    let personId = foundPersonId;
     const isUpdate = !!personId;
 
     const personData: Record<string, any> = {
