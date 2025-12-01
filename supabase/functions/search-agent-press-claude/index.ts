@@ -154,10 +154,35 @@ Look for references to achievements even if cited by secondary sources.`;
       }
     }
 
-    // Score and deduplicate mentions
+    // Enhanced deduplication: check both URL and content similarity
     const uniqueMentions = new Map();
+    const seenTitles = new Set<string>();
+    
     mentions.forEach(mention => {
-      if (mention.url && !uniqueMentions.has(mention.url)) {
+      if (!mention.url) return;
+      
+      // Normalize title for duplicate detection
+      const normalizedTitle = (mention.title || '').toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      // Check if we've seen a very similar title (same award from different sources)
+      let isDuplicate = false;
+      for (const seenTitle of seenTitles) {
+        // If 80% of words match, consider it a duplicate
+        const titleWords = normalizedTitle.split(' ');
+        const seenWords = seenTitle.split(' ');
+        const commonWords = titleWords.filter((w: string) => seenWords.includes(w));
+        const similarity = commonWords.length / Math.max(titleWords.length, seenWords.length);
+        
+        if (similarity > 0.8) {
+          isDuplicate = true;
+          break;
+        }
+      }
+      
+      if (!isDuplicate && !uniqueMentions.has(mention.url)) {
         // Assign credibility score based on type and source
         let credibilityScore = 5;
         const lowerSource = (mention.source || '').toLowerCase();
@@ -173,13 +198,14 @@ Look for references to achievements even if cited by secondary sources.`;
           ...mention,
           credibilityScore
         });
+        seenTitles.add(normalizedTitle);
       }
     });
 
     // Convert to array and sort by credibility
     const finalMentions = Array.from(uniqueMentions.values())
       .sort((a, b) => (b.credibilityScore || 0) - (a.credibilityScore || 0))
-      .slice(0, 10); // Top 10 mentions
+      .slice(0, 10); // Top 10 unique mentions
 
     console.log(`Found ${finalMentions.length} press mentions for ${agentName}`);
 

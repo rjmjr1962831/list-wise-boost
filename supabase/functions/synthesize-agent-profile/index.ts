@@ -184,13 +184,43 @@ IMPORTANT: Even if no press research is provided, you MUST extract achievements 
     const synthesizedData = JSON.parse(toolCall.function.arguments);
     console.log('Synthesized data:', synthesizedData);
 
-    // Sort achievements by credibility
+    // Sort achievements by credibility and deduplicate similar titles
     if (synthesizedData.notable_achievements) {
       synthesizedData.notable_achievements.sort((a: any, b: any) => 
         (b.credibility || 0) - (a.credibility || 0)
       );
-      // Keep top 5
-      synthesizedData.notable_achievements = synthesizedData.notable_achievements.slice(0, 5);
+      
+      // Deduplicate similar achievement titles
+      const seenTitles = new Set<string>();
+      const uniqueAchievements = [];
+      
+      for (const achievement of synthesizedData.notable_achievements) {
+        const normalizedTitle = (achievement.title || '').toLowerCase()
+          .replace(/[^a-z0-9\s]/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        
+        let isDuplicate = false;
+        for (const seenTitle of seenTitles) {
+          const titleWords = normalizedTitle.split(' ');
+          const seenWords = seenTitle.split(' ');
+          const commonWords = titleWords.filter((w: string) => seenWords.includes(w));
+          const similarity = commonWords.length / Math.max(titleWords.length, seenWords.length);
+          
+          if (similarity > 0.8) {
+            isDuplicate = true;
+            break;
+          }
+        }
+        
+        if (!isDuplicate) {
+          uniqueAchievements.push(achievement);
+          seenTitles.add(normalizedTitle);
+        }
+      }
+      
+      // Keep top 10 unique achievements
+      synthesizedData.notable_achievements = uniqueAchievements.slice(0, 10);
     }
 
     // Update professional record
