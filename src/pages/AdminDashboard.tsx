@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search } from "lucide-react";
 import { toast } from "sonner";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
@@ -23,6 +23,7 @@ import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedri
 import { AdminPipedriveDuplicateCleanup } from "@/components/admin/AdminPipedriveDuplicateCleanup";
 import { BulkPipedriveSyncAll } from "@/components/admin/BulkPipedriveSyncAll";
 import { PipedriveCleanupDuplicates } from "@/components/admin/PipedriveCleanupDuplicates";
+import { AdminPipedriveFieldInspector } from "@/components/admin/AdminPipedriveFieldInspector";
 import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
 import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
@@ -159,6 +160,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Pipedrive Fields
             </TabsTrigger>
+            <TabsTrigger value="pipedrive-field-inspector">
+              <Search className="mr-2 h-4 w-4" />
+              Field Inspector
+            </TabsTrigger>
             <TabsTrigger value="pipedrive-cleanup">
               <RefreshCw className="mr-2 h-4 w-4" />
               Pipedrive Cleanup
@@ -235,6 +240,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="pipedrive-fields" className="space-y-4">
             <AdminPipedriveFields />
+          </TabsContent>
+
+          <TabsContent value="pipedrive-field-inspector" className="space-y-4">
+            <AdminPipedriveFieldInspector />
           </TabsContent>
 
           <TabsContent value="pipedrive-cleanup" className="space-y-4">
