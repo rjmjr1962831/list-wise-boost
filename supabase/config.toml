@@ -169,7 +169,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.generate-test-profile-token]
-verify_jwt = true
+verify_jwt = false
 
 [functions.repair-pipedrive-profile-links]
 verify_jwt = true
