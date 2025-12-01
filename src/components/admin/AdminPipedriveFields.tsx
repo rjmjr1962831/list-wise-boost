@@ -43,6 +43,7 @@ const FIELD_NAMES = [
   { name: 'zillow_profile_url', label: 'Zillow Profile URL' },
   
   // URLs
+  { name: 'profile_link', label: 'Profile Link (Top10Lists Agent Funnel)' },
   { name: 'card_url', label: 'Top10Lists Card URL' },
 ];
 

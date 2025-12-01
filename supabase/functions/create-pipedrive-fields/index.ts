@@ -21,6 +21,7 @@ interface FieldDefinition {
 }
 
 const FIELDS_TO_CREATE: FieldDefinition[] = [
+  { field_name: "profile_link", pipedrive_name: "Profile Link", field_type: "varchar" },
   { field_name: "current_listings", pipedrive_name: "Current Listings", field_type: "double" },
   { field_name: "total_sales", pipedrive_name: "Total Sales", field_type: "double" },
   { field_name: "license_number", pipedrive_name: "License Number", field_type: "varchar" },
@@ -37,7 +38,7 @@ async function createPipedriveField(field: FieldDefinition): Promise<string | nu
     const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/personFields?api_token=${PIPEDRIVE_API_TOKEN}`;
     
     const body: any = {
-      name: field.pipedrive_name,
+      field_name: field.pipedrive_name,
       field_type: field.field_type,
     };
 
