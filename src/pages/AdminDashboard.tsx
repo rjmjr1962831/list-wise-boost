@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
@@ -25,6 +25,7 @@ import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
 import { MagicLinkGenerator } from '@/components/admin/MagicLinkGenerator';
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
 import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
+import CacheManagement from '@/components/admin/CacheManagement';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -192,6 +193,10 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Bulk Press Enrichment
             </TabsTrigger>
+            <TabsTrigger value="cache-management">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Cache Management
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -255,6 +260,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="bulk-press" className="space-y-4">
             <BulkPressEnricher />
+          </TabsContent>
+
+          <TabsContent value="cache-management" className="space-y-4">
+            <CacheManagement />
           </TabsContent>
         </Tabs>
       </div>
