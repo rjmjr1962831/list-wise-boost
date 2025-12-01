@@ -359,15 +359,15 @@ export default function EditProfile() {
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-full p-0" align="start">
-                    <Command>
+                  <PopoverContent className="w-[400px] p-0 z-[100] bg-background" align="start" side="bottom">
+                    <Command className="bg-background">
                       <CommandInput 
                         placeholder="Search or add specialty..." 
                         value={specialtySearch}
                         onValueChange={setSpecialtySearch}
                       />
-                      <CommandList>
-                        <CommandEmpty>
+                      <CommandList className="max-h-[300px] overflow-y-auto bg-background">
+                        <CommandEmpty className="bg-background">
                           <div className="p-2 text-center">
                             <p className="text-sm text-muted-foreground mb-2">No specialty found</p>
                             <Button 
@@ -379,12 +379,13 @@ export default function EditProfile() {
                             </Button>
                           </div>
                         </CommandEmpty>
-                        <CommandGroup>
+                        <CommandGroup className="bg-background">
                           {availableSpecialties.map((specialty) => (
                             <CommandItem
                               key={specialty.id}
                               value={specialty.name}
                               onSelect={() => addSpecialtyFromList(specialty.name)}
+                              className="cursor-pointer hover:bg-accent"
                             >
                               <Check
                                 className={cn(
