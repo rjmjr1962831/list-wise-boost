@@ -157,7 +157,7 @@ serve(async (req) => {
       phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
     };
 
-    // Map ALL configured custom fields (keep in sync with bulk sync)
+    // Map configured custom fields - only include fields that won't cause validation errors
     const dynamicFields: Record<string, any> = {
       // Core IDs & URLs
       supabase_id: professional.id,
@@ -168,39 +168,34 @@ serve(async (req) => {
             : `https://top10lists.us${professional.profile_link}`)
         : null,
 
-      // Professional Details
-      years_experience: professional.years_experience,
-      current_listings: professional.current_listings,
-      total_sales: professional.total_sales,
-      license_number: professional.license_number,
-      business_name: professional.business_name || professional.company,
+      // Professional Details (all as strings)
+      years_experience: professional.years_experience?.toString() || '',
+      current_listings: professional.current_listings?.toString() || '',
+      total_sales: professional.total_sales?.toString() || '',
+      license_number: professional.license_number || '',
+      business_name: professional.business_name || professional.company || '',
       specialty: Array.isArray(professional.specialty)
         ? professional.specialty.join(', ')
-        : professional.specialty,
-      website: professional.website,
-      rank: professional.rank,
-      synthesized_bio: professional.synthesized_bio || professional.description,
-
-      // Badges / flags
-      is_top_agent: professional.is_top_agent ? 'YES' : 'NO',
-      is_premier_agent: professional.is_premier_agent ? 'YES' : 'NO',
-      is_brand_builder: professional.is_brand_builder ? 'YES' : 'NO',
-      email_verified: professional.email_verified_at ? 'YES' : 'NO',
-
-      // Status
-      active_status: professional.active ? 'Active' : 'Inactive',
+        : (professional.specialty || ''),
+      website: professional.website || '',
+      rank: professional.rank?.toString() || '',
+      synthesized_bio: professional.synthesized_bio || professional.description || '',
 
       // Location
-      city_name: city.name,
-      state: city.state,
+      city_name: city.name || '',
+      state: city.state || '',
 
-      // Zillow Data
-      zillow_profile_url: professional.zillow_profile_url,
-      zillow_rating: professional.review_stars_rating,
-      zillow_reviews: professional.num_total_reviews,
-      zillow_page: professional.zillow_search_page,
-      zillow_position: professional.zillow_search_position,
+      // Zillow Data (all as strings)
+      zillow_profile_url: professional.zillow_profile_url || '',
+      zillow_rating: professional.review_stars_rating?.toString() || '',
+      zillow_reviews: professional.num_total_reviews?.toString() || '',
+      zillow_page: professional.zillow_search_page?.toString() || '',
+      zillow_position: professional.zillow_search_position?.toString() || '',
+      agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1).toString() : '',
     };
+    
+    // Skip boolean/dropdown fields (is_top_agent, is_premier_agent, is_brand_builder, email_verified)
+    // These require specific Pipedrive option IDs which vary by account
     // Apply mapped fields to custom_fields object (API v2 format)
     personData.custom_fields = {};
     for (const [fieldName, value] of Object.entries(dynamicFields)) {
