@@ -54,7 +54,7 @@ serve(async (req) => {
       );
     }
 
-    const email = data?.email?.[0]?.value;
+    const email = data?.emails?.[0]?.value || data?.email?.[0]?.value;
     if (!email) {
       return new Response(
         JSON.stringify({ success: false, error: "No email in payload" }),
@@ -82,7 +82,8 @@ serve(async (req) => {
 
       // Map basic fields
       if (data?.name) profUpdates.name = data.name;
-      if (data?.phone?.[0]?.value) profUpdates.phone = data.phone[0].value;
+      if (data?.phones?.[0]?.value) profUpdates.phone = data.phones[0].value;
+      else if (data?.phone?.[0]?.value) profUpdates.phone = data.phone[0].value;
 
       // Map custom fields back to professional columns
       for (const [pipedriveKey, fieldName] of Object.entries(fieldMapping)) {
@@ -143,8 +144,10 @@ serve(async (req) => {
 
     // Map Pipedrive fields back to Supabase
     if (data?.name) updates.name = data.name;
-    if (data?.email?.[0]?.value) updates.email = data.email[0].value;
-    if (data?.phone?.[0]?.value) updates.phone = data.phone[0].value;
+    if (data?.emails?.[0]?.value) updates.email = data.emails[0].value;
+    else if (data?.email?.[0]?.value) updates.email = data.email[0].value;
+    if (data?.phones?.[0]?.value) updates.phone = data.phones[0].value;
+    else if (data?.phone?.[0]?.value) updates.phone = data.phone[0].value;
 
     // Map custom fields
     for (const [pipedriveKey, fieldName] of Object.entries(fieldMapping)) {
