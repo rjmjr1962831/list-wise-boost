@@ -83,12 +83,12 @@ serve(async (req) => {
       throw new Error("Missing city or category data");
     }
 
-    // Build card URL to match bulk sync behavior
+    // Build card URL to match app route structure: /:stateSlug/:citySlug/:categorySlug/:agentSlug
     const agentSlug = professional.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    const stateSlug = city.state_slug || "az";
+    const stateSlug = city.state_slug;
     const citySlug = city.slug;
     const categorySlug = category.slug;
     const cardUrl = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`;
