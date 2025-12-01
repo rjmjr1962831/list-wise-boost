@@ -168,9 +168,9 @@ serve(async (req) => {
       phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
     };
 
-    // Map configured custom fields - only include fields that won't cause validation errors
+    // Map configured custom fields - numeric fields as numbers, text as strings
     const dynamicFields: Record<string, any> = {
-      // Core IDs & URLs
+      // Core IDs & URLs (strings)
       supabase_id: professional.id,
       card_url: cardUrl,
       profile_link: professional.profile_link 
@@ -179,30 +179,28 @@ serve(async (req) => {
             : `https://top10lists.us${professional.profile_link}`)
         : null,
 
-      // Professional Details (all as strings)
-      years_experience: professional.years_experience?.toString() || '',
-      current_listings: professional.current_listings?.toString() || '',
-      total_sales: professional.total_sales?.toString() || '',
+      // Numeric fields (send as actual numbers)
+      years_experience: professional.years_experience ?? null,
+      current_listings: professional.current_listings ?? null,
+      total_sales: professional.total_sales ?? null,
+      rank: professional.rank ?? null,
+      zillow_rating: professional.review_stars_rating ?? null,
+      zillow_reviews: professional.num_total_reviews ?? null,
+      zillow_page: professional.zillow_search_page ?? null,
+      zillow_position: professional.zillow_search_position ?? null,
+      agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1) : null,
+
+      // Text fields (strings)
       license_number: professional.license_number || '',
       business_name: professional.business_name || professional.company || '',
       specialty: Array.isArray(professional.specialty)
         ? professional.specialty.join(', ')
         : (professional.specialty || ''),
       website: professional.website || '',
-      rank: professional.rank?.toString() || '',
       synthesized_bio: professional.synthesized_bio || professional.description || '',
-
-      // Location
       city_name: city.name || '',
       state: city.state || '',
-
-      // Zillow Data (all as strings)
       zillow_profile_url: professional.zillow_profile_url || '',
-      zillow_rating: professional.review_stars_rating?.toString() || '',
-      zillow_reviews: professional.num_total_reviews?.toString() || '',
-      zillow_page: professional.zillow_search_page?.toString() || '',
-      zillow_position: professional.zillow_search_position?.toString() || '',
-      agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1).toString() : '',
     };
     
     // Skip boolean/dropdown fields (is_top_agent, is_premier_agent, is_brand_builder, email_verified)
@@ -210,7 +208,7 @@ serve(async (req) => {
     // Apply mapped fields to custom_fields object (API v2 format)
     personData.custom_fields = {};
     for (const [fieldName, value] of Object.entries(dynamicFields)) {
-      if (fieldMapping[fieldName] && value !== null && value !== undefined) {
+      if (fieldMapping[fieldName] && value !== null && value !== undefined && value !== '') {
         personData.custom_fields[fieldMapping[fieldName]] = value;
       }
     }

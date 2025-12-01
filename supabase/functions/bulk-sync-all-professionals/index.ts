@@ -18,18 +18,29 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('🚀 Starting bulk professional sync to Pipedrive...');
+    const { batch_size = 50, offset = 0 } = await req.json();
 
-    // Fetch all active professionals with email addresses
+    console.log(`🚀 Starting batch sync: offset=${offset}, batch_size=${batch_size}`);
+
+    // Fetch total count first
+    const { count: totalCount } = await supabase
+      .from('professionals')
+      .select('*', { count: 'exact', head: true })
+      .eq('active', true)
+      .not('email', 'is', null);
+
+    // Fetch batch of professionals
     const { data: professionals, error: fetchError } = await supabase
       .from('professionals')
       .select('id, name, email')
       .eq('active', true)
-      .not('email', 'is', null);
+      .not('email', 'is', null)
+      .range(offset, offset + batch_size - 1)
+      .order('created_at', { ascending: true });
 
     if (fetchError) throw fetchError;
 
-    console.log(`📊 Found ${professionals?.length || 0} active professionals with email addresses`);
+    console.log(`📊 Processing batch: ${professionals?.length || 0} professionals (${offset + 1}-${offset + (professionals?.length || 0)} of ${totalCount})`);
 
     const results = {
       total: professionals?.length || 0,
@@ -103,13 +114,20 @@ serve(async (req) => {
       }
     }
 
-    console.log(`✅ Bulk sync complete: ${results.successful} successful, ${results.failed} failed`);
+    console.log(`✅ Batch sync complete: ${results.successful} successful, ${results.failed} failed`);
+
+    const hasMore = (offset + batch_size) < (totalCount || 0);
+    const nextOffset = hasMore ? offset + batch_size : null;
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Synced ${results.successful}/${results.total} professionals to Pipedrive`,
-        results
+        message: `Synced ${results.successful}/${results.total} professionals in this batch`,
+        results,
+        hasMore,
+        nextOffset,
+        totalCount,
+        processedCount: offset + (professionals?.length || 0)
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
