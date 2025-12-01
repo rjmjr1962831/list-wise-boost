@@ -23,6 +23,7 @@ const VerifyDetails = lazy(() => import("./pages/VerifyDetails"));
 const VerifySpecialties = lazy(() => import("./pages/VerifySpecialties"));
 const VerifyCities = lazy(() => import("./pages/VerifyCities"));
 const CityLanding = lazy(() => import("./pages/CityLanding"));
+const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
 const BookAppointment = lazy(() => import("./pages/BookAppointment"));
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const CRM = lazy(() => import("./pages/CRM"));
@@ -72,6 +73,8 @@ const App = () => (
                     <Route path="/about" element={<About />} />
                     <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
+                    {/* Coming Soon route for non-Arizona cities */}
+                    <Route path="/coming-soon/:stateSlug/:citySlug" element={<CityComingSoon />} />
                     {/* Dynamic city and category routes */}
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
