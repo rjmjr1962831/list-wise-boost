@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Save } from 'lucide-react';
 import { AdminPipedriveFieldCreator } from './AdminPipedriveFieldCreator';
+import { AdminPipedriveSyncQueueManager } from './AdminPipedriveSyncQueueManager';
 
 const FIELD_NAMES = [
   // Core IDs & Status
@@ -129,6 +130,8 @@ export default function AdminPipedriveFields() {
           Configure the Pipedrive custom field API keys for data synchronization
         </p>
       </div>
+
+      <AdminPipedriveSyncQueueManager />
 
       <AdminPipedriveFieldCreator />
 

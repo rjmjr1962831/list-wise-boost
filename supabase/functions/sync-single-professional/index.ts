@@ -104,6 +104,7 @@ serve(async (req) => {
       is_premier_agent: professional.is_premier_agent ? 'YES' : 'NO',
       city_name: city.name,
       state: city.state,
+      profile_link: professional.profile_link,
     };
 
     // Apply mapped fields
