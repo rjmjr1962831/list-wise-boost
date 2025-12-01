@@ -28,14 +28,22 @@ async function getFieldMapping(): Promise<Record<string, string>> {
 }
 
 async function searchPersonByEmail(email: string): Promise<number | null> {
-  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=emails&api_token=${PIPEDRIVE_API_TOKEN}`;
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=emails&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const response = await fetch(url);
   const data = await response.json();
 
-  if (data.success && data.data?.length > 0) {
-    return data.data[0].id;
+  console.log(`🔍 Pipedrive search by email response for ${email}:`, JSON.stringify(data, null, 2));
+
+  // v2 search returns results under data.items[]. Each item may either be the
+  // person object itself or wrapped under an "item" key depending on account.
+  const items = data?.data?.items;
+  if (data.success && Array.isArray(items) && items.length > 0) {
+    const first = items[0];
+    const personId = first?.item?.id ?? first?.id;
+    return typeof personId === "number" ? personId : null;
   }
+
   return null;
 }
 
