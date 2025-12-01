@@ -180,3 +180,6 @@ verify_jwt = false
 [functions.request-review]
 verify_jwt = false
 
+[functions.setup-arizona-pricing]
+verify_jwt = false
+

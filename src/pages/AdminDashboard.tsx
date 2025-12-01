@@ -29,6 +29,7 @@ import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
 import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 import CacheManagement from '@/components/admin/CacheManagement';
+import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -200,6 +201,10 @@ const AdminDashboard = () => {
               <RefreshCw className="mr-2 h-4 w-4" />
               Cache Management
             </TabsTrigger>
+            <TabsTrigger value="arizona-pricing">
+              <Database className="mr-2 h-4 w-4" />
+              Arizona Pricing
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -270,6 +275,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="cache-management" className="space-y-4">
             <CacheManagement />
+          </TabsContent>
+
+          <TabsContent value="arizona-pricing" className="space-y-4">
+            <ArizonaPricingSetup />
           </TabsContent>
         </Tabs>
       </div>

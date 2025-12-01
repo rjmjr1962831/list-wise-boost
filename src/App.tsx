@@ -49,6 +49,7 @@ const CheckProfile = lazy(() => import("./pages/CheckProfile"));
 const WelcomeInterstitial = lazy(() => import("./pages/profile/WelcomeInterstitial"));
 const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
 const PricingInterstitial = lazy(() => import("./pages/profile/PricingInterstitial"));
+const SelectCities = lazy(() => import("./pages/profile/SelectCities"));
 const SelectionPlaceholder = lazy(() => import("./pages/profile/SelectionPlaceholder"));
 const ScheduleCall = lazy(() => import("./pages/profile/ScheduleCall"));
 
@@ -107,6 +108,7 @@ const App = () => (
                     <Route path="/profile/:token" element={<WelcomeInterstitial />} />
                     <Route path="/profile/:token/edit" element={<EditProfile />} />
                     <Route path="/profile/:token/pricing" element={<PricingInterstitial />} />
+                    <Route path="/profile/:token/select-cities" element={<SelectCities />} />
                     <Route path="/profile/:token/select" element={<SelectionPlaceholder />} />
                     <Route path="/profile/:token/schedule" element={<ScheduleCall />} />
                     {/* Legacy profile view route */}
