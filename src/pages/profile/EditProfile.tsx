@@ -6,9 +6,12 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, X, Check, ChevronsUpDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 
 export default function EditProfile() {
   const { token } = useParams<{ token: string }>();
@@ -17,6 +20,9 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<any>(null);
+  const [availableSpecialties, setAvailableSpecialties] = useState<Array<{ id: string; name: string }>>([]);
+  const [specialtySearchOpen, setSpecialtySearchOpen] = useState(false);
+  const [specialtySearch, setSpecialtySearch] = useState('');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -39,7 +45,7 @@ export default function EditProfile() {
     zip_code: ''
   });
 
-  const [newTag, setNewTag] = useState({ specialty: '', certification: '', language: '', service_area: '' });
+  const [newTag, setNewTag] = useState({ certification: '', language: '', service_area: '' });
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -49,6 +55,17 @@ export default function EditProfile() {
       }
 
       try {
+        // Load specialties
+        const { data: specialtiesData } = await supabase
+          .from('specialties')
+          .select('id, name')
+          .eq('active', true)
+          .order('name');
+        
+        if (specialtiesData) {
+          setAvailableSpecialties(specialtiesData);
+        }
+
         const { data, error } = await supabase.functions.invoke('validate-profile-token', {
           body: { token }
         });
@@ -110,9 +127,57 @@ export default function EditProfile() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const addTag = (field: 'specialty' | 'certifications' | 'languages' | 'service_areas') => {
-    const tagKey = field === 'specialty' ? 'specialty' : 
-                   field === 'certifications' ? 'certification' :
+  const addSpecialtyFromList = (specialtyName: string) => {
+    if (!formData.specialty.includes(specialtyName)) {
+      handleInputChange('specialty', [...formData.specialty, specialtyName]);
+    }
+    setSpecialtySearchOpen(false);
+  };
+
+  const addNewSpecialty = async () => {
+    const value = specialtySearch.trim();
+    if (!value) return;
+
+    // Check if already exists in list
+    const existing = availableSpecialties.find(s => s.name.toLowerCase() === value.toLowerCase());
+    if (existing) {
+      addSpecialtyFromList(existing.name);
+      setSpecialtySearch('');
+      return;
+    }
+
+    // Add to form immediately
+    if (!formData.specialty.includes(value)) {
+      handleInputChange('specialty', [...formData.specialty, value]);
+    }
+
+    // Save to database in background
+    try {
+      const { data: newSpecialty, error } = await supabase
+        .from('specialties')
+        .insert({
+          name: value,
+          category_id: professional?.category_id,
+          active: true
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error saving specialty:', error);
+      } else if (newSpecialty) {
+        setAvailableSpecialties(prev => [...prev, { id: newSpecialty.id, name: newSpecialty.name }].sort((a, b) => a.name.localeCompare(b.name)));
+      }
+    } catch (err) {
+      console.error('Error adding specialty:', err);
+    }
+
+    setSpecialtySearch('');
+    setSpecialtySearchOpen(false);
+  };
+
+  const addTag = (field: 'certifications' | 'languages' | 'service_areas') => {
+    const tagKey = field === 'certifications' ? 'certification' :
                    field === 'languages' ? 'language' : 'service_area';
     const value = newTag[tagKey].trim();
     
@@ -281,17 +346,63 @@ export default function EditProfile() {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Specialties</h2>
               <div>
-                <Label htmlFor="specialty">Add Specialty</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="specialty"
-                    placeholder="e.g., First-Time Buyers"
-                    value={newTag.specialty}
-                    onChange={(e) => setNewTag(prev => ({ ...prev, specialty: e.target.value }))}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag('specialty'))}
-                  />
-                  <Button type="button" onClick={() => addTag('specialty')}>Add</Button>
-                </div>
+                <Label>Select or Add Specialty</Label>
+                <Popover open={specialtySearchOpen} onOpenChange={setSpecialtySearchOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={specialtySearchOpen}
+                      className="w-full justify-between"
+                    >
+                      Select specialty...
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput 
+                        placeholder="Search or add specialty..." 
+                        value={specialtySearch}
+                        onValueChange={setSpecialtySearch}
+                      />
+                      <CommandList>
+                        <CommandEmpty>
+                          <div className="p-2 text-center">
+                            <p className="text-sm text-muted-foreground mb-2">No specialty found</p>
+                            <Button 
+                              size="sm" 
+                              onClick={addNewSpecialty}
+                              disabled={!specialtySearch.trim()}
+                            >
+                              Add "{specialtySearch}"
+                            </Button>
+                          </div>
+                        </CommandEmpty>
+                        <CommandGroup>
+                          {availableSpecialties.map((specialty) => (
+                            <CommandItem
+                              key={specialty.id}
+                              value={specialty.name}
+                              onSelect={() => addSpecialtyFromList(specialty.name)}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  formData.specialty.includes(specialty.name) ? "opacity-100" : "opacity-0"
+                                )}
+                              />
+                              {specialty.name}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Select from existing specialties or type to add a new one
+                </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.specialty.map(tag => (
                     <Badge key={tag} variant="secondary">
