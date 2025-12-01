@@ -1456,6 +1456,60 @@ export type Database = {
         }
         Relationships: []
       }
+      review_requests: {
+        Row: {
+          brokerage: string
+          created_at: string
+          email: string
+          estimated_transactions: string | null
+          full_name: string
+          id: string
+          license_number: string
+          message: string | null
+          notes: string | null
+          phone: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          years_licensed: number | null
+        }
+        Insert: {
+          brokerage: string
+          created_at?: string
+          email: string
+          estimated_transactions?: string | null
+          full_name: string
+          id?: string
+          license_number: string
+          message?: string | null
+          notes?: string | null
+          phone: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          years_licensed?: number | null
+        }
+        Update: {
+          brokerage?: string
+          created_at?: string
+          email?: string
+          estimated_transactions?: string | null
+          full_name?: string
+          id?: string
+          license_number?: string
+          message?: string | null
+          notes?: string | null
+          phone?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          years_licensed?: number | null
+        }
+        Relationships: []
+      }
       scrape_jobs: {
         Row: {
           agents_found: number | null
