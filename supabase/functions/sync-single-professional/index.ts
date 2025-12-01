@@ -220,6 +220,18 @@ serve(async (req) => {
       custom_fields: personData.custom_fields
     }, null, 2));
 
+    async function sendToPipedrive(method: string, url: string) {
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(personData),
+      });
+
+      const data = await response.json();
+      console.log(`📥 Pipedrive response (${method}):`, JSON.stringify(data, null, 2));
+      return { response, data };
+    }
+
     let url: string;
     let method: string;
 
@@ -231,15 +243,15 @@ serve(async (req) => {
       method = "POST";
     }
 
-    const response = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(personData),
-    });
+    let { data } = await sendToPipedrive(method, url);
 
-    const data = await response.json();
-
-    console.log(`📥 Pipedrive response:`, JSON.stringify(data, null, 2));
+    // If the contact we're trying to update has been deleted in Pipedrive,
+    // fall back to creating a fresh person instead of failing the sync.
+    if (!data.success && isUpdate && typeof data.error === "string" && data.error.includes("deleted")) {
+      console.warn(`⚠️ Primary contact ${personId} is deleted in Pipedrive, creating a new person instead.`);
+      const createUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
+      ({ data } = await sendToPipedrive("POST", createUrl));
+    }
 
     if (!data.success) {
       console.error(`❌ Pipedrive error for ${professional.name}:`, JSON.stringify(data, null, 2));
