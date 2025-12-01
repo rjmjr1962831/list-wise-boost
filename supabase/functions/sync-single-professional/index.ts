@@ -147,12 +147,20 @@ serve(async (req) => {
       zillow_page: professional.zillow_search_page,
       zillow_position: professional.zillow_search_position,
     };
-    // Apply mapped fields
+    // Apply mapped fields to custom_fields object (API v2 format)
+    personData.custom_fields = {};
     for (const [fieldName, value] of Object.entries(dynamicFields)) {
       if (fieldMapping[fieldName] && value !== null && value !== undefined) {
-        personData[fieldMapping[fieldName]] = value;
+        personData.custom_fields[fieldMapping[fieldName]] = value;
       }
     }
+
+    console.log(`📤 Sending to Pipedrive (${isUpdate ? 'UPDATE' : 'CREATE'}):`, JSON.stringify({
+      name: personData.name,
+      email: personData.emails[0]?.value,
+      custom_fields_count: Object.keys(personData.custom_fields).length,
+      custom_fields: personData.custom_fields
+    }, null, 2));
 
     let url: string;
     let method: string;
@@ -173,7 +181,10 @@ serve(async (req) => {
 
     const data = await response.json();
 
+    console.log(`📥 Pipedrive response:`, JSON.stringify(data, null, 2));
+
     if (!data.success) {
+      console.error(`❌ Pipedrive error for ${professional.name}:`, JSON.stringify(data, null, 2));
       throw new Error(`Failed to ${isUpdate ? 'update' : 'create'} person: ${JSON.stringify(data)}`);
     }
 
