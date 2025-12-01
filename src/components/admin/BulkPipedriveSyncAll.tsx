@@ -13,25 +13,62 @@ export function BulkPipedriveSyncAll() {
     total: 0,
     successful: 0,
     failed: 0,
-    errors: [] as any[]
+    errors: [] as any[],
+    totalCount: 0,
+    processedCount: 0
   });
   const { toast } = useToast();
 
   const handleBulkSync = async () => {
     setIsSyncing(true);
-    setProgress({ total: 0, successful: 0, failed: 0, errors: [] });
+    setProgress({ total: 0, successful: 0, failed: 0, errors: [], totalCount: 0, processedCount: 0 });
 
     try {
-      const { data, error } = await supabase.functions.invoke('bulk-sync-all-professionals');
+      let offset = 0;
+      let hasMore = true;
+      const batchSize = 50;
+      let aggregatedResults = {
+        total: 0,
+        successful: 0,
+        failed: 0,
+        errors: [] as any[],
+        totalCount: 0,
+        processedCount: 0
+      };
 
-      if (error) throw error;
+      while (hasMore) {
+        console.log(`Processing batch at offset ${offset}...`);
 
-      setProgress(data.results);
+        const { data, error } = await supabase.functions.invoke('bulk-sync-all-professionals', {
+          body: { batch_size: batchSize, offset }
+        });
+
+        if (error) throw error;
+
+        // Aggregate results
+        aggregatedResults.total += data.results.total;
+        aggregatedResults.successful += data.results.successful;
+        aggregatedResults.failed += data.results.failed;
+        aggregatedResults.errors.push(...data.results.errors);
+        aggregatedResults.totalCount = data.totalCount;
+        aggregatedResults.processedCount = data.processedCount;
+
+        // Update UI
+        setProgress({ ...aggregatedResults });
+
+        hasMore = data.hasMore;
+        offset = data.nextOffset || offset + batchSize;
+
+        // Small delay between batches
+        if (hasMore) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
 
       toast({
         title: 'Bulk Sync Complete',
-        description: `✅ ${data.results.successful} successful, ❌ ${data.results.failed} failed`,
-        variant: data.results.failed > 0 ? 'default' : 'default'
+        description: `✅ ${aggregatedResults.successful} successful, ❌ ${aggregatedResults.failed} failed`,
+        variant: aggregatedResults.failed > 0 ? 'default' : 'default'
       });
     } catch (error: any) {
       toast({
@@ -71,12 +108,24 @@ export function BulkPipedriveSyncAll() {
             {isSyncing ? 'Syncing All Professionals...' : 'Sync All Professionals to Pipedrive'}
           </Button>
 
-          {progress.total > 0 && (
+          {progress.totalCount > 0 && (
             <div className="space-y-4 pt-4 border-t">
+              <div className="mb-4">
+                <p className="text-sm text-muted-foreground mb-2">
+                  Progress: {progress.processedCount} of {progress.totalCount} professionals
+                </p>
+                <div className="w-full bg-secondary rounded-full h-2">
+                  <div 
+                    className="bg-primary h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${(progress.processedCount / progress.totalCount) * 100}%` }}
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-3 gap-4">
                 <div className="text-center">
                   <div className="text-2xl font-bold">{progress.total}</div>
-                  <div className="text-sm text-muted-foreground">Total</div>
+                  <div className="text-sm text-muted-foreground">Processed</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600 flex items-center justify-center gap-1">
