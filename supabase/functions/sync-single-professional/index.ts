@@ -83,6 +83,16 @@ serve(async (req) => {
       throw new Error("Missing city or category data");
     }
 
+    // Build card URL to match bulk sync behavior
+    const agentSlug = professional.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    const stateSlug = city.state_slug || "az";
+    const citySlug = city.slug;
+    const categorySlug = category.slug;
+    const cardUrl = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`;
+
     // Search for existing person
     let personId = await searchPersonByEmail(professional.email);
     const isUpdate = !!personId;
@@ -93,20 +103,46 @@ serve(async (req) => {
       phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
     };
 
-    // Map custom fields
+    // Map ALL configured custom fields (keep in sync with bulk sync)
     const dynamicFields: Record<string, any> = {
+      // Core IDs & URLs
+      supabase_id: professional.id,
+      card_url: cardUrl,
+      profile_link: professional.profile_link,
+
+      // Professional Details
+      years_experience: professional.years_experience,
       current_listings: professional.current_listings,
       total_sales: professional.total_sales,
       license_number: professional.license_number,
+      business_name: professional.business_name || professional.company,
+      specialty: Array.isArray(professional.specialty)
+        ? professional.specialty.join(', ')
+        : professional.specialty,
+      website: professional.website,
       rank: professional.rank,
       synthesized_bio: professional.synthesized_bio || professional.description,
+
+      // Badges / flags
       is_top_agent: professional.is_top_agent ? 'YES' : 'NO',
       is_premier_agent: professional.is_premier_agent ? 'YES' : 'NO',
+      is_brand_builder: professional.is_brand_builder ? 'YES' : 'NO',
+      email_verified: professional.email_verified_at ? 'YES' : 'NO',
+
+      // Status
+      active_status: professional.active ? 'Active' : 'Inactive',
+
+      // Location
       city_name: city.name,
       state: city.state,
-      profile_link: professional.profile_link,
-    };
 
+      // Zillow Data
+      zillow_profile_url: professional.zillow_profile_url,
+      zillow_rating: professional.review_stars_rating,
+      zillow_reviews: professional.num_total_reviews,
+      zillow_page: professional.zillow_search_page,
+      zillow_position: professional.zillow_search_position,
+    };
     // Apply mapped fields
     for (const [fieldName, value] of Object.entries(dynamicFields)) {
       if (fieldMapping[fieldName] && value !== null && value !== undefined) {
