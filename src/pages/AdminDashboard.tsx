@@ -24,6 +24,7 @@ import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
 import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
 import { MagicLinkGenerator } from '@/components/admin/MagicLinkGenerator';
+import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
 import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 import CacheManagement from '@/components/admin/CacheManagement';
@@ -253,6 +254,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="magic-links" className="space-y-4">
+            <AgentFunnelTester />
             <MagicLinkGenerator />
           </TabsContent>
 

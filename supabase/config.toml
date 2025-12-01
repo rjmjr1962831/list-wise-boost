@@ -168,4 +168,9 @@ verify_jwt = false
 [functions.track-profile-event]
 verify_jwt = false
 
+[functions.generate-test-profile-token]
+verify_jwt = true
+
+[functions.repair-pipedrive-profile-links]
+verify_jwt = true
 
