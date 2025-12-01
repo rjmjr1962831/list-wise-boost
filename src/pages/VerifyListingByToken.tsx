@@ -25,25 +25,37 @@ export default function VerifyListingByToken() {
       }
 
       try {
-        // Check if token is a UUID (professional ID) or a verification token
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
-        
-        let query = supabase
+
+        // 1) PRIMARY LOOKUP: treat token as verification_token (current behavior for all magic links)
+        let { data, error } = await supabase
           .from('professionals')
           .select(`
             *,
             cities:city_id (id, name, state, state_slug, slug),
             categories:category_id (id, name, slug)
-          `);
+          `)
+          .eq('verification_token', token)
+          .maybeSingle();
 
-        // Query by ID or verification_token depending on format
-        if (isUUID) {
-          query = query.eq('id', token);
-        } else {
-          query = query.eq('verification_token', token);
+        let lookedUpById = false;
+
+        // 2) FALLBACK: if nothing found and it looks like a UUID, try matching by id
+        if (!data && !error && isUUID) {
+          const fallbackResult = await supabase
+            .from('professionals')
+            .select(`
+              *,
+              cities:city_id (id, name, state, state_slug, slug),
+              categories:category_id (id, name, slug)
+            `)
+            .eq('id', token)
+            .maybeSingle();
+
+          data = fallbackResult.data;
+          error = fallbackResult.error;
+          lookedUpById = !!data;
         }
-
-        const { data, error } = await query.maybeSingle();
 
         if (error) {
           console.error('Error fetching professional:', error);
@@ -52,13 +64,13 @@ export default function VerifyListingByToken() {
         }
 
         if (!data) {
-          console.log('No professional found for token:', token);
+          console.log('No professional found for token or id:', token);
           setPageState('invalid');
           return;
         }
 
-        // Check if token is expired (only for verification_token, not ID)
-        if (!isUUID) {
+        // Only enforce token expiration when we actually matched on verification_token
+        if (!lookedUpById) {
           const expiresAt = data.verification_token_expires_at;
           if (expiresAt && new Date(expiresAt) < new Date()) {
             console.log('Token expired:', expiresAt);
