@@ -4,21 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Check, Star } from 'lucide-react';
+import { Loader2, Check, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { PRICING_TIERS } from '@/types/pricing';
 
-interface PricingPlan {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
+interface PricingTierSummary {
+  tier_name: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
+  city_count: number;
   price_monthly: number;
   price_annual: number;
-  features: string[];
-  cities_included: number;
-  is_featured: boolean;
+  sample_cities: string[];
 }
 
 export default function PricingInterstitial() {
@@ -26,8 +23,8 @@ export default function PricingInterstitial() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [plans, setPlans] = useState<PricingPlan[]>([]);
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [tiers, setTiers] = useState<PricingTierSummary[]>([]);
+  const [isAnnual, setIsAnnual] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
@@ -52,24 +49,42 @@ export default function PricingInterstitial() {
           return;
         }
 
-        // Fetch pricing plans
-        const { data: plansData, error: plansError } = await supabase
-          .from('pricing_plans')
+        // Fetch Arizona city pricing
+        const { data: cityData, error: cityError } = await supabase
+          .from('arizona_city_pricing')
           .select('*')
           .eq('is_active', true)
-          .order('display_order');
+          .order('value_tier', { ascending: false });
 
-        if (plansError) throw plansError;
+        if (cityError) throw cityError;
 
-        // Convert features from Json to string[]
-        const formattedPlans = (plansData || []).map(plan => ({
-          ...plan,
-          features: Array.isArray(plan.features) 
-            ? (plan.features as string[])
-            : []
-        })) as PricingPlan[];
+        // Group by tier and create summary
+        const tierMap = new Map<string, PricingTierSummary>();
+        
+        (cityData || []).forEach(city => {
+          const existing = tierMap.get(city.tier_name);
+          if (existing) {
+            existing.city_count++;
+            if (existing.sample_cities.length < 3) {
+              existing.sample_cities.push(city.city_name);
+            }
+          } else {
+            tierMap.set(city.tier_name, {
+              tier_name: city.tier_name as any,
+              city_count: 1,
+              price_monthly: city.price_monthly,
+              price_annual: city.price_annual,
+              sample_cities: [city.city_name]
+            });
+          }
+        });
 
-        setPlans(formattedPlans);
+        const sortedTiers = Array.from(tierMap.values()).sort((a, b) => {
+          const order = { Platinum: 4, Gold: 3, Silver: 2, Bronze: 1 };
+          return order[b.tier_name] - order[a.tier_name];
+        });
+
+        setTiers(sortedTiers);
 
         // Track pricing view
         supabase.functions.invoke('track-profile-event', {
@@ -103,7 +118,7 @@ export default function PricingInterstitial() {
     supabase.functions.invoke('track-profile-event', {
       body: { token, event_name: 'selection_clicked_from_pricing' }
     });
-    navigate(`/profile/${token}/select`);
+    navigate(`/profile/${token}/select-cities`);
   };
 
   if (loading) {
@@ -113,8 +128,6 @@ export default function PricingInterstitial() {
       </div>
     );
   }
-
-  const annualSavings = 20; // 20% savings on annual
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
@@ -133,10 +146,10 @@ export default function PricingInterstitial() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Expand Your Reach (Optional)
+            Expand Your Reach Across Arizona
           </h1>
           <p className="text-xl text-muted-foreground mb-6">
-            Your free listing is confirmed. Want to maximize your visibility?
+            Your free city listing is confirmed. Add more cities to maximize your visibility.
           </p>
 
           {/* Billing Toggle */}
@@ -151,81 +164,99 @@ export default function PricingInterstitial() {
             />
             <Label htmlFor="billing" className={isAnnual ? 'font-semibold' : ''}>
               Annual
-              <span className="ml-2 text-primary text-sm">
-                (Save {annualSavings}%)
+              <span className="ml-2 text-green-600 text-sm font-medium">
+                (Save 2 months FREE)
               </span>
             </Label>
           </div>
         </div>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {plans.map((plan) => {
-            const price = isAnnual ? plan.price_annual : plan.price_monthly;
-            const isFree = plan.slug === 'free';
-            const monthlyEquivalent = isAnnual && price > 0 ? (price / 12).toFixed(2) : null;
+        {/* Pricing Tiers */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {tiers.map((tier) => {
+            const tierConfig = PRICING_TIERS.find(t => t.name === tier.tier_name);
+            if (!tierConfig) return null;
+
+            const price = isAnnual ? tier.price_annual / 12 : tier.price_monthly;
+            const totalPrice = isAnnual ? tier.price_annual : tier.price_monthly;
 
             return (
               <Card
-                key={plan.id}
-                className={`p-6 relative ${
-                  plan.is_featured
-                    ? 'border-2 border-primary shadow-xl scale-105'
-                    : 'border-border'
-                }`}
+                key={tier.tier_name}
+                className={`p-6 ${tierConfig.bgColor} ${tierConfig.borderColor} border-2 hover:shadow-lg transition-shadow`}
               >
-                {plan.is_featured && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground px-4 py-1">
-                      <Star className="h-3 w-3 mr-1" />
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-
                 <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-foreground mb-2">{plan.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
-                  
-                  <div className="mb-4">
-                    <div className="text-4xl font-bold text-foreground">
-                      ${price}
-                      {!isFree && <span className="text-lg text-muted-foreground">/mo</span>}
-                    </div>
-                    {monthlyEquivalent && (
-                      <div className="text-sm text-muted-foreground">
-                        Billed ${plan.price_annual}/year
-                      </div>
-                    )}
-                  </div>
-
-                  {isFree ? (
-                    <Button className="w-full" variant="outline" disabled>
-                      <Check className="h-4 w-4 mr-2" />
-                      Already Included
-                    </Button>
-                  ) : (
-                    <Button className="w-full" onClick={handleProceedToSelection}>
-                      Select Plan
-                    </Button>
+                  <Badge className={`${tierConfig.badgeColor} mb-3`}>
+                    {tier.tier_name}
+                  </Badge>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">
+                    ${Math.round(price)}
+                    <span className="text-sm text-muted-foreground">/mo</span>
+                  </h3>
+                  {isAnnual && (
+                    <p className="text-xs text-muted-foreground">
+                      ${totalPrice}/year
+                    </p>
                   )}
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {tierConfig.description}
+                  </p>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="text-sm font-semibold text-foreground mb-2">
-                    {plan.cities_included} {plan.cities_included === 1 ? 'City' : 'Cities'} Included
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-2 text-sm">
+                    <MapPin className={`h-4 w-4 ${tierConfig.color}`} />
+                    <span className="font-medium">
+                      {tier.city_count} {tier.city_count === 1 ? 'City' : 'Cities'}
+                    </span>
                   </div>
-                  {plan.features.map((feature, idx) => (
-                    <div key={idx} className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
-                    </div>
-                  ))}
+                  <div className="text-xs text-muted-foreground">
+                    Including: {tier.sample_cities.join(', ')}
+                    {tier.city_count > 3 && ` +${tier.city_count - 3} more`}
+                  </div>
                 </div>
+
+                <Button 
+                  className="w-full" 
+                  onClick={handleProceedToSelection}
+                  variant={tier.tier_name === 'Gold' ? 'default' : 'outline'}
+                >
+                  View Cities
+                </Button>
               </Card>
             );
           })}
         </div>
+
+        {/* Value Prop */}
+        <Card className="p-8 mb-8 border-2 border-primary/20">
+          <h2 className="text-2xl font-bold text-center text-foreground mb-6">
+            Why Add More Cities?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-3xl mb-2">🎯</div>
+              <h3 className="font-semibold text-foreground mb-2">Targeted Exposure</h3>
+              <p className="text-sm text-muted-foreground">
+                Get found by buyers and sellers in specific Arizona markets
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl mb-2">🤖</div>
+              <h3 className="font-semibold text-foreground mb-2">AI Discovery</h3>
+              <p className="text-sm text-muted-foreground">
+                Appear when ChatGPT, Claude, and Perplexity search for agents
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl mb-2">📈</div>
+              <h3 className="font-semibold text-foreground mb-2">Market Leadership</h3>
+              <p className="text-sm text-muted-foreground">
+                Position yourself as a regional expert across multiple cities
+              </p>
+            </div>
+          </div>
+        </Card>
 
         {/* CTAs */}
         <Card className="p-8 text-center">
