@@ -331,6 +331,118 @@ export type Database = {
         }
         Relationships: []
       }
+      cache_invalidation_queue: {
+        Row: {
+          attempts: number
+          category_id: string
+          city_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          max_attempts: number
+          processed_at: string | null
+          reason: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          category_id: string
+          city_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number
+          processed_at?: string | null
+          reason: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          category_id?: string
+          city_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          max_attempts?: number
+          processed_at?: string | null
+          reason?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cache_invalidation_queue_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cache_invalidation_queue_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canonical_city_rankings: {
+        Row: {
+          category_id: string
+          city_id: string
+          created_at: string
+          id: string
+          last_calculated_at: string
+          professional_id: string
+          rank: number
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          category_id: string
+          city_id: string
+          created_at?: string
+          id?: string
+          last_calculated_at?: string
+          professional_id: string
+          rank: number
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string
+          city_id?: string
+          created_at?: string
+          id?: string
+          last_calculated_at?: string
+          professional_id?: string
+          rank?: number
+          score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canonical_city_rankings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canonical_city_rankings_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canonical_city_rankings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       categories: {
         Row: {
           active: boolean
