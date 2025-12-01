@@ -34,7 +34,7 @@ const FIELDS_TO_CREATE: FieldDefinition[] = [
 
 async function createPipedriveField(field: FieldDefinition): Promise<string | null> {
   try {
-    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/personFields?api_token=${PIPEDRIVE_API_TOKEN}`;
+    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/personFields?api_token=${PIPEDRIVE_API_TOKEN}`;
     
     const body: any = {
       name: field.pipedrive_name,

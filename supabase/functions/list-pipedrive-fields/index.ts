@@ -22,7 +22,7 @@ serve(async (req) => {
 
     // Fetch all person fields from Pipedrive
     const response = await fetch(
-      `https://${pipedriveDomain}.pipedrive.com/api/v1/personFields?api_token=${pipedriveApiToken}`,
+      `https://${pipedriveDomain}.pipedrive.com/api/v2/personFields?api_token=${pipedriveApiToken}`,
       {
         method: 'GET',
         headers: {

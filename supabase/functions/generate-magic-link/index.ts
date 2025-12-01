@@ -92,9 +92,9 @@ serve(async (req) => {
         personData[fieldMapping.pipedrive_key] = profileLink;
 
         const pipedriveResponse = await fetch(
-          `https://${pipedriveDomain}.pipedrive.com/api/v1/persons/${pipedrive_person_id}?api_token=${pipedriveToken}`,
+          `https://${pipedriveDomain}.pipedrive.com/api/v2/persons/${pipedrive_person_id}?api_token=${pipedriveToken}`,
           {
-            method: 'PUT',
+            method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(personData)
           }

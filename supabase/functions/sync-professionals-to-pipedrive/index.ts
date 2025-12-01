@@ -57,31 +57,31 @@ async function getFieldMapping(): Promise<Record<string, string>> {
 }
 
 async function searchPersonByEmail(email: string): Promise<number | null> {
-  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons/search?term=${encodeURIComponent(email)}&fields=email&api_token=${PIPEDRIVE_API_TOKEN}`;
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=emails&api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const response = await fetch(url);
   const data = await response.json();
 
-  if (data.success && data.data?.items?.length > 0) {
-    return data.data.items[0].item.id;
+  if (data.success && data.data?.length > 0) {
+    return data.data[0].id;
   }
   return null;
 }
 
 async function searchOrganizationByName(name: string): Promise<number | null> {
-  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/organizations/search?term=${encodeURIComponent(name)}&api_token=${PIPEDRIVE_API_TOKEN}`;
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/organizations/search?term=${encodeURIComponent(name)}&api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const response = await fetch(url);
   const data = await response.json();
 
-  if (data.success && data.data?.items?.length > 0) {
-    return data.data.items[0].item.id;
+  if (data.success && data.data?.length > 0) {
+    return data.data[0].id;
   }
   return null;
 }
 
 async function createOrganization(name: string): Promise<number> {
-  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/organizations?api_token=${PIPEDRIVE_API_TOKEN}`;
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/organizations?api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const response = await fetch(url, {
     method: "POST",
@@ -119,8 +119,8 @@ async function createOrUpdatePerson(
 
   const personData: Record<string, any> = {
     name: professional.name,
-    email: professional.email ? [{ value: professional.email, primary: true }] : undefined,
-    phone: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
+    emails: professional.email ? [{ value: professional.email, primary: true }] : undefined,
+    phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
   };
 
   // Link to organization if company exists
@@ -179,10 +179,10 @@ async function createOrUpdatePerson(
   let method: string;
 
   if (personId) {
-    url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons/${personId}?api_token=${PIPEDRIVE_API_TOKEN}`;
-    method = "PUT";
+    url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${personId}?api_token=${PIPEDRIVE_API_TOKEN}`;
+    method = "PATCH";
   } else {
-    url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
+    url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
     method = "POST";
   }
 
