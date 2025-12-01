@@ -10,8 +10,8 @@ import { MapPin } from 'lucide-react';
 export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
   
-  // Redirect to coming soon page if not Arizona
-  if (stateSlug && stateSlug !== 'arizona') {
+  // Redirect to coming soon page if not Arizona (accept both 'arizona' and 'az')
+  if (stateSlug && stateSlug !== 'arizona' && stateSlug !== 'az') {
     return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
   }
   
