@@ -8,10 +8,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function AdminPipedriveSyncQueueManager() {
   const [isClearing, setIsClearing] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [queueStats, setQueueStats] = useState<Record<string, number> | null>(null);
   const { toast } = useToast();
 
   const fetchQueueStats = async () => {
+    setIsRefreshing(true);
     try {
       const { data, error } = await supabase
         .from("pipedrive_sync_queue")
@@ -20,13 +22,26 @@ export function AdminPipedriveSyncQueueManager() {
       if (error) throw error;
 
       const stats: Record<string, number> = {};
+      let total = 0;
       data?.forEach((item) => {
         stats[item.status] = (stats[item.status] || 0) + 1;
+        total++;
       });
 
       setQueueStats(stats);
+      toast({
+        title: "Stats Refreshed",
+        description: `Found ${total} total entries in queue`,
+      });
     } catch (error) {
       console.error("Error fetching queue stats:", error);
+      toast({
+        title: "Refresh Failed",
+        description: error instanceof Error ? error.message : "Unknown error",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -75,17 +90,24 @@ export function AdminPipedriveSyncQueueManager() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {queueStats && (
-          <Alert>
+        {queueStats !== null && (
+          <Alert variant={Object.keys(queueStats).length === 0 ? "default" : undefined}>
             <AlertDescription>
               <div className="font-semibold mb-2">Current Queue Status:</div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                {Object.entries(queueStats).map(([status, count]) => (
-                  <div key={status}>
-                    <span className="font-medium capitalize">{status}:</span> {count}
+              {Object.keys(queueStats).length === 0 ? (
+                <p className="text-green-600 font-medium">✓ Queue is empty - no pending syncs</p>
+              ) : (
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  {Object.entries(queueStats).map(([status, count]) => (
+                    <div key={status}>
+                      <span className="font-medium capitalize">{status}:</span> {count}
+                    </div>
+                  ))}
+                  <div className="col-span-2 mt-2 pt-2 border-t">
+                    <span className="font-bold">Total:</span> {Object.values(queueStats).reduce((a, b) => a + b, 0)}
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </AlertDescription>
           </Alert>
         )}
@@ -103,9 +125,19 @@ export function AdminPipedriveSyncQueueManager() {
             onClick={fetchQueueStats}
             variant="outline"
             className="flex-1"
+            disabled={isRefreshing}
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh Stats
+            {isRefreshing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh Stats
+              </>
+            )}
           </Button>
 
           <Button
