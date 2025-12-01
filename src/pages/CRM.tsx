@@ -3,11 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, UserPlus, CheckSquare, BarChart3 } from "lucide-react";
+import { LogOut, Users, UserPlus, CheckSquare, BarChart3, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { LeadsManager } from "@/components/crm/LeadsManager";
 import { FollowUpsManager } from "@/components/crm/FollowUpsManager";
 import { CRMDashboard } from "@/components/crm/CRMDashboard";
+import { PipedriveCleanupDuplicates } from "@/components/admin/PipedriveCleanupDuplicates";
 
 const CRM = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -88,7 +89,7 @@ const CRM = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="inline-flex w-full max-w-2xl">
+          <TabsList className="inline-flex w-full max-w-3xl">
             <TabsTrigger value="overview" className="flex-1">
               <BarChart3 className="mr-2 h-4 w-4" />
               Overview
@@ -100,6 +101,10 @@ const CRM = () => {
             <TabsTrigger value="followups" className="flex-1">
               <CheckSquare className="mr-2 h-4 w-4" />
               Follow-ups
+            </TabsTrigger>
+            <TabsTrigger value="cleanup" className="flex-1">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Cleanup
             </TabsTrigger>
           </TabsList>
 
@@ -113,6 +118,10 @@ const CRM = () => {
 
           <TabsContent value="followups">
             <FollowUpsManager />
+          </TabsContent>
+
+          <TabsContent value="cleanup">
+            <PipedriveCleanupDuplicates />
           </TabsContent>
         </Tabs>
       </div>
