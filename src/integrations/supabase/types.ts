@@ -110,6 +110,63 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_city_subscriptions: {
+        Row: {
+          city_id: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          price_paid: number | null
+          professional_id: string
+          started_at: string | null
+          stripe_subscription_id: string | null
+          subscription_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          city_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          price_paid?: number | null
+          professional_id: string
+          started_at?: string | null
+          stripe_subscription_id?: string | null
+          subscription_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          city_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          price_paid?: number | null
+          professional_id?: string
+          started_at?: string | null
+          stripe_subscription_id?: string | null
+          subscription_type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_city_subscriptions_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "arizona_city_pricing"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_city_subscriptions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_types: {
         Row: {
           active: boolean | null
@@ -201,6 +258,60 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      arizona_city_pricing: {
+        Row: {
+          city_name: string
+          city_slug: string
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          price_annual: number
+          price_monthly: number
+          state: string | null
+          state_abbr: string | null
+          tier_name: string
+          updated_at: string | null
+          value_tier: number
+          zip_codes: string[]
+        }
+        Insert: {
+          city_name: string
+          city_slug: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          price_annual: number
+          price_monthly: number
+          state?: string | null
+          state_abbr?: string | null
+          tier_name: string
+          updated_at?: string | null
+          value_tier: number
+          zip_codes: string[]
+        }
+        Update: {
+          city_name?: string
+          city_slug?: string
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          price_annual?: number
+          price_monthly?: number
+          state?: string | null
+          state_abbr?: string | null
+          tier_name?: string
+          updated_at?: string | null
+          value_tier?: number
+          zip_codes?: string[]
+        }
+        Relationships: []
       }
       arizona_licenses: {
         Row: {
