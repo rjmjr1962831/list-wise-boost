@@ -26,7 +26,7 @@ async function verifyEmail(queueItem: any, clearoutApiKey: string, supabaseClien
       },
       body: JSON.stringify({
         email: queueItem.email,
-        timeout: 30,
+        timeout: 3000,
       }),
     });
 
