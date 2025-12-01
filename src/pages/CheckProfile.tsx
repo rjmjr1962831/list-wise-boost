@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, CheckCircle2, Search, Mail, Phone, CreditCard, ExternalLink } from 'lucide-react';
+import { Loader2, CheckCircle2, Search, Mail, Phone, CreditCard, ExternalLink, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { ProfessionalCard } from '@/components/ProfessionalCard';
 
 type PageState = 'lookup' | 'searching' | 'found' | 'not-found' | 'review-submitted';
 
@@ -19,6 +20,8 @@ export default function CheckProfile() {
   const [pageState, setPageState] = useState<PageState>('lookup');
   const [filledFields, setFilledFields] = useState(0);
   const [foundAgentName, setFoundAgentName] = useState('');
+  const [foundProfessional, setFoundProfessional] = useState<any>(null);
+  const [foundToken, setFoundToken] = useState('');
 
   // Lookup form fields
   const [email, setEmail] = useState('');
@@ -70,12 +73,9 @@ export default function CheckProfile() {
 
       if (data.found) {
         setFoundAgentName(data.name);
+        setFoundProfessional(data.professional);
+        setFoundToken(data.token);
         setPageState('found');
-        
-        // Auto-redirect after 2 seconds
-        setTimeout(() => {
-          navigate(`/profile/${data.token}`);
-        }, 2000);
       } else {
         setPageState('not-found');
         // Pre-fill review form with lookup data
@@ -218,19 +218,75 @@ export default function CheckProfile() {
         )}
 
         {/* Found State */}
-        {pageState === 'found' && (
-          <Card>
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <CheckCircle2 className="h-16 w-16 text-green-500 mb-4" />
-              <h2 className="text-2xl font-bold mb-2">You're on the List! 🎉</h2>
-              <p className="text-muted-foreground mb-4">
-                Great news, {foundAgentName}! You're featured in our directory.
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Redirecting to your profile...
-              </p>
-            </CardContent>
-          </Card>
+        {pageState === 'found' && foundProfessional && (
+          <div className="space-y-6">
+            {/* Fixed Accept Now Button */}
+            <div className="fixed top-4 right-4 z-50">
+              <Button 
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-8"
+                onClick={() => navigate(`/profile/${foundToken}/pricing`)}
+              >
+                Accept Now
+              </Button>
+            </div>
+
+            {/* Success Banner */}
+            <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
+              <CardContent className="flex items-center gap-3 py-4">
+                <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <div>
+                  <p className="font-semibold text-green-900 dark:text-green-100">
+                    You're on the List! 🎉
+                  </p>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    Great news, {foundAgentName}! You're featured in our directory.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Heading Section */}
+            <div className="space-y-3">
+              <h2 className="text-3xl font-bold">Here is what your listing looks like.</h2>
+              <div className="flex items-start justify-between gap-4">
+                <h3 className="text-xl text-muted-foreground">
+                  Please review it. You can edit it by clicking the edit button.
+                </h3>
+                <Button 
+                  variant="outline"
+                  size="lg"
+                  className="shrink-0"
+                  onClick={() => navigate(`/profile/${foundToken}/edit`)}
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit Profile
+                </Button>
+              </div>
+            </div>
+
+            {/* Professional Card */}
+            <ProfessionalCard 
+              professional={foundProfessional}
+              accentColor="primary"
+              quizCompleted={true}
+            />
+
+            {/* Bottom CTA */}
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="py-6 text-center">
+                <p className="text-lg mb-4">
+                  Ready to claim your listing and get started?
+                </p>
+                <Button 
+                  size="lg"
+                  onClick={() => navigate(`/profile/${foundToken}/pricing`)}
+                >
+                  Accept Now & View Pricing
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {/* Not Found State */}
