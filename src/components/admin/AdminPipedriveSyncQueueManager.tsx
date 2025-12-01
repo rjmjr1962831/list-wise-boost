@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 export function AdminPipedriveSyncQueueManager() {
   const [isClearing, setIsClearing] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [queueStats, setQueueStats] = useState<Record<string, number> | null>(null);
   const { toast } = useToast();
 
@@ -42,6 +43,31 @@ export function AdminPipedriveSyncQueueManager() {
       });
     } finally {
       setIsRefreshing(false);
+    }
+  };
+
+  const processQueue = async () => {
+    setIsProcessing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("process-pipedrive-sync-queue");
+
+      if (error) throw error;
+
+      toast({
+        title: "Queue Processing Complete",
+        description: `Processed: ${data.processed}, Succeeded: ${data.succeeded}, Failed: ${data.failed}`,
+      });
+
+      await fetchQueueStats();
+    } catch (error) {
+      console.error("Error processing queue:", error);
+      toast({
+        title: "Processing Failed",
+        description: error instanceof Error ? error.message : "Failed to process queue",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -120,31 +146,51 @@ export function AdminPipedriveSyncQueueManager() {
           </AlertDescription>
         </Alert>
 
-        <div className="flex gap-2">
-          <Button
-            onClick={fetchQueueStats}
-            variant="outline"
-            className="flex-1"
-            disabled={isRefreshing}
-          >
-            {isRefreshing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Refreshing...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh Stats
-              </>
-            )}
-          </Button>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <Button
+              onClick={fetchQueueStats}
+              variant="outline"
+              className="flex-1"
+              disabled={isRefreshing}
+            >
+              {isRefreshing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Refresh Stats
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={processQueue}
+              disabled={isProcessing}
+              className="flex-1"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Process Queue Now
+                </>
+              )}
+            </Button>
+          </div>
 
           <Button
             onClick={clearStuckEntries}
             disabled={isClearing}
             variant="destructive"
-            className="flex-1"
+            className="w-full"
           >
             {isClearing ? (
               <>

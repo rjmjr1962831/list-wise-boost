@@ -69,20 +69,22 @@ export function BulkPipedriveReQueue() {
         return;
       }
 
-      // Insert all professionals into queue (ON CONFLICT will prevent duplicates)
+      // Delete existing completed/failed entries and insert fresh pending entries
+      await supabase
+        .from("pipedrive_sync_queue")
+        .delete()
+        .in("professional_id", professionals.map(p => p.id));
+
+      // Insert all professionals into queue as fresh pending entries
       const { error: insertError } = await supabase
         .from("pipedrive_sync_queue")
-        .upsert(
+        .insert(
           professionals.map(p => ({
             professional_id: p.id,
             status: 'pending',
             attempts: 0,
             next_retry_at: new Date().toISOString(),
-          })),
-          { 
-            onConflict: 'professional_id',
-            ignoreDuplicates: false 
-          }
+          }))
         );
 
       if (insertError) throw insertError;
