@@ -19,6 +19,7 @@ import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager"
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
 import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
+import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedriveProfileLinkRepair";
 import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
 import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
@@ -212,6 +213,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
+            <AdminPipedriveProfileLinkRepair />
             <AdminPipedriveAutoSync />
             <AdminPipedriveSync />
           </TabsContent>
