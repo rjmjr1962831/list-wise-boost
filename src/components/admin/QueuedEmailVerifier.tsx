@@ -40,7 +40,7 @@ export const QueuedEmailVerifier = () => {
   const [stats, setStats] = useState<QueueStats>({ total: 0, pending: 0, processing: 0, completed: 0, failed: 0, failedVerifications: 0 });
   const [recentItems, setRecentItems] = useState<QueueItem[]>([]);
   const [limit, setLimit] = useState(20);
-  const [delaySeconds, setDelaySeconds] = useState(3);
+  const [delaySeconds, setDelaySeconds] = useState(15);
   const [concurrency, setConcurrency] = useState(5);
   const [citySlug, setCitySlug] = useState<string>('');
   const [cities, setCities] = useState<Array<{ name: string; slug: string }>>([]);
@@ -400,14 +400,14 @@ export const QueuedEmailVerifier = () => {
             Queue-Based Email Verifier
           </CardTitle>
           <CardDescription>
-            Process {concurrency} emails in parallel with configurable delays • {unverifiedCount} unverified emails
+            Process {concurrency} emails in parallel with configurable delays • {unverifiedCount} unverified emails • API limit: 25 requests/min
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertDescription>
               Concurrent processing verifies {concurrency} emails in parallel with atomic queue locking to prevent duplicates.
-              Configure concurrency (1-10) and delay between batches. Cost: ~$0.02 per verification.
+              Configure concurrency (1-10) and delay between batches. <strong>Clearout API limit: 25 requests/min.</strong> With concurrency={concurrency} and delay={delaySeconds}s, rate ≈ {Math.round((concurrency / delaySeconds) * 60)} req/min. Cost: ~$0.02 per verification.
             </AlertDescription>
           </Alert>
 
@@ -479,10 +479,10 @@ export const QueuedEmailVerifier = () => {
               <label className="text-sm font-medium">Delay (seconds):</label>
               <input
                 type="number"
-                min="1"
-                max="10"
+                min="10"
+                max="60"
                 value={delaySeconds}
-                onChange={(e) => setDelaySeconds(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => setDelaySeconds(Math.max(10, parseInt(e.target.value) || 15))}
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 disabled={loading || processing}
               />
