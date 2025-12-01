@@ -20,6 +20,7 @@ import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
 import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
 import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedriveProfileLinkRepair";
+import { AdminPipedriveDuplicateCleanup } from "@/components/admin/AdminPipedriveDuplicateCleanup";
 import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
 import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
@@ -217,6 +218,7 @@ const AdminDashboard = () => {
             <AdminPipedriveProfileLinkRepair />
             <AdminPipedriveAutoSync />
             <AdminPipedriveSync />
+            <AdminPipedriveDuplicateCleanup />
           </TabsContent>
 
           <TabsContent value="pipedrive-fields" className="space-y-4">
