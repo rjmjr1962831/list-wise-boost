@@ -61,27 +61,38 @@ async function searchPersonByEmail(email: string): Promise<{ personId: number | 
   return { personId: null, duplicates: [] };
 }
 
-async function deleteDuplicates(duplicateIds: number[]): Promise<void> {
+async function mergeDuplicates(primaryPersonId: number, duplicateIds: number[]): Promise<void> {
   if (duplicateIds.length === 0) return;
 
-  console.log(`🗑️ Deleting ${duplicateIds.length} duplicate contact(s)...`);
+  console.log(`🔀 Merging ${duplicateIds.length} duplicate contact(s) into primary ID ${primaryPersonId}...`);
   
-  for (const id of duplicateIds) {
+  for (const duplicateId of duplicateIds) {
     try {
-      const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${id}?api_token=${PIPEDRIVE_API_TOKEN}`;
-      const response = await fetch(url, { method: "DELETE" });
+      // Use Pipedrive's merge API to merge duplicate into primary contact
+      const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons/${primaryPersonId}/merge?api_token=${PIPEDRIVE_API_TOKEN}`;
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ merge_with_id: duplicateId })
+      });
+      
       const result = await response.json();
       
       if (result.success) {
-        console.log(`✅ Deleted duplicate contact ID ${id}`);
+        console.log(`✅ Merged duplicate contact ID ${duplicateId} into primary ID ${primaryPersonId}`);
       } else {
-        console.error(`❌ Failed to delete duplicate ID ${id}:`, result);
+        // Skip "already deleted" errors silently
+        if (result.error && result.error.includes("deleted")) {
+          console.log(`⚠️ Skipping duplicate ID ${duplicateId} (already deleted)`);
+        } else {
+          console.error(`❌ Failed to merge duplicate ID ${duplicateId}:`, result);
+        }
       }
     } catch (err) {
-      console.error(`Error deleting duplicate ID ${id}:`, err);
+      console.error(`Error merging duplicate ID ${duplicateId}:`, err);
     }
     
-    // Rate limit: 250ms between deletes
+    // Rate limit: 250ms between merges
     await new Promise(resolve => setTimeout(resolve, 250));
   }
 }
@@ -143,9 +154,9 @@ serve(async (req) => {
     // Search for existing person and handle duplicates
     const { personId: foundPersonId, duplicates } = await searchPersonByEmail(professional.email);
     
-    // Delete any duplicates before proceeding
-    if (duplicates.length > 0) {
-      await deleteDuplicates(duplicates);
+    // Merge any duplicates into the primary contact before proceeding
+    if (duplicates.length > 0 && foundPersonId) {
+      await mergeDuplicates(foundPersonId, duplicates);
     }
     
     let personId = foundPersonId;
