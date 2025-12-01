@@ -174,3 +174,9 @@ verify_jwt = false
 [functions.repair-pipedrive-profile-links]
 verify_jwt = true
 
+[functions.lookup-agent]
+verify_jwt = false
+
+[functions.request-review]
+verify_jwt = false
+
