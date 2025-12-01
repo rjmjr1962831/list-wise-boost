@@ -38,23 +38,22 @@ serve(async (req) => {
 
     const data = await response.json();
     
-    // Filter to custom fields and format nicely
-    const customFields = data.data
-      .filter((field: any) => field.edit_flag === true)
-      .map((field: any) => ({
-        key: field.key,
-        name: field.name,
-        field_type: field.field_type,
-        options: field.options || []
-      }));
+    // Include all person fields (both custom and built-in) so existing fields like Profile_link show up
+    const allFields = data.data.map((field: any) => ({
+      key: field.key,
+      name: field.name,
+      field_type: field.field_type,
+      options: field.options || [],
+      is_custom: field.is_custom_field ?? field.edit_flag ?? false,
+    }));
 
-    console.log(`Found ${customFields.length} custom person fields`);
+    console.log(`Found ${allFields.length} person fields`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        fields: customFields,
-        total: customFields.length
+        fields: allFields,
+        total: allFields.length,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
