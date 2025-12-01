@@ -306,15 +306,20 @@ export const QueuedEmailVerifier = () => {
 
     setLoading(true);
     try {
-      // First get the items to reset
-      const { data: itemsToReset } = await supabase
+      // Get all completed items with their verification results
+      const { data: itemsToReset, error: fetchError } = await supabase
         .from('email_verification_queue')
         .select('id, verification_result')
         .eq('status', 'completed')
         .not('verification_result', 'is', null);
 
-      if (!itemsToReset) {
-        toast.info('No failed verifications found');
+      if (fetchError) {
+        console.error('Fetch error:', fetchError);
+        throw fetchError;
+      }
+
+      if (!itemsToReset || itemsToReset.length === 0) {
+        toast.info('No completed items with verification results found');
         return;
       }
 
@@ -323,29 +328,42 @@ export const QueuedEmailVerifier = () => {
         .filter((item: any) => item.verification_result?.status === 'failed')
         .map((item: any) => item.id);
 
+      console.log('Items to reset:', failedIds.length, 'out of', itemsToReset.length);
+
       if (failedIds.length === 0) {
         toast.info('No failed verifications found');
         return;
       }
 
-      // Reset them to pending
-      const { error } = await supabase
-        .from('email_verification_queue')
-        .update({
-          status: 'pending',
-          attempts: 0,
-          error_message: null,
-          started_at: null,
-          completed_at: null,
-          verification_result: null
-        })
-        .in('id', failedIds);
+      // Reset them one by one to avoid RLS issues
+      let resetCount = 0;
+      for (const id of failedIds) {
+        const { error: updateError } = await supabase
+          .from('email_verification_queue')
+          .update({
+            status: 'pending',
+            attempts: 0,
+            error_message: null,
+            started_at: null,
+            completed_at: null,
+            verification_result: null
+          })
+          .eq('id', id);
 
-      if (error) throw error;
+        if (!updateError) {
+          resetCount++;
+        } else {
+          console.error('Error updating item:', id, updateError);
+        }
+      }
 
-      toast.success(`Reset ${failedIds.length} failed verifications to pending`);
-      fetchStats();
-      fetchRecentItems();
+      if (resetCount > 0) {
+        toast.success(`Reset ${resetCount} failed verifications to pending`);
+        fetchStats();
+        fetchRecentItems();
+      } else {
+        toast.error('Failed to reset any verifications - check console for details');
+      }
     } catch (error: any) {
       console.error('Error resetting failed verifications:', error);
       toast.error(`Failed to reset: ${error.message}`);
