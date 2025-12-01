@@ -44,6 +44,7 @@ const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
 const AgentProfile = lazy(() => import("./pages/AgentProfile"));
 const CheckProfile = lazy(() => import("./pages/CheckProfile"));
+const VerifyListingByToken = lazy(() => import("./pages/VerifyListingByToken"));
 
 // Agent funnel pages
 const WelcomeInterstitial = lazy(() => import("./pages/profile/WelcomeInterstitial"));
@@ -104,8 +105,8 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
-                    {/* Agent funnel routes */}
-                    <Route path="/profile/:token" element={<WelcomeInterstitial />} />
+                    {/* Agent funnel routes - Magic link landing page */}
+                    <Route path="/profile/:token" element={<VerifyListingByToken />} />
                     <Route path="/profile/:token/edit" element={<EditProfile />} />
                     <Route path="/profile/:token/pricing" element={<PricingInterstitial />} />
                     <Route path="/profile/:token/select-cities" element={<SelectCities />} />
