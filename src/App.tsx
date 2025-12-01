@@ -43,6 +43,7 @@ const RankingMethodology = lazy(() => import("./pages/RankingMethodology"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
 const AgentProfile = lazy(() => import("./pages/AgentProfile"));
+const CheckProfile = lazy(() => import("./pages/CheckProfile"));
 
 // Agent funnel pages
 const WelcomeInterstitial = lazy(() => import("./pages/profile/WelcomeInterstitial"));
@@ -72,6 +73,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
+                    <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Coming Soon route for non-Arizona cities */}
                     <Route path="/coming-soon/:stateSlug/:citySlug" element={<CityComingSoon />} />
