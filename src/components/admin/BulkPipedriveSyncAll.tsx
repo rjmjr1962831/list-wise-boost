@@ -100,12 +100,12 @@ export function BulkPipedriveSyncAll() {
         <CardContent className="space-y-4">
           <Button 
             onClick={handleBulkSync} 
-            disabled={isSyncing}
+            disabled={true}
             size="lg"
             className="w-full"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-            {isSyncing ? 'Syncing All Professionals...' : 'Sync All Professionals to Pipedrive'}
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Bulk Sync Temporarily Disabled (duplicate issue)
           </Button>
 
           {progress.totalCount > 0 && (
