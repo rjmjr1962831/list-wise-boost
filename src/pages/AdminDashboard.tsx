@@ -22,6 +22,7 @@ import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSyn
 import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedriveProfileLinkRepair";
 import { AdminPipedriveDuplicateCleanup } from "@/components/admin/AdminPipedriveDuplicateCleanup";
 import { BulkPipedriveSyncAll } from "@/components/admin/BulkPipedriveSyncAll";
+import { PipedriveCleanupDuplicates } from "@/components/admin/PipedriveCleanupDuplicates";
 import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
 import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
 import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
@@ -158,6 +159,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Pipedrive Fields
             </TabsTrigger>
+            <TabsTrigger value="pipedrive-cleanup">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Pipedrive Cleanup
+            </TabsTrigger>
             <TabsTrigger value="enrichment-progress">
               <Zap className="mr-2 h-4 w-4" />
               Enrichment Progress
@@ -230,6 +235,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="pipedrive-fields" className="space-y-4">
             <AdminPipedriveFields />
+          </TabsContent>
+
+          <TabsContent value="pipedrive-cleanup" className="space-y-4">
+            <PipedriveCleanupDuplicates />
           </TabsContent>
 
           <TabsContent value="enrichment-progress" className="space-y-4">
