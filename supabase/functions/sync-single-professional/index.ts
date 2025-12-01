@@ -28,7 +28,7 @@ async function getFieldMapping(): Promise<Record<string, string>> {
 }
 
 async function searchPersonByEmail(email: string): Promise<number | null> {
-  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=emails&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=email&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const response = await fetch(url);
   const data = await response.json();
