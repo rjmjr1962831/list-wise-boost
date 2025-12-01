@@ -13,17 +13,32 @@ export function BulkPipedriveReQueue() {
 
   const checkStats = async () => {
     try {
+      // First get IDs already in pending queue
+      const { data: queueData, error: queueError } = await supabase
+        .from("pipedrive_sync_queue")
+        .select("professional_id")
+        .eq("status", "pending");
+
+      if (queueError) throw queueError;
+
+      const queuedIds = queueData?.map(q => q.professional_id) || [];
+
       // Count professionals not in queue
-      const { count, error } = await supabase
+      let query = supabase
         .from("professionals")
         .select("*", { count: "exact", head: true })
         .eq("active", true)
-        .not("email", "is", null)
-        .not("id", "in", `(SELECT professional_id FROM pipedrive_sync_queue WHERE status = 'pending')`);
+        .not("email", "is", null);
+
+      if (queuedIds.length > 0) {
+        query = query.not("id", "in", `(${queuedIds.join(",")})`);
+      }
+
+      const { count, error } = await query;
 
       if (error) throw error;
 
-      setStats({ total: count || 0, queued: 0 });
+      setStats({ total: count || 0, queued: queuedIds.length });
     } catch (error) {
       console.error("Error checking stats:", error);
       toast({
