@@ -25,15 +25,25 @@ export default function VerifyListingByToken() {
       }
 
       try {
-        const { data, error } = await supabase
+        // Check if token is a UUID (professional ID) or a verification token
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
+        
+        let query = supabase
           .from('professionals')
           .select(`
             *,
             cities:city_id (id, name, state, state_slug, slug),
             categories:category_id (id, name, slug)
-          `)
-          .eq('verification_token', token)
-          .maybeSingle();
+          `);
+
+        // Query by ID or verification_token depending on format
+        if (isUUID) {
+          query = query.eq('id', token);
+        } else {
+          query = query.eq('verification_token', token);
+        }
+
+        const { data, error } = await query.maybeSingle();
 
         if (error) {
           console.error('Error fetching professional:', error);
@@ -47,12 +57,14 @@ export default function VerifyListingByToken() {
           return;
         }
 
-        // Check if token is expired
-        const expiresAt = data.verification_token_expires_at;
-        if (expiresAt && new Date(expiresAt) < new Date()) {
-          console.log('Token expired:', expiresAt);
-          setPageState('expired');
-          return;
+        // Check if token is expired (only for verification_token, not ID)
+        if (!isUUID) {
+          const expiresAt = data.verification_token_expires_at;
+          if (expiresAt && new Date(expiresAt) < new Date()) {
+            console.log('Token expired:', expiresAt);
+            setPageState('expired');
+            return;
+          }
         }
 
         // Check if professional is active
