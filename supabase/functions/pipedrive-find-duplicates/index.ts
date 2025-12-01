@@ -18,6 +18,7 @@ interface DuplicateContact {
   name: string;
   add_time: string;
   professional_id?: string;
+  data_richness?: number;
 }
 
 interface DuplicateGroup {
@@ -31,7 +32,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, duplicates } = await req.json();
+    const { action, duplicates, cleanupMethod = 'delete' } = await req.json();
 
     if (action === "scan") {
       console.log("🔍 Starting duplicate scan...");
@@ -99,7 +100,7 @@ serve(async (req) => {
     }
 
     if (action === "cleanup") {
-      console.log("🧹 Starting cleanup of duplicates...");
+      console.log(`🧹 Starting cleanup of ${duplicates.length} duplicate groups (method: ${cleanupMethod})...`);
 
       if (!duplicates || !Array.isArray(duplicates)) {
         throw new Error("Duplicates array is required for cleanup");
@@ -111,43 +112,71 @@ serve(async (req) => {
       for (const group of duplicates as DuplicateGroup[]) {
         console.log(`Cleaning ${group.email}...`);
 
-        // Sort by add_time to keep the oldest
-        const sortedContacts = [...group.contacts].sort((a, b) =>
-          new Date(a.add_time).getTime() - new Date(b.add_time).getTime()
-        );
+        // Sort by data_richness if available, otherwise by add_time
+        const sortedContacts = [...group.contacts].sort((a, b) => {
+          if (a.data_richness !== undefined && b.data_richness !== undefined) {
+            if (b.data_richness !== a.data_richness) {
+              return b.data_richness - a.data_richness;
+            }
+          }
+          return new Date(a.add_time).getTime() - new Date(b.add_time).getTime();
+        });
 
         const keepContact = sortedContacts[0];
-        const deleteContacts = sortedContacts.slice(1);
+        const duplicateContacts = sortedContacts.slice(1);
 
         console.log(`Keeping: ${keepContact.name} (ID: ${keepContact.id})`);
-        console.log(`Deleting: ${deleteContacts.length} duplicate(s)`);
+        console.log(`Processing: ${duplicateContacts.length} duplicate(s)`);
 
-        // Delete duplicates
-        for (const contact of deleteContacts) {
+        // Process duplicates
+        for (const contact of duplicateContacts) {
           try {
-            const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${contact.id}?api_token=${PIPEDRIVE_API_TOKEN}`;
-            const response = await fetch(url, { method: "DELETE" });
-            const result = await response.json();
+            if (cleanupMethod === 'merge') {
+              // Use Pipedrive merge API
+              const mergeUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${keepContact.id}/merge?api_token=${PIPEDRIVE_API_TOKEN}`;
+              const mergeResponse = await fetch(mergeUrl, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ merge_with_id: contact.id }),
+              });
 
-            if (result.success) {
-              console.log(`✅ Deleted duplicate ${contact.id}`);
+              const mergeResult = await mergeResponse.json();
+
+              if (mergeResult.success) {
+                console.log(`✅ Merged duplicate ${contact.id} into ${keepContact.id}`);
+                successCount++;
+              } else {
+                console.error(`❌ Failed to merge ${contact.id}:`, mergeResult);
+                failCount++;
+              }
             } else {
-              console.error(`❌ Failed to delete ${contact.id}:`, result);
-              failCount++;
+              // Delete method
+              const deleteUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${contact.id}?api_token=${PIPEDRIVE_API_TOKEN}`;
+              const deleteResponse = await fetch(deleteUrl, { method: "DELETE" });
+              const deleteResult = await deleteResponse.json();
+
+              if (deleteResult.success) {
+                console.log(`✅ Deleted duplicate ${contact.id}`);
+                successCount++;
+              } else if (deleteResult.error?.includes('already deleted')) {
+                console.log(`ℹ️ Contact ${contact.id} already deleted, skipping`);
+                successCount++;
+              } else {
+                console.error(`❌ Failed to delete ${contact.id}:`, deleteResult);
+                failCount++;
+              }
             }
           } catch (err) {
-            console.error(`Error deleting contact ${contact.id}:`, err);
+            console.error(`❌ Error processing ${contact.id}:`, err);
             failCount++;
           }
 
           // Rate limit
           await new Promise(resolve => setTimeout(resolve, 250));
         }
-
-        successCount++;
       }
 
-      console.log(`✅ Cleanup complete: ${successCount} groups processed, ${failCount} failures`);
+      console.log(`✅ Cleanup complete: ${successCount} processed, ${failCount} failures`);
 
       return new Response(
         JSON.stringify({ success: true, successCount, failCount }),
