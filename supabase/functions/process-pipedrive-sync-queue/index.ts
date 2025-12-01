@@ -126,30 +126,9 @@ serve(async (req) => {
   try {
     console.log("🔄 Starting Pipedrive sync queue processing...");
 
-    // Fetch pending or failed items that are ready for retry
-    const { data: queueItems, error: fetchError } = await supabase
-      .from("pipedrive_sync_queue")
-      .select("id, professional_id, attempts, max_attempts, last_error")
-      .in("status", ["pending", "failed"])
-      .or(`next_retry_at.is.null,next_retry_at.lte.${new Date().toISOString()}`)
-      .order("created_at", { ascending: true })
-      .limit(10); // Process 10 at a time to avoid timeouts
-
-    if (fetchError) {
-      console.error("❌ Error fetching queue items:", fetchError);
-      throw fetchError;
-    }
-
-    if (!queueItems || queueItems.length === 0) {
-      console.log("✅ No items in queue to process");
-      return new Response(
-        JSON.stringify({ success: true, message: "No items to process", processed: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`📋 Found ${queueItems.length} items to process`);
-
+    const MAX_RECORDS_PER_RUN = 300;
+    const BATCH_SIZE = 10;
+    
     const results = {
       processed: 0,
       succeeded: 0,
@@ -157,8 +136,35 @@ serve(async (req) => {
       errors: [] as Array<{ professional_id: string; error: string }>,
     };
 
-    // Process each item
-    for (const item of queueItems) {
+    // Process in batches until queue is empty or max records reached
+    while (results.processed < MAX_RECORDS_PER_RUN) {
+      // Fetch next batch of pending or failed items that are ready for retry
+      const { data: queueItems, error: fetchError } = await supabase
+        .from("pipedrive_sync_queue")
+        .select("id, professional_id, attempts, max_attempts, last_error")
+        .in("status", ["pending", "failed"])
+        .or(`next_retry_at.is.null,next_retry_at.lte.${new Date().toISOString()}`)
+        .order("created_at", { ascending: true })
+        .limit(BATCH_SIZE);
+
+      if (fetchError) {
+        console.error("❌ Error fetching queue items:", fetchError);
+        throw fetchError;
+      }
+
+      if (!queueItems || queueItems.length === 0) {
+        console.log(`✅ No more items in queue to process (processed ${results.processed} total)`);
+        break;
+      }
+
+      console.log(`📋 Found ${queueItems.length} items in batch (${results.processed}/${MAX_RECORDS_PER_RUN} total processed so far)`);
+
+      // Process each item in this batch
+      for (const item of queueItems) {
+        if (results.processed >= MAX_RECORDS_PER_RUN) {
+          console.log(`⚠️ Reached max records limit (${MAX_RECORDS_PER_RUN}), stopping`);
+          break;
+        }
       try {
         // Mark as processing
         await supabase
@@ -306,8 +312,15 @@ serve(async (req) => {
             newAttempts
           );
         }
+        }
       }
-    }
+      
+      // Check if we've hit the limit mid-batch
+      if (results.processed >= MAX_RECORDS_PER_RUN) {
+        console.log(`⚠️ Reached max records limit (${MAX_RECORDS_PER_RUN}), exiting batch loop`);
+        break;
+      }
+    } // End of while loop
 
     console.log(
       `✅ Queue processing complete: ${results.processed} processed, ${results.succeeded} succeeded, ${results.failed} failed`
