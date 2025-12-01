@@ -168,6 +168,12 @@ export default function DynamicCategoryList() {
     citySlug: string; 
     categorySlug: string;
   }>();
+  
+  // Redirect to coming soon page if not Arizona
+  if (stateSlug && stateSlug !== 'arizona') {
+    return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
+  }
+  
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [loading, setLoading] = useState(true);
