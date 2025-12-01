@@ -108,7 +108,11 @@ serve(async (req) => {
       // Core IDs & URLs
       supabase_id: professional.id,
       card_url: cardUrl,
-      profile_link: professional.profile_link,
+      profile_link: professional.profile_link 
+        ? (professional.profile_link.startsWith('http') 
+            ? professional.profile_link 
+            : `https://top10lists.us${professional.profile_link}`)
+        : null,
 
       // Professional Details
       years_experience: professional.years_experience,
