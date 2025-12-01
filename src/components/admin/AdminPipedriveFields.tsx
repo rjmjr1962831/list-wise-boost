@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Save } from 'lucide-react';
 import { AdminPipedriveFieldCreator } from './AdminPipedriveFieldCreator';
 import { AdminPipedriveSyncQueueManager } from './AdminPipedriveSyncQueueManager';
+import { BulkPipedriveReQueue } from './BulkPipedriveReQueue';
 
 const FIELD_NAMES = [
   // Core IDs & Status
@@ -132,6 +133,8 @@ export default function AdminPipedriveFields() {
       </div>
 
       <AdminPipedriveSyncQueueManager />
+
+      <BulkPipedriveReQueue />
 
       <AdminPipedriveFieldCreator />
 
