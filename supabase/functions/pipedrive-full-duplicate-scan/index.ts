@@ -46,7 +46,7 @@ serve(async (req) => {
       throw new Error('Missing Pipedrive configuration');
     }
 
-    const baseUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2`;
+    const baseUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1`;
     const { scanType = 'email' } = await req.json();
 
     console.log(`🔍 Starting full Pipedrive ${scanType} duplicate scan...`);
@@ -64,7 +64,9 @@ serve(async (req) => {
       const response = await fetch(url);
 
       if (!response.ok) {
-        throw new Error(`Pipedrive API error: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error(`❌ Pipedrive persons fetch error: ${response.status} ${response.statusText}`, errorText);
+        throw new Error(`Pipedrive API error: ${response.statusText} - ${errorText}`);
       }
 
       const data = await response.json();
