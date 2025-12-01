@@ -64,14 +64,14 @@ export function AdminPipedriveFieldInspector() {
 
   const filteredFields = fields.filter(
     (f) =>
-      f.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      f.key.includes(searchTerm)
+      (f.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      f.key?.includes(searchTerm))
   );
 
   // Find profile_link related fields
   const profileLinkFields = fields.filter(
     (f) =>
-      f.name.toLowerCase().includes('profile') && f.name.toLowerCase().includes('link')
+      f.name?.toLowerCase().includes('profile') && f.name?.toLowerCase().includes('link')
   );
 
   const profileLinkMapping = mappings.find((m) => m.field_name === 'profile_link');
