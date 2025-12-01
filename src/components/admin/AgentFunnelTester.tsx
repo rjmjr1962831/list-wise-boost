@@ -90,6 +90,36 @@ export const AgentFunnelTester = () => {
     }
   };
 
+  const quickTest = async () => {
+    if (professionals.length === 0) {
+      toast.error('No professionals available to test');
+      return;
+    }
+
+    const firstPro = professionals[0];
+    setSelectedProfessionalId(firstPro.id);
+    
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-test-profile-token', {
+        body: { professionalId: firstPro.id }
+      });
+
+      if (error) throw error;
+
+      // Open funnel immediately
+      window.open(data.funnelUrl, '_blank');
+      
+      toast.success(`Opening funnel for ${data.professionalName}`);
+      await fetchProfessionals();
+    } catch (error: any) {
+      console.error('Error in quick test:', error);
+      toast.error(`Failed to start test: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const selectedProfessional = professionals.find(p => p.id === selectedProfessionalId);
   const hasExistingToken = selectedProfessional?.verification_token;
   const existingTokenExpired = selectedProfessional?.verification_token_expires_at 
@@ -122,6 +152,37 @@ export const AgentFunnelTester = () => {
             Test tokens expire after 7 days.
           </AlertDescription>
         </Alert>
+
+        <Button
+          onClick={quickTest}
+          disabled={loading || professionals.length === 0}
+          className="w-full"
+          size="lg"
+          variant="default"
+        >
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Starting Test...
+            </>
+          ) : (
+            <>
+              <TestTube2 className="mr-2 h-4 w-4" />
+              Quick Test (Opens Funnel Immediately)
+            </>
+          )}
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or select specific professional
+            </span>
+          </div>
+        </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Select Professional:</label>
