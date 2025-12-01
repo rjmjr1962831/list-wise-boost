@@ -169,8 +169,8 @@ export default function DynamicCategoryList() {
     categorySlug: string;
   }>();
   
-  // Redirect to coming soon page if not Arizona
-  if (stateSlug && stateSlug !== 'arizona') {
+  // Redirect to coming soon page if not Arizona (accept both 'arizona' and 'az')
+  if (stateSlug && stateSlug !== 'arizona' && stateSlug !== 'az') {
     return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
   }
   
