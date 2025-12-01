@@ -37,10 +37,10 @@ Deno.serve(async (req) => {
 
     console.log('📝 Normalized search params:', { normalizedPhone, zillowSlug });
 
-    // Build query with OR conditions
+    // Build query with OR conditions - select all fields for ProfessionalCard
     let query = supabase
       .from('professionals')
-      .select('id, name, verification_token, email, phone, zillow_profile_url')
+      .select('*')
       .eq('active', true)
       .limit(1);
 
@@ -109,6 +109,7 @@ Deno.serve(async (req) => {
           found: true,
           token,
           name: agent.name,
+          professional: agent,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
