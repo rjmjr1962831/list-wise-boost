@@ -12,6 +12,8 @@ import { ContactProfessionalModal } from '@/components/ContactProfessionalModal'
 import { AgentDetailModal } from '@/components/AgentDetailModal';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { isBot, getBotType } from '@/utils/botDetection';
+import { getCanonicalRankings } from '@/services/canonicalAgentService';
 
 interface City {
   id: string;
@@ -197,6 +199,17 @@ export default function DynamicCategoryList() {
       if (!stateSlug || !citySlug || !categorySlug) return;
 
       try {
+        // Detect if request is from a bot
+        const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+        const isBotRequest = isBot(userAgent);
+        const botType = getBotType(userAgent);
+        
+        if (isBotRequest) {
+          console.log(`🤖 Bot detected: ${botType} - Serving canonical (stable) rankings`);
+        } else {
+          console.log('👤 Human user detected - Using dynamic rotation');
+        }
+
         // Fetch city
         const { data: cityData, error: cityError } = await supabase
           .from('cities')
@@ -237,6 +250,29 @@ export default function DynamicCategoryList() {
         }
 
         setCategory(categoryData);
+
+        // BOT PATH: Serve stable canonical rankings
+        if (isBotRequest) {
+          console.log('📊 Fetching canonical rankings for bot...');
+          const canonicalProfessionals = await getCanonicalRankings(
+            cityData.id,
+            categoryData.id
+          );
+          
+          if (canonicalProfessionals && canonicalProfessionals.length > 0) {
+            console.log(`✅ Serving ${canonicalProfessionals.length} canonical agents to ${botType}`);
+            setAllProfessionals(canonicalProfessionals);
+            setFilteredProfessionals(canonicalProfessionals);
+            setReviewsReady(true);
+            setLoading(false);
+            return; // Exit early - bots get canonical list only
+          } else {
+            console.warn('⚠️ No canonical rankings available, falling back to dynamic query');
+            // Fall through to human path as fallback
+          }
+        }
+
+        // HUMAN PATH: Dynamic rotation with random selection
 
         // Fetch professionals - ONLY enriched and qualified agents (4.8+ stars, 100+ reviews)
         // SPECIAL CASE: For Scottsdale, always include Beauvais first (even if <100 reviews)
