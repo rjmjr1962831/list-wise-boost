@@ -27,12 +27,22 @@ export default function VerifyListingByToken() {
       try {
         const { data, error } = await supabase
           .from('professionals')
-          .select('*')
+          .select(`
+            *,
+            cities:city_id (id, name, state, state_slug, slug),
+            categories:category_id (id, name, slug)
+          `)
           .eq('verification_token', token)
-          .eq('active', true)
-          .single();
+          .maybeSingle();
 
-        if (error || !data) {
+        if (error) {
+          console.error('Error fetching professional:', error);
+          setPageState('invalid');
+          return;
+        }
+
+        if (!data) {
+          console.log('No professional found for token:', token);
           setPageState('invalid');
           return;
         }
@@ -40,10 +50,19 @@ export default function VerifyListingByToken() {
         // Check if token is expired
         const expiresAt = data.verification_token_expires_at;
         if (expiresAt && new Date(expiresAt) < new Date()) {
+          console.log('Token expired:', expiresAt);
           setPageState('expired');
           return;
         }
 
+        // Check if professional is active
+        if (!data.active) {
+          console.log('Professional is not active');
+          setPageState('invalid');
+          return;
+        }
+
+        console.log('Professional loaded successfully:', data.name);
         setProfessional(data);
         setPageState('valid');
 
