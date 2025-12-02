@@ -6,63 +6,55 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle2, Loader2, Edit, AlertCircle } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
-
 type PageState = 'loading' | 'valid' | 'expired' | 'invalid';
-
 export default function VerifyListingByToken() {
-  const { token } = useParams<{ token: string }>();
+  const {
+    token
+  } = useParams<{
+    token: string;
+  }>();
   const navigate = useNavigate();
-  const { trackEvent } = useGA4Tracking();
-  
+  const {
+    trackEvent
+  } = useGA4Tracking();
   const [pageState, setPageState] = useState<PageState>('loading');
   const [professional, setProfessional] = useState<any>(null);
-
   useEffect(() => {
     const validateAndFetchProfessional = async () => {
       if (!token) {
         setPageState('invalid');
         return;
       }
-
       try {
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
 
         // 1) PRIMARY LOOKUP: treat token as verification_token (current behavior for all magic links)
-        let { data, error } = await supabase
-          .from('professionals')
-          .select(`
+        let {
+          data,
+          error
+        } = await supabase.from('professionals').select(`
             *,
             cities:city_id (id, name, state, state_slug, slug),
             categories:category_id (id, name, slug)
-          `)
-          .eq('verification_token', token)
-          .maybeSingle();
-
+          `).eq('verification_token', token).maybeSingle();
         let lookedUpById = false;
 
         // 2) FALLBACK: if nothing found and it looks like a UUID, try matching by id
         if (!data && !error && isUUID) {
-          const fallbackResult = await supabase
-            .from('professionals')
-            .select(`
+          const fallbackResult = await supabase.from('professionals').select(`
               *,
               cities:city_id (id, name, state, state_slug, slug),
               categories:category_id (id, name, slug)
-            `)
-            .eq('id', token)
-            .maybeSingle();
-
+            `).eq('id', token).maybeSingle();
           data = fallbackResult.data;
           error = fallbackResult.error;
           lookedUpById = !!data;
         }
-
         if (error) {
           console.error('Error fetching professional:', error);
           setPageState('invalid');
           return;
         }
-
         if (!data) {
           console.log('No professional found for token or id:', token);
           setPageState('invalid');
@@ -85,39 +77,31 @@ export default function VerifyListingByToken() {
           setPageState('invalid');
           return;
         }
-
         console.log('Professional loaded successfully:', data.name);
         setProfessional(data);
         setPageState('valid');
-
         trackEvent('agent_profile_click', {
           search_type: 'magic_link_access',
           professional_name: data.name,
-          professional_id: data.id,
+          professional_id: data.id
         });
       } catch (error) {
         console.error('Error validating token:', error);
         setPageState('invalid');
       }
     };
-
     validateAndFetchProfessional();
   }, [token, trackEvent]);
-
   if (pageState === 'loading') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+    return <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Loading your listing...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (pageState === 'expired') {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    return <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
@@ -130,13 +114,10 @@ export default function VerifyListingByToken() {
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
   if (pageState === 'invalid' || !professional) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    return <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
@@ -149,42 +130,31 @@ export default function VerifyListingByToken() {
             </Button>
           </CardContent>
         </Card>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen bg-background py-12 px-4">
+  return <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Heading Section */}
         <div className="space-y-3">
-          <h2 className="text-3xl font-bold">Here is what your listing looks like.</h2>
-          <h3 className="text-xl text-muted-foreground">
-            Please review it. You can edit it by clicking the button.
-          </h3>
+          <h2 className="text-3xl font-bold">Congratulations! Our analysis shows us that you are the best of the best.
+
+
+Here is what your listing looks like.</h2>
+          <h3 className="text-xl text-muted-foreground">Please review it. You can edit or add to it by clicking the button.</h3>
         </div>
 
         {/* Professional Card with CTA button overlay */}
         <div className="relative">
-          <ProfessionalCard 
-            professional={professional}
-            accentColor="primary"
-            quizCompleted={true}
-          />
+          <ProfessionalCard professional={professional} accentColor="primary" quizCompleted={true} />
           
           {/* Review or Edit button - responsive positioning */}
           <div className="absolute top-4 right-4 md:top-[160px] md:right-[40px] lg:top-[114px] lg:right-[273px] flex items-center justify-center z-10">
-            <Button 
-              size="lg"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3"
-              onClick={() => navigate(`/profile/${token}/edit`)}
-            >
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3" onClick={() => navigate(`/profile/${token}/edit`)}>
               <Edit className="mr-2 h-4 w-4" />
               Review or Edit
             </Button>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
