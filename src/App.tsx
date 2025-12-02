@@ -125,9 +125,10 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
                     {/* Dynamic city and category routes - MUST BE LAST before catch-all */}
-                    <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
+                    {/* Order: most specific (4-params) first, then 3-params, then 2-params */}
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
+                    <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     {/* Catch-all 404 route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
