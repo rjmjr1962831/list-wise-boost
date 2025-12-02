@@ -40,44 +40,58 @@ function normalizeUrl(url: string): string {
 }
 
 /**
+ * Get proper state abbreviation (convert full state name to 2-letter code)
+ */
+function getProperStateAbbr(stateAbbr: string, stateName: string): string {
+  // If already a proper 2-letter abbreviation, use it
+  if (stateAbbr.length === 2 && stateAbbr.toUpperCase() === stateAbbr) {
+    // But make sure it's not incorrectly derived (e.g., "AR" from "Arizona")
+    if (stateName.toLowerCase().includes('arizona') && stateAbbr.toUpperCase() !== 'AZ') {
+      return 'AZ';
+    }
+    return stateAbbr.toUpperCase();
+  }
+  
+  // Map common state names to abbreviations
+  const stateMap: Record<string, string> = {
+    'arizona': 'AZ',
+    'california': 'CA',
+    'texas': 'TX',
+    'florida': 'FL',
+    'nevada': 'NV',
+    'colorado': 'CO',
+    'new mexico': 'NM',
+    'utah': 'UT',
+  };
+  
+  const normalized = (stateAbbr || stateName).toLowerCase().trim();
+  return stateMap[normalized] || stateAbbr.substring(0, 2).toUpperCase();
+}
+
+/**
  * Get all authority/verification links for a professional
+ * Only includes license verification and brokerage links
+ * Website and Zillow are already shown in the card header
  */
 export function getAgentAuthorityLinks(
   professional: Professional,
   location: { city: string; state: string; stateAbbr: string }
 ): AuthorityLink[] {
   const links: AuthorityLink[] = [];
+  
+  const properStateAbbr = getProperStateAbbr(location.stateAbbr, location.state);
 
-  // License verification link
+  // License verification link only
   if (professional.license_number) {
-    const licenseUrl = getLicenseVerificationUrl(location.stateAbbr, professional.license_number);
+    const licenseUrl = getLicenseVerificationUrl(properStateAbbr, professional.license_number);
     if (licenseUrl) {
       links.push({
         type: 'license',
-        label: `Verify ${location.stateAbbr} License`,
+        label: `Verify ${properStateAbbr} License`,
         url: licenseUrl,
         icon: 'shield'
       });
     }
-  }
-
-  // Zillow profile link (constructed search URL)
-  const zillowUrl = getZillowProfileUrl(professional.name, location.city, location.state);
-  links.push({
-    type: 'zillow',
-    label: 'View on Zillow',
-    url: zillowUrl,
-    icon: 'star'
-  });
-
-  // Agent website
-  if (professional.website) {
-    links.push({
-      type: 'website',
-      label: 'Agent Website',
-      url: normalizeUrl(professional.website),
-      icon: 'globe'
-    });
   }
 
   // Brokerage (if we have company name, create a search link)
