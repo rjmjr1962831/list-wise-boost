@@ -1056,7 +1056,7 @@ export default function DynamicCategoryList() {
   
   // Convert professionals to AgentData for enhanced schemas
   const agentDataArray = topTenProfessionals.map(prof => 
-    professionalToAgentData(prof, city.name, city.state, stateAbbrev)
+    professionalToAgentData(prof, city.name, city.state, stateAbbrev, prof.id || '')
   );
   
   // Generate all three schemas using new cityListingSchema utility
