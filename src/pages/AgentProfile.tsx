@@ -7,6 +7,17 @@ import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { Professional } from '@/types/professional';
 import { generateAgentSlug } from '@/utils/routeHelpers';
 import { generateAgentProfileSchema, professionalToSchemaData } from '@/utils/agentSchema';
+import { generateVerifiedAgentSchema, generateCitationText } from '@/utils/verifiedAgentSchema';
+import { professionalToVerifiedAgent } from '@/utils/professionalToVerifiedAgent';
+import { VerifiedAgent } from '@/types/verifiedAgent';
+import {
+  LicenseCard,
+  ReviewsCard,
+  PressMentionsCard,
+  AwardsCard,
+  CertificationsCard,
+  CardFooter,
+} from '@/components/verified';
 
 interface DBProfessional {
   id: string;
@@ -30,6 +41,10 @@ interface DBProfessional {
   total_sales: number | null;
   license_number: string | null;
   license_verified_at: string | null;
+  license_type: string | null;
+  license_status: string | null;
+  license_issued_at: string | null;
+  license_expires_at: string | null;
   zillow_profile_url: string | null;
   zillow_data_fetched_at: string | null;
   review_stars_rating: number | null;
@@ -46,6 +61,14 @@ interface DBProfessional {
   social_linkedin: string | null;
   social_facebook: string | null;
   social_instagram: string | null;
+  certifications: any | null;
+  certifications_verified: any | null;
+  awards_verified: any | null;
+  platform_reviews: any | null;
+  data_sources_log: any | null;
+  card_created_at: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 interface City {
@@ -153,6 +176,8 @@ export default function AgentProfile() {
   const [city, setCity] = useState<City | null>(null);
   const [category, setCategory] = useState<Category | null>(null);
   const [professional, setProfessional] = useState<Professional | null>(null);
+  const [verifiedAgent, setVerifiedAgent] = useState<VerifiedAgent | null>(null);
+  const [rawDbProf, setRawDbProf] = useState<DBProfessional | null>(null);
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -221,7 +246,22 @@ export default function AgentProfile() {
           return;
         }
 
-        setProfessional(convertToProfessional(agent));
+        // Store raw DB professional for verified transformation
+        setRawDbProf(agent as DBProfessional);
+        
+        // Convert to Professional for existing components
+        setProfessional(convertToProfessional(agent as DBProfessional));
+        
+        // Convert to VerifiedAgent for new components
+        const stateAbbrev = cityData.state === 'Arizona' ? 'AZ' : cityData.state.substring(0, 2).toUpperCase();
+        const verified = professionalToVerifiedAgent(
+          agent,
+          cityData.name,
+          cityData.state,
+          stateAbbrev
+        );
+        setVerifiedAgent(verified);
+        
         setLoading(false);
 
       } catch (error) {
@@ -250,15 +290,28 @@ export default function AgentProfile() {
   const pageDescription = professional.description || 
     `${professional.name} is a top-rated ${category.name.toLowerCase()} serving ${city.name}, ${city.state}. ${professional.rating > 0 ? `Rated ${professional.rating}/5 with ${professional.reviews} reviews.` : ''}`;
 
-  // Generate scalable JSON-LD schema using template
+  // Generate standard JSON-LD schema
   const schemaData = professionalToSchemaData(
     professional,
     city.name,
     city.state,
-    city.state.substring(0, 2).toUpperCase(), // State abbreviation
+    city.state.substring(0, 2).toUpperCase(),
     agentSlug || ''
   );
   const agentSchema = generateAgentProfileSchema(schemaData);
+
+  // Generate enhanced verified schema if available
+  const verifiedSchema = verifiedAgent ? generateVerifiedAgentSchema(verifiedAgent) : null;
+  const citationText = verifiedAgent ? generateCitationText(verifiedAgent) : null;
+
+  // Check if we have enhanced verified data to display
+  const hasVerifiedData = verifiedAgent && (
+    verifiedAgent.license?.licenseNumber ||
+    verifiedAgent.aggregatedRating?.platformBreakdown?.length > 0 ||
+    verifiedAgent.certifications?.length > 0 ||
+    verifiedAgent.awards?.length > 0 ||
+    verifiedAgent.pressMentions?.length > 0
+  );
 
   return (
     <>
@@ -273,10 +326,17 @@ export default function AgentProfile() {
         <meta property="og:updated_time" content={new Date().toISOString()} />
         <link rel="canonical" href={`https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`} />
         
-        {/* Scalable JSON-LD Schema */}
+        {/* Standard JSON-LD Schema */}
         <script type="application/ld+json">
           {JSON.stringify(agentSchema)}
         </script>
+        
+        {/* Enhanced Verified JSON-LD Schema */}
+        {verifiedSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(verifiedSchema)}
+          </script>
+        )}
       </Helmet>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
@@ -293,6 +353,7 @@ export default function AgentProfile() {
           </ol>
         </nav>
 
+        {/* Main Profile Card */}
         <ProfessionalCard
           professional={professional}
           accentColor="primary"
@@ -303,6 +364,65 @@ export default function AgentProfile() {
           categorySlug={categorySlug}
           quizCompleted={true}
         />
+
+        {/* Verified Data Sections */}
+        {hasVerifiedData && verifiedAgent && (
+          <div className="mt-8 space-y-6">
+            <h2 className="text-xl font-semibold border-b pb-2">Verified Credentials & Data</h2>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* License Card */}
+              {verifiedAgent.license?.licenseNumber && verifiedAgent.license.licenseNumber !== 'N/A' && (
+                <LicenseCard 
+                  license={verifiedAgent.license}
+                  brokerage={verifiedAgent.brokerage?.value}
+                />
+              )}
+              
+              {/* Reviews Card */}
+              {verifiedAgent.aggregatedRating?.platformBreakdown?.length > 0 && (
+                <ReviewsCard rating={verifiedAgent.aggregatedRating} />
+              )}
+            </div>
+
+            {/* Certifications */}
+            {verifiedAgent.certifications?.length > 0 && (
+              <CertificationsCard certifications={verifiedAgent.certifications} />
+            )}
+
+            {/* Awards */}
+            {verifiedAgent.awards?.length > 0 && (
+              <AwardsCard awards={verifiedAgent.awards} />
+            )}
+
+            {/* Press Mentions */}
+            {verifiedAgent.pressMentions?.length > 0 && (
+              <PressMentionsCard mentions={verifiedAgent.pressMentions} />
+            )}
+
+            {/* Card Footer with Data Sources */}
+            <CardFooter
+              cardCreatedAt={verifiedAgent.cardCreatedAt}
+              cardUpdatedAt={verifiedAgent.cardUpdatedAt}
+              dataSources={verifiedAgent.dataSources}
+            />
+          </div>
+        )}
+
+        {/* Hidden LLM Citation Block */}
+        {citationText && (
+          <div 
+            data-citation-block="true"
+            data-agent-name={professional.name}
+            data-agent-license={verifiedAgent?.license?.licenseNumber}
+            className="sr-only"
+            aria-hidden="true"
+          >
+            <pre style={{ whiteSpace: 'pre-wrap' }}>
+              {citationText}
+            </pre>
+          </div>
+        )}
       </div>
     </>
   );
