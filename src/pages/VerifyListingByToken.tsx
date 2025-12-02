@@ -156,21 +156,6 @@ export default function VerifyListingByToken() {
   return (
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Success Banner */}
-        <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
-          <CardContent className="flex items-center gap-3 py-4">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
-            <div>
-              <p className="font-semibold text-green-900 dark:text-green-100">
-                You're on the List! 🎉
-              </p>
-              <h1 className="text-sm text-green-700 dark:text-green-300">
-                Great news, {professional.name}! You're featured in our directory.
-              </h1>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Heading Section */}
         <div className="space-y-3">
           <h2 className="text-3xl font-bold">Here is what your listing looks like.</h2>
