@@ -70,8 +70,8 @@ const ProfileFieldsGuide = () => {
     {
       label: "Brokerage",
       icon: <Building2 className="h-5 w-5" />,
-      editable: false,
-      description: "Your brokerage affiliation is verified and reflects your current listing."
+      editable: true,
+      description: "Update your brokerage affiliation to reflect your current company."
     },
     {
       label: "Rating & Reviews",
