@@ -24,12 +24,14 @@ export const CitationBlock = ({
   
   return (
     <div 
-      className={`mt-4 p-3 bg-muted/50 rounded-md border-l-4 border-primary text-sm font-mono whitespace-pre-line ${className}`}
+      className={`sr-only ${className}`}
       data-citation-block="true"
       itemProp="description"
-      aria-label={`Citation summary for ${professional.name}`}
+      aria-hidden="true"
     >
-      {citationText}
+      <pre style={{ whiteSpace: 'pre-wrap' }}>
+        {citationText}
+      </pre>
     </div>
   );
 };
