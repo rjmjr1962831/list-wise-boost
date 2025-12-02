@@ -119,7 +119,7 @@ const Index = () => {
       <Helmet>
         {/* Primary Meta Tags */}
         <title>Top 10 Real Estate Agents in Arizona | Top10Lists.us</title>
-        <meta name="description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings. Updated daily based on reviews, transactions, and press coverage." />
+        <meta name="description" content="Find top-rated local service providers by city. Curated lists of the best professionals, verified and trusted by AI search engines." />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://top10lists.us" />
         
