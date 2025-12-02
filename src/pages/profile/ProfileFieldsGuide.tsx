@@ -159,7 +159,7 @@ const ProfileFieldsGuide = () => {
               Your Profile Fields
             </h1>
             <p className="text-lg text-muted-foreground">
-              We're all about accuracy. Tune your profile so it best represents who you are and what you've done. This is a free listing. You can <a href="/ranking-methodology" className="text-primary hover:underline">click here</a> to see how we have selected you.
+              We're all about accuracy. Tune your profile so it best represents who you are and what you've done. This is a free listing. You can <a href="/about/ranking-methodology" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">click here</a> to see how we have selected you.
             </p>
           </div>
 
