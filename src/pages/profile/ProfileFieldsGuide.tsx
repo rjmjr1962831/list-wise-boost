@@ -28,14 +28,25 @@ const ProfileFieldsGuide = () => {
     const fetchProfessional = async () => {
       if (!token) return;
       try {
-        let query = supabase.from("professionals").select("id, name");
+        // First try to find by verification_token (primary lookup for magic links)
+        let { data, error } = await supabase
+          .from("professionals")
+          .select("id, name")
+          .eq("verification_token", token)
+          .maybeSingle();
+        
+        // If not found by verification_token and token looks like UUID, try by id
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
-        if (isUUID) {
-          query = query.eq("id", token);
-        } else {
-          query = query.ilike("verification_token", `%${token}%`);
+        if (!data && !error && isUUID) {
+          const fallback = await supabase
+            .from("professionals")
+            .select("id, name")
+            .eq("id", token)
+            .maybeSingle();
+          data = fallback.data;
+          error = fallback.error;
         }
-        const { data, error } = await query.maybeSingle();
+        
         if (error) throw error;
         if (!data) {
           navigate("/");
