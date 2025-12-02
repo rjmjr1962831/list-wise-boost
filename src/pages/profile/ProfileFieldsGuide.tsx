@@ -340,22 +340,30 @@ const ProfileFieldsGuide = () => {
   const handleSaveImage = async (imageUrl: string) => {
     if (!currentField || !professional) return;
     
-    const oldValue = getFieldValue(currentField);
-    
-    setChangeHistory(prev => [...prev, {
-      fieldKey: currentField.key,
-      fieldLabel: currentField.label,
-      oldValue,
-      newValue: imageUrl,
-      timestamp: new Date()
-    }]);
+    // Save image directly to database (don't wait for "Save All Changes")
+    try {
+      const { error } = await supabase
+        .from("professionals")
+        .update({ [currentField.key]: imageUrl })
+        .eq("id", professional.id);
 
-    setProfessional(prev => prev ? { ...prev, [currentField.key]: imageUrl } : null);
-    
-    toast({
-      title: "Image Updated",
-      description: "Your photo has been uploaded. Remember to save all changes."
-    });
+      if (error) throw error;
+
+      // Update local state
+      setProfessional(prev => prev ? { ...prev, [currentField.key]: imageUrl } : null);
+      
+      toast({
+        title: "Image Saved",
+        description: "Your photo has been saved successfully."
+      });
+    } catch (error: any) {
+      console.error("Error saving image:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save image to database.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveAllChanges = async () => {
