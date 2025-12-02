@@ -164,9 +164,9 @@ export default function VerifyListingByToken() {
               <p className="font-semibold text-green-900 dark:text-green-100">
                 You're on the List! 🎉
               </p>
-              <p className="text-sm text-green-700 dark:text-green-300">
+              <h1 className="text-sm text-green-700 dark:text-green-300">
                 Great news, {professional.name}! You're featured in our directory.
-              </p>
+              </h1>
             </div>
           </CardContent>
         </Card>
