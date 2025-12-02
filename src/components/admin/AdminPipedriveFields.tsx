@@ -88,22 +88,38 @@ export default function AdminPipedriveFields() {
 
   const handleSave = useCallback(async (showToast = true) => {
     setIsSaving(true);
+    const errors: string[] = [];
+    const savedFieldNames: string[] = [];
+    
     try {
-      const savePromises = Object.entries(fields)
-        .filter(([_, pipedriveKey]) => pipedriveKey)
-        .map(([fieldName, pipedriveKey]) =>
-          supabase.from('pipedrive_field_mapping').upsert(
-            { field_name: fieldName, pipedrive_key: pipedriveKey },
-            { onConflict: 'field_name' }
-          )
+      const fieldsToSave = Object.entries(fields).filter(([_, pipedriveKey]) => pipedriveKey);
+      
+      for (const [fieldName, pipedriveKey] of fieldsToSave) {
+        const { error } = await supabase.from('pipedrive_field_mapping').upsert(
+          { field_name: fieldName, pipedrive_key: pipedriveKey },
+          { onConflict: 'field_name' }
         );
+        
+        if (error) {
+          console.error(`Failed to save ${fieldName}:`, error);
+          errors.push(`${fieldName}: ${error.message}`);
+        } else {
+          savedFieldNames.push(fieldName);
+        }
+      }
 
-      await Promise.all(savePromises);
-      setSavedFields({ ...fields });
-      setLastSaved(new Date());
-
-      if (showToast) {
-        toast({ title: 'Field mappings saved!' });
+      if (errors.length > 0) {
+        toast({
+          title: `Saved ${savedFieldNames.length} fields, ${errors.length} failed`,
+          description: errors.slice(0, 3).join('; ') + (errors.length > 3 ? '...' : ''),
+          variant: 'destructive',
+        });
+      } else {
+        setSavedFields({ ...fields });
+        setLastSaved(new Date());
+        if (showToast) {
+          toast({ title: `Saved ${savedFieldNames.length} field mappings!` });
+        }
       }
     } catch (error: any) {
       toast({
