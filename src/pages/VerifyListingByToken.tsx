@@ -187,8 +187,8 @@ export default function VerifyListingByToken() {
             quizCompleted={true}
           />
           
-          {/* Review or Edit button in top right blank space */}
-          <div className="absolute top-[114px] right-[273px] flex items-center justify-center">
+          {/* Review or Edit button - responsive positioning */}
+          <div className="absolute top-4 right-4 md:top-[60px] md:right-[40px] lg:top-[114px] lg:right-[273px] flex items-center justify-center z-10">
             <Button 
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3"
