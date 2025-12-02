@@ -18,49 +18,44 @@ serve(async (req) => {
       throw new Error('Pipedrive credentials not configured');
     }
 
-    console.log('Fetching Pipedrive person fields...');
+    const { field_id } = await req.json();
+    
+    if (!field_id) {
+      throw new Error('field_id (integer) is required');
+    }
 
-    // Fetch all person fields from Pipedrive (using v1 API for complete field data including key and name)
+    console.log(`Deleting Pipedrive person field ID: ${field_id}`);
+
+    // Delete person field from Pipedrive (v1 API) - requires integer ID
     const response = await fetch(
-      `https://${pipedriveDomain}.pipedrive.com/api/v1/personFields?api_token=${pipedriveApiToken}`,
+      `https://${pipedriveDomain}.pipedrive.com/api/v1/personFields/${field_id}?api_token=${pipedriveApiToken}`,
       {
-        method: 'GET',
+        method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
       }
     );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Pipedrive API error: ${response.statusText} - ${errorText}`);
-    }
-
     const data = await response.json();
     
-    // Include all person fields (both custom and built-in) so existing fields like Profile_link show up
-    const allFields = data.data.map((field: any) => ({
-      id: field.id,
-      key: field.key,
-      name: field.name,
-      field_type: field.field_type,
-      options: field.options || [],
-      is_custom: field.is_custom_field ?? field.edit_flag ?? false,
-    }));
+    if (!data.success) {
+      throw new Error(`Pipedrive API error: ${JSON.stringify(data)}`);
+    }
 
-    console.log(`Found ${allFields.length} person fields`);
+    console.log(`Successfully deleted field ID: ${field_id}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        fields: allFields,
-        total: allFields.length,
+        message: `Field ID ${field_id} deleted successfully`,
+        data: data.data,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error fetching Pipedrive fields:', error);
+    console.error('Error deleting Pipedrive field:', error);
     return new Response(
       JSON.stringify({ 
         success: false,
