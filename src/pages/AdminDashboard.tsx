@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
@@ -33,6 +33,7 @@ import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesize
 import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 import CacheManagement from '@/components/admin/CacheManagement';
 import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
+import PrerenderRecache from '@/components/admin/PrerenderRecache';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -233,6 +234,10 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Arizona Pricing
             </TabsTrigger>
+            <TabsTrigger value="prerender">
+              <Globe className="mr-2 h-4 w-4" />
+              Prerender
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -316,6 +321,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="arizona-pricing" className="space-y-4">
             <ArizonaPricingSetup />
+          </TabsContent>
+
+          <TabsContent value="prerender" className="space-y-4">
+            <PrerenderRecache />
           </TabsContent>
         </Tabs>
       </div>
