@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ImageUploadModalProps {
   open: boolean;
@@ -22,6 +23,7 @@ export default function ImageUploadModal({
   currentImageUrl,
   professionalId
 }: ImageUploadModalProps) {
+  const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -30,6 +32,16 @@ export default function ImageUploadModal({
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File Too Large",
+          description: "Please choose an image smaller than 5MB.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -45,25 +57,48 @@ export default function ImageUploadModal({
     setUploading(true);
     try {
       // Upload to Supabase storage
-      const fileExt = selectedFile.name.split('.').pop();
+      const fileExt = selectedFile.name.split('.').pop()?.toLowerCase() || 'jpg';
       const fileName = `${professionalId}-${Date.now()}.${fileExt}`;
       const filePath = `profile-photos/${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('professional-photos')
-        .upload(filePath, selectedFile, { upsert: true });
+      console.log('Uploading file to:', filePath);
 
-      if (uploadError) throw uploadError;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('professional-photos')
+        .upload(filePath, selectedFile, { 
+          upsert: true,
+          contentType: selectedFile.type
+        });
+
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('Upload successful:', uploadData);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('professional-photos')
         .getPublicUrl(filePath);
 
+      console.log('Public URL:', publicUrl);
+
       await onSave(publicUrl);
+      
+      toast({
+        title: "Image Uploaded",
+        description: "Your photo has been uploaded successfully."
+      });
+      
       handleClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Failed to upload image. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setUploading(false);
     }
@@ -98,7 +133,7 @@ export default function ImageUploadModal({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/jpeg,image/png,image/webp"
               onChange={handleFileSelect}
               className="hidden"
             />
@@ -127,6 +162,10 @@ export default function ImageUploadModal({
                 Choose Different Image
               </Button>
             )}
+            
+            <p className="text-xs text-muted-foreground">
+              Accepts JPG, PNG, or WebP. Max 5MB.
+            </p>
           </div>
         </div>
         <DialogFooter>
