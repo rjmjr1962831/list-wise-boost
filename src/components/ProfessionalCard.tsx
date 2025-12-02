@@ -1619,7 +1619,16 @@ export const ProfessionalCard = ({
                   
                   if (!bioHtml && !fallbackText && !isEditing) return null;
                   
-                  const firstName = professional.name.split(' ')[0];
+                  // Parse name to handle couples like "Don and Jenny Matheson" or "Mark & Dina Beauvais"
+                  const parseDisplayName = (fullName: string): string => {
+                    const andMatch = fullName.match(/^(\w+)\s+(?:and|&)\s+(\w+)\s+/i);
+                    if (andMatch) {
+                      return `${andMatch[1]} and ${andMatch[2]}`;
+                    }
+                    return fullName.split(' ')[0];
+                  };
+                  
+                  const displayName = parseDisplayName(professional.name);
                   
                   return (
                     <button
@@ -1627,7 +1636,7 @@ export const ProfessionalCard = ({
                       className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
                     >
                       <div className="flex flex-col items-center justify-center gap-1.5">
-                        <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">From {firstName}</span>
+                        <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">From {displayName}</span>
                         <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", bioOpen && "rotate-180")} />
                       </div>
                     </button>
