@@ -24,8 +24,11 @@ serve(async (req) => {
 
     console.log('🔍 Validating token:', token.substring(0, 8) + '...');
 
-    // Fetch professional by token
-    const { data: professional, error: fetchError } = await supabase
+    // Check if token is UUID format (professional ID) or verification token
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
+
+    // Build query based on token format
+    let query = supabase
       .from('professionals')
       .select(`
         *,
@@ -42,9 +45,15 @@ serve(async (req) => {
           slug,
           plural_name
         )
-      `)
-      .eq('verification_token', token)
-      .single();
+      `);
+
+    if (isUUID) {
+      query = query.eq('id', token);
+    } else {
+      query = query.ilike('verification_token', `%${token}%`);
+    }
+
+    const { data: professional, error: fetchError } = await query.maybeSingle();
 
     if (fetchError || !professional) {
       console.error('❌ Invalid token');
