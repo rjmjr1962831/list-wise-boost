@@ -131,8 +131,8 @@ export function generateFAQSchema(
       "acceptedAnswer": {
         "@type": "Answer",
         "text": topAgentName 
-          ? `Based on our AI and human-curated analysis of reviews, sales data, and credentials, ${topAgentName} leads our list of top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. All agents on our list have 4.8+ star ratings and 100+ verified reviews.`
-          : `Our curated list features the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}, all with 4.8+ star ratings and 100+ verified reviews.`
+          ? `Based on our AI and human-curated analysis of reviews, sales data, and credentials, ${topAgentName} leads our list of top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. All agents on our list have 4.8+ star ratings and 50+ verified reviews.`
+          : `Our curated list features the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}, all with 4.8+ star ratings and 50+ verified reviews.`
       }
     },
     {
@@ -140,7 +140,7 @@ export function generateFAQSchema(
       "name": `How are ${city} ${categoryName.toLowerCase()} ranked on Top10Lists.us?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Our rankings are based on a combination of factors: verified client reviews (minimum 100 reviews, 4.8+ rating), transaction history, years of experience, license verification, and local market expertise. Rankings are updated regularly to reflect current performance.`
+        "text": `Our rankings are based on a combination of factors: verified client reviews (minimum 50 reviews, 4.8+ rating), transaction history, years of experience, license verification, and local market expertise. Rankings are updated regularly to reflect current performance.`
       }
     },
     {

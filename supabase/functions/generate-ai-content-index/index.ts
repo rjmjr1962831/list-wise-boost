@@ -58,7 +58,7 @@ serve(async (req) => {
             .eq('category_id', categoryId)
             .eq('active', true)
             .gte('review_stars_rating', 4.8)
-            .gte('num_total_reviews', 100);
+            .gte('num_total_reviews', 50);
           
           agentCount = count || 0;
         }
@@ -86,7 +86,7 @@ serve(async (req) => {
       "@context": "https://schema.org",
       "@type": "Dataset",
       "name": "Top10Lists.us Real Estate Agents Database",
-      "description": "An AI and human curated list of the top 10 real estate agents in U.S. markets. Agents qualified with 4.8+ star ratings and 100+ verified reviews.",
+      "description": "An AI and human curated list of the top 10 real estate agents in U.S. markets. Agents qualified with 4.8+ star ratings and 50+ verified reviews.",
       "url": "https://top10lists.us",
       "version": "2.1",
       "dateModified": lastUpdated.split('T')[0],
@@ -176,7 +176,7 @@ serve(async (req) => {
       })),
       "qualificationCriteria": {
         "minimumRating": 4.8,
-        "minimumReviews": 100,
+        "minimumReviews": 50,
         "verificationStatus": "AI and human curated",
         "listFormat": "Top 10 agents per market",
         "dataFreshness": "Updated weekly from Zillow and verified sources"

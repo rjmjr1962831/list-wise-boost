@@ -100,7 +100,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `How are real estate agents in ${listing.city} ranked?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Top10Lists.us uses a multi-source verification methodology that aggregates data from Google reviews, Zillow, Realtor.com, Redfin, and press coverage. Agents must meet minimum thresholds for review count (100+), rating (4.8+), and years of experience. Rankings are updated weekly."
+          "text": "Top10Lists.us uses a multi-source verification methodology that aggregates data from Google reviews, Zillow, Realtor.com, Redfin, and press coverage. Agents must meet minimum thresholds for review count (50+), rating (4.8+), and years of experience. Rankings are updated weekly."
         }
       },
       {
@@ -116,7 +116,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `What qualifications do ${listing.city} agents need to be listed?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `To be featured on Top10Lists.us, ${listing.city} real estate agents must have: minimum 4.8-star rating, at least 100 verified reviews, active ${listing.state} real estate license, and demonstrated local market expertise. Our AI-powered ranking system continuously evaluates agent performance.`
+          "text": `To be featured on Top10Lists.us, ${listing.city} real estate agents must have: minimum 4.8-star rating, at least 50 verified reviews, active ${listing.state} real estate license, and demonstrated local market expertise. Our AI-powered ranking system continuously evaluates agent performance.`
         }
       }
     ]
