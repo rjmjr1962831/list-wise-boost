@@ -18,35 +18,55 @@ serve(async (req) => {
       throw new Error('Pipedrive credentials not configured');
     }
 
-    console.log('Fetching Pipedrive person fields...');
+    console.log('Fetching Pipedrive person fields (v2 API)...');
 
-    // Fetch all person fields from Pipedrive (using v1 API for complete field data including key and name)
-    const response = await fetch(
-      `https://${pipedriveDomain}.pipedrive.com/api/v1/personFields?api_token=${pipedriveApiToken}`,
-      {
+    // Fetch all person fields from Pipedrive using v2 API with cursor pagination
+    const allFields: any[] = [];
+    let cursor: string | null = null;
+    const limit = 100;
+
+    do {
+      const url = new URL(`https://${pipedriveDomain}.pipedrive.com/api/v2/personFields`);
+      url.searchParams.set('api_token', pipedriveApiToken);
+      url.searchParams.set('limit', String(limit));
+      if (cursor) {
+        url.searchParams.set('cursor', cursor);
+      }
+
+      const response = await fetch(url.toString(), {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Pipedrive API error: ${response.statusText} - ${errorText}`);
       }
-    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Pipedrive API error: ${response.statusText} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    
-    // Include all person fields (both custom and built-in) so existing fields like Profile_link show up
-    const allFields = data.data.map((field: any) => ({
-      id: field.id,
-      key: field.key,
-      name: field.name,
-      field_type: field.field_type,
-      options: field.options || [],
-      is_custom: field.is_custom_field ?? field.edit_flag ?? false,
-    }));
+      const data = await response.json();
+      
+      if (data.success && data.data && data.data.length > 0) {
+        // Map v2 response format to our expected structure
+        for (const field of data.data) {
+          allFields.push({
+            id: field.id,
+            key: field.key,
+            name: field.name,
+            field_type: field.field_type,
+            options: field.options || [],
+            is_custom: field.is_custom_flag ?? field.edit_flag ?? false,
+          });
+        }
+        
+        // v2 uses next_cursor for pagination
+        cursor = data.additional_data?.next_cursor || null;
+        console.log(`   Fetched ${allFields.length} fields so far...`);
+      } else {
+        cursor = null;
+      }
+    } while (cursor);
 
     console.log(`Found ${allFields.length} person fields`);
 

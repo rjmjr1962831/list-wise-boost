@@ -20,7 +20,7 @@ interface DuplicateContact {
   name: string;
   email: string;
   add_time: string;
-  data_richness: number; // Score based on deals, activities, notes
+  data_richness: number;
 }
 
 interface DuplicateGroup {
@@ -46,22 +46,29 @@ serve(async (req) => {
       throw new Error('Missing Pipedrive configuration');
     }
 
-    const baseUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1`;
+    const baseUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2`;
     const { scanType = 'email' } = await req.json();
 
-    console.log(`🔍 Starting full Pipedrive ${scanType} duplicate scan...`);
+    console.log(`🔍 Starting full Pipedrive ${scanType} duplicate scan (v2 API with cursor pagination)...`);
 
-    // Fetch ALL persons from Pipedrive with pagination
+    // Fetch ALL persons from Pipedrive with v2 cursor-based pagination (50% fewer tokens)
     const allPersons: PipedrivePerson[] = [];
-    let start = 0;
+    let cursor: string | null = null;
     const limit = 100;
-    let hasMore = true;
 
-    while (hasMore) {
-      const url = `${baseUrl}/persons?limit=${limit}&start=${start}&api_token=${PIPEDRIVE_API_TOKEN}`;
-      console.log(`📥 Fetching persons: start=${start}`);
+    do {
+      const url = new URL(`${baseUrl}/persons`);
+      url.searchParams.set('api_token', PIPEDRIVE_API_TOKEN);
+      url.searchParams.set('limit', String(limit));
+      // Only request fields we need to reduce payload size
+      url.searchParams.set('include_fields', 'open_deals_count,activities_count,notes_count');
+      if (cursor) {
+        url.searchParams.set('cursor', cursor);
+      }
 
-      const response = await fetch(url);
+      console.log(`📥 Fetching persons: cursor=${cursor || 'initial'}`);
+
+      const response = await fetch(url.toString());
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -73,19 +80,18 @@ serve(async (req) => {
       
       if (data.data && data.data.length > 0) {
         allPersons.push(...data.data);
-        start += limit;
         
-        // Check if there are more results
-        hasMore = data.additional_data?.pagination?.more_items_in_collection || false;
+        // v2 uses next_cursor instead of pagination.more_items_in_collection
+        cursor = data.additional_data?.next_cursor || null;
         
         console.log(`✅ Fetched ${data.data.length} persons (total: ${allPersons.length})`);
         
         // Rate limit: wait 250ms between requests
         await new Promise(resolve => setTimeout(resolve, 250));
       } else {
-        hasMore = false;
+        cursor = null;
       }
-    }
+    } while (cursor);
 
     console.log(`📊 Total persons fetched: ${allPersons.length}`);
 
@@ -94,8 +100,8 @@ serve(async (req) => {
       const emailGroups = new Map<string, DuplicateContact[]>();
 
       for (const person of allPersons) {
-        // Get primary email or first email
-        const email = person.emails?.[0]?.value;
+        // v2 email structure: find primary or first email
+        const email = person.emails?.find(e => e.primary)?.value || person.emails?.[0]?.value;
         if (!email) continue;
 
         const normalizedEmail = email.toLowerCase().trim();
@@ -155,7 +161,9 @@ serve(async (req) => {
 
       for (const person of allPersons) {
         const normalizedName = person.name.toLowerCase().trim();
-        const email = person.emails?.[0]?.value || 'no-email';
+        const email = person.emails?.find(e => e.primary)?.value || 
+                     person.emails?.[0]?.value || 
+                     'no-email';
 
         const dataRichness = 
           (person.open_deals_count || 0) * 10 +

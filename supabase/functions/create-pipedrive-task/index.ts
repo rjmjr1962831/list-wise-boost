@@ -52,25 +52,25 @@ ${changeRequest}
 *Submitted via Top10Lists.us self-service portal*
     `.trim();
 
-    // Create activity (task) in Pipedrive
+    // Create activity (task) in Pipedrive using v2 API
     const activityData: Record<string, any> = {
       subject: taskSubject,
       type: 'task',
-      note: taskNote,
+      public_description: taskNote,
       due_date: new Date().toISOString().split('T')[0], // Today
       due_time: '09:00',
-      done: 0 // Not completed
+      done: false // v2 uses boolean instead of 0/1
     };
 
     // Link to person if we have their Pipedrive ID
     if (pipedrivePersonId) {
-      activityData.person_id = pipedrivePersonId;
+      activityData.person_id = Number(pipedrivePersonId); // v2 requires numeric type
     }
 
-    console.log('📤 Creating Pipedrive activity:', activityData);
+    console.log('📤 Creating Pipedrive activity (v2 API):', activityData);
 
     const response = await fetch(
-      `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/v1/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
+      `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
       {
         method: 'POST',
         headers: {
