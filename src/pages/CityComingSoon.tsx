@@ -35,9 +35,9 @@ const CityComingSoon = () => {
           Coming Soon!
         </h2>
         <p className="text-lg text-muted-foreground mb-6">
-          We're expanding our network of top-rated professionals to {cityName}. 
-          Our team is currently researching and verifying the best real estate agents, 
-          dentists, lawyers, and other professionals in your area.
+          We're expanding our network of top-rated real estate agents to {cityName}. 
+          Our team is currently researching and verifying the best real estate agents 
+          in your area.
         </p>
         <div className="bg-muted/50 rounded-lg p-6 mb-6">
           <Bell className="h-8 w-8 text-primary mx-auto mb-3" />
