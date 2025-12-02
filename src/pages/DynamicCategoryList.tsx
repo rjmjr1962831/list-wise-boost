@@ -5,7 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { ProfessionalListLayout } from '@/components/ProfessionalListLayout';
 import { CollapsibleListSection } from '@/components/CollapsibleListSection';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
+import { LastUpdatedBanner } from '@/components/LastUpdatedBanner';
 import { generatePageTitle, generateMetaDescription, formatCityName } from '@/utils/routeHelpers';
+import { generateFAQSchema, getLastUpdatedTimestamp } from '@/utils/structuredData';
 import { ListSection, Professional } from '@/types/professional';
 import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
@@ -1029,6 +1031,20 @@ export default function DynamicCategoryList() {
   const cityCoords = getCityCoordinates(city.slug);
   const pageUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
   const ogImageUrl = `https://top10lists.us/og-${city.slug}.png`;
+  
+  // Freshness signals for LLM optimization
+  const lastUpdated = getLastUpdatedTimestamp();
+  const topAgentName = topTenProfessionals[0]?.name;
+  
+  // FAQ Schema for Q&A targeting
+  const faqSchema = generateFAQSchema(
+    city.name,
+    city.state,
+    category.plural_name,
+    topTenProfessionals.length,
+    topAgentName,
+    lastUpdated
+  );
 
   // BreadcrumbList schema for SEO
   const breadcrumbSchema = {
@@ -1158,6 +1174,11 @@ export default function DynamicCategoryList() {
         <meta name="geo.position" content={cityCoords.position} />
         <meta name="ICBM" content={cityCoords.icbm} />
         
+        {/* Freshness Signals for LLMs */}
+        <meta property="article:modified_time" content={lastUpdated} />
+        <meta property="og:updated_time" content={lastUpdated} />
+        <meta name="last-modified" content={lastUpdated} />
+        
         {/* Author/Publisher */}
         <meta name="author" content="Top10Lists.us" />
         
@@ -1167,6 +1188,9 @@ export default function DynamicCategoryList() {
         </script>
         <script type="application/ld+json">
           {JSON.stringify(breadcrumbSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(faqSchema)}
         </script>
       </Helmet>
       
@@ -1215,6 +1239,7 @@ export default function DynamicCategoryList() {
         key={`professionals-${allProfessionals.length}-${Date.now()}`}
         metadata={metadata}
         professionals={filteredProfessionals}
+        lastUpdated={lastUpdated}
       >
         {sections.map((section, index) => (
           <CollapsibleListSection

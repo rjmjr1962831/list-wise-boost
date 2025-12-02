@@ -5,19 +5,22 @@ import { Link } from "react-router-dom";
 import { useEffect, ReactNode } from "react";
 import { PageMetadata, Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { LastUpdatedBanner } from "@/components/LastUpdatedBanner";
 
 interface ProfessionalListLayoutProps {
   metadata: PageMetadata;
   professionals: Professional[];
   children: ReactNode;
   heroIcons?: Array<{ icon: ReactNode; label: string }>;
+  lastUpdated?: string;
 }
 
 export const ProfessionalListLayout = ({
   metadata,
   professionals,
   children,
-  heroIcons
+  heroIcons,
+  lastUpdated
 }: ProfessionalListLayoutProps) => {
   const { trackEvent } = useGA4Tracking();
   
@@ -87,7 +90,7 @@ export const ProfessionalListLayout = ({
       metaTag.setAttribute('content', tag.content);
     });
 
-    // Add JSON-LD structured data for SEO
+    // Add JSON-LD structured data for SEO with freshness signals
     const structuredData = {
       "@context": "https://schema.org",
       "@type": "ItemList",
@@ -95,6 +98,7 @@ export const ProfessionalListLayout = ({
       "description": metadata.description,
       "itemListOrder": "https://schema.org/ItemListOrderDescending",
       "numberOfItems": professionals.length,
+      ...(lastUpdated && { "dateModified": lastUpdated }),
       "itemListElement": professionals.map(professional => ({
         "@type": "ListItem",
         "position": professional.rank,
@@ -237,6 +241,11 @@ export const ProfessionalListLayout = ({
               </div>
             ))}
           </div>
+          
+          {/* Freshness indicator for LLM optimization */}
+          {lastUpdated && (
+            <LastUpdatedBanner lastUpdated={lastUpdated} className="pt-4" />
+          )}
         </div>
       </section>
 
