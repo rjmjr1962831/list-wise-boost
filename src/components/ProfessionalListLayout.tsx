@@ -222,12 +222,7 @@ export const ProfessionalListLayout = ({
               <Badge variant="outline" className="px-3 py-1">2025</Badge>
             </div>
             <h1 className="text-3xl md:text-5xl font-bold">
-              {metadata.title.split('\n').map((line, i, arr) => (
-                <>
-                  {line}
-                  {i < arr.length - 1 && <br />}
-                </>
-              ))}
+              Top 10 {metadata.profession.plural} in {metadata.location.city}, {metadata.location.state}
             </h1>
             <p className="text-lg text-muted-foreground">
               {metadata.description}
