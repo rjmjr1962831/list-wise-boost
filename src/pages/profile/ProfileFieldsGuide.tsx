@@ -321,31 +321,59 @@ const ProfileFieldsGuide = () => {
     
     const oldValue = getFieldValue(currentField);
     
-    setChangeHistory(prev => [...prev, {
-      fieldKey: currentField.key,
-      fieldLabel: currentField.label,
-      oldValue,
-      newValue,
-      timestamp: new Date()
-    }]);
+    // Save field directly to database via edge function (bypasses RLS)
+    try {
+      const { data, error } = await supabase.functions.invoke('update-professional-field', {
+        body: {
+          token,
+          field: currentField.key,
+          value: newValue
+        }
+      });
 
-    setProfessional(prev => prev ? { ...prev, [currentField.key]: newValue } : null);
-    
-    toast({
-      title: "Field Updated",
-      description: `${currentField.label} has been updated. Remember to save all changes.`
-    });
+      if (error) throw error;
+
+      // Update local state
+      setProfessional(prev => prev ? { ...prev, [currentField.key]: newValue } : null);
+      
+      toast({
+        title: "Field Saved",
+        description: `${currentField.label} has been saved successfully.`
+      });
+    } catch (error: any) {
+      console.error("Error saving field:", error);
+      
+      // Fallback: add to change history for manual save
+      setChangeHistory(prev => [...prev, {
+        fieldKey: currentField.key,
+        fieldLabel: currentField.label,
+        oldValue,
+        newValue,
+        timestamp: new Date()
+      }]);
+
+      setProfessional(prev => prev ? { ...prev, [currentField.key]: newValue } : null);
+      
+      toast({
+        title: "Field Updated Locally",
+        description: `${currentField.label} updated. Click "Save All Changes" to persist.`,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveImage = async (imageUrl: string) => {
     if (!currentField || !professional) return;
     
-    // Save image directly to database (don't wait for "Save All Changes")
+    // Save image directly to database via edge function (bypasses RLS for magic link users)
     try {
-      const { error } = await supabase
-        .from("professionals")
-        .update({ [currentField.key]: imageUrl })
-        .eq("id", professional.id);
+      const { data, error } = await supabase.functions.invoke('update-professional-field', {
+        body: {
+          token,
+          field: currentField.key,
+          value: imageUrl
+        }
+      });
 
       if (error) throw error;
 

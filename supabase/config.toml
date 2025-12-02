@@ -198,3 +198,6 @@ verify_jwt = false
 [functions.generate-selection-rationales]
 verify_jwt = false
 
+[functions.update-professional-field]
+verify_jwt = false
+
