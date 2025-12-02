@@ -188,7 +188,7 @@ export default function VerifyListingByToken() {
           />
           
           {/* Review or Edit button in top right blank space */}
-          <div className="absolute top-[164px] right-[348px] flex items-center justify-center">
+          <div className="absolute top-[114px] right-[273px] flex items-center justify-center">
             <Button 
               size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3"
