@@ -8,6 +8,8 @@ import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { LastUpdatedBanner } from '@/components/LastUpdatedBanner';
 import { generatePageTitle, generateMetaDescription, formatCityName } from '@/utils/routeHelpers';
 import { generateFAQSchema, getLastUpdatedTimestamp } from '@/utils/structuredData';
+import { generateCityListingSchema, CityListingData } from '@/utils/cityListingSchema';
+import { professionalToAgentData } from '@/utils/agentSchema';
 import { ListSection, Professional } from '@/types/professional';
 import { RealEstateAgentQuizModal } from '@/components/RealEstateAgentQuizModal';
 import { ContactProfessionalModal } from '@/components/ContactProfessionalModal';
@@ -1049,55 +1051,37 @@ export default function DynamicCategoryList() {
   const lastUpdated = getLastUpdatedTimestamp();
   const topAgentName = topTenProfessionals[0]?.name;
   
-  // FAQ Schema for Q&A targeting
-  const faqSchema = generateFAQSchema(
-    city.name,
-    city.state,
-    category.plural_name,
-    topTenProfessionals.length,
-    topAgentName,
-    lastUpdated
+  // State abbreviation for schemas
+  const stateAbbrev = city.state_slug === 'arizona' ? 'AZ' : city.state_slug.toUpperCase().slice(0, 2);
+  
+  // Convert professionals to AgentData for enhanced schemas
+  const agentDataArray = topTenProfessionals.map(prof => 
+    professionalToAgentData(prof, city.name, city.state, stateAbbrev)
   );
-
-  // BreadcrumbList schema for SEO
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://top10lists.us"
-      },
-      {
-        "@type": "ListItem",
-        "position": 2,
-        "name": city.state,
-        "item": `https://top10lists.us/${city.state_slug}`
-      },
-      {
-        "@type": "ListItem",
-        "position": 3,
-        "name": city.name,
-        "item": `https://top10lists.us/${city.state_slug}/${city.slug}`
-      },
-      {
-        "@type": "ListItem",
-        "position": 4,
-        "name": `Top 10 ${category.plural_name}`,
-        "item": pageUrl
-      }
-    ]
+  
+  // Generate all three schemas using new cityListingSchema utility
+  const cityListingData: CityListingData = {
+    city: city.name,
+    state: city.state,
+    stateAbbrev,
+    stateSlug: city.state_slug,
+    slug: city.slug,
+    agents: agentDataArray,
+    dateModified: lastUpdated,
+    totalAgentsInCity: 500 // Approximate number of licensed agents in city
   };
+  
+  // Get ItemList, BreadcrumbList, and FAQPage schemas
+  const [itemListSchema, breadcrumbSchema, faqSchema] = generateCityListingSchema(cityListingData);
 
-  // Enhanced JSON-LD schema for city page
+  // Enhanced JSON-LD schema for city page (CollectionPage wrapper)
   const collectionPageSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
-    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, Arizona. All agents are data-verified with 50+ reviews, 4.8+ ratings, and 6+ years experience.`,
+    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 100+ reviews, 4.8+ ratings.`,
     "url": pageUrl,
+    "dateModified": lastUpdated,
     "isPartOf": {
       "@type": "WebSite",
       "name": "Top10Lists.us",
@@ -1109,42 +1093,9 @@ export default function DynamicCategoryList() {
       "address": {
         "@type": "PostalAddress",
         "addressLocality": city.name,
-        "addressRegion": city.state_slug.toUpperCase(),
+        "addressRegion": stateAbbrev,
         "addressCountry": "US"
       }
-    },
-    "mainEntity": {
-      "@type": "ItemList",
-      "name": `Top ${category.plural_name} in ${city.name}`,
-      "description": "Curated list of elite, data-verified agents",
-      "itemListOrder": "https://schema.org/ItemListOrderDescending",
-      "numberOfItems": Math.min(topTenProfessionals.length, 10),
-      "itemListElement": topTenProfessionals.slice(0, 10).map((agent, index) => {
-        const agentData = agent as any;
-        return {
-          "@type": "ListItem",
-          "position": index + 1,
-          "item": {
-            "@type": "RealEstateAgent",
-            "name": agent.name,
-            "description": agent.description || `Elite ${category.name.toLowerCase()} serving ${city.name}, ${city.state}`,
-            "url": agent.website || undefined,
-            "image": agent.image !== '/api/placeholder/400/400' ? agent.image : undefined,
-            "areaServed": {
-              "@type": "City",
-              "name": city.name
-            },
-            "aggregateRating": agent.rating > 0 ? {
-              "@type": "AggregateRating",
-              "ratingValue": agent.rating,
-              "reviewCount": agent.reviews,
-              "bestRating": 5,
-              "worstRating": 1
-            } : undefined,
-            "knowsAbout": agent.specialties || []
-          }
-        };
-      })
     }
   };
 
@@ -1197,6 +1148,9 @@ export default function DynamicCategoryList() {
         {/* JSON-LD Structured Data */}
         <script type="application/ld+json">
           {JSON.stringify(collectionPageSchema)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(itemListSchema)}
         </script>
         <script type="application/ld+json">
           {JSON.stringify(breadcrumbSchema)}
