@@ -24,7 +24,7 @@ const TASK_TYPES = [
 ];
 
 const MODEL_OVERRIDES = [
-  { value: '', label: 'Auto (use task routing)' },
+  { value: 'auto', label: 'Auto (use task routing)' },
   { value: 'gemini-flash', label: 'Gemini Flash' },
   { value: 'gemini-pro', label: 'Gemini Pro' },
   { value: 'gpt5', label: 'GPT-5' },
@@ -58,7 +58,7 @@ interface AIResponse {
 
 export const AIModelTester: React.FC = () => {
   const [task, setTask] = useState('general');
-  const [modelOverride, setModelOverride] = useState('');
+  const [modelOverride, setModelOverride] = useState('auto');
   const [prompt, setPrompt] = useState('');
   const [systemPrompt, setSystemPrompt] = useState('You are a helpful assistant.');
   const [isLoading, setIsLoading] = useState(false);
@@ -82,7 +82,7 @@ export const AIModelTester: React.FC = () => {
           task,
           messages: [{ role: 'user', content: prompt }],
           systemPrompt,
-          model: modelOverride || undefined,
+          model: modelOverride === 'auto' ? undefined : modelOverride,
         },
       });
 
