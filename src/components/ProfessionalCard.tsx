@@ -787,10 +787,14 @@ export const ProfessionalCard = ({
           <div className="flex-shrink-0">
             <div className="relative">
               <img 
-                src={photoPreview || professional.image} 
+                src={photoPreview || professional.image || (professional as any).image_url || '/api/placeholder/400/400'} 
                 alt={`${professional.name} - Top professional${(professional.specialties || (professional as any).specialty)?.length ? ` specializing in ${(professional.specialties || (professional as any).specialty).slice(0, 3).join(', ')}` : ''}`}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                 itemProp="image"
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  (e.target as HTMLImageElement).src = '/api/placeholder/400/400';
+                }}
               />
               {isOwnProfile && isEditing && (
                 <label className="absolute -top-2 -right-2 cursor-pointer bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90 shadow-lg">
@@ -1284,26 +1288,30 @@ export const ProfessionalCard = ({
 
                 // Use extracted years if available, otherwise fall back to stored value
                 const yearsExperience = extractedYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
+                
+                // Support both Professional interface (rating/reviews) and raw DB fields (review_stars_rating/num_total_reviews)
+                const displayRating = professional.rating || (professional as any).review_stars_rating || 0;
+                const displayReviews = professional.reviews || (professional as any).num_total_reviews || 0;
 
                 return (
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-2">
                     {/* Rating */}
-                    {professional.rating > 0 ? (
+                    {displayRating > 0 ? (
                       <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
                         <div className="flex items-center gap-1">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
                               className={`h-5 w-5 ${
-                                i < Math.floor(professional.rating)
+                                i < Math.floor(displayRating)
                                   ? "fill-primary text-primary"
                                   : "text-muted"
                               }`}
                             />
                           ))}
                         </div>
-                        <span className="font-semibold" itemProp="ratingValue">{professional.rating}</span>
-                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
+                        <span className="font-semibold" itemProp="ratingValue">{displayRating}</span>
+                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{displayReviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
                         <meta itemProp="bestRating" content="5" />
                       </div>
                     ) : (
