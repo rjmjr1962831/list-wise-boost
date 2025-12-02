@@ -146,7 +146,7 @@ export default function VerifyListingByToken() {
           
           {/* Review or Edit button - responsive positioning */}
           <div className="absolute top-4 right-4 md:top-[160px] md:right-[40px] lg:top-[114px] lg:right-[273px] flex items-center justify-center z-10">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3" onClick={() => navigate(`/profile/${token}/edit`)}>
+            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3" onClick={() => navigate(`/profile/${token}/fields`)}>
               <Edit className="mr-2 h-4 w-4" />
               Review or Edit
             </Button>
