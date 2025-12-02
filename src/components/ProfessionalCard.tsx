@@ -788,7 +788,7 @@ export const ProfessionalCard = ({
             <div className="relative">
               <img 
                 src={photoPreview || professional.image} 
-                alt={`${professional.name} - Top professional specializing in ${professional.specialties.slice(0, 3).join(', ')}`}
+                alt={`${professional.name} - Top professional${(professional.specialties || (professional as any).specialty)?.length ? ` specializing in ${(professional.specialties || (professional as any).specialty).slice(0, 3).join(', ')}` : ''}`}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                 itemProp="image"
               />
@@ -902,7 +902,7 @@ export const ProfessionalCard = ({
                     .map(pt => profileTypeMap[pt])
                     .filter(Boolean);
                   
-                  const dbSpecialties = professional.specialties || [];
+                  const dbSpecialties = professional.specialties || (professional as any).specialty || [];
                   const parsedSpecialties = parsedProfInfo?.specialties || [];
                   
                   const profInfoArray = (professional as any).professional_information;
@@ -1460,7 +1460,7 @@ export const ProfessionalCard = ({
                       .map(pt => profileTypeMap[pt])
                       .filter(Boolean);
                     
-                    const dbSpecialties = professional.specialties || [];
+                    const dbSpecialties = professional.specialties || (professional as any).specialty || [];
                     const parsedSpecialties = parsedProfInfo?.specialties || [];
                     
                     const profInfoArray = (professional as any).professional_information;
