@@ -143,17 +143,23 @@ Deno.serve(async (req) => {
     <priority>0.6</priority>
   </url>
   
-  <!-- Legacy Pages -->
+  <!-- Featured Real Estate Agent Pages -->
   <url>
-    <loc>${baseUrl}/gilbert-realtors</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>${baseUrl}/arizona/gilbert/top10realestateagents</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   
   <url>
-    <loc>${baseUrl}/gilbert-dentists</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <loc>${baseUrl}/arizona/scottsdale/top10realestateagents</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>${baseUrl}/arizona/phoenix/top10realestateagents</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>`;
 

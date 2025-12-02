@@ -322,16 +322,16 @@
     <priority>0.6</priority>
   </url>
   
-  <!-- Legacy Pages -->
+  <!-- About & Methodology -->
   <url>
-    <loc>https://top10lists.us/gilbert-realtors</loc>
+    <loc>https://top10lists.us/about</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   
   <url>
-    <loc>https://top10lists.us/gilbert-dentists</loc>
+    <loc>https://top10lists.us/ranking-methodology</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
 </urlset>

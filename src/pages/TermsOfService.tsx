@@ -106,7 +106,7 @@ const TermsOfService = () => {
             <div style={{ lineHeight: '1.5', marginTop: '15px' }}>
               <span style={{ fontSize: '15px' }}>
                 <span data-custom-class="body_text">
-                  Top10Lists.us provides a directory and listing service for professionals including real estate agents, dentists, and other service providers. Our Service allows users to search, view, and contact professionals listed on our platform.
+                  Top10Lists.us provides an AI and human curated directory of the top real estate agents in every major U.S. city. Our Service allows users to search, view, and contact real estate agents listed on our platform.
                 </span>
               </span>
             </div>
