@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Save } from 'lucide-react';
+import { Save, AlertCircle, Check } from 'lucide-react';
 import { AdminPipedriveFieldCreator } from './AdminPipedriveFieldCreator';
 import { AdminPipedriveSyncQueueManager } from './AdminPipedriveSyncQueueManager';
 import { BulkPipedriveReQueue } from './BulkPipedriveReQueue';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const FIELD_NAMES = [
   // Core IDs & Status
@@ -51,14 +52,24 @@ const FIELD_NAMES = [
 
 export default function AdminPipedriveFields() {
   const [fields, setFields] = useState<Record<string, string>>({});
+  const [savedFields, setSavedFields] = useState<Record<string, string>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [isFetchingFields, setIsFetchingFields] = useState(false);
   const [availableFields, setAvailableFields] = useState<any[]>([]);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const { toast } = useToast();
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     fetchFields();
   }, []);
+
+  // Check if there are unsaved changes
+  const hasUnsavedChanges = Object.keys(fields).some(
+    key => fields[key] !== (savedFields[key] || '')
+  ) || Object.keys(savedFields).some(
+    key => savedFields[key] !== (fields[key] || '')
+  );
 
   const fetchFields = async () => {
     const { data, error } = await supabase
@@ -71,22 +82,29 @@ export default function AdminPipedriveFields() {
         mapping[row.field_name] = row.pipedrive_key;
       });
       setFields(mapping);
+      setSavedFields(mapping);
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async (showToast = true) => {
     setIsSaving(true);
     try {
-      for (const [fieldName, pipedriveKey] of Object.entries(fields)) {
-        if (pipedriveKey) {
-          await supabase.from('pipedrive_field_mapping').upsert(
+      const savePromises = Object.entries(fields)
+        .filter(([_, pipedriveKey]) => pipedriveKey)
+        .map(([fieldName, pipedriveKey]) =>
+          supabase.from('pipedrive_field_mapping').upsert(
             { field_name: fieldName, pipedrive_key: pipedriveKey },
             { onConflict: 'field_name' }
-          );
-        }
-      }
+          )
+        );
 
-      toast({ title: 'Field mappings saved!' });
+      await Promise.all(savePromises);
+      setSavedFields({ ...fields });
+      setLastSaved(new Date());
+
+      if (showToast) {
+        toast({ title: 'Field mappings saved!' });
+      }
     } catch (error: any) {
       toast({
         title: 'Save Failed',
@@ -96,7 +114,31 @@ export default function AdminPipedriveFields() {
     } finally {
       setIsSaving(false);
     }
+  }, [fields, toast]);
+
+  // Auto-save after 2 seconds of no changes
+  const handleFieldChange = (fieldName: string, value: string) => {
+    setFields(prev => ({ ...prev, [fieldName]: value }));
+    
+    // Clear existing timeout
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    // Set new auto-save timeout
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      handleSave(false);
+    }, 2000);
   };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const fetchPipedriveFields = async () => {
     setIsFetchingFields(true);
@@ -140,10 +182,24 @@ export default function AdminPipedriveFields() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Custom Field Keys</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            Custom Field Keys
+            {hasUnsavedChanges && (
+              <span className="text-sm text-amber-500 flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" />
+                Unsaved changes (auto-saving...)
+              </span>
+            )}
+            {!hasUnsavedChanges && lastSaved && (
+              <span className="text-sm text-green-500 flex items-center gap-1">
+                <Check className="h-4 w-4" />
+                Saved
+              </span>
+            )}
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Enter the Pipedrive API keys for each custom field. Find these in Pipedrive:
-            Settings → Data fields → Person → Click field → Copy API key.
+            Enter the Pipedrive API keys for each custom field. Changes are auto-saved after 2 seconds.
+            Find keys in Pipedrive: Settings → Data fields → Person → Click field → Copy API key.
           </p>
           <Button 
             variant="outline" 
@@ -155,22 +211,33 @@ export default function AdminPipedriveFields() {
           </Button>
         </CardHeader>
         <CardContent>
+          <Alert className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Fields are auto-saved 2 seconds after you stop typing. You can also click "Save Mappings" to save immediately.
+            </AlertDescription>
+          </Alert>
+
           <div className="space-y-4">
             {FIELD_NAMES.map(({ name, label }) => (
               <div key={name} className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                 <label className="font-medium">{label}</label>
-                <Input
-                  placeholder="e.g., abc123def456..."
-                  value={fields[name] || ''}
-                  onChange={(e) =>
-                    setFields({ ...fields, [name]: e.target.value })
-                  }
-                />
+                <div className="relative">
+                  <Input
+                    placeholder="e.g., abc123def456..."
+                    value={fields[name] || ''}
+                    onChange={(e) => handleFieldChange(name, e.target.value)}
+                    className={fields[name] !== (savedFields[name] || '') ? 'border-amber-500' : ''}
+                  />
+                  {fields[name] && fields[name] === savedFields[name] && (
+                    <Check className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-green-500" />
+                  )}
+                </div>
               </div>
             ))}
           </div>
 
-          <Button className="mt-6" onClick={handleSave} disabled={isSaving}>
+          <Button className="mt-6" onClick={() => handleSave(true)} disabled={isSaving}>
             <Save className="w-4 h-4 mr-2" />
             {isSaving ? 'Saving...' : 'Save Mappings'}
           </Button>
