@@ -3,9 +3,13 @@ import { CheckCircle2, Bot, MapPin } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Helmet } from "react-helmet-async";
+import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 
 const Index = () => {
   const navigate = useNavigate();
+  
+  // Signal Prerender.io that meta tags are ready
+  usePrerenderReady();
 
   const featuredCities = [
     { name: "Phoenix", slug: "phoenix", avgReviews: 127 },
