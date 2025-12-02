@@ -24,11 +24,11 @@ serve(async (req) => {
       throw new Error('field_id (integer) is required');
     }
 
-    console.log(`Deleting Pipedrive person field ID: ${field_id}`);
+    console.log(`Deleting Pipedrive person field ID: ${field_id} (v2 API)`);
 
-    // Delete person field from Pipedrive (v1 API) - requires integer ID
+    // Delete person field from Pipedrive using v2 API
     const response = await fetch(
-      `https://${pipedriveDomain}.pipedrive.com/api/v1/personFields/${field_id}?api_token=${pipedriveApiToken}`,
+      `https://${pipedriveDomain}.pipedrive.com/api/v2/personFields/${field_id}?api_token=${pipedriveApiToken}`,
       {
         method: 'DELETE',
         headers: {

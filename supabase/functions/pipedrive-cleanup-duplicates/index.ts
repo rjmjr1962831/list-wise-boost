@@ -12,28 +12,38 @@ interface Contact {
   id: number;
   name: string;
   email: string;
-  dealsCount?: number;
-  activitiesCount?: number;
-  notesCount?: number;
+  dealsCount: number;
+  activitiesCount: number;
+  notesCount: number;
   updateTime?: string;
 }
 
+// Fetch all contacts using v2 cursor-based pagination (50% fewer tokens)
 async function getAllContacts(): Promise<Contact[]> {
   const contacts: Contact[] = [];
-  let start = 0;
-  const limit = 500;
-  let hasMore = true;
+  let cursor: string | null = null;
+  const limit = 100;
 
-  console.log("📥 Fetching all contacts from Pipedrive...");
+  console.log("📥 Fetching all contacts from Pipedrive (v2 API with cursor pagination)...");
 
-  while (hasMore) {
-    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons?start=${start}&limit=${limit}&api_token=${PIPEDRIVE_API_TOKEN}`;
-    const response = await fetch(url);
+  do {
+    const url = new URL(`https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons`);
+    url.searchParams.set('api_token', PIPEDRIVE_API_TOKEN);
+    url.searchParams.set('limit', String(limit));
+    // Request only fields we need to reduce payload
+    url.searchParams.set('include_fields', 'open_deals_count,activities_count,notes_count');
+    if (cursor) {
+      url.searchParams.set('cursor', cursor);
+    }
+
+    const response = await fetch(url.toString());
     const data = await response.json();
 
     if (data.success && data.data && data.data.length > 0) {
       for (const person of data.data) {
-        const primaryEmail = person.primary_email || person.email?.[0]?.value;
+        // v2 uses different email structure
+        const primaryEmail = person.emails?.find((e: any) => e.primary)?.value || 
+                            person.emails?.[0]?.value;
         if (primaryEmail) {
           contacts.push({
             id: person.id,
@@ -47,16 +57,16 @@ async function getAllContacts(): Promise<Contact[]> {
         }
       }
       
-      start += limit;
+      // v2 uses next_cursor instead of pagination.more_items_in_collection
+      cursor = data.additional_data?.next_cursor || null;
       console.log(`   Fetched ${contacts.length} contacts so far...`);
       
-      if (!data.additional_data?.pagination?.more_items_in_collection) {
-        hasMore = false;
-      }
+      // Rate limit: wait between requests
+      await new Promise(resolve => setTimeout(resolve, 250));
     } else {
-      hasMore = false;
+      cursor = null;
     }
-  }
+  } while (cursor);
 
   console.log(`✅ Fetched ${contacts.length} total contacts`);
   return contacts;
@@ -83,21 +93,17 @@ function findDuplicates(contacts: Contact[]): Map<string, Contact[]> {
 }
 
 function selectPrimaryContact(contacts: Contact[]): { primary: Contact; duplicates: Contact[] } {
-  // Sort by data richness: deals > activities > notes > oldest update time
+  // Sort by data richness: deals > activities > notes > oldest ID
   const sorted = [...contacts].sort((a, b) => {
-    // First priority: deals
     if (a.dealsCount !== b.dealsCount) {
-      return (b.dealsCount || 0) - (a.dealsCount || 0);
+      return b.dealsCount - a.dealsCount;
     }
-    // Second: activities
     if (a.activitiesCount !== b.activitiesCount) {
-      return (b.activitiesCount || 0) - (a.activitiesCount || 0);
+      return b.activitiesCount - a.activitiesCount;
     }
-    // Third: notes
     if (a.notesCount !== b.notesCount) {
-      return (b.notesCount || 0) - (a.notesCount || 0);
+      return b.notesCount - a.notesCount;
     }
-    // Finally: oldest ID (first created)
     return a.id - b.id;
   });
 
@@ -107,11 +113,12 @@ function selectPrimaryContact(contacts: Contact[]): { primary: Contact; duplicat
   };
 }
 
+// v2 API uses PATCH method instead of PUT for merge
 async function mergeContact(primaryId: number, duplicateId: number): Promise<boolean> {
   try {
-    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons/${primaryId}/merge?api_token=${PIPEDRIVE_API_TOKEN}`;
+    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${primaryId}/merge?api_token=${PIPEDRIVE_API_TOKEN}`;
     const response = await fetch(url, {
-      method: "PUT",
+      method: "PATCH", // Changed from PUT to PATCH for v2
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ merge_with_id: duplicateId }),
     });
@@ -124,7 +131,7 @@ async function mergeContact(primaryId: number, duplicateId: number): Promise<boo
       // Check if already deleted
       if (result.error && typeof result.error === "string" && result.error.includes("deleted")) {
         console.log(`⚠️ Contact ${duplicateId} already deleted, skipping`);
-        return true; // Consider this success
+        return true;
       }
       console.error(`❌ Failed to merge ${duplicateId} into ${primaryId}:`, result.error);
       return false;
@@ -143,7 +150,7 @@ serve(async (req) => {
   try {
     const { dry_run = false } = await req.json().catch(() => ({ dry_run: false }));
 
-    console.log(`🚀 Starting Pipedrive duplicate cleanup (${dry_run ? 'DRY RUN' : 'LIVE MODE'})`);
+    console.log(`🚀 Starting Pipedrive duplicate cleanup (${dry_run ? 'DRY RUN' : 'LIVE MODE'}) - v2 API`);
 
     // Step 1: Fetch all contacts
     const allContacts = await getAllContacts();
@@ -181,7 +188,7 @@ serve(async (req) => {
     };
 
     for (const [email, contacts] of duplicateGroups.entries()) {
-      results.duplicateContacts += contacts.length - 1; // -1 because one will be kept
+      results.duplicateContacts += contacts.length - 1;
 
       const { primary, duplicates } = selectPrimaryContact(contacts);
       
@@ -198,7 +205,6 @@ serve(async (req) => {
       };
 
       if (!dry_run) {
-        // Merge each duplicate into primary with delay
         for (const duplicate of duplicates) {
           const success = await mergeContact(primary.id, duplicate.id);
           if (success) {
