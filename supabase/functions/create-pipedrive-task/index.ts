@@ -5,8 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PIPEDRIVE_API_KEY = Deno.env.get('PIPEDRIVE_API_KEY');
-const PIPEDRIVE_DOMAIN = Deno.env.get('PIPEDRIVE_DOMAIN') || 'api';
+const PIPEDRIVE_API_TOKEN = Deno.env.get('PIPEDRIVE_API_TOKEN');
+const PIPEDRIVE_DOMAIN = Deno.env.get('PIPEDRIVE_DOMAIN');
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -30,8 +30,8 @@ serve(async (req) => {
       pipedrivePersonId
     });
 
-    if (!PIPEDRIVE_API_KEY) {
-      throw new Error('PIPEDRIVE_API_KEY not configured');
+    if (!PIPEDRIVE_API_TOKEN || !PIPEDRIVE_DOMAIN) {
+      throw new Error('Pipedrive credentials not configured');
     }
 
     // Build task subject and note
@@ -70,7 +70,7 @@ ${changeRequest}
     console.log('📤 Creating Pipedrive activity:', activityData);
 
     const response = await fetch(
-      `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/v1/activities?api_token=${PIPEDRIVE_API_KEY}`,
+      `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/v1/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
       {
         method: 'POST',
         headers: {
