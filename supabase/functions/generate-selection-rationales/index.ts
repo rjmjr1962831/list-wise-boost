@@ -10,6 +10,8 @@ interface GenerateRequest {
   cityId?: string;
   professionalIds?: string[];
   regenerateExisting?: boolean;
+  batchSize?: number;
+  offset?: number;
 }
 
 serve(async (req) => {
@@ -18,13 +20,33 @@ serve(async (req) => {
   }
 
   try {
-    const { cityId, professionalIds, regenerateExisting = false }: GenerateRequest = await req.json();
+    const { cityId, professionalIds, regenerateExisting = false, batchSize = 15, offset = 0 }: GenerateRequest = await req.json();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Build query for qualified agents
+    // First get total count
+    let countQuery = supabase
+      .from('professionals')
+      .select('id', { count: 'exact', head: true })
+      .eq('active', true)
+      .gte('review_stars_rating', 4.8)
+      .gte('num_total_reviews', 50);
+
+    if (cityId) {
+      countQuery = countQuery.eq('city_id', cityId);
+    }
+    if (professionalIds && professionalIds.length > 0) {
+      countQuery = countQuery.in('id', professionalIds);
+    }
+    if (!regenerateExisting) {
+      countQuery = countQuery.is('selection_rationale', null);
+    }
+
+    const { count: totalCount } = await countQuery;
+
+    // Build query for qualified agents with pagination
     let query = supabase
       .from('professionals')
       .select(`
@@ -47,7 +69,9 @@ serve(async (req) => {
       `)
       .eq('active', true)
       .gte('review_stars_rating', 4.8)
-      .gte('num_total_reviews', 50);
+      .gte('num_total_reviews', 50)
+      .order('name')
+      .range(offset, offset + batchSize - 1);
 
     if (cityId) {
       query = query.eq('city_id', cityId);
@@ -61,18 +85,25 @@ serve(async (req) => {
       query = query.is('selection_rationale', null);
     }
 
-    const { data: professionals, error: fetchError } = await query.limit(100);
+    const { data: professionals, error: fetchError } = await query;
 
     if (fetchError) {
       console.error('Error fetching professionals:', fetchError);
       throw fetchError;
     }
 
-    console.log(`Found ${professionals?.length || 0} professionals to process`);
+    console.log(`Batch ${offset}-${offset + batchSize}: Found ${professionals?.length || 0} professionals (total: ${totalCount})`);
 
     if (!professionals || professionals.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, processed: 0, message: 'No professionals to process' }),
+        JSON.stringify({ 
+          success: true, 
+          processed: 0, 
+          message: 'No professionals to process',
+          hasMore: false,
+          totalCount: totalCount || 0,
+          nextOffset: offset
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -175,8 +206,10 @@ Write in third person, professional tone. Focus on their standout metrics and qu
 
     const successful = results.filter(r => r.success).length;
     const failed = results.filter(r => !r.success).length;
+    const nextOffset = offset + professionals.length;
+    const hasMore = nextOffset < (totalCount || 0);
 
-    console.log(`Completed: ${successful} successful, ${failed} failed`);
+    console.log(`Batch complete: ${successful} successful, ${failed} failed. hasMore: ${hasMore}, nextOffset: ${nextOffset}`);
 
     return new Response(
       JSON.stringify({
@@ -184,7 +217,10 @@ Write in third person, professional tone. Focus on their standout metrics and qu
         processed: results.length,
         successful,
         failed,
-        results
+        results,
+        hasMore,
+        nextOffset,
+        totalCount: totalCount || 0
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
