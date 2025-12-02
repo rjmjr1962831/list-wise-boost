@@ -1208,6 +1208,8 @@ export type Database = {
           reviews_data: Json | null
           reviews_text: string | null
           screen_name: string | null
+          selection_rationale: string | null
+          selection_rationale_generated_at: string | null
           service_areas: Json | null
           sidebar_video_url: string | null
           skip_pipedrive_sync: boolean | null
@@ -1299,6 +1301,8 @@ export type Database = {
           reviews_data?: Json | null
           reviews_text?: string | null
           screen_name?: string | null
+          selection_rationale?: string | null
+          selection_rationale_generated_at?: string | null
           service_areas?: Json | null
           sidebar_video_url?: string | null
           skip_pipedrive_sync?: boolean | null
@@ -1390,6 +1394,8 @@ export type Database = {
           reviews_data?: Json | null
           reviews_text?: string | null
           screen_name?: string | null
+          selection_rationale?: string | null
+          selection_rationale_generated_at?: string | null
           service_areas?: Json | null
           sidebar_video_url?: string | null
           skip_pipedrive_sync?: boolean | null
