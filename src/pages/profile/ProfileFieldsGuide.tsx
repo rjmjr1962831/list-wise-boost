@@ -139,9 +139,7 @@ const ProfileFieldsGuide = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
               Your Profile Fields
             </h1>
-            <p className="text-lg text-muted-foreground">We're all about accuracy.  Tune your profile so it best represents
-who you are and what you've done.  This is a free listing.
-You can  </p>
+            <p className="text-lg text-muted-foreground">We're all about accuracy.  Tune your profile so it best represents who you are and what you've done.  This is a free listing. You can click here to see how we have selected you.</p>
           </div>
 
           {/* Editable Fields Section */}
