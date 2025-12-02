@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import FieldEditModal from "@/components/profile/FieldEditModal";
 import ImageUploadModal from "@/components/profile/ImageUploadModal";
 import FieldReviewRequestModal from "@/components/profile/FieldReviewRequestModal";
+import SpecialtyEditModal from "@/components/profile/SpecialtyEditModal";
 import { Badge } from "@/components/ui/badge";
 
 interface Professional {
@@ -64,6 +65,7 @@ const ProfileFieldsGuide = () => {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [specialtyModalOpen, setSpecialtyModalOpen] = useState(false);
   const [currentField, setCurrentField] = useState<FieldConfig | null>(null);
   
   // Change history
@@ -281,13 +283,37 @@ const ProfileFieldsGuide = () => {
 
   const handleEditClick = (field: FieldConfig) => {
     setCurrentField(field);
-    if (field.type === 'image') {
+    if (field.key === 'specialty') {
+      setSpecialtyModalOpen(true);
+    } else if (field.type === 'image') {
       setImageModalOpen(true);
     } else if (field.requiresReview) {
       setReviewModalOpen(true);
     } else {
       setEditModalOpen(true);
     }
+  };
+
+  const handleSaveSpecialties = async (newSpecialties: string[]) => {
+    if (!professional) return;
+    
+    const oldValue = getFieldValue(fields.find(f => f.key === 'specialty')!);
+    const newValue = newSpecialties.join(", ");
+    
+    setChangeHistory(prev => [...prev, {
+      fieldKey: 'specialty',
+      fieldLabel: 'Specialties',
+      oldValue,
+      newValue,
+      timestamp: new Date()
+    }]);
+
+    setProfessional(prev => prev ? { ...prev, specialty: newSpecialties } : null);
+    
+    toast({
+      title: "Specialties Updated",
+      description: "Your specialties have been updated. Remember to save all changes."
+    });
   };
 
   const handleSaveField = async (newValue: string) => {
@@ -633,6 +659,19 @@ const ProfileFieldsGuide = () => {
           profileLink={`https://top10lists.us/profile/${token}`}
           professionalName={professional.name}
           professionalEmail={professional.email}
+        />
+      )}
+
+      {/* Specialty Edit Modal */}
+      {professional && (
+        <SpecialtyEditModal
+          open={specialtyModalOpen}
+          onClose={() => {
+            setSpecialtyModalOpen(false);
+            setCurrentField(null);
+          }}
+          onSave={handleSaveSpecialties}
+          currentSpecialties={professional.specialty || []}
         />
       )}
     </>
