@@ -6,6 +6,149 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Send failover alert email
+async function sendFailoverAlert(
+  supabase: any,
+  provider: string,
+  error: string,
+  agentName: string
+) {
+  try {
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY not configured, cannot send failover alert');
+      return;
+    }
+
+    const emailBody = `
+AI Provider Failover Alert
+
+Provider: ${provider}
+Error: ${error}
+Agent Being Processed: ${agentName}
+Time: ${new Date().toISOString()}
+
+Action Required:
+${provider === 'Anthropic/Claude' ? 
+  '1. Check Anthropic credit balance: https://console.anthropic.com/settings/billing\n2. Add credits or update payment method if needed' :
+  '1. Check the provider status and API key configuration\n2. Review error logs for details'}
+
+The system automatically failed over to Lovable AI (Gemini) to complete this request.
+`;
+
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Top10Lists <alerts@top10lists.us>',
+        to: ['robert@top10lists.us'],
+        subject: `⚠️ AI Failover Alert: ${provider} failed - switched to backup`,
+        text: emailBody,
+      }),
+    });
+
+    if (response.ok) {
+      console.log('✅ Failover alert email sent to robert@top10lists.us');
+    } else {
+      const errorText = await response.text();
+      console.error('Failed to send failover alert email:', errorText);
+    }
+  } catch (emailError) {
+    console.error('Error sending failover alert:', emailError);
+  }
+}
+
+// Call Claude API
+async function callClaudeAPI(systemPrompt: string, userQuery: string, anthropicApiKey: string) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': anthropicApiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 5000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userQuery }],
+      tools: [
+        {
+          type: 'web_search_20250305',
+          name: 'web_search',
+          max_uses: 6
+        }
+      ],
+      tool_choice: { type: 'auto' }
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Claude API error ${response.status}: ${errorText}`);
+  }
+
+  return response.json();
+}
+
+// Call Lovable AI (Gemini) as fallback
+async function callLovableAI(systemPrompt: string, userQuery: string) {
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  if (!lovableApiKey) {
+    throw new Error('LOVABLE_API_KEY not configured');
+  }
+
+  // Enhanced prompt for Gemini that simulates research
+  const enhancedPrompt = `${systemPrompt}
+
+IMPORTANT: Since you cannot perform live web searches, use your training knowledge to identify likely press mentions, awards, and recognition for this real estate professional. Focus on:
+- Major industry awards they might have received (WSJ Real Trends, local top agent lists)
+- Types of media coverage common for top agents in their area
+- Industry publications that feature successful agents
+
+If you don't have specific information, provide a structured response indicating no verified press mentions were found.
+
+${userQuery}
+
+Respond with a JSON array of any known mentions. If uncertain, return an empty array [].`;
+
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${lovableApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: enhancedPrompt }
+      ],
+      temperature: 0.3,
+      max_tokens: 4096,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Lovable AI error ${response.status}: ${errorText}`);
+  }
+
+  const data = await response.json();
+  
+  // Convert to Claude-like response format
+  return {
+    content: [{
+      type: 'text',
+      text: data.choices?.[0]?.message?.content || '[]'
+    }],
+    provider: 'lovable-ai-fallback'
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -35,18 +178,9 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!anthropicApiKey) {
-      console.error('ANTHROPIC_API_KEY not configured');
-      return new Response(
-        JSON.stringify({ error: 'API key not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    console.log(`Searching press mentions for ${agentName} with AI (Claude primary, Lovable fallback)`);
 
-    console.log(`Searching press mentions for ${agentName} with Claude Web Search (Enhanced)`);
-
-    // Comprehensive system prompt to guide Claude
+    // Comprehensive system prompt
     const systemPrompt = `You are a research assistant finding press mentions and web presence for real estate professionals.
 
 Search multiple angles to build a comprehensive profile:
@@ -64,7 +198,6 @@ Exclude generic real estate listing sites (Zillow agent profiles, Realtor.com, R
 
 Return your findings as a JSON array with: title, source, url, snippet, date (YYYY-MM-DD or 'NA'), type (tv_appearance, award, article, interview, podcast, speaking_engagement, or recognition).`;
 
-    // Enhanced user query with city context
     const userQuery = `Find the complete web presence and press mentions for ${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''}, a real estate professional in ${city}, ${state}.
 
 Search for:
@@ -77,69 +210,62 @@ Search for:
 
 Look for references to achievements even if cited by secondary sources.`;
 
-    // Call Claude with enhanced configuration
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',  // Upgraded from haiku for better research
-        max_tokens: 5000,             // Increased from 1500 for comprehensive results
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: userQuery
-          }
-        ],
-        tools: [
-          {
-            type: 'web_search_20250305',
-            name: 'web_search',
-            max_uses: 6  // Increased from 2 for multi-angle searching
-          }
-        ],
-        tool_choice: { type: 'auto' }
-      }),
-    });
+    let data: any;
+    let usedFallback = false;
+    let failoverError = '';
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Claude API error:', response.status, errorText);
-      
-      // Pass through rate limit errors with proper status code
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: 'Rate limited', details: errorText }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    // Try Claude first, fall back to Lovable AI
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    
+    if (anthropicApiKey) {
+      try {
+        console.log('🔵 Attempting Claude API...');
+        data = await callClaudeAPI(systemPrompt, userQuery, anthropicApiKey);
+        console.log('✅ Claude API succeeded');
+      } catch (claudeError) {
+        const errorMsg = claudeError instanceof Error ? claudeError.message : String(claudeError);
+        console.error('❌ Claude API failed:', errorMsg);
+        failoverError = errorMsg;
+        
+        // Check if it's a credits/billing issue
+        const isCreditsIssue = errorMsg.includes('credit balance') || 
+                               errorMsg.includes('billing') || 
+                               errorMsg.includes('payment') ||
+                               errorMsg.includes('402');
+        
+        console.log(`⚠️ Failing over to Lovable AI (Gemini)... Reason: ${isCreditsIssue ? 'Credits issue' : 'API error'}`);
+        
+        try {
+          data = await callLovableAI(systemPrompt, userQuery);
+          usedFallback = true;
+          console.log('✅ Lovable AI fallback succeeded');
+          
+          // Send alert email about the failover
+          await sendFailoverAlert(supabase, 'Anthropic/Claude', errorMsg, agentName);
+        } catch (fallbackError) {
+          console.error('❌ Lovable AI fallback also failed:', fallbackError);
+          throw new Error(`Both Claude and Lovable AI failed. Claude: ${errorMsg}. Fallback: ${fallbackError}`);
+        }
       }
-      
-      return new Response(
-        JSON.stringify({ error: 'Claude API request failed', details: errorText }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    } else {
+      // No Anthropic key configured, use Lovable AI directly
+      console.log('⚠️ ANTHROPIC_API_KEY not configured, using Lovable AI directly');
+      data = await callLovableAI(systemPrompt, userQuery);
+      usedFallback = true;
     }
 
-    const data = await response.json();
-    console.log('Claude response received');
+    console.log(`Response received from ${usedFallback ? 'Lovable AI (fallback)' : 'Claude'}`);
 
-    // Extract press mentions from Claude's response AND capture full research text
+    // Extract press mentions from response
     const mentions: any[] = [];
     let fullResearchText = '';
     
-    // Look through the content blocks for text responses
     if (data.content) {
       for (const block of data.content) {
         if (block.type === 'text' && block.text) {
-          // Capture all text for synthesis
           fullResearchText += block.text + '\n\n';
           
           try {
-            // Try to extract JSON from the text
             const jsonMatch = block.text.match(/\[[\s\S]*\]/);
             if (jsonMatch) {
               const parsedMentions = JSON.parse(jsonMatch[0]);
@@ -148,29 +274,26 @@ Look for references to achievements even if cited by secondary sources.`;
               }
             }
           } catch (e) {
-            console.error('Failed to parse JSON from Claude response:', e);
+            console.error('Failed to parse JSON from response:', e);
           }
         }
       }
     }
 
-    // Enhanced deduplication: check both URL and content similarity
+    // Enhanced deduplication
     const uniqueMentions = new Map();
     const seenTitles = new Set<string>();
     
     mentions.forEach(mention => {
       if (!mention.url) return;
       
-      // Normalize title for duplicate detection
       const normalizedTitle = (mention.title || '').toLowerCase()
         .replace(/[^a-z0-9\s]/g, '')
         .replace(/\s+/g, ' ')
         .trim();
       
-      // Check if we've seen a very similar title (same award from different sources)
       let isDuplicate = false;
       for (const seenTitle of seenTitles) {
-        // If 80% of words match, consider it a duplicate
         const titleWords = normalizedTitle.split(' ');
         const seenWords = seenTitle.split(' ');
         const commonWords = titleWords.filter((w: string) => seenWords.includes(w));
@@ -183,7 +306,6 @@ Look for references to achievements even if cited by secondary sources.`;
       }
       
       if (!isDuplicate && !uniqueMentions.has(mention.url)) {
-        // Assign credibility score based on type and source
         let credibilityScore = 5;
         const lowerSource = (mention.source || '').toLowerCase();
         const type = mention.type || 'article';
@@ -202,10 +324,9 @@ Look for references to achievements even if cited by secondary sources.`;
       }
     });
 
-    // Convert to array and sort by credibility
     const finalMentions = Array.from(uniqueMentions.values())
       .sort((a, b) => (b.credibilityScore || 0) - (a.credibilityScore || 0))
-      .slice(0, 10); // Top 10 unique mentions
+      .slice(0, 10);
 
     console.log(`Found ${finalMentions.length} press mentions for ${agentName}`);
 
@@ -217,7 +338,6 @@ Look for references to achievements even if cited by secondary sources.`;
       console.log(`🔄 Auto-triggering profile synthesis for ${agentName}...`);
       
       try {
-        // Call synthesize-agent-profile in background (don't await to avoid blocking response)
         supabase.functions.invoke('synthesize-agent-profile', {
           body: {
             professionalId,
@@ -247,7 +367,6 @@ ${JSON.stringify(finalMentions, null, 2)}`
         });
       } catch (synthError) {
         console.error('❌ Failed to trigger synthesis:', synthError);
-        // Don't block the response on synthesis failure
       }
     } else if (dryRun) {
       console.log('🔧 DRY RUN: Would trigger synthesis for', agentName);
@@ -260,7 +379,12 @@ ${JSON.stringify(finalMentions, null, 2)}`
     }
 
     return new Response(
-      JSON.stringify({ mentions: finalMentions }),
+      JSON.stringify({ 
+        mentions: finalMentions,
+        provider: usedFallback ? 'lovable-ai-fallback' : 'claude',
+        failoverUsed: usedFallback,
+        failoverReason: usedFallback ? failoverError : undefined
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
