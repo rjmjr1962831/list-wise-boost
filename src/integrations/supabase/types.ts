@@ -1150,11 +1150,14 @@ export type Database = {
           address: string | null
           agent_licenses: Json | null
           agent_sales_stats: Json | null
+          awards_verified: Json | null
           badges: string[] | null
           business_address: Json | null
           business_name: string | null
+          card_created_at: string | null
           category_id: string
           certifications: Json | null
+          certifications_verified: Json | null
           city_id: string
           claim_notes: string | null
           claim_status: Database["public"]["Enums"]["claim_status"]
@@ -1165,6 +1168,7 @@ export type Database = {
           cpd_user_pronouns: string | null
           created_at: string
           current_listings: number | null
+          data_sources_log: Json | null
           description: string | null
           email: string | null
           email_verified_at: string | null
@@ -1181,7 +1185,11 @@ export type Database = {
           is_premier_agent: boolean | null
           is_top_agent: boolean | null
           languages: Json | null
+          license_expires_at: string | null
+          license_issued_at: string | null
           license_number: string | null
+          license_status: string | null
+          license_type: string | null
           license_verified_at: string | null
           most_recent_review_date: string | null
           name: string
@@ -1191,6 +1199,7 @@ export type Database = {
           past_sales: Json | null
           phone: string | null
           phone_numbers: Json | null
+          platform_reviews: Json | null
           press_mentions: Json | null
           professional_data: Json | null
           professional_information: Json | null
@@ -1243,11 +1252,14 @@ export type Database = {
           address?: string | null
           agent_licenses?: Json | null
           agent_sales_stats?: Json | null
+          awards_verified?: Json | null
           badges?: string[] | null
           business_address?: Json | null
           business_name?: string | null
+          card_created_at?: string | null
           category_id: string
           certifications?: Json | null
+          certifications_verified?: Json | null
           city_id: string
           claim_notes?: string | null
           claim_status?: Database["public"]["Enums"]["claim_status"]
@@ -1258,6 +1270,7 @@ export type Database = {
           cpd_user_pronouns?: string | null
           created_at?: string
           current_listings?: number | null
+          data_sources_log?: Json | null
           description?: string | null
           email?: string | null
           email_verified_at?: string | null
@@ -1274,7 +1287,11 @@ export type Database = {
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
           languages?: Json | null
+          license_expires_at?: string | null
+          license_issued_at?: string | null
           license_number?: string | null
+          license_status?: string | null
+          license_type?: string | null
           license_verified_at?: string | null
           most_recent_review_date?: string | null
           name: string
@@ -1284,6 +1301,7 @@ export type Database = {
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
+          platform_reviews?: Json | null
           press_mentions?: Json | null
           professional_data?: Json | null
           professional_information?: Json | null
@@ -1336,11 +1354,14 @@ export type Database = {
           address?: string | null
           agent_licenses?: Json | null
           agent_sales_stats?: Json | null
+          awards_verified?: Json | null
           badges?: string[] | null
           business_address?: Json | null
           business_name?: string | null
+          card_created_at?: string | null
           category_id?: string
           certifications?: Json | null
+          certifications_verified?: Json | null
           city_id?: string
           claim_notes?: string | null
           claim_status?: Database["public"]["Enums"]["claim_status"]
@@ -1351,6 +1372,7 @@ export type Database = {
           cpd_user_pronouns?: string | null
           created_at?: string
           current_listings?: number | null
+          data_sources_log?: Json | null
           description?: string | null
           email?: string | null
           email_verified_at?: string | null
@@ -1367,7 +1389,11 @@ export type Database = {
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
           languages?: Json | null
+          license_expires_at?: string | null
+          license_issued_at?: string | null
           license_number?: string | null
+          license_status?: string | null
+          license_type?: string | null
           license_verified_at?: string | null
           most_recent_review_date?: string | null
           name?: string
@@ -1377,6 +1403,7 @@ export type Database = {
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
+          platform_reviews?: Json | null
           press_mentions?: Json | null
           professional_data?: Json | null
           professional_information?: Json | null
