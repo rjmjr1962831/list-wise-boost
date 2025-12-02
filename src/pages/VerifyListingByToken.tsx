@@ -156,17 +156,6 @@ export default function VerifyListingByToken() {
   return (
     <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
-        {/* Fixed Accept Now Button */}
-        <div className="fixed top-4 right-4 z-50">
-          <Button 
-            size="lg"
-            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-8"
-            onClick={() => navigate(`/profile/${token}/pricing`)}
-          >
-            Accept Now
-          </Button>
-        </div>
-
         {/* Success Banner */}
         <Card className="bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900">
           <CardContent className="flex items-center gap-3 py-4">
@@ -185,28 +174,31 @@ export default function VerifyListingByToken() {
         {/* Heading Section */}
         <div className="space-y-3">
           <h2 className="text-3xl font-bold">Here is what your listing looks like.</h2>
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <h3 className="text-xl text-muted-foreground">
-              Please review it. You can edit it by clicking the edit button.
-            </h3>
+          <h3 className="text-xl text-muted-foreground">
+            Please review it. You can edit it by clicking the button.
+          </h3>
+        </div>
+
+        {/* Professional Card with CTA button overlay */}
+        <div className="relative">
+          <ProfessionalCard 
+            professional={professional}
+            accentColor="primary"
+            quizCompleted={true}
+          />
+          
+          {/* Review or Edit button in top right blank space */}
+          <div className="absolute top-0 right-0 h-48 w-48 flex items-center justify-center p-6">
             <Button 
-              variant="outline"
               size="lg"
-              className="shrink-0"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3"
               onClick={() => navigate(`/profile/${token}/edit`)}
             >
               <Edit className="mr-2 h-4 w-4" />
-              Edit Profile
+              Review or Edit
             </Button>
           </div>
         </div>
-
-        {/* Professional Card */}
-        <ProfessionalCard 
-          professional={professional}
-          accentColor="primary"
-          quizCompleted={true}
-        />
 
         {/* Bottom CTA */}
         <Card className="bg-primary/5 border-primary/20">
