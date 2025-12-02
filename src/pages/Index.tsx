@@ -279,7 +279,7 @@ const Index = () => {
                 <CardContent className="p-6 space-y-3">
                   <h3 className="text-lg font-semibold">Reviews & Ratings</h3>
                   <p className="text-sm text-muted-foreground">
-                    Minimum 4.8★ rating across multiple platforms with at least 100 verified reviews
+                    Minimum 4.8★ rating across multiple platforms with at least 50 verified reviews
                   </p>
                 </CardContent>
               </Card>

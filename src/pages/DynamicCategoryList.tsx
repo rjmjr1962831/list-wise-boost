@@ -291,8 +291,8 @@ export default function DynamicCategoryList() {
 
         // HUMAN PATH: Dynamic rotation with random selection
 
-        // Fetch professionals - ONLY enriched and qualified agents (4.8+ stars, 100+ reviews)
-        // SPECIAL CASE: For Scottsdale, always include Beauvais first (even if <100 reviews)
+        // Fetch professionals - ONLY enriched and qualified agents (4.8+ stars, 50+ reviews)
+        // SPECIAL CASE: For Scottsdale, always include Beauvais first (even if <50 reviews)
         const cacheBuster = Date.now();
         
         let professionalsData: any[] = [];
@@ -332,7 +332,7 @@ export default function DynamicCategoryList() {
           .eq('professionals.active', true)
           .eq('professionals.is_brand_builder', false)
           .gte('professionals.review_stars_rating', 4.8)
-          .gte('professionals.num_total_reviews', 100);
+          .gte('professionals.num_total_reviews', 50);
 
         console.log(`🔍 Qualified pool query returned ${qualifiedPool?.length || 0} rows for ${cityData.name}`);
 
@@ -372,7 +372,7 @@ export default function DynamicCategoryList() {
             .eq('category_id', categoryData.id)
             .eq('active', true)
             .gte('review_stars_rating', 4.8)
-            .gte('num_total_reviews', 100)
+            .gte('num_total_reviews', 50)
             .order('num_total_reviews', { ascending: false })
             .limit(10);
           
@@ -706,7 +706,7 @@ export default function DynamicCategoryList() {
         .eq('category_id', categoryId)
         .eq('active', true)
         .gte('review_stars_rating', 4.8)
-        .gte('num_total_reviews', 100)
+        .gte('num_total_reviews', 50)
         .limit(1);
       
       if (error) {
@@ -1079,7 +1079,7 @@ export default function DynamicCategoryList() {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
-    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 100+ reviews, 4.8+ ratings.`,
+    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 50+ reviews, 4.8+ ratings.`,
     "url": pageUrl,
     "dateModified": lastUpdated,
     "isPartOf": {

@@ -74,7 +74,7 @@ const QALandingPage = () => {
               .eq('category_id', category.id)
               .eq('active', true)
               .gte('review_stars_rating', 4.8)
-              .gte('num_total_reviews', 100)
+              .gte('num_total_reviews', 50)
               .order('rank', { ascending: true })
               .limit(10);
 
@@ -251,7 +251,7 @@ const QALandingPage = () => {
               <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                 <p className="text-muted-foreground" itemProp="text">
                   Our rankings are based on a combination of factors: verified client reviews 
-                  (minimum 100 reviews, 4.8+ rating), transaction history, years of experience, 
+                  (minimum 50 reviews, 4.8+ rating), transaction history, years of experience, 
                   license verification, and local market expertise. Rankings are updated weekly 
                   to reflect current performance.
                 </p>
