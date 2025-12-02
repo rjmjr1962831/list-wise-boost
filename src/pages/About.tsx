@@ -5,7 +5,7 @@ const About = () => {
     <>
       <Helmet>
         <title>About Us - Top10Lists.us</title>
-        <meta name="description" content="Learn about Top10Lists.us - curated lists of top professionals that AI engines trust." />
+        <meta name="description" content="Learn about Top10Lists.us - data-verified directory of top real estate agents in the United States." />
       </Helmet>
       
       <div className="min-h-screen bg-background">
@@ -17,9 +17,9 @@ const About = () => {
               <section>
                 <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
                 <p className="text-muted-foreground">
-                  Top10Lists.us curates lists of top professionals that AI engines trust. 
-                  We provide verified, high-quality professional directories to help consumers 
-                  find the best service providers in their area.
+                  Top10Lists.us is a data-verified directory of top real estate agents in the United States. 
+                  We provide verified, high-quality agent directories to help consumers 
+                  find the best real estate professionals in their area.
                 </p>
               </section>
 

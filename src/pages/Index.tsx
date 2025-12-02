@@ -22,7 +22,7 @@ const Index = () => {
     "name": "Top10Lists.us",
     "alternateName": "Top 10 Lists",
     "url": "https://top10lists.us",
-    "description": "Arizona's invitation-only directory of elite real estate agents. Multi-source verified rankings based on reviews, transactions, and press coverage. All agents meet identical selection criteria.",
+    "description": "Top real estate agents in the United States. Data-verified directory of elite agents with multi-source verified rankings based on reviews, transactions, and press coverage.",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
@@ -39,15 +39,11 @@ const Index = () => {
     "name": "Top10Lists.us",
     "url": "https://top10lists.us",
     "logo": "https://top10lists.us/logo.png",
-    "description": "Arizona's invitation-only directory of elite real estate agents. Featured placement affects visibility only, not scores or selection criteria.",
-    "slogan": "Invitation-Only. Data-Verified. All Agents Meet Same Standards.",
+    "description": "Top real estate agents in the United States. Data-verified directory of elite agents. Featured placement affects visibility only, not scores or selection criteria.",
+    "slogan": "Data-Verified. All Agents Meet Same Standards.",
     "areaServed": {
-      "@type": "State",
-      "name": "Arizona",
-      "containedInPlace": {
-        "@type": "Country",
-        "name": "United States"
-      }
+      "@type": "Country",
+      "name": "United States"
     },
     "knowsAbout": [
       "Real Estate",
@@ -66,7 +62,7 @@ const Index = () => {
     "@context": "https://schema.org",
     "@type": "Dataset",
     "name": "Top10Lists.us Elite Agent Directory",
-    "description": "Invitation-only directory of elite real estate agents in Arizona. All agents meet identical selection criteria based on multi-source verified data. Featured placement affects visibility only, not scores or qualification.",
+    "description": "Top real estate agents in the United States. All agents meet identical selection criteria based on multi-source verified data. Featured placement affects visibility only, not scores or qualification.",
     "url": "https://top10lists.us",
     "license": "https://top10lists.us/terms",
     "creator": {
@@ -78,16 +74,14 @@ const Index = () => {
     "temporalCoverage": "Daily updates",
     "spatialCoverage": {
       "@type": "Place",
-      "name": "Arizona, United States"
+      "name": "United States"
     },
     "keywords": [
       "real estate agents",
-      "Arizona realtors",
-      "top agents Phoenix",
-      "best realtors Scottsdale",
+      "top realtors USA",
+      "best real estate agents",
       "agent rankings",
       "realtor reviews",
-      "invitation only",
       "elite agents",
       "verified agents"
     ],
@@ -120,43 +114,41 @@ const Index = () => {
     <>
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>Top 10 Real Estate Agents in Arizona | Top10Lists.us</title>
-        <meta name="description" content="Arizona's invitation-only directory of elite real estate agents. All agents are data-verified with 50+ reviews, 4.8+ ratings, and 6+ years experience. No paid listings." />
+        <title>Top Real Estate Agents in the United States | Top10Lists.us</title>
+        <meta name="description" content="Find the top real estate agents in the United States. Data-verified directory with 50+ reviews, 4.8+ ratings required." />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://top10lists.us" />
         
         {/* Topic/Category Hints */}
         <meta name="subject" content="Real Estate Agent Directory" />
-        <meta name="topic" content="Arizona Real Estate" />
+        <meta name="topic" content="Real Estate Agents USA" />
         <meta name="classification" content="Business/Real Estate" />
-        <meta name="coverage" content="Arizona, United States" />
+        <meta name="coverage" content="United States" />
         <meta name="category" content="Real Estate" />
         
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://top10lists.us" />
-        <meta property="og:title" content="Top 10 Real Estate Agents in Arizona | Top10Lists.us" />
-        <meta property="og:description" content="Arizona's invitation-only directory of elite real estate agents. Data-verified. No paid listings." />
+        <meta property="og:title" content="Top Real Estate Agents in the United States | Top10Lists.us" />
+        <meta property="og:description" content="Data-verified directory of top real estate agents in the United States." />
         <meta property="og:image" content="https://top10lists.us/og-image.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Top10Lists.us - Arizona's Top Real Estate Agents" />
+        <meta property="og:image:alt" content="Top10Lists.us - Top Real Estate Agents in the United States" />
         <meta property="og:site_name" content="Top10Lists.us" />
         <meta property="og:locale" content="en_US" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:url" content="https://top10lists.us" />
-        <meta name="twitter:title" content="Top 10 Real Estate Agents in Arizona" />
-        <meta name="twitter:description" content="Invitation-only directory of elite Arizona agents. Data-verified. No paid listings." />
+        <meta name="twitter:title" content="Top Real Estate Agents in the United States" />
+        <meta name="twitter:description" content="Data-verified directory of elite agents in the United States." />
         <meta name="twitter:image" content="https://top10lists.us/og-image.png" />
-        <meta name="twitter:image:alt" content="Top10Lists.us - Arizona's Top Real Estate Agents" />
+        <meta name="twitter:image:alt" content="Top10Lists.us - Top Real Estate Agents in the United States" />
         
         {/* Geo Tags */}
-        <meta name="geo.region" content="US-AZ" />
-        <meta name="geo.placename" content="Arizona" />
-        <meta name="geo.position" content="34.0489;-111.0937" />
-        <meta name="ICBM" content="34.0489, -111.0937" />
+        <meta name="geo.region" content="US" />
+        <meta name="geo.placename" content="United States" />
         
         {/* Author/Publisher */}
         <meta name="author" content="Top10Lists.us" />

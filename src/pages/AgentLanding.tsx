@@ -76,8 +76,8 @@ export default function AgentLanding() {
     <>
       <Helmet>
         <title>Be the Answer When AI Recommends | Top10Lists Real Estate Agents</title>
-        <meta name="description" content="When ChatGPT, Gemini, or Claude search for top agents, will they find you? Top10Lists uses cutting-edge technology to make LLMs cite you as the expert. 4.9+ rating required." />
-        <meta name="keywords" content="AI search optimization, LLM citations, real estate agent AI, ChatGPT real estate, brand builder agents, AI real estate leads" />
+        <meta name="description" content="Top real estate agents in the United States. When ChatGPT, Gemini, or Claude search for top agents, will they find you? Data-verified directory. 4.9+ rating required." />
+        <meta name="keywords" content="top real estate agents USA, best realtors, AI search optimization, ChatGPT real estate, verified agents" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20">
