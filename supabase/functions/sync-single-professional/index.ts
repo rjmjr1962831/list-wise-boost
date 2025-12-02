@@ -61,9 +61,62 @@ async function searchPersonByEmail(email: string): Promise<{ personId: number | 
   return { personId: null, duplicates: [] };
 }
 
+async function searchOrganizationByName(name: string): Promise<number | null> {
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/organizations/search?term=${encodeURIComponent(name)}&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
+  
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  const items = data?.data?.items;
+  if (data.success && Array.isArray(items) && items.length > 0) {
+    const orgId = items[0]?.item?.id ?? items[0]?.id;
+    if (typeof orgId === "number") {
+      console.log(`🏢 Found existing organization "${name}" (ID: ${orgId})`);
+      return orgId;
+    }
+  }
+  
+  return null;
+}
+
+async function createOrganization(name: string): Promise<number> {
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/organizations?api_token=${PIPEDRIVE_API_TOKEN}`;
+  
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name })
+  });
+  
+  const data = await response.json();
+  
+  if (!data.success) {
+    throw new Error(`Failed to create organization: ${JSON.stringify(data)}`);
+  }
+  
+  console.log(`🏢 Created new organization "${name}" (ID: ${data.data.id})`);
+  return data.data.id;
+}
+
+async function findOrCreateOrganization(companyName: string): Promise<number | null> {
+  if (!companyName || companyName.trim() === '') {
+    return null;
+  }
+  
+  const trimmedName = companyName.trim();
+  
+  // Search for existing organization
+  const existingOrgId = await searchOrganizationByName(trimmedName);
+  if (existingOrgId) {
+    return existingOrgId;
+  }
+  
+  // Create new organization
+  return await createOrganization(trimmedName);
+}
+
 async function mergeDuplicates(primaryPersonId: number, duplicateIds: number[]): Promise<void> {
   if (duplicateIds.length === 0) return;
-
   console.log(`🔀 Merging ${duplicateIds.length} duplicate contact(s) into primary ID ${primaryPersonId}...`);
   
   for (const duplicateId of duplicateIds) {
@@ -162,10 +215,15 @@ serve(async (req) => {
     let personId = foundPersonId;
     const isUpdate = !!personId;
 
+    // Find or create organization based on business_name or company
+    const companyName = professional.business_name || professional.company;
+    const orgId = await findOrCreateOrganization(companyName);
+
     const personData: Record<string, any> = {
       name: professional.name,
       emails: [{ value: professional.email, primary: true }],
       phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
+      org_id: orgId, // Link to organization
     };
 
     // Map configured custom fields - numeric fields as numbers, text as strings
