@@ -6,6 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { Professional } from '@/types/professional';
 import { generateAgentSlug } from '@/utils/routeHelpers';
+import { generateAgentProfileSchema, professionalToSchemaData } from '@/utils/agentSchema';
 
 interface DBProfessional {
   id: string;
@@ -249,6 +250,16 @@ export default function AgentProfile() {
   const pageDescription = professional.description || 
     `${professional.name} is a top-rated ${category.name.toLowerCase()} serving ${city.name}, ${city.state}. ${professional.rating > 0 ? `Rated ${professional.rating}/5 with ${professional.reviews} reviews.` : ''}`;
 
+  // Generate scalable JSON-LD schema using template
+  const schemaData = professionalToSchemaData(
+    professional,
+    city.name,
+    city.state,
+    city.state.substring(0, 2).toUpperCase(), // State abbreviation
+    agentSlug || ''
+  );
+  const agentSchema = generateAgentProfileSchema(schemaData);
+
   return (
     <>
       <Helmet>
@@ -257,68 +268,14 @@ export default function AgentProfile() {
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="profile" />
+        <meta property="og:image" content={professional.image} />
+        <meta property="article:modified_time" content={new Date().toISOString()} />
+        <meta property="og:updated_time" content={new Date().toISOString()} />
         <link rel="canonical" href={`https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`} />
         
-        {/* Schema.org structured data */}
+        {/* Scalable JSON-LD Schema */}
         <script type="application/ld+json">
-          {JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "RealEstateAgent",
-            "name": professional.name,
-            "url": `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`,
-            "image": professional.image,
-            "description": pageDescription,
-            "address": {
-              "@type": "PostalAddress",
-              "addressLocality": city.name,
-              "addressRegion": city.state
-            },
-            ...(professional.rating > 0 && {
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": professional.rating.toString(),
-                "reviewCount": professional.reviews.toString(),
-                "bestRating": "5"
-              }
-            }),
-            ...(professional.phone && { "telephone": professional.phone }),
-            ...(professional.email && { "email": professional.email }),
-            ...(professional.license_number && { "license": professional.license_number }),
-            "areaServed": {
-              "@type": "State",
-              "name": city.state
-            },
-            ...(professional.specialties && professional.specialties.length > 0 && {
-              "knowsAbout": [
-                `${city.state} real estate`,
-                ...professional.specialties
-              ]
-            }),
-            ...((professional as any).notable_achievements && 
-              Array.isArray((professional as any).notable_achievements) && 
-              (professional as any).notable_achievements.length > 0 && {
-              "award": (professional as any).notable_achievements
-                .filter((a: any) => a?.title || a?.text)
-                .map((a: any) => a.title || a.text)
-                .slice(0, 5)
-            }),
-            ...((() => {
-              const sameAs: string[] = [];
-              if ((professional as any).zillow_profile_url) {
-                sameAs.push((professional as any).zillow_profile_url);
-              }
-              if ((professional as any).social_linkedin) {
-                sameAs.push((professional as any).social_linkedin);
-              }
-              if ((professional as any).social_facebook) {
-                sameAs.push((professional as any).social_facebook);
-              }
-              if ((professional as any).social_instagram) {
-                sameAs.push((professional as any).social_instagram);
-              }
-              return sameAs.length > 0 ? { "sameAs": sameAs } : {};
-            })())
-          })}
+          {JSON.stringify(agentSchema)}
         </script>
       </Helmet>
 

@@ -2,10 +2,10 @@
 // SEO Head component for individual agent profile pages
 
 import { Helmet } from 'react-helmet-async';
-import { generateAgentProfileSchema, AgentData } from '@/utils/agentSchema';
+import { generateAgentProfileSchema, AgentSchemaData } from '@/utils/agentSchema';
 
 interface AgentProfileHeadProps {
-  agent: AgentData;
+  agent: AgentSchemaData;
 }
 
 export function AgentProfileHead({ agent }: AgentProfileHeadProps) {
