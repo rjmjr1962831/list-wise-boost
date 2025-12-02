@@ -218,7 +218,7 @@ const ProfileFieldsGuide = () => {
           {/* CTA Button */}
           <div className="flex justify-center">
             <Button size="lg" onClick={() => navigate(`/profile/${token}/edit`)} className="gap-2 px-8 py-6 text-lg">
-              Continue to Edit Profile
+              Next
               <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
