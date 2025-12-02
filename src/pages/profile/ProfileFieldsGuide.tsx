@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Pencil, Upload, ArrowRight, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus, History } from "lucide-react";
+import { Loader2, Pencil, Upload, ArrowRight, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import FieldEditModal from "@/components/profile/FieldEditModal";
 import ImageUploadModal from "@/components/profile/ImageUploadModal";
@@ -35,14 +35,6 @@ interface Professional {
   verification_token?: string;
 }
 
-interface ChangeHistoryItem {
-  fieldKey: string;
-  fieldLabel: string;
-  oldValue: string;
-  newValue: string;
-  timestamp: Date;
-}
-
 interface FieldConfig {
   key: string;
   label: string;
@@ -58,7 +50,6 @@ const ProfileFieldsGuide = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<Professional | null>(null);
   
   // Modal states
@@ -67,10 +58,6 @@ const ProfileFieldsGuide = () => {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [specialtyModalOpen, setSpecialtyModalOpen] = useState(false);
   const [currentField, setCurrentField] = useState<FieldConfig | null>(null);
-  
-  // Change history
-  const [changeHistory, setChangeHistory] = useState<ChangeHistoryItem[]>([]);
-  const [showHistory, setShowHistory] = useState(false);
 
   const fields: FieldConfig[] = [
     {
@@ -297,23 +284,32 @@ const ProfileFieldsGuide = () => {
   const handleSaveSpecialties = async (newSpecialties: string[]) => {
     if (!professional) return;
     
-    const oldValue = getFieldValue(fields.find(f => f.key === 'specialty')!);
-    const newValue = newSpecialties.join(", ");
-    
-    setChangeHistory(prev => [...prev, {
-      fieldKey: 'specialty',
-      fieldLabel: 'Specialties',
-      oldValue,
-      newValue,
-      timestamp: new Date()
-    }]);
+    // Save specialties directly to database via edge function
+    try {
+      const { data, error } = await supabase.functions.invoke('update-professional-field', {
+        body: {
+          token,
+          field: 'specialty',
+          value: newSpecialties
+        }
+      });
 
-    setProfessional(prev => prev ? { ...prev, specialty: newSpecialties } : null);
-    
-    toast({
-      title: "Specialties Updated",
-      description: "Your specialties have been updated. Remember to save all changes."
-    });
+      if (error) throw error;
+
+      setProfessional(prev => prev ? { ...prev, specialty: newSpecialties } : null);
+      
+      toast({
+        title: "Specialties Saved",
+        description: "Your specialties have been saved successfully."
+      });
+    } catch (error: any) {
+      console.error("Error saving specialties:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save specialties.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSaveField = async (newValue: string) => {
@@ -342,21 +338,9 @@ const ProfileFieldsGuide = () => {
       });
     } catch (error: any) {
       console.error("Error saving field:", error);
-      
-      // Fallback: add to change history for manual save
-      setChangeHistory(prev => [...prev, {
-        fieldKey: currentField.key,
-        fieldLabel: currentField.label,
-        oldValue,
-        newValue,
-        timestamp: new Date()
-      }]);
-
-      setProfessional(prev => prev ? { ...prev, [currentField.key]: newValue } : null);
-      
       toast({
-        title: "Field Updated Locally",
-        description: `${currentField.label} updated. Click "Save All Changes" to persist.`,
+        title: "Error Saving",
+        description: error.message || `Failed to save ${currentField.label}.`,
         variant: "destructive"
       });
     }
@@ -394,63 +378,7 @@ const ProfileFieldsGuide = () => {
     }
   };
 
-  const handleSaveAllChanges = async () => {
-    if (!professional || changeHistory.length === 0) {
-      toast({
-        title: "No Changes",
-        description: "You haven't made any changes yet."
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const updates: Record<string, any> = {};
-      changeHistory.forEach(change => {
-        updates[change.fieldKey] = (professional as any)[change.fieldKey];
-      });
-
-      const { error } = await supabase
-        .from("professionals")
-        .update(updates)
-        .eq("id", professional.id);
-
-      if (error) throw error;
-
-      supabase.functions.invoke('track-profile-event', {
-        body: { 
-          token, 
-          event_name: 'profile_fields_edited',
-          event_data: { 
-            fields_changed: changeHistory.map(c => c.fieldKey),
-            change_count: changeHistory.length
-          }
-        }
-      });
-
-      toast({
-        title: "Changes Saved",
-        description: `${changeHistory.length} field(s) updated successfully.`
-      });
-
-      setChangeHistory([]);
-      
-    } catch (error: any) {
-      console.error("Error saving changes:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save changes.",
-        variant: "destructive"
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleContinue = async () => {
-    if (changeHistory.length > 0) {
-      await handleSaveAllChanges();
-    }
+  const handleContinue = () => {
     navigate(`/profile/${token}/pricing`);
   };
 
@@ -480,57 +408,12 @@ const ProfileFieldsGuide = () => {
               Edit Your Profile
             </h1>
             <p className="text-lg text-muted-foreground">
-              Click "Edit" next to any field to update it. Changes are saved when you click "Save All Changes".
+              Click "Edit" next to any field to update it. Changes save automatically.
             </p>
             {professional?.name && (
               <p className="text-primary font-medium mt-2">{professional.name}</p>
             )}
           </div>
-
-          {/* Change History Banner */}
-          {changeHistory.length > 0 && (
-            <Card className="mb-6 border-amber-500/50 bg-amber-500/10">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                  <div className="flex items-center gap-2">
-                    <History className="h-5 w-5 text-amber-600" />
-                    <span className="font-medium text-foreground">
-                      {changeHistory.length} unsaved change{changeHistory.length > 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => setShowHistory(!showHistory)}
-                    >
-                      {showHistory ? "Hide" : "Show"} Details
-                    </Button>
-                    <Button 
-                      size="sm"
-                      onClick={handleSaveAllChanges}
-                      disabled={saving}
-                    >
-                      {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      Save All Changes
-                    </Button>
-                  </div>
-                </div>
-                
-                {showHistory && (
-                  <div className="mt-4 space-y-2">
-                    {changeHistory.map((change, idx) => (
-                      <div key={idx} className="text-sm p-2 bg-background/50 rounded">
-                        <span className="font-medium">{change.fieldLabel}:</span>
-                        <span className="text-muted-foreground"> "{change.oldValue.substring(0, 50)}{change.oldValue.length > 50 ? '...' : ''}" → </span>
-                        <span className="text-primary">"{change.newValue.substring(0, 50)}{change.newValue.length > 50 ? '...' : ''}"</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
 
           {/* Editable Fields Section */}
           <Card className="mb-6 border-primary/20 bg-primary/5">
@@ -644,7 +527,7 @@ const ProfileFieldsGuide = () => {
               Back to Preview
             </Button>
             <Button size="lg" onClick={handleContinue} className="gap-2 px-8">
-              {changeHistory.length > 0 ? "Save & Continue" : "Continue"}
+              Continue
               <ArrowRight className="h-5 w-5" />
             </Button>
           </div>
