@@ -6,12 +6,23 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, X, Check, ChevronsUpDown } from 'lucide-react';
+import { Loader2, X, Check, ChevronsUpDown, MessageSquarePlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
+import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
+
+// Fields that require manual review to change
+const READ_ONLY_FIELDS = [
+  { key: 'name', label: 'Name' },
+  { key: 'review_stars_rating', label: 'Review Rating' },
+  { key: 'num_total_reviews', label: 'Reviews' },
+  { key: 'years_experience', label: 'Years Experience' },
+  { key: 'total_sales', label: 'Total Sales' },
+  { key: 'license_number', label: 'License Number' }
+];
 
 export default function EditProfile() {
   const { token } = useParams<{ token: string }>();
@@ -24,15 +35,17 @@ export default function EditProfile() {
   const [specialtySearchOpen, setSpecialtySearchOpen] = useState(false);
   const [specialtySearch, setSpecialtySearch] = useState('');
   
-  // Form state
+  // Review request modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [selectedField, setSelectedField] = useState<{ key: string; label: string } | null>(null);
+  
+  // Form state - only editable fields
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     phone: '',
     company: '',
     headline: '',
     description: '',
-    years_experience: '',
     specialty: [] as string[],
     certifications: [] as string[],
     languages: [] as string[],
@@ -84,13 +97,11 @@ export default function EditProfile() {
         setProfessional(prof);
         
         setFormData({
-          name: prof.name || '',
           email: prof.email || '',
           phone: prof.phone || '',
           company: prof.company || '',
           headline: prof.headline || '',
           description: prof.description || '',
-          years_experience: prof.years_experience?.toString() || '',
           specialty: Array.isArray(prof.specialty) ? prof.specialty : [],
           certifications: Array.isArray(prof.certifications) ? prof.certifications : [],
           languages: Array.isArray(prof.languages) ? prof.languages : [],
@@ -125,6 +136,36 @@ export default function EditProfile() {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const openReviewModal = (field: { key: string; label: string }) => {
+    setSelectedField(field);
+    setReviewModalOpen(true);
+  };
+
+  const getProfileLink = () => {
+    return `https://top10lists.us/profile/${token}`;
+  };
+
+  const getReadOnlyValue = (key: string) => {
+    if (!professional) return 'N/A';
+    
+    switch (key) {
+      case 'name':
+        return professional.name || 'N/A';
+      case 'review_stars_rating':
+        return professional.review_stars_rating ? `${professional.review_stars_rating} stars` : 'N/A';
+      case 'num_total_reviews':
+        return professional.num_total_reviews?.toString() || 'N/A';
+      case 'years_experience':
+        return professional.years_experience ? `${professional.years_experience} years` : 'N/A';
+      case 'total_sales':
+        return professional.total_sales?.toString() || 'N/A';
+      case 'license_number':
+        return professional.license_number || 'N/A';
+      default:
+        return 'N/A';
+    }
   };
 
   const addSpecialtyFromList = (specialtyName: string) => {
@@ -198,7 +239,6 @@ export default function EditProfile() {
     try {
       const updates = {
         ...formData,
-        years_experience: formData.years_experience ? parseInt(formData.years_experience) : null,
         funnel_status: 'edit_complete'
       };
 
@@ -268,19 +308,42 @@ export default function EditProfile() {
         {/* Form */}
         <Card className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Basic Info */}
+            {/* Read-Only Fields Section */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
+              <h2 className="text-xl font-semibold text-foreground">Synced Information</h2>
+              <p className="text-sm text-muted-foreground">
+                These fields are synced from external sources. To request changes, click "Ask For Review" next to the field.
+              </p>
               <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Full Name *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    required
-                  />
-                </div>
+                {READ_ONLY_FIELDS.map((field) => (
+                  <div key={field.key} className="space-y-1">
+                    <Label>{field.label}</Label>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        value={getReadOnlyValue(field.key)}
+                        disabled
+                        className="bg-muted flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openReviewModal(field)}
+                        className="whitespace-nowrap"
+                      >
+                        <MessageSquarePlus className="h-4 w-4 mr-1" />
+                        Ask For Review
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Editable Basic Info */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Contact Information</h2>
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -329,15 +392,6 @@ export default function EditProfile() {
                   rows={4}
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="years_experience">Years of Experience</Label>
-                <Input
-                  id="years_experience"
-                  type="number"
-                  value={formData.years_experience}
-                  onChange={(e) => handleInputChange('years_experience', e.target.value)}
                 />
               </div>
             </div>
@@ -569,6 +623,19 @@ export default function EditProfile() {
           </form>
         </Card>
       </div>
+
+      {/* Review Request Modal */}
+      {selectedField && (
+        <FieldReviewRequestModal
+          open={reviewModalOpen}
+          onOpenChange={setReviewModalOpen}
+          fieldName={selectedField.label}
+          profileLink={getProfileLink()}
+          professionalName={professional?.name || ''}
+          professionalEmail={professional?.email}
+          pipedrivePersonId={professional?.pipedrive_person_id}
+        />
+      )}
     </div>
   );
 }
