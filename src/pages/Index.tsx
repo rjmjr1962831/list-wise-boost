@@ -114,41 +114,39 @@ const Index = () => {
     <>
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>Top Real Estate Agents in the United States | Top10Lists.us</title>
-        <meta name="description" content="Find the top real estate agents in the United States. Data-verified directory with 50+ reviews, 4.8+ ratings required." />
+        <title>Top 10 Real Estate Agents in Arizona | Top10Lists.us</title>
+        <meta name="description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings. Updated daily based on reviews, transactions, and press coverage." />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://top10lists.us" />
         
         {/* Topic/Category Hints */}
         <meta name="subject" content="Real Estate Agent Directory" />
-        <meta name="topic" content="Real Estate Agents USA" />
+        <meta name="topic" content="Real Estate Agents Arizona" />
         <meta name="classification" content="Business/Real Estate" />
-        <meta name="coverage" content="United States" />
+        <meta name="coverage" content="Arizona, United States" />
         <meta name="category" content="Real Estate" />
         
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://top10lists.us" />
-        <meta property="og:title" content="Top Real Estate Agents in the United States | Top10Lists.us" />
-        <meta property="og:description" content="Data-verified directory of top real estate agents in the United States." />
+        <meta property="og:title" content="Top 10 Real Estate Agents in Arizona | Top10Lists.us" />
+        <meta property="og:description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings." />
         <meta property="og:image" content="https://top10lists.us/og-image.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:image:alt" content="Top10Lists.us - Top Real Estate Agents in the United States" />
+        <meta property="og:image:alt" content="Top10Lists.us - Top 10 Real Estate Agents in Arizona" />
         <meta property="og:site_name" content="Top10Lists.us" />
         <meta property="og:locale" content="en_US" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://top10lists.us" />
-        <meta name="twitter:title" content="Top Real Estate Agents in the United States" />
-        <meta name="twitter:description" content="Data-verified directory of elite agents in the United States." />
+        <meta name="twitter:title" content="Top 10 Real Estate Agents in Arizona | Top10Lists.us" />
+        <meta name="twitter:description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings." />
         <meta name="twitter:image" content="https://top10lists.us/og-image.png" />
-        <meta name="twitter:image:alt" content="Top10Lists.us - Top Real Estate Agents in the United States" />
         
         {/* Geo Tags */}
-        <meta name="geo.region" content="US" />
-        <meta name="geo.placename" content="United States" />
+        <meta name="geo.region" content="US-AZ" />
+        <meta name="geo.placename" content="Arizona, United States" />
         
         {/* Author/Publisher */}
         <meta name="author" content="Top10Lists.us" />
@@ -170,7 +168,7 @@ const Index = () => {
       <section className="container mx-auto px-4 pt-16 pb-12">
         <div className="max-w-4xl mx-auto text-center space-y-6 mb-8">
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight text-foreground">
-            Find the best real estate agents
+            Top 10 Real Estate Agents
             <br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               in Arizona

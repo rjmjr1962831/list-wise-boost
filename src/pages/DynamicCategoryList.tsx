@@ -1139,8 +1139,8 @@ export default function DynamicCategoryList() {
     <>
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>{metadata.title}</title>
-        <meta name="description" content={metadata.description} />
+        <title>{`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`}</title>
+        <meta name="description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`} />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href={pageUrl} />
         
@@ -1153,9 +1153,9 @@ export default function DynamicCategoryList() {
         {/* Open Graph Tags */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={pageUrl} />
-        <meta property="og:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()}`} />
-        <meta property="og:description" content={`${city.name}'s elite ${category.plural_name.toLowerCase()}. Invitation-only. Data-verified.`} />
-        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`} />
+        <meta property="og:description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings.`} />
+        <meta property="og:image" content="https://top10lists.us/og-image.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Top10Lists.us" />
@@ -1163,10 +1163,9 @@ export default function DynamicCategoryList() {
         
         {/* Twitter Card Tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content={pageUrl} />
-        <meta name="twitter:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()}`} />
-        <meta name="twitter:description" content={`${city.name}'s elite agents. Invitation-only. Data-verified.`} />
-        <meta name="twitter:image" content={ogImageUrl} />
+        <meta name="twitter:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`} />
+        <meta name="twitter:description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings.`} />
+        <meta name="twitter:image" content="https://top10lists.us/og-image.png" />
         
         {/* Geo Tags - City-Specific */}
         <meta name="geo.region" content={`US-${city.state_slug.toUpperCase()}`} />
