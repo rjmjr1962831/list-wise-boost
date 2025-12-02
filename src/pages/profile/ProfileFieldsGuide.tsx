@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, CheckCircle, XCircle, ArrowRight, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, ArrowRight, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy } from "lucide-react";
 
 interface Professional {
   id: string;
@@ -65,19 +65,31 @@ const ProfileFieldsGuide = () => {
       label: "Name",
       icon: <User className="h-5 w-5" />,
       editable: false,
-      description: "Your name is pulled from your Zillow profile and cannot be changed here."
+      description: "Your name is verified through our research process and cannot be changed here."
     },
     {
       label: "Brokerage",
       icon: <Building2 className="h-5 w-5" />,
       editable: false,
-      description: "Your brokerage affiliation is sourced from Zillow and reflects your current listing."
+      description: "Your brokerage affiliation is verified and reflects your current listing."
     },
     {
       label: "Rating & Reviews",
       icon: <Star className="h-5 w-5" />,
       editable: false,
-      description: "Your rating and review count are automatically synced from Zillow."
+      description: "Your rating and review count are automatically synced from verified sources."
+    },
+    {
+      label: "Profile Photo",
+      icon: <Image className="h-5 w-5" />,
+      editable: true,
+      description: "Upload a professional headshot to make a great first impression."
+    },
+    {
+      label: "Video Introduction",
+      icon: <Video className="h-5 w-5" />,
+      editable: true,
+      description: "Add a video to introduce yourself and showcase your personality."
     },
     {
       label: "Phone Number",
@@ -110,10 +122,22 @@ const ProfileFieldsGuide = () => {
       description: "Select the specialties that best represent your areas of focus."
     },
     {
+      label: "Awards & Achievements",
+      icon: <Trophy className="h-5 w-5" />,
+      editable: true,
+      description: "Add awards, certifications, and notable achievements to build credibility."
+    },
+    {
+      label: "Press Mentions",
+      icon: <FileText className="h-5 w-5" />,
+      editable: true,
+      description: "Include media coverage and press mentions that highlight your expertise."
+    },
+    {
       label: "Service Areas",
       icon: <MapPin className="h-5 w-5" />,
       editable: false,
-      description: "Your service areas are determined by your Zillow profile and subscription cities."
+      description: "Your service areas are determined by your profile and subscription cities."
     }
   ];
 
@@ -186,7 +210,7 @@ const ProfileFieldsGuide = () => {
                 </h2>
               </div>
               <p className="text-muted-foreground mb-4">
-                These fields are automatically pulled from Zillow to ensure accuracy:
+                These fields are verified through our research and kept accurate automatically:
               </p>
               <div className="space-y-3">
                 {readOnlyFields.map((field, index) => (
