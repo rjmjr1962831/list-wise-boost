@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
@@ -35,6 +35,7 @@ import CacheManagement from '@/components/admin/CacheManagement';
 import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
 import PrerenderRecache from '@/components/admin/PrerenderRecache';
 import AIModelTester from '@/components/admin/AIModelTester';
+import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -243,6 +244,10 @@ const AdminDashboard = () => {
               <Bot className="mr-2 h-4 w-4" />
               AI Router
             </TabsTrigger>
+            <TabsTrigger value="selection-rationales">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Selection Rationales
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -334,6 +339,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="ai-router" className="space-y-4">
             <AIModelTester />
+          </TabsContent>
+
+          <TabsContent value="selection-rationales" className="space-y-4">
+            <SelectionRationaleGenerator />
           </TabsContent>
         </Tabs>
       </div>

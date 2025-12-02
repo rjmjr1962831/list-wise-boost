@@ -195,3 +195,6 @@ verify_jwt = false
 [functions.ai-router]
 verify_jwt = false
 
+[functions.generate-selection-rationales]
+verify_jwt = false
+
