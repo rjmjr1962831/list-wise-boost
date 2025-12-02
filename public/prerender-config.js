@@ -25,16 +25,20 @@
 
 (function() {
   // Add prerender-ready event for SPA frameworks
+  // This will be set to true by React components after meta tags are injected
   window.prerenderReady = false;
   
-  // Signal when the app has fully loaded
+  // Fallback: if React doesn't signal within 5 seconds, assume ready
+  // This handles edge cases where the React app might fail to load
   window.addEventListener('load', function() {
     setTimeout(function() {
-      window.prerenderReady = true;
-    }, 1000);
+      if (!window.prerenderReady) {
+        console.info('[Prerender.io] Fallback: signaling ready after timeout');
+        window.prerenderReady = true;
+      }
+    }, 5000);
   });
   
   // Log configuration for debugging
-  console.info('[Prerender.io] Configuration loaded');
-  console.info('[Prerender.io] For full bot support, configure DNS-level integration');
+  console.info('[Prerender.io] Configuration loaded - waiting for React to signal ready');
 })();

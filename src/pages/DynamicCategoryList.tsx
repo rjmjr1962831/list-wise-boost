@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { isBot, getBotType } from '@/utils/botDetection';
 import { getCanonicalRankings } from '@/services/canonicalAgentService';
+import { signalPrerenderReady } from '@/hooks/usePrerenderReady';
 
 interface City {
   id: string;
@@ -194,6 +195,18 @@ export default function DynamicCategoryList() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+
+  // Signal Prerender.io when meta tags are ready (after city/category load)
+  useEffect(() => {
+    if (!loading && city && category) {
+      // Small delay to ensure Helmet has updated DOM
+      const timer = setTimeout(() => {
+        signalPrerenderReady();
+        console.log('[Prerender.io] Page ready - meta tags injected');
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, city, category]);
 
   // Fetch city and category data
   useEffect(() => {
