@@ -189,3 +189,9 @@ verify_jwt = false
 [functions.recache-prerender]
 verify_jwt = false
 
+[functions.recache-prerender-single]
+verify_jwt = false
+
+[functions.ai-router]
+verify_jwt = false
+
