@@ -13,6 +13,7 @@ import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { ContactProfessionalModal } from "./ContactProfessionalModal";
 import { ExternalReviewsPreview } from "./ExternalReviewsPreview";
 import { CitationBlock } from "./CitationBlock";
+import { VerificationLinks } from "./VerificationLinks";
 import { getLicenseLookupByStateAbbr } from "@/data/stateLicenseLookups";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -2211,6 +2212,16 @@ export const ProfessionalCard = ({
                 {/* Citation-Ready Summary Block for LLM extraction */}
                 {!isEditing && (
                   <CitationBlock
+                    professional={professional}
+                    city={market?.split(',')[0]?.trim() || ''}
+                    state={market?.split(',')[1]?.trim() || 'Arizona'}
+                    stateAbbr={stateAbbr}
+                  />
+                )}
+                
+                {/* Verification/Authority Links */}
+                {!isEditing && (
+                  <VerificationLinks
                     professional={professional}
                     city={market?.split(',')[0]?.trim() || ''}
                     state={market?.split(',')[1]?.trim() || 'Arizona'}

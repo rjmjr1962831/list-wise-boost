@@ -55,6 +55,9 @@ const SelectCities = lazy(() => import("./pages/profile/SelectCities"));
 const SelectionPlaceholder = lazy(() => import("./pages/profile/SelectionPlaceholder"));
 const ScheduleCall = lazy(() => import("./pages/profile/ScheduleCall"));
 
+// Q&A Landing Pages for LLM optimization
+const QALandingPage = lazy(() => import("./pages/QALandingPage"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -118,6 +121,9 @@ const App = () => (
                     <Route path="/profile-view/:token" element={<ProfileView />} />
                     {/* Coming Soon route for non-Arizona cities */}
                     <Route path="/coming-soon/:stateSlug/:citySlug" element={<CityComingSoon />} />
+                    {/* Q&A Landing Pages for LLM optimization */}
+                    <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
+                    <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
                     {/* Dynamic city and category routes - MUST BE LAST before catch-all */}
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
