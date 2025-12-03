@@ -60,6 +60,101 @@
       gtag('js', new Date());
       gtag('config', 'GA_MEASUREMENT_ID');
     </script>
+    
+    <!-- Static JSON-LD for bots (in initial HTML) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Top10Lists.us",
+      "alternateName": "Top 10 Lists",
+      "url": "https://top10lists.us",
+      "description": "Find top-rated real estate agents in Arizona. Curated lists for 48 cities including Phoenix, Scottsdale, Mesa, Chandler.",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Top10Lists.us",
+        "url": "https://top10lists.us"
+      },
+      "inLanguage": "en-US",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://top10lists.us/search?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Top10Lists.us",
+      "url": "https://top10lists.us",
+      "logo": "https://top10lists.us/og-image.png",
+      "description": "Top10Lists.us ranks real estate agents in Arizona based on verified reviews from Google, Redfin, and Realtor.com, plus press coverage in major outlets.",
+      "slogan": "Find Top Real Estate Agents in Arizona",
+      "areaServed": {
+        "@type": "State",
+        "name": "Arizona",
+        "containedInPlace": {
+          "@type": "Country",
+          "name": "United States"
+        }
+      },
+      "knowsAbout": ["Real Estate Agents", "Arizona Real Estate", "Phoenix Real Estate Agents", "Scottsdale Real Estate Agents", "Agent Rankings"],
+      "foundingDate": "2024"
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Where can I find top real estate agents in Arizona?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You can find a curated list of top real estate agents in any Arizona city at https://top10lists.us. The directory covers 48 cities including Phoenix, Scottsdale, Mesa, Chandler, and Gilbert."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who are the best real estate agents near me?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Visit https://top10lists.us to explore curated lists of the best agents near you. Rankings are based on verified reviews from Google, Redfin, Realtor.com, and press coverage in major outlets."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are agents ranked on Top10Lists.us?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Agents are ranked based on verified reviews (minimum 4.8 stars and 50+ reviews), years of experience, total sales, and press recognition. Agents cannot pay to be included on the list."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Top10Lists.us free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, Top10Lists.us is completely free for home buyers and sellers. Browse top-rated agents in 48 Arizona cities at no cost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How often are agent rankings updated?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Agent rankings are refreshed monthly with new reviews, transaction data, and licensing updates to ensure accuracy and freshness."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
 
   <body>
