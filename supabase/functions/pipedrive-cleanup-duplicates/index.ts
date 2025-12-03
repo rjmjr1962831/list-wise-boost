@@ -113,12 +113,13 @@ function selectPrimaryContact(contacts: Contact[]): { primary: Contact; duplicat
   };
 }
 
-// v2 API uses PATCH method instead of PUT for merge
+// Merge uses v1 API (v2 doesn't support merge endpoint)
 async function mergeContact(primaryId: number, duplicateId: number): Promise<boolean> {
   try {
-    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${primaryId}/merge?api_token=${PIPEDRIVE_API_TOKEN}`;
+    // Use v1 API for merge - v2 doesn't support this endpoint
+    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/v1/persons/${primaryId}/merge?api_token=${PIPEDRIVE_API_TOKEN}`;
     const response = await fetch(url, {
-      method: "PATCH", // Changed from PUT to PATCH for v2
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ merge_with_id: duplicateId }),
     });
@@ -126,6 +127,7 @@ async function mergeContact(primaryId: number, duplicateId: number): Promise<boo
     const result = await response.json();
 
     if (result.success) {
+      console.log(`   ✅ Merged ID ${duplicateId} into ${primaryId}`);
       return true;
     } else {
       // Check if already deleted
