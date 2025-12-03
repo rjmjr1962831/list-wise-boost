@@ -7,7 +7,8 @@ const reviewPlatforms = [
   { name: "Google Reviews", url: "https://google.com" },
   { name: "Redfin", url: "https://redfin.com" },
   { name: "Realtor.com", url: "https://realtor.com" },
-  { name: "Yelp", url: "https://yelp.com" }
+  { name: "Yelp", url: "https://yelp.com" },
+  { name: "Zillow", url: "https://zillow.com" }
 ];
 
 const pressOutlets = [
