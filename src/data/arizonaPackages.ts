@@ -49,8 +49,8 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     includedCityIds: phoenixMetroCities,
     excludedPremiumCities: ['paradise-valley', 'scottsdale', 'carefree', 'cave-creek'],
     retailTotal: phoenixMetroPrices.retail,
-    earlyAdopterPrice: Math.round(phoenixMetroPrices.earlyAdopter * 0.85), // 15% package discount
-    savings: phoenixMetroPrices.retail - Math.round(phoenixMetroPrices.earlyAdopter * 0.85),
+    earlyAdopterPrice: phoenixMetroPrices.earlyAdopter, // 50% off retail (sum of city early adopter prices)
+    savings: phoenixMetroPrices.retail - phoenixMetroPrices.earlyAdopter,
   },
   {
     id: 'northern-arizona',
@@ -59,8 +59,8 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     includedCityIds: northernAZCities,
     excludedPremiumCities: ['sedona'],
     retailTotal: northernAZPrices.retail,
-    earlyAdopterPrice: Math.round(northernAZPrices.earlyAdopter * 0.85),
-    savings: northernAZPrices.retail - Math.round(northernAZPrices.earlyAdopter * 0.85),
+    earlyAdopterPrice: northernAZPrices.earlyAdopter,
+    savings: northernAZPrices.retail - northernAZPrices.earlyAdopter,
   },
   {
     id: 'southern-arizona',
@@ -69,8 +69,8 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     includedCityIds: southernAZCities,
     excludedPremiumCities: [],
     retailTotal: southernAZPrices.retail,
-    earlyAdopterPrice: Math.round(southernAZPrices.earlyAdopter * 0.85),
-    savings: southernAZPrices.retail - Math.round(southernAZPrices.earlyAdopter * 0.85),
+    earlyAdopterPrice: southernAZPrices.earlyAdopter,
+    savings: southernAZPrices.retail - southernAZPrices.earlyAdopter,
   },
 ];
 
