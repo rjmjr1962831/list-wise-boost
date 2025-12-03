@@ -92,11 +92,11 @@ export function ExternalReviewsPreview({
   const { data, loading } = useExternalReviews({ agentName, company, market, professionalId });
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
-  // Build external review links
+  // Build external review links - Zillow only
   const getReviewLinks = () => {
     const links: { name: string; url: string; icon: string }[] = [];
     
-    // Zillow profile
+    // Zillow profile only
     if (zillowProfileUrl) {
       links.push({
         name: 'Zillow',
@@ -104,30 +104,6 @@ export function ExternalReviewsPreview({
         icon: '🏠'
       });
     }
-    
-    // Google Maps search - use maps.google.com format to avoid blocks
-    const mapsQuery = encodeURIComponent(`${agentName} ${company || ''} ${market || ''} real estate agent`);
-    links.push({
-      name: 'Google Maps',
-      url: `https://maps.google.com/?q=${mapsQuery}`,
-      icon: '📍'
-    });
-    
-    // Realtor.com search
-    const realtorQuery = encodeURIComponent(`${agentName} ${market || ''}`);
-    links.push({
-      name: 'Realtor.com',
-      url: `https://www.realtor.com/realestateagents/${realtorQuery.replace(/%20/g, '-').toLowerCase()}`,
-      icon: '🏡'
-    });
-    
-    // Google search for reviews (more comprehensive than Yelp for agents)
-    const googleQuery = encodeURIComponent(`${agentName} ${company || ''} reviews ${market || ''}`);
-    links.push({
-      name: 'Google',
-      url: `https://www.google.com/search?q=${googleQuery}`,
-      icon: '🔍'
-    });
     
     return links;
   };
@@ -231,27 +207,29 @@ export function ExternalReviewsPreview({
         </div>
       )}
       
-      {/* Find More Reviews Section */}
-      <div className="mt-4 pt-3 border-t border-border/50">
-        <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-          <ExternalLink className="h-3 w-3" />
-          Find More Reviews
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {reviewLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md bg-muted/50 hover:bg-muted"
-            >
-              <span>{link.icon}</span>
-              <span>{link.name}</span>
-            </a>
-          ))}
+      {/* Find More Reviews Section - only show if we have links */}
+      {reviewLinks.length > 0 && (
+        <div className="mt-4 pt-3 border-t border-border/50">
+          <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+            <ExternalLink className="h-3 w-3" />
+            Find More Reviews
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {reviewLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md bg-muted/50 hover:bg-muted"
+              >
+                <span>{link.icon}</span>
+                <span>{link.name}</span>
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
