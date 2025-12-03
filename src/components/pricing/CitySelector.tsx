@@ -141,9 +141,9 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
                           <span className="text-sm font-medium">{city.cityName}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className={cn('text-xs', getTierColor(city.tier))}>
-                            {city.tier}
-                          </Badge>
+                          <span className="text-sm line-through text-muted-foreground">
+                            ${city.retailPrice}
+                          </span>
                           <span className="text-sm font-semibold text-primary">
                             ${city.earlyAdopterPrice}
                           </span>
