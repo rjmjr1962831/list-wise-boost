@@ -32,7 +32,6 @@ const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
 const AgentOnboarding = lazy(() => import("./pages/AgentOnboarding"));
 const AgentOnboardingFunnel = lazy(() => import("./pages/AgentOnboardingFunnel"));
-const AgentPayment = lazy(() => import("./pages/AgentPayment"));
 const AgentPaymentSuccess = lazy(() => import("./pages/AgentPaymentSuccess"));
 const AgentInfo = lazy(() => import("./pages/AgentInfo"));
 const AgentLanding = lazy(() => import("./pages/AgentLanding"));
@@ -100,7 +99,6 @@ const App = () => (
                     <Route path="/agent-setup" element={<AgentSetup />} />
                     <Route path="/agent/dashboard" element={<AgentDashboard />} />
                     <Route path="/agent-onboarding" element={<AgentOnboarding />} />
-                    <Route path="/agent-onboarding/payment" element={<AgentPayment />} />
                     <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
                     {/* New Agent Onboarding Funnel */}
                     <Route path="/apply/onboarding" element={<AgentOnboardingFunnel />} />
