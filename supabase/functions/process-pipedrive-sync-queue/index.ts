@@ -17,6 +17,12 @@ const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// Helper to safely extract error message
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 async function sendFailureAlert(
   professionalName: string,
   professionalId: string,
@@ -163,15 +169,16 @@ serve(async (req) => {
         throw fetchError;
       }
 
-      if (!queueItems || queueItems.length === 0) {
+      const queueItemsData = queueItems ?? [];
+      if (queueItemsData.length === 0) {
         console.log(`✅ No more items in queue to process (processed ${results.processed} total)`);
         break;
       }
 
-      console.log(`📋 Found ${queueItems.length} items in batch (${results.processed}/${MAX_RECORDS_PER_RUN} total processed so far)`);
+      console.log(`📋 Found ${queueItemsData.length} items in batch (${results.processed}/${MAX_RECORDS_PER_RUN} total processed so far)`);
 
       // Process each item in this batch
-      for (const item of queueItems) {
+      for (const item of queueItemsData) {
         if (results.processed >= MAX_RECORDS_PER_RUN) {
           console.log(`⚠️ Reached max records limit (${MAX_RECORDS_PER_RUN}), stopping`);
           break;
@@ -270,10 +277,10 @@ serve(async (req) => {
 
           results.succeeded++;
         }
-      } catch (error: unknown) {
-        console.error(`❌ Error processing queue item ${item.id}:`, error);
+      } catch (err) {
+        console.error(`❌ Error processing queue item ${item.id}:`, err);
         results.failed++;
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage = getErrorMessage(err);
         results.errors.push({
           professional_id: item.professional_id,
           error: errorMessage,
@@ -340,9 +347,9 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true, ...results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error: unknown) {
-    console.error("❌ Fatal error processing queue:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  } catch (err) {
+    console.error("❌ Fatal error processing queue:", err);
+    const errorMessage = getErrorMessage(err);
 
     return new Response(JSON.stringify({ success: false, error: errorMessage }), {
       status: 500,

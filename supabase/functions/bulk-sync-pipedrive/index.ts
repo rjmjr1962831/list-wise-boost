@@ -13,6 +13,12 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// Helper to safely extract error message
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 // Rate limit: Pipedrive allows 80 requests per 2 seconds
 const DELAY_MS = 100;
 
@@ -229,7 +235,8 @@ serve(async (req) => {
 
     if (error) throw error;
 
-    if (!prospects || prospects.length === 0) {
+    const prospectsData = prospects ?? [];
+    if (prospectsData.length === 0) {
       return new Response(
         JSON.stringify({ success: true, message: "No prospects to sync", synced: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -239,7 +246,7 @@ serve(async (req) => {
     const fieldMapping = await getFieldMapping();
     const results = { created: 0, updated: 0, errors: 0 };
 
-    for (const prospect of prospects) {
+    for (const prospect of prospectsData) {
       try {
         const { personId, action } = await createOrUpdatePerson(prospect, fieldMapping);
 
@@ -259,9 +266,9 @@ serve(async (req) => {
 
         // Rate limit delay
         await delay(DELAY_MS);
-      } catch (error: unknown) {
-        console.error(`Error syncing prospect ${prospect.id}:`, error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
+      } catch (err) {
+        console.error(`Error syncing prospect ${prospect.id}:`, err);
+        const errorMessage = getErrorMessage(err);
         results.errors++;
 
         // Update with error
@@ -283,9 +290,9 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: unknown) {
-    console.error("Bulk sync error:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  } catch (err) {
+    console.error("Bulk sync error:", err);
+    const errorMessage = getErrorMessage(err);
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
