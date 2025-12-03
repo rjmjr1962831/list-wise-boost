@@ -101,14 +101,14 @@ const Index = () => {
 
           {/* Dual CTA */}
           <div className="flex justify-center gap-4 flex-wrap">
-            <Link 
-              to="/arizona" 
+            <button 
+              onClick={() => document.getElementById('browse-cities')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
             >
               Browse Cities →
-            </Link>
+            </button>
             <Link 
-              to="/ranking-methodology" 
+              to="/about/ranking-methodology" 
               className="px-6 py-3 bg-muted text-foreground rounded-lg font-medium hover:bg-muted/80 transition-colors"
             >
               How We Rank
