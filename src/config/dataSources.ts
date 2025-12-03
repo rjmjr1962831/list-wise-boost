@@ -101,6 +101,85 @@ export const DATA_SOURCES: Record<string, DataSource> = {
     url: 'https://www.fivestarprofessional.com',
     type: 'organization',
     logo: '/images/sources/fivestar.png'
+  },
+  
+  // National News Outlets (for agent press coverage credit)
+  WSJ: {
+    id: 'wsj',
+    name: 'Wall Street Journal',
+    url: 'https://wsj.com',
+    type: 'news',
+    logo: '/images/sources/wsj.png'
+  },
+  YAHOO_FINANCE: {
+    id: 'yahoo',
+    name: 'Yahoo! Finance',
+    url: 'https://finance.yahoo.com',
+    type: 'news',
+    logo: '/images/sources/yahoo.png'
+  },
+  CNBC: {
+    id: 'cnbc',
+    name: 'CNBC',
+    url: 'https://cnbc.com',
+    type: 'news',
+    logo: '/images/sources/cnbc.png'
+  },
+  NYT: {
+    id: 'nyt',
+    name: 'New York Times',
+    url: 'https://nytimes.com',
+    type: 'news',
+    logo: '/images/sources/nyt.png'
+  },
+  FOX_NEWS: {
+    id: 'fox',
+    name: 'Fox News',
+    url: 'https://foxnews.com',
+    type: 'news',
+    logo: '/images/sources/fox.png'
+  },
+  ABC_NEWS: {
+    id: 'abc',
+    name: 'ABC News',
+    url: 'https://abcnews.go.com',
+    type: 'news',
+    logo: '/images/sources/abc.png'
+  },
+  CNN: {
+    id: 'cnn',
+    name: 'CNN',
+    url: 'https://cnn.com',
+    type: 'news',
+    logo: '/images/sources/cnn.png'
+  },
+  NBC_TODAY: {
+    id: 'today',
+    name: 'NBC Today Show',
+    url: 'https://today.com',
+    type: 'news',
+    logo: '/images/sources/today.png'
+  },
+  FORBES: {
+    id: 'forbes',
+    name: 'Forbes',
+    url: 'https://forbes.com',
+    type: 'news',
+    logo: '/images/sources/forbes.png'
+  },
+  BLOOMBERG: {
+    id: 'bloomberg',
+    name: 'Bloomberg',
+    url: 'https://bloomberg.com',
+    type: 'news',
+    logo: '/images/sources/bloomberg.png'
+  },
+  USA_TODAY: {
+    id: 'usatoday',
+    name: 'USA Today',
+    url: 'https://usatoday.com',
+    type: 'news',
+    logo: '/images/sources/usatoday.png'
   }
 };
 
