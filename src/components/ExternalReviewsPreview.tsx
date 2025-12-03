@@ -121,12 +121,12 @@ export function ExternalReviewsPreview({
       icon: '🏡'
     });
     
-    // Yelp search for reviews
-    const yelpQuery = encodeURIComponent(`${agentName} ${market || ''}`);
+    // Google search for reviews (more comprehensive than Yelp for agents)
+    const googleQuery = encodeURIComponent(`${agentName} ${company || ''} reviews ${market || ''}`);
     links.push({
-      name: 'Yelp',
-      url: `https://www.yelp.com/search?find_desc=${yelpQuery}&find_loc=${encodeURIComponent(market || '')}`,
-      icon: '⭐'
+      name: 'Google',
+      url: `https://www.google.com/search?q=${googleQuery}`,
+      icon: '🔍'
     });
     
     return links;
