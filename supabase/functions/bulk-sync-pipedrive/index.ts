@@ -197,6 +197,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // TEMPORARILY DISABLED - Pipedrive API consuming excessive tokens
+  console.log("⛔ PIPEDRIVE SYNC DISABLED - bulk-sync-pipedrive called but blocked");
+  return new Response(
+    JSON.stringify({ 
+      success: false, 
+      error: "Pipedrive sync is temporarily disabled. Contact admin to re-enable.",
+      disabled: true 
+    }),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+
   try {
     const body = await req.json();
     const limit = body.limit || 100;
@@ -248,7 +259,7 @@ serve(async (req) => {
 
         // Rate limit delay
         await delay(DELAY_MS);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Error syncing prospect ${prospect.id}:`, error);
         const errorMessage = error instanceof Error ? error.message : String(error);
         results.errors++;
@@ -272,7 +283,7 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Bulk sync error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     return new Response(

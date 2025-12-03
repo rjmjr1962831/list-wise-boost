@@ -155,6 +155,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // TEMPORARILY DISABLED - Pipedrive API consuming excessive tokens
+  console.log("⛔ PIPEDRIVE SYNC DISABLED - sync-single-professional called but blocked");
+  return new Response(
+    JSON.stringify({ 
+      success: false, 
+      error: "Pipedrive sync is temporarily disabled. Contact admin to re-enable.",
+      disabled: true 
+    }),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+
   try {
     const { professional_id } = await req.json();
 
@@ -208,7 +219,7 @@ serve(async (req) => {
     const { personId: foundPersonId, duplicates } = await searchPersonByEmail(professional.email);
     
     // Merge any duplicates into the primary contact before proceeding
-    if (duplicates.length > 0 && foundPersonId) {
+    if (duplicates.length > 0 && foundPersonId !== null) {
       await mergeDuplicates(foundPersonId, duplicates);
     }
     
@@ -325,7 +336,7 @@ serve(async (req) => {
       JSON.stringify({ success: true, action, personId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Sync error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
 

@@ -123,6 +123,17 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // TEMPORARILY DISABLED - Pipedrive API consuming excessive tokens
+  console.log("⛔ PIPEDRIVE SYNC DISABLED - process-pipedrive-sync-queue called but blocked");
+  return new Response(
+    JSON.stringify({ 
+      success: false, 
+      error: "Pipedrive sync is temporarily disabled. Contact admin to re-enable.",
+      disabled: true 
+    }),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+  );
+
   try {
     console.log("🔄 Starting Pipedrive sync queue processing...");
 
@@ -259,7 +270,7 @@ serve(async (req) => {
 
           results.succeeded++;
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`❌ Error processing queue item ${item.id}:`, error);
         results.failed++;
         const errorMessage = error instanceof Error ? error.message : String(error);
@@ -329,7 +340,7 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true, ...results }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("❌ Fatal error processing queue:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
 
