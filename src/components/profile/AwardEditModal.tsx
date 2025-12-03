@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Trash2, Award, Calendar, Link, CheckCircle2, AlertCircle, Info } from "lucide-react";
+import { Loader2, Plus, Trash2, Award, Calendar, Link, CheckCircle2, Info, Building2, ExternalLink } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -12,9 +12,12 @@ interface AwardEntry {
   name?: string;
   year?: number;
   date?: string;
+  givenBy?: string;
+  issuingOrganization?: string;
   url?: string;
   issuingOrgUrl?: string;
   verifiedAt?: string;
+  type?: string;
 }
 
 interface AwardEditModalProps {
@@ -34,26 +37,31 @@ export default function AwardEditModal({
   const [saving, setSaving] = useState(false);
   
   // New award form
-  const [newAward, setNewAward] = useState({ name: "", year: "", url: "" });
+  const [newAward, setNewAward] = useState({ name: "", givenBy: "", date: "", url: "" });
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (open) {
-      // Normalize existing awards to consistent format
+      // Normalize existing awards
       const normalized = (currentAwards || []).map(a => ({
         title: a.title || a.name || "",
         name: a.name || a.title || "",
-        year: a.year || (a.date ? new Date(a.date).getFullYear() : undefined),
+        year: a.year,
+        date: a.date || (a.year ? `${a.year}-01-01` : undefined),
+        givenBy: a.givenBy || a.issuingOrganization || "",
+        issuingOrganization: a.issuingOrganization || a.givenBy || "",
         url: a.url || a.issuingOrgUrl || "",
-        verifiedAt: a.verifiedAt
+        verifiedAt: a.verifiedAt,
+        type: a.type || "award"
       }));
       setAwards(normalized);
-      setNewAward({ name: "", year: "", url: "" });
+      setNewAward({ name: "", givenBy: "", date: "", url: "" });
       setFormError("");
     }
   }, [open, currentAwards]);
 
   const isValidUrl = (url: string) => {
+    if (!url) return true; // URL is optional
     try {
       new URL(url);
       return true;
@@ -62,49 +70,44 @@ export default function AwardEditModal({
     }
   };
 
-  const isAwardVerified = (award: AwardEntry) => {
-    const hasName = !!(award.title || award.name);
-    const hasYear = !!award.year;
-    const hasUrl = !!(award.url || award.issuingOrgUrl) && isValidUrl(award.url || award.issuingOrgUrl || "");
-    return hasName && hasYear && hasUrl;
-  };
-
   const handleAddAward = () => {
     setFormError("");
     
-    // Validate all fields
     if (!newAward.name.trim()) {
       setFormError("Award name is required");
       return;
     }
-    if (!newAward.year || isNaN(Number(newAward.year))) {
-      setFormError("Valid year is required");
+    if (!newAward.givenBy.trim()) {
+      setFormError("Given by (organization) is required");
       return;
     }
-    const yearNum = Number(newAward.year);
-    if (yearNum < 1900 || yearNum > new Date().getFullYear() + 1) {
-      setFormError("Please enter a valid year");
+    if (!newAward.date) {
+      setFormError("Date is required");
       return;
     }
-    if (!newAward.url.trim()) {
-      setFormError("Verification URL is required");
+    if (newAward.url && !isValidUrl(newAward.url)) {
+      setFormError("Please enter a valid URL");
       return;
     }
-    if (!isValidUrl(newAward.url)) {
-      setFormError("Please enter a valid URL (e.g., https://example.com)");
-      return;
-    }
+
+    const dateObj = new Date(newAward.date);
+    const year = dateObj.getFullYear();
 
     const newEntry: AwardEntry = {
       title: newAward.name.trim(),
       name: newAward.name.trim(),
-      year: yearNum,
-      url: newAward.url.trim(),
-      verifiedAt: new Date().toISOString()
+      year: year,
+      date: newAward.date,
+      givenBy: newAward.givenBy.trim(),
+      issuingOrganization: newAward.givenBy.trim(),
+      url: newAward.url.trim() || undefined,
+      issuingOrgUrl: newAward.url.trim() || undefined,
+      verifiedAt: new Date().toISOString(),
+      type: "award"
     };
 
     setAwards([...awards, newEntry]);
-    setNewAward({ name: "", year: "", url: "" });
+    setNewAward({ name: "", givenBy: "", date: "", url: "" });
   };
 
   const handleRemoveAward = (index: number) => {
@@ -140,7 +143,7 @@ export default function AwardEditModal({
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Awards must be verified by a third party. Please provide a link to where the award is publicly listed (e.g., your brokerage site, award organization's page, or press release).</p>
+                  <p>Add awards and recognitions you've received. A verification URL is optional but helps confirm the award.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -150,16 +153,13 @@ export default function AwardEditModal({
         <div className="flex-1 overflow-hidden flex flex-col gap-4 py-4">
           {/* Add New Award Form */}
           <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
-            <h3 className="font-medium text-sm text-foreground">Add New Award</h3>
-            <p className="text-xs text-muted-foreground">
-              All fields required for verification. Provide a URL where the award is listed.
-            </p>
+            <h3 className="font-medium text-sm text-foreground">Add Award</h3>
             
-            <div className="space-y-3">
-              <div className="space-y-1">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2 space-y-1">
                 <Label htmlFor="award-name" className="text-xs flex items-center gap-1">
                   <Award className="h-3 w-3" />
-                  Award Name
+                  Award Name *
                 </Label>
                 <Input
                   id="award-name"
@@ -170,19 +170,30 @@ export default function AwardEditModal({
                 />
               </div>
               
-              <div className="space-y-1">
-                <Label htmlFor="award-year" className="text-xs flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Year Received
+              <div className="col-span-2 space-y-1">
+                <Label htmlFor="award-given-by" className="text-xs flex items-center gap-1">
+                  <Building2 className="h-3 w-3" />
+                  Given By *
                 </Label>
                 <Input
-                  id="award-year"
-                  type="number"
-                  value={newAward.year}
-                  onChange={(e) => setNewAward({ ...newAward, year: e.target.value })}
-                  placeholder={`e.g., ${new Date().getFullYear()}`}
-                  min="1900"
-                  max={new Date().getFullYear() + 1}
+                  id="award-given-by"
+                  value={newAward.givenBy}
+                  onChange={(e) => setNewAward({ ...newAward, givenBy: e.target.value })}
+                  placeholder="e.g., Arizona Association of Realtors"
+                  className="h-9"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="award-date" className="text-xs flex items-center gap-1">
+                  <Calendar className="h-3 w-3" />
+                  Date *
+                </Label>
+                <Input
+                  id="award-date"
+                  type="date"
+                  value={newAward.date}
+                  onChange={(e) => setNewAward({ ...newAward, date: e.target.value })}
                   className="h-9"
                 />
               </div>
@@ -190,101 +201,86 @@ export default function AwardEditModal({
               <div className="space-y-1">
                 <Label htmlFor="award-url" className="text-xs flex items-center gap-1">
                   <Link className="h-3 w-3" />
-                  Verification URL
+                  URL (optional)
                 </Label>
                 <Input
                   id="award-url"
                   type="url"
                   value={newAward.url}
                   onChange={(e) => setNewAward({ ...newAward, url: e.target.value })}
-                  placeholder="https://example.com/award-listing"
+                  placeholder="https://..."
                   className="h-9"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Link to where this award is publicly listed
-                </p>
               </div>
-
-              {formError && (
-                <div className="flex items-center gap-2 text-sm text-destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  {formError}
-                </div>
-              )}
-
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm"
-                onClick={handleAddAward}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Award
-              </Button>
             </div>
+
+            {formError && (
+              <p className="text-sm text-destructive">{formError}</p>
+            )}
+
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm"
+              onClick={handleAddAward}
+              className="w-full"
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Add Award
+            </Button>
           </div>
 
           {/* Existing Awards */}
           <div className="flex-1 min-h-0">
             <h3 className="font-medium text-sm mb-2">Your Awards ({awards.length})</h3>
-            <ScrollArea className="h-[200px]">
+            <ScrollArea className="h-[220px]">
               {awards.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   No awards added yet
                 </p>
               ) : (
                 <div className="space-y-2 pr-4">
-                  {awards.map((award, index) => {
-                    const verified = isAwardVerified(award);
-                    return (
-                      <div 
-                        key={index} 
-                        className={`flex items-start gap-3 p-3 rounded-lg border ${verified ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/30' : 'bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800/30'}`}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            {verified ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-                            )}
-                            <span className="font-medium text-sm truncate">
+                  {awards.map((award, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-yellow-600 shrink-0 mt-0.5" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm">
                               {award.title || award.name}
-                            </span>
-                            {award.year && (
-                              <span className="text-xs text-muted-foreground shrink-0">
-                                ({award.year})
-                              </span>
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {award.givenBy || award.issuingOrganization}
+                              {(award.year || award.date) && ` • ${award.year || new Date(award.date!).getFullYear()}`}
+                            </p>
+                            {(award.url || award.issuingOrgUrl) && (
+                              <a 
+                                href={award.url || award.issuingOrgUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                View source
+                              </a>
                             )}
                           </div>
-                          {(award.url || award.issuingOrgUrl) && (
-                            <a 
-                              href={award.url || award.issuingOrgUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline truncate block mt-1"
-                            >
-                              {award.url || award.issuingOrgUrl}
-                            </a>
-                          )}
-                          {!verified && (
-                            <p className="text-xs text-amber-600 mt-1">
-                              Missing: {!award.year && "year, "}{!(award.url || award.issuingOrgUrl) && "verification URL"}
-                            </p>
-                          )}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                          onClick={() => handleRemoveAward(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
-                    );
-                  })}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => handleRemoveAward(index)}
+                        title="Remove this award"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
             </ScrollArea>
@@ -297,7 +293,7 @@ export default function AwardEditModal({
           </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Save Awards
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
