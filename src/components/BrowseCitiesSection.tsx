@@ -26,7 +26,7 @@ export const BrowseCitiesSection = () => {
   };
 
   return (
-    <section className="container mx-auto px-4 py-16 bg-muted/30">
+    <section id="browse-cities" className="container mx-auto px-4 py-16 bg-muted/30">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-3">
@@ -51,11 +51,11 @@ export const BrowseCitiesSection = () => {
                 </div>
               </div>
               <Link 
-                to="/arizona" 
+                to="/#search" 
                 className="text-primary hover:underline text-sm font-medium flex items-center gap-1"
                 onClick={() => handleCityClick('all')}
               >
-                View all <ChevronRight className="h-4 w-4" />
+                Search all <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
 
@@ -75,7 +75,7 @@ export const BrowseCitiesSection = () => {
 
             <div className="mt-4 text-center">
               <Link 
-                to="/arizona" 
+                to="/#search" 
                 className="text-sm text-muted-foreground hover:text-primary"
                 onClick={() => handleCityClick('more')}
               >
