@@ -3,9 +3,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface AuthStepProps {
   onComplete: (userId: string, email: string) => void;
@@ -16,6 +18,7 @@ const AuthStep = ({ onComplete }: AuthStepProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -47,6 +50,9 @@ const AuthStep = ({ onComplete }: AuthStepProps) => {
         password,
         options: {
           emailRedirectTo: `${window.location.origin}/apply/onboarding`,
+          data: {
+            sms_opt_in: smsOptIn,
+          },
         },
       });
 
@@ -114,6 +120,21 @@ const AuthStep = ({ onComplete }: AuthStepProps) => {
             placeholder="Re-enter your password"
             required
           />
+        </div>
+
+        <div className="flex items-start space-x-3 pt-2">
+          <Checkbox
+            id="smsOptIn"
+            checked={smsOptIn}
+            onCheckedChange={(checked) => setSmsOptIn(checked === true)}
+            className="mt-1"
+          />
+          <Label htmlFor="smsOptIn" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+            I agree to receive SMS notifications about my account, billing, and listing status from Top10Lists. Message frequency varies. Reply STOP to opt out. Msg & data rates may apply.{" "}
+            <Link to="/sms-terms" className="text-primary hover:underline" target="_blank">
+              SMS Terms
+            </Link>
+          </Label>
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>

@@ -17,6 +17,7 @@ const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
+const SMSTerms = lazy(() => import("./pages/SMSTerms"));
 const ApplyListing = lazy(() => import("./pages/ApplyListing"));
 const VerifyListing = lazy(() => import("./pages/VerifyListing"));
 const VerifyDetails = lazy(() => import("./pages/VerifyDetails"));
@@ -89,6 +90,7 @@ const App = () => (
                     {/* Static pages */}
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<TermsOfService />} />
+                    <Route path="/sms-terms" element={<SMSTerms />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
