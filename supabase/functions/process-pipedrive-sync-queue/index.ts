@@ -143,8 +143,10 @@ serve(async (req) => {
   try {
     console.log("🔄 Starting Pipedrive sync queue processing...");
 
-    const MAX_RECORDS_PER_RUN = 300;
-    const BATCH_SIZE = 10;
+    // IMPORTANT: Process ONE at a time to prevent race conditions creating duplicates
+    const MAX_RECORDS_PER_RUN = 50;
+    const BATCH_SIZE = 1;
+    const DELAY_AFTER_CREATE_MS = 3000; // Wait 3s after creates for Pipedrive search index
     
     const results = {
       processed: 0,
@@ -201,6 +203,12 @@ serve(async (req) => {
         );
 
         results.processed++;
+
+        // Add delay after CREATE to let Pipedrive index the new contact
+        if (syncResult?.action === 'created') {
+          console.log(`⏳ Waiting ${DELAY_AFTER_CREATE_MS}ms for Pipedrive index after CREATE...`);
+          await new Promise(resolve => setTimeout(resolve, DELAY_AFTER_CREATE_MS));
+        }
 
         if (syncError || !syncResult?.success) {
           // Sync failed
