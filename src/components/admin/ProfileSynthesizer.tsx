@@ -105,12 +105,45 @@ Julie Calza is a former Marine and Air Force Crew Chief wife...
 
         {result && (
           <div className="mt-6 space-y-4 border-t pt-4">
-            <h3 className="font-semibold text-lg">Synthesis Results</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-lg">Synthesis Results</h3>
+              {result.websiteUsed && (
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                  ✓ Website content used
+                </span>
+              )}
+            </div>
             
             <div className="space-y-2">
-              <Label>Synthesized Bio</Label>
-              <p className="text-sm bg-muted p-3 rounded-md">{result.synthesized_bio}</p>
+              <Label>Synthesized Bio (3-5 sentences)</Label>
+              <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-line">{result.synthesized_bio}</p>
             </div>
+
+            {result.areas_served?.length > 0 && (
+              <div className="space-y-2">
+                <Label>Areas Served ({result.areas_served.length})</Label>
+                <div className="flex flex-wrap gap-2">
+                  {result.areas_served.map((area: string, idx: number) => (
+                    <span key={idx} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      {area}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {result.specialties_extracted?.length > 0 && (
+              <div className="space-y-2">
+                <Label>Specialties Extracted ({result.specialties_extracted.length})</Label>
+                <div className="flex flex-wrap gap-2">
+                  {result.specialties_extracted.map((spec: string, idx: number) => (
+                    <span key={idx} className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                      {spec}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {result.notable_achievements?.length > 0 && (
               <div className="space-y-2">
@@ -122,8 +155,8 @@ Julie Calza is a former Marine and Air Force Crew Chief wife...
                         <div className="flex-1">
                           <p className="font-semibold">{achievement.title}</p>
                           <p className="text-sm text-muted-foreground mt-1">{achievement.description}</p>
-                          {achievement.year && (
-                            <p className="text-xs text-muted-foreground mt-1">Year: {achievement.year}</p>
+                          {achievement.date && (
+                            <p className="text-xs text-muted-foreground mt-1">Date: {achievement.date}</p>
                           )}
                           {achievement.source && (
                             <p className="text-xs text-muted-foreground">Source: {achievement.source}</p>
