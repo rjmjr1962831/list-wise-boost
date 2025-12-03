@@ -102,12 +102,8 @@ export function FreeVsPremium() {
             ))}
             
             <div className="pt-3 border-t mt-3">
-              <p className="text-xs text-muted-foreground mb-1">Starting at</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-2xl font-bold text-primary">$75</span>
-                <span className="text-muted-foreground">/mo</span>
-              </div>
-              <p className="text-xs text-muted-foreground">Billed monthly, 3-month minimum</p>
+              <p className="text-lg font-semibold text-primary">Choose your cities</p>
+              <p className="text-xs text-muted-foreground">Pricing varies by market</p>
             </div>
           </CardContent>
         </Card>
