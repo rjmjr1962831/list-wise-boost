@@ -201,3 +201,6 @@ verify_jwt = false
 [functions.update-professional-field]
 verify_jwt = false
 
+[functions.notify-indexnow]
+verify_jwt = false
+
