@@ -1644,22 +1644,27 @@ export const ProfessionalCard = ({
                 })()}
                 
                 {/* Reviews Button */}
-                {professional.rating > 0 && (
-                  <button
-                    onClick={() => setReviewsOpen(!reviewsOpen)}
-                    className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex flex-col items-center justify-center gap-1.5">
-                      <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
-                        <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Reviews</span>
-                        <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2">
-                          {professional.reviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                        </Badge>
+                {(() => {
+                  const btnRating = professional.rating || (professional as any).review_stars_rating || 0;
+                  const btnReviews = professional.reviews || (professional as any).num_total_reviews || 0;
+                  if (btnRating <= 0) return null;
+                  return (
+                    <button
+                      onClick={() => setReviewsOpen(!reviewsOpen)}
+                      className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex flex-col items-center justify-center gap-1.5">
+                        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                          <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Reviews</span>
+                          <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2">
+                            {btnReviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                          </Badge>
+                        </div>
+                        <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", reviewsOpen && "rotate-180")} />
                       </div>
-                      <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", reviewsOpen && "rotate-180")} />
-                    </div>
-                  </button>
-                )}
+                    </button>
+                  );
+                })()}
                 
                 {/* News and Awards Button */}
                 <button
@@ -1736,18 +1741,22 @@ export const ProfessionalCard = ({
                 })()}
 
                 {/* Bar 2: Reviews */}
-                {professional.rating > 0 && reviewsOpen && (
-                  <div className="border rounded-lg p-4 bg-background">
-                    <ExternalReviewsPreview 
-                      agentName={professional.name}
-                      professionalId={professional.id}
-                      company={professional.company} 
-                      market={professional.address || market}
-                      zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
-                      minimumRating={professional.rating || 4.0}
-                    />
-                  </div>
-                )}
+                {(() => {
+                  const contentRating = professional.rating || (professional as any).review_stars_rating || 0;
+                  if (contentRating <= 0 || !reviewsOpen) return null;
+                  return (
+                    <div className="border rounded-lg p-4 bg-background">
+                      <ExternalReviewsPreview 
+                        agentName={professional.name}
+                        professionalId={professional.id}
+                        company={professional.company} 
+                        market={professional.address || market}
+                        zillowProfileUrl={(professional as any).zillow_profile_url || (professional.zuid ? `https://www.zillow.com/profile/${professional.zuid}` : null)}
+                        minimumRating={contentRating || 4.0}
+                      />
+                    </div>
+                  );
+                })()}
 
                 {/* Bar 3: News and Awards */}
                 {newsOpen && (
