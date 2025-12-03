@@ -105,12 +105,12 @@ export function ExternalReviewsPreview({
       });
     }
     
-    // Google search for reviews
-    const searchQuery = encodeURIComponent(`${agentName} ${company || ''} ${market || ''} reviews`);
+    // Google Maps search (doesn't get blocked like regular Google search)
+    const mapsQuery = encodeURIComponent(`${agentName} ${company || ''} ${market || ''} real estate agent`);
     links.push({
-      name: 'Google',
-      url: `https://www.google.com/search?q=${searchQuery}`,
-      icon: '🔍'
+      name: 'Google Maps',
+      url: `https://www.google.com/maps/search/${mapsQuery}`,
+      icon: '📍'
     });
     
     // Realtor.com search
@@ -119,6 +119,14 @@ export function ExternalReviewsPreview({
       name: 'Realtor.com',
       url: `https://www.realtor.com/realestateagents/${realtorQuery.replace(/%20/g, '-').toLowerCase()}`,
       icon: '🏡'
+    });
+    
+    // Yelp search for reviews
+    const yelpQuery = encodeURIComponent(`${agentName} ${market || ''}`);
+    links.push({
+      name: 'Yelp',
+      url: `https://www.yelp.com/search?find_desc=${yelpQuery}&find_loc=${encodeURIComponent(market || '')}`,
+      icon: '⭐'
     });
     
     return links;
