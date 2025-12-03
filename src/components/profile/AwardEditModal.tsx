@@ -3,8 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Trash2, Award, Calendar, Link, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, Plus, Trash2, Award, Calendar, Link, CheckCircle2, AlertCircle, Info } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AwardEntry {
   title?: string;
@@ -133,6 +134,16 @@ export default function AwardEditModal({
           <DialogTitle className="flex items-center gap-2">
             <Award className="h-5 w-5 text-yellow-600" />
             Awards & Achievements
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>Awards must be verified by a third party. Please provide a link to where the award is publicly listed (e.g., your brokerage site, award organization's page, or press release).</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </DialogTitle>
         </DialogHeader>
         
