@@ -204,3 +204,6 @@ verify_jwt = false
 [functions.notify-indexnow]
 verify_jwt = false
 
+[functions.extract-press-metadata]
+verify_jwt = false
+

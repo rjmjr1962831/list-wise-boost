@@ -3,9 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Plus, Trash2, Newspaper, Calendar, Link, CheckCircle2, AlertCircle, Info, Building2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Newspaper, Link, CheckCircle2, AlertCircle, Info, ExternalLink } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface PressMentionEntry {
   title?: string;
@@ -31,24 +33,19 @@ export default function PressMentionEditModal({
 }: PressMentionEditModalProps) {
   const [mentions, setMentions] = useState<PressMentionEntry[]>([]);
   const [saving, setSaving] = useState(false);
+  const [extracting, setExtracting] = useState(false);
+  const { toast } = useToast();
   
-  // New mention form
-  const [newMention, setNewMention] = useState({ title: "", outlet: "", date: "", url: "" });
+  // New mention URL input
+  const [newUrl, setNewUrl] = useState("");
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
     if (open) {
-      // Normalize existing mentions
-      const normalized = (currentMentions || []).map(m => ({
-        title: m.title || "",
-        outlet: m.outlet || "",
-        date: m.date || "",
-        url: m.url || "",
-        verifiedAt: m.verifiedAt,
-        type: m.type || "press"
-      }));
-      setMentions(normalized);
-      setNewMention({ title: "", outlet: "", date: "", url: "" });
+      // Filter to only show press type mentions (not awards)
+      const pressMentions = (currentMentions || []).filter(m => m.type !== 'award');
+      setMentions(pressMentions);
+      setNewUrl("");
       setFormError("");
     }
   }, [open, currentMentions]);
@@ -62,45 +59,75 @@ export default function PressMentionEditModal({
     }
   };
 
-  const isMentionVerified = (mention: PressMentionEntry) => {
-    const hasTitle = !!mention.title;
-    const hasOutlet = !!mention.outlet;
-    const hasUrl = !!mention.url && isValidUrl(mention.url);
-    return hasTitle && hasOutlet && hasUrl;
+  const isDuplicateUrl = (url: string) => {
+    const normalizedNew = url.toLowerCase().replace(/\/$/, '');
+    return mentions.some(m => 
+      m.url?.toLowerCase().replace(/\/$/, '') === normalizedNew
+    );
   };
 
-  const handleAddMention = () => {
+  const handleAddMention = async () => {
     setFormError("");
     
-    // Validate all fields
-    if (!newMention.title.trim()) {
-      setFormError("Article title/headline is required");
+    if (!newUrl.trim()) {
+      setFormError("Please enter a URL");
       return;
     }
-    if (!newMention.outlet.trim()) {
-      setFormError("Publication/outlet name is required");
-      return;
-    }
-    if (!newMention.url.trim()) {
-      setFormError("Article URL is required");
-      return;
-    }
-    if (!isValidUrl(newMention.url)) {
+    if (!isValidUrl(newUrl)) {
       setFormError("Please enter a valid URL (e.g., https://example.com/article)");
       return;
     }
+    if (isDuplicateUrl(newUrl)) {
+      setFormError("This article has already been added");
+      return;
+    }
 
-    const newEntry: PressMentionEntry = {
-      title: newMention.title.trim(),
-      outlet: newMention.outlet.trim(),
-      date: newMention.date || undefined,
-      url: newMention.url.trim(),
-      verifiedAt: new Date().toISOString(),
-      type: "press"
-    };
+    setExtracting(true);
+    
+    try {
+      // Call edge function to extract metadata from URL
+      const { data, error } = await supabase.functions.invoke('extract-press-metadata', {
+        body: { url: newUrl.trim() }
+      });
 
-    setMentions([...mentions, newEntry]);
-    setNewMention({ title: "", outlet: "", date: "", url: "" });
+      if (error) throw error;
+
+      const newEntry: PressMentionEntry = {
+        title: data?.title || "Article",
+        outlet: data?.outlet || new URL(newUrl).hostname.replace('www.', ''),
+        date: data?.date || undefined,
+        url: newUrl.trim(),
+        verifiedAt: new Date().toISOString(),
+        type: "press"
+      };
+
+      setMentions([...mentions, newEntry]);
+      setNewUrl("");
+      
+      toast({
+        title: "Article Added",
+        description: data?.title ? `"${data.title}" from ${newEntry.outlet}` : "Press mention added successfully"
+      });
+    } catch (error: any) {
+      console.error("Error extracting metadata:", error);
+      // Still add with basic info if extraction fails
+      const newEntry: PressMentionEntry = {
+        title: "Article",
+        outlet: new URL(newUrl).hostname.replace('www.', ''),
+        url: newUrl.trim(),
+        verifiedAt: new Date().toISOString(),
+        type: "press"
+      };
+      setMentions([...mentions, newEntry]);
+      setNewUrl("");
+      
+      toast({
+        title: "Article Added",
+        description: "Added with basic info. Details will be verified manually."
+      });
+    } finally {
+      setExtracting(false);
+    }
   };
 
   const handleRemoveMention = (index: number) => {
@@ -118,7 +145,7 @@ export default function PressMentionEditModal({
   };
 
   const handleOpenChange = (isOpen: boolean) => {
-    if (!isOpen) {
+    if (!isOpen && !extracting) {
       onClose();
     }
   };
@@ -136,7 +163,7 @@ export default function PressMentionEditModal({
                   <Info className="h-4 w-4 text-muted-foreground cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
-                  <p>Press mentions must be verifiable. Please provide a link to the published article or media coverage where you are mentioned.</p>
+                  <p>Add links to articles where you are featured or mentioned. We'll automatically extract the article details.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -148,68 +175,45 @@ export default function PressMentionEditModal({
           <div className="space-y-3 p-4 border rounded-lg bg-muted/30">
             <h3 className="font-medium text-sm text-foreground">Add Press Mention</h3>
             <p className="text-xs text-muted-foreground">
-              Provide a link to the article where you are featured or mentioned.
+              Paste the URL of an article where you are featured. We'll extract the details automatically.
             </p>
             
             <div className="space-y-3">
-              <div className="space-y-1">
-                <Label htmlFor="mention-title" className="text-xs flex items-center gap-1">
-                  <Newspaper className="h-3 w-3" />
-                  Article Title/Headline
-                </Label>
-                <Input
-                  id="mention-title"
-                  value={newMention.title}
-                  onChange={(e) => setNewMention({ ...newMention, title: e.target.value })}
-                  placeholder="e.g., Top Agents to Watch in 2024"
-                  className="h-9"
-                />
-              </div>
-              
-              <div className="space-y-1">
-                <Label htmlFor="mention-outlet" className="text-xs flex items-center gap-1">
-                  <Building2 className="h-3 w-3" />
-                  Publication/Outlet
-                </Label>
-                <Input
-                  id="mention-outlet"
-                  value={newMention.outlet}
-                  onChange={(e) => setNewMention({ ...newMention, outlet: e.target.value })}
-                  placeholder="e.g., Arizona Republic, Forbes, etc."
-                  className="h-9"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="mention-date" className="text-xs flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  Date Published (optional)
-                </Label>
-                <Input
-                  id="mention-date"
-                  type="date"
-                  value={newMention.date}
-                  onChange={(e) => setNewMention({ ...newMention, date: e.target.value })}
-                  className="h-9"
-                />
-              </div>
-              
               <div className="space-y-1">
                 <Label htmlFor="mention-url" className="text-xs flex items-center gap-1">
                   <Link className="h-3 w-3" />
                   Article URL
                 </Label>
-                <Input
-                  id="mention-url"
-                  type="url"
-                  value={newMention.url}
-                  onChange={(e) => setNewMention({ ...newMention, url: e.target.value })}
-                  placeholder="https://example.com/article"
-                  className="h-9"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Link to the published article
-                </p>
+                <div className="flex gap-2">
+                  <Input
+                    id="mention-url"
+                    type="url"
+                    value={newUrl}
+                    onChange={(e) => setNewUrl(e.target.value)}
+                    placeholder="https://example.com/article-about-you"
+                    className="h-9 flex-1"
+                    disabled={extracting}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddMention();
+                      }
+                    }}
+                  />
+                  <Button 
+                    type="button" 
+                    size="sm"
+                    onClick={handleAddMention}
+                    disabled={extracting || !newUrl.trim()}
+                    className="h-9"
+                  >
+                    {extracting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
 
               {formError && (
@@ -218,81 +222,60 @@ export default function PressMentionEditModal({
                   {formError}
                 </div>
               )}
-
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm"
-                onClick={handleAddMention}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Press Mention
-              </Button>
             </div>
           </div>
 
           {/* Existing Mentions */}
           <div className="flex-1 min-h-0">
             <h3 className="font-medium text-sm mb-2">Your Press Mentions ({mentions.length})</h3>
-            <ScrollArea className="h-[200px]">
+            <ScrollArea className="h-[250px]">
               {mentions.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-8">
                   No press mentions added yet
                 </p>
               ) : (
                 <div className="space-y-2 pr-4">
-                  {mentions.map((mention, index) => {
-                    const verified = isMentionVerified(mention);
-                    return (
-                      <div 
-                        key={index} 
-                        className={`flex items-start gap-3 p-3 rounded-lg border ${verified ? 'bg-green-50/50 border-green-200 dark:bg-green-900/10 dark:border-green-800/30' : 'bg-amber-50/50 border-amber-200 dark:bg-amber-900/10 dark:border-amber-800/30'}`}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            {verified ? (
-                              <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
-                            ) : (
-                              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
-                            )}
-                            <span className="font-medium text-sm truncate">
-                              {mention.title}
-                            </span>
-                          </div>
-                          {mention.outlet && (
-                            <p className="text-xs text-muted-foreground mt-1">
+                  {mentions.map((mention, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-start gap-3 p-3 rounded-lg border bg-card"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-sm line-clamp-2">
+                              {mention.title || "Article"}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
                               {mention.outlet}
                               {mention.date && ` • ${new Date(mention.date).toLocaleDateString()}`}
                             </p>
-                          )}
-                          {mention.url && (
-                            <a 
-                              href={mention.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-primary hover:underline truncate block mt-1"
-                            >
-                              {mention.url}
-                            </a>
-                          )}
-                          {!verified && (
-                            <p className="text-xs text-amber-600 mt-1">
-                              Missing: {!mention.title && "title, "}{!mention.outlet && "outlet, "}{!mention.url && "URL"}
-                            </p>
-                          )}
+                            {mention.url && (
+                              <a 
+                                href={mention.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                View article
+                              </a>
+                            )}
+                          </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
-                          onClick={() => handleRemoveMention(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
                       </div>
-                    );
-                  })}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0"
+                        onClick={() => handleRemoveMention(index)}
+                        title="Remove this mention"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
               )}
             </ScrollArea>
@@ -300,12 +283,12 @@ export default function PressMentionEditModal({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={saving}>
+          <Button variant="outline" onClick={onClose} disabled={saving || extracting}>
             Cancel
           </Button>
-          <Button onClick={handleSave} disabled={saving}>
+          <Button onClick={handleSave} disabled={saving || extracting}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Save Press Mentions
+            Save
           </Button>
         </DialogFooter>
       </DialogContent>
