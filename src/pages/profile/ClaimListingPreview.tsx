@@ -13,14 +13,16 @@ export default function ClaimListingPreview() {
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [profileId, setProfileId] = useState<string>('');
+
+  // Test profile UUID for Robert Maynard
+  const TEST_PROFILE_ID = '45415a04-dffe-46d0-96c6-fe8dbf6cebff';
 
   useEffect(() => {
     const loadProfessional = async () => {
-      if (!token) {
-        setError('Invalid profile link');
-        setLoading(false);
-        return;
-      }
+      // Use the token from URL, or fall back to test profile
+      const id = token || TEST_PROFILE_ID;
+      setProfileId(id);
 
       try {
         const { data, error: fetchError } = await supabase
@@ -30,8 +32,8 @@ export default function ClaimListingPreview() {
             cities!inner(name, state, slug, state_slug),
             categories!inner(name, slug, plural_name)
           `)
-          .eq('id', token)
-          .single();
+          .eq('id', id)
+          .maybeSingle();
 
         if (fetchError || !data) {
           setError('Profile not found');
@@ -78,11 +80,11 @@ export default function ClaimListingPreview() {
   }, [token]);
 
   const handleClaimListing = () => {
-    navigate(`/profile/${token}/pricing`);
+    navigate(`/profile/${profileId}/pricing`);
   };
 
   const handleContinueEditing = () => {
-    navigate(`/profile/${token}/edit`);
+    navigate(`/profile/${profileId}/edit`);
   };
 
   if (loading) {
