@@ -176,10 +176,10 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
 
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!anthropicApiKey) {
+      throw new Error('ANTHROPIC_API_KEY not configured');
     }
 
     // Fetch existing professional data
@@ -249,19 +249,8 @@ serve(async (req) => {
     console.log(`   Website content: ${context.websiteContent.length} chars`);
     console.log(`   Website source: ${context.websiteSource || 'None'}`);
 
-    // Call Lovable AI with tool calling for structured extraction
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a professional profile synthesizer for a real estate agent directory. Your job is to create a compelling 3-5 sentence synthesis about THE AGENT by combining ALL available data sources.
+    // Call Claude Sonnet with tool calling for structured extraction
+    const systemPrompt = `You are a professional profile synthesizer for a real estate agent directory. Your job is to create a compelling 3-5 sentence synthesis about THE AGENT by combining ALL available data sources.
 
 CRITICAL: SYNTHESIZE FROM ALL SOURCES
 You must weave together information from:
@@ -303,11 +292,9 @@ ADDITIONAL EXTRACTION RULES:
 2. Extract notable achievements, awards, certifications from ALL data sources
 3. Rank achievements by credibility (1-10): press mentions = 9-10, website = 6-8, existing bio = 5-7
 4. Deduplicate information across sources
-5. **ALWAYS INCLUDE DATES**: Extract year for EVERY achievement when available`
-          },
-          {
-            role: 'user',
-            content: `Synthesize this agent profile by combining ALL available data sources:
+5. **ALWAYS INCLUDE DATES**: Extract year for EVERY achievement when available`;
+
+    const userPrompt = `Synthesize this agent profile by combining ALL available data sources:
 
 AGENT INFORMATION:
 - Name: ${context.name}
@@ -339,81 +326,90 @@ INSTRUCTIONS:
 - If they have press mentions, MENTION them (e.g., "featured in Arizona Republic" or "recognized by Phoenix Business Journal")
 - If no website content, reword the Zillow bio and enhance with press/achievements
 - Do NOT mention specific properties, prices, addresses, or inventory
-- If you know their start year, you can say "serving since [year]" but do NOT state a specific years count`
-          }
+- If you know their start year, you can say "serving since [year]" but do NOT state a specific years count`;
+
+    const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': anthropicApiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: userPrompt }
         ],
         tools: [
           {
-            type: 'function',
-            function: {
-              name: 'synthesize_profile',
-              description: 'Extract structured profile data including synthesis and achievements',
-              parameters: {
-                type: 'object',
-                properties: {
-                  synthesized_bio: {
-                    type: 'string',
-                    description: '3-5 sentence synthesis about THE AGENT - their experience, areas served, specialties, awards, and what makes them unique. NO property listings or inventory.'
-                  },
-                  areas_served: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    description: 'List of areas/neighborhoods the agent serves'
-                  },
-                  specialties_extracted: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    description: 'List of specialties extracted from website/bio (investors, luxury, first-time buyers, etc.)'
-                  },
-                  notable_achievements: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        title: { type: 'string' },
-                        description: { type: 'string' },
-                        date: { type: 'string', description: 'Year or date if available (YYYY format)' },
-                        credibility: { type: 'number', description: 'Score 1-10' },
-                        source: { type: 'string' },
-                        source_url: { type: 'string', description: 'URL of the source if available' }
-                      },
-                      required: ['title', 'description', 'credibility']
-                    }
-                  },
-                  publications: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        title: { type: 'string' },
-                        type: { type: 'string', description: 'book, article, etc.' },
-                        publisher: { type: 'string' },
-                        date: { type: 'string', description: 'Year or date' },
-                        url: { type: 'string' }
-                      },
-                      required: ['title', 'type']
-                    }
-                  },
-                  community_roles: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        organization: { type: 'string' },
-                        role: { type: 'string' },
-                        description: { type: 'string' }
-                      },
-                      required: ['organization', 'role']
-                    }
+            name: 'synthesize_profile',
+            description: 'Extract structured profile data including synthesis and achievements',
+            input_schema: {
+              type: 'object',
+              properties: {
+                synthesized_bio: {
+                  type: 'string',
+                  description: '3-5 sentence synthesis about THE AGENT - their experience, areas served, specialties, awards, and what makes them unique. NO property listings or inventory.'
+                },
+                areas_served: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'List of areas/neighborhoods the agent serves'
+                },
+                specialties_extracted: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'List of specialties extracted from website/bio (investors, luxury, first-time buyers, etc.)'
+                },
+                notable_achievements: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      title: { type: 'string' },
+                      description: { type: 'string' },
+                      date: { type: 'string', description: 'Year or date if available (YYYY format)' },
+                      credibility: { type: 'number', description: 'Score 1-10' },
+                      source: { type: 'string' },
+                      source_url: { type: 'string', description: 'URL of the source if available' }
+                    },
+                    required: ['title', 'description', 'credibility']
                   }
                 },
-                required: ['synthesized_bio', 'notable_achievements'],
-                additionalProperties: false
-              }
+                publications: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      title: { type: 'string' },
+                      type: { type: 'string', description: 'book, article, etc.' },
+                      publisher: { type: 'string' },
+                      date: { type: 'string', description: 'Year or date' },
+                      url: { type: 'string' }
+                    },
+                    required: ['title', 'type']
+                  }
+                },
+                community_roles: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      organization: { type: 'string' },
+                      role: { type: 'string' },
+                      description: { type: 'string' }
+                    },
+                    required: ['organization', 'role']
+                  }
+                }
+              },
+              required: ['synthesized_bio', 'notable_achievements']
             }
           }
         ],
-        tool_choice: { type: 'function', function: { name: 'synthesize_profile' } }
+        tool_choice: { type: 'tool', name: 'synthesize_profile' }
       })
     });
 
@@ -426,8 +422,9 @@ INSTRUCTIONS:
     const aiData = await aiResponse.json();
     console.log('AI response received');
 
-    // Extract tool call result
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
+    // Extract tool call result from Claude's response format
+    const toolUseBlock = aiData.content?.find((block: any) => block.type === 'tool_use');
+    const toolCall = toolUseBlock ? { function: { arguments: JSON.stringify(toolUseBlock.input) } } : null;
     if (!toolCall) {
       throw new Error('No tool call in AI response');
     }
