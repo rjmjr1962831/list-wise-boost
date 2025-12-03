@@ -10,13 +10,15 @@ interface FeatureItem {
 }
 
 const features: FeatureItem[] = [
+  // Enabled items first
   { label: 'Basic profile listing', free: true, premium: true },
   { label: 'Verified license display', free: true, premium: true },
+  { label: 'AI search optimization', free: true, premium: true },
+  { label: 'Enhanced profile (awards, press)', free: true, premium: true },
+  { label: 'Video introduction', free: true, premium: true },
+  // Premium-only items
   { label: 'Guaranteed Top 10 placement', free: false, premium: true },
   { label: 'Priority position in rankings', free: false, premium: true },
-  { label: 'AI search optimization', free: false, premium: true },
-  { label: 'Enhanced profile (awards, press)', free: false, premium: true },
-  { label: 'Video introduction', free: false, premium: true },
   { label: 'Multi-city coverage', free: false, premium: true },
 ];
 
