@@ -92,6 +92,38 @@ export function ExternalReviewsPreview({
   const { data, loading } = useExternalReviews({ agentName, company, market, professionalId });
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
+  // Build external review links
+  const getReviewLinks = () => {
+    const links: { name: string; url: string; icon: string }[] = [];
+    
+    // Zillow profile
+    if (zillowProfileUrl) {
+      links.push({
+        name: 'Zillow',
+        url: zillowProfileUrl,
+        icon: '🏠'
+      });
+    }
+    
+    // Google search for reviews
+    const searchQuery = encodeURIComponent(`${agentName} ${company || ''} ${market || ''} reviews`);
+    links.push({
+      name: 'Google',
+      url: `https://www.google.com/search?q=${searchQuery}`,
+      icon: '🔍'
+    });
+    
+    // Realtor.com search
+    const realtorQuery = encodeURIComponent(`${agentName} ${market || ''}`);
+    links.push({
+      name: 'Realtor.com',
+      url: `https://www.realtor.com/realestateagents/${realtorQuery.replace(/%20/g, '-').toLowerCase()}`,
+      icon: '🏡'
+    });
+    
+    return links;
+  };
+
   if (loading) {
     return (
       <div className="mt-4 pt-4 border-t">
@@ -122,6 +154,8 @@ export function ExternalReviewsPreview({
     .slice(0, 3);
 
   if (recentReviews.length === 0) return null;
+
+  const reviewLinks = getReviewLinks();
 
   return (
     <div>
@@ -184,6 +218,28 @@ export function ExternalReviewsPreview({
             </article>
           );
         })}
+      </div>
+      
+      {/* Find More Reviews Section */}
+      <div className="mt-4 pt-3 border-t border-border/50">
+        <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
+          <ExternalLink className="h-3 w-3" />
+          Find More Reviews
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {reviewLinks.map((link) => (
+            <a
+              key={link.name}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors px-2 py-1 rounded-md bg-muted/50 hover:bg-muted"
+            >
+              <span>{link.icon}</span>
+              <span>{link.name}</span>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   );
