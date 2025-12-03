@@ -29,33 +29,33 @@ export function SynthesisTester() {
   }, []);
 
   const fetchScottsdaleAgents = async () => {
-    // First get Beauvais
-    const { data: beauvais } = await supabase
+    // Get 5 active agents with good data - Beauvais + 4 others
+    const { data: allAgents } = await supabase
       .from('professionals')
       .select('id, name, website')
-      .ilike('name', '%beauvais%')
       .eq('active', true)
-      .single();
-
-    // Then get other Scottsdale agents
-    const { data: others } = await supabase
-      .from('professionals')
-      .select('id, name, website')
-      .eq('zillow_search_city', 'Scottsdale')
-      .eq('active', true)
+      .gte('num_total_reviews', 20)
       .order('name', { ascending: true })
-      .limit(10);
+      .limit(50);
 
+    if (!allAgents) {
+      setAgents([]);
+      return;
+    }
+
+    // Find Beauvais and put first
+    const beauvais = allAgents.find(a => a.name.toLowerCase().includes('beauvais'));
+    const others = allAgents.filter(a => !a.name.toLowerCase().includes('beauvais'));
+    
     const combined: Agent[] = [];
     if (beauvais) combined.push(beauvais);
-    if (others) {
-      for (const agent of others) {
-        if (!combined.find(a => a.id === agent.id)) {
-          combined.push(agent);
-        }
-        if (combined.length >= 5) break;
-      }
+    
+    // Add 4 more agents
+    for (const agent of others) {
+      if (combined.length >= 5) break;
+      combined.push(agent);
     }
+    
     setAgents(combined);
   };
 
