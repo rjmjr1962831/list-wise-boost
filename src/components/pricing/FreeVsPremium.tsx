@@ -105,6 +105,7 @@ export function FreeVsPremium() {
               <p className="text-lg font-semibold text-primary">Choose your cities</p>
               <p className="text-xs text-muted-foreground">Pricing varies by market</p>
               <p className="text-xs text-muted-foreground">Three month minimum commitment</p>
+              <p className="text-xs text-muted-foreground">Your price won't change for 24 months</p>
             </div>
           </CardContent>
         </Card>
