@@ -105,11 +105,11 @@ export function ExternalReviewsPreview({
       });
     }
     
-    // Google Maps search (doesn't get blocked like regular Google search)
+    // Google Maps search - use maps.google.com format to avoid blocks
     const mapsQuery = encodeURIComponent(`${agentName} ${company || ''} ${market || ''} real estate agent`);
     links.push({
       name: 'Google Maps',
-      url: `https://www.google.com/maps/search/${mapsQuery}`,
+      url: `https://maps.google.com/?q=${mapsQuery}`,
       icon: '📍'
     });
     
