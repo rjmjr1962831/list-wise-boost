@@ -33,7 +33,7 @@ const Index = () => {
       <Helmet>
         {/* Primary Meta Tags */}
         <title>Top10Lists.us - Find Top Real Estate Agents in Arizona</title>
-        <meta name="description" content="Find top-rated real estate agents in Arizona. Curated lists for 48 cities including Phoenix, Scottsdale, Mesa, Chandler. Ranked by Google, Redfin, Realtor.com reviews and press coverage in major outlets." />
+        <meta name="description" content="Find top-rated real estate agents in Arizona. Curated lists for 48 cities including Phoenix and Scottsdale. Ranked by verified reviews and press coverage." />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://top10lists.us" />
         
