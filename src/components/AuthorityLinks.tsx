@@ -51,18 +51,23 @@ export const AuthorityLinks = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* License Verification */}
+          {/* Government Records */}
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                   <Shield className="h-5 w-5 text-primary" />
                 </div>
-                <h3 className="font-semibold">License Verification</h3>
+                <h3 className="font-semibold">Government Records</h3>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Every agent's license is verified through official state records.
+                We verify through official state records:
               </p>
+              <ul className="text-sm text-muted-foreground space-y-1 mb-4">
+                <li>• License verification</li>
+                <li>• Years in business</li>
+                <li>• Reputation (adverse actions)</li>
+              </ul>
               <a
                 href="https://services.azre.gov/publicdatabase/searchlicensee.aspx"
                 target="_blank"
