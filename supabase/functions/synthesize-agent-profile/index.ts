@@ -261,14 +261,23 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a professional profile synthesizer for a real estate agent directory. Your job is to create a compelling 3-5 sentence synthesis about THE AGENT (not their properties).
+            content: `You are a professional profile synthesizer for a real estate agent directory. Your job is to create a compelling 3-5 sentence synthesis about THE AGENT by combining ALL available data sources.
 
-CRITICAL RULES FOR THE SYNTHESIS:
+CRITICAL: SYNTHESIZE FROM ALL SOURCES
+You must weave together information from:
+- Their personal website (if available)
+- Press mentions and media coverage (IMPORTANT - mention notable press if available!)
+- Awards and achievements  
+- Existing Zillow/profile bio (but NEVER just copy it - always rewrite and enhance)
+- Review data and ratings
+- Specialties and areas served
+
+SYNTHESIS RULES:
 1. Write in third-person, present tense
 2. The synthesis should be 3-5 sentences covering:
    - Areas/neighborhoods they serve (if known)
    - Specialties (investors, luxury, first-time buyers, relocation, etc.)
-   - Awards and recognition (if any)
+   - Awards, recognition, and PRESS MENTIONS (if any - these are credibility boosters!)
    - What makes them unique (brokerage ownership, team leadership, niche expertise)
    - You may mention "beginning in [year]" or "serving since [year]" but DO NOT state a specific years of experience number
 3. DO NOT mention:
@@ -278,18 +287,27 @@ CRITICAL RULES FOR THE SYNTHESIS:
    - Open house schedules
 4. Be factual - only include information explicitly found in the provided data
 5. If they own their brokerage, mention that (shows commitment)
-6. Keep it professional, engaging, and concise
+6. If they have press mentions (featured in publications), MENTION them - this is credibility gold!
+7. NEVER just copy the Zillow bio verbatim - always synthesize and enhance with other data
+
+IMPORTANT ON FAILOVER:
+If no website content is available, you MUST still create a compelling synthesis by combining:
+- The Zillow bio (reworded, not copied)
+- Any press mentions (PRIORITIZE these!)
+- Awards and achievements
+- Specialties and service areas
+- Review/rating data
 
 ADDITIONAL EXTRACTION RULES:
 1. Convert all first-person language to third-person
 2. Extract notable achievements, awards, certifications from ALL data sources
-3. Rank achievements by credibility (1-10): website = 6-8, existing bio = 5-7, press mentions = 8-10
+3. Rank achievements by credibility (1-10): press mentions = 9-10, website = 6-8, existing bio = 5-7
 4. Deduplicate information across sources
 5. **ALWAYS INCLUDE DATES**: Extract year for EVERY achievement when available`
           },
           {
             role: 'user',
-            content: `Synthesize this agent profile:
+            content: `Synthesize this agent profile by combining ALL available data sources:
 
 AGENT INFORMATION:
 - Name: ${context.name}
@@ -300,26 +318,28 @@ AGENT INFORMATION:
 - Reviews: ${context.reviewCount || 0} reviews (${context.rating || 0} stars)
 - Badges: ${context.badges.join(', ') || 'None'}
 
-WEBSITE CONTENT (from ${context.websiteSource || 'their website'}):
-${context.websiteContent || 'No website content available'}
+=== WEBSITE CONTENT (from ${context.websiteSource || 'their website'}) ===
+${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE - use other sources below'}
 
-EXISTING BIO:
+=== EXISTING ZILLOW BIO (reword this, do NOT copy verbatim) ===
 ${context.existingBio || 'No bio available'}
 
-PROFILE INFORMATION:
-${JSON.stringify(context.professionalInformation, null, 2)}
+=== PRESS MENTIONS (HIGH PRIORITY - include these in synthesis!) ===
+${context.existingPressData.length > 0 ? JSON.stringify(context.existingPressData, null, 2) : 'No press mentions available'}
 
-RAW PRESS RESEARCH:
+=== RAW PRESS RESEARCH ===
 ${context.rawResearch || 'No press research available'}
 
-EXISTING PRESS MENTIONS:
-${JSON.stringify(context.existingPressData, null, 2)}
+=== PROFILE INFORMATION ===
+${JSON.stringify(context.professionalInformation, null, 2)}
 
-IMPORTANT: 
+INSTRUCTIONS: 
 - Create a compelling 3-5 sentence synthesis focused on WHO THE AGENT IS
-- Extract achievements from ALL available data above
+- COMBINE all sources above - don't rely on just one
+- If they have press mentions, MENTION them (e.g., "featured in Arizona Republic" or "recognized by Phoenix Business Journal")
+- If no website content, reword the Zillow bio and enhance with press/achievements
 - Do NOT mention specific properties, prices, addresses, or inventory
-- If website content mentions their start year, you can say "serving since [year]" but do NOT override or mention a specific years count`
+- If you know their start year, you can say "serving since [year]" but do NOT state a specific years count`
           }
         ],
         tools: [
