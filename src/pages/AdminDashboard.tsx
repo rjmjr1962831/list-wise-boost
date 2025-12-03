@@ -36,6 +36,7 @@ import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
 import PrerenderRecache from '@/components/admin/PrerenderRecache';
 import AIModelTester from '@/components/admin/AIModelTester';
 import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
+import { SynthesisTester } from '@/components/admin/SynthesisTester';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -318,6 +319,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="bulk-synthesis" className="space-y-4">
+            <SynthesisTester />
             <BulkProfileSynthesizer />
           </TabsContent>
 
