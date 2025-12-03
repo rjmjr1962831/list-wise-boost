@@ -51,7 +51,7 @@ const VerifyListingByToken = lazy(() => import("./pages/VerifyListingByToken"));
 const WelcomeInterstitial = lazy(() => import("./pages/profile/WelcomeInterstitial"));
 const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
 const ProfileFieldsGuide = lazy(() => import("./pages/profile/ProfileFieldsGuide"));
-const PricingInterstitial = lazy(() => import("./pages/profile/PricingInterstitial"));
+const PremiumPricingPage = lazy(() => import("./pages/profile/PremiumPricingPage"));
 const SelectCities = lazy(() => import("./pages/profile/SelectCities"));
 const SelectionPlaceholder = lazy(() => import("./pages/profile/SelectionPlaceholder"));
 const ScheduleCall = lazy(() => import("./pages/profile/ScheduleCall"));
@@ -115,7 +115,7 @@ const App = () => (
                     <Route path="/profile/:token" element={<VerifyListingByToken />} />
                     <Route path="/profile/:token/fields" element={<ProfileFieldsGuide />} />
                     <Route path="/profile/:token/edit" element={<EditProfile />} />
-                    <Route path="/profile/:token/pricing" element={<PricingInterstitial />} />
+                    <Route path="/profile/:token/pricing" element={<PremiumPricingPage />} />
                     <Route path="/profile/:token/select-cities" element={<SelectCities />} />
                     <Route path="/profile/:token/select" element={<SelectionPlaceholder />} />
                     <Route path="/profile/:token/schedule" element={<ScheduleCall />} />
