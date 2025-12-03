@@ -6,6 +6,58 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Extract years of experience from bio text by finding "since YYYY", "X years", "established in YYYY", etc.
+ */
+function extractYearsFromBio(bioText: string | null | undefined): number | null {
+  if (!bioText) return null;
+  
+  // Strip HTML tags if present
+  const cleanText = bioText.replace(/<[^>]*>/g, ' ');
+  
+  const foundYears: number[] = [];
+  
+  // Pattern 1: Direct year mentions like "15 years of experience", "over 20 years"
+  const directYearPatterns = [
+    /(\d+)\+?\s+years?\s+(?:of\s+)?(?:experience|in\s+(?:the\s+)?(?:business|industry|real\s+estate))/i,
+    /(?:over|more\s+than|nearly)\s+(\d+)\s+years?/i,
+  ];
+  
+  for (const pattern of directYearPatterns) {
+    const match = cleanText.match(pattern);
+    if (match && match[1]) {
+      const years = parseInt(match[1], 10);
+      if (years > 0 && years <= 70) {
+        foundYears.push(years);
+      }
+    }
+  }
+  
+  // Pattern 2: "Since YYYY", "established in YYYY", "began in YYYY", etc.
+  const sinceYearPatterns = [
+    /since\s+(\d{4})/i,
+    /starting\s+in\s+(\d{4})/i,
+    /began\s+in\s+(\d{4})/i,
+    /started\s+in\s+(\d{4})/i,
+    /established\s+(?:in\s+)?(\d{4})/i,
+    /founded\s+(?:in\s+)?(\d{4})/i,
+    /in\s+business\s+since\s+(\d{4})/i,
+  ];
+  
+  const currentYear = new Date().getFullYear();
+  for (const pattern of sinceYearPatterns) {
+    const match = cleanText.match(pattern);
+    if (match && match[1]) {
+      const year = parseInt(match[1], 10);
+      if (year >= 1950 && year <= currentYear) {
+        foundYears.push(currentYear - year);
+      }
+    }
+  }
+  
+  return foundYears.length > 0 ? Math.max(...foundYears) : null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -565,13 +617,25 @@ async function processAgent(
       }
     }
     
-    // Extract years experience from getToKnowMe.yearsInIndustry (most reliable source)
+    // Extract years experience from multiple sources
     if (agent.getToKnowMe?.yearsInIndustry && typeof agent.getToKnowMe.yearsInIndustry === 'number') {
       memo23Data.years_experience = agent.getToKnowMe.yearsInIndustry;
     } else if (agent.yearsExperience !== undefined) {
       memo23Data.years_experience = agent.yearsExperience;
     } else if (agent.professionalInformation?.yearsExperience !== undefined) {
       memo23Data.years_experience = agent.professionalInformation.yearsExperience;
+    }
+    
+    // SYSTEM-WIDE: Extract years from bio if not found from direct sources
+    if (!memo23Data.years_experience) {
+      const bioText = memo23Data.get_to_know_me || memo23Data.description || '';
+      if (bioText) {
+        const extractedYears = extractYearsFromBio(bioText);
+        if (extractedYears !== null) {
+          console.log(`📅 Extracted years from bio for ${agent.name}: ${extractedYears}`);
+          memo23Data.years_experience = extractedYears;
+        }
+      }
     }
     
     memo23Data.zillow_data_fetched_at = new Date().toISOString();

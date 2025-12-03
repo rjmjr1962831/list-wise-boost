@@ -6,6 +6,60 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Extract years of experience from bio text by finding "since YYYY", "X years", "established in YYYY", etc.
+ */
+function extractYearsFromBio(bioText: string | null | undefined): number | null {
+  if (!bioText) return null;
+  
+  // Strip HTML tags if present
+  const cleanText = bioText.replace(/<[^>]*>/g, ' ');
+  
+  const foundYears: number[] = [];
+  
+  // Pattern 1: Direct year mentions like "15 years of experience", "over 20 years"
+  const directYearPatterns = [
+    /(\d+)\+?\s+years?\s+(?:of\s+)?(?:experience|in\s+(?:the\s+)?(?:business|industry|real\s+estate))/i,
+    /(?:over|more\s+than|nearly)\s+(\d+)\s+years?/i,
+  ];
+  
+  for (const pattern of directYearPatterns) {
+    const match = cleanText.match(pattern);
+    if (match && match[1]) {
+      const years = parseInt(match[1], 10);
+      if (years > 0 && years <= 70) { // Sanity check
+        foundYears.push(years);
+      }
+    }
+  }
+  
+  // Pattern 2: "Since YYYY", "established in YYYY", "began in YYYY", etc.
+  const sinceYearPatterns = [
+    /since\s+(\d{4})/i,
+    /starting\s+in\s+(\d{4})/i,
+    /began\s+in\s+(\d{4})/i,
+    /started\s+in\s+(\d{4})/i,
+    /established\s+(?:in\s+)?(\d{4})/i,
+    /founded\s+(?:in\s+)?(\d{4})/i,
+    /in\s+business\s+since\s+(\d{4})/i,
+  ];
+  
+  const currentYear = new Date().getFullYear();
+  for (const pattern of sinceYearPatterns) {
+    const match = cleanText.match(pattern);
+    if (match && match[1]) {
+      const year = parseInt(match[1], 10);
+      // Sanity check: year should be reasonable (not in the future, not before 1950)
+      if (year >= 1950 && year <= currentYear) {
+        foundYears.push(currentYear - year);
+      }
+    }
+  }
+  
+  // Return the highest value found (most conservative estimate)
+  return foundYears.length > 0 ? Math.max(...foundYears) : null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -50,6 +104,26 @@ serve(async (req) => {
 
     if (fetchError) throw fetchError;
 
+    // SYSTEM-WIDE: Extract years from bio and update if different
+    const bioText = professional.get_to_know_me || professional.description || '';
+    const extractedYears = extractYearsFromBio(bioText);
+    
+    if (extractedYears !== null && extractedYears !== professional.years_experience) {
+      console.log(`📅 Bio-extracted years for ${professional.name}: ${extractedYears} (DB has: ${professional.years_experience})`);
+      
+      // Update years_experience in database
+      const { error: yearsUpdateError } = await supabase
+        .from('professionals')
+        .update({ years_experience: extractedYears })
+        .eq('id', professionalId);
+      
+      if (yearsUpdateError) {
+        console.error('Error updating years_experience:', yearsUpdateError);
+      } else {
+        console.log(`✅ Updated years_experience to ${extractedYears} for ${professional.name}`);
+      }
+    }
+
     // Prepare context for AI - gather all available data sources
     const context = {
       name: professional.name,
@@ -58,7 +132,7 @@ serve(async (req) => {
       rawResearch: rawResearch || '',
       professionalInformation: professional.professional_information || {},
       // Additional data that might contain achievements
-      yearsExperience: professional.years_experience,
+      yearsExperience: extractedYears || professional.years_experience,
       badges: professional.badges || [],
       specialty: professional.specialty || [],
       reviewCount: professional.num_total_reviews,
