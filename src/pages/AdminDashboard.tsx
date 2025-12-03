@@ -124,7 +124,7 @@ const AdminDashboard = () => {
             <EnrichmentCostControls />
           </div>
           <h2 className="text-lg font-semibold mb-2 mt-4">Test Links</h2>
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 flex-wrap mb-4">
             <a 
               href="/arizona/phoenix/top10realestateagents/robert-maynard" 
               target="_blank"
@@ -138,6 +138,13 @@ const AdminDashboard = () => {
               className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
             >
               Robert Maynard Edit Profile
+            </a>
+            <a 
+              href="/profile/45415a04-dffe-46d0-96c6-fe8dbf6cebff/pricing" 
+              target="_blank"
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-primary bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+            >
+              Premium Pricing Page
             </a>
           </div>
           <h2 className="text-lg font-semibold mb-2">Download Files</h2>
