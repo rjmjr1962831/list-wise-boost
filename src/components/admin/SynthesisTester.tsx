@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,9 +23,9 @@ export function SynthesisTester() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [results, setResults] = useState<SynthesisResult[]>([]);
   const [running, setRunning] = useState(false);
-  const [stopped, setStopped] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const [stats, setStats] = useState({ success: 0, failed: 0 });
+  const stoppedRef = useRef(false);
 
   useEffect(() => {
     fetchAllActiveAgents();
@@ -52,7 +52,7 @@ export function SynthesisTester() {
     }
 
     setRunning(true);
-    setStopped(false);
+    stoppedRef.current = false;
     setResults([]);
     setProgress({ current: 0, total: agents.length });
     setStats({ success: 0, failed: 0 });
@@ -63,7 +63,7 @@ export function SynthesisTester() {
     const allResults: SynthesisResult[] = [];
 
     for (let i = 0; i < agents.length; i += BATCH_SIZE) {
-      if (stopped) break;
+      if (stoppedRef.current) break;
 
       const batch = agents.slice(i, i + BATCH_SIZE);
       
@@ -109,8 +109,9 @@ export function SynthesisTester() {
   };
 
   const stopSynthesis = () => {
-    setStopped(true);
-    toast.info('Stopping after current batch...');
+    stoppedRef.current = true;
+    setRunning(false);
+    toast.info('Stopped.');
   };
 
   const progressPercent = progress.total > 0 ? (progress.current / progress.total) * 100 : 0;
