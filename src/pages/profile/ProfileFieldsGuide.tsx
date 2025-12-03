@@ -11,6 +11,7 @@ import ImageUploadModal from "@/components/profile/ImageUploadModal";
 import FieldReviewRequestModal from "@/components/profile/FieldReviewRequestModal";
 import SpecialtyEditModal from "@/components/profile/SpecialtyEditModal";
 import AwardEditModal from "@/components/profile/AwardEditModal";
+import PressMentionEditModal from "@/components/profile/PressMentionEditModal";
 import { Badge } from "@/components/ui/badge";
 
 interface Professional {
@@ -59,6 +60,7 @@ const ProfileFieldsGuide = () => {
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [specialtyModalOpen, setSpecialtyModalOpen] = useState(false);
   const [awardModalOpen, setAwardModalOpen] = useState(false);
+  const [pressMentionModalOpen, setPressMentionModalOpen] = useState(false);
   const [currentField, setCurrentField] = useState<FieldConfig | null>(null);
 
   const fields: FieldConfig[] = [
@@ -276,6 +278,8 @@ const ProfileFieldsGuide = () => {
       setSpecialtyModalOpen(true);
     } else if (field.key === 'notable_achievements') {
       setAwardModalOpen(true);
+    } else if (field.key === 'press_mentions') {
+      setPressMentionModalOpen(true);
     } else if (field.type === 'image') {
       setImageModalOpen(true);
     } else if (field.requiresReview) {
@@ -341,6 +345,36 @@ const ProfileFieldsGuide = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to save awards.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSavePressMentions = async (mentions: any[]) => {
+    if (!professional) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('update-professional-field', {
+        body: {
+          token,
+          field: 'press_mentions',
+          value: mentions
+        }
+      });
+
+      if (error) throw error;
+
+      setProfessional(prev => prev ? { ...prev, press_mentions: mentions } : null);
+      
+      toast({
+        title: "Press Mentions Saved",
+        description: "Your press mentions have been saved successfully."
+      });
+    } catch (error: any) {
+      console.error("Error saving press mentions:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save press mentions.",
         variant: "destructive"
       });
     }
@@ -638,6 +672,19 @@ const ProfileFieldsGuide = () => {
           }}
           onSave={handleSaveAwards}
           currentAwards={professional.notable_achievements || []}
+        />
+      )}
+
+      {/* Press Mention Edit Modal */}
+      {professional && (
+        <PressMentionEditModal
+          open={pressMentionModalOpen}
+          onClose={() => {
+            setPressMentionModalOpen(false);
+            setCurrentField(null);
+          }}
+          onSave={handleSavePressMentions}
+          currentMentions={professional.press_mentions || []}
         />
       )}
     </>
