@@ -260,7 +260,7 @@ export default function EditProfile() {
         description: 'Your information has been saved successfully.'
       });
 
-      navigate(`/profile/${token}/pricing`);
+      navigate(`/profile/${token}/preview`);
     } catch (err: any) {
       console.error('Error saving profile:', err);
       toast({

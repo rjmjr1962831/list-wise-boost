@@ -123,7 +123,7 @@ export default function ClaimListingPreview() {
               Great! Here's what your listing looks like
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Review your profile below. If everything looks good, claim your free listing to make it live. 
+              If everything looks good, click "Claim My Free Listing" to make it live.
               You can always come back and edit it later.
             </p>
           </div>
