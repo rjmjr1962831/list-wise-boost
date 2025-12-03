@@ -176,10 +176,10 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
 
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    if (!deepseekApiKey) {
+      throw new Error('DEEPSEEK_API_KEY not configured');
     }
 
     // Fetch existing professional data
@@ -249,15 +249,15 @@ serve(async (req) => {
     console.log(`   Website content: ${context.websiteContent.length} chars`);
     console.log(`   Website source: ${context.websiteSource || 'None'}`);
 
-    // Call Lovable AI with tool calling for structured extraction
-    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    // Call DeepSeek R1 with tool calling for structured extraction
+    const aiResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
+        'Authorization': `Bearer ${deepseekApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: 'deepseek-reasoner',
         messages: [
           {
             role: 'system',
