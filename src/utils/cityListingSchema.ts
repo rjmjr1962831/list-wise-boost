@@ -2,6 +2,7 @@
 // City Listing Schema Generator for LLM Optimization
 
 import { AgentData } from './agentSchema';
+import { generateCityFaqSchema } from './cityFaqSchema';
 
 export interface CityListingData {
   city: string;
@@ -81,46 +82,12 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     ]
   };
 
-  // Schema 3: FAQPage (common questions - great for LLM Q&A)
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "dateModified": listing.dateModified,
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": `Who are the best real estate agents in ${listing.city}, ${listing.stateAbbrev}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": `The top-rated real estate agents in ${listing.city} according to Top10Lists.us are: ${listing.agents.slice(0, 3).map((a, i) => `${i + 1}. ${a.name} (${a.brokerage}) with ${a.ratingValue}★ rating`).join(', ')}. Rankings are based on verified reviews, transaction history, and professional credentials.`
-        }
-      },
-      {
-        "@type": "Question",
-        "name": `How are real estate agents in ${listing.city} ranked?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Top10Lists.us uses a multi-source verification methodology that aggregates data from Google reviews, Zillow, Realtor.com, Redfin, and press coverage. Agents must meet minimum thresholds for review count (50+), rating (4.8+), and years of experience. Rankings are updated weekly."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": `How many real estate agents are there in ${listing.city}?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": `There are approximately ${listing.totalAgentsInCity.toLocaleString()} licensed real estate agents in ${listing.city}, ${listing.stateAbbrev}. Top10Lists.us highlights the top 10 verified performers based on objective criteria.`
-        }
-      },
-      {
-        "@type": "Question",
-        "name": `What qualifications do ${listing.city} agents need to be listed?`,
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": `To be featured on Top10Lists.us, ${listing.city} real estate agents must have: minimum 4.8-star rating, at least 50 verified reviews, active ${listing.state} real estate license, and demonstrated local market expertise. Our AI-powered ranking system continuously evaluates agent performance.`
-        }
-      }
-    ]
-  };
+  // Schema 3: FAQPage (10 questions for LLM optimization)
+  const faqSchema = generateCityFaqSchema({
+    city: listing.city,
+    state: listing.state,
+    stateAbbrev: listing.stateAbbrev
+  });
 
   return [itemListSchema, breadcrumbSchema, faqSchema];
 }
