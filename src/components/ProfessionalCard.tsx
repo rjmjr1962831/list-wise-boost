@@ -1643,28 +1643,21 @@ export const ProfessionalCard = ({
                   );
                 })()}
                 
-                {/* Reviews Button */}
-                {(() => {
-                  const btnRating = professional.rating || (professional as any).review_stars_rating || 0;
-                  const btnReviews = professional.reviews || (professional as any).num_total_reviews || 0;
-                  if (btnRating <= 0) return null;
-                  return (
-                    <button
-                      onClick={() => setReviewsOpen(!reviewsOpen)}
-                      className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
-                    >
-                      <div className="flex flex-col items-center justify-center gap-1.5">
-                        <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
-                          <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Reviews</span>
-                          <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2">
-                            {btnReviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                          </Badge>
-                        </div>
-                        <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", reviewsOpen && "rotate-180")} />
-                      </div>
-                    </button>
-                  );
-                })()}
+                {/* Reviews Button - Always show */}
+                <button
+                  onClick={() => setReviewsOpen(!reviewsOpen)}
+                  className="border rounded-lg p-2.5 sm:p-3.5 bg-accent/30 hover:bg-accent/50 transition-colors"
+                >
+                  <div className="flex flex-col items-center justify-center gap-1.5">
+                    <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                      <span className="font-semibold text-xs sm:text-sm whitespace-nowrap">Reviews</span>
+                      <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2">
+                        {(professional.reviews || (professional as any).num_total_reviews || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                      </Badge>
+                    </div>
+                    <ChevronDown className={cn("h-4 w-4 transition-transform flex-shrink-0", reviewsOpen && "rotate-180")} />
+                  </div>
+                </button>
                 
                 {/* News and Awards Button */}
                 <button
