@@ -19,6 +19,36 @@ interface SynthesisResult {
   error?: string;
 }
 
+function ResultCard({ result }: { result: SynthesisResult }) {
+  const [expanded, setExpanded] = useState(false);
+  
+  return (
+    <div className={`p-3 rounded-lg text-sm ${result.success ? 'bg-green-500/10 border border-green-500/20' : 'bg-destructive/10 border border-destructive/20'}`}>
+      <div className="font-medium flex items-center gap-2">
+        {result.success ? '✓' : '✗'} {result.agentName}
+      </div>
+      {result.success && result.synthesized_bio && (
+        <div className="mt-1">
+          <p className={`text-muted-foreground ${expanded ? '' : 'line-clamp-2'}`}>
+            {result.synthesized_bio}
+          </p>
+          {result.synthesized_bio.length > 150 && (
+            <button 
+              onClick={() => setExpanded(!expanded)}
+              className="text-primary text-xs mt-1 hover:underline"
+            >
+              {expanded ? 'Show less' : 'Show more'}
+            </button>
+          )}
+        </div>
+      )}
+      {result.error && (
+        <p className="text-destructive mt-1">{result.error}</p>
+      )}
+    </div>
+  );
+}
+
 export function SynthesisTester() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [results, setResults] = useState<SynthesisResult[]>([]);
@@ -156,20 +186,7 @@ export function SynthesisTester() {
         {results.length > 0 && (
           <div className="max-h-[500px] overflow-y-auto space-y-2">
             {results.map((result) => (
-              <div 
-                key={result.agentId} 
-                className={`p-3 rounded-lg text-sm ${result.success ? 'bg-green-500/10 border border-green-500/20' : 'bg-destructive/10 border border-destructive/20'}`}
-              >
-                <div className="font-medium flex items-center gap-2">
-                  {result.success ? '✓' : '✗'} {result.agentName}
-                </div>
-                {result.success && result.synthesized_bio && (
-                  <p className="text-muted-foreground mt-1 line-clamp-2">{result.synthesized_bio}</p>
-                )}
-                {result.error && (
-                  <p className="text-destructive mt-1">{result.error}</p>
-                )}
-              </div>
+              <ResultCard key={result.agentId} result={result} />
             ))}
           </div>
         )}
