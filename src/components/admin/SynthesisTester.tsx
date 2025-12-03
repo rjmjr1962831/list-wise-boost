@@ -57,7 +57,7 @@ export function SynthesisTester() {
     setProgress({ current: 0, total: agents.length });
     setStats({ success: 0, failed: 0 });
 
-    const BATCH_SIZE = 3; // Run 3 at a time
+    const BATCH_SIZE = 1; // Run 1 at a time to avoid 503 boot errors
     let successCount = 0;
     let failedCount = 0;
     const allResults: SynthesisResult[] = [];
