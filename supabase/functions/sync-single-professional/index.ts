@@ -13,6 +13,12 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// Helper to safely extract error message
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  return String(err);
+}
+
 async function getFieldMapping(): Promise<Record<string, string>> {
   const { data, error } = await supabase
     .from("pipedrive_field_mapping")
@@ -220,7 +226,7 @@ serve(async (req) => {
     
     // Merge any duplicates into the primary contact before proceeding
     if (duplicates.length > 0 && foundPersonId !== null) {
-      await mergeDuplicates(foundPersonId, duplicates);
+      await mergeDuplicates(foundPersonId as number, duplicates);
     }
     
     let personId = foundPersonId;
@@ -336,9 +342,9 @@ serve(async (req) => {
       JSON.stringify({ success: true, action, personId }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error: unknown) {
-    console.error("Sync error:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
+  } catch (err) {
+    console.error("Sync error:", err);
+    const errorMessage = getErrorMessage(err);
 
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
