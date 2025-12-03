@@ -10,6 +10,7 @@ import FieldEditModal from "@/components/profile/FieldEditModal";
 import ImageUploadModal from "@/components/profile/ImageUploadModal";
 import FieldReviewRequestModal from "@/components/profile/FieldReviewRequestModal";
 import SpecialtyEditModal from "@/components/profile/SpecialtyEditModal";
+import AwardEditModal from "@/components/profile/AwardEditModal";
 import { Badge } from "@/components/ui/badge";
 
 interface Professional {
@@ -57,6 +58,7 @@ const ProfileFieldsGuide = () => {
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [specialtyModalOpen, setSpecialtyModalOpen] = useState(false);
+  const [awardModalOpen, setAwardModalOpen] = useState(false);
   const [currentField, setCurrentField] = useState<FieldConfig | null>(null);
 
   const fields: FieldConfig[] = [
@@ -272,6 +274,8 @@ const ProfileFieldsGuide = () => {
     setCurrentField(field);
     if (field.key === 'specialty') {
       setSpecialtyModalOpen(true);
+    } else if (field.key === 'notable_achievements') {
+      setAwardModalOpen(true);
     } else if (field.type === 'image') {
       setImageModalOpen(true);
     } else if (field.requiresReview) {
@@ -307,6 +311,36 @@ const ProfileFieldsGuide = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to save specialties.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleSaveAwards = async (awards: any[]) => {
+    if (!professional) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('update-professional-field', {
+        body: {
+          token,
+          field: 'notable_achievements',
+          value: awards
+        }
+      });
+
+      if (error) throw error;
+
+      setProfessional(prev => prev ? { ...prev, notable_achievements: awards } : null);
+      
+      toast({
+        title: "Awards Saved",
+        description: "Your awards have been saved successfully."
+      });
+    } catch (error: any) {
+      console.error("Error saving awards:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save awards.",
         variant: "destructive"
       });
     }
@@ -591,6 +625,19 @@ const ProfileFieldsGuide = () => {
           }}
           onSave={handleSaveSpecialties}
           currentSpecialties={professional.specialty || []}
+        />
+      )}
+
+      {/* Award Edit Modal */}
+      {professional && (
+        <AwardEditModal
+          open={awardModalOpen}
+          onClose={() => {
+            setAwardModalOpen(false);
+            setCurrentField(null);
+          }}
+          onSave={handleSaveAwards}
+          currentAwards={professional.notable_achievements || []}
         />
       )}
     </>
