@@ -81,7 +81,7 @@ export const SynthesisTester = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Synthesis Tester (DeepSeek R1)</CardTitle>
+        <CardTitle>Synthesis Tester (Gemini 2.5 Flash)</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-4">
