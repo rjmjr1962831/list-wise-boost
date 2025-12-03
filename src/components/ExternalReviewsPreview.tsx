@@ -92,11 +92,11 @@ export function ExternalReviewsPreview({
   const { data, loading } = useExternalReviews({ agentName, company, market, professionalId });
   const [expanded, setExpanded] = useState<Record<number, boolean>>({});
 
-  // Build external review links - Zillow only
+  // Build external review links - Zillow and Google Maps
   const getReviewLinks = () => {
     const links: { name: string; url: string; icon: string }[] = [];
     
-    // Zillow profile only
+    // Zillow profile
     if (zillowProfileUrl) {
       links.push({
         name: 'Zillow',
@@ -104,6 +104,14 @@ export function ExternalReviewsPreview({
         icon: '🏠'
       });
     }
+    
+    // Google Maps search (where the reviews are) - labeled as "Google"
+    const mapsQuery = encodeURIComponent(`${agentName} ${company || ''} ${market || ''} real estate agent`);
+    links.push({
+      name: 'Google',
+      url: `https://maps.google.com/?q=${mapsQuery}`,
+      icon: '🔍'
+    });
     
     return links;
   };
