@@ -591,7 +591,9 @@ const ProfileFieldsGuide = () => {
                             {displayValue}
                           </span>
                           {isLong && (
-                            <button
+                            <Button
+                              variant="link"
+                              size="sm"
                               onClick={() => {
                                 setExpandedFields(prev => {
                                   const next = new Set(prev);
@@ -603,10 +605,10 @@ const ProfileFieldsGuide = () => {
                                   return next;
                                 });
                               }}
-                              className="ml-1 text-primary hover:underline font-medium"
+                              className="ml-1 p-0 h-auto text-primary font-medium"
                             >
-                              {isExpanded ? "less" : "more"}
-                            </button>
+                              {isExpanded ? "Show less" : "Show more"}
+                            </Button>
                           )}
                         </div>
                       </div>
