@@ -545,14 +545,15 @@ const ProfileFieldsGuide = () => {
                           const isExpanded = expandedFields.has(field.key);
                           const displayValue = isLong && !isExpanded ? value.substring(0, 200) + "..." : value;
                           return (
-                            <div>
-                              <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
+                            <div className="space-y-2">
+                              <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line block"}>
                                 {displayValue}
                               </span>
-                              {isLong && (
+                              {isLong ? (
                                 <button
                                   type="button"
                                   onClick={(e) => {
+                                    e.preventDefault();
                                     e.stopPropagation();
                                     setExpandedFields(prev => {
                                       const next = new Set(prev);
@@ -564,11 +565,11 @@ const ProfileFieldsGuide = () => {
                                       return next;
                                     });
                                   }}
-                                  className="block mt-2 text-primary font-medium text-sm hover:underline"
+                                  className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium hover:bg-primary/20 transition-colors"
                                 >
-                                  {isExpanded ? "Show less" : "Show more"}
+                                  {isExpanded ? "Show less ↑" : "Show more ↓"}
                                 </button>
-                              )}
+                              ) : null}
                             </div>
                           );
                         })()}
@@ -614,14 +615,15 @@ const ProfileFieldsGuide = () => {
                             Request Review
                           </Button>
                         </div>
-                        <div className="mt-2 p-2 bg-muted/30 rounded text-sm">
-                          <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
+                        <div className="mt-2 p-2 bg-muted/30 rounded text-sm space-y-2">
+                          <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line block"}>
                             {displayValue}
                           </span>
-                          {isLong && (
+                          {isLong ? (
                             <button
                               type="button"
                               onClick={(e) => {
+                                e.preventDefault();
                                 e.stopPropagation();
                                 setExpandedFields(prev => {
                                   const next = new Set(prev);
@@ -633,11 +635,11 @@ const ProfileFieldsGuide = () => {
                                   return next;
                                 });
                               }}
-                              className="block mt-2 text-primary font-medium text-sm hover:underline"
+                              className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium hover:bg-primary/20 transition-colors"
                             >
-                              {isExpanded ? "Show less" : "Show more"}
+                              {isExpanded ? "Show less ↑" : "Show more ↓"}
                             </button>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                     </div>
