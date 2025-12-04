@@ -615,9 +615,9 @@ const ProfileFieldsGuide = () => {
                                     isExpanded ? next.delete(field.key) : next.add(field.key);
                                     return next;
                                   })}
-                                  className="text-primary cursor-pointer hover:underline font-medium"
+                                  className="text-primary cursor-pointer hover:underline font-medium ml-1"
                                 >
-                                  {isExpanded ? " less" : "...more"}
+                                  {isExpanded ? " [less]" : " ...[more]"}
                                 </span>
                               )}
                             </span>
@@ -676,9 +676,9 @@ const ProfileFieldsGuide = () => {
                                     isExpanded ? next.delete(field.key) : next.add(field.key);
                                     return next;
                                   })}
-                                  className="text-primary cursor-pointer hover:underline font-medium"
+                                  className="text-primary cursor-pointer hover:underline font-medium ml-1"
                                 >
-                                  {isExpanded ? " less" : "...more"}
+                                  {isExpanded ? " [less]" : " ...[more]"}
                                 </span>
                               )}
                             </span>
