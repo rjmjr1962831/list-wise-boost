@@ -22,6 +22,7 @@ import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSyn
 import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedriveProfileLinkRepair";
 import { AdminPipedriveDuplicateCleanup } from "@/components/admin/AdminPipedriveDuplicateCleanup";
 import { BulkPipedriveSyncAll } from "@/components/admin/BulkPipedriveSyncAll";
+import { BulkPipedriveReQueue } from "@/components/admin/BulkPipedriveReQueue";
 import { PipedriveCleanupDuplicates } from "@/components/admin/PipedriveCleanupDuplicates";
 import { AdminPipedriveFieldInspector } from "@/components/admin/AdminPipedriveFieldInspector";
 import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
@@ -278,6 +279,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
+            <BulkPipedriveReQueue />
             <BulkPipedriveSyncAll />
             <AdminPipedriveProfileLinkRepair />
             <AdminPipedriveAutoSync />
