@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
@@ -6,61 +6,46 @@ import { RefreshCw, Globe, CheckCircle, XCircle, Loader2, Square } from 'lucide-
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-// Hardcoded URLs to recache (matching Python script)
-const URLS_TO_RECACHE = [
-  "https://top10lists.us/",
-  "https://top10lists.us/about",
-  "https://top10lists.us/about/ranking-methodology",
-  "https://top10lists.us/arizona",
-  "https://top10lists.us/arizona/anthem/top10realestateagents",
-  "https://top10lists.us/arizona/apache-junction/top10realestateagents",
-  "https://top10lists.us/arizona/avondale/top10realestateagents",
-  "https://top10lists.us/arizona/benson/top10realestateagents",
-  "https://top10lists.us/arizona/buckeye/top10realestateagents",
-  "https://top10lists.us/arizona/bullhead-city/top10realestateagents",
-  "https://top10lists.us/arizona/carefree/top10realestateagents",
-  "https://top10lists.us/arizona/casa-grande/top10realestateagents",
-  "https://top10lists.us/arizona/cave-creek/top10realestateagents",
-  "https://top10lists.us/arizona/chandler/top10realestateagents",
-  "https://top10lists.us/arizona/coolidge/top10realestateagents",
-  "https://top10lists.us/arizona/cottonwood/top10realestateagents",
-  "https://top10lists.us/arizona/douglas/top10realestateagents",
-  "https://top10lists.us/arizona/el-mirage/top10realestateagents",
-  "https://top10lists.us/arizona/flagstaff/top10realestateagents",
-  "https://top10lists.us/arizona/florence/top10realestateagents",
-  "https://top10lists.us/arizona/fountain-hills/top10realestateagents",
-  "https://top10lists.us/arizona/gila-bend/top10realestateagents",
-  "https://top10lists.us/arizona/gilbert/top10realestateagents",
-  "https://top10lists.us/arizona/glendale/top10realestateagents",
-  "https://top10lists.us/arizona/goodyear/top10realestateagents",
-  "https://top10lists.us/arizona/kingman/top10realestateagents",
-  "https://top10lists.us/arizona/lake-havasu-city/top10realestateagents",
-  "https://top10lists.us/arizona/litchfield-park/top10realestateagents",
-  "https://top10lists.us/arizona/maricopa/top10realestateagents",
-  "https://top10lists.us/arizona/mesa/top10realestateagents",
-  "https://top10lists.us/arizona/nogales/top10realestateagents",
-  "https://top10lists.us/arizona/paradise-valley/top10realestateagents",
-  "https://top10lists.us/arizona/payson/top10realestateagents",
-  "https://top10lists.us/arizona/peoria/top10realestateagents",
-  "https://top10lists.us/arizona/phoenix/top10realestateagents",
-  "https://top10lists.us/arizona/prescott/top10realestateagents",
-  "https://top10lists.us/arizona/prescott-valley/top10realestateagents",
-  "https://top10lists.us/arizona/queen-creek/top10realestateagents",
-  "https://top10lists.us/arizona/san-tan-valley/top10realestateagents",
-  "https://top10lists.us/arizona/scottsdale/top10realestateagents",
-  "https://top10lists.us/arizona/sedona/top10realestateagents",
-  "https://top10lists.us/arizona/show-low/top10realestateagents",
-  "https://top10lists.us/arizona/sierra-vista/top10realestateagents",
-  "https://top10lists.us/arizona/surprise/top10realestateagents",
-  "https://top10lists.us/arizona/tempe/top10realestateagents",
-  "https://top10lists.us/arizona/tolleson/top10realestateagents",
-  "https://top10lists.us/arizona/tucson/top10realestateagents",
-  "https://top10lists.us/arizona/west-valley/top10realestateagents",
-  "https://top10lists.us/arizona/wickenburg/top10realestateagents",
-  "https://top10lists.us/arizona/winslow/top10realestateagents",
-  "https://top10lists.us/arizona/youngtown/top10realestateagents",
-  "https://top10lists.us/arizona/yuma/top10realestateagents",
+const BASE_URL = "https://top10lists.us";
+
+// Static pages that always need caching
+const STATIC_PAGES = [
+  "/",
+  "/about",
+  "/about/ranking-methodology",
+  "/privacy",
+  "/terms",
+  "/sms-terms",
+  "/agent-info",
+  "/check-profile",
 ];
+
+// Build all URLs dynamically from cities
+const buildUrlsFromCities = (cities: { slug: string; state_slug: string }[]): string[] => {
+  const urls: string[] = [];
+  
+  // Add static pages
+  STATIC_PAGES.forEach(page => {
+    urls.push(`${BASE_URL}${page}`);
+  });
+  
+  // Add state landing page
+  urls.push(`${BASE_URL}/arizona`);
+  
+  // For each city, add all page variants
+  cities.forEach(city => {
+    const cityPath = `/${city.state_slug}/${city.slug}`;
+    
+    // Main listing page
+    urls.push(`${BASE_URL}${cityPath}/top10realestateagents`);
+    
+    // Q&A landing pages
+    urls.push(`${BASE_URL}${cityPath}/best-real-estate-agents`);
+    urls.push(`${BASE_URL}${cityPath}/best-real-estate-agents-2025`);
+  });
+  
+  return urls;
+};
 
 interface UrlResult {
   url: string;
@@ -72,11 +57,43 @@ const DELAY_BETWEEN_REQUESTS = 1000; // 1 second delay
 
 export const PrerenderRecache: React.FC = () => {
   const [isRunning, setIsRunning] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<UrlResult[]>([]);
   const [successCount, setSuccessCount] = useState(0);
   const [failCount, setFailCount] = useState(0);
+  const [urls, setUrls] = useState<string[]>([]);
   const abortRef = useRef(false);
+
+  // Load cities and build URLs on mount
+  useEffect(() => {
+    const loadCities = async () => {
+      setIsLoading(true);
+      try {
+        const { data: cities, error } = await supabase
+          .from('cities')
+          .select('slug, state_slug')
+          .eq('active', true)
+          .order('name');
+        
+        if (error) {
+          console.error('Error loading cities:', error);
+          toast.error('Failed to load cities');
+          return;
+        }
+        
+        const builtUrls = buildUrlsFromCities(cities || []);
+        setUrls(builtUrls);
+      } catch (err) {
+        console.error('Exception loading cities:', err);
+        toast.error('Failed to load cities');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadCities();
+  }, []);
 
   const recacheUrl = async (url: string): Promise<boolean> => {
     try {
@@ -97,6 +114,11 @@ export const PrerenderRecache: React.FC = () => {
   };
 
   const handleStart = async () => {
+    if (urls.length === 0) {
+      toast.error('No URLs to recache');
+      return;
+    }
+    
     setIsRunning(true);
     setResults([]);
     setCurrentIndex(0);
@@ -107,13 +129,13 @@ export const PrerenderRecache: React.FC = () => {
     let successes = 0;
     let failures = 0;
 
-    for (let i = 0; i < URLS_TO_RECACHE.length; i++) {
+    for (let i = 0; i < urls.length; i++) {
       if (abortRef.current) {
         toast.info('Recache stopped by user');
         break;
       }
 
-      const url = URLS_TO_RECACHE[i];
+      const url = urls[i];
       setCurrentIndex(i + 1);
 
       const success = await recacheUrl(url);
@@ -135,7 +157,7 @@ export const PrerenderRecache: React.FC = () => {
       }
 
       // Delay between requests (skip on last URL)
-      if (i < URLS_TO_RECACHE.length - 1 && !abortRef.current) {
+      if (i < urls.length - 1 && !abortRef.current) {
         await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_REQUESTS));
       }
     }
@@ -151,8 +173,8 @@ export const PrerenderRecache: React.FC = () => {
     abortRef.current = true;
   };
 
-  const progress = URLS_TO_RECACHE.length > 0 
-    ? Math.round((currentIndex / URLS_TO_RECACHE.length) * 100) 
+  const progress = urls.length > 0 
+    ? Math.round((currentIndex / urls.length) * 100) 
     : 0;
 
   return (
@@ -163,15 +185,19 @@ export const PrerenderRecache: React.FC = () => {
           Prerender.io Recache
         </CardTitle>
         <CardDescription>
-          Recache {URLS_TO_RECACHE.length} URLs to refresh pre-rendered content for search engines and LLMs.
+          {isLoading ? 'Loading URLs...' : `Recache ${urls.length} URLs to refresh pre-rendered content for search engines and LLMs.`}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
           {!isRunning ? (
-            <Button onClick={handleStart} className="w-full md:w-auto">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Start Recache ({URLS_TO_RECACHE.length} URLs)
+            <Button onClick={handleStart} disabled={isLoading || urls.length === 0} className="w-full md:w-auto">
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? 'Loading...' : `Start Recache (${urls.length} URLs)`}
             </Button>
           ) : (
             <Button onClick={handleStop} variant="destructive" className="w-full md:w-auto">
@@ -187,7 +213,7 @@ export const PrerenderRecache: React.FC = () => {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Progress</span>
-                <span className="font-medium">{currentIndex} / {URLS_TO_RECACHE.length} ({progress}%)</span>
+                <span className="font-medium">{currentIndex} / {urls.length} ({progress}%)</span>
               </div>
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div 
@@ -214,10 +240,10 @@ export const PrerenderRecache: React.FC = () => {
             </div>
 
             {/* Current URL */}
-            {isRunning && currentIndex > 0 && currentIndex <= URLS_TO_RECACHE.length && (
+            {isRunning && currentIndex > 0 && currentIndex <= urls.length && (
               <div className="flex items-center gap-2 p-2 rounded bg-muted/50">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                <span className="text-sm truncate">{URLS_TO_RECACHE[currentIndex - 1]}</span>
+                <span className="text-sm truncate">{urls[currentIndex - 1]}</span>
               </div>
             )}
 
@@ -248,6 +274,7 @@ export const PrerenderRecache: React.FC = () => {
 
         <div className="text-xs text-muted-foreground">
           <p><strong>Note:</strong> Each URL is recached individually with a 1-second delay to prevent rate limiting.</p>
+          <p className="mt-1">Includes: static pages, city listing pages, and Q&A landing pages for all active cities.</p>
         </div>
       </CardContent>
     </Card>
