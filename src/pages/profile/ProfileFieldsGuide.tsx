@@ -65,39 +65,40 @@ const TextWithShowMore = ({
   expandedFields: Set<string>; 
   setExpandedFields: React.Dispatch<React.SetStateAction<Set<string>>> 
 }) => {
-  // Strip HTML tags and clean the value
   const cleanValue = stripHtmlTags(value || "");
   const isLong = cleanValue.length > 200;
   const isExpanded = expandedFields.has(fieldKey);
-  const displayValue = isLong && !isExpanded ? cleanValue.substring(0, 200) + "..." : cleanValue;
   
+  const toggleExpand = () => {
+    setExpandedFields(prev => {
+      const next = new Set(prev);
+      if (isExpanded) {
+        next.delete(fieldKey);
+      } else {
+        next.add(fieldKey);
+      }
+      return next;
+    });
+  };
+
+  if (!cleanValue || cleanValue === "Not set") {
+    return <span className="text-muted-foreground italic">Not set</span>;
+  }
+
+  if (!isLong) {
+    return <span className="whitespace-pre-line">{cleanValue}</span>;
+  }
+
   return (
-    <div>
-      <p className={!cleanValue || cleanValue === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
-        {displayValue || "Not set"}
-      </p>
-      {isLong && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setExpandedFields(prev => {
-              const next = new Set(prev);
-              if (isExpanded) {
-                next.delete(fieldKey);
-              } else {
-                next.add(fieldKey);
-              }
-              return next;
-            });
-          }}
-          className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 border border-blue-300 rounded-md text-sm font-medium hover:bg-blue-200 transition-colors cursor-pointer"
-        >
-          {isExpanded ? "▲ Show less" : "▼ Show more"}
-        </button>
-      )}
-    </div>
+    <span className="whitespace-pre-line">
+      {isExpanded ? cleanValue : cleanValue.substring(0, 200)}
+      <span 
+        onClick={toggleExpand}
+        className="text-primary cursor-pointer hover:underline ml-1"
+      >
+        {isExpanded ? " less" : "...more"}
+      </span>
+    </span>
   );
 };
 
