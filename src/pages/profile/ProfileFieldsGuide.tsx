@@ -62,6 +62,7 @@ const ProfileFieldsGuide = () => {
   const [awardModalOpen, setAwardModalOpen] = useState(false);
   const [pressMentionModalOpen, setPressMentionModalOpen] = useState(false);
   const [currentField, setCurrentField] = useState<FieldConfig | null>(null);
+  const [expandedFields, setExpandedFields] = useState<Set<string>>(new Set());
 
   const fields: FieldConfig[] = [
     {
@@ -561,30 +562,57 @@ const ProfileFieldsGuide = () => {
                 These fields are verified through our research. Click "Request Review" to request changes.
               </p>
               <div className="space-y-3">
-                {readOnlyFields.map((field) => (
-                  <div key={field.key} className="flex items-start gap-3 p-4 rounded-lg bg-background/50 border border-border/30">
-                    <div className="text-muted-foreground mt-0.5 shrink-0">{field.icon}</div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="font-medium text-foreground">{field.label}</p>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleEditClick(field)}
-                          className="shrink-0 text-muted-foreground"
-                        >
-                          <MessageSquarePlus className="h-4 w-4 mr-1" />
-                          Request Review
-                        </Button>
-                      </div>
-                      <div className="mt-2 p-2 bg-muted/30 rounded text-sm">
-                        <span className={!getFieldValue(field) || getFieldValue(field) === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
-                          {getFieldValue(field).length > 200 ? getFieldValue(field).substring(0, 200) + "..." : getFieldValue(field)}
-                        </span>
+                {readOnlyFields.map((field) => {
+                  const value = getFieldValue(field);
+                  const isLong = value.length > 200;
+                  const isExpanded = expandedFields.has(field.key);
+                  const displayValue = isLong && !isExpanded 
+                    ? value.substring(0, 200) + "..." 
+                    : value;
+                  
+                  return (
+                    <div key={field.key} className="flex items-start gap-3 p-4 rounded-lg bg-background/50 border border-border/30">
+                      <div className="text-muted-foreground mt-0.5 shrink-0">{field.icon}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="font-medium text-foreground">{field.label}</p>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleEditClick(field)}
+                            className="shrink-0 text-muted-foreground"
+                          >
+                            <MessageSquarePlus className="h-4 w-4 mr-1" />
+                            Request Review
+                          </Button>
+                        </div>
+                        <div className="mt-2 p-2 bg-muted/30 rounded text-sm">
+                          <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
+                            {displayValue}
+                          </span>
+                          {isLong && (
+                            <button
+                              onClick={() => {
+                                setExpandedFields(prev => {
+                                  const next = new Set(prev);
+                                  if (isExpanded) {
+                                    next.delete(field.key);
+                                  } else {
+                                    next.add(field.key);
+                                  }
+                                  return next;
+                                });
+                              }}
+                              className="ml-1 text-primary hover:underline font-medium"
+                            >
+                              {isExpanded ? "less" : "more"}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
