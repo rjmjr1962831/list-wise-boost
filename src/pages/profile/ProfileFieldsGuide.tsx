@@ -594,14 +594,35 @@ const ProfileFieldsGuide = () => {
                               <Badge variant="outline" className="text-xs">+{(professional as any)[field.key].length - 5} more</Badge>
                             )}
                           </div>
-                        ) : (
-                          <TextWithShowMore 
-                            value={getFieldValue(field)} 
-                            fieldKey={field.key}
-                            expandedFields={expandedFields}
-                            setExpandedFields={setExpandedFields}
-                          />
-                        )}
+                        ) : (() => {
+                          // Inline text with expand/collapse - v2
+                          const rawVal = getFieldValue(field);
+                          const cleanVal = rawVal.replace(/<[^>]*>/g, '').trim();
+                          const needsExpand = cleanVal.length > 200;
+                          const isExpanded = expandedFields.has(field.key);
+                          
+                          if (!cleanVal || cleanVal === "Not set") {
+                            return <span className="text-muted-foreground italic">Not set</span>;
+                          }
+                          
+                          return (
+                            <span className="whitespace-pre-line">
+                              {needsExpand && !isExpanded ? cleanVal.slice(0, 200) : cleanVal}
+                              {needsExpand && (
+                                <span 
+                                  onClick={() => setExpandedFields(prev => {
+                                    const next = new Set(prev);
+                                    isExpanded ? next.delete(field.key) : next.add(field.key);
+                                    return next;
+                                  })}
+                                  className="text-primary cursor-pointer hover:underline font-medium"
+                                >
+                                  {isExpanded ? " less" : "...more"}
+                                </span>
+                              )}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -621,7 +642,10 @@ const ProfileFieldsGuide = () => {
               </p>
               <div className="space-y-3">
                 {readOnlyFields.map((field) => {
-                  const value = getFieldValue(field);
+                  const rawVal = getFieldValue(field);
+                  const cleanVal = rawVal.replace(/<[^>]*>/g, '').trim();
+                  const needsExpand = cleanVal.length > 200;
+                  const isExpanded = expandedFields.has(field.key);
                   
                   return (
                     <div key={field.key} className="flex items-start gap-3 p-4 rounded-lg bg-background/50 border border-border/30">
@@ -640,12 +664,25 @@ const ProfileFieldsGuide = () => {
                           </Button>
                         </div>
                         <div className="mt-2 p-2 bg-muted/30 rounded text-sm">
-                          <TextWithShowMore 
-                            value={value} 
-                            fieldKey={field.key}
-                            expandedFields={expandedFields}
-                            setExpandedFields={setExpandedFields}
-                          />
+                          {!cleanVal || cleanVal === "Not set" ? (
+                            <span className="text-muted-foreground italic">Not set</span>
+                          ) : (
+                            <span className="whitespace-pre-line">
+                              {needsExpand && !isExpanded ? cleanVal.slice(0, 200) : cleanVal}
+                              {needsExpand && (
+                                <span 
+                                  onClick={() => setExpandedFields(prev => {
+                                    const next = new Set(prev);
+                                    isExpanded ? next.delete(field.key) : next.add(field.key);
+                                    return next;
+                                  })}
+                                  className="text-primary cursor-pointer hover:underline font-medium"
+                                >
+                                  {isExpanded ? " less" : "...more"}
+                                </span>
+                              )}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
