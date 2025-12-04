@@ -35,18 +35,20 @@ const FIELDS_TO_CREATE: FieldDefinition[] = [
 
 async function createPipedriveField(field: FieldDefinition): Promise<string | null> {
   try {
-    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/personFields?api_token=${PIPEDRIVE_API_TOKEN}`;
+    // Use v1 API for personFields - v2 doesn't return key properly
+    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/personFields?api_token=${PIPEDRIVE_API_TOKEN}`;
     
     const body: any = {
-      field_name: field.pipedrive_name,
+      name: field.pipedrive_name,
       field_type: field.field_type,
     };
 
+    // For enum fields, options must be objects with label property
     if (field.options) {
-      body.options = field.options;
+      body.options = field.options.map(opt => ({ label: opt }));
     }
 
-    console.log(`Creating Pipedrive field: ${field.pipedrive_name}`);
+    console.log(`Creating Pipedrive field: ${field.pipedrive_name}`, JSON.stringify(body));
     
     const response = await fetch(url, {
       method: "POST",
@@ -56,16 +58,18 @@ async function createPipedriveField(field: FieldDefinition): Promise<string | nu
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to create field ${field.pipedrive_name}:`, errorText);
-      throw new Error(`Pipedrive API error: ${response.status} - ${errorText}`);
+    const data = await response.json();
+    console.log(`Pipedrive response for ${field.pipedrive_name}:`, JSON.stringify(data));
+
+    if (!data.success) {
+      console.error(`Failed to create field ${field.pipedrive_name}:`, JSON.stringify(data));
+      throw new Error(`Pipedrive API error: ${JSON.stringify(data)}`);
     }
 
-    const data = await response.json();
-    console.log(`Created field ${field.pipedrive_name} with key: ${data.data.key}`);
+    const fieldKey = data.data?.key;
+    console.log(`Created field ${field.pipedrive_name} with key: ${fieldKey}`);
     
-    return data.data.key;
+    return fieldKey;
   } catch (error) {
     console.error(`Error creating field ${field.pipedrive_name}:`, error);
     return null;
