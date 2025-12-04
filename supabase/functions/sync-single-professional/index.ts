@@ -161,17 +161,6 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // TEMPORARILY DISABLED - Pipedrive API consuming excessive tokens
-  console.log("⛔ PIPEDRIVE SYNC DISABLED - sync-single-professional called but blocked");
-  return new Response(
-    JSON.stringify({ 
-      success: false, 
-      error: "Pipedrive sync is temporarily disabled. Contact admin to re-enable.",
-      disabled: true 
-    }),
-    { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-  );
-
   try {
     const { professional_id } = await req.json();
 
