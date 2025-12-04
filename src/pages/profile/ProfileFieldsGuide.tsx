@@ -539,11 +539,39 @@ const ProfileFieldsGuide = () => {
                               <Badge variant="outline" className="text-xs">+{(professional as any)[field.key].length - 5} more</Badge>
                             )}
                           </div>
-                        ) : (
-                          <span className={!getFieldValue(field) || getFieldValue(field) === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
-                            {getFieldValue(field).length > 200 ? getFieldValue(field).substring(0, 200) + "..." : getFieldValue(field)}
-                          </span>
-                        )}
+                        ) : (() => {
+                          const value = getFieldValue(field);
+                          const isLong = value.length > 200;
+                          const isExpanded = expandedFields.has(field.key);
+                          const displayValue = isLong && !isExpanded ? value.substring(0, 200) + "..." : value;
+                          return (
+                            <>
+                              <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
+                                {displayValue}
+                              </span>
+                              {isLong && (
+                                <Button
+                                  variant="link"
+                                  size="sm"
+                                  onClick={() => {
+                                    setExpandedFields(prev => {
+                                      const next = new Set(prev);
+                                      if (isExpanded) {
+                                        next.delete(field.key);
+                                      } else {
+                                        next.add(field.key);
+                                      }
+                                      return next;
+                                    });
+                                  }}
+                                  className="ml-1 p-0 h-auto text-primary font-medium"
+                                >
+                                  {isExpanded ? "Show less" : "Show more"}
+                                </Button>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
