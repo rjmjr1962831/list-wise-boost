@@ -47,6 +47,59 @@ interface FieldConfig {
   requiresReview?: boolean;
 }
 
+// Helper component for text with show more/less functionality
+const TextWithShowMore = ({ 
+  value, 
+  fieldKey, 
+  expandedFields, 
+  setExpandedFields 
+}: { 
+  value: string; 
+  fieldKey: string; 
+  expandedFields: Set<string>; 
+  setExpandedFields: React.Dispatch<React.SetStateAction<Set<string>>> 
+}) => {
+  const safeValue = value || "";
+  const isLong = safeValue.length > 200;
+  const isExpanded = expandedFields.has(fieldKey);
+  const displayValue = isLong && !isExpanded ? safeValue.substring(0, 200) + "..." : safeValue;
+  
+  // Debug log
+  console.log(`TextWithShowMore: fieldKey=${fieldKey}, length=${safeValue.length}, isLong=${isLong}`);
+  
+  return (
+    <div className="space-y-2">
+      <span className={!safeValue || safeValue === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line block"}>
+        {displayValue}
+      </span>
+      {isLong && (
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log("Button clicked for", fieldKey);
+              setExpandedFields(prev => {
+                const next = new Set(prev);
+                if (isExpanded) {
+                  next.delete(fieldKey);
+                } else {
+                  next.add(fieldKey);
+                }
+                return next;
+              });
+            }}
+            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 border border-blue-300 rounded-md text-sm font-medium hover:bg-blue-200 transition-colors"
+          >
+            {isExpanded ? "▲ Show less" : "▼ Show more"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ProfileFieldsGuide = () => {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -539,40 +592,14 @@ const ProfileFieldsGuide = () => {
                               <Badge variant="outline" className="text-xs">+{(professional as any)[field.key].length - 5} more</Badge>
                             )}
                           </div>
-                        ) : (() => {
-                          const value = getFieldValue(field);
-                          const isLong = value.length > 200;
-                          const isExpanded = expandedFields.has(field.key);
-                          const displayValue = isLong && !isExpanded ? value.substring(0, 200) + "..." : value;
-                          return (
-                            <div className="space-y-2">
-                              <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line block"}>
-                                {displayValue}
-                              </span>
-                              {isLong ? (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setExpandedFields(prev => {
-                                      const next = new Set(prev);
-                                      if (isExpanded) {
-                                        next.delete(field.key);
-                                      } else {
-                                        next.add(field.key);
-                                      }
-                                      return next;
-                                    });
-                                  }}
-                                  className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium hover:bg-primary/20 transition-colors"
-                                >
-                                  {isExpanded ? "Show less ↑" : "Show more ↓"}
-                                </button>
-                              ) : null}
-                            </div>
-                          );
-                        })()}
+                        ) : (
+                          <TextWithShowMore 
+                            value={getFieldValue(field)} 
+                            fieldKey={field.key}
+                            expandedFields={expandedFields}
+                            setExpandedFields={setExpandedFields}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -593,11 +620,6 @@ const ProfileFieldsGuide = () => {
               <div className="space-y-3">
                 {readOnlyFields.map((field) => {
                   const value = getFieldValue(field);
-                  const isLong = value.length > 200;
-                  const isExpanded = expandedFields.has(field.key);
-                  const displayValue = isLong && !isExpanded 
-                    ? value.substring(0, 200) + "..." 
-                    : value;
                   
                   return (
                     <div key={field.key} className="flex items-start gap-3 p-4 rounded-lg bg-background/50 border border-border/30">
@@ -615,31 +637,13 @@ const ProfileFieldsGuide = () => {
                             Request Review
                           </Button>
                         </div>
-                        <div className="mt-2 p-2 bg-muted/30 rounded text-sm space-y-2">
-                          <span className={!value || value === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line block"}>
-                            {displayValue}
-                          </span>
-                          {isLong ? (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setExpandedFields(prev => {
-                                  const next = new Set(prev);
-                                  if (isExpanded) {
-                                    next.delete(field.key);
-                                  } else {
-                                    next.add(field.key);
-                                  }
-                                  return next;
-                                });
-                              }}
-                              className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium hover:bg-primary/20 transition-colors"
-                            >
-                              {isExpanded ? "Show less ↑" : "Show more ↓"}
-                            </button>
-                          ) : null}
+                        <div className="mt-2 p-2 bg-muted/30 rounded text-sm">
+                          <TextWithShowMore 
+                            value={value} 
+                            fieldKey={field.key}
+                            expandedFields={expandedFields}
+                            setExpandedFields={setExpandedFields}
+                          />
                         </div>
                       </div>
                     </div>
