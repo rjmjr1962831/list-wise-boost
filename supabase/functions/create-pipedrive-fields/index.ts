@@ -33,41 +33,58 @@ const FIELDS_TO_CREATE: FieldDefinition[] = [
   { field_name: "state", pipedrive_name: "State", field_type: "varchar" },
 ];
 
+async function lookupFieldKeyByName(fieldName: string): Promise<string | null> {
+  // Use v1 to lookup field key by name (v1 returns key reliably)
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/personFields?api_token=${PIPEDRIVE_API_TOKEN}`;
+  
+  const response = await fetch(url);
+  const data = await response.json();
+  
+  if (data.success && data.data) {
+    const field = data.data.find((f: any) => f.name === fieldName);
+    return field?.key || null;
+  }
+  return null;
+}
+
 async function createPipedriveField(field: FieldDefinition): Promise<string | null> {
   try {
-    // Use v1 API for personFields - v2 doesn't return key properly
-    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/personFields?api_token=${PIPEDRIVE_API_TOKEN}`;
+    // Use v2 API for creation (half the tokens)
+    const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/personFields`;
     
     const body: any = {
       name: field.pipedrive_name,
       field_type: field.field_type,
     };
 
-    // For enum fields, options must be objects with label property
+    // For enum fields, options must be strings in v2
     if (field.options) {
-      body.options = field.options.map(opt => ({ label: opt }));
+      body.options = field.options;
     }
 
-    console.log(`Creating Pipedrive field: ${field.pipedrive_name}`, JSON.stringify(body));
+    console.log(`Creating Pipedrive field (v2): ${field.pipedrive_name}`, JSON.stringify(body));
     
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "Authorization": `Bearer ${PIPEDRIVE_API_TOKEN}`,
       },
       body: JSON.stringify(body),
     });
 
     const data = await response.json();
-    console.log(`Pipedrive response for ${field.pipedrive_name}:`, JSON.stringify(data));
+    console.log(`Pipedrive v2 response for ${field.pipedrive_name}:`, JSON.stringify(data));
 
-    if (!data.success) {
+    if (!response.ok) {
       console.error(`Failed to create field ${field.pipedrive_name}:`, JSON.stringify(data));
       throw new Error(`Pipedrive API error: ${JSON.stringify(data)}`);
     }
 
-    const fieldKey = data.data?.key;
-    console.log(`Created field ${field.pipedrive_name} with key: ${fieldKey}`);
+    // v2 doesn't return key reliably, so lookup via v1
+    console.log(`Looking up field key for ${field.pipedrive_name} via v1...`);
+    const fieldKey = await lookupFieldKeyByName(field.pipedrive_name);
+    console.log(`Found field key: ${fieldKey}`);
     
     return fieldKey;
   } catch (error) {
