@@ -47,6 +47,12 @@ interface FieldConfig {
   requiresReview?: boolean;
 }
 
+// Helper function to strip HTML tags
+const stripHtmlTags = (html: string): string => {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, '').trim();
+};
+
 // Helper component for text with show more/less functionality
 const TextWithShowMore = ({ 
   value, 
@@ -59,42 +65,37 @@ const TextWithShowMore = ({
   expandedFields: Set<string>; 
   setExpandedFields: React.Dispatch<React.SetStateAction<Set<string>>> 
 }) => {
-  const safeValue = value || "";
-  const isLong = safeValue.length > 200;
+  // Strip HTML tags and clean the value
+  const cleanValue = stripHtmlTags(value || "");
+  const isLong = cleanValue.length > 200;
   const isExpanded = expandedFields.has(fieldKey);
-  const displayValue = isLong && !isExpanded ? safeValue.substring(0, 200) + "..." : safeValue;
-  
-  // Debug log
-  console.log(`TextWithShowMore: fieldKey=${fieldKey}, length=${safeValue.length}, isLong=${isLong}`);
+  const displayValue = isLong && !isExpanded ? cleanValue.substring(0, 200) + "..." : cleanValue;
   
   return (
-    <div className="space-y-2">
-      <span className={!safeValue || safeValue === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line block"}>
-        {displayValue}
-      </span>
+    <div>
+      <p className={!cleanValue || cleanValue === "Not set" ? "text-muted-foreground italic" : "whitespace-pre-line"}>
+        {displayValue || "Not set"}
+      </p>
       {isLong && (
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              console.log("Button clicked for", fieldKey);
-              setExpandedFields(prev => {
-                const next = new Set(prev);
-                if (isExpanded) {
-                  next.delete(fieldKey);
-                } else {
-                  next.add(fieldKey);
-                }
-                return next;
-              });
-            }}
-            className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 border border-blue-300 rounded-md text-sm font-medium hover:bg-blue-200 transition-colors"
-          >
-            {isExpanded ? "▲ Show less" : "▼ Show more"}
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setExpandedFields(prev => {
+              const next = new Set(prev);
+              if (isExpanded) {
+                next.delete(fieldKey);
+              } else {
+                next.add(fieldKey);
+              }
+              return next;
+            });
+          }}
+          className="mt-2 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-100 text-blue-700 border border-blue-300 rounded-md text-sm font-medium hover:bg-blue-200 transition-colors cursor-pointer"
+        >
+          {isExpanded ? "▲ Show less" : "▼ Show more"}
+        </button>
       )}
     </div>
   );
