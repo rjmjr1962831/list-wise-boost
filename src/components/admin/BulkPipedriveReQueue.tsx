@@ -52,7 +52,18 @@ export function BulkPipedriveReQueue() {
   const bulkReQueue = async () => {
     setIsQueuing(true);
     try {
-      // Get all active professionals with emails who aren't already in the pending queue
+      // First, clear ALL existing queue entries
+      const { error: deleteError } = await supabase
+        .from("pipedrive_sync_queue")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all rows
+      
+      if (deleteError) {
+        console.error("Delete error:", deleteError);
+        throw deleteError;
+      }
+
+      // Get all active professionals with emails
       const { data: professionals, error: fetchError } = await supabase
         .from("professionals")
         .select("id, name")
@@ -66,14 +77,9 @@ export function BulkPipedriveReQueue() {
           title: "No Professionals Found",
           description: "No active professionals with emails found to queue",
         });
+        setIsQueuing(false);
         return;
       }
-
-      // Delete existing completed/failed entries and insert fresh pending entries
-      await supabase
-        .from("pipedrive_sync_queue")
-        .delete()
-        .in("professional_id", professionals.map(p => p.id));
 
       // Insert all professionals into queue as fresh pending entries
       const { error: insertError } = await supabase
@@ -87,11 +93,14 @@ export function BulkPipedriveReQueue() {
           }))
         );
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error("Insert error:", insertError);
+        throw insertError;
+      }
 
       toast({
         title: "Bulk Re-Queue Complete",
-        description: `Successfully queued ${professionals.length} professionals for Pipedrive sync`,
+        description: `Cleared queue and queued ${professionals.length} professionals for Pipedrive sync`,
       });
 
       setStats({ total: 0, queued: professionals.length });
