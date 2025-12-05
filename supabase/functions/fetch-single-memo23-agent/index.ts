@@ -6,6 +6,61 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Validate if a URL is accessible by making a HEAD request
+ * Returns the URL if valid, null if invalid/inaccessible
+ */
+async function validateWebsiteUrl(url: string | null | undefined): Promise<string | null> {
+  if (!url || typeof url !== 'string') return null;
+  
+  // Clean up the URL
+  let cleanUrl = url.trim();
+  if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    cleanUrl = `https://${cleanUrl}`;
+  }
+  
+  // Basic URL format validation
+  try {
+    new URL(cleanUrl);
+  } catch {
+    console.log(`❌ Invalid URL format: ${url}`);
+    return null;
+  }
+  
+  // Skip validation for known platform URLs (not agent websites)
+  if (cleanUrl.includes('zillow.com') || cleanUrl.includes('realtor.com') || cleanUrl.includes('redfin.com')) {
+    console.log(`⏭️ Skipping platform URL: ${cleanUrl}`);
+    return null;
+  }
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(cleanUrl, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Top10Lists/1.0; +https://top10lists.us)'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (response.ok || response.status === 301 || response.status === 302 || response.status === 308) {
+      console.log(`✅ Website validated: ${cleanUrl} (${response.status})`);
+      return cleanUrl;
+    } else {
+      console.log(`❌ Website returned ${response.status}: ${cleanUrl}`);
+      return null;
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.log(`❌ Website unreachable: ${cleanUrl} - ${errorMsg}`);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -607,25 +662,40 @@ serve(async (req) => {
         updateData.raw_scraper_data.social_urls = socialUrls;
       }
       
-      // Extract website from getToKnowMe.websiteUrl (as backup if not already set)
+      // Extract and validate website URL
+      let candidateWebsite: string | null = null;
+      
+      // Try getToKnowMe.websiteUrl first
       if (!updateData.website && agentData.getToKnowMe?.websiteUrl) {
-        updateData.website = agentData.getToKnowMe.websiteUrl;
-        console.log(`Extracted website from getToKnowMe: ${updateData.website}`);
+        candidateWebsite = agentData.getToKnowMe.websiteUrl;
+        console.log(`Found website candidate from getToKnowMe: ${candidateWebsite}`);
       }
       
-      // Extract website from professionalInformation
-      const websitesEntry = agentData.professionalInformation.find((info: any) => 
-        info.term === 'Websites' || info.term === 'Website'
-      );
-      if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
-        const websiteLink = websitesEntry.links.find((link: any) => 
-          link.url && !link.url.includes('youtube') && !link.url.includes('vimeo') && 
-          !link.url.includes('facebook') && !link.url.includes('instagram') &&
-          !link.url.includes('twitter') && !link.url.includes('linkedin')
+      // Fallback: Extract website from professionalInformation
+      if (!candidateWebsite) {
+        const websitesEntry = agentData.professionalInformation.find((info: any) => 
+          info.term === 'Websites' || info.term === 'Website'
         );
-        if (websiteLink?.url) {
-          updateData.website = websiteLink.url;
-          console.log(`Extracted website from professionalInformation: ${websiteLink.url}`);
+        if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
+          const websiteLink = websitesEntry.links.find((link: any) => 
+            link.url && !link.url.includes('youtube') && !link.url.includes('vimeo') && 
+            !link.url.includes('facebook') && !link.url.includes('instagram') &&
+            !link.url.includes('twitter') && !link.url.includes('linkedin')
+          );
+          if (websiteLink?.url) {
+            candidateWebsite = websiteLink.url;
+            console.log(`Found website candidate from professionalInformation: ${candidateWebsite}`);
+          }
+        }
+      }
+      
+      // Validate the website URL before saving
+      if (candidateWebsite) {
+        const validatedUrl = await validateWebsiteUrl(candidateWebsite);
+        if (validatedUrl) {
+          updateData.website = validatedUrl;
+        } else {
+          console.log(`⚠️ Website invalid for ${professional.name}, not saving: ${candidateWebsite}`);
         }
       }
     }

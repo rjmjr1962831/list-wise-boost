@@ -58,6 +58,62 @@ function extractYearsFromBio(bioText: string | null | undefined): number | null 
   return foundYears.length > 0 ? Math.max(...foundYears) : null;
 }
 
+/**
+ * Validate if a URL is accessible by making a HEAD request
+ * Returns the URL if valid, null if invalid/inaccessible
+ */
+async function validateWebsiteUrl(url: string | null | undefined): Promise<string | null> {
+  if (!url || typeof url !== 'string') return null;
+  
+  // Clean up the URL
+  let cleanUrl = url.trim();
+  if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+    cleanUrl = `https://${cleanUrl}`;
+  }
+  
+  // Basic URL format validation
+  try {
+    new URL(cleanUrl);
+  } catch {
+    console.log(`❌ Invalid URL format: ${url}`);
+    return null;
+  }
+  
+  // Skip validation for known problematic patterns
+  if (cleanUrl.includes('zillow.com') || cleanUrl.includes('realtor.com') || cleanUrl.includes('redfin.com')) {
+    // These are profile URLs, not agent websites - skip them
+    console.log(`⏭️ Skipping platform URL: ${cleanUrl}`);
+    return null;
+  }
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    
+    const response = await fetch(cleanUrl, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Top10Lists/1.0; +https://top10lists.us)'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (response.ok || response.status === 301 || response.status === 302 || response.status === 308) {
+      console.log(`✅ Website validated: ${cleanUrl} (${response.status})`);
+      return cleanUrl;
+    } else {
+      console.log(`❌ Website returned ${response.status}: ${cleanUrl}`);
+      return null;
+    }
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.log(`❌ Website unreachable: ${cleanUrl} - ${errorMsg}`);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -544,19 +600,30 @@ async function processAgent(
       }
     }
     
-    // Extract website from getToKnowMe first (most reliable)
+    // Extract and validate website from getToKnowMe first (most reliable)
+    let candidateWebsite: string | null = null;
     if (agent.getToKnowMe?.websiteUrl) {
-      memo23Data.website = agent.getToKnowMe.websiteUrl;
+      candidateWebsite = agent.getToKnowMe.websiteUrl;
     }
     
     // Fallback: Extract website from professionalInformation if not already set
-    if (!memo23Data.website && agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
+    if (!candidateWebsite && agent.professionalInformation && Array.isArray(agent.professionalInformation)) {
       const websitesEntry = agent.professionalInformation.find((info: any) => info.term === 'Websites');
       if (websitesEntry?.links && Array.isArray(websitesEntry.links)) {
         const primaryWebsite = websitesEntry.links[0];
         if (primaryWebsite?.url) {
-          memo23Data.website = primaryWebsite.url;
+          candidateWebsite = primaryWebsite.url;
         }
+      }
+    }
+    
+    // Validate website URL if found
+    if (candidateWebsite) {
+      const validatedUrl = await validateWebsiteUrl(candidateWebsite);
+      if (validatedUrl) {
+        memo23Data.website = validatedUrl;
+      } else {
+        console.log(`⚠️ Website invalid for ${agent.fullName || 'Unknown'}, not saving: ${candidateWebsite}`);
       }
     }
     
