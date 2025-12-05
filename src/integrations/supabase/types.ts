@@ -922,6 +922,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pipedrive_org_cache: {
+        Row: {
+          created_at: string | null
+          id: string
+          org_name: string
+          pipedrive_org_id: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          org_name: string
+          pipedrive_org_id: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          org_name?: string
+          pipedrive_org_id?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       pipedrive_sync_queue: {
         Row: {
           attempts: number
@@ -961,6 +985,47 @@ export type Database = {
             foreignKeyName: "pipedrive_sync_queue_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pipedrive_sync_state: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_sync_hash: string | null
+          last_synced_at: string | null
+          last_synced_data: Json | null
+          pipedrive_person_id: number | null
+          professional_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_sync_hash?: string | null
+          last_synced_at?: string | null
+          last_synced_data?: Json | null
+          pipedrive_person_id?: number | null
+          professional_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_sync_hash?: string | null
+          last_synced_at?: string | null
+          last_synced_data?: Json | null
+          pipedrive_person_id?: number | null
+          professional_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pipedrive_sync_state_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },

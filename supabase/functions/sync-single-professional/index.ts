@@ -13,10 +13,22 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// Helper to safely extract error message
 function getErrorMessage(err: unknown): string {
   if (err instanceof Error) return err.message;
   return String(err);
+}
+
+// Generate hash of syncable data for change detection
+function generateSyncHash(data: Record<string, any>): string {
+  const sortedJson = JSON.stringify(data, Object.keys(data).sort());
+  // Simple hash using string operations (sufficient for change detection)
+  let hash = 0;
+  for (let i = 0; i < sortedJson.length; i++) {
+    const char = sortedJson.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return hash.toString(16);
 }
 
 async function getFieldMapping(): Promise<Record<string, string>> {
@@ -33,38 +45,25 @@ async function getFieldMapping(): Promise<Record<string, string>> {
   return mapping;
 }
 
-async function searchPersonByEmail(email: string): Promise<{ personId: number | null; duplicates: number[] }> {
-  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=email&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
+// Check org cache first, then Pipedrive API
+async function getCachedOrg(orgName: string): Promise<number | null> {
+  const { data } = await supabase
+    .from("pipedrive_org_cache")
+    .select("pipedrive_org_id")
+    .eq("org_name", orgName.trim().toLowerCase())
+    .single();
+  
+  return data?.pipedrive_org_id || null;
+}
 
-  const response = await fetch(url);
-  const data = await response.json();
-
-  console.log(`🔍 Pipedrive search by email response for ${email}:`, JSON.stringify(data, null, 2));
-
-  // v2 search returns results under data.items[]. Each item may either be the
-  // person object itself or wrapped under an "item" key depending on account.
-  const items = data?.data?.items;
-  if (data.success && Array.isArray(items) && items.length > 0) {
-    // Get all person IDs
-    const allIds = items
-      .map((item: any) => item?.item?.id ?? item?.id)
-      .filter((id: any) => typeof id === "number");
-
-    if (allIds.length === 0) {
-      return { personId: null, duplicates: [] };
-    }
-
-    // Return the oldest (first) and mark rest as duplicates
-    const [personId, ...duplicates] = allIds;
-    
-    if (duplicates.length > 0) {
-      console.log(`⚠️ Found ${duplicates.length} duplicate(s) for ${email}, will use ID ${personId}`);
-    }
-
-    return { personId, duplicates };
-  }
-
-  return { personId: null, duplicates: [] };
+async function cacheOrg(orgName: string, orgId: number): Promise<void> {
+  await supabase
+    .from("pipedrive_org_cache")
+    .upsert({
+      org_name: orgName.trim().toLowerCase(),
+      pipedrive_org_id: orgId,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'org_name' });
 }
 
 async function searchOrganizationByName(name: string): Promise<number | null> {
@@ -104,6 +103,7 @@ async function createOrganization(name: string): Promise<number> {
   return data.data.id;
 }
 
+// Optimized: Check cache first, then API, then create
 async function findOrCreateOrganization(companyName: string): Promise<number | null> {
   if (!companyName || companyName.trim() === '') {
     return null;
@@ -111,49 +111,75 @@ async function findOrCreateOrganization(companyName: string): Promise<number | n
   
   const trimmedName = companyName.trim();
   
-  // Search for existing organization
+  // 1. Check cache first (no API call)
+  const cachedOrgId = await getCachedOrg(trimmedName);
+  if (cachedOrgId) {
+    console.log(`📦 Using cached org ID for "${trimmedName}": ${cachedOrgId}`);
+    return cachedOrgId;
+  }
+  
+  // 2. Search Pipedrive API
   const existingOrgId = await searchOrganizationByName(trimmedName);
   if (existingOrgId) {
+    await cacheOrg(trimmedName, existingOrgId);
     return existingOrgId;
   }
   
-  // Create new organization
-  return await createOrganization(trimmedName);
+  // 3. Create new organization
+  const newOrgId = await createOrganization(trimmedName);
+  await cacheOrg(trimmedName, newOrgId);
+  return newOrgId;
 }
 
-async function mergeDuplicates(primaryPersonId: number, duplicateIds: number[]): Promise<void> {
-  if (duplicateIds.length === 0) return;
-  console.log(`🔀 Merging ${duplicateIds.length} duplicate contact(s) into primary ID ${primaryPersonId}...`);
+// Get sync state for change detection
+async function getSyncState(professionalId: string): Promise<{ personId: number | null; lastHash: string | null }> {
+  const { data } = await supabase
+    .from("pipedrive_sync_state")
+    .select("pipedrive_person_id, last_sync_hash")
+    .eq("professional_id", professionalId)
+    .single();
   
-  for (const duplicateId of duplicateIds) {
-    try {
-      // Use Pipedrive's merge API to merge duplicate into primary contact
-      const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/persons/${primaryPersonId}/merge?api_token=${PIPEDRIVE_API_TOKEN}`;
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ merge_with_id: duplicateId })
-      });
-      
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log(`✅ Merged duplicate contact ID ${duplicateId} into primary ID ${primaryPersonId}`);
-      } else {
-        // Skip "already deleted" errors silently
-        if (result.error && result.error.includes("deleted")) {
-          console.log(`⚠️ Skipping duplicate ID ${duplicateId} (already deleted)`);
-        } else {
-          console.error(`❌ Failed to merge duplicate ID ${duplicateId}:`, result);
-        }
-      }
-    } catch (err) {
-      console.error(`Error merging duplicate ID ${duplicateId}:`, err);
+  return {
+    personId: data?.pipedrive_person_id || null,
+    lastHash: data?.last_sync_hash || null
+  };
+}
+
+// Update sync state after successful sync
+async function updateSyncState(
+  professionalId: string, 
+  personId: number, 
+  hash: string,
+  syncData: Record<string, any>
+): Promise<void> {
+  await supabase
+    .from("pipedrive_sync_state")
+    .upsert({
+      professional_id: professionalId,
+      pipedrive_person_id: personId,
+      last_sync_hash: hash,
+      last_synced_at: new Date().toISOString(),
+      last_synced_data: syncData,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'professional_id' });
+}
+
+// Only search Pipedrive if we don't have a cached person ID
+async function searchPersonByEmail(email: string): Promise<number | null> {
+  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=email&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  const items = data?.data?.items;
+  if (data.success && Array.isArray(items) && items.length > 0) {
+    const personId = items[0]?.item?.id ?? items[0]?.id;
+    if (typeof personId === "number") {
+      return personId;
     }
-    
-    // Rate limit: 250ms between merges
-    await new Promise(resolve => setTimeout(resolve, 250));
   }
+
+  return null;
 }
 
 serve(async (req) => {
@@ -162,13 +188,13 @@ serve(async (req) => {
   }
 
   try {
-    const { professional_id } = await req.json();
+    const { professional_id, force = false } = await req.json();
 
     if (!professional_id) {
       throw new Error("professional_id is required");
     }
 
-    console.log(`Syncing professional ${professional_id} to Pipedrive`);
+    console.log(`🔄 Syncing professional ${professional_id} (force: ${force})`);
 
     // Get professional with related data
     const { data: professional, error: fetchError } = await supabase
@@ -187,12 +213,11 @@ serve(async (req) => {
 
     if (!professional.email) {
       return new Response(
-        JSON.stringify({ success: false, error: "Professional has no email" }),
+        JSON.stringify({ success: false, error: "Professional has no email", skipped: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const fieldMapping = await getFieldMapping();
     const city = Array.isArray(professional.cities) ? professional.cities[0] : professional.cities;
     const category = Array.isArray(professional.categories) ? professional.categories[0] : professional.categories;
 
@@ -200,76 +225,102 @@ serve(async (req) => {
       throw new Error("Missing city or category data");
     }
 
-    // Build card URL to match app route structure: /:stateSlug/:citySlug/:categorySlug/:agentSlug
+    // Build sync data object for hashing
     const agentSlug = professional.name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    const stateSlug = city.state_slug;
-    const citySlug = city.slug;
-    const categorySlug = category.slug;
-    const cardUrl = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`;
-
-    // Search for existing person and handle duplicates
-    const { personId: foundPersonId, duplicates } = await searchPersonByEmail(professional.email);
+    const cardUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}/${agentSlug}`;
     
-    // Merge any duplicates into the primary contact before proceeding
-    if (duplicates.length > 0 && foundPersonId !== null) {
-      await mergeDuplicates(foundPersonId as number, duplicates);
-    }
-    
-    let personId = foundPersonId;
-    const isUpdate = !!personId;
-
-    // Find or create organization based on business_name or company
-    const companyName = professional.business_name || professional.company;
-    const orgId = await findOrCreateOrganization(companyName);
-
-    const personData: Record<string, any> = {
+    const syncData: Record<string, any> = {
       name: professional.name,
-      emails: [{ value: professional.email, primary: true }],
-      phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
-      org_id: orgId, // Link to organization
-    };
-
-    // Map configured custom fields - numeric fields as numbers, text as strings
-    const dynamicFields: Record<string, any> = {
-      // Core IDs & URLs (strings)
-      supabase_id: professional.id,
+      email: professional.email,
+      phone: professional.phone || '',
+      company: professional.business_name || professional.company || '',
+      profile_link: professional.profile_link || '',
       card_url: cardUrl,
-      profile_link: professional.profile_link 
-        ? (professional.profile_link.startsWith('http') 
-            ? professional.profile_link 
-            : `https://top10lists.us${professional.profile_link}`)
-        : null,
-
-      // Numeric fields (send as actual numbers)
       years_experience: professional.years_experience ?? null,
       current_listings: professional.current_listings ?? null,
       total_sales: professional.total_sales ?? null,
       rank: professional.rank ?? null,
       zillow_rating: professional.review_stars_rating ?? null,
       zillow_reviews: professional.num_total_reviews ?? null,
-      zillow_page: professional.zillow_search_page ?? null,
-      zillow_position: professional.zillow_search_position ?? null,
-      agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1) : null,
-
-      // Text fields (strings)
       license_number: professional.license_number || '',
-      business_name: professional.business_name || professional.company || '',
-      specialty: Array.isArray(professional.specialty)
-        ? professional.specialty.join(', ')
-        : (professional.specialty || ''),
+      specialty: Array.isArray(professional.specialty) ? professional.specialty.join(', ') : '',
       website: professional.website || '',
       synthesized_bio: professional.synthesized_bio || professional.description || '',
       city_name: city.name || '',
       state: city.state || '',
+    };
+
+    // Generate hash for change detection
+    const currentHash = generateSyncHash(syncData);
+    
+    // Get cached sync state
+    const { personId: cachedPersonId, lastHash } = await getSyncState(professional_id);
+
+    // CHANGE DETECTION: Skip if data hasn't changed (unless force=true)
+    if (!force && lastHash === currentHash && cachedPersonId) {
+      console.log(`⏭️ Skipping ${professional.name} - no changes detected (hash: ${currentHash})`);
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          action: 'skipped', 
+          reason: 'no_changes',
+          personId: cachedPersonId 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const fieldMapping = await getFieldMapping();
+
+    // Determine person ID: use cached, or search Pipedrive
+    let personId = cachedPersonId;
+    if (!personId) {
+      console.log(`🔍 No cached person ID, searching Pipedrive for ${professional.email}`);
+      personId = await searchPersonByEmail(professional.email);
+    }
+    
+    const isUpdate = !!personId;
+
+    // Find or create organization (uses cache)
+    const orgId = await findOrCreateOrganization(syncData.company);
+
+    // Build person data for Pipedrive
+    const personData: Record<string, any> = {
+      name: syncData.name,
+      emails: [{ value: syncData.email, primary: true }],
+      phones: syncData.phone ? [{ value: syncData.phone, primary: true }] : undefined,
+      org_id: orgId,
+    };
+
+    // Map custom fields
+    const dynamicFields: Record<string, any> = {
+      supabase_id: professional.id,
+      card_url: syncData.card_url,
+      profile_link: syncData.profile_link 
+        ? (syncData.profile_link.startsWith('http') ? syncData.profile_link : `https://top10lists.us${syncData.profile_link}`)
+        : null,
+      years_experience: syncData.years_experience,
+      current_listings: syncData.current_listings,
+      total_sales: syncData.total_sales,
+      rank: syncData.rank,
+      zillow_rating: syncData.zillow_rating,
+      zillow_reviews: syncData.zillow_reviews,
+      zillow_page: professional.zillow_search_page ?? null,
+      zillow_position: professional.zillow_search_position ?? null,
+      agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1) : null,
+      license_number: syncData.license_number,
+      business_name: syncData.company,
+      specialty: syncData.specialty,
+      website: syncData.website,
+      synthesized_bio: syncData.synthesized_bio,
+      city_name: syncData.city_name,
+      state: syncData.state,
       zillow_profile_url: professional.zillow_profile_url || '',
     };
     
-    // Skip boolean/dropdown fields (is_top_agent, is_premier_agent, is_brand_builder, email_verified)
-    // These require specific Pipedrive option IDs which vary by account
-    // Apply mapped fields to custom_fields object (API v2 format)
     personData.custom_fields = {};
     for (const [fieldName, value] of Object.entries(dynamicFields)) {
       if (fieldMapping[fieldName] && value !== null && value !== undefined && value !== '') {
@@ -277,66 +328,58 @@ serve(async (req) => {
       }
     }
 
-    console.log(`📤 Sending to Pipedrive (${isUpdate ? 'UPDATE' : 'CREATE'}):`, JSON.stringify({
-      name: personData.name,
-      email: personData.emails[0]?.value,
-      custom_fields_count: Object.keys(personData.custom_fields).length,
-      custom_fields: personData.custom_fields
-    }, null, 2));
+    console.log(`📤 ${isUpdate ? 'UPDATE' : 'CREATE'} ${professional.name} (hash: ${currentHash})`);
 
-    async function sendToPipedrive(method: string, url: string) {
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(personData),
-      });
+    // Single API call to create/update person
+    const url = isUpdate
+      ? `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${personId}?api_token=${PIPEDRIVE_API_TOKEN}`
+      : `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
+    
+    const method = isUpdate ? "PATCH" : "POST";
 
-      const data = await response.json();
-      console.log(`📥 Pipedrive response (${method}):`, JSON.stringify(data, null, 2));
-      return { response, data };
-    }
+    const response = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(personData),
+    });
 
-    let url: string;
-    let method: string;
+    let data = await response.json();
 
-    if (isUpdate) {
-      url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/${personId}?api_token=${PIPEDRIVE_API_TOKEN}`;
-      method = "PATCH";
-    } else {
-      url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
-      method = "POST";
-    }
-
-    let { data } = await sendToPipedrive(method, url);
-
-    // If the contact we're trying to update has been deleted in Pipedrive,
-    // fall back to creating a fresh person instead of failing the sync.
+    // Handle deleted contact case
     if (!data.success && isUpdate && typeof data.error === "string" && data.error.includes("deleted")) {
-      console.warn(`⚠️ Primary contact ${personId} is deleted in Pipedrive, creating a new person instead.`);
-      const createUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons?api_token=${PIPEDRIVE_API_TOKEN}`;
-      ({ data } = await sendToPipedrive("POST", createUrl));
+      console.warn(`⚠️ Contact ${personId} deleted in Pipedrive, creating new`);
+      const createResponse = await fetch(
+        `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons?api_token=${PIPEDRIVE_API_TOKEN}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(personData),
+        }
+      );
+      data = await createResponse.json();
     }
 
     if (!data.success) {
-      console.error(`❌ Pipedrive error for ${professional.name}:`, JSON.stringify(data, null, 2));
+      console.error(`❌ Pipedrive error:`, JSON.stringify(data, null, 2));
       throw new Error(`Failed to ${isUpdate ? 'update' : 'create'} person: ${JSON.stringify(data)}`);
     }
 
-    personId = data.data.id;
+    const finalPersonId = data.data.id;
     const action = isUpdate ? 'updated' : 'created';
 
-    console.log(`✅ ${action} ${professional.name} in Pipedrive (ID: ${personId})`);
+    // Update sync state for future change detection
+    await updateSyncState(professional_id, finalPersonId, currentHash, syncData);
+
+    console.log(`✅ ${action} ${professional.name} (ID: ${finalPersonId})`);
 
     return new Response(
-      JSON.stringify({ success: true, action, personId }),
+      JSON.stringify({ success: true, action, personId: finalPersonId, hash: currentHash }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
     console.error("Sync error:", err);
-    const errorMessage = getErrorMessage(err);
-
     return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
+      JSON.stringify({ success: false, error: getErrorMessage(err) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
