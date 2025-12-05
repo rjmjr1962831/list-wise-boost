@@ -59,6 +59,7 @@ export const ProfessionalCard = ({
   
   // Collapsible bar states
   const [bioOpen, setBioOpen] = useState(false);
+  const [showFullSynthesizedBio, setShowFullSynthesizedBio] = useState(false);
   const [reviewsOpen, setReviewsOpen] = useState(false);
   const [newsOpen, setNewsOpen] = useState(false);
   
@@ -1596,10 +1597,24 @@ export const ProfessionalCard = ({
                 const synthesizedBio = (professional as any).synthesized_bio;
                 if (!synthesizedBio || isEditing) return null;
                 
+                const CHAR_LIMIT = 400;
+                const needsTruncation = synthesizedBio.length > CHAR_LIMIT;
+                const displayText = showFullSynthesizedBio || !needsTruncation 
+                  ? synthesizedBio 
+                  : synthesizedBio.slice(0, CHAR_LIMIT) + '...';
+                
                 return (
                   <div className="border rounded-lg p-4 bg-primary/5 mt-3">
                     <h4 className="sr-only">Professional Summary</h4>
-                    <p className="text-sm text-foreground whitespace-pre-line">{synthesizedBio}</p>
+                    <p className="text-sm text-foreground whitespace-pre-line">{displayText}</p>
+                    {needsTruncation && (
+                      <button
+                        onClick={() => setShowFullSynthesizedBio(!showFullSynthesizedBio)}
+                        className="text-primary hover:underline text-sm font-medium mt-2"
+                      >
+                        {showFullSynthesizedBio ? 'Show less' : 'Show more'}
+                      </button>
+                    )}
                     {(professional as any).profile_last_synthesized_at && (
                       <p className="text-xs text-muted-foreground mt-2">
                         Profile synthesized: {format(new Date((professional as any).profile_last_synthesized_at), 'MMM d, yyyy')}
