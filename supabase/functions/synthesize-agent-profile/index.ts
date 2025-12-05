@@ -6,6 +6,57 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// TOKEN OPTIMIZATION: Maximum characters for website content (reduced from 25K to 8K)
+const MAX_WEBSITE_CONTENT_CHARS = 8000;
+
+/**
+ * Strip HTML tags and clean content for token optimization
+ */
+function stripHtmlAndClean(html: string): string {
+  // Remove script and style tags with their content
+  let text = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
+  text = text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+  text = text.replace(/<noscript[^>]*>[\s\S]*?<\/noscript>/gi, '');
+  
+  // Remove HTML tags
+  text = text.replace(/<[^>]+>/g, ' ');
+  
+  // Decode common HTML entities
+  text = text.replace(/&nbsp;/g, ' ');
+  text = text.replace(/&amp;/g, '&');
+  text = text.replace(/&lt;/g, '<');
+  text = text.replace(/&gt;/g, '>');
+  text = text.replace(/&quot;/g, '"');
+  text = text.replace(/&#39;/g, "'");
+  text = text.replace(/&rsquo;/g, "'");
+  text = text.replace(/&ldquo;/g, '"');
+  text = text.replace(/&rdquo;/g, '"');
+  
+  // Clean up whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  return text;
+}
+
+/**
+ * Truncate content to reduce token usage (respects sentence boundaries)
+ */
+function truncateContent(content: string, maxChars: number = MAX_WEBSITE_CONTENT_CHARS): string {
+  if (content.length <= maxChars) return content;
+  
+  // Try to truncate at a sentence boundary
+  const truncated = content.substring(0, maxChars);
+  const lastPeriod = truncated.lastIndexOf('.');
+  const lastNewline = truncated.lastIndexOf('\n');
+  
+  const breakPoint = Math.max(lastPeriod, lastNewline);
+  if (breakPoint > maxChars * 0.7) {
+    return truncated.substring(0, breakPoint + 1) + '\n[Content truncated for efficiency]';
+  }
+  
+  return truncated + '...[truncated]';
+}
+
 /**
  * Extract years of experience from bio text by finding "since YYYY", "X years", "established in YYYY", etc.
  */
@@ -13,7 +64,7 @@ function extractYearsFromBio(bioText: string | null | undefined): number | null 
   if (!bioText) return null;
   
   // Strip HTML tags if present
-  const cleanText = bioText.replace(/<[^>]*>/g, ' ');
+  const cleanText = stripHtmlAndClean(bioText);
   
   const foundYears: number[] = [];
   
@@ -117,12 +168,14 @@ async function fetchWebsiteContent(
       const data = await response.json();
       
       if (data.success && data.parsedData?.bodyText) {
-        const text = data.parsedData.bodyText;
+        // TOKEN OPTIMIZATION: Strip HTML and clean the text
+        let text = stripHtmlAndClean(data.parsedData.bodyText);
+        
         // Only include if we got substantial content (more than 200 chars)
         if (text.length > 200) {
           combinedContent += `\n\n--- Content from ${url} ---\n\n${text}`;
           successfulUrls.push(url);
-          console.log(`   ✅ Got ${text.length} chars`);
+          console.log(`   ✅ Got ${text.length} chars (cleaned)`);
         } else {
           console.log(`   ⚠️ Content too short (${text.length} chars)`);
         }
@@ -140,9 +193,12 @@ async function fetchWebsiteContent(
     return null;
   }
 
-  console.log(`✅ Website content collected from ${successfulUrls.length} page(s)`);
+  // TOKEN OPTIMIZATION: Truncate to max chars for AI context (reduced from 25K to 8K)
+  const truncatedContent = truncateContent(combinedContent, MAX_WEBSITE_CONTENT_CHARS);
+  console.log(`✅ Website content collected from ${successfulUrls.length} page(s), ${truncatedContent.length} chars (capped at ${MAX_WEBSITE_CONTENT_CHARS})`);
+  
   return {
-    content: combinedContent.slice(0, 25000), // Cap at 25k chars for AI context
+    content: truncatedContent,
     source: successfulUrls.join(', ')
   };
 }

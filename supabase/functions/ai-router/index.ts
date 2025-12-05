@@ -32,8 +32,11 @@ const TASK_ROUTING: Record<string, string> = {
   'data-extraction': 'deepseek-chat',
   'specialty-extraction': 'deepseek-chat',
   
-  // Complex reasoning, document analysis → Claude
-  'press-extraction': 'claude-sonnet',
+  // Press search now uses FREE Gemini Flash (was Claude)
+  'press-search': 'gemini-flash',
+  'press-extraction': 'gemini-flash',
+  
+  // Complex reasoning, document analysis → Claude (use sparingly)
   'document-analysis': 'claude-sonnet',
   'code-review': 'claude-sonnet',
   'complex-reasoning': 'claude-sonnet',
