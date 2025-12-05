@@ -23,8 +23,8 @@ export function SinglePageRecache() {
       return;
     }
 
-    // Validate URL format
-    if (!url.startsWith('https://top10lists.us')) {
+    // Validate URL format (accept both with and without www)
+    if (!url.startsWith('https://top10lists.us') && !url.startsWith('https://www.top10lists.us')) {
       toast.error('URL must start with https://top10lists.us');
       return;
     }
