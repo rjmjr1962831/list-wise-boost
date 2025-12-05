@@ -277,14 +277,62 @@ serve(async (req) => {
       supabaseKey
     );
 
+    // STEP 1: Call Gemini Flash for iterative web search (FREE)
+    console.log(`\n🔍 Running Gemini Flash iterative web search for: ${professional.name}`);
+    let geminiSearchResults = null;
+    try {
+      const geminiResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press-gemini`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          agentName: professional.name,
+          brokerage: professional.company || professional.business_name,
+          city: professional.zillow_search_city,
+          state: 'Arizona',
+          zillowUrl: professional.zillow_profile_url,
+          professionalId: professionalId,
+          dryRun: true // Don't save press mentions yet - we'll do that after synthesis
+        }),
+      });
+
+      if (geminiResponse.ok) {
+        geminiSearchResults = await geminiResponse.json();
+        console.log(`   ✅ Gemini search complete: ${geminiSearchResults.totalSearches} searches, ${geminiSearchResults.pressMentions?.length || 0} press mentions found`);
+      } else {
+        console.log(`   ⚠️ Gemini search failed: ${geminiResponse.status}`);
+      }
+    } catch (searchError) {
+      console.log(`   ⚠️ Gemini search error: ${searchError instanceof Error ? searchError.message : 'Unknown'}`);
+    }
+
     // Prepare context for AI - gather all available data sources
     const confirmedYearsExperience = professional.years_experience || extractedYears;
+    
+    // Compile web search findings into a structured summary
+    const webSearchFindings = geminiSearchResults ? `
+=== WEB SEARCH FINDINGS (${geminiSearchResults.totalSearches} searches performed) ===
+${geminiSearchResults.phases?.map((phase: any) => `
+Phase ${phase.phase}: ${phase.queries?.length || 0} queries
+${phase.analysis || 'No analysis'}
+Results: ${phase.results?.map((r: any) => `- ${r.title}: ${r.snippet}`).join('\n') || 'None'}
+`).join('\n') || 'No phase data'}
+
+=== PRESS MENTIONS DISCOVERED ===
+${geminiSearchResults.pressMentions?.map((pm: any) => 
+  `- ${pm.title} (${pm.outlet || 'Unknown outlet'}, credibility: ${pm.credibilityScore || 'N/A'})`
+).join('\n') || 'No press mentions found'}
+` : '';
     
     const context = {
       name: professional.name,
       existingBio: professional.get_to_know_me || professional.description,
       existingPressData: professional.press_mentions || [],
       rawResearch: rawResearch || '',
+      webSearchFindings: webSearchFindings,
+      geminiPressMentions: geminiSearchResults?.pressMentions || [],
       professionalInformation: professional.professional_information || {},
       websiteContent: websiteData?.content || '',
       websiteSource: websiteData?.source || '',
@@ -300,30 +348,38 @@ serve(async (req) => {
 
     console.log('\n📝 Synthesizing profile for:', professional.name);
     console.log(`   Bio length: ${(context.existingBio || '').length} chars`);
-    console.log(`   Press mentions: ${context.existingPressData.length}`);
+    console.log(`   Press mentions (existing): ${context.existingPressData.length}`);
+    console.log(`   Press mentions (from search): ${context.geminiPressMentions.length}`);
     console.log(`   Raw research: ${context.rawResearch.length} chars`);
+    console.log(`   Web search findings: ${context.webSearchFindings.length} chars`);
     console.log(`   Website content: ${context.websiteContent.length} chars`);
     console.log(`   Website source: ${context.websiteSource || 'None'}`);
 
-    // Call Claude Sonnet with tool calling for structured extraction
-    const systemPrompt = `You are a professional profile synthesizer for a real estate agent directory. Your job is to create a compelling 3-5 sentence synthesis about THE AGENT by combining ALL available data sources.
+    // STEP 2: Call Claude Sonnet with tool calling for 300-word synthesis
+    const systemPrompt = `You are a professional profile synthesizer for a real estate agent directory. Your job is to create a compelling ~300 WORD synthesis about THE AGENT by combining ALL available data sources.
 
-CRITICAL: SYNTHESIZE FROM ALL SOURCES
-You must weave together information from:
-- Their personal website (if available)
-- Press mentions and media coverage (IMPORTANT - mention notable press if available!)
-- Awards and achievements  
-- Existing Zillow/profile bio (but NEVER just copy it - always rewrite and enhance)
-- Review data and ratings
-- Specialties and areas served
+CRITICAL: WEB SEARCH RESULTS ARE YOUR PRIMARY SOURCE
+We have conducted 10 iterative web searches using Gemini Flash to gather information about this agent. The web search findings are your MOST IMPORTANT data source. Use them to write a rich, detailed profile.
 
-SYNTHESIS RULES:
+SYNTHESIZE FROM ALL SOURCES (in priority order):
+1. WEB SEARCH FINDINGS - Our 10-query iterative search results (HIGHEST PRIORITY)
+2. Press mentions discovered from web search
+3. Their personal website content (if available)
+4. Awards and achievements found
+5. Existing Zillow/profile bio (rewrite, NEVER copy verbatim)
+6. Review data and ratings
+7. Specialties and areas served
+
+SYNTHESIS RULES - WRITE ~300 WORDS:
 1. Write in third-person, present tense
-2. The synthesis should be 3-5 sentences covering:
-   - Areas/neighborhoods they serve (if known)
+2. The synthesis should be approximately 300 WORDS (about 4-6 paragraphs) covering:
+   - Background and career history
+   - Areas/neighborhoods they serve
    - Specialties (investors, luxury, first-time buyers, relocation, etc.)
-   - Awards, recognition, and PRESS MENTIONS (if any - these are credibility boosters!)
+   - Awards, recognition, and PRESS MENTIONS (if any - credibility boosters!)
    - What makes them unique (brokerage ownership, team leadership, niche expertise)
+   - Notable transactions or achievements
+   - Community involvement or industry leadership
    - You may mention "beginning in [year]" or "serving since [year]" but DO NOT state a specific years of experience number
 3. DO NOT mention:
    - Specific properties or listings
@@ -332,57 +388,53 @@ SYNTHESIS RULES:
    - Open house schedules
 4. Be factual - only include information explicitly found in the provided data
 5. If they own their brokerage, mention that (shows commitment)
-6. If they have press mentions (featured in publications), MENTION them - this is credibility gold!
-7. NEVER just copy the Zillow bio verbatim - always synthesize and enhance with other data
-
-IMPORTANT ON FAILOVER:
-If no website content is available, you MUST still create a compelling synthesis by combining:
-- The Zillow bio (reworded, not copied)
-- Any press mentions (PRIORITIZE these!)
-- Awards and achievements
-- Specialties and service areas
-- Review/rating data
+6. If web search found press mentions, FEATURE them prominently!
+7. NEVER just copy the Zillow bio verbatim - synthesize with search findings
 
 ADDITIONAL EXTRACTION RULES:
 1. Convert all first-person language to third-person
 2. Extract notable achievements, awards, certifications from ALL data sources
-3. Rank achievements by credibility (1-10): press mentions = 9-10, website = 6-8, existing bio = 5-7
+3. Rank achievements by credibility (1-10): web search press = 9-10, website = 6-8, existing bio = 5-7
 4. Deduplicate information across sources
 5. **ALWAYS INCLUDE DATES**: Extract year for EVERY achievement when available`;
 
-    const userPrompt = `Synthesize this agent profile by combining ALL available data sources:
+    const userPrompt = `Synthesize this agent profile using the web search findings as your PRIMARY source. Write approximately 300 WORDS.
 
 AGENT INFORMATION:
 - Name: ${context.name}
 - Brokerage: ${context.company || 'Unknown'}
 - Location: ${context.city || 'Unknown'}
-- Confirmed Years Experience: ${context.yearsExperience || 'Unknown'} (use this for reference but write "since [year]" or "beginning in [year]" in synthesis instead of stating years)
+- Confirmed Years Experience: ${context.yearsExperience || 'Unknown'} (write "since [year]" instead of stating years)
 - Specialties: ${context.specialty.join(', ') || 'None listed'}
 - Reviews: ${context.reviewCount || 0} reviews (${context.rating || 0} stars)
 - Badges: ${context.badges.join(', ') || 'None'}
 
+=== WEB SEARCH FINDINGS (PRIMARY SOURCE - 10 iterative searches via Gemini Flash) ===
+${context.webSearchFindings || 'No web search results available'}
+
+=== PRESS MENTIONS FROM WEB SEARCH ===
+${context.geminiPressMentions?.length > 0 ? JSON.stringify(context.geminiPressMentions, null, 2) : 'No press mentions discovered'}
+
 === WEBSITE CONTENT (from ${context.websiteSource || 'their website'}) ===
-${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE - use other sources below'}
+${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
 
 === EXISTING ZILLOW BIO (reword this, do NOT copy verbatim) ===
 ${context.existingBio || 'No bio available'}
 
-=== PRESS MENTIONS (HIGH PRIORITY - include these in synthesis!) ===
-${context.existingPressData.length > 0 ? JSON.stringify(context.existingPressData, null, 2) : 'No press mentions available'}
+=== EXISTING PRESS MENTIONS ===
+${context.existingPressData.length > 0 ? JSON.stringify(context.existingPressData, null, 2) : 'No existing press mentions'}
 
 === RAW PRESS RESEARCH ===
 ${context.rawResearch || 'No press research available'}
 
-=== PROFILE INFORMATION ===
-${JSON.stringify(context.professionalInformation, null, 2)}
-
 INSTRUCTIONS: 
-- Create a compelling 3-5 sentence synthesis focused on WHO THE AGENT IS
-- COMBINE all sources above - don't rely on just one
-- If they have press mentions, MENTION them (e.g., "featured in Arizona Republic" or "recognized by Phoenix Business Journal")
-- If no website content, reword the Zillow bio and enhance with press/achievements
+- Write approximately 300 WORDS (4-6 paragraphs) about WHO THE AGENT IS
+- PRIORITIZE the web search findings - they are our freshest, most comprehensive data
+- Feature any press mentions prominently (credibility gold!)
+- Include career background, specialties, achievements, and what makes them unique
+- If no website content, synthesize from web search and Zillow bio
 - Do NOT mention specific properties, prices, addresses, or inventory
-- If you know their start year, you can say "serving since [year]" but do NOT state a specific years count`;
+- Write "serving since [year]" but do NOT state a specific years count`;
 
     const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -401,13 +453,13 @@ INSTRUCTIONS:
         tools: [
           {
             name: 'synthesize_profile',
-            description: 'Extract structured profile data including synthesis and achievements',
+            description: 'Extract structured profile data including a ~300 word synthesis and achievements',
             input_schema: {
               type: 'object',
               properties: {
                 synthesized_bio: {
                   type: 'string',
-                  description: '3-5 sentence synthesis about THE AGENT - their experience, areas served, specialties, awards, and what makes them unique. NO property listings or inventory.'
+                  description: 'Approximately 300-word synthesis (4-6 paragraphs) about THE AGENT - their career background, areas served, specialties, awards, press mentions, and what makes them unique. NO property listings or inventory.'
                 },
                 areas_served: {
                   type: 'array',
