@@ -14,6 +14,32 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
 
+// Bio Preview component with ...more expander
+const BioPreview = ({ text }: { text: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  const cleanText = stripHtml(text);
+  const maxLength = 200;
+  const needsTruncation = cleanText.length > maxLength;
+  const displayText = expanded ? cleanText : cleanText.slice(0, maxLength);
+
+  return (
+    <div className="bg-muted/50 rounded-md p-3 mb-2 text-sm text-muted-foreground">
+      <span className="whitespace-pre-line">
+        {displayText}
+        {needsTruncation && (
+          <span
+            onClick={() => setExpanded(!expanded)}
+            className="text-primary cursor-pointer hover:underline font-medium ml-1"
+          >
+            {expanded ? "less" : "...more"}
+          </span>
+        )}
+      </span>
+    </div>
+  );
+};
+
 // Fields that require manual review to change
 const READ_ONLY_FIELDS = [
   { key: 'name', label: 'Name' },
@@ -387,9 +413,14 @@ export default function EditProfile() {
               </div>
               <div>
                 <Label htmlFor="description">Bio</Label>
+                {/* Current Bio Preview with ...more expander */}
+                {professional?.synthesized_bio && (
+                  <BioPreview text={professional.synthesized_bio} />
+                )}
                 <Textarea
                   id="description"
                   rows={4}
+                  placeholder="Enter your bio..."
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                 />
