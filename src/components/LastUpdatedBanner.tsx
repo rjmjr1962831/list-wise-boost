@@ -22,8 +22,6 @@ export const LastUpdatedBanner = ({ lastUpdated, date, className = "" }: LastUpd
   return (
     <div 
       className={`last-updated-banner flex items-center gap-2 text-sm bg-muted/50 border border-border/50 rounded-md px-4 py-2 ${className}`}
-      itemScope 
-      itemType="https://schema.org/Dataset"
     >
       <Calendar className="h-4 w-4 text-muted-foreground" />
       <span className="text-muted-foreground">Rankings verified and updated: </span>
