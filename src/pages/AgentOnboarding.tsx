@@ -180,6 +180,7 @@ export default function AgentOnboarding() {
           name="description"
           content="Join Top10Lists.us as a featured real estate agent. Complete your profile and start connecting with clients."
         />
+        <link rel="canonical" href="https://top10lists.us/agent-onboarding" />
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
