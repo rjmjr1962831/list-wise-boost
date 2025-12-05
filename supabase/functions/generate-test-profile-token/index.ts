@@ -12,15 +12,40 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId } = await req.json();
-
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Verify the user is authenticated and is an admin
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      throw new Error('Authorization header required');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    
+    if (authError || !user) {
+      throw new Error('Invalid authentication token');
+    }
+
+    // Check if user has admin role
+    const { data: roleData, error: roleError } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    if (roleError || !roleData) {
+      throw new Error('Admin access required');
+    }
+
+    const { professionalId } = await req.json();
+
     // Generate a verification token that expires in 7 days
-    const token = crypto.randomUUID();
+    const verificationToken = crypto.randomUUID();
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
 
@@ -28,7 +53,7 @@ serve(async (req) => {
     const { data: professional, error: updateError } = await supabaseClient
       .from('professionals')
       .update({
-        verification_token: token,
+        verification_token: verificationToken,
         verification_token_expires_at: expiresAt.toISOString(),
         verification_started_at: new Date().toISOString(),
         funnel_status: 'welcome'
@@ -39,15 +64,15 @@ serve(async (req) => {
 
     if (updateError) throw updateError;
 
-    console.log(`✅ Generated test token for ${professional.name}: ${token}`);
+    console.log(`✅ Generated test token for ${professional.name}: ${verificationToken}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        token,
+        token: verificationToken,
         professionalId: professional.id,
         professionalName: professional.name,
-        funnelUrl: `/profile/${token}`,
+        funnelUrl: `/profile/${verificationToken}`,
         expiresAt: expiresAt.toISOString()
       }),
       {
@@ -59,7 +84,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        status: 500,
+        status: error.message.includes('required') || error.message.includes('Invalid') ? 401 : 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
