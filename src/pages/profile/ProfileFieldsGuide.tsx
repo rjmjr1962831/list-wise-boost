@@ -617,7 +617,7 @@ const ProfileFieldsGuide = () => {
                                   })}
                                   className="text-primary cursor-pointer hover:underline font-medium ml-1"
                                 >
-                                  {isExpanded ? " [less]" : " ...[more]"}
+                                  {isExpanded ? "less" : "...more"}
                                 </span>
                               )}
                             </span>
@@ -678,7 +678,7 @@ const ProfileFieldsGuide = () => {
                                   })}
                                   className="text-primary cursor-pointer hover:underline font-medium ml-1"
                                 >
-                                  {isExpanded ? " [less]" : " ...[more]"}
+                                  {isExpanded ? "less" : "...more"}
                                 </span>
                               )}
                             </span>
