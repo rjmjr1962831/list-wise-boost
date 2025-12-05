@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-declare const EdgeRuntime: {
-  waitUntil(promise: Promise<unknown>): void;
-};
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -21,8 +17,8 @@ const BASE_URL = "https://top10lists.us";
 const STATIC_PAGES = [
   "/", "/about", "/about/ranking-methodology", "/privacy", "/terms", "/sms-terms", "/agent-info", "/check-profile"
 ];
-const DELAY_MS = 1000;
-const BATCH_SIZE = 10; // Process 10 URLs per function call to avoid timeout
+const DELAY_MS = 500; // Reduced delay for faster processing
+const BATCH_SIZE = 50; // Process 50 URLs per batch before self-triggering
 
 async function recacheUrl(url: string): Promise<boolean> {
   try {
@@ -95,10 +91,31 @@ serve(async (req) => {
 
       console.log(`Created job ${job.id} with ${urls.length} URLs`);
       
-      // Start processing in background
-      EdgeRuntime.waitUntil(processJob(job.id));
+      // Process first batch
+      const result = await processBatch(job.id);
+      
+      // If not completed, trigger next batch
+      if (!result.completed) {
+        triggerNextBatch(job.id);
+      }
 
       return new Response(JSON.stringify({ success: true, jobId: job.id, totalUrls: urls.length }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Action: continue - Continue processing (self-triggered)
+    if (action === 'continue' && jobId) {
+      console.log(`Continuing job ${jobId}`);
+      
+      const result = await processBatch(jobId);
+      
+      // If not completed, trigger next batch
+      if (!result.completed) {
+        triggerNextBatch(jobId);
+      }
+
+      return new Response(JSON.stringify({ success: true, completed: result.completed, processed: result.processed }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
@@ -122,7 +139,11 @@ serve(async (req) => {
         .update({ status: 'running' })
         .eq('id', jobId);
 
-      EdgeRuntime.waitUntil(processJob(jobId));
+      // Process batch and continue
+      const result = await processBatch(jobId);
+      if (!result.completed) {
+        triggerNextBatch(jobId);
+      }
 
       return new Response(JSON.stringify({ success: true }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -156,30 +177,37 @@ serve(async (req) => {
   }
 });
 
-async function processJob(jobId: string) {
-  console.log(`Processing job ${jobId}`);
+async function processBatch(jobId: string): Promise<{ completed: boolean; processed: number }> {
+  console.log(`Processing batch for job ${jobId}`);
   
-  try {
-    // Get job data
-    const { data: job, error: fetchError } = await supabase
-      .from('prerender_recache_jobs')
-      .select('*')
-      .eq('id', jobId)
-      .single();
+  // Get job data
+  const { data: job, error: fetchError } = await supabase
+    .from('prerender_recache_jobs')
+    .select('*')
+    .eq('id', jobId)
+    .single();
 
-    if (fetchError || !job) {
-      console.error('Failed to fetch job:', fetchError);
-      return;
-    }
+  if (fetchError || !job) {
+    console.error('Failed to fetch job:', fetchError);
+    return { completed: true, processed: 0 };
+  }
 
-    const urls = job.urls as string[];
-    let currentIndex = job.current_index;
-    let successCount = job.success_count;
-    let failCount = job.fail_count;
-    const results = (job.results as any[]) || [];
+  if (job.status === 'stopped') {
+    console.log('Job was stopped');
+    return { completed: true, processed: 0 };
+  }
 
-    while (currentIndex < urls.length) {
-      // Check if job was stopped
+  const urls = job.urls as string[];
+  let currentIndex = job.current_index;
+  let successCount = job.success_count;
+  let failCount = job.fail_count;
+  const results = (job.results as any[]) || [];
+  let processedInBatch = 0;
+
+  // Process up to BATCH_SIZE URLs
+  while (currentIndex < urls.length && processedInBatch < BATCH_SIZE) {
+    // Check if job was stopped mid-batch
+    if (processedInBatch > 0 && processedInBatch % 10 === 0) {
       const { data: currentJob } = await supabase
         .from('prerender_recache_jobs')
         .select('status')
@@ -187,25 +215,28 @@ async function processJob(jobId: string) {
         .single();
 
       if (currentJob?.status === 'stopped') {
-        console.log('Job was stopped');
-        return;
+        console.log('Job was stopped mid-batch');
+        return { completed: true, processed: processedInBatch };
       }
+    }
 
-      const url = urls[currentIndex];
-      console.log(`Processing [${currentIndex + 1}/${urls.length}]: ${url}`);
+    const url = urls[currentIndex];
+    console.log(`Processing [${currentIndex + 1}/${urls.length}]: ${url}`);
 
-      const success = await recacheUrl(url);
-      
-      if (success) {
-        successCount++;
-      } else {
-        failCount++;
-      }
+    const success = await recacheUrl(url);
+    
+    if (success) {
+      successCount++;
+    } else {
+      failCount++;
+    }
 
-      results.push({ url, success, timestamp: new Date().toISOString() });
-      currentIndex++;
+    results.push({ url, success, timestamp: new Date().toISOString() });
+    currentIndex++;
+    processedInBatch++;
 
-      // Update progress every URL
+    // Update progress every 5 URLs to reduce DB calls
+    if (processedInBatch % 5 === 0 || currentIndex >= urls.length) {
       await supabase
         .from('prerender_recache_jobs')
         .update({
@@ -213,17 +244,19 @@ async function processJob(jobId: string) {
           processed_count: currentIndex,
           success_count: successCount,
           fail_count: failCount,
-          results: results.slice(-100) // Keep last 100 results to avoid huge payload
+          results: results.slice(-100)
         })
         .eq('id', jobId);
-
-      // Delay between requests
-      if (currentIndex < urls.length) {
-        await new Promise(resolve => setTimeout(resolve, DELAY_MS));
-      }
     }
 
-    // Mark job as completed
+    // Delay between requests
+    if (currentIndex < urls.length && processedInBatch < BATCH_SIZE) {
+      await new Promise(resolve => setTimeout(resolve, DELAY_MS));
+    }
+  }
+
+  // Check if job is complete
+  if (currentIndex >= urls.length) {
     await supabase
       .from('prerender_recache_jobs')
       .update({
@@ -231,17 +264,34 @@ async function processJob(jobId: string) {
         completed_at: new Date().toISOString()
       })
       .eq('id', jobId);
-
     console.log(`Job ${jobId} completed: ${successCount} success, ${failCount} failed`);
+    return { completed: true, processed: processedInBatch };
+  }
+
+  return { completed: false, processed: processedInBatch };
+}
+
+// Self-trigger to continue processing
+async function triggerNextBatch(jobId: string) {
+  try {
+    console.log(`Triggering next batch for job ${jobId}`);
+    
+    // Small delay before triggering next batch
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/process-prerender-recache`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({ action: 'continue', jobId })
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to trigger next batch:', await response.text());
+    }
   } catch (error) {
-    console.error('Error processing job:', error);
-    await supabase
-      .from('prerender_recache_jobs')
-      .update({
-        status: 'failed',
-        error_message: error instanceof Error ? error.message : 'Unknown error',
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
+    console.error('Error triggering next batch:', error);
   }
 }
