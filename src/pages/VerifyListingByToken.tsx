@@ -132,11 +132,22 @@ export default function VerifyListingByToken() {
         </Card>
       </div>;
   }
+  // Parse name to handle couples like "Don and Jenny Matheson" or "Mark & Dina Beauvais"
+  const parseDisplayName = (fullName: string): string => {
+    const andMatch = fullName.match(/^(\w+)\s+(?:and|&)\s+(\w+)\s+/i);
+    if (andMatch) {
+      return `${andMatch[1]} and ${andMatch[2]}`;
+    }
+    return fullName.split(' ')[0];
+  };
+
+  const displayName = parseDisplayName(professional.name);
+
   return <div className="min-h-screen bg-background py-12 px-4">
       <div className="max-w-5xl mx-auto space-y-6">
         {/* Heading Section */}
         <div className="space-y-3">
-          <h2 className="text-3xl font-bold">Congratulations, {professional.name.split(' ')[0]}! Our analysis shows us that you are the best of the best. Here is what your FREE listing looks like.</h2>
+          <h2 className="text-3xl font-bold">Congratulations, {displayName}! Our analysis shows us that you are the best of the best. Here is what your FREE listing looks like.</h2>
           <h3 className="text-xl text-muted-foreground">Please review it. You can edit or add to it by clicking the button.</h3>
         </div>
 
