@@ -370,35 +370,45 @@ SYNTHESIZE FROM ALL SOURCES (in priority order):
 6. Review data and ratings
 7. Specialties and areas served
 
-SYNTHESIS RULES - WRITE ~300 WORDS:
+SYNTHESIS RULES - WRITE EXACTLY ~300 WORDS (THIS IS MANDATORY):
 1. Write in third-person, present tense
-2. The synthesis should be approximately 300 WORDS (about 4-6 paragraphs) covering:
-   - Background and career history
+2. The synthesis MUST be approximately 300 WORDS (about 5-7 paragraphs) covering ALL of these topics:
+   - PERSONAL BACKGROUND: Education achievements (valedictorian, degrees, schools attended), personal history, where they grew up
+   - CAREER HISTORY: How they got into real estate, career progression, brokerage ownership
+   - COMMUNITY INVOLVEMENT: Charitable work, foundations, nonprofits they support, volunteer activities
    - Areas/neighborhoods they serve
    - Specialties (investors, luxury, first-time buyers, relocation, etc.)
    - Awards, recognition, and PRESS MENTIONS (if any - credibility boosters!)
    - What makes them unique (brokerage ownership, team leadership, niche expertise)
    - Notable transactions or achievements
-   - Community involvement or industry leadership
+   - Industry leadership positions, board memberships
    - You may mention "beginning in [year]" or "serving since [year]" but DO NOT state a specific years of experience number
-3. DO NOT mention:
+3. PRIORITIZE HUMANIZING DETAILS:
+   - Education achievements (valedictorian, honors, degrees)
+   - Charities and causes they support
+   - Family background if mentioned (e.g., "native Arizonan", "family of real estate professionals")
+   - Personal interests that relate to their work
+4. DO NOT mention:
    - Specific properties or listings
    - Property prices or addresses
    - Current inventory
    - Open house schedules
-4. Be factual - only include information explicitly found in the provided data
-5. If they own their brokerage, mention that (shows commitment)
-6. If web search found press mentions, FEATURE them prominently!
-7. NEVER just copy the Zillow bio verbatim - synthesize with search findings
+5. Be factual - only include information explicitly found in the provided data
+6. If they own their brokerage, mention that (shows commitment)
+7. If web search found press mentions, FEATURE them prominently!
+8. NEVER just copy the Zillow bio verbatim - synthesize with search findings
+9. COUNT YOUR WORDS - the synthesis MUST be approximately 300 words, NOT shorter
 
 ADDITIONAL EXTRACTION RULES:
 1. Convert all first-person language to third-person
 2. Extract notable achievements, awards, certifications from ALL data sources
-3. Rank achievements by credibility (1-10): web search press = 9-10, website = 6-8, existing bio = 5-7
-4. Deduplicate information across sources
-5. **ALWAYS INCLUDE DATES**: Extract year for EVERY achievement when available`;
+3. Look for PERSONAL achievements (valedictorian, scholarships, etc.) - these are highly valuable
+4. Extract CHARITABLE involvement (charities supported, foundations, volunteer work)
+5. Rank achievements by credibility (1-10): web search press = 9-10, website = 6-8, existing bio = 5-7
+6. Deduplicate information across sources
+7. **ALWAYS INCLUDE DATES**: Extract year for EVERY achievement when available`;
 
-    const userPrompt = `Synthesize this agent profile using the web search findings as your PRIMARY source. Write approximately 300 WORDS.
+    const userPrompt = `Synthesize this agent profile using the web search findings as your PRIMARY source. Write EXACTLY approximately 300 WORDS (this is MANDATORY - count your words!).
 
 AGENT INFORMATION:
 - Name: ${context.name}
@@ -427,14 +437,16 @@ ${context.existingPressData.length > 0 ? JSON.stringify(context.existingPressDat
 === RAW PRESS RESEARCH ===
 ${context.rawResearch || 'No press research available'}
 
-INSTRUCTIONS: 
-- Write approximately 300 WORDS (4-6 paragraphs) about WHO THE AGENT IS
+INSTRUCTIONS (FOLLOW ALL OF THESE): 
+- Write EXACTLY approximately 300 WORDS (5-7 paragraphs) - COUNT YOUR WORDS, this is MANDATORY
 - PRIORITIZE the web search findings - they are our freshest, most comprehensive data
+- INCLUDE PERSONAL DETAILS if found: education achievements (valedictorian, degrees), charities supported, community involvement
 - Feature any press mentions prominently (credibility gold!)
 - Include career background, specialties, achievements, and what makes them unique
 - If no website content, synthesize from web search and Zillow bio
 - Do NOT mention specific properties, prices, addresses, or inventory
-- Write "serving since [year]" but do NOT state a specific years count`;
+- Write "serving since [year]" but do NOT state a specific years count
+- Extract CHARITABLE WORK and community involvement - these humanize the profile`;
 
     const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -453,13 +465,13 @@ INSTRUCTIONS:
         tools: [
           {
             name: 'synthesize_profile',
-            description: 'Extract structured profile data including a ~300 word synthesis and achievements',
+            description: 'Extract structured profile data including a MANDATORY ~300 word synthesis with personal background, education, charitable work, and achievements',
             input_schema: {
               type: 'object',
               properties: {
                 synthesized_bio: {
                   type: 'string',
-                  description: 'Approximately 300-word synthesis (4-6 paragraphs) about THE AGENT - their career background, areas served, specialties, awards, press mentions, and what makes them unique. NO property listings or inventory.'
+                  description: 'MANDATORY 300-word synthesis (5-7 paragraphs) about THE AGENT including: personal background (education achievements like valedictorian, degrees), career history, charitable work/community involvement, areas served, specialties, awards, press mentions, and what makes them unique. NO property listings or inventory. MUST be approximately 300 words.'
                 },
                 areas_served: {
                   type: 'array',
@@ -484,7 +496,8 @@ INSTRUCTIONS:
                       source_url: { type: 'string', description: 'URL of the source if available' }
                     },
                     required: ['title', 'description', 'credibility']
-                  }
+                  },
+                  description: 'Include PERSONAL achievements (valedictorian, scholarships, degrees) and PROFESSIONAL achievements (awards, rankings)'
                 },
                 publications: {
                   type: 'array',
@@ -505,15 +518,16 @@ INSTRUCTIONS:
                   items: {
                     type: 'object',
                     properties: {
-                      organization: { type: 'string' },
-                      role: { type: 'string' },
-                      description: { type: 'string' }
+                      organization: { type: 'string', description: 'Name of charity, nonprofit, or community organization' },
+                      role: { type: 'string', description: 'Their role (supporter, board member, volunteer, founder, etc.)' },
+                      description: { type: 'string', description: 'What they do for this organization' }
                     },
                     required: ['organization', 'role']
-                  }
+                  },
+                  description: 'Charities supported, nonprofits, volunteer work, community involvement - PRIORITIZE extracting this'
                 }
               },
-              required: ['synthesized_bio', 'notable_achievements']
+              required: ['synthesized_bio', 'notable_achievements', 'community_roles']
             }
           }
         ],
