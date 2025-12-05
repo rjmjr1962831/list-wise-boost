@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { RefreshCw, CheckCircle2, XCircle } from 'lucide-react';
+import { RefreshCw, CheckCircle2, XCircle, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -116,6 +116,30 @@ export function SinglePageRecache() {
             <span className="text-sm">{result.message}</span>
           </div>
         )}
+
+        <div className="border-t pt-4 mt-4">
+          <span className="text-sm text-muted-foreground block mb-2">Sitemaps:</span>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="https://top10lists.us/sitemap.xml"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Static Sitemap
+            </a>
+            <a
+              href="https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Dynamic Sitemap
+            </a>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
