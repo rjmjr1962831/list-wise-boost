@@ -25,7 +25,7 @@ const VerifySpecialties = lazy(() => import("./pages/VerifySpecialties"));
 const VerifyCities = lazy(() => import("./pages/VerifyCities"));
 const CityLanding = lazy(() => import("./pages/CityLanding"));
 const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
-const BookAppointment = lazy(() => import("./pages/BookAppointment"));
+
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const CRM = lazy(() => import("./pages/CRM"));
 const MigrateData = lazy(() => import("./pages/MigrateData"));
@@ -94,7 +94,7 @@ const App = () => (
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
-                    <Route path="/book-appointment-robert" element={<BookAppointment />} />
+                    
                     {/* Agent Landing & Onboarding */}
                     <Route path="/join" element={<AgentLanding />} />
                     <Route path="/agent-setup" element={<AgentSetup />} />
