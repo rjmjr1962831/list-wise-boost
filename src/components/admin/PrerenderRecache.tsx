@@ -23,7 +23,7 @@ interface Job {
 
 export const PrerenderRecache: React.FC = () => {
   const [job, setJob] = useState<Job | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
   const fetchJobStatus = useCallback(async () => {
