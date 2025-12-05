@@ -150,7 +150,7 @@ export function SynthesisTester() {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Bulk Synthesis (Claude Sonnet) - {agents.length} Agents</span>
+          <span>Run ALL Agents (Gemini Search + Claude Synthesis) - {agents.length}</span>
           <div className="flex gap-2">
             {!running ? (
               <Button onClick={runAllSynthesis} disabled={agents.length === 0}>
@@ -163,6 +163,9 @@ export function SynthesisTester() {
             )}
           </div>
         </CardTitle>
+        <p className="text-sm text-muted-foreground">
+          ⚠️ Runs full synthesis on ALL {agents.length} agents. ~5-8 hours. Use "Bulk Profile Synthesizer" below to select specific agents.
+        </p>
       </CardHeader>
       <CardContent className="space-y-4">
         {running && (

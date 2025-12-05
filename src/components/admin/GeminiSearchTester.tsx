@@ -144,10 +144,10 @@ export const GeminiSearchTester: React.FC = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Search className="h-5 w-5" />
-          Gemini Flash Iterative Search Tester
+          Single Agent Tester (Search + Full Synthesis)
         </CardTitle>
         <CardDescription>
-          Test the 3-phase/10-search iterative approach using Gemini Flash for agent research
+          Test a SINGLE agent: Gemini Flash for 10 iterative searches, Claude Sonnet for ~300 word bio synthesis
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
