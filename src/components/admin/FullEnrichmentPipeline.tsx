@@ -9,13 +9,20 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { Loader2, Zap, CheckCircle2, AlertCircle, User, Search } from "lucide-react";
+import { Loader2, Zap, CheckCircle2, AlertCircle, User, Search, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 
 interface City {
   id: string;
   name: string;
   state: string;
+}
+
+interface ShortBioAgent {
+  id: string;
+  name: string;
+  synthesized_bio: string;
+  word_count: number;
 }
 
 export default function FullEnrichmentPipeline() {
@@ -48,6 +55,12 @@ export default function FullEnrichmentPipeline() {
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [searchPerformed, setSearchPerformed] = useState(false);
 
+  // Short bio resynthesis
+  const [shortBioAgents, setShortBioAgents] = useState<ShortBioAgent[]>([]);
+  const [shortBioLoading, setShortBioLoading] = useState(false);
+  const [shortBioProgress, setShortBioProgress] = useState({ current: 0, total: 0 });
+  const [minWordCount, setMinWordCount] = useState(200);
+  const [batchSize, setBatchSize] = useState(10);
   useEffect(() => {
     fetchCities();
   }, []);
@@ -278,6 +291,89 @@ export default function FullEnrichmentPipeline() {
     } finally {
       setSingleAgentLoading(false);
     }
+  };
+
+  // Short bio resynthesis functions
+  const findShortBios = async () => {
+    setShortBioLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('id, name, synthesized_bio')
+        .eq('active', true)
+        .not('synthesized_bio', 'is', null)
+        .order('name');
+
+      if (error) throw error;
+
+      // Filter by word count on client side
+      const filtered = (data || [])
+        .filter(agent => agent.synthesized_bio && agent.synthesized_bio.trim().length > 0)
+        .map(agent => ({
+          ...agent,
+          word_count: agent.synthesized_bio.split(/\s+/).length
+        }))
+        .filter(agent => agent.word_count < minWordCount)
+        .sort((a, b) => a.word_count - b.word_count);
+
+      setShortBioAgents(filtered);
+      toast.success(`Found ${filtered.length} agents with bios under ${minWordCount} words`);
+    } catch (error: any) {
+      console.error("Error finding short bios:", error);
+      toast.error("Failed to find short bios: " + error.message);
+    } finally {
+      setShortBioLoading(false);
+    }
+  };
+
+  const resynthesizeShortBios = async () => {
+    if (shortBioAgents.length === 0) {
+      toast.error("No agents to resynthesize. Click 'Find Short Bios' first.");
+      return;
+    }
+
+    setShortBioLoading(true);
+    const total = Math.min(batchSize, shortBioAgents.length);
+    setShortBioProgress({ current: 0, total });
+    
+    let successCount = 0;
+    let failCount = 0;
+
+    addLog(`🔄 Starting resynthesis of ${total} agents with short bios...`);
+
+    for (let i = 0; i < total; i++) {
+      const agent = shortBioAgents[i];
+      setShortBioProgress({ current: i + 1, total });
+      addLog(`📝 [${i + 1}/${total}] Resynthesizing: ${agent.name} (${agent.word_count} words)`);
+
+      try {
+        const { data, error } = await supabase.functions.invoke('synthesize-agent-profile', {
+          body: { professionalId: agent.id }
+        });
+
+        if (error) {
+          addLog(`❌ Failed: ${agent.name} - ${error.message}`);
+          failCount++;
+        } else {
+          const newWordCount = data?.synthesizedBio?.split(/\s+/).length || 0;
+          addLog(`✅ Done: ${agent.name} - now ${newWordCount} words`);
+          successCount++;
+        }
+
+        // Small delay to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (error: any) {
+        addLog(`❌ Error: ${agent.name} - ${error.message}`);
+        failCount++;
+      }
+    }
+
+    addLog(`🎉 Resynthesis complete: ${successCount} success, ${failCount} failed`);
+    toast.success(`Resynthesis complete: ${successCount} success, ${failCount} failed`);
+    
+    // Refresh the list
+    await findShortBios();
+    setShortBioLoading(false);
   };
 
   const runEnrichment = async () => {
@@ -813,6 +909,85 @@ export default function FullEnrichmentPipeline() {
             )}
             {selectedAgent ? `Run Enrichment for ${selectedAgent.name}` : 'Select an agent to enrich'}
           </Button>
+        </div>
+
+        {/* Short Bio Resynthesis Section */}
+        <div className="p-4 border rounded-lg bg-muted/30 space-y-4">
+          <div className="flex items-center gap-2">
+            <RefreshCw className="h-5 w-5" />
+            <Label className="text-base font-semibold">Short Bio Resynthesis</Label>
+          </div>
+          
+          <p className="text-sm text-muted-foreground">
+            Find and resynthesize agents with bios under a certain word count to generate longer, more detailed profiles.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Minimum Word Count: {minWordCount}</Label>
+              <Slider
+                value={[minWordCount]}
+                onValueChange={([value]) => setMinWordCount(value)}
+                min={50}
+                max={400}
+                step={25}
+                disabled={shortBioLoading}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Batch Size: {batchSize}</Label>
+              <Slider
+                value={[batchSize]}
+                onValueChange={([value]) => setBatchSize(value)}
+                min={5}
+                max={50}
+                step={5}
+                disabled={shortBioLoading}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button onClick={findShortBios} disabled={shortBioLoading} variant="secondary">
+              {shortBioLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+              Find Short Bios
+            </Button>
+            <Button 
+              onClick={resynthesizeShortBios} 
+              disabled={shortBioLoading || shortBioAgents.length === 0}
+            >
+              {shortBioLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+              Resynthesize ({shortBioAgents.length > 0 ? Math.min(batchSize, shortBioAgents.length) : 0})
+            </Button>
+          </div>
+
+          {shortBioProgress.total > 0 && shortBioLoading && (
+            <div className="space-y-2">
+              <Progress value={(shortBioProgress.current / shortBioProgress.total) * 100} />
+              <p className="text-xs text-muted-foreground text-center">
+                Processing {shortBioProgress.current} of {shortBioProgress.total}
+              </p>
+            </div>
+          )}
+
+          {shortBioAgents.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">
+                Found {shortBioAgents.length} agents with bios under {minWordCount} words:
+              </Label>
+              <div className="max-h-40 overflow-y-auto border rounded p-2 bg-background text-xs space-y-1">
+                {shortBioAgents.slice(0, 50).map((agent) => (
+                  <div key={agent.id} className="flex justify-between">
+                    <span className="truncate">{agent.name}</span>
+                    <span className="text-muted-foreground shrink-0 ml-2">{agent.word_count} words</span>
+                  </div>
+                ))}
+                {shortBioAgents.length > 50 && (
+                  <p className="text-muted-foreground">...and {shortBioAgents.length - 50} more</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
