@@ -48,6 +48,7 @@ export const GeminiSearchTester: React.FC = () => {
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const [result, setResult] = useState<SearchResponse | null>(null);
   const [synthesisResult, setSynthesisResult] = useState<string | null>(null);
+  const [synthesisError, setSynthesisError] = useState<string | null>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
   const [synthesisTime, setSynthesisTime] = useState<number | null>(null);
 
@@ -96,6 +97,7 @@ export const GeminiSearchTester: React.FC = () => {
 
     setIsSynthesizing(true);
     setSynthesisResult(null);
+    setSynthesisError(null);
     const startTime = Date.now();
 
     try {
@@ -129,7 +131,9 @@ export const GeminiSearchTester: React.FC = () => {
       toast.success('Full synthesis complete!');
     } catch (error) {
       console.error('Synthesis error:', error);
-      toast.error(error instanceof Error ? error.message : 'Synthesis failed');
+      const errorMsg = error instanceof Error ? error.message : 'Synthesis failed';
+      setSynthesisError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsSynthesizing(false);
     }
@@ -250,6 +254,17 @@ export const GeminiSearchTester: React.FC = () => {
               Claude Sonnet Synthesis (~300 words)
             </h3>
             <p className="whitespace-pre-line text-sm">{synthesisResult}</p>
+          </div>
+        )}
+
+        {/* Synthesis Error */}
+        {synthesisError && (
+          <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
+            <h3 className="font-semibold mb-2 text-destructive">Synthesis Error</h3>
+            <p className="text-sm">{synthesisError}</p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Note: The agent must exist in your database. Try searching for an existing agent like "Robert Maynard" or "Dina Beauvais".
+            </p>
           </div>
         )}
 
