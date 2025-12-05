@@ -78,7 +78,7 @@ export function MagicLinkGenerator() {
           Magic Link Generator
         </CardTitle>
         <CardDescription>
-          Generate permanent profile links for all active professionals without links.
+          Generate permanent magic links for all active professionals without links.
           Links are stored in the database and can be synced to Pipedrive.
         </CardDescription>
       </CardHeader>
@@ -88,7 +88,7 @@ export function MagicLinkGenerator() {
           <div className="space-y-0.5">
             <Label htmlFor="sync-pipedrive">Sync to Pipedrive</Label>
             <p className="text-sm text-muted-foreground">
-              Automatically update the Profile Link field in Pipedrive
+              Automatically update the Magic Link field in Pipedrive
             </p>
           </div>
           <Switch
@@ -204,10 +204,10 @@ export function MagicLinkGenerator() {
         <div className="text-sm text-muted-foreground bg-muted/50 p-4 rounded-lg space-y-2">
           <div className="font-medium text-foreground">How it works:</div>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li>Generates permanent tokens (expires 2099) for active professionals without profile links</li>
+            <li>Generates permanent tokens (expires 2099) for active professionals without magic links</li>
             <li>Creates URLs: <code className="text-xs bg-background px-1 py-0.5 rounded">https://top10lists.us/profile/{'{token}'}</code></li>
             <li>Rate limited to 500ms between generations to protect API</li>
-            <li>Optionally syncs profile links to Pipedrive custom field</li>
+            <li>Optionally syncs magic links to Pipedrive custom field</li>
             <li>Tokens are stored in verification_token column</li>
           </ul>
         </div>

@@ -93,7 +93,7 @@ export function BulkPipedriveSyncAll() {
               <li>Create new contacts for agents not in Pipedrive</li>
               <li>Update existing contacts with latest data</li>
               <li>Merge duplicate contacts automatically</li>
-              <li>Populate all 20+ custom fields including Card URL and Profile Link</li>
+              <li>Populate all 20+ custom fields including Card URL and Magic Link</li>
             </ul>
           </CardDescription>
         </CardHeader>

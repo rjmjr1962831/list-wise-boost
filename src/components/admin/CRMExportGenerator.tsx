@@ -160,7 +160,7 @@ export function CRMExportGenerator() {
         'Created At',
         'Updated At',
         'Verification Link',
-        'Top10 Profile Link',
+        'Top10 Magic Link',
         'Direct Profile URL',
         'Anchor Link',
         'OG Image URL (Proxy)'
@@ -172,7 +172,7 @@ export function CRMExportGenerator() {
           ? `https://top10lists.us/verify-listing/${prof.verification_token}`
           : 'No token';
 
-        // Generate Top10 profile link
+        // Generate Top10 magic link
         const stateSlug = (prof.cities as any)?.state_slug || 'unknown';
         const citySlug = prof.cities?.slug || 'unknown';
         const categorySlug = prof.categories?.slug || 'unknown';
@@ -452,7 +452,7 @@ export function CRMExportGenerator() {
             <li><strong>Enrichment data</strong>: Video URL, phone numbers JSON, professional info JSON, licenses JSON, sales stats JSON</li>
             <li>Last enriched timestamp</li>
             <li>Verification link for each agent</li>
-            <li>Top10 profile link for each agent</li>
+            <li>Top10 magic link for each agent</li>
             <li><strong>Direct Profile URL</strong> (opens agent modal with query param)</li>
             <li><strong>Anchor Link</strong> (scrolls to agent card on list page)</li>
             <li><strong>OG Image URL (Proxy)</strong> - top10lists.us domain for HubSpot emails</li>

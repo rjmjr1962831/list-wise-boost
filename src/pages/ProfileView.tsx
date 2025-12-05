@@ -50,7 +50,7 @@ export default function ProfileView() {
 
   useEffect(() => {
     if (!token) {
-      setError("Invalid profile link");
+      setError("Invalid magic link");
       setLoading(false);
       return;
     }
@@ -71,7 +71,7 @@ export default function ProfileView() {
         setProfessional(data.professional);
       } catch (err: any) {
         console.error("Error loading profile:", err);
-        setError(err.message || "Invalid or expired profile link");
+        setError(err.message || "Invalid or expired magic link");
         toast({
           title: "Error",
           description: "Unable to load profile. Please check your link.",
@@ -101,7 +101,7 @@ export default function ProfileView() {
             <CardTitle className="text-destructive">Profile Not Found</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">{error || "This profile link is invalid or has expired."}</p>
+            <p className="text-muted-foreground">{error || "This magic link is invalid or has expired."}</p>
           </CardContent>
         </Card>
       </div>

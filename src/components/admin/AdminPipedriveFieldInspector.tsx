@@ -92,14 +92,14 @@ export function AdminPipedriveFieldInspector() {
 
         {fields.length > 0 && (
           <>
-            {/* Profile Link Analysis */}
+            {/* Magic Link Analysis */}
             {profileLinkFields.length > 0 && (
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
                   <div className="space-y-2">
                     <div className="font-semibold">
-                      Found {profileLinkFields.length} "Profile Link" field(s):
+                      Found {profileLinkFields.length} "Magic Link" field(s):
                     </div>
                     {profileLinkFields.map((field) => (
                       <div key={field.key} className="ml-4 space-y-1">
@@ -206,14 +206,14 @@ export function AdminPipedriveFieldInspector() {
             <strong>Instructions:</strong>
             <ol className="list-decimal ml-4 mt-2 space-y-1 text-sm">
               <li>
-                In Pipedrive, find the duplicate "Profile Link" field and note its field type.
+                In Pipedrive, find the duplicate "Magic Link" field and note its field type.
               </li>
               <li>
                 If the mapped field is not type "url", you need to change it to URL type in
                 Pipedrive settings or map to a different URL field.
               </li>
               <li>
-                Delete any duplicate Profile Link fields that aren't being used.
+                Delete any duplicate Magic Link fields that aren't being used.
               </li>
               <li>
                 The correct field should show clickable URLs like: https://top10lists.us/profile/UUID
