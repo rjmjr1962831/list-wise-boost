@@ -11,6 +11,92 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+/**
+ * Paraphrase a review using Lovable AI (Gemini Flash) to avoid verbatim copying
+ */
+async function paraphraseReview(reviewText: string, reviewerName: string, lovableApiKey: string): Promise<string> {
+  if (!reviewText || reviewText.length < 20) return reviewText;
+  
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash-lite', // Cheapest/fastest for simple rewording
+        messages: [
+          { 
+            role: 'system', 
+            content: `You are a professional editor. Rework the given customer review to convey the same meaning and sentiment without copying it verbatim. Keep the same length and tone. Do NOT add or remove information. Do NOT change the rating implication. Output ONLY the reworded review text, nothing else.`
+          },
+          { 
+            role: 'user', 
+            content: `Rework this customer review by ${reviewerName} while preserving the exact meaning and sentiment:\n\n"${reviewText}"`
+          }
+        ],
+        max_tokens: 500,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Paraphrase API error: ${response.status}`);
+      return reviewText; // Fallback to original
+    }
+
+    const data = await response.json();
+    const paraphrased = data.choices?.[0]?.message?.content?.trim();
+    
+    if (paraphrased && paraphrased.length > 10) {
+      return paraphrased;
+    }
+    return reviewText;
+  } catch (error) {
+    console.error('Paraphrase error:', error);
+    return reviewText; // Fallback to original on error
+  }
+}
+
+/**
+ * Paraphrase multiple reviews in parallel with rate limiting
+ */
+async function paraphraseReviews(reviews: any[], lovableApiKey: string): Promise<any[]> {
+  const paraphrasedReviews = [];
+  const batchSize = 5; // Process 5 reviews at a time to avoid rate limits
+  
+  for (let i = 0; i < reviews.length; i += batchSize) {
+    const batch = reviews.slice(i, i + batchSize);
+    
+    const batchResults = await Promise.all(
+      batch.map(async (review) => {
+        const paraphrasedText = await paraphraseReview(
+          review.reviewText || review.text || '',
+          review.reviewerName || review.reviewer || 'Customer',
+          lovableApiKey
+        );
+        
+        return {
+          ...review,
+          reviewText: paraphrasedText,
+          text: paraphrasedText,
+          originalTextHash: review.reviewText?.substring(0, 50) || '', // Keep a hash for reference
+          paraphrased: true
+        };
+      })
+    );
+    
+    paraphrasedReviews.push(...batchResults);
+    
+    // Small delay between batches to avoid rate limits
+    if (i + batchSize < reviews.length) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
+  
+  return paraphrasedReviews;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -22,6 +108,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const apifyToken = Deno.env.get('APIFY_API_TOKEN')!;
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -165,14 +252,20 @@ serve(async (req) => {
                 continue;
               }
 
-              const reviews = scrapedAgent.reviewsData.reviews;
+              let reviews = scrapedAgent.reviewsData.reviews;
+              
+              // PARAPHRASE REVIEWS to avoid verbatim copying
+              console.log(`Paraphrasing ${reviews.length} reviews for ${agent.name}...`);
+              reviews = await paraphraseReviews(reviews, lovableApiKey);
+              console.log(`✓ Paraphrased ${reviews.length} reviews for ${agent.name}`);
               
               // Update reviews_data with zillow_reviews
               const existingReviewsData = (agent.reviews_data as any) || {};
               const updatedReviewsData = {
                 ...existingReviewsData,
                 zillow_reviews: reviews,
-                zillow_reviews_fetched_at: new Date().toISOString()
+                zillow_reviews_fetched_at: new Date().toISOString(),
+                zillow_reviews_paraphrased: true
               };
 
               const { error: updateError } = await supabase
@@ -184,7 +277,7 @@ serve(async (req) => {
                 console.error(`Failed to update ${agent.name}:`, updateError);
                 failed++;
               } else {
-                console.log(`✓ Updated ${agent.name} with ${reviews.length} reviews`);
+                console.log(`✓ Updated ${agent.name} with ${reviews.length} paraphrased reviews`);
                 successful++;
               }
             } catch (err) {
@@ -212,7 +305,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        message: `Started background task to fetch reviews for ${agentsNeedingReviews.length} agents`,
+        message: `Started background task to fetch & paraphrase reviews for ${agentsNeedingReviews.length} agents`,
         total: agentsNeedingReviews.length,
         city: citySlug || 'all'
       }),
