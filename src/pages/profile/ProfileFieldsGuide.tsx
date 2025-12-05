@@ -5,6 +5,8 @@ import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, Pencil, Upload, ArrowRight, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import FieldEditModal from "@/components/profile/FieldEditModal";
 import ImageUploadModal from "@/components/profile/ImageUploadModal";
@@ -118,6 +120,7 @@ const ProfileFieldsGuide = () => {
   const [pressMentionModalOpen, setPressMentionModalOpen] = useState(false);
   const [currentField, setCurrentField] = useState<FieldConfig | null>(null);
   const [expandedFields, setExpandedFields] = useState<Set<string>>(new Set());
+  const [communicationConsent, setCommunicationConsent] = useState(false);
 
   const fields: FieldConfig[] = [
     {
@@ -692,12 +695,25 @@ const ProfileFieldsGuide = () => {
             </CardContent>
           </Card>
 
+          {/* Communication Consent */}
+          <div className="flex items-start space-x-3 p-4 bg-muted/30 rounded-lg border">
+            <Checkbox
+              id="communicationConsent"
+              checked={communicationConsent}
+              onCheckedChange={(checked) => setCommunicationConsent(checked === true)}
+              className="mt-1"
+            />
+            <Label htmlFor="communicationConsent" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+              We will send you periodic updates by mail and text. Please check the box to say you understand.
+            </Label>
+          </div>
+
           {/* CTA Buttons */}
           <div className="flex justify-between items-center">
             <Button variant="ghost" onClick={() => navigate(`/profile/${token}`)}>
               Back to Preview
             </Button>
-            <Button size="lg" onClick={handleContinue} className="gap-2 px-8">
+            <Button size="lg" onClick={handleContinue} disabled={!communicationConsent} className="gap-2 px-8">
               Continue
               <ArrowRight className="h-5 w-5" />
             </Button>

@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, X, Check, ChevronsUpDown, MessageSquarePlus } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -85,6 +86,7 @@ export default function EditProfile() {
   });
 
   const [newTag, setNewTag] = useState({ certification: '', language: '', service_area: '' });
+  const [communicationConsent, setCommunicationConsent] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -631,6 +633,19 @@ export default function EditProfile() {
               </div>
             </div>
 
+            {/* Communication Consent */}
+            <div className="flex items-start space-x-3 pt-4 border-t">
+              <Checkbox
+                id="communicationConsent"
+                checked={communicationConsent}
+                onCheckedChange={(checked) => setCommunicationConsent(checked === true)}
+                className="mt-1"
+              />
+              <Label htmlFor="communicationConsent" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
+                We will send you periodic updates by mail and text. Please check the box to say you understand.
+              </Label>
+            </div>
+
             {/* Submit */}
             <div className="flex gap-4 pt-4">
               <Button
@@ -640,7 +655,7 @@ export default function EditProfile() {
               >
                 Back
               </Button>
-              <Button type="submit" disabled={saving} className="flex-1">
+              <Button type="submit" disabled={saving || !communicationConsent} className="flex-1">
                 {saving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
