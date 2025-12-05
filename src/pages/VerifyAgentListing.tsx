@@ -183,7 +183,14 @@ export default function VerifyAgentListing() {
           <div className="flex justify-center mb-4">
             <CheckCircle2 className="h-16 w-16 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Congratulations, {professional.name.split(' ')[0]}!</h1>
+          <h1 className="text-3xl font-bold mb-2">Congratulations, {(() => {
+            // Parse name to handle couples like "Don and Jenny Matheson" or "Mark & Dina Beauvais"
+            const andMatch = professional.name.match(/^(\w+)\s+(?:and|&)\s+(\w+)\s+/i);
+            if (andMatch) {
+              return `${andMatch[1]} and ${andMatch[2]}`;
+            }
+            return professional.name.split(' ')[0];
+          })()}!</h1>
           <p className="text-xl text-muted-foreground">
             You've been selected as a finalist for one of {cityName}'s Top 10 Real Estate Agents
           </p>
