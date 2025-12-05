@@ -151,18 +151,43 @@ export default function FullEnrichmentPipeline() {
       // Check if it's a UUID
       const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchTerm);
       
-      let query = supabase
-        .from('professionals')
-        .select('id, name, email, phone, website, image_url, review_stars_rating, num_total_reviews, zillow_profile_url, zillow_data_fetched_at, synthesized_bio')
-        .eq('active', true);
-
+      let data, error;
+      
       if (isUUID) {
-        query = query.eq('id', searchTerm);
+        const result = await supabase
+          .from('professionals')
+          .select('id, name, email, phone, website, image_url, review_stars_rating, num_total_reviews, zillow_profile_url, zillow_data_fetched_at, synthesized_bio')
+          .eq('active', true)
+          .eq('id', searchTerm)
+          .limit(10);
+        data = result.data;
+        error = result.error;
       } else {
-        query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+        // Search by name first
+        const nameResult = await supabase
+          .from('professionals')
+          .select('id, name, email, phone, website, image_url, review_stars_rating, num_total_reviews, zillow_profile_url, zillow_data_fetched_at, synthesized_bio')
+          .eq('active', true)
+          .ilike('name', `%${searchTerm}%`)
+          .limit(10);
+        
+        if (nameResult.error) throw nameResult.error;
+        
+        // If no results by name, try email
+        if (!nameResult.data || nameResult.data.length === 0) {
+          const emailResult = await supabase
+            .from('professionals')
+            .select('id, name, email, phone, website, image_url, review_stars_rating, num_total_reviews, zillow_profile_url, zillow_data_fetched_at, synthesized_bio')
+            .eq('active', true)
+            .ilike('email', `%${searchTerm}%`)
+            .limit(10);
+          data = emailResult.data;
+          error = emailResult.error;
+        } else {
+          data = nameResult.data;
+          error = null;
+        }
       }
-
-      const { data, error } = await query.limit(10);
 
       if (error) throw error;
 
@@ -170,6 +195,7 @@ export default function FullEnrichmentPipeline() {
         toast.info("No agents found matching your search");
       } else {
         setSearchResults(data);
+        toast.success(`Found ${data.length} agent(s)`);
         if (data.length === 1) {
           setSelectedAgent(data[0]);
         }
@@ -702,12 +728,13 @@ export default function FullEnrichmentPipeline() {
             />
             <Button onClick={searchAgent} disabled={singleAgentLoading} variant="secondary">
               {singleAgentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              <span className="ml-2">Search</span>
             </Button>
           </div>
 
           {searchResults.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-sm text-muted-foreground">Search Results:</Label>
+              <Label className="text-sm text-muted-foreground">Search Results ({searchResults.length}):</Label>
               <div className="grid gap-2 max-h-48 overflow-y-auto">
                 {searchResults.map((agent) => (
                   <div
@@ -752,24 +779,27 @@ export default function FullEnrichmentPipeline() {
                       : 'Never'}
                   </p>
                 </div>
-                <Button 
-                  onClick={enrichSingleAgent} 
-                  disabled={singleAgentLoading}
-                  size="sm"
-                >
-                  {singleAgentLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Zap className="h-4 w-4 mr-2" />
-                  )}
-                  Enrich Now
-                </Button>
               </div>
               {selectedAgent.synthesized_bio && (
                 <p className="text-xs text-muted-foreground line-clamp-2">{selectedAgent.synthesized_bio}</p>
               )}
             </div>
           )}
+
+          {/* Always visible Enrich button */}
+          <Button 
+            onClick={enrichSingleAgent} 
+            disabled={singleAgentLoading || !selectedAgent}
+            className="w-full"
+            size="lg"
+          >
+            {singleAgentLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : (
+              <Zap className="h-4 w-4 mr-2" />
+            )}
+            {selectedAgent ? `Run Enrichment for ${selectedAgent.name}` : 'Select an agent to enrich'}
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
