@@ -296,11 +296,14 @@ serve(async (req) => {
     };
 
     // Map custom fields
+    // Helper to truncate strings to Pipedrive's 255 char limit
+    const truncate = (str: string, max = 255) => str && str.length > max ? str.substring(0, max - 3) + '...' : str;
+
     const dynamicFields: Record<string, any> = {
       supabase_id: professional.id,
-      card_url: syncData.card_url,
+      card_url: truncate(syncData.card_url),
       profile_link: syncData.profile_link 
-        ? (syncData.profile_link.startsWith('http') ? syncData.profile_link : `https://top10lists.us${syncData.profile_link}`)
+        ? truncate(syncData.profile_link.startsWith('http') ? syncData.profile_link : `https://top10lists.us${syncData.profile_link}`)
         : null,
       years_experience: syncData.years_experience,
       current_listings: syncData.current_listings,
@@ -311,14 +314,14 @@ serve(async (req) => {
       zillow_page: professional.zillow_search_page ?? null,
       zillow_position: professional.zillow_search_position ?? null,
       agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1) : null,
-      license_number: syncData.license_number,
-      business_name: syncData.company,
-      specialty: syncData.specialty,
-      website: syncData.website,
-      synthesized_bio: syncData.synthesized_bio,
-      city_name: syncData.city_name,
-      state: syncData.state,
-      zillow_profile_url: professional.zillow_profile_url || '',
+      license_number: truncate(syncData.license_number),
+      business_name: truncate(syncData.company),
+      specialty: truncate(syncData.specialty),
+      website: truncate(syncData.website),
+      synthesized_bio: truncate(syncData.synthesized_bio), // Truncate to 255 chars
+      city_name: truncate(syncData.city_name),
+      state: truncate(syncData.state),
+      zillow_profile_url: truncate(professional.zillow_profile_url || ''),
     };
     
     personData.custom_fields = {};
