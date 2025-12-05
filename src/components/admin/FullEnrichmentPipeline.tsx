@@ -46,6 +46,7 @@ export default function FullEnrichmentPipeline() {
   const [singleAgentLoading, setSingleAgentLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
   useEffect(() => {
     fetchCities();
@@ -144,6 +145,7 @@ export default function FullEnrichmentPipeline() {
     setSingleAgentLoading(true);
     setSearchResults([]);
     setSelectedAgent(null);
+    setSearchPerformed(false);
 
     try {
       const searchTerm = singleAgentSearch.trim();
@@ -191,6 +193,8 @@ export default function FullEnrichmentPipeline() {
 
       if (error) throw error;
 
+      setSearchPerformed(true);
+      
       if (!data || data.length === 0) {
         toast.info("No agents found matching your search");
       } else {
@@ -766,6 +770,15 @@ export default function FullEnrichmentPipeline() {
                 ))}
               </div>
             </div>
+          )}
+
+          {searchPerformed && searchResults.length === 0 && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                No agents found matching "<strong>{singleAgentSearch}</strong>". Try a different name or check spelling.
+              </AlertDescription>
+            </Alert>
           )}
 
           {selectedAgent && (
