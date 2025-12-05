@@ -11,6 +11,12 @@ export function SinglePageRecache() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
 
+  // Clear result when URL changes to indicate ready for new operation
+  const handleUrlChange = (newUrl: string) => {
+    setUrl(newUrl);
+    setResult(null);
+  };
+
   const handleRecache = async () => {
     if (!url.trim()) {
       toast.error('Please enter a URL');
@@ -71,7 +77,7 @@ export function SinglePageRecache() {
         <div className="flex gap-2">
           <Input
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => handleUrlChange(e.target.value)}
             placeholder="https://top10lists.us/arizona/scottsdale/top10realestateagents"
             className="flex-1"
           />
@@ -97,7 +103,7 @@ export function SinglePageRecache() {
               key={item.url}
               variant="outline"
               size="sm"
-              onClick={() => setUrl(item.url)}
+              onClick={() => handleUrlChange(item.url)}
             >
               {item.label}
             </Button>
