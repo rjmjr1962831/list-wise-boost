@@ -318,7 +318,7 @@ serve(async (req) => {
       business_name: truncate(syncData.company),
       specialty: truncate(syncData.specialty),
       website: truncate(syncData.website),
-      synthesized_bio: truncate(syncData.synthesized_bio), // Truncate to 255 chars
+      synthesized_bio: syncData.synthesized_bio, // Text field - no truncation needed
       city_name: truncate(syncData.city_name),
       state: truncate(syncData.state),
       zillow_profile_url: truncate(professional.zillow_profile_url || ''),
