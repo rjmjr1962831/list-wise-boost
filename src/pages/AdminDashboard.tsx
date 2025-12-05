@@ -35,6 +35,7 @@ import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 import CacheManagement from '@/components/admin/CacheManagement';
 import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
 import PrerenderRecache from '@/components/admin/PrerenderRecache';
+import { SinglePageRecache } from '@/components/admin/SinglePageRecache';
 import AIModelTester from '@/components/admin/AIModelTester';
 import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
@@ -356,6 +357,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="prerender" className="space-y-4">
+            <SinglePageRecache />
             <PrerenderRecache />
           </TabsContent>
 
