@@ -39,6 +39,7 @@ import AIModelTester from '@/components/admin/AIModelTester';
 import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
+import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -336,6 +337,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="bulk-synthesis" className="space-y-4">
+            <UnsynthesizedProfileRunner />
             <GeminiSearchTester />
             <SynthesisTester />
             <BulkProfileSynthesizer />
