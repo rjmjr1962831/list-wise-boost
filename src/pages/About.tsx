@@ -6,6 +6,7 @@ const About = () => {
       <Helmet>
         <title>About Us - Top10Lists.us</title>
         <meta name="description" content="Learn about Top10Lists.us - data-verified directory of top real estate agents in the United States." />
+        <link rel="canonical" href="https://top10lists.us/about" />
       </Helmet>
       
       <div className="min-h-screen bg-background">
