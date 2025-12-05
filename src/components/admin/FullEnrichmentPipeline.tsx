@@ -8,7 +8,8 @@ import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, Zap, CheckCircle2, AlertCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Zap, CheckCircle2, AlertCircle, User, Search } from "lucide-react";
 import { toast } from "sonner";
 
 interface City {
@@ -39,6 +40,12 @@ export default function FullEnrichmentPipeline() {
   const [skipRecentlyEnriched, setSkipRecentlyEnriched] = useState(true);
   const [skipGenericBios, setSkipGenericBios] = useState(true);
   const [skipIfNoPress, setSkipIfNoPress] = useState(true);
+  
+  // Single agent enrichment
+  const [singleAgentSearch, setSingleAgentSearch] = useState("");
+  const [singleAgentLoading, setSingleAgentLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [selectedAgent, setSelectedAgent] = useState<any>(null);
 
   useEffect(() => {
     fetchCities();
@@ -126,6 +133,121 @@ export default function FullEnrichmentPipeline() {
       total: (Math.max(0.1, creditsPerAgent) * targetAgents).toFixed(0),
       savings: ((1 - creditsPerAgent / baseCreditsPerAgent) * 100).toFixed(0)
     };
+  };
+
+  const searchAgent = async () => {
+    if (!singleAgentSearch.trim()) {
+      toast.error("Please enter a name, email, or ID to search");
+      return;
+    }
+
+    setSingleAgentLoading(true);
+    setSearchResults([]);
+    setSelectedAgent(null);
+
+    try {
+      const searchTerm = singleAgentSearch.trim();
+      
+      // Check if it's a UUID
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(searchTerm);
+      
+      let query = supabase
+        .from('professionals')
+        .select('id, name, email, phone, website, image_url, review_stars_rating, num_total_reviews, zillow_profile_url, zillow_data_fetched_at, synthesized_bio')
+        .eq('active', true);
+
+      if (isUUID) {
+        query = query.eq('id', searchTerm);
+      } else {
+        query = query.or(`name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
+      }
+
+      const { data, error } = await query.limit(10);
+
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        toast.info("No agents found matching your search");
+      } else {
+        setSearchResults(data);
+        if (data.length === 1) {
+          setSelectedAgent(data[0]);
+        }
+      }
+    } catch (error: any) {
+      console.error("Search error:", error);
+      toast.error("Search failed: " + error.message);
+    } finally {
+      setSingleAgentLoading(false);
+    }
+  };
+
+  const enrichSingleAgent = async () => {
+    if (!selectedAgent) {
+      toast.error("Please select an agent first");
+      return;
+    }
+
+    setSingleAgentLoading(true);
+    addLog(`🎯 Starting single agent enrichment for: ${selectedAgent.name}`);
+
+    try {
+      // Step 1: Fetch memo23 data
+      addLog(`📡 Fetching memo23 data...`);
+      const { data: memo23Data, error: memo23Error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
+        body: {
+          professionalId: selectedAgent.id,
+          dryRun: false,
+          skipRecentlyEnriched: false,
+          skipGenericBios: false
+        }
+      });
+
+      if (memo23Error) {
+        addLog(`❌ Memo23 fetch failed: ${memo23Error.message}`);
+      } else if (memo23Data?.skipped) {
+        addLog(`⏭️ Memo23: ${memo23Data.reason}`);
+      } else {
+        addLog(`✅ Memo23 data fetched successfully`);
+      }
+
+      // Step 2: Run profile synthesis
+      addLog(`🧠 Running profile synthesis...`);
+      const { data: synthData, error: synthError } = await supabase.functions.invoke('synthesize-agent-profile', {
+        body: {
+          professionalId: selectedAgent.id
+        }
+      });
+
+      if (synthError) {
+        addLog(`❌ Synthesis failed: ${synthError.message}`);
+      } else {
+        addLog(`✅ Profile synthesis complete`);
+        if (synthData?.synthesizedBio) {
+          addLog(`📝 Generated ${synthData.synthesizedBio.length} char bio`);
+        }
+      }
+
+      addLog(`🎉 Single agent enrichment complete for ${selectedAgent.name}!`);
+      toast.success(`Enrichment complete for ${selectedAgent.name}`);
+
+      // Refresh the agent data
+      const { data: refreshed } = await supabase
+        .from('professionals')
+        .select('id, name, email, phone, website, image_url, review_stars_rating, num_total_reviews, zillow_profile_url, zillow_data_fetched_at, synthesized_bio')
+        .eq('id', selectedAgent.id)
+        .single();
+
+      if (refreshed) {
+        setSelectedAgent(refreshed);
+      }
+    } catch (error: any) {
+      console.error("Single agent enrichment error:", error);
+      addLog(`❌ Error: ${error.message}`);
+      toast.error("Enrichment failed: " + error.message);
+    } finally {
+      setSingleAgentLoading(false);
+    }
   };
 
   const runEnrichment = async () => {
@@ -561,6 +683,94 @@ export default function FullEnrichmentPipeline() {
             <strong>Full Enrichment:</strong> Includes press research via Claude and auto-synthesis of bios, achievements, and publications.
           </AlertDescription>
         </Alert>
+
+        {/* Single Agent Enrichment Section */}
+        <div className="p-4 border rounded-lg bg-muted/30 space-y-4">
+          <div className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            <Label className="text-base font-semibold">Single Agent Enrichment</Label>
+          </div>
+          
+          <div className="flex gap-2">
+            <Input
+              placeholder="Search by name, email, or paste UUID..."
+              value={singleAgentSearch}
+              onChange={(e) => setSingleAgentSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && searchAgent()}
+              disabled={singleAgentLoading}
+              className="flex-1"
+            />
+            <Button onClick={searchAgent} disabled={singleAgentLoading} variant="secondary">
+              {singleAgentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            </Button>
+          </div>
+
+          {searchResults.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Search Results:</Label>
+              <div className="grid gap-2 max-h-48 overflow-y-auto">
+                {searchResults.map((agent) => (
+                  <div
+                    key={agent.id}
+                    onClick={() => setSelectedAgent(agent)}
+                    className={`p-2 rounded cursor-pointer border transition-colors ${
+                      selectedAgent?.id === agent.id 
+                        ? 'border-primary bg-primary/10' 
+                        : 'border-border hover:bg-muted'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {agent.image_url && (
+                        <img src={agent.image_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{agent.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {agent.email || 'No email'} • {agent.review_stars_rating?.toFixed(1) || 'NA'}★ • {agent.num_total_reviews || 0} reviews
+                        </p>
+                      </div>
+                      {agent.synthesized_bio && (
+                        <span title="Has synthesized bio">
+                          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectedAgent && (
+            <div className="p-3 rounded-lg border bg-background space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-semibold">{selectedAgent.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Last enriched: {selectedAgent.zillow_data_fetched_at 
+                      ? new Date(selectedAgent.zillow_data_fetched_at).toLocaleDateString()
+                      : 'Never'}
+                  </p>
+                </div>
+                <Button 
+                  onClick={enrichSingleAgent} 
+                  disabled={singleAgentLoading}
+                  size="sm"
+                >
+                  {singleAgentLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Zap className="h-4 w-4 mr-2" />
+                  )}
+                  Enrich Now
+                </Button>
+              </div>
+              {selectedAgent.synthesized_bio && (
+                <p className="text-xs text-muted-foreground line-clamp-2">{selectedAgent.synthesized_bio}</p>
+              )}
+            </div>
+          )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
