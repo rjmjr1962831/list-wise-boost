@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Search, Loader2, Globe, Clock, FileText } from 'lucide-react';
+import { Search, Loader2, Globe, Clock, FileText, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -45,8 +45,11 @@ export const GeminiSearchTester: React.FC = () => {
   const [state, setState] = useState('KS');
   const [dryRun, setDryRun] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
   const [result, setResult] = useState<SearchResponse | null>(null);
+  const [synthesisResult, setSynthesisResult] = useState<string | null>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
+  const [synthesisTime, setSynthesisTime] = useState<number | null>(null);
 
   const handleSearch = async () => {
     if (!agentName.trim()) {
@@ -82,6 +85,53 @@ export const GeminiSearchTester: React.FC = () => {
       toast.error(error instanceof Error ? error.message : 'Search failed');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleFullSynthesis = async () => {
+    if (!agentName.trim()) {
+      toast.error('Agent name is required');
+      return;
+    }
+
+    setIsSynthesizing(true);
+    setSynthesisResult(null);
+    const startTime = Date.now();
+
+    try {
+      // First, look up the agent by name
+      const { data: agents, error: lookupError } = await supabase
+        .from('professionals')
+        .select('id, name')
+        .ilike('name', `%${agentName.trim()}%`)
+        .limit(1);
+
+      if (lookupError || !agents || agents.length === 0) {
+        throw new Error(`Agent "${agentName}" not found in database`);
+      }
+
+      const agent = agents[0];
+      toast.info(`Found agent: ${agent.name} (${agent.id})`);
+
+      // Run full synthesis pipeline
+      const { data, error } = await supabase.functions.invoke('synthesize-agent-profile', {
+        body: { professionalId: agent.id }
+      });
+
+      setSynthesisTime(Date.now() - startTime);
+
+      if (error) {
+        throw error;
+      }
+
+      const bio = data?.data?.synthesized_bio || data?.synthesized_bio;
+      setSynthesisResult(bio || 'No synthesis generated');
+      toast.success('Full synthesis complete!');
+    } catch (error) {
+      console.error('Synthesis error:', error);
+      toast.error(error instanceof Error ? error.message : 'Synthesis failed');
+    } finally {
+      setIsSynthesizing(false);
     }
   };
 
@@ -147,7 +197,7 @@ export const GeminiSearchTester: React.FC = () => {
               Dry Run (don't save to database)
             </Label>
           </div>
-          <Button onClick={handleSearch} disabled={isLoading}>
+          <Button onClick={handleSearch} disabled={isLoading || isSynthesizing}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -160,12 +210,46 @@ export const GeminiSearchTester: React.FC = () => {
               </>
             )}
           </Button>
+          <Button onClick={handleFullSynthesis} disabled={isLoading || isSynthesizing} variant="secondary">
+            {isSynthesizing ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Synthesizing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Run Full Synthesis (Gemini + Sonnet)
+              </>
+            )}
+          </Button>
         </div>
 
-        {responseTime !== null && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            Response time: {(responseTime / 1000).toFixed(2)}s
+        {(responseTime !== null || synthesisTime !== null) && (
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            {responseTime !== null && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-4 w-4" />
+                Search: {(responseTime / 1000).toFixed(2)}s
+              </span>
+            )}
+            {synthesisTime !== null && (
+              <span className="flex items-center gap-1">
+                <Sparkles className="h-4 w-4" />
+                Synthesis: {(synthesisTime / 1000).toFixed(2)}s
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Synthesis Result */}
+        {synthesisResult && (
+          <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <h3 className="font-semibold mb-2 flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              Claude Sonnet Synthesis (~300 words)
+            </h3>
+            <p className="whitespace-pre-line text-sm">{synthesisResult}</p>
           </div>
         )}
 
