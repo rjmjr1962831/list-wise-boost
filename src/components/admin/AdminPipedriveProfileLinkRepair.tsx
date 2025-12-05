@@ -34,11 +34,11 @@ export function AdminPipedriveProfileLinkRepair() {
       if (dryRun) {
         toast.success("Dry run completed - no changes made");
       } else {
-        toast.success(`Repaired ${data.updated} profile links`);
+        toast.success(`Repaired ${data.updated} magic links`);
       }
     } catch (error: any) {
       console.error("Repair error:", error);
-      toast.error(error.message || "Failed to repair profile links");
+      toast.error(error.message || "Failed to repair magic links");
     } finally {
       setIsRepairing(false);
     }
@@ -49,11 +49,11 @@ export function AdminPipedriveProfileLinkRepair() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <RefreshCw className="h-5 w-5" />
-          Repair Pipedrive Profile Links
+          Repair Pipedrive Magic Links
         </CardTitle>
         <CardDescription>
-          Fix malformed profile_link values in Pipedrive. This will update all professionals
-          with their correct full URL profile links (https://top10lists.us/profile/UUID).
+          Fix malformed magic link values in Pipedrive. This will update all professionals
+          with their correct full URL magic links (https://top10lists.us/profile/UUID).
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -61,7 +61,7 @@ export function AdminPipedriveProfileLinkRepair() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <strong>What this does:</strong> Searches for each professional in Pipedrive by email
-            and updates their profile_link field with the correct full URL from the database.
+            and updates their magic link field with the correct full URL from the database.
           </AlertDescription>
         </Alert>
 

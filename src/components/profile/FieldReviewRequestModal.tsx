@@ -97,7 +97,7 @@ export default function FieldReviewRequestModal({
           </div>
 
           <div>
-            <Label>Profile Link</Label>
+            <Label>Magic Link</Label>
             <Input value={profileLink} disabled className="bg-muted text-xs" />
           </div>
 
