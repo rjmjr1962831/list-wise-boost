@@ -3,6 +3,9 @@
 User-agent: *
 Allow: /
 
+# Block agent profile magic link pages from crawlers
+Disallow: /profile/
+
 # Sitemap - Static version (updated periodically)
 Sitemap: https://top10lists.us/sitemap.xml
 
