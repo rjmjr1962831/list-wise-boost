@@ -162,7 +162,7 @@ export function BulkProfileSynthesizer() {
               Bulk Profile Synthesizer
             </CardTitle>
             <CardDescription>
-              Re-run AI synthesis to populate dates for notable achievements, publications, and community roles
+              Uses Gemini Flash for web search (10 iterative queries) + Claude Sonnet for ~300 word profile synthesis
             </CardDescription>
           </div>
           <Badge variant="secondary">{professionals.length} professionals</Badge>
