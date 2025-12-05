@@ -210,3 +210,6 @@ verify_jwt = false
 [functions.extract-press-metadata]
 verify_jwt = false
 
+[functions.process-prerender-recache]
+verify_jwt = false
+
