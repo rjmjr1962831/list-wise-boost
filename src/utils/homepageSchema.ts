@@ -149,10 +149,10 @@ export function generateCoverageSchema() {
 }
 
 export function generateHomepageSchema() {
+  // FAQ schema consolidated to /faq page - not included on homepage
   return [
     generateWebsiteSchema(),
     generateOrganizationSchema(),
-    generateFAQSchema(),
     generateCoverageSchema()
   ];
 }

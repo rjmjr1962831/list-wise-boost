@@ -59,6 +59,9 @@ const ClaimListingPreview = lazy(() => import("./pages/profile/ClaimListingPrevi
 // Q&A Landing Pages for LLM optimization
 const QALandingPage = lazy(() => import("./pages/QALandingPage"));
 
+// FAQ page
+const FAQ = lazy(() => import("./pages/FAQ"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -88,6 +91,7 @@ const App = () => (
                     <Route path="/crm" element={<CRM />} />
                     <Route path="/migrate-data" element={<MigrateData />} />
                     {/* Static pages */}
+                    <Route path="/faq" element={<FAQ />} />
                     <Route path="/privacy" element={<Privacy />} />
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/sms-terms" element={<SMSTerms />} />

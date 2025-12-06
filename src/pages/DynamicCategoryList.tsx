@@ -1071,8 +1071,8 @@ export default function DynamicCategoryList() {
     totalAgentsInCity: 500 // Approximate number of licensed agents in city
   };
   
-  // Get ItemList, BreadcrumbList, and FAQPage schemas
-  const [itemListSchema, breadcrumbSchema, faqSchema] = generateCityListingSchema(cityListingData);
+  // Get ItemList and BreadcrumbList schemas (FAQ consolidated to /faq page)
+  const [itemListSchema, breadcrumbSchema] = generateCityListingSchema(cityListingData);
 
   // Enhanced JSON-LD schema for city page (CollectionPage wrapper)
   const collectionPageSchema = {
@@ -1154,9 +1154,6 @@ export default function DynamicCategoryList() {
         </script>
         <script type="application/ld+json">
           {JSON.stringify(breadcrumbSchema)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(faqSchema)}
         </script>
       </Helmet>
       
