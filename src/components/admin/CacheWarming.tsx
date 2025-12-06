@@ -11,9 +11,10 @@ interface Job {
   id: string;
   status: string;
   total_urls: number;
-  processed_urls: number;
-  successful_urls: number;
-  failed_urls: number;
+  processed_count: number;
+  success_count: number;
+  fail_count: number;
+  current_index: number;
   started_at: string | null;
   completed_at: string | null;
   error_message: string | null;
@@ -41,12 +42,12 @@ export function CacheWarming() {
   useEffect(() => {
     fetchJobStatus();
     
-    // Poll for updates if job is running
+    // Poll for updates every 2 seconds if job is running (faster for real-time feedback)
     const interval = setInterval(() => {
       if (job?.status === 'running') {
         fetchJobStatus();
       }
-    }, 3000);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [job?.status, fetchJobStatus]);
@@ -96,7 +97,7 @@ export function CacheWarming() {
     }
   };
 
-  const progress = job ? (job.processed_urls / job.total_urls) * 100 : 0;
+  const progress = job ? (job.processed_count / job.total_urls) * 100 : 0;
 
   const getStatusBadge = () => {
     if (!job) return null;
@@ -179,15 +180,15 @@ export function CacheWarming() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Processed:</span>
-                <span className="ml-2 font-medium">{job.processed_urls} / {job.total_urls}</span>
+                <span className="ml-2 font-medium">{job.processed_count} / {job.total_urls}</span>
               </div>
               <div>
                 <span className="text-muted-foreground">Success:</span>
-                <span className="ml-2 font-medium text-green-600">{job.successful_urls}</span>
+                <span className="ml-2 font-medium text-green-600">{job.success_count}</span>
               </div>
               <div>
                 <span className="text-muted-foreground">Failed:</span>
-                <span className="ml-2 font-medium text-red-600">{job.failed_urls}</span>
+                <span className="ml-2 font-medium text-red-600">{job.fail_count}</span>
               </div>
               <div>
                 <span className="text-muted-foreground">Progress:</span>

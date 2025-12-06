@@ -178,10 +178,12 @@ async function processBatch(jobId: string): Promise<{ completed: boolean; proces
   }
 
   const urls = job.urls as string[];
-  const startIndex = job.processed_urls || 0;
+  const startIndex = job.processed_count || 0;
   const endIndex = Math.min(startIndex + BATCH_SIZE, urls.length);
-  let successCount = job.successful_urls || 0;
-  let failCount = job.failed_urls || 0;
+  let successCount = job.success_count || 0;
+  let failCount = job.fail_count || 0;
+
+  console.log(`Processing batch: URLs ${startIndex} to ${endIndex} of ${urls.length}`);
 
   for (let i = startIndex; i < endIndex; i++) {
     const url = urls[i];
@@ -193,8 +195,8 @@ async function processBatch(jobId: string): Promise<{ completed: boolean; proces
       failCount++;
     }
 
-    // Check if job was stopped every 10 URLs
-    if ((i - startIndex) % 10 === 0 && i > startIndex) {
+    // Update progress every 10 URLs for real-time feedback
+    if ((i - startIndex + 1) % 10 === 0 || i === endIndex - 1) {
       const { data: currentJob } = await supabase
         .from('prerender_recache_jobs')
         .select('status')
@@ -205,13 +207,26 @@ async function processBatch(jobId: string): Promise<{ completed: boolean; proces
         await supabase
           .from('prerender_recache_jobs')
           .update({
-            processed_urls: i + 1,
-            successful_urls: successCount,
-            failed_urls: failCount
+            processed_count: i + 1,
+            current_index: i + 1,
+            success_count: successCount,
+            fail_count: failCount
           })
           .eq('id', jobId);
+        console.log(`Job stopped at URL ${i + 1}`);
         return { completed: true, processed: i - startIndex + 1 };
       }
+
+      // Update progress in DB for real-time display
+      await supabase
+        .from('prerender_recache_jobs')
+        .update({
+          processed_count: i + 1,
+          current_index: i + 1,
+          success_count: successCount,
+          fail_count: failCount
+        })
+        .eq('id', jobId);
     }
 
     await new Promise(resolve => setTimeout(resolve, DELAY_MS));
@@ -222,14 +237,16 @@ async function processBatch(jobId: string): Promise<{ completed: boolean; proces
   await supabase
     .from('prerender_recache_jobs')
     .update({
-      processed_urls: endIndex,
-      successful_urls: successCount,
-      failed_urls: failCount,
+      processed_count: endIndex,
+      current_index: endIndex,
+      success_count: successCount,
+      fail_count: failCount,
       status: completed ? 'completed' : 'running',
       completed_at: completed ? new Date().toISOString() : null
     })
     .eq('id', jobId);
 
+  console.log(`Batch complete: ${endIndex}/${urls.length} URLs processed (${successCount} success, ${failCount} failed)`);
   return { completed, processed: endIndex - startIndex };
 }
 
