@@ -34,8 +34,8 @@ import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesize
 import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 import CacheManagement from '@/components/admin/CacheManagement';
 import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
-import PrerenderRecache from '@/components/admin/PrerenderRecache';
-import { SinglePageRecache } from '@/components/admin/SinglePageRecache';
+import { CacheWarming } from '@/components/admin/CacheWarming';
+import { SinglePageCacheWarm } from '@/components/admin/SinglePageCacheWarm';
 import AIModelTester from '@/components/admin/AIModelTester';
 import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
@@ -255,9 +255,9 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Arizona Pricing
             </TabsTrigger>
-            <TabsTrigger value="prerender">
+            <TabsTrigger value="cache-warming">
               <Globe className="mr-2 h-4 w-4" />
-              Prerender
+              Cache Warming
             </TabsTrigger>
             <TabsTrigger value="ai-router">
               <Bot className="mr-2 h-4 w-4" />
@@ -356,9 +356,9 @@ const AdminDashboard = () => {
             <ArizonaPricingSetup />
           </TabsContent>
 
-          <TabsContent value="prerender" className="space-y-4">
-            <SinglePageRecache />
-            <PrerenderRecache />
+          <TabsContent value="cache-warming" className="space-y-4">
+            <SinglePageCacheWarm />
+            <CacheWarming />
           </TabsContent>
 
           <TabsContent value="ai-router" className="space-y-4">
