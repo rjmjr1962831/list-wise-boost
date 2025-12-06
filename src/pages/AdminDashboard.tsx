@@ -43,6 +43,7 @@ import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
 import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
 import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
+import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -317,6 +318,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="full-enrichment" className="space-y-4">
+            <CrossLinkMetroAgents />
             <BulkPhoenixImporter />
             <FullEnrichmentPipeline />
           </TabsContent>
