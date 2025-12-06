@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, Loader2, RefreshCw, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Play, Loader2, RefreshCw, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 interface CityStatus {
@@ -11,12 +11,25 @@ interface CityStatus {
   qualified_count: number;
 }
 
+interface ImportProgress {
+  session_id: string;
+  status: string;
+  total_cities: number;
+  current_index: number;
+  current_city: string | null;
+  results: {
+    processed: { city: string; count: number }[];
+    skipped: { city: string; reason: string }[];
+    failed: { city: string; error: string }[];
+  };
+}
+
 export function BulkPhoenixImporter() {
   const [isStarting, setIsStarting] = useState(false);
-  const [isRunning, setIsRunning] = useState(false);
   const [cities, setCities] = useState<CityStatus[]>([]);
   const [citiesNeedingAgents, setCitiesNeedingAgents] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeSession, setActiveSession] = useState<ImportProgress | null>(null);
 
   const fetchCityStats = async () => {
     setIsLoading(true);
@@ -30,7 +43,6 @@ export function BulkPhoenixImporter() {
 
       if (error) throw error;
 
-      // Get qualified count for each city
       const cityStats: CityStatus[] = [];
       const needsAgents: string[] = [];
 
@@ -58,9 +70,37 @@ export function BulkPhoenixImporter() {
     }
   };
 
+  const fetchActiveSession = useCallback(async () => {
+    const { data } = await supabase
+      .from('bulk_capture_progress')
+      .select('*')
+      .eq('status', 'running')
+      .order('started_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (data) {
+      setActiveSession(data as unknown as ImportProgress);
+    } else {
+      setActiveSession(null);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCityStats();
-  }, []);
+    fetchActiveSession();
+  }, [fetchActiveSession]);
+
+  // Poll for progress when session is active
+  useEffect(() => {
+    if (!activeSession) return;
+
+    const interval = setInterval(() => {
+      fetchActiveSession();
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [activeSession, fetchActiveSession]);
 
   const handleStartImport = async () => {
     setIsStarting(true);
@@ -69,13 +109,10 @@ export function BulkPhoenixImporter() {
       
       if (error) throw error;
       
-      setIsRunning(true);
-      toast.success(
-        `Import started for ${data.totalCitiesNeedingAgents} cities needing agents.`,
-        { duration: 5000 }
-      );
+      toast.success(`Import started for ${data.totalCitiesNeedingAgents} cities (4.8★ + 50 reviews)`);
       
-      console.log('Cities being processed:', data.citiesNeedingAgents);
+      // Start polling for the new session
+      setTimeout(fetchActiveSession, 2000);
       
     } catch (error) {
       console.error('Import error:', error);
@@ -87,13 +124,14 @@ export function BulkPhoenixImporter() {
 
   const citiesWithEnough = cities.filter(c => c.qualified_count >= 10).length;
   const progressPercent = cities.length > 0 ? (citiesWithEnough / cities.length) * 100 : 0;
+  const sessionProgress = activeSession ? (activeSession.current_index / activeSession.total_cities) * 100 : 0;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           Bulk Arizona Agent Import
-          <Button variant="ghost" size="sm" onClick={fetchCityStats} disabled={isLoading}>
+          <Button variant="ghost" size="sm" onClick={() => { fetchCityStats(); fetchActiveSession(); }} disabled={isLoading}>
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
           </Button>
         </CardTitle>
@@ -102,7 +140,42 @@ export function BulkPhoenixImporter() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Progress Overview */}
+        {/* Active Session Progress */}
+        {activeSession && (
+          <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Import in Progress
+              </span>
+              <span className="text-sm font-mono">
+                {activeSession.current_index}/{activeSession.total_cities}
+              </span>
+            </div>
+            <Progress value={sessionProgress} className="h-2" />
+            {activeSession.current_city && (
+              <p className="text-sm text-muted-foreground">
+                Currently processing: <span className="font-medium">{activeSession.current_city}</span>
+              </p>
+            )}
+            <div className="flex gap-4 text-xs">
+              <span className="text-green-600">
+                <CheckCircle className="inline h-3 w-3 mr-1" />
+                {activeSession.results?.processed?.length || 0} imported
+              </span>
+              <span className="text-amber-600">
+                <AlertTriangle className="inline h-3 w-3 mr-1" />
+                {activeSession.results?.skipped?.length || 0} skipped
+              </span>
+              <span className="text-red-600">
+                <XCircle className="inline h-3 w-3 mr-1" />
+                {activeSession.results?.failed?.length || 0} failed
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Overall Progress */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Cities with 10+ qualified agents</span>
@@ -112,7 +185,7 @@ export function BulkPhoenixImporter() {
         </div>
 
         {/* Cities needing agents */}
-        {citiesNeedingAgents.length > 0 && (
+        {citiesNeedingAgents.length > 0 && !activeSession && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
             <p className="text-sm font-medium text-amber-700 dark:text-amber-400 mb-2">
               {citiesNeedingAgents.length} cities need agents:
@@ -148,7 +221,7 @@ export function BulkPhoenixImporter() {
 
         <Button 
           onClick={handleStartImport} 
-          disabled={isStarting || isRunning || citiesNeedingAgents.length === 0}
+          disabled={isStarting || !!activeSession || citiesNeedingAgents.length === 0}
           className="w-full"
         >
           {isStarting ? (
@@ -156,10 +229,10 @@ export function BulkPhoenixImporter() {
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Starting...
             </>
-          ) : isRunning ? (
+          ) : activeSession ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Running in Background
+              Import Running...
             </>
           ) : citiesNeedingAgents.length === 0 ? (
             <>
@@ -173,15 +246,6 @@ export function BulkPhoenixImporter() {
             </>
           )}
         </Button>
-
-        {isRunning && (
-          <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-sm text-blue-700 dark:text-blue-400">
-              <Clock className="inline h-4 w-4 mr-1" />
-              Import running in background. Click refresh to see updated counts.
-            </p>
-          </div>
-        )}
       </CardContent>
     </Card>
   );
