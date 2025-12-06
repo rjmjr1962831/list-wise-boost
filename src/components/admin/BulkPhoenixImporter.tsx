@@ -18,11 +18,11 @@ export function BulkPhoenixImporter() {
       
       setIsRunning(true);
       toast.success(
-        `Background import started for ${data.totalCities} Phoenix-area cities! Will loop until 50 agents (5.0★ + 200+ reviews) per city. Reusing enriched data where available.`,
+        `Import started for ${data.totalCitiesNeedingAgents} cities needing agents (4.8★ + 50+ reviews).`,
         { duration: 5000 }
       );
       
-      console.log('Cities being processed:', data.cities);
+      console.log('Cities being processed:', data.citiesNeedingAgents);
       
     } catch (error) {
       console.error('Import error:', error);
@@ -35,11 +35,10 @@ export function BulkPhoenixImporter() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Bulk Phoenix Agent Import</CardTitle>
+        <CardTitle>Bulk Arizona Agent Import</CardTitle>
         <CardDescription>
-          Automatically import agents (5.0★ rating + 200+ reviews) for all Phoenix-area cities. 
-          Loops until 50 qualifying agents per city. Reuses enriched data from other cities. 
-          This process runs in the background and may take 1-2 hours.
+          Import agents (4.8★ rating + 50+ reviews) for all Arizona cities with fewer than 10 qualified agents.
+          Runs in background.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -48,11 +47,10 @@ export function BulkPhoenixImporter() {
             <strong>What this does:</strong>
           </p>
           <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-            <li>Processes all active Arizona cities</li>
-            <li>Imports agents until 50 with 5.0★ + 200+ reviews per city</li>
-            <li>Uses getdataforme (agenscrape) with proxyscrape</li>
-            <li>Reuses enriched data from agents in other cities</li>
-            <li>Only runs memo23 for new agents meeting criteria</li>
+            <li>Checks all 48 Arizona cities</li>
+            <li>Only processes cities with fewer than 10 qualified agents</li>
+            <li>Imports agents with 4.8★ + 50+ reviews</li>
+            <li>Uses agenscrape + memo23 enrichment</li>
             <li>Runs completely in the background</li>
           </ul>
         </div>
