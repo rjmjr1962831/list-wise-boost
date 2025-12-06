@@ -140,8 +140,8 @@ export function CacheWarming() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex gap-2">
-          {(!job || job.status === 'completed' || job.status === 'failed') && (
+        <div className="flex gap-2 flex-wrap">
+          {(!job || job.status === 'completed' || job.status === 'failed' || job.status === 'stopped') && (
             <Button onClick={handleStart} disabled={starting}>
               {starting ? (
                 <>
@@ -151,9 +151,15 @@ export function CacheWarming() {
               ) : (
                 <>
                   <Play className="h-4 w-4 mr-2" />
-                  Start Cache Warming
+                  {job?.status === 'stopped' ? 'Start Fresh' : 'Start Cache Warming'}
                 </>
               )}
+            </Button>
+          )}
+          {job?.status === 'stopped' && (
+            <Button onClick={handleResume} variant="outline">
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Resume Previous
             </Button>
           )}
           {job?.status === 'running' && (
@@ -162,14 +168,13 @@ export function CacheWarming() {
               Stop
             </Button>
           )}
-          {job?.status === 'stopped' && (
-            <Button onClick={handleResume}>
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Resume
-            </Button>
-          )}
-          <Button onClick={fetchJobStatus} variant="outline" size="icon">
-            <RefreshCw className="h-4 w-4" />
+          <Button 
+            onClick={() => { setLoading(true); fetchJobStatus(); }} 
+            variant="outline" 
+            size="icon"
+            title="Refresh status"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
 
