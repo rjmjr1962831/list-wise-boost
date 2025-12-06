@@ -43,22 +43,38 @@ serve(async (req) => {
       throw new Error('Real Estate Agent category not found with slug: top10realestateagents');
     }
 
-    console.log(`Starting bulk import for ${cities?.length || 0} Phoenix-area cities`);
+    // Check which cities need agents (less than 10 qualified)
+    const citiesNeedingAgents: typeof cities = [];
+    for (const city of cities || []) {
+      const { count } = await supabase
+        .from('professionals')
+        .select('id', { count: 'exact', head: true })
+        .eq('city_id', city.id)
+        .eq('active', true)
+        .gte('review_stars_rating', 4.8)
+        .gte('num_total_reviews', 50);
+      
+      if ((count || 0) < 10) {
+        citiesNeedingAgents.push(city);
+      }
+    }
 
-    // Background task to process all cities
+    console.log(`Starting bulk import for ${citiesNeedingAgents.length} cities needing agents (out of ${cities?.length || 0} total)`);
+
+    // Background task to process cities needing agents
     const backgroundImport = async () => {
-      for (const city of cities || []) {
+      for (const city of citiesNeedingAgents) {
         try {
           console.log(`Processing ${city.name}...`);
           
-          // Call import-city-agents for this city (will loop until 50 agents with 5★ + 200+ reviews)
+          // Call import-city-agents for this city (4.8★ + 50 reviews criteria)
           const { data: importData, error: importError } = await supabase.functions.invoke(
             'import-city-agents',
             {
               body: { 
                 cityId: city.id,
                 categoryId: category.id,
-                maxResults: 100 // Starting batch size, will increase if needed
+                maxResults: 50
               }
             }
           );
@@ -68,10 +84,10 @@ serve(async (req) => {
             continue;
           }
 
-          console.log(`✓ Completed ${city.name}: ${importData?.agenscrapeImported || 0} agents imported, enrichment in progress`);
+          console.log(`✓ Completed ${city.name}: ${importData?.agentsImported || importData?.agenscrapeImported || 0} agents imported`);
           
           // Delay between cities to manage rate limits
-          await new Promise(resolve => setTimeout(resolve, 15000));
+          await new Promise(resolve => setTimeout(resolve, 10000));
           
         } catch (error) {
           console.error(`Failed to process ${city.name}:`, error);
@@ -88,7 +104,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         message: 'Bulk import started in background',
-        cities: cities?.map(c => c.name) || [],
+        citiesNeedingAgents: citiesNeedingAgents.map(c => c.name),
+        totalCitiesNeedingAgents: citiesNeedingAgents.length,
         totalCities: cities?.length || 0
       }),
       { 

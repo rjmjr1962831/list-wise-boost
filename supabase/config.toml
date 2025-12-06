@@ -218,3 +218,6 @@ verify_jwt = false
 
 [functions.warm-cache-single]
 verify_jwt = false
+
+[functions.bulk-import-phoenix-agents]
+verify_jwt = false
