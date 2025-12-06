@@ -38,13 +38,14 @@ async function warmCacheUrl(url: string): Promise<boolean> {
 }
 
 async function buildUrls(): Promise<string[]> {
-  const { data: cities, error } = await supabase
+  // Get cities that have at least one active qualified agent linked
+  const { data: citiesWithAgents, error } = await supabase
     .from('cities')
-    .select('slug, state_slug')
+    .select('id, slug, state_slug')
     .eq('active', true)
     .order('name');
 
-  if (error || !cities) {
+  if (error || !citiesWithAgents) {
     console.error('Error loading cities:', error);
     return [];
   }
@@ -53,13 +54,14 @@ async function buildUrls(): Promise<string[]> {
   STATIC_PAGES.forEach(page => urls.push(`${BASE_URL}${page}`));
   urls.push(`${BASE_URL}/arizona`);
   
-  cities.forEach(city => {
+  citiesWithAgents.forEach(city => {
     const cityPath = `/${city.state_slug}/${city.slug}`;
     urls.push(`${BASE_URL}${cityPath}/top10realestateagents`);
     urls.push(`${BASE_URL}${cityPath}/best-real-estate-agents`);
     urls.push(`${BASE_URL}${cityPath}/best-real-estate-agents-2025`);
   });
 
+  console.log(`Built ${urls.length} URLs for ${citiesWithAgents.length} cities`);
   return urls;
 }
 
