@@ -213,3 +213,8 @@ verify_jwt = false
 [functions.process-prerender-recache]
 verify_jwt = false
 
+[functions.warm-cache]
+verify_jwt = false
+
+[functions.warm-cache-single]
+verify_jwt = false
