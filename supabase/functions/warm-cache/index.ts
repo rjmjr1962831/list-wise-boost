@@ -16,29 +16,40 @@ const BOT_USER_AGENT = 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.goog
 const STATIC_PAGES = [
   "/", "/about", "/about/ranking-methodology", "/privacy", "/terms", "/sms-terms", "/agent-info", "/check-profile"
 ];
-const DELAY_MS = 500;
-const BATCH_SIZE = 50;
+const DELAY_MS = 300; // Reduced delay since we have timeout protection
+const BATCH_SIZE = 20; // Reduced from 50 to complete within edge function timeout
+const URL_TIMEOUT_MS = 5000; // 5 second timeout per URL
 
-// Warm a single URL by fetching with bot user-agent (triggers Cloudflare KV caching)
+// Warm a single URL with timeout protection
 async function warmCacheUrl(url: string): Promise<boolean> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
+    
     const response = await fetch(url, {
       method: 'GET',
       headers: { 
         'User-Agent': BOT_USER_AGENT,
         'Accept': 'text/html,application/xhtml+xml'
-      }
+      },
+      signal: controller.signal
     });
+    
+    clearTimeout(timeoutId);
     console.log(`Warmed ${url}: ${response.status}`);
     return response.ok;
-  } catch (err) {
-    console.error(`Error warming ${url}:`, err);
+  } catch (err: unknown) {
+    const error = err as Error;
+    if (error.name === 'AbortError') {
+      console.warn(`Timeout warming ${url} after ${URL_TIMEOUT_MS}ms - skipping`);
+    } else {
+      console.error(`Error warming ${url}:`, error.message || err);
+    }
     return false;
   }
 }
 
 async function buildUrls(): Promise<string[]> {
-  // Get cities that have at least one active qualified agent linked
   const { data: citiesWithAgents, error } = await supabase
     .from('cities')
     .select('id, slug, state_slug')
@@ -63,6 +74,18 @@ async function buildUrls(): Promise<string[]> {
 
   console.log(`Built ${urls.length} URLs for ${citiesWithAgents.length} cities`);
   return urls;
+}
+
+// Background batch processor using EdgeRuntime.waitUntil pattern
+async function processBatchInBackground(jobId: string) {
+  try {
+    const result = await processBatch(jobId);
+    if (!result.completed) {
+      await triggerNextBatch(jobId);
+    }
+  } catch (err) {
+    console.error(`Background batch processing error for job ${jobId}:`, err);
+  }
 }
 
 serve(async (req) => {
@@ -92,10 +115,17 @@ serve(async (req) => {
 
       console.log(`Created cache warming job ${job.id} with ${urls.length} URLs`);
       
-      const result = await processBatch(job.id);
-      
-      if (!result.completed) {
-        triggerNextBatch(job.id);
+      // Use EdgeRuntime.waitUntil for background processing
+      // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(processBatchInBackground(job.id));
+      } else {
+        // Fallback: process inline if EdgeRuntime not available
+        const result = await processBatch(job.id);
+        if (!result.completed) {
+          triggerNextBatch(job.id);
+        }
       }
 
       return new Response(JSON.stringify({ success: true, jobId: job.id, totalUrls: urls.length }), {
@@ -106,13 +136,24 @@ serve(async (req) => {
     // Action: continue - Continue processing (self-triggered)
     if (action === 'continue' && jobId) {
       console.log(`Continuing cache warming job ${jobId}`);
-      const result = await processBatch(jobId);
-      if (!result.completed) {
-        triggerNextBatch(jobId);
+      
+      // Use EdgeRuntime.waitUntil for background processing
+      // @ts-ignore
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(processBatchInBackground(jobId));
+        return new Response(JSON.stringify({ success: true, message: 'Batch processing started in background' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        const result = await processBatch(jobId);
+        if (!result.completed) {
+          triggerNextBatch(jobId);
+        }
+        return new Response(JSON.stringify({ success: true, completed: result.completed, processed: result.processed }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
-      return new Response(JSON.stringify({ success: true, completed: result.completed, processed: result.processed }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
     }
 
     // Action: stop - Stop a running job
@@ -132,13 +173,24 @@ serve(async (req) => {
         .from('prerender_recache_jobs')
         .update({ status: 'running' })
         .eq('id', jobId);
-      const result = await processBatch(jobId);
-      if (!result.completed) {
-        triggerNextBatch(jobId);
+      
+      // Use EdgeRuntime.waitUntil for background processing
+      // @ts-ignore
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(processBatchInBackground(jobId));
+        return new Response(JSON.stringify({ success: true, message: 'Resume started in background' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      } else {
+        const result = await processBatch(jobId);
+        if (!result.completed) {
+          triggerNextBatch(jobId);
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
       }
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
     }
 
     // Action: status - Get current job status
@@ -185,7 +237,7 @@ async function processBatch(jobId: string): Promise<{ completed: boolean; proces
   let successCount = job.success_count || 0;
   let failCount = job.fail_count || 0;
 
-  console.log(`Processing batch: URLs ${startIndex} to ${endIndex} of ${urls.length}`);
+  console.log(`Processing batch: URLs ${startIndex} to ${endIndex} of ${urls.length} (batch size: ${BATCH_SIZE})`);
 
   for (let i = startIndex; i < endIndex; i++) {
     const url = urls[i];
@@ -197,8 +249,8 @@ async function processBatch(jobId: string): Promise<{ completed: boolean; proces
       failCount++;
     }
 
-    // Update progress every 10 URLs for real-time feedback
-    if ((i - startIndex + 1) % 10 === 0 || i === endIndex - 1) {
+    // Check if job was stopped every 5 URLs
+    if ((i - startIndex + 1) % 5 === 0 || i === endIndex - 1) {
       const { data: currentJob } = await supabase
         .from('prerender_recache_jobs')
         .select('status')
@@ -277,12 +329,10 @@ async function triggerNextBatch(jobId: string, retries = 3) {
       console.error(`Error triggering next batch (attempt ${attempt}):`, err);
     }
     
-    // Wait before retry
     if (attempt < retries) {
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
   }
   
-  // If all retries failed, mark job as needing resume
   console.error(`All trigger attempts failed for job ${jobId} - job will need manual resume`);
 }
