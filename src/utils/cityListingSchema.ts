@@ -2,7 +2,6 @@
 // City Listing Schema Generator for LLM Optimization
 
 import { AgentData } from './agentSchema';
-import { generateCityFaqSchema } from './cityFaqSchema';
 
 export interface CityListingData {
   city: string;
@@ -16,8 +15,6 @@ export interface CityListingData {
 }
 
 export function generateCityListingSchema(listing: CityListingData): object[] {
-  const currentYear = new Date().getFullYear();
-  
   // Schema 1: ItemList (the ranked list)
   const itemListSchema = {
     "@context": "https://schema.org",
@@ -82,12 +79,6 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     ]
   };
 
-  // Schema 3: FAQPage (10 questions for LLM optimization)
-  const faqSchema = generateCityFaqSchema({
-    city: listing.city,
-    state: listing.state,
-    stateAbbrev: listing.stateAbbrev
-  });
-
-  return [itemListSchema, breadcrumbSchema, faqSchema];
+  // No FAQ schema on city pages - consolidated to /faq page
+  return [itemListSchema, breadcrumbSchema];
 }

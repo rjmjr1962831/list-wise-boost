@@ -78,6 +78,9 @@ export const Header = () => {
             <Link to="/about/ranking-methodology" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Methodology
             </Link>
+            <Link to="/faq" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              FAQ
+            </Link>
             {!user && (
               <Link 
                 to="/agent-onboarding" 
