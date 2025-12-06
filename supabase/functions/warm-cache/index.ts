@@ -250,19 +250,37 @@ async function processBatch(jobId: string): Promise<{ completed: boolean; proces
   return { completed, processed: endIndex - startIndex };
 }
 
-async function triggerNextBatch(jobId: string) {
+async function triggerNextBatch(jobId: string, retries = 3) {
   const functionUrl = `${SUPABASE_URL}/functions/v1/warm-cache`;
   
-  try {
-    await fetch(functionUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-      },
-      body: JSON.stringify({ action: 'continue', jobId })
-    });
-  } catch (err) {
-    console.error('Error triggering next batch:', err);
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      console.log(`Triggering next batch for job ${jobId} (attempt ${attempt})`);
+      const response = await fetch(functionUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        },
+        body: JSON.stringify({ action: 'continue', jobId })
+      });
+      
+      if (response.ok) {
+        console.log(`Successfully triggered next batch for job ${jobId}`);
+        return;
+      } else {
+        console.error(`Trigger attempt ${attempt} failed with status ${response.status}`);
+      }
+    } catch (err) {
+      console.error(`Error triggering next batch (attempt ${attempt}):`, err);
+    }
+    
+    // Wait before retry
+    if (attempt < retries) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
   }
+  
+  // If all retries failed, mark job as needing resume
+  console.error(`All trigger attempts failed for job ${jobId} - job will need manual resume`);
 }
