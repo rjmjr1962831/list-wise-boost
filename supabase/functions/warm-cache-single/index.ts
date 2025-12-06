@@ -23,10 +23,12 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Warming cache for: ${url}`);
+    // Normalize URL to www version for cache key consistency
+    const normalizedUrl = url.replace('https://top10lists.us', 'https://www.top10lists.us');
+    console.log(`Warming cache for: ${normalizedUrl} (original: ${url})`);
 
     // Fetch the URL with a bot user-agent to trigger Cloudflare KV caching
-    const response = await fetch(url, {
+    const response = await fetch(normalizedUrl, {
       method: 'GET',
       headers: {
         'User-Agent': BOT_USER_AGENT,
@@ -35,17 +37,17 @@ serve(async (req) => {
     });
 
     if (response.ok) {
-      console.log(`Successfully warmed cache for: ${url} (status: ${response.status})`);
+      console.log(`Successfully warmed cache for: ${normalizedUrl} (status: ${response.status})`);
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: `Cache warmed for ${url}`,
+          message: `Cache warmed for ${normalizedUrl}`,
           status: response.status
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
-      console.error(`Failed to warm cache for: ${url} (status: ${response.status})`);
+      console.error(`Failed to warm cache for: ${normalizedUrl} (status: ${response.status})`);
       return new Response(
         JSON.stringify({ 
           success: false, 
