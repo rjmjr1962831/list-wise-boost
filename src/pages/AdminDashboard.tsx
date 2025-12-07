@@ -36,7 +36,7 @@ import CacheManagement from '@/components/admin/CacheManagement';
 import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
 import { CacheWarming } from '@/components/admin/CacheWarming';
 import { SinglePageCacheWarm } from '@/components/admin/SinglePageCacheWarm';
-import { SelectiveRecache } from '@/components/admin/SelectiveRecache';
+
 import AIModelTester from '@/components/admin/AIModelTester';
 import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
@@ -362,7 +362,6 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="cache-warming" className="space-y-4">
-            <SelectiveRecache />
             <SinglePageCacheWarm />
             <CacheWarming />
           </TabsContent>
