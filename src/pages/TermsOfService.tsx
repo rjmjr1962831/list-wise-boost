@@ -64,7 +64,7 @@ const TermsOfService = () => {
             <div>
               <strong>
                 <span style={{ fontSize: '26px' }}>
-                  <span data-custom-class="title">TERMS OF SERVICE</span>
+                  <span data-custom-class="title"><h1>TERMS OF SERVICE</h1></span>
                 </span>
               </strong>
             </div>

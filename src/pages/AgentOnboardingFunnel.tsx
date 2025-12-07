@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -153,34 +154,41 @@ const AgentOnboardingFunnel = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8">
-      <div className="container mx-auto px-4">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl font-bold text-center mb-8">Real Estate Agent Onboarding</h1>
+    <>
+      <Helmet>
+        <title>Agent Onboarding | Top10Lists.us</title>
+        <meta name="description" content="Join Arizona's premier real estate agent directory. Complete our onboarding process to get listed on Top10Lists.us." />
+        <link rel="canonical" href="https://top10lists.us/agent-onboarding" />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <h1 className="text-3xl font-bold text-center mb-8">Real Estate Agent Onboarding</h1>
           
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <Card className="p-6 mb-6">
-                <Progress value={(currentStep / totalSteps) * 100} className="mb-4" />
-                <p className="text-sm text-muted-foreground text-center">
-                  Step {currentStep} of {totalSteps}
-                </p>
-              </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <Card className="p-6 mb-6">
+                  <Progress value={(currentStep / totalSteps) * 100} className="mb-4" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    Step {currentStep} of {totalSteps}
+                  </p>
+                </Card>
 
-              {renderStep()}
-            </div>
-
-            {currentStep > 2 && (
-              <div className="lg:col-span-1">
-                <div className="sticky top-4">
-                  <PricingSummary data={data} />
-                </div>
+                {renderStep()}
               </div>
-            )}
+
+              {currentStep > 2 && (
+                <div className="lg:col-span-1">
+                  <div className="sticky top-4">
+                    <PricingSummary data={data} />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
