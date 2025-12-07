@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -24,6 +24,17 @@ export function CacheWarming() {
   const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  const prevStatusRef = useRef<string | null>(null);
+
+  // Show toast when job completes
+  useEffect(() => {
+    if (prevStatusRef.current === 'running' && job?.status === 'completed') {
+      toast.success('Cache warm complete, push to production.', {
+        duration: 10000,
+      });
+    }
+    prevStatusRef.current = job?.status || null;
+  }, [job?.status]);
 
   const fetchJobStatus = useCallback(async () => {
     try {
