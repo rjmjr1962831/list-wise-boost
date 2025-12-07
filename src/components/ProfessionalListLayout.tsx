@@ -177,9 +177,9 @@ export const ProfessionalListLayout = ({
               <Badge variant="outline" className="px-3 py-1">Updated Monthly</Badge>
               <Badge variant="outline" className="px-3 py-1">2025</Badge>
             </div>
-            <h1 className="text-3xl md:text-5xl font-bold">
+            <h2 className="text-3xl md:text-5xl font-bold">
               Top 10 {metadata.profession.plural} in {metadata.location.city}, {metadata.location.state}
-            </h1>
+            </h2>
             <p className="text-lg text-muted-foreground">
               {metadata.description}
             </p>
