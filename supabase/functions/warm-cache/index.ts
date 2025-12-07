@@ -213,6 +213,52 @@ serve(async (req) => {
       }
     }
 
+    // Action: recache - Rerun the last job's URLs
+    if (action === 'recache' && jobId) {
+      // Get the last job's URLs
+      const { data: lastJob } = await supabase
+        .from('prerender_recache_jobs')
+        .select('urls')
+        .eq('id', jobId)
+        .single();
+
+      if (!lastJob || !lastJob.urls || (lastJob.urls as string[]).length === 0) {
+        throw new Error('No URLs found in last job to recache');
+      }
+
+      const urls = lastJob.urls as string[];
+      
+      const { data: job, error } = await supabase
+        .from('prerender_recache_jobs')
+        .insert({
+          status: 'running',
+          total_urls: urls.length,
+          urls: urls,
+          started_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      console.log(`Created recache job ${job.id} with ${urls.length} URLs from previous job`);
+      
+      // @ts-ignore
+      if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+        // @ts-ignore
+        EdgeRuntime.waitUntil(processBatchInBackground(job.id));
+      } else {
+        const result = await processBatch(job.id);
+        if (!result.completed) {
+          triggerNextBatch(job.id);
+        }
+      }
+
+      return new Response(JSON.stringify({ success: true, jobId: job.id, totalUrls: urls.length }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
     // Action: status - Get current job status
     if (action === 'status') {
       const { data: job } = await supabase
