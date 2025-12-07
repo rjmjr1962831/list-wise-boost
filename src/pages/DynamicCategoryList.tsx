@@ -1157,6 +1157,18 @@ export default function DynamicCategoryList() {
         </script>
       </Helmet>
       
+      {/* SEO H1 - Visible heading for search engine compliance */}
+      <div className="bg-gradient-to-b from-primary/5 to-background pt-8 pb-4">
+        <div className="container mx-auto px-4">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center text-foreground">
+            Top 10 {category.plural_name} in {city.name}, {stateAbbrev}
+          </h1>
+          <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
+            Invitation-only directory with multi-source verified rankings
+          </p>
+        </div>
+      </div>
+      
       {categorySlug === 'top10realestateagents' && city && (
         <RealEstateAgentQuizModal
           open={showQuiz}
