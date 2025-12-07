@@ -18,7 +18,7 @@ const STATIC_PAGES = [
 ];
 const DELAY_MS = 300; // Reduced delay since we have timeout protection
 const BATCH_SIZE = 20; // Reduced from 50 to complete within edge function timeout
-const URL_TIMEOUT_MS = 5000; // 5 second timeout per URL
+const URL_TIMEOUT_MS = 60000; // 60 second timeout per URL
 
 // Warm a single URL with timeout protection
 async function warmCacheUrl(url: string): Promise<boolean> {
