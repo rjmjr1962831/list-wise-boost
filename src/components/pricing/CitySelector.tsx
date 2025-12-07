@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, ChevronRight, MapPin } from 'lucide-react';
-import { ARIZONA_CITIES, CityPricingData, getNonPremiumCities } from '@/data/arizonaCityPricing';
+import { ARIZONA_CITIES, CityPricingData, getNonPremiumCities, Region } from '@/data/arizonaCityPricing';
 import { cn } from '@/lib/utils';
 
 interface CitySelectorProps {
@@ -14,18 +14,17 @@ interface CitySelectorProps {
   disabled?: boolean;
 }
 
-type Region = CityPricingData['region'];
-
 const REGION_ORDER: Region[] = [
-  'Phoenix Metro',
   'East Valley', 
   'West Valley',
+  'North Valley',
+  'Phoenix Central',
   'Northern Arizona',
   'Southern Arizona',
 ];
 
 export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelectorProps) {
-  const [expandedRegions, setExpandedRegions] = useState<Set<Region>>(new Set(['Phoenix Metro', 'East Valley']));
+  const [expandedRegions, setExpandedRegions] = useState<Set<Region>>(new Set(['East Valley', 'West Valley']));
   
   const nonPremiumCities = getNonPremiumCities();
   
