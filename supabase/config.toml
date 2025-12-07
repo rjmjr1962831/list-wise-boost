@@ -203,3 +203,6 @@ verify_jwt = false
 
 [functions.cloudflare-purge-cache]
 verify_jwt = false
+
+[functions.clear-kv-cache]
+verify_jwt = false
