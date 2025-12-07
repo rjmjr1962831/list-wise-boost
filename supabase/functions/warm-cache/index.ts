@@ -6,10 +6,12 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PRERENDER_TOKEN = Deno.env.get('PRERENDER_TOKEN');
+const CLOUDFLARE_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN');
+const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
+const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const URL_TIMEOUT_MS = 60000; // 60 seconds per URL for Prerender
+const URL_TIMEOUT_MS = 60000; // 60 seconds per URL
 
 interface WarmRequest {
   urls?: string[];
@@ -25,21 +27,57 @@ interface WarmResult {
   errors: string[];
 }
 
-// Warm a single URL via Prerender.io
-async function warmUrl(url: string): Promise<{ success: boolean; error?: string }> {
-  if (!PRERENDER_TOKEN) {
-    return { success: false, error: 'PRERENDER_TOKEN not configured' };
+// Generate a cache key from URL
+function urlToCacheKey(url: string): string {
+  // Remove protocol and create a clean key
+  return url.replace('https://', '').replace('http://', '').replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+// Write to Cloudflare KV
+async function writeToKV(key: string, value: string): Promise<boolean> {
+  if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
+    console.error('Cloudflare KV credentials not configured');
+    return false;
   }
 
   try {
-    const prerenderUrl = `https://service.prerender.io/${url}`;
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${key}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
+          'Content-Type': 'text/html',
+        },
+        body: value,
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`KV write failed for ${key}: ${response.status} - ${errorText}`);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error(`KV write error for ${key}:`, error);
+    return false;
+  }
+}
+
+// Fetch rendered HTML from Cloudflare Worker (with bot user-agent)
+async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
+  try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
 
-    const response = await fetch(prerenderUrl, {
+    // Use Googlebot user-agent to trigger Cloudflare's bot rendering
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
-        'X-Prerender-Token': PRERENDER_TOKEN,
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
       },
       signal: controller.signal,
     });
@@ -47,7 +85,14 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
     clearTimeout(timeoutId);
 
     if (response.ok) {
-      return { success: true };
+      const html = await response.text();
+      
+      // Basic validation - should have actual content, not just JS shell
+      if (html.length > 1000 && html.includes('</html>')) {
+        return { success: true, html };
+      } else {
+        return { success: false, error: 'Response appears to be empty or JS shell only' };
+      }
     } else {
       return { success: false, error: `HTTP ${response.status}` };
     }
@@ -55,6 +100,27 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
     const message = error instanceof Error ? error.message : 'Unknown error';
     return { success: false, error: message };
   }
+}
+
+// Warm a single URL: fetch rendered HTML and store in KV
+async function warmUrl(url: string): Promise<{ success: boolean; error?: string }> {
+  // Fetch rendered page from Cloudflare Worker
+  const fetchResult = await fetchRenderedPage(url);
+  
+  if (!fetchResult.success || !fetchResult.html) {
+    return { success: false, error: fetchResult.error || 'No HTML returned' };
+  }
+
+  // Store in Cloudflare KV
+  const cacheKey = urlToCacheKey(url);
+  const kvSuccess = await writeToKV(cacheKey, fetchResult.html);
+  
+  if (!kvSuccess) {
+    return { success: false, error: 'Failed to write to KV' };
+  }
+
+  console.log(`  ✓ Cached ${url} (${fetchResult.html.length} bytes)`);
+  return { success: true };
 }
 
 // Get URLs to warm based on region or fetch from database
@@ -105,6 +171,14 @@ serve(async (req) => {
     const body = await req.json() as WarmRequest;
     const { urls: providedUrls, region, limit } = body;
 
+    // Validate Cloudflare credentials
+    if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Cloudflare KV credentials not configured' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+
     // Get URLs to warm
     const urls = providedUrls && providedUrls.length > 0 
       ? providedUrls 
@@ -117,7 +191,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Starting cache warming for ${urls.length} URLs...`);
+    console.log(`🔥 Starting cache warming for ${urls.length} URLs...`);
 
     const result: WarmResult = {
       success: true,
@@ -127,7 +201,7 @@ serve(async (req) => {
       errors: [],
     };
 
-    // Process URLs sequentially to avoid overwhelming Prerender
+    // Process URLs sequentially to avoid overwhelming the server
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i];
       console.log(`[${i + 1}/${urls.length}] Warming: ${url}`);
@@ -139,16 +213,16 @@ serve(async (req) => {
       } else {
         result.failed++;
         result.errors.push(`${url}: ${warmResult.error}`);
-        console.error(`Failed to warm ${url}: ${warmResult.error}`);
+        console.error(`  ✗ Failed: ${warmResult.error}`);
       }
 
-      // Small delay between requests to be nice to Prerender
+      // Small delay between requests
       if (i < urls.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
-    console.log(`✅ Cache warming complete: ${result.warmed}/${result.total} successful`);
+    console.log(`✅ Cache warming complete: ${result.warmed}/${result.total} successful, ${result.failed} failed`);
 
     return new Response(
       JSON.stringify(result),
