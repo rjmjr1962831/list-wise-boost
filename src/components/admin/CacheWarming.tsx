@@ -111,6 +111,24 @@ export function CacheWarming() {
     }
   };
 
+  const handleRecache = async () => {
+    if (!job?.id) return;
+    setStarting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('warm-cache', {
+        body: { action: 'recache', jobId: job.id }
+      });
+      if (error) throw error;
+      toast.success(`Recaching ${data.totalUrls} URLs from last run`);
+      fetchJobStatus();
+    } catch (err) {
+      toast.error('Failed to start recache');
+      console.error(err);
+    } finally {
+      setStarting(false);
+    }
+  };
+
   const progress = job ? (job.processed_count / job.total_urls) * 100 : 0;
 
   const getStatusBadge = () => {
@@ -168,6 +186,12 @@ export function CacheWarming() {
                   {job?.status === 'stopped' ? 'Start Fresh' : 'Start Cache Warming'}
                 </>
               )}
+            </Button>
+          )}
+          {job && (job.status === 'completed' || job.status === 'failed' || job.status === 'stopped') && (
+            <Button onClick={handleRecache} disabled={starting} variant="secondary">
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Recache Last Run
             </Button>
           )}
           {job?.status === 'stopped' && (
