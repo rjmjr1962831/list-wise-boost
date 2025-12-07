@@ -33,9 +33,6 @@ verify_jwt = false
 [functions.generate-agent-photos]
 verify_jwt = false
 
-[functions.prerender-proxy]
-verify_jwt = false
-
 [functions.send-api-failure-alert]
 verify_jwt = false
 
@@ -79,7 +76,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.bulk-import-phoenix-agents]
-verify_jwt = true
+verify_jwt = false
 
 [functions.claude-score-lead]
 verify_jwt = true
@@ -189,12 +186,6 @@ verify_jwt = false
 [functions.generate-ai-content-index]
 verify_jwt = false
 
-[functions.recache-prerender]
-verify_jwt = false
-
-[functions.recache-prerender-single]
-verify_jwt = false
-
 [functions.ai-router]
 verify_jwt = false
 
@@ -210,14 +201,5 @@ verify_jwt = false
 [functions.extract-press-metadata]
 verify_jwt = false
 
-[functions.process-prerender-recache]
-verify_jwt = false
-
-[functions.warm-cache]
-verify_jwt = false
-
-[functions.warm-cache-single]
-verify_jwt = false
-
-[functions.bulk-import-phoenix-agents]
+[functions.cloudflare-purge-cache]
 verify_jwt = false
