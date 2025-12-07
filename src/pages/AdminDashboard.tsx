@@ -34,7 +34,7 @@ import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesize
 import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 import CacheManagement from '@/components/admin/CacheManagement';
 import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
-import { CloudflareCachePurge } from '@/components/admin/CloudflareCachePurge';
+import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManager';
 
 import AIModelTester from '@/components/admin/AIModelTester';
 import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
@@ -361,7 +361,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="cache-warming" className="space-y-4">
-            <CloudflareCachePurge />
+            <CloudflareCacheManager />
           </TabsContent>
 
           <TabsContent value="ai-router" className="space-y-4">
