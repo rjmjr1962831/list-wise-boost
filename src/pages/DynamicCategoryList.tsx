@@ -966,21 +966,27 @@ export default function DynamicCategoryList() {
 
   if (allProfessionals.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-8">
-        <div className="text-center max-w-md">
-          <h2 className="text-2xl font-bold mb-4">No Listings Yet</h2>
-          <p className="text-muted-foreground mb-6">
-            We're importing real agents for {city.name}. This takes a moment—no placeholders will be shown.
-          </p>
-          <Button
-            onClick={() => window.location.reload()}
-            variant="default"
-            size="lg"
-          >
-            Refresh Page
-          </Button>
+      <>
+        <Helmet>
+          <meta name="robots" content="noindex, nofollow" />
+          <title>{`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`}</title>
+        </Helmet>
+        <div className="min-h-screen flex items-center justify-center p-8">
+          <div className="text-center max-w-md">
+            <h2 className="text-2xl font-bold mb-4">No Listings Yet</h2>
+            <p className="text-muted-foreground mb-6">
+              We're importing real agents for {city.name}. This takes a moment—no placeholders will be shown.
+            </p>
+            <Button
+              onClick={() => window.location.reload()}
+              variant="default"
+              size="lg"
+            >
+              Refresh Page
+            </Button>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
