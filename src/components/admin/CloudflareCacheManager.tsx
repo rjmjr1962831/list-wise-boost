@@ -3,14 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { Trash2, Database, Globe, Loader2 } from 'lucide-react';
+
+interface ProgressState {
+  step: number;
+  totalSteps: number;
+  message: string;
+  percent: number;
+}
 
 export function CloudflareCacheManager() {
   const [prefix, setPrefix] = useState('');
   const [isPurgingCdn, setIsPurgingCdn] = useState(false);
   const [isClearingKv, setIsClearingKv] = useState(false);
   const [isClearingAll, setIsClearingAll] = useState(false);
+  const [progress, setProgress] = useState<ProgressState | null>(null);
   const [result, setResult] = useState<{ cdnPurged?: number; kvDeleted?: number; error?: string } | null>(null);
 
   const purgeCdnCache = async (urls?: string[]) => {
@@ -38,16 +47,17 @@ export function CloudflareCacheManager() {
     
     setIsClearingAll(true);
     setResult(null);
+    setProgress({ step: 1, totalSteps: 2, message: 'Purging CDN cache...', percent: 25 });
     
     try {
       // Step 1: Purge CDN cache
-      toast.info('Step 1/2: Purging CDN cache...');
       await purgeCdnCache();
+      setProgress({ step: 2, totalSteps: 2, message: 'Clearing KV cache...', percent: 75 });
       
       // Step 2: Clear KV cache
-      toast.info('Step 2/2: Clearing KV cache...');
       const kvResult = await clearKvCache(undefined, true);
       
+      setProgress({ step: 2, totalSteps: 2, message: 'Complete!', percent: 100 });
       setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted });
       toast.success(`Cache cleared! CDN purged, ${kvResult.deleted} KV keys deleted`);
     } catch (error) {
@@ -56,22 +66,24 @@ export function CloudflareCacheManager() {
       toast.error(`Failed: ${message}`);
     } finally {
       setIsClearingAll(false);
+      setTimeout(() => setProgress(null), 2000);
     }
   };
 
   const handleClearByPrefix = async (prefixValue: string) => {
     setIsClearingKv(true);
     setResult(null);
+    setProgress({ step: 1, totalSteps: 2, message: 'Purging CDN cache...', percent: 25 });
     
     try {
       // Step 1: Purge specific URL from CDN
-      toast.info('Step 1/2: Purging CDN cache...');
       await purgeCdnCache([prefixValue]);
+      setProgress({ step: 2, totalSteps: 2, message: 'Clearing KV cache...', percent: 75 });
       
       // Step 2: Clear KV keys with prefix
-      toast.info('Step 2/2: Clearing KV cache...');
       const kvResult = await clearKvCache(prefixValue);
       
+      setProgress({ step: 2, totalSteps: 2, message: 'Complete!', percent: 100 });
       setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted });
       toast.success(`Cache cleared for ${prefixValue}: ${kvResult.deleted} KV keys deleted`);
     } catch (error) {
@@ -80,6 +92,7 @@ export function CloudflareCacheManager() {
       toast.error(`Failed: ${message}`);
     } finally {
       setIsClearingKv(false);
+      setTimeout(() => setProgress(null), 2000);
     }
   };
 
@@ -91,9 +104,11 @@ export function CloudflareCacheManager() {
     
     setIsPurgingCdn(true);
     setResult(null);
+    setProgress({ step: 1, totalSteps: 1, message: 'Purging CDN cache...', percent: 50 });
     
     try {
       await purgeCdnCache([prefix]);
+      setProgress({ step: 1, totalSteps: 1, message: 'Complete!', percent: 100 });
       setResult({ cdnPurged: 1 });
       toast.success(`CDN cache purged for ${prefix}`);
     } catch (error) {
@@ -102,6 +117,7 @@ export function CloudflareCacheManager() {
       toast.error(`Failed: ${message}`);
     } finally {
       setIsPurgingCdn(false);
+      setTimeout(() => setProgress(null), 2000);
     }
   };
 
@@ -201,6 +217,17 @@ export function CloudflareCacheManager() {
             </Button>
           </div>
         </div>
+
+        {/* Progress Bar */}
+        {progress && (
+          <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
+            <div className="flex justify-between text-sm">
+              <span className="font-medium">{progress.message}</span>
+              <span className="text-muted-foreground">Step {progress.step}/{progress.totalSteps}</span>
+            </div>
+            <Progress value={progress.percent} className="h-2" />
+          </div>
+        )}
 
         {/* Result Display */}
         {result && (
