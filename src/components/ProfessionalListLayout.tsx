@@ -164,8 +164,8 @@ export const ProfessionalListLayout = ({
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-12 md:py-16">
+      {/* Hero Section - Supporting content only (H1 is in parent page) */}
+      <section className="container mx-auto px-4 py-8 md:py-12">
         <div className="max-w-6xl mx-auto space-y-6">
           <Link to="/" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
@@ -177,9 +177,6 @@ export const ProfessionalListLayout = ({
               <Badge variant="outline" className="px-3 py-1">Updated Monthly</Badge>
               <Badge variant="outline" className="px-3 py-1">2025</Badge>
             </div>
-            <h2 className="text-3xl md:text-5xl font-bold">
-              Top 10 {metadata.profession.plural} in {metadata.location.city}, {metadata.location.state}
-            </h2>
             <p className="text-lg text-muted-foreground">
               {metadata.description}
             </p>
