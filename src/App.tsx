@@ -24,6 +24,7 @@ const VerifyDetails = lazy(() => import("./pages/VerifyDetails"));
 const VerifySpecialties = lazy(() => import("./pages/VerifySpecialties"));
 const VerifyCities = lazy(() => import("./pages/VerifyCities"));
 const CityLanding = lazy(() => import("./pages/CityLanding"));
+const StateLanding = lazy(() => import("./pages/StateLanding"));
 const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
@@ -135,6 +136,8 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
+                    {/* State landing page - must be after city routes */}
+                    <Route path="/arizona" element={<StateLanding />} />
                     {/* Catch-all 404 route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
