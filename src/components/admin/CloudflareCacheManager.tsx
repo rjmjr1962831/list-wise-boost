@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { Trash2, Database, Globe, Loader2 } from 'lucide-react';
+import { Trash2, Database, Globe, Loader2, Flame, RefreshCw } from 'lucide-react';
 
 interface ProgressState {
   step: number;
@@ -14,13 +14,21 @@ interface ProgressState {
   percent: number;
 }
 
+interface WarmResult {
+  total: number;
+  warmed: number;
+  failed: number;
+}
+
 export function CloudflareCacheManager() {
   const [prefix, setPrefix] = useState('');
   const [isPurgingCdn, setIsPurgingCdn] = useState(false);
   const [isClearingKv, setIsClearingKv] = useState(false);
   const [isClearingAll, setIsClearingAll] = useState(false);
+  const [isWarming, setIsWarming] = useState(false);
+  const [isFullRefresh, setIsFullRefresh] = useState(false);
   const [progress, setProgress] = useState<ProgressState | null>(null);
-  const [result, setResult] = useState<{ cdnPurged?: number; kvDeleted?: number; error?: string } | null>(null);
+  const [result, setResult] = useState<{ cdnPurged?: number; kvDeleted?: number; warmResult?: WarmResult; error?: string } | null>(null);
 
   const purgeCdnCache = async (urls?: string[]) => {
     const { data, error } = await supabase.functions.invoke('cloudflare-purge-cache', {
@@ -42,6 +50,49 @@ export function CloudflareCacheManager() {
     return data;
   };
 
+  const warmCache = async (region?: string, limit?: number) => {
+    const { data, error } = await supabase.functions.invoke('warm-cache', {
+      body: { region, limit }
+    });
+    
+    if (error) throw error;
+    if (!data.success && data.error) throw new Error(data.error);
+    return data as WarmResult;
+  };
+
+  // Full workflow: Purge → Clear KV → Warm
+  const handleFullRefresh = async () => {
+    if (!confirm('This will purge all caches and re-warm them. This may take several minutes. Continue?')) return;
+    
+    setIsFullRefresh(true);
+    setResult(null);
+    
+    try {
+      // Step 1: Purge CDN
+      setProgress({ step: 1, totalSteps: 3, message: 'Purging CDN cache...', percent: 10 });
+      await purgeCdnCache();
+      
+      // Step 2: Clear KV
+      setProgress({ step: 2, totalSteps: 3, message: 'Clearing KV cache...', percent: 30 });
+      const kvResult = await clearKvCache(undefined, true);
+      
+      // Step 3: Warm cache
+      setProgress({ step: 3, totalSteps: 3, message: 'Warming cache (this takes a while)...', percent: 50 });
+      const warmResult = await warmCache('arizona');
+      
+      setProgress({ step: 3, totalSteps: 3, message: 'Complete!', percent: 100 });
+      setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted, warmResult });
+      toast.success(`Full refresh complete! Warmed ${warmResult.warmed}/${warmResult.total} pages`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setResult({ error: message });
+      toast.error(`Failed: ${message}`);
+    } finally {
+      setIsFullRefresh(false);
+      setTimeout(() => setProgress(null), 3000);
+    }
+  };
+
   const handleClearAll = async () => {
     if (!confirm('This will clear ALL CDN cache AND ALL KV cache. Are you sure?')) return;
     
@@ -50,11 +101,9 @@ export function CloudflareCacheManager() {
     setProgress({ step: 1, totalSteps: 2, message: 'Purging CDN cache...', percent: 25 });
     
     try {
-      // Step 1: Purge CDN cache
       await purgeCdnCache();
       setProgress({ step: 2, totalSteps: 2, message: 'Clearing KV cache...', percent: 75 });
       
-      // Step 2: Clear KV cache
       const kvResult = await clearKvCache(undefined, true);
       
       setProgress({ step: 2, totalSteps: 2, message: 'Complete!', percent: 100 });
@@ -70,17 +119,35 @@ export function CloudflareCacheManager() {
     }
   };
 
+  const handleWarmOnly = async (region?: string, limit?: number) => {
+    setIsWarming(true);
+    setResult(null);
+    setProgress({ step: 1, totalSteps: 1, message: 'Warming cache...', percent: 50 });
+    
+    try {
+      const warmResult = await warmCache(region, limit);
+      setProgress({ step: 1, totalSteps: 1, message: 'Complete!', percent: 100 });
+      setResult({ warmResult });
+      toast.success(`Cache warmed: ${warmResult.warmed}/${warmResult.total} pages`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setResult({ error: message });
+      toast.error(`Failed: ${message}`);
+    } finally {
+      setIsWarming(false);
+      setTimeout(() => setProgress(null), 2000);
+    }
+  };
+
   const handleClearByPrefix = async (prefixValue: string) => {
     setIsClearingKv(true);
     setResult(null);
     setProgress({ step: 1, totalSteps: 2, message: 'Purging CDN cache...', percent: 25 });
     
     try {
-      // Step 1: Purge specific URL from CDN
       await purgeCdnCache([prefixValue]);
       setProgress({ step: 2, totalSteps: 2, message: 'Clearing KV cache...', percent: 75 });
       
-      // Step 2: Clear KV keys with prefix
       const kvResult = await clearKvCache(prefixValue);
       
       setProgress({ step: 2, totalSteps: 2, message: 'Complete!', percent: 100 });
@@ -130,7 +197,7 @@ export function CloudflareCacheManager() {
     { label: 'Gilbert', prefix: 'https://top10lists.us/arizona/gilbert' },
   ];
 
-  const isLoading = isPurgingCdn || isClearingKv || isClearingAll;
+  const isLoading = isPurgingCdn || isClearingKv || isClearingAll || isWarming || isFullRefresh;
 
   return (
     <Card>
@@ -140,13 +207,68 @@ export function CloudflareCacheManager() {
           Cloudflare Cache Manager
         </CardTitle>
         <CardDescription>
-          Purge CDN cache and clear KV prerender cache. Always purge before warming.
+          Purge CDN cache, clear KV prerender cache, and warm cache for bots.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Full Refresh Section */}
+        <div className="p-4 border border-primary/30 rounded-lg bg-primary/5">
+          <h3 className="font-semibold text-primary mb-2 flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Full Cache Refresh (Recommended)
+          </h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Purges CDN → Clears KV → Warms all Arizona pages. Takes 5-10 minutes.
+          </p>
+          <Button 
+            onClick={handleFullRefresh}
+            disabled={isLoading}
+          >
+            {isFullRefresh ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Running Full Refresh...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Full Cache Refresh
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Warm Only Section */}
+        <div className="p-4 border border-orange-500/30 rounded-lg bg-orange-500/5">
+          <h3 className="font-semibold text-orange-600 mb-2 flex items-center gap-2">
+            <Flame className="h-4 w-4" />
+            Warm Cache Only
+          </h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Pre-render pages without clearing existing cache.
+          </p>
+          <div className="flex gap-2 flex-wrap">
+            <Button 
+              variant="outline"
+              onClick={() => handleWarmOnly('arizona')}
+              disabled={isLoading}
+            >
+              {isWarming ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Flame className="h-4 w-4 mr-2" />}
+              Warm Arizona
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => handleWarmOnly('arizona', 10)}
+              disabled={isLoading}
+            >
+              Warm 10 Pages (Test)
+            </Button>
+          </div>
+        </div>
+
         {/* Clear All Section */}
         <div className="p-4 border border-destructive/30 rounded-lg bg-destructive/5">
-          <h3 className="font-semibold text-destructive mb-2">Nuclear Option: Clear Everything</h3>
+          <h3 className="font-semibold text-destructive mb-2">Clear Caches Only (No Warm)</h3>
           <p className="text-sm text-muted-foreground mb-3">
             Purges entire CDN cache AND deletes all KV prerender entries.
           </p>
@@ -236,9 +358,12 @@ export function CloudflareCacheManager() {
               <p>❌ Error: {result.error}</p>
             ) : (
               <div>
-                <p>✅ Cache cleared successfully</p>
+                <p>✅ Operation completed successfully</p>
                 {result.cdnPurged !== undefined && <p>• CDN: Purged</p>}
                 {result.kvDeleted !== undefined && <p>• KV: {result.kvDeleted} keys deleted</p>}
+                {result.warmResult && (
+                  <p>• Warmed: {result.warmResult.warmed}/{result.warmResult.total} pages ({result.warmResult.failed} failed)</p>
+                )}
               </div>
             )}
           </div>
@@ -248,7 +373,7 @@ export function CloudflareCacheManager() {
         <div className="text-xs text-muted-foreground space-y-1">
           <p><strong>CDN Cache:</strong> Cloudflare edge cache (browser requests)</p>
           <p><strong>KV Cache:</strong> Prerendered HTML storage (bot/crawler requests)</p>
-          <p><strong>Workflow:</strong> Clear cache → Wait 30s → Warm cache (if needed)</p>
+          <p><strong>Warm:</strong> Pre-render pages via Prerender.io and cache in KV</p>
         </div>
       </CardContent>
     </Card>
