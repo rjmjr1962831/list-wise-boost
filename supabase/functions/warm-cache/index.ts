@@ -50,29 +50,37 @@ async function warmCacheUrl(url: string): Promise<boolean> {
 }
 
 async function buildUrls(): Promise<string[]> {
-  const { data: citiesWithAgents, error } = await supabase
+  // Only get cities that have at least one active professional
+  const { data: citiesWithContent, error } = await supabase
     .from('cities')
-    .select('id, slug, state_slug')
+    .select(`
+      id, slug, state_slug, name,
+      professionals!inner(id)
+    `)
     .eq('active', true)
+    .eq('professionals.active', true)
     .order('name');
 
-  if (error || !citiesWithAgents) {
-    console.error('Error loading cities:', error);
+  if (error || !citiesWithContent) {
+    console.error('Error loading cities with content:', error);
     return [];
   }
+
+  // Deduplicate cities (inner join can cause duplicates)
+  const uniqueCities = [...new Map(citiesWithContent.map(c => [c.id, c])).values()];
 
   const urls: string[] = [];
   STATIC_PAGES.forEach(page => urls.push(`${BASE_URL}${page}`));
   urls.push(`${BASE_URL}/arizona`);
   
-  citiesWithAgents.forEach(city => {
+  uniqueCities.forEach(city => {
     const cityPath = `/${city.state_slug}/${city.slug}`;
     urls.push(`${BASE_URL}${cityPath}/top10realestateagents`);
     urls.push(`${BASE_URL}${cityPath}/best-real-estate-agents`);
     urls.push(`${BASE_URL}${cityPath}/best-real-estate-agents-2025`);
   });
 
-  console.log(`Built ${urls.length} URLs for ${citiesWithAgents.length} cities`);
+  console.log(`Built ${urls.length} URLs for ${uniqueCities.length} cities with content (skipped ${234 - uniqueCities.length} empty cities)`);
   return urls;
 }
 
