@@ -70,17 +70,18 @@ async function buildUrls(): Promise<string[]> {
     return [];
   }
 
-  // Extract unique cities from the junction table results
+  // Extract unique Arizona cities only from the junction table results
   const cityMap = new Map<string, { id: string; slug: string; state_slug: string; name: string }>();
   linkedCities.forEach((row: any) => {
     const city = row.cities;
-    if (city && !cityMap.has(city.id)) {
+    // Only include Arizona cities
+    if (city && city.state_slug === 'arizona' && !cityMap.has(city.id)) {
       cityMap.set(city.id, { id: city.id, slug: city.slug, state_slug: city.state_slug, name: city.name });
     }
   });
   const citiesWithContent = Array.from(cityMap.values());
   
-  console.log(`Found ${citiesWithContent.length} cities with qualified agents via professional_cities junction table`);
+  console.log(`Found ${citiesWithContent.length} Arizona cities with qualified agents via professional_cities junction table`);
 
   const urls: string[] = [];
   STATIC_PAGES.forEach(page => urls.push(`${BASE_URL}${page}`));
