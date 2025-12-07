@@ -290,16 +290,13 @@ export default function DynamicCategoryList() {
         }
 
         // HUMAN PATH: Dynamic rotation with random selection
+        // OPTIMIZED: Single query fetches all qualified agents, then client-side splits brand builders vs free
 
-        // Fetch professionals - ONLY enriched and qualified agents (4.8+ stars, 50+ reviews)
-        // SPECIAL CASE: For Scottsdale, always include Beauvais first (even if <50 reviews)
-        const cacheBuster = Date.now();
-        
         let professionalsData: any[] = [];
         let profsError = null;
         
-        // Fetch Brand Builders first (always shown)
-        const { data: brandBuilders, error: brandError } = await supabase
+        // Single query: Get ALL qualified agents (brand builders + free) in one call
+        const { data: allQualified, error: queryError } = await supabase
           .from('professional_cities')
           .select(`
             rank,
@@ -309,52 +306,30 @@ export default function DynamicCategoryList() {
           .eq('active', true)
           .eq('professionals.category_id', categoryData.id)
           .eq('professionals.active', true)
-          .eq('professionals.is_brand_builder', true);
-
-        if (brandError) {
-          console.error('Error fetching brand builders:', brandError);
-        }
-
-        const brandBuilderProfs = (brandBuilders || []).map((pc: any) => pc.professionals);
-        console.log(`Found ${brandBuilderProfs.length} Brand Builders for ${cityData.name}`);
-
-        // Fetch qualified pool for random selection
-        // FIXED: Removed professional_information requirement to include agents with notable_achievements
-        const { data: qualifiedPool, error: poolError } = await supabase
-          .from('professional_cities')
-          .select(`
-            rank,
-            professionals!inner(*)
-          `)
-          .eq('city_id', cityData.id)
-          .eq('active', true)
-          .eq('professionals.category_id', categoryData.id)
-          .eq('professionals.active', true)
-          .eq('professionals.is_brand_builder', false)
           .gte('professionals.review_stars_rating', 4.8)
           .gte('professionals.num_total_reviews', 50);
 
-        console.log(`🔍 Qualified pool query returned ${qualifiedPool?.length || 0} rows for ${cityData.name}`);
-
-        if (poolError) {
-          console.error('Error fetching qualified pool:', poolError);
+        if (queryError) {
+          console.error('Error fetching qualified agents:', queryError);
+          profsError = queryError;
         }
 
-        const qualifiedProfs = (qualifiedPool || []).map((pc: any) => pc.professionals);
-        console.log(`Found ${qualifiedProfs.length} qualified non-Brand Builder agents`);
+        // Client-side split: Brand Builders (always shown) vs Free (round-robin)
+        const allProfs = (allQualified || []).map((pc: any) => pc.professionals);
+        const brandBuilderProfs = allProfs.filter((p: any) => p.is_brand_builder === true);
+        const freeProfs = allProfs.filter((p: any) => p.is_brand_builder !== true);
+        
+        console.log(`🔍 Single query: ${allProfs.length} total (${brandBuilderProfs.length} Brand Builders + ${freeProfs.length} free)`);
 
-        // Random selection: shuffle and pick to fill remaining slots
+        // Random selection: shuffle free agents and pick to fill remaining slots
         const spotsRemaining = Math.max(0, 10 - brandBuilderProfs.length);
-        const shuffled = qualifiedProfs.sort(() => Math.random() - 0.5);
+        const shuffled = freeProfs.sort(() => Math.random() - 0.5);
         const randomPicks = shuffled.slice(0, spotsRemaining);
 
-        // Combine: Brand Builders + random picks
+        // Combine: Brand Builders first + random free picks
         professionalsData = [...brandBuilderProfs, ...randomPicks];
         
         console.log(`Final list: ${brandBuilderProfs.length} Brand Builders + ${randomPicks.length} random = ${professionalsData.length} total`);
-
-        // Reset error since we handled both queries
-        profsError = brandError || poolError;
 
         if (profsError) {
           console.error('Error fetching professionals:', profsError);
