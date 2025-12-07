@@ -157,8 +157,7 @@ const AgentOnboardingFunnel = () => {
     <>
       <Helmet>
         <title>Agent Onboarding | Top10Lists.us</title>
-        <meta name="description" content="Join Arizona's premier real estate agent directory. Complete our onboarding process to get listed on Top10Lists.us." />
-        <link rel="canonical" href="https://top10lists.us/agent-onboarding" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8">
         <div className="container mx-auto px-4">
