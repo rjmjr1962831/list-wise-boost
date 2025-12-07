@@ -39,14 +39,17 @@ export function CacheWarming() {
     }
   }, []);
 
+  // Initial fetch
   useEffect(() => {
     fetchJobStatus();
+  }, [fetchJobStatus]);
+
+  // Poll for updates every 2 seconds while job is running
+  useEffect(() => {
+    if (job?.status !== 'running') return;
     
-    // Poll for updates every 2 seconds if job is running (faster for real-time feedback)
     const interval = setInterval(() => {
-      if (job?.status === 'running') {
-        fetchJobStatus();
-      }
+      fetchJobStatus();
     }, 2000);
 
     return () => clearInterval(interval);
