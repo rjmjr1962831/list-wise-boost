@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,8 +60,13 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
-      <Card className="w-full max-w-md">
+    <>
+      <Helmet>
+        <title>Admin Login | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
+        <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Shield className="h-12 w-12 text-primary" />
@@ -109,8 +115,9 @@ const AdminLogin = () => {
             </button>
           </div>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 };
 

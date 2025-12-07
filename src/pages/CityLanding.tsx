@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, Navigate, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
 import { getCityBySlug } from '@/data/cities';
@@ -21,18 +22,11 @@ export default function CityLanding() {
   const [ensureMsg, setEnsureMsg] = useState<string>('');
   const didStart = useRef(false);
   
+  const cityName = city ? formatCityName(city) : '';
+
   useEffect(() => {
     if (!city || didStart.current) return;
     didStart.current = true;
-
-    document.title = `Top Professionals in ${formatCityName(city)} | Top10Lists`;
-    
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute('content', 
-        `Find the top real estate agents in ${formatCityName(city)}. Expert-vetted agents with verified reviews and proven track records.`
-      );
-    }
 
     // GA4 page view
     if (typeof window.gtag === 'function') {
@@ -110,7 +104,12 @@ export default function CityLanding() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <>
+      <Helmet>
+        <title>{`Top 10 Real Estate Agents in ${cityName}, Arizona | Top10Lists.us`}</title>
+        <meta name="description" content={`Discover the top 10 real estate agents in ${cityName}, Arizona. Our ranking highlights elite agents based on sales performance, client reviews, and industry recognition.`} />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
         <div className="container mx-auto px-4">
@@ -178,6 +177,7 @@ export default function CityLanding() {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </>
   );
 }
