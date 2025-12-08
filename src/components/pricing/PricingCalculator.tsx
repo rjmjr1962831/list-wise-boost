@@ -14,13 +14,15 @@ interface PricingCalculatorProps {
 
 // Generate Stripe line items preview based on selection
 function getStripeLineItems(calculator: PricingCalculatorResult) {
-  const items: { name: string; price: number }[] = [];
+  const items: { name: string; price: number; description?: string }[] = [];
   
   // If package selected, add as single line item
   if (calculator.selectedPackage) {
+    const cityCount = calculator.selectedPackage.includedCityIds?.length || 0;
     items.push({
       name: `${calculator.selectedPackage.name} Package`,
       price: calculator.selectedPackage.earlyAdopterPrice,
+      description: `Top 10 placement in ${cityCount} cities`,
     });
     
     // Get premium cities NOT in package
@@ -137,11 +139,16 @@ export function PricingCalculator({ calculator, onCheckout, isLoading }: Pricing
                     Stripe Checkout Preview
                   </span>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {stripeLineItems.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-sm">
-                      <span className="text-foreground">{item.name}</span>
-                      <span className="font-medium">${item.price}/mo</span>
+                    <div key={idx} className="space-y-0.5">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-foreground">{item.name}</span>
+                        <span className="font-medium">${item.price}/mo</span>
+                      </div>
+                      {item.description && (
+                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                      )}
                     </div>
                   ))}
                 </div>
