@@ -105,7 +105,7 @@ export default function PremiumPricingPage() {
             price: c.earlyAdopterPrice,
           })),
           monthlyTotal: calculator.monthlyTotal,
-          successUrl: `${window.location.origin}/profile/${token}/schedule`,
+          successUrl: `${window.location.origin}/agent-payment-success`,
           cancelUrl: window.location.href,
         },
       });

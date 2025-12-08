@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.complete-agent-subscription]
+verify_jwt = false
+
 [functions.create-pipedrive-fields]
 verify_jwt = true
 

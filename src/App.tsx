@@ -106,6 +106,7 @@ const App = () => (
                     <Route path="/agent/dashboard" element={<AgentDashboard />} />
                     <Route path="/agent-onboarding" element={<AgentOnboarding />} />
                     <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
+                    <Route path="/agent-payment-success" element={<AgentPaymentSuccess />} />
                     {/* New Agent Onboarding Funnel */}
                     <Route path="/apply/onboarding" element={<AgentOnboardingFunnel />} />
                     <Route path="/apply/payment-coming-soon" element={<PaymentComingSoon />} />
