@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { X, Sparkles, ArrowRight, Clock, CreditCard } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Clock, CreditCard, Receipt } from 'lucide-react';
 import { PricingCalculatorResult } from '@/hooks/usePricingCalculator';
 import { cn } from '@/lib/utils';
 
@@ -12,8 +12,50 @@ interface PricingCalculatorProps {
   isLoading?: boolean;
 }
 
+// Generate Stripe line items preview based on selection
+function getStripeLineItems(calculator: PricingCalculatorResult) {
+  const items: { name: string; price: number }[] = [];
+  
+  // If package selected, add as single line item
+  if (calculator.selectedPackage) {
+    items.push({
+      name: `${calculator.selectedPackage.name} Package`,
+      price: calculator.selectedPackage.earlyAdopterPrice,
+    });
+    
+    // Get premium cities NOT in package
+    const packageCityIds = calculator.selectedPackage.includedCityIds || [];
+    calculator.state.selectedPremiumCityIds
+      .filter(cityId => !packageCityIds.includes(cityId))
+      .forEach(cityId => {
+        const city = calculator.selectedCities.find(c => c.id === cityId);
+        if (city) {
+          items.push({
+            name: `${city.cityName} (Premium Add-on)`,
+            price: city.earlyAdopterPrice,
+          });
+        }
+      });
+  } else if (calculator.state.mode === 'build-your-own') {
+    // À la carte cities
+    calculator.state.selectedAlaCarte.forEach(cityId => {
+      const city = calculator.selectedCities.find(c => c.id === cityId);
+      if (city) {
+        items.push({
+          name: city.cityName,
+          price: city.earlyAdopterPrice,
+        });
+      }
+    });
+  }
+  
+  return items;
+}
+
 export function PricingCalculator({ calculator, onCheckout, isLoading }: PricingCalculatorProps) {
   const { lineItems, monthlyTotal, retailTotal, totalSavings, cityCount, removeCity, suggestions } = calculator;
+  
+  const stripeLineItems = getStripeLineItems(calculator);
 
   return (
     <Card className="sticky top-4 border-2 border-primary/20 shadow-lg">
@@ -85,6 +127,31 @@ export function PricingCalculator({ calculator, onCheckout, isLoading }: Pricing
                 </div>
               </div>
             </div>
+
+            {/* Stripe Checkout Preview */}
+            {stripeLineItems.length > 0 && (
+              <div className="p-3 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <Receipt className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Stripe Checkout Preview
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  {stripeLineItems.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-sm">
+                      <span className="text-foreground">{item.name}</span>
+                      <span className="font-medium">${item.price}/mo</span>
+                    </div>
+                  ))}
+                </div>
+                <Separator className="my-2" />
+                <div className="flex justify-between text-sm font-semibold">
+                  <span>Total on Stripe</span>
+                  <span>${stripeLineItems.reduce((sum, item) => sum + item.price, 0)}/mo</span>
+                </div>
+              </div>
+            )}
 
             {/* Commitment Notice */}
             <div className="p-3 rounded-lg bg-muted/50 space-y-2">
