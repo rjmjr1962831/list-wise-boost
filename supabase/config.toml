@@ -206,3 +206,6 @@ verify_jwt = false
 
 [functions.clear-kv-cache]
 verify_jwt = false
+
+[functions.agent-subscribe]
+verify_jwt = false

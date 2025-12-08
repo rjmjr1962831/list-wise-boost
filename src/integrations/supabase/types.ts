@@ -167,6 +167,39 @@ export type Database = {
           },
         ]
       }
+      agent_subscriptions: {
+        Row: {
+          consent: boolean
+          created_at: string
+          email: string
+          id: string
+          name: string
+          phone: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          consent?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          consent?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointment_types: {
         Row: {
           active: boolean | null
