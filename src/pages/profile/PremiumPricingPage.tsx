@@ -95,19 +95,56 @@ export default function PremiumPricingPage() {
     });
 
     try {
+      // Build checkout payload with package info if selected
+      const checkoutPayload: any = {
+        professionalId: professional.id,
+        email: professional.email,
+        monthlyTotal: calculator.monthlyTotal,
+        successUrl: `${window.location.origin}/agent-payment-success`,
+        cancelUrl: window.location.href,
+      };
+
+      // If package selected, send package info for single line item
+      if (calculator.selectedPackage) {
+        checkoutPayload.package = {
+          id: calculator.selectedPackage.id,
+          name: calculator.selectedPackage.name,
+          price: calculator.selectedPackage.earlyAdopterPrice,
+          cityCount: calculator.selectedPackage.includedCityIds.length,
+        };
+      }
+
+      // Add premium add-on cities (separate from package)
+      const premiumAddons = calculator.state.selectedPremiumCityIds
+        .map(cityId => calculator.selectedCities.find(c => c.id === cityId))
+        .filter(Boolean)
+        .map(c => ({
+          cityId: c!.id,
+          cityName: c!.cityName,
+          price: c!.earlyAdopterPrice,
+        }));
+      
+      if (premiumAddons.length > 0) {
+        checkoutPayload.premiumCities = premiumAddons;
+      }
+
+      // Add à la carte cities (build-your-own mode)
+      if (calculator.state.mode === 'build-your-own') {
+        checkoutPayload.selectedCities = calculator.state.selectedAlaCarte
+          .map(cityId => calculator.selectedCities.find(c => c.id === cityId))
+          .filter(Boolean)
+          .map(c => ({
+            cityId: c!.id,
+            cityName: c!.cityName,
+            price: c!.earlyAdopterPrice,
+          }));
+      }
+
+      // All city IDs for metadata
+      checkoutPayload.allCityIds = calculator.selectedCities.map(c => c.id);
+
       const { data, error } = await supabase.functions.invoke('create-agent-checkout', {
-        body: {
-          professionalId: professional.id,
-          email: professional.email,
-          selectedCities: calculator.selectedCities.map(c => ({
-            cityId: c.id,
-            cityName: c.cityName,
-            price: c.earlyAdopterPrice,
-          })),
-          monthlyTotal: calculator.monthlyTotal,
-          successUrl: `${window.location.origin}/agent-payment-success`,
-          cancelUrl: window.location.href,
-        },
+        body: checkoutPayload,
       });
 
       if (error) throw error;

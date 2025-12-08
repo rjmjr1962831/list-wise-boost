@@ -16,10 +16,20 @@ interface SelectedCity {
   price: number;
 }
 
+interface PackageInfo {
+  id: string;
+  name: string;
+  price: number;
+  cityCount: number;
+}
+
 interface CheckoutRequest {
   professionalId: string;
   email: string;
-  selectedCities: SelectedCity[];
+  package?: PackageInfo;
+  premiumCities?: SelectedCity[];
+  selectedCities?: SelectedCity[];
+  allCityIds?: string[];
   monthlyTotal: number;
   successUrl: string;
   cancelUrl: string;
@@ -34,7 +44,10 @@ const handler = async (req: Request): Promise<Response> => {
     const { 
       professionalId, 
       email,
+      package: packageInfo,
+      premiumCities,
       selectedCities,
+      allCityIds,
       monthlyTotal,
       successUrl,
       cancelUrl 
@@ -43,23 +56,70 @@ const handler = async (req: Request): Promise<Response> => {
     console.log('Creating checkout session for:', { 
       professionalId, 
       email, 
-      cityCount: selectedCities.length,
+      hasPackage: !!packageInfo,
+      packageName: packageInfo?.name,
+      premiumCityCount: premiumCities?.length || 0,
+      selectedCityCount: selectedCities?.length || 0,
       monthlyTotal 
     });
 
-    // Build line items from selected cities
-    const lineItems = selectedCities.map((city) => ({
-      price_data: {
-        currency: 'usd',
-        recurring: { interval: 'month' as const },
-        unit_amount: Math.round(city.price * 100), // Convert to cents
-        product_data: {
-          name: `${city.cityName} Premium Placement`,
-          description: `Guaranteed Top 10 placement in ${city.cityName}`,
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
+
+    // Add package as single line item if selected
+    if (packageInfo) {
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          recurring: { interval: 'month' as const },
+          unit_amount: Math.round(packageInfo.price * 100),
+          product_data: {
+            name: `${packageInfo.name} Package`,
+            description: `Guaranteed Top 10 placement in ${packageInfo.cityCount} cities`,
+          },
         },
-      },
-      quantity: 1,
-    }));
+        quantity: 1,
+      });
+    }
+
+    // Add premium add-on cities as separate line items
+    if (premiumCities && premiumCities.length > 0) {
+      premiumCities.forEach((city) => {
+        lineItems.push({
+          price_data: {
+            currency: 'usd',
+            recurring: { interval: 'month' as const },
+            unit_amount: Math.round(city.price * 100),
+            product_data: {
+              name: `${city.cityName} Premium Placement`,
+              description: `Guaranteed Top 10 placement in ${city.cityName}`,
+            },
+          },
+          quantity: 1,
+        });
+      });
+    }
+
+    // Add à la carte cities (build-your-own mode)
+    if (selectedCities && selectedCities.length > 0) {
+      selectedCities.forEach((city) => {
+        lineItems.push({
+          price_data: {
+            currency: 'usd',
+            recurring: { interval: 'month' as const },
+            unit_amount: Math.round(city.price * 100),
+            product_data: {
+              name: `${city.cityName} Premium Placement`,
+              description: `Guaranteed Top 10 placement in ${city.cityName}`,
+            },
+          },
+          quantity: 1,
+        });
+      });
+    }
+
+    if (lineItems.length === 0) {
+      throw new Error('No items selected for checkout');
+    }
 
     // Check if customer exists
     const customers = await stripe.customers.list({ email, limit: 1 });
@@ -71,6 +131,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Build success URL with professional ID for completion
     const successUrlWithParams = `${successUrl}?session_id={CHECKOUT_SESSION_ID}&professional_id=${professionalId}`;
 
+    // Calculate total city count
+    const totalCities = allCityIds?.length || 
+      (packageInfo?.cityCount || 0) + 
+      (premiumCities?.length || 0) + 
+      (selectedCities?.length || 0);
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
@@ -81,8 +147,10 @@ const handler = async (req: Request): Promise<Response> => {
       client_reference_id: professionalId,
       metadata: {
         professionalId,
-        cityCount: selectedCities.length.toString(),
-        cityIds: selectedCities.map(c => c.cityId).join(','),
+        packageId: packageInfo?.id || '',
+        packageName: packageInfo?.name || '',
+        cityCount: totalCities.toString(),
+        cityIds: allCityIds?.join(',') || '',
         monthlyTotal: monthlyTotal.toString(),
       },
       success_url: successUrlWithParams,
@@ -92,7 +160,8 @@ const handler = async (req: Request): Promise<Response> => {
       subscription_data: {
         metadata: {
           professionalId,
-          cityIds: selectedCities.map(c => c.cityId).join(','),
+          packageId: packageInfo?.id || '',
+          cityIds: allCityIds?.join(',') || '',
         },
       },
     });
