@@ -114,8 +114,10 @@ export default function PremiumPricingPage() {
         };
       }
 
-      // Add premium add-on cities (separate from package)
+      // Add premium add-on cities (only those NOT already in selected package)
+      const packageCityIds = calculator.selectedPackage?.includedCityIds || [];
       const premiumAddons = calculator.state.selectedPremiumCityIds
+        .filter(cityId => !packageCityIds.includes(cityId)) // Exclude cities already in package
         .map(cityId => calculator.selectedCities.find(c => c.id === cityId))
         .filter(Boolean)
         .map(c => ({
