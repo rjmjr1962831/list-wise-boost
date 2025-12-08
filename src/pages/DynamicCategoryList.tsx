@@ -902,7 +902,8 @@ export default function DynamicCategoryList() {
         <title>{`Top 10 Real Estate Agents in ${loadingCityName}, Arizona | Top10Lists.us`}</title>
         <meta name="description" content={loadingDescription} />
       </Helmet>
-      <div className="min-h-[70vh] flex items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
+        <h1 className="sr-only">Top 10 Real Estate Agents in {loadingCityName}, Arizona</h1>
         <div className="flex flex-col items-center gap-8 text-center max-w-2xl">
           {isGeneratingData ? (
             <>
@@ -983,6 +984,7 @@ export default function DynamicCategoryList() {
           <meta name="description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`} />
         </Helmet>
         <div className="min-h-screen flex items-center justify-center p-8">
+          <h1 className="sr-only">Top 10 {category.plural_name} in {city.name}, {city.state_slug.toUpperCase()}</h1>
           <div className="text-center max-w-md">
             <h2 className="text-2xl font-bold mb-4">No Listings Yet</h2>
             <p className="text-muted-foreground mb-6">

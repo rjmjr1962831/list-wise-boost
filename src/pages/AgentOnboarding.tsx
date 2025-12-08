@@ -184,6 +184,7 @@ export default function AgentOnboarding() {
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
+        <h1 className="sr-only">Agent Onboarding - Join Top10Lists.us</h1>
         <main className="flex-1 container max-w-4xl mx-auto px-4 py-8">
           {currentStep > 0 && (
             <div className="mb-8">

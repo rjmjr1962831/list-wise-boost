@@ -63,11 +63,13 @@ const AdminLogin = () => {
     <>
       <Helmet>
         <title>Admin Login | Top10Lists.us</title>
+        <meta name="description" content="Admin login portal for Top10Lists.us management dashboard." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
         <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <h1 className="sr-only">Admin Login - Top10Lists.us</h1>
           <div className="flex justify-center mb-4">
             <Shield className="h-12 w-12 text-primary" />
           </div>
