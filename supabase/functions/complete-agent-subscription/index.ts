@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import Stripe from 'https://esm.sh/stripe@18.5.0';
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,8 +37,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') || '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
     );
-
-    const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
     // Verify the checkout session is paid
     logStep('Retrieving Stripe session');
@@ -110,12 +108,26 @@ serve(async (req) => {
     const cityName = (professional as any).cities?.name || 'your selected cities';
     const stateName = (professional as any).cities?.state || 'Arizona';
 
-    // Send confirmation email
+    // Send confirmation email via SMTP
     if (professional.email) {
       try {
-        const emailResponse = await resend.emails.send({
-          from: 'Top10Lists <hello@top10lists.us>',
-          to: [professional.email],
+        const smtpClient = new SMTPClient({
+          connection: {
+            hostname: "smtp.gmail.com",
+            port: parseInt(Deno.env.get('SMTP_PORT') || '465'),
+            tls: true,
+            auth: {
+              username: Deno.env.get('SMTP_USERNAME') || '',
+              password: Deno.env.get('SMTP_PASSWORD') || '',
+            },
+          },
+        });
+
+        const fromEmail = Deno.env.get('SMTP_FROM_EMAIL') || 'hello@top10lists.us';
+
+        await smtpClient.send({
+          from: fromEmail,
+          to: professional.email,
           subject: '🎉 Welcome to Top10Lists Premium Placement!',
           html: `
             <!DOCTYPE html>
@@ -177,7 +189,9 @@ serve(async (req) => {
             </html>
           `,
         });
-        logStep('Confirmation email sent', { response: emailResponse });
+
+        await smtpClient.close();
+        logStep('Confirmation email sent via SMTP');
       } catch (emailError: any) {
         logStep('Warning: Email send failed', { error: emailError.message });
         // Don't throw - email failure shouldn't block the subscription
