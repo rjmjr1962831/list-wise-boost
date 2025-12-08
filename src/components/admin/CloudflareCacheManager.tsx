@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { Trash2, Database, Globe, Loader2, Flame, RefreshCw } from 'lucide-react';
+import { Trash2, Database, Globe, Loader2, Flame, RefreshCw, Square } from 'lucide-react';
 
 interface ProgressState {
   step: number;
@@ -31,6 +31,9 @@ export function CloudflareCacheManager() {
   const [isFullRefresh, setIsFullRefresh] = useState(false);
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const [result, setResult] = useState<{ cdnPurged?: number; kvDeleted?: number; warmResult?: WarmResult; error?: string } | null>(null);
+  
+  // Ref to track cancellation request
+  const cancelRequestedRef = useRef(false);
 
   const purgeCdnCache = async (urls?: string[]) => {
     const { data, error } = await supabase.functions.invoke('cloudflare-purge-cache', {
@@ -69,8 +72,16 @@ export function CloudflareCacheManager() {
     let totalFailed = 0;
     let totalPages = 0;
     let batchNum = 1;
+    let wasCancelled = false;
 
     while (true) {
+      // Check for cancellation
+      if (cancelRequestedRef.current) {
+        wasCancelled = true;
+        console.log('Warming cancelled by user');
+        break;
+      }
+
       setProgress({ 
         step: batchNum, 
         totalSteps: totalPages > 0 ? Math.ceil(totalPages / batchSize) : batchNum, 
@@ -94,7 +105,12 @@ export function CloudflareCacheManager() {
       batchNum++;
     }
 
-    return { total: totalPages, warmed: totalWarmed, failed: totalFailed };
+    return { total: totalPages, warmed: totalWarmed, failed: totalFailed, cancelled: wasCancelled };
+  };
+
+  const handleCancel = () => {
+    cancelRequestedRef.current = true;
+    toast.info('Cancelling after current batch completes...');
   };
 
   // Full workflow: Purge → Clear KV → Warm
@@ -103,6 +119,7 @@ export function CloudflareCacheManager() {
     
     setIsFullRefresh(true);
     setResult(null);
+    cancelRequestedRef.current = false;
     
     try {
       // Step 1: Purge CDN
@@ -117,15 +134,21 @@ export function CloudflareCacheManager() {
       setProgress({ step: 3, totalSteps: 3, message: 'Warming cache (running batches)...', percent: 50 });
       const warmResult = await warmAllPages('arizona', 10);
       
-      setProgress({ step: 3, totalSteps: 3, message: 'Complete!', percent: 100 });
+      setProgress({ step: 3, totalSteps: 3, message: warmResult.cancelled ? 'Cancelled!' : 'Complete!', percent: 100 });
       setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted, warmResult: { ...warmResult, hasMore: false, nextOffset: 0 } });
-      toast.success(`Full refresh complete! Warmed ${warmResult.warmed}/${warmResult.total} pages`);
+      
+      if (warmResult.cancelled) {
+        toast.warning(`Warming cancelled. Warmed ${warmResult.warmed}/${warmResult.total} pages before stopping.`);
+      } else {
+        toast.success(`Full refresh complete! Warmed ${warmResult.warmed}/${warmResult.total} pages`);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       setResult({ error: message });
       toast.error(`Failed: ${message}`);
     } finally {
       setIsFullRefresh(false);
+      cancelRequestedRef.current = false;
       setTimeout(() => setProgress(null), 3000);
     }
   };
@@ -159,19 +182,26 @@ export function CloudflareCacheManager() {
   const handleWarmOnly = async (region: string, batchSize: number = 10) => {
     setIsWarming(true);
     setResult(null);
+    cancelRequestedRef.current = false;
     setProgress({ step: 1, totalSteps: 1, message: 'Starting cache warming...', percent: 10 });
     
     try {
       const warmResult = await warmAllPages(region, batchSize);
-      setProgress({ step: 1, totalSteps: 1, message: 'Complete!', percent: 100 });
+      setProgress({ step: 1, totalSteps: 1, message: warmResult.cancelled ? 'Cancelled!' : 'Complete!', percent: 100 });
       setResult({ warmResult: { ...warmResult, hasMore: false, nextOffset: 0 } });
-      toast.success(`Cache warmed: ${warmResult.warmed}/${warmResult.total} pages`);
+      
+      if (warmResult.cancelled) {
+        toast.warning(`Warming cancelled. Warmed ${warmResult.warmed}/${warmResult.total} pages before stopping.`);
+      } else {
+        toast.success(`Cache warmed: ${warmResult.warmed}/${warmResult.total} pages`);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       setResult({ error: message });
       toast.error(`Failed: ${message}`);
     } finally {
       setIsWarming(false);
+      cancelRequestedRef.current = false;
       setTimeout(() => setProgress(null), 2000);
     }
   };
@@ -388,6 +418,17 @@ export function CloudflareCacheManager() {
               <span className="text-muted-foreground">Step {progress.step}/{progress.totalSteps}</span>
             </div>
             <Progress value={progress.percent} className="h-2" />
+            {(isWarming || isFullRefresh) && (
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={handleCancel}
+                className="mt-2"
+              >
+                <Square className="h-3 w-3 mr-2" />
+                Stop Warming
+              </Button>
+            )}
           </div>
         )}
 
