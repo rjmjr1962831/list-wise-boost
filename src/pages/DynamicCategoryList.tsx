@@ -892,7 +892,16 @@ export default function DynamicCategoryList() {
   // Old manual DOM injection removed to prevent duplicates
 
   if (loading || (isGeneratingData && !importComplete) || !reviewsReady) {
+    // Generate a description even for loading state
+    const loadingCityName = city?.name || citySlug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'this city';
+    const loadingDescription = `Find ${loadingCityName}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
+    
     return (
+      <>
+      <Helmet>
+        <title>{`Top 10 Real Estate Agents in ${loadingCityName}, Arizona | Top10Lists.us`}</title>
+        <meta name="description" content={loadingDescription} />
+      </Helmet>
       <div className="min-h-[70vh] flex items-center justify-center p-8 bg-gradient-to-b from-primary/5 to-background">
         <div className="flex flex-col items-center gap-8 text-center max-w-2xl">
           {isGeneratingData ? (
@@ -957,6 +966,7 @@ export default function DynamicCategoryList() {
           )}
         </div>
       </div>
+      </>
     );
   }
 
@@ -970,6 +980,7 @@ export default function DynamicCategoryList() {
         <Helmet>
           <meta name="robots" content="noindex, nofollow" />
           <title>{`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`}</title>
+          <meta name="description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`} />
         </Helmet>
         <div className="min-h-screen flex items-center justify-center p-8">
           <div className="text-center max-w-md">
