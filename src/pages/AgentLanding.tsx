@@ -309,11 +309,14 @@ export default function AgentLanding() {
 
         {/* Agent Opt-In Section - Bot Visible */}
         <section 
+          id="agent-subscribe"
           className="container mx-auto px-4 py-16 md:py-24 bg-muted/30"
           itemScope 
           itemType="https://schema.org/ContactPoint"
           aria-label="Agent Updates Subscription"
         >
+          <meta itemProp="url" content="https://top10lists.us/for-agents#agent-subscribe" />
+          <meta itemProp="contactType" content="Agent Subscription" />
           <div className="max-w-2xl mx-auto">
             <Card className="p-8 md:p-10 border-primary/20">
               <div className="text-center mb-8">
@@ -323,6 +326,9 @@ export default function AgentLanding() {
                 <p className="text-muted-foreground">
                   Get exclusive insights on how AI is changing real estate search. 
                   Be the first to know about new market opportunities.
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Direct link: <a href="https://top10lists.us/for-agents#agent-subscribe" className="text-primary underline hover:no-underline">top10lists.us/for-agents#agent-subscribe</a>
                 </p>
               </div>
 
