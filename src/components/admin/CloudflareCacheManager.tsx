@@ -20,6 +20,7 @@ interface WarmResult {
   failed: number;
   hasMore: boolean;
   nextOffset: number;
+  errors?: string[];
 }
 
 export function CloudflareCacheManager() {
@@ -55,14 +56,39 @@ export function CloudflareCacheManager() {
     return data;
   };
 
-  const warmCache = async (region?: string, limit?: number, offset?: number) => {
+  const warmCache = async (region?: string, limit?: number, offset?: number, urls?: string[]) => {
     const { data, error } = await supabase.functions.invoke('warm-cache', {
-      body: { region, limit, offset }
+      body: urls ? { urls } : { region, limit, offset }
     });
     
     if (error) throw error;
     if (!data.success && data.error) throw new Error(data.error);
     return data as WarmResult;
+  };
+
+  const handleWarmSingleUrl = async (url: string) => {
+    setIsWarming(true);
+    setResult(null);
+    setProgress({ step: 1, totalSteps: 1, message: `Warming ${url}...`, percent: 30 });
+    
+    try {
+      const warmResult = await warmCache(undefined, undefined, undefined, [url]);
+      setProgress({ step: 1, totalSteps: 1, message: 'Complete!', percent: 100 });
+      setResult({ warmResult: { ...warmResult, hasMore: false, nextOffset: 0 } });
+      
+      if (warmResult.warmed > 0) {
+        toast.success(`Warmed ${url}`);
+      } else {
+        toast.error(`Failed to warm ${url}: ${warmResult.errors?.join(', ') || 'Unknown error'}`);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setResult({ error: message });
+      toast.error(`Failed: ${message}`);
+    } finally {
+      setIsWarming(false);
+      setTimeout(() => setProgress(null), 2000);
+    }
   };
 
   // Warm all pages in sequential batches
@@ -406,6 +432,14 @@ export function CloudflareCacheManager() {
             >
               <Globe className="h-4 w-4 mr-2" />
               CDN Only
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => prefix && handleWarmSingleUrl(prefix)}
+              disabled={isLoading || !prefix}
+            >
+              <Flame className="h-4 w-4 mr-2" />
+              Warm URL
             </Button>
           </div>
         </div>
