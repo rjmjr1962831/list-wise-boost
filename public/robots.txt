@@ -3,9 +3,10 @@
 User-agent: *
 Allow: /
 
-# Block admin and API routes
+# Block admin, API, agent dashboard, and profile funnel routes
 Disallow: /admin/
 Disallow: /api/
+Disallow: /agent/
 Disallow: /profile/
 
 # AI Crawler Declarations
