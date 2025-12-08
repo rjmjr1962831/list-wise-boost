@@ -30,7 +30,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
       "position": index + 1,
       "name": agent.name,
       "description": `${agent.name} - ${agent.brokerage}. ${agent.yearsExperience} years experience, ${agent.totalSales.toLocaleString()} sales, ${agent.ratingValue}★ rating.`,
-      "url": `https://top10lists.us/profile/${agent.slug}`,
+      "url": `https://top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents#agent-${agent.slug}`,
       "image": agent.image,
       "item": {
         "@type": "RealEstateAgent",
