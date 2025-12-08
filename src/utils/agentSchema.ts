@@ -42,7 +42,8 @@ export function generateAgentProfileSchema(agent: AgentSchemaData): object {
       "@type": "Organization",
       "name": agent.brokerage || "Independent Agent"
     },
-    "url": `https://top10lists.us/profile/${agent.slug}`,
+    // Use city page anchor instead of profile URL to prevent profile indexing
+    "url": `https://top10lists.us/${agent.stateAbbrev.toLowerCase()}/${agent.city.toLowerCase().replace(/\s+/g, '-')}/top10realestateagents#agent-${agent.slug}`,
     "image": agent.image,
     "description": `Top ${agent.city} real estate agent with ${agent.yearsExperience || 'extensive'} years of experience and ${agent.totalSales > 0 ? `${agent.totalSales.toLocaleString()} verified sales` : 'proven track record'}.`,
     "areaServed": {
@@ -201,7 +202,8 @@ export function generateCityAgentListSchema(
       "@type": "ListItem",
       "position": index + 1,
       "name": agent.name,
-      "url": `https://top10lists.us/profile/${agent.slug}`,
+      // Use city page anchor instead of profile URL to prevent profile indexing
+      "url": `https://top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}/top10realestateagents#agent-${agent.slug}`,
       "item": {
         "@type": "RealEstateAgent",
         "name": agent.name,
