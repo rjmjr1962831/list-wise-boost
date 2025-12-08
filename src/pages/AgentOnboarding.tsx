@@ -176,11 +176,8 @@ export default function AgentOnboarding() {
     <>
       <Helmet>
         <title>Agent Onboarding | Top10Lists.us</title>
-        <meta
-          name="description"
-          content="Join Top10Lists.us as a featured real estate agent. Complete your profile and start connecting with clients."
-        />
-        <link rel="canonical" href="https://top10lists.us/agent-onboarding" />
+        <meta name="description" content="Join Top10Lists.us as a featured real estate agent. Complete your profile and start connecting with clients." />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-primary/5">
