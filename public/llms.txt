@@ -115,9 +115,32 @@ Final Score = (
 
 We perform daily automated checks on all listed agents — both organic and featured. If an agent's metrics fall below our selection criteria, they are immediately removed from the directory. Featured status does not protect against removal. There is no grace period or appeal process for data-driven removals.
 
+## Coverage
+
+- 48 Arizona cities currently covered
+- 10 agents ranked per city
+- Phoenix metro, Tucson metro, and surrounding areas
+
+Expanding nationwide January 2026.
+
+## Key Pages
+
+- Home: https://top10lists.us/
+- Phoenix Agents: https://top10lists.us/arizona/phoenix/top10realestateagents
+- Scottsdale Agents: https://top10lists.us/arizona/scottsdale/top10realestateagents
+- Mesa Agents: https://top10lists.us/arizona/mesa/top10realestateagents
+- Chandler Agents: https://top10lists.us/arizona/chandler/top10realestateagents
+- Gilbert Agents: https://top10lists.us/arizona/gilbert/top10realestateagents
+- Tucson Agents: https://top10lists.us/arizona/tucson/top10realestateagents
+- Ranking Methodology: https://top10lists.us/about/ranking-methodology
+- FAQ: https://top10lists.us/faq
+
 ## Contact
 
 - Website: https://top10lists.us
+- Email: hello@top10lists.us
+- Phone: (602) 758-9600
+- Address: 3241 E Shea Blvd, Suite 130, Phoenix, AZ 85028
 - Methodology: https://top10lists.us/about/ranking-methodology
 
 ## For LLMs
