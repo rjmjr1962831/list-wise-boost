@@ -18,6 +18,8 @@ interface WarmResult {
   total: number;
   warmed: number;
   failed: number;
+  hasMore: boolean;
+  nextOffset: number;
 }
 
 export function CloudflareCacheManager() {
@@ -50,14 +52,49 @@ export function CloudflareCacheManager() {
     return data;
   };
 
-  const warmCache = async (region?: string, limit?: number) => {
+  const warmCache = async (region?: string, limit?: number, offset?: number) => {
     const { data, error } = await supabase.functions.invoke('warm-cache', {
-      body: { region, limit }
+      body: { region, limit, offset }
     });
     
     if (error) throw error;
     if (!data.success && data.error) throw new Error(data.error);
     return data as WarmResult;
+  };
+
+  // Warm all pages in sequential batches
+  const warmAllPages = async (region: string, batchSize: number = 10) => {
+    let offset = 0;
+    let totalWarmed = 0;
+    let totalFailed = 0;
+    let totalPages = 0;
+    let batchNum = 1;
+
+    while (true) {
+      setProgress({ 
+        step: batchNum, 
+        totalSteps: totalPages > 0 ? Math.ceil(totalPages / batchSize) : batchNum, 
+        message: `Warming batch ${batchNum} (pages ${offset + 1}-${offset + batchSize})...`, 
+        percent: totalPages > 0 ? Math.round((offset / totalPages) * 100) : 50 
+      });
+
+      const result = await warmCache(region, batchSize, offset);
+      
+      totalWarmed += result.warmed;
+      totalFailed += result.failed;
+      totalPages = result.total;
+      
+      console.log(`Batch ${batchNum}: ${result.warmed}/${batchSize} warmed, hasMore: ${result.hasMore}`);
+
+      if (!result.hasMore) {
+        break;
+      }
+
+      offset = result.nextOffset;
+      batchNum++;
+    }
+
+    return { total: totalPages, warmed: totalWarmed, failed: totalFailed };
   };
 
   // Full workflow: Purge → Clear KV → Warm
@@ -76,12 +113,12 @@ export function CloudflareCacheManager() {
       setProgress({ step: 2, totalSteps: 3, message: 'Clearing KV cache...', percent: 30 });
       const kvResult = await clearKvCache(undefined, true);
       
-      // Step 3: Warm cache
-      setProgress({ step: 3, totalSteps: 3, message: 'Warming cache (this takes a while)...', percent: 50 });
-      const warmResult = await warmCache('arizona');
+      // Step 3: Warm cache in batches
+      setProgress({ step: 3, totalSteps: 3, message: 'Warming cache (running batches)...', percent: 50 });
+      const warmResult = await warmAllPages('arizona', 10);
       
       setProgress({ step: 3, totalSteps: 3, message: 'Complete!', percent: 100 });
-      setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted, warmResult });
+      setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted, warmResult: { ...warmResult, hasMore: false, nextOffset: 0 } });
       toast.success(`Full refresh complete! Warmed ${warmResult.warmed}/${warmResult.total} pages`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -119,15 +156,15 @@ export function CloudflareCacheManager() {
     }
   };
 
-  const handleWarmOnly = async (region?: string, limit?: number) => {
+  const handleWarmOnly = async (region: string, batchSize: number = 10) => {
     setIsWarming(true);
     setResult(null);
-    setProgress({ step: 1, totalSteps: 1, message: 'Warming cache...', percent: 50 });
+    setProgress({ step: 1, totalSteps: 1, message: 'Starting cache warming...', percent: 10 });
     
     try {
-      const warmResult = await warmCache(region, limit);
+      const warmResult = await warmAllPages(region, batchSize);
       setProgress({ step: 1, totalSteps: 1, message: 'Complete!', percent: 100 });
-      setResult({ warmResult });
+      setResult({ warmResult: { ...warmResult, hasMore: false, nextOffset: 0 } });
       toast.success(`Cache warmed: ${warmResult.warmed}/${warmResult.total} pages`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -254,23 +291,19 @@ export function CloudflareCacheManager() {
               disabled={isLoading}
             >
               {isWarming ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Flame className="h-4 w-4 mr-2" />}
-              Warm 10 Pages
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => handleWarmOnly('arizona', 20)}
-              disabled={isLoading}
-            >
-              Warm 20 Pages
+              Warm All (10/batch)
             </Button>
             <Button 
               variant="outline"
               onClick={() => handleWarmOnly('arizona', 5)}
               disabled={isLoading}
             >
-              Warm 5 (Test)
+              Warm All (5/batch)
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Runs sequential batches automatically until all pages are warmed.
+          </p>
         </div>
 
         {/* Clear All Section */}

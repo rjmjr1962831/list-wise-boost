@@ -17,6 +17,7 @@ interface WarmRequest {
   urls?: string[];
   region?: string;
   limit?: number;
+  offset?: number;
 }
 
 interface WarmResult {
@@ -25,6 +26,8 @@ interface WarmResult {
   warmed: number;
   failed: number;
   errors: string[];
+  hasMore: boolean;
+  nextOffset: number;
 }
 
 // Generate a cache key from URL
@@ -124,7 +127,7 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
 }
 
 // Get URLs to warm based on region or fetch from database
-async function getUrlsToWarm(region?: string, limit?: number): Promise<string[]> {
+async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   
   // Get cities with qualified agents
@@ -142,23 +145,25 @@ async function getUrlsToWarm(region?: string, limit?: number): Promise<string[]>
   
   if (error || !cities) {
     console.error('Error fetching cities:', error);
-    return [];
+    return { urls: [], totalCount: 0 };
   }
 
   // Generate URLs for each city
-  const urls: string[] = [];
+  const allUrls: string[] = [];
   const baseUrl = 'https://www.top10lists.us';
 
   for (const city of cities) {
     // Main category page
-    urls.push(`${baseUrl}/${city.state_slug}/${city.slug}/top10realestateagents`);
+    allUrls.push(`${baseUrl}/${city.state_slug}/${city.slug}/top10realestateagents`);
   }
 
-  // Apply limit if specified
-  const finalUrls = limit ? urls.slice(0, limit) : urls;
+  const totalCount = allUrls.length;
+  const startIndex = offset || 0;
+  const endIndex = limit ? startIndex + limit : allUrls.length;
+  const urls = allUrls.slice(startIndex, endIndex);
   
-  console.log(`Generated ${finalUrls.length} URLs to warm`);
-  return finalUrls;
+  console.log(`Generated ${urls.length} URLs to warm (offset: ${startIndex}, total: ${totalCount})`);
+  return { urls, totalCount };
 }
 
 serve(async (req) => {
@@ -169,7 +174,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json() as WarmRequest;
-    const { urls: providedUrls, region, limit } = body;
+    const { urls: providedUrls, region, limit = 10, offset = 0 } = body;
 
     // Validate Cloudflare credentials
     if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
@@ -180,25 +185,38 @@ serve(async (req) => {
     }
 
     // Get URLs to warm
-    const urls = providedUrls && providedUrls.length > 0 
-      ? providedUrls 
-      : await getUrlsToWarm(region, limit);
+    let urls: string[];
+    let totalCount: number;
+    
+    if (providedUrls && providedUrls.length > 0) {
+      urls = providedUrls;
+      totalCount = providedUrls.length;
+    } else {
+      const result = await getUrlsToWarm(region, limit, offset);
+      urls = result.urls;
+      totalCount = result.totalCount;
+    }
 
     if (urls.length === 0) {
       return new Response(
-        JSON.stringify({ success: true, total: 0, warmed: 0, failed: 0, errors: [] }),
+        JSON.stringify({ success: true, total: 0, warmed: 0, failed: 0, errors: [], hasMore: false, nextOffset: offset }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`🔥 Starting cache warming for ${urls.length} URLs...`);
+    const nextOffset = offset + urls.length;
+    const hasMore = nextOffset < totalCount;
+    
+    console.log(`🔥 Starting cache warming for ${urls.length} URLs (batch ${offset}-${nextOffset} of ${totalCount})...`);
 
     const result: WarmResult = {
       success: true,
-      total: urls.length,
+      total: totalCount,
       warmed: 0,
       failed: 0,
       errors: [],
+      hasMore,
+      nextOffset,
     };
 
     // Process URLs sequentially to avoid overwhelming the server
