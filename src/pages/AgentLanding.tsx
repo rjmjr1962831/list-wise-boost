@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
@@ -17,14 +18,57 @@ import {
   BarChart3,
   Clock,
   Zap,
-  Target
+  Target,
+  Loader2
 } from 'lucide-react';
 import { AISearchComparison } from '@/components/brand/AISearchComparison';
 import { IndustryShiftStats } from '@/components/brand/IndustryShiftStats';
 import { CitationBadge } from '@/components/brand/CitationBadge';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export default function AgentLanding() {
   const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    consent: false
+  });
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.consent) {
+      toast.error('Please agree to receive updates');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('agent-subscribe', {
+        body: {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || null,
+          consent: formData.consent,
+          source: 'agent-landing'
+        }
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error);
+
+      toast.success('Successfully subscribed! Check your inbox.');
+      setFormData({ name: '', email: '', phone: '', consent: false });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to subscribe';
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const whyTop10Features = [
     {
@@ -284,8 +328,7 @@ export default function AgentLanding() {
 
               <form 
                 className="space-y-4"
-                action="https://top10lists.us/api/agent-subscribe"
-                method="POST"
+                onSubmit={handleSubscribe}
                 itemProp="potentialAction"
                 itemScope
                 itemType="https://schema.org/SubscribeAction"
@@ -300,6 +343,8 @@ export default function AgentLanding() {
                     name="name"
                     placeholder="Your full name"
                     required
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-4 py-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     itemProp="name"
                   />
@@ -315,6 +360,8 @@ export default function AgentLanding() {
                     name="email"
                     placeholder="you@yourbrokerage.com"
                     required
+                    value={formData.email}
+                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-4 py-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     itemProp="email"
                   />
@@ -329,6 +376,8 @@ export default function AgentLanding() {
                     id="agent-phone"
                     name="phone"
                     placeholder="(555) 123-4567"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                     className="w-full px-4 py-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                     itemProp="telephone"
                   />
@@ -340,6 +389,8 @@ export default function AgentLanding() {
                     id="agent-consent"
                     name="consent"
                     required
+                    checked={formData.consent}
+                    onChange={(e) => setFormData(prev => ({ ...prev, consent: e.target.checked }))}
                     className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
                   />
                   <label htmlFor="agent-consent" className="text-sm text-muted-foreground">
@@ -349,8 +400,15 @@ export default function AgentLanding() {
                   </label>
                 </div>
 
-                <Button type="submit" size="lg" className="w-full mt-4">
-                  Subscribe to Agent Updates
+                <Button type="submit" size="lg" className="w-full mt-4" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Subscribing...
+                    </>
+                  ) : (
+                    'Subscribe to Agent Updates'
+                  )}
                 </Button>
 
                 <p className="text-xs text-muted-foreground text-center mt-4">
