@@ -274,11 +274,22 @@ export default function AgentProfile() {
     fetchAgent();
   }, [stateSlug, citySlug, categorySlug, agentSlug]);
 
+  // Generate loading state meta info from URL params
+  const loadingCityName = citySlug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Arizona';
+  const loadingAgentName = agentSlug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Agent';
+  const loadingDescription = `${loadingAgentName} is a top-rated real estate agent in ${loadingCityName}, Arizona. View verified credentials, reviews, and contact information.`;
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <>
+        <Helmet>
+          <title>{`${loadingAgentName} - Real Estate Agent in ${loadingCityName}, AZ | Top10Lists.us`}</title>
+          <meta name="description" content={loadingDescription} />
+        </Helmet>
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </>
     );
   }
 
