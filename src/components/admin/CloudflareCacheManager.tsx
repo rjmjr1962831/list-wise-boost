@@ -250,18 +250,25 @@ export function CloudflareCacheManager() {
           <div className="flex gap-2 flex-wrap">
             <Button 
               variant="outline"
-              onClick={() => handleWarmOnly('arizona')}
-              disabled={isLoading}
-            >
-              {isWarming ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Flame className="h-4 w-4 mr-2" />}
-              Warm Arizona
-            </Button>
-            <Button 
-              variant="outline"
               onClick={() => handleWarmOnly('arizona', 10)}
               disabled={isLoading}
             >
-              Warm 10 Pages (Test)
+              {isWarming ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Flame className="h-4 w-4 mr-2" />}
+              Warm 10 Pages
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => handleWarmOnly('arizona', 20)}
+              disabled={isLoading}
+            >
+              Warm 20 Pages
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => handleWarmOnly('arizona', 5)}
+              disabled={isLoading}
+            >
+              Warm 5 (Test)
             </Button>
           </div>
         </div>
