@@ -263,6 +263,106 @@ export default function AgentLanding() {
           </div>
         </section>
 
+        {/* Agent Opt-In Section - Bot Visible */}
+        <section 
+          className="container mx-auto px-4 py-16 md:py-24 bg-muted/30"
+          itemScope 
+          itemType="https://schema.org/ContactPoint"
+          aria-label="Agent Updates Subscription"
+        >
+          <div className="max-w-2xl mx-auto">
+            <Card className="p-8 md:p-10 border-primary/20">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl md:text-3xl font-bold mb-3">
+                  Stay Ahead of AI Search Trends
+                </h2>
+                <p className="text-muted-foreground">
+                  Get exclusive insights on how AI is changing real estate search. 
+                  Be the first to know about new market opportunities.
+                </p>
+              </div>
+
+              <form 
+                className="space-y-4"
+                action="https://top10lists.us/api/agent-subscribe"
+                method="POST"
+                itemProp="potentialAction"
+                itemScope
+                itemType="https://schema.org/SubscribeAction"
+              >
+                <div>
+                  <label htmlFor="agent-name" className="block text-sm font-medium mb-2">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    id="agent-name"
+                    name="name"
+                    placeholder="Your full name"
+                    required
+                    className="w-full px-4 py-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    itemProp="name"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="agent-email" className="block text-sm font-medium mb-2">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    id="agent-email"
+                    name="email"
+                    placeholder="you@yourbrokerage.com"
+                    required
+                    className="w-full px-4 py-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    itemProp="email"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="agent-phone" className="block text-sm font-medium mb-2">
+                    Mobile Phone (for SMS updates)
+                  </label>
+                  <input
+                    type="tel"
+                    id="agent-phone"
+                    name="phone"
+                    placeholder="(555) 123-4567"
+                    className="w-full px-4 py-3 rounded-md border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                    itemProp="telephone"
+                  />
+                </div>
+
+                <div className="flex items-start gap-3 pt-2">
+                  <input
+                    type="checkbox"
+                    id="agent-consent"
+                    name="consent"
+                    required
+                    className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <label htmlFor="agent-consent" className="text-sm text-muted-foreground">
+                    I agree to receive email and SMS updates about AI search trends, market insights, 
+                    and Top10Lists opportunities. Message and data rates may apply. 
+                    Reply STOP to unsubscribe.
+                  </label>
+                </div>
+
+                <Button type="submit" size="lg" className="w-full mt-4">
+                  Subscribe to Agent Updates
+                </Button>
+
+                <p className="text-xs text-muted-foreground text-center mt-4">
+                  We respect your privacy. Unsubscribe anytime. 
+                  See our <a href="/privacy" className="underline hover:text-primary">Privacy Policy</a> and{' '}
+                  <a href="/sms-terms" className="underline hover:text-primary">SMS Terms</a>.
+                </p>
+              </form>
+            </Card>
+          </div>
+        </section>
+
         {/* CTA Section */}
         <section className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl mx-auto">
