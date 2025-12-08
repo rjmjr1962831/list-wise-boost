@@ -138,6 +138,7 @@ export default function PremiumPricingPage() {
       <Helmet>
         <title>Premium Placement Pricing | Top10Lists.us</title>
         <meta name="description" content="Get guaranteed Top 10 placement in Arizona's most searched real estate markets. AI-optimized profiles that get recommended." />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="min-h-screen bg-background pb-24 lg:pb-8">

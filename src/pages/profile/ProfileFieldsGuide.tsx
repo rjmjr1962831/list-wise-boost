@@ -525,6 +525,7 @@ const ProfileFieldsGuide = () => {
       <Helmet>
         <title>Edit Your Profile | Top10Lists.us</title>
         <meta name="description" content="Edit your Top10Lists profile information" />
+        <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-8 px-4">

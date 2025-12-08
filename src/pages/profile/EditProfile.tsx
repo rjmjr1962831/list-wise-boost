@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -310,7 +311,12 @@ export default function EditProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
+    <>
+      <Helmet>
+        <title>Edit Your Profile | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Progress Bar */}
         <div className="mb-8">
@@ -682,6 +688,7 @@ export default function EditProfile() {
           pipedrivePersonId={professional?.pipedrive_person_id}
         />
       )}
-    </div>
+      </div>
+    </>
   );
 }
