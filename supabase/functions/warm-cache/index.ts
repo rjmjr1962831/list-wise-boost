@@ -147,7 +147,7 @@ async function getUrlsToWarm(region?: string, limit?: number): Promise<string[]>
 
   // Generate URLs for each city
   const urls: string[] = [];
-  const baseUrl = 'https://top10lists.us';
+  const baseUrl = 'https://www.top10lists.us';
 
   for (const city of cities) {
     // Main category page
