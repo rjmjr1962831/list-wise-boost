@@ -187,8 +187,8 @@ export const ScraperComparison = () => {
     const startTime = Date.now();
     
     try {
-      // Step 1: Scrape Zillow with Firecrawl
-      toast.info('Step 1/3: Scraping Zillow with Firecrawl...');
+      // Scrape Zillow with Firecrawl - ONLY this step for fair comparison with Memo23
+      toast.info('Scraping Zillow with Firecrawl...');
       const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('fetch-zillow-agent-firecrawl', {
         body: { profileUrl: selectedProfessional.zillow_profile_url }
       });
@@ -196,146 +196,23 @@ export const ScraperComparison = () => {
       if (firecrawlError) throw firecrawlError;
       if (!firecrawlData.success) throw new Error(firecrawlData.error || 'Firecrawl scrape failed');
 
-      const scrapeTime = Date.now() - startTime;
-      toast.success(`Zillow scraped in ${(scrapeTime / 1000).toFixed(1)}s`);
-
-      // Step 2: Run press search and website scrape IN PARALLEL for speed
-      toast.info('Step 2/3: Searching press & scraping website (parallel)...');
-      const parallelStartTime = Date.now();
-      
-      const agentWebsite = firecrawlData.data?.website || currentDbProfessional?.website;
-      
-      // Run both in parallel
-      const [pressResult, websiteResult] = await Promise.all([
-        // Press search
-        supabase.functions.invoke('search-agent-press-gemini', {
-          body: {
-            agentName: firecrawlData.data?.name || selectedProfessional.name,
-            brokerage: firecrawlData.data?.businessName || currentDbProfessional?.company,
-            city: (currentDbProfessional as any)?.cities?.name,
-            state: 'Arizona',
-            dryRun: true
-          }
-        }),
-        // Website scrape (if URL exists)
-        agentWebsite 
-          ? supabase.functions.invoke('scrape-html', { body: { url: agentWebsite } }).catch(e => {
-              console.log('Website scrape failed:', e);
-              return { data: null };
-            })
-          : Promise.resolve({ data: null })
-      ]);
-
-      const pressMentions = pressResult.data?.pressMentions || [];
-      const websiteContent = websiteResult.data?.content || websiteResult.data?.text || '';
-      const parallelTime = Date.now() - parallelStartTime;
-      toast.success(`Found ${pressMentions.length} press mentions, website ${websiteContent ? 'scraped' : 'skipped'} in ${(parallelTime / 1000).toFixed(1)}s`);
-
-      // Step 4: Synthesize bio using AI router
-      toast.info(`Step ${agentWebsite ? '4/4' : '3/3'}: Synthesizing agent bio...`);
-      const synthesisStartTime = Date.now();
-      
-      // Clean bio - extract only the actual biographical content
-      // Remove: "Show more", "Specialties" section, "X Years of experience", markdown links, phone numbers
-      const cleanBioExcerpt = (firecrawlData.data?.bio || '')
-        .split(/\n\s*Specialties\b/i)[0] // Cut off at "Specialties" section
-        .split(/\n\s*Show more\b/i)[0] // Cut off at "Show more"
-        .replace(/\[.*?\]\(.*?\)/g, '') // Remove markdown links
-        .replace(/\d+\s*Years?\s+of\s+experience/gi, '') // Remove years of experience line
-        .replace(/Call me @?\s*[\d-().\s]+/gi, '') // Remove phone CTAs
-        .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
-        .replace(/\b(facebook|instagram|twitter|linkedin|youtube)\b[^\n]*/gi, '') // Remove social mentions
-        .replace(/team\s+website[^\n]*/gi, '') // Remove team website lines
-        .replace(/\n{3,}/g, '\n\n') // Collapse multiple newlines
-        .trim()
-        .substring(0, 500);
-
-      const bioPrompt = `Write a 3-5 sentence professional bio for ${firecrawlData.data?.name || selectedProfessional.name}, a real estate agent in Arizona.
-
-FACTS TO INCLUDE:
-- ${firecrawlData.data?.ratingsAverage || 'N/A'} star rating with ${firecrawlData.data?.ratingsCount || 0} reviews
-- ${firecrawlData.data?.totalSales || 'Unknown'} total sales
-- ${firecrawlData.data?.yearsExperience || 'Many'} years of experience
-- Works at ${firecrawlData.data?.businessName || 'a local brokerage'}
-
-BACKGROUND INFO (rework, don't quote):
-${cleanBioExcerpt}
-
-${websiteContent ? `FROM THEIR WEBSITE:\n${websiteContent.substring(0, 800)}` : ''}
-
-${pressMentions.length > 0 ? `PRESS COVERAGE: ${pressMentions.slice(0, 3).map((p: any) => p.title).join('; ')}` : ''}
-
-RULES:
-- Write ONLY the bio text, nothing else
-- Do NOT include URLs, website links, or social media
-- Do NOT list specialties or bullet points
-- Do NOT mention team members
-- Write in third person, professional tone
-- Focus on achievements and expertise`;
-
-      const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('ai-router', {
-        body: {
-          task: 'bio-generation',
-          messages: [
-            { role: 'system', content: 'You are a professional bio writer. Output ONLY the bio text - no headers, no lists, no URLs, no formatting. Just 3-5 sentences of professional prose.' },
-            { role: 'user', content: bioPrompt }
-          ]
-        }
-      });
-
-      // Clean any residual formatting from the response
-      // ai-router returns OpenAI format: data.choices[0].message.content
-      const rawBio = synthesisData?.choices?.[0]?.message?.content 
-        || synthesisData?.content 
-        || synthesisData?.text 
-        || '';
-      let synthesizedBio = rawBio
-        .replace(/^#+\s*/gm, '') // Remove markdown headers
-        .replace(/^\*+\s*/gm, '') // Remove bullet points
-        .replace(/https?:\/\/[^\s]+/g, '') // Remove any URLs
-        .trim();
-      const synthesisTime = Date.now() - synthesisStartTime;
-      toast.success(`Bio synthesized in ${(synthesisTime / 1000).toFixed(1)}s`);
-
       const totalDuration = Date.now() - startTime;
-
-      // Filter high-credibility press mentions as achievements
-      const achievements = pressMentions.filter((p: any) => p.credibilityScore >= 7);
-
-      // Combine all data
-      const enrichedData = {
-        ...firecrawlData.data,
-        pressMentions,
-        achievements,
-        synthesizedBio,
-        timings: {
-          scrape: scrapeTime,
-          parallel: parallelTime,
-          synthesis: synthesisTime,
-          total: totalDuration
-        }
-      };
 
       setFirecrawlResult({
         success: true,
-        data: enrichedData,
+        data: firecrawlData.data,
         duration: totalDuration,
         method: 'firecrawl'
       });
 
-      // Map to Professional with enriched data
-      const mapped = {
-        ...mapFirecrawlToProfessional(firecrawlData.data, currentDbProfessional),
-        press_mentions: pressMentions,
-        synthesized_bio: synthesizedBio,
-        notable_achievements: pressMentions.filter((p: any) => p.credibilityScore >= 7)
-      };
+      // Map to Professional format
+      const mapped = mapFirecrawlToProfessional(firecrawlData.data, currentDbProfessional);
       setFirecrawlProfessional(mapped as Professional);
       
-      toast.success(`Full enrichment completed in ${(totalDuration / 1000).toFixed(1)}s`);
+      toast.success(`Firecrawl completed in ${(totalDuration / 1000).toFixed(1)}s`);
 
     } catch (error: any) {
-      console.error('Firecrawl enrichment error:', error);
+      console.error('Firecrawl error:', error);
       setFirecrawlResult({
         success: false,
         error: error.message,
