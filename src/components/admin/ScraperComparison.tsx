@@ -216,22 +216,23 @@ export const ScraperComparison = () => {
       const pressTime = Date.now() - pressStartTime;
       toast.success(`Found ${pressMentions.length} press mentions in ${(pressTime / 1000).toFixed(1)}s`);
 
-      // Step 3: Scrape agent website (Phase 4)
+      // Step 3: Scrape agent website (Phase 4) - use existing scrape-html function
       let websiteContent = '';
       const agentWebsite = firecrawlData.data?.website || currentDbProfessional?.website;
       if (agentWebsite) {
         toast.info('Step 3/4: Scraping agent website...');
         const websiteStartTime = Date.now();
         try {
-          const { data: websiteData } = await supabase.functions.invoke('fetch-zillow-agent-firecrawl', {
-            body: {
-              profileUrl: agentWebsite,
-              scrapeWebsite: true // Flag to use onlyMainContent mode
-            }
+          const { data: websiteData } = await supabase.functions.invoke('scrape-html', {
+            body: { url: agentWebsite }
           });
-          websiteContent = websiteData?.markdown || '';
+          websiteContent = websiteData?.content || websiteData?.text || '';
           const websiteTime = Date.now() - websiteStartTime;
-          toast.success(`Website scraped in ${(websiteTime / 1000).toFixed(1)}s`);
+          if (websiteContent) {
+            toast.success(`Website scraped in ${(websiteTime / 1000).toFixed(1)}s`);
+          } else {
+            toast.info('No website content found, continuing...');
+          }
         } catch (e) {
           console.log('Website scrape failed, continuing without:', e);
         }
