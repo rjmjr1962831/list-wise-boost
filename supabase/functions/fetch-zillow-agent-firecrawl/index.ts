@@ -11,74 +11,17 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY');
-const FIRECRAWL_API_URL = 'https://api.firecrawl.dev/v1/scrape';
+const FIRECRAWL_API_URL = 'https://api.firecrawl.dev/v2/scrape';
 
-// Schema for structured extraction from Zillow agent profiles
-const ZILLOW_AGENT_SCHEMA = {
-  type: 'object',
-  properties: {
-    name: { type: 'string', description: 'Full name of the real estate agent' },
-    screenName: { type: 'string', description: 'Zillow screen name / profile slug' },
-    businessName: { type: 'string', description: 'Brokerage or business name' },
-    businessAddress: {
-      type: 'object',
-      properties: {
-        address1: { type: 'string' },
-        city: { type: 'string' },
-        state: { type: 'string' },
-        postalCode: { type: 'string' }
-      }
-    },
-    phone: { type: 'string', description: 'Primary phone number' },
-    email: { type: 'string', description: 'Email address' },
-    website: { type: 'string', description: 'Personal/team website URL' },
-    profilePhotoUrl: { type: 'string', description: 'Profile photo URL' },
-    
-    // Stats
-    ratingsAverage: { type: 'number', description: 'Average rating (e.g., 5.0)' },
-    ratingsCount: { type: 'integer', description: 'Total number of reviews' },
-    salesLast12Months: { type: 'integer', description: 'Number of sales in last 12 months' },
-    totalSales: { type: 'integer', description: 'Total career sales' },
-    priceRangeMin: { type: 'string', description: 'Minimum price in range (e.g., "$13K")' },
-    priceRangeMax: { type: 'string', description: 'Maximum price in range (e.g., "$5.6M")' },
-    averagePrice: { type: 'string', description: 'Average sale price' },
-    yearsExperience: { type: 'integer', description: 'Years of experience' },
-    
-    // Profile details
-    isTopAgent: { type: 'boolean', description: 'Is marked as Top Agent' },
-    isPremierAgent: { type: 'boolean', description: 'Is a Zillow Premier Agent' },
-    specialties: { 
-      type: 'array', 
-      items: { type: 'string' },
-      description: 'List of specialties (e.g., Buyer\'s Agent, Listing Agent)' 
-    },
-    languages: { 
-      type: 'array', 
-      items: { type: 'string' },
-      description: 'Languages spoken' 
-    },
-    bio: { type: 'string', description: 'Agent bio/description text' },
-    
-    // Team info
-    teamName: { type: 'string', description: 'Team name if applicable' },
-    teamSize: { type: 'integer', description: 'Number of team members' },
-    isTeamLead: { type: 'boolean', description: 'Is the team lead' },
-    
-    // Social
-    facebookUrl: { type: 'string' },
-    linkedinUrl: { type: 'string' },
-    
-    // Listings summary
-    activeListingsCount: { type: 'integer', description: 'Number of active for-sale listings' },
-    rentalListingsCount: { type: 'integer', description: 'Number of rental listings' }
-  }
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
 interface FirecrawlResponse {
   success: boolean;
   data?: {
     markdown: string;
-    extract?: Record<string, unknown>;
     metadata?: {
       ogImage?: string;
       title?: string;
@@ -152,9 +95,10 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
   const startTime = Date.now();
 
   if (!FIRECRAWL_API_KEY) {
-    throw new Error('FIRECRAWL_API_KEY is not configured');
+    throw new Error('FIRECRAWL_API_KEY not configured');
   }
 
+  // FAST MODE: Markdown only, no LLM extraction (2-4 sec vs 13+ sec)
   const response = await fetch(FIRECRAWL_API_URL, {
     method: 'POST',
     headers: {
@@ -163,16 +107,9 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
     },
     body: JSON.stringify({
       url: profileUrl,
-      formats: ['markdown', 'extract'],
+      formats: ['markdown'],
       onlyMainContent: true,
-      waitFor: 2000,
-      extract: {
-        schema: ZILLOW_AGENT_SCHEMA,
-        prompt: `Extract all real estate agent profile information from this Zillow agent page. 
-                 Include contact info, sales statistics, ratings, specialties, bio, and team information.
-                 For sales stats, extract the exact numbers shown (e.g., "1,483 sales last 12 months").
-                 For price range, capture both min and max values.`
-      }
+      waitFor: 1000 // Reduced from 2000ms
     })
   });
 
@@ -190,64 +127,63 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
     throw new Error(`Firecrawl scrape failed: ${result.error || 'Unknown error'}`);
   }
 
-  const extract = result.data?.extract || {};
   const metadata = result.data?.metadata || {};
   const markdown = result.data?.markdown || '';
 
-  // Parse additional data from markdown if extract missed it
-  const additionalData = parseMarkdownFallback(markdown);
+  // Parse all data from markdown (fast, no LLM needed)
+  const parsedData = parseMarkdownFallback(markdown);
 
-  // Build the agent data object
+  // Build the agent data object from parsed markdown
   const agentData: AgentData = {
     // Core identity
-    name: (extract.name as string) || additionalData.name || null,
-    screenName: (extract.screenName as string) || extractScreenName(profileUrl),
-    businessName: (extract.businessName as string) || additionalData.businessName || null,
+    name: parsedData.name || null,
+    screenName: extractScreenName(profileUrl),
+    businessName: parsedData.businessName || null,
     
     // Contact
-    businessAddress: extract.businessAddress as AgentData['businessAddress'] || additionalData.businessAddress || null,
-    phone: (extract.phone as string) || additionalData.phone || null,
-    email: (extract.email as string) || additionalData.email || null,
-    website: (extract.website as string) || additionalData.website || null,
-    profilePhotoUrl: (extract.profilePhotoUrl as string) || (metadata.ogImage as string) || null,
+    businessAddress: parsedData.businessAddress || null,
+    phone: parsedData.phone || null,
+    email: parsedData.email || null,
+    website: parsedData.website || null,
+    profilePhotoUrl: (metadata.ogImage as string) || null,
     
     // Stats
-    ratingsAverage: (extract.ratingsAverage as number) || additionalData.ratingsAverage || null,
-    ratingsCount: (extract.ratingsCount as number) || additionalData.ratingsCount || null,
-    salesLast12Months: (extract.salesLast12Months as number) || additionalData.salesLast12Months || null,
-    totalSales: (extract.totalSales as number) || additionalData.totalSales || null,
-    priceRangeMin: (extract.priceRangeMin as string) || additionalData.priceRangeMin || null,
-    priceRangeMax: (extract.priceRangeMax as string) || additionalData.priceRangeMax || null,
-    averagePrice: (extract.averagePrice as string) || additionalData.averagePrice || null,
-    yearsExperience: (extract.yearsExperience as number) || additionalData.yearsExperience || null,
+    ratingsAverage: parsedData.ratingsAverage || null,
+    ratingsCount: parsedData.ratingsCount || null,
+    salesLast12Months: parsedData.salesLast12Months || null,
+    totalSales: parsedData.totalSales || null,
+    priceRangeMin: parsedData.priceRangeMin || null,
+    priceRangeMax: parsedData.priceRangeMax || null,
+    averagePrice: parsedData.averagePrice || null,
+    yearsExperience: parsedData.yearsExperience || null,
     
     // Status
-    isTopAgent: (extract.isTopAgent as boolean) || additionalData.isTopAgent || false,
-    isPremierAgent: (extract.isPremierAgent as boolean) || additionalData.isPremierAgent || false,
+    isTopAgent: parsedData.isTopAgent || false,
+    isPremierAgent: parsedData.isPremierAgent || false,
     
     // Profile
-    specialties: (extract.specialties as string[]) || additionalData.specialties || [],
-    languages: (extract.languages as string[]) || additionalData.languages || [],
-    bio: (extract.bio as string) || additionalData.bio || null,
+    specialties: parsedData.specialties || [],
+    languages: parsedData.languages || [],
+    bio: parsedData.bio || null,
     
     // Team
-    teamName: (extract.teamName as string) || additionalData.teamName || null,
-    teamSize: (extract.teamSize as number) || additionalData.teamSize || null,
-    isTeamLead: (extract.isTeamLead as boolean) || additionalData.isTeamLead || false,
+    teamName: parsedData.teamName || null,
+    teamSize: parsedData.teamSize || null,
+    isTeamLead: parsedData.isTeamLead || false,
     
     // Social
-    facebookUrl: (extract.facebookUrl as string) || additionalData.facebookUrl || null,
-    linkedinUrl: (extract.linkedinUrl as string) || additionalData.linkedinUrl || null,
+    facebookUrl: parsedData.facebookUrl || null,
+    linkedinUrl: parsedData.linkedinUrl || null,
     
     // Listings
-    activeListingsCount: (extract.activeListingsCount as number) || additionalData.activeListingsCount || null,
-    rentalListingsCount: (extract.rentalListingsCount as number) || additionalData.rentalListingsCount || null,
+    activeListingsCount: parsedData.activeListingsCount || null,
+    rentalListingsCount: parsedData.rentalListingsCount || null,
     
     // Meta
     zillowProfileUrl: profileUrl,
     scrapedAt: new Date().toISOString(),
     scrapeMethod: 'firecrawl',
-    rawMarkdown: markdown.substring(0, 5000) // Store first 5k chars for debugging
+    rawMarkdown: markdown
   };
 
   console.log(`[Firecrawl] Extracted: ${agentData.name}, ${agentData.ratingsCount} reviews, ${agentData.salesLast12Months} sales`);
@@ -260,60 +196,72 @@ function extractScreenName(url: string): string | null {
   return match ? match[1] : null;
 }
 
-// Fallback parser for data that LLM extraction might miss
+// Robust markdown parser for Zillow agent profiles
 function parseMarkdownFallback(markdown: string): Partial<AgentData> {
   const data: Partial<AgentData> = {};
 
-  // Extract name from "# George Laughton" pattern
-  const nameMatch = markdown.match(/^#\s+(.+?)$/m);
+  // Extract name from "# George Laughton" pattern (at end of page typically)
+  const nameMatch = markdown.match(/^#\s+([A-Za-z\s]+?)$/m);
   if (nameMatch) data.name = nameMatch[1].trim();
 
-  // Extract team name from "## Meet The X Team" or "Lead of X"
-  const teamMatch = markdown.match(/Meet The (.+? Team)/i) || markdown.match(/Lead of\s*(.+?)(?:\n|$)/i);
+  // Extract team name from "## Meet The X Team" or "Lead of The X Team"
+  const teamMatch = markdown.match(/Meet The (.+? Team)/i) || markdown.match(/Lead of\s*The\s*(.+? Team)/i);
   if (teamMatch) data.teamName = teamMatch[1].trim();
+
+  // Check if team lead
+  data.isTeamLead = /Lead of/i.test(markdown);
 
   // Extract team size from "190 members"
   const teamSizeMatch = markdown.match(/(\d+)\s*members/i);
   if (teamSizeMatch) data.teamSize = parseInt(teamSizeMatch[1]);
 
-  // Extract ratings from "5.0 [3,786 team reviews]" or "5.0(149)"
+  // Extract ratings - multiple patterns
+  // Pattern 1: "5.0 [3,786 team reviews]"
+  // Pattern 2: "5.0(149)"
   const ratingMatch = markdown.match(/(\d+\.?\d*)\s*[\[(]?([\d,]+)\s*(?:team\s*)?reviews/i);
   if (ratingMatch) {
     data.ratingsAverage = parseFloat(ratingMatch[1]);
     data.ratingsCount = parseInt(ratingMatch[2].replace(/,/g, ''));
   }
 
-  // Extract sales stats
+  // Extract sales stats - bold format: **1,483**sales last 12 months
   const salesMatch = markdown.match(/\*\*([\d,]+)\*\*\s*sales last 12 months/i);
   if (salesMatch) data.salesLast12Months = parseInt(salesMatch[1].replace(/,/g, ''));
 
   const totalSalesMatch = markdown.match(/\*\*([\d,]+)\*\*\s*total sales/i);
   if (totalSalesMatch) data.totalSales = parseInt(totalSalesMatch[1].replace(/,/g, ''));
 
-  // Extract price range
+  // Extract price range: **$13K-$5.6M**price range
   const priceRangeMatch = markdown.match(/\*\*(\$[\d.]+[KMB]?)-(\$[\d.]+[KMB]?)\*\*\s*price range/i);
   if (priceRangeMatch) {
     data.priceRangeMin = priceRangeMatch[1];
     data.priceRangeMax = priceRangeMatch[2];
   }
 
-  // Extract average price
+  // Extract average price: **$487K**average price
   const avgPriceMatch = markdown.match(/\*\*(\$[\d,]+[KMB]?)\*\*\s*average price/i);
   if (avgPriceMatch) data.averagePrice = avgPriceMatch[1];
 
-  // Extract years experience
-  const expMatch = markdown.match(/\*\*(\d+)\*\*\s*years? of experience/i) || markdown.match(/(\d+)\s+Years? of experience/i);
+  // Extract years experience: **19**years of experience OR "19 Years of experience"
+  const expMatch = markdown.match(/\*\*(\d+)\*\*\s*years? of experience/i) || 
+                   markdown.match(/(\d+)\s+Years? of experience/i);
   if (expMatch) data.yearsExperience = parseInt(expMatch[1]);
 
-  // Extract phone
+  // Extract phone: [(623) 462-3017](tel:...)
   const phoneMatch = markdown.match(/\[?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\]?/);
   if (phoneMatch) data.phone = phoneMatch[0].replace(/[\[\]]/g, '');
 
-  // Extract email
-  const emailMatch = markdown.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-  if (emailMatch) data.email = emailMatch[1];
+  // Extract email from mailto link
+  const emailMatch = markdown.match(/\[([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\]/);
+  if (emailMatch) {
+    data.email = emailMatch[1];
+  } else {
+    // Fallback: plain email
+    const plainEmailMatch = markdown.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+    if (plainEmailMatch) data.email = plainEmailMatch[1];
+  }
 
-  // Extract website
+  // Extract website from [Visit team website](url)
   const websiteMatch = markdown.match(/\[Visit (?:team )?website\]\(([^)]+)\)/i);
   if (websiteMatch) data.website = websiteMatch[1];
 
@@ -324,39 +272,69 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
   const liMatch = markdown.match(/\[LinkedIn\]\(([^)]+)\)/i);
   if (liMatch) data.linkedinUrl = liMatch[1];
 
-  // Extract specialties
-  const specialtiesMatch = markdown.match(/Specialties\s*\n\s*([^\n]+)/i);
-  if (specialtiesMatch) {
-    data.specialties = specialtiesMatch[1].split(/(?=[A-Z])/).filter(s => s.trim().length > 0);
+  // Extract specialties - appears after "Specialties" header
+  const specialtiesSection = markdown.match(/Specialties\s*\n\s*([^\n]+)/i);
+  if (specialtiesSection) {
+    // Split on capital letters that start new words (BuyerAgent -> Buyer, Agent)
+    const rawSpecialties = specialtiesSection[1];
+    data.specialties = rawSpecialties
+      .split(/(?=[A-Z][a-z])/)
+      .map(s => s.trim())
+      .filter(s => s.length > 2);
   }
 
-  // Extract languages
-  const langMatch = markdown.match(/Speaks\s*([^\n]+)/i);
+  // Extract languages - "SpeaksEnglish, Spanish" or "Speaks English, Spanish"
+  const langMatch = markdown.match(/Speaks?\s*([A-Za-z,\s]+?)(?:\n|$)/i);
   if (langMatch) {
-    data.languages = langMatch[1].split(/,\s*/).map(l => l.trim());
+    data.languages = langMatch[1]
+      .split(/,\s*/)
+      .map(l => l.trim())
+      .filter(l => l.length > 0);
   }
 
   // Extract bio from "Get to know" section
-  const bioMatch = markdown.match(/## Get to know[^\n]*\n\n([^#]+?)(?=\n\n(?:Show more|Specialties|\*\*))/is);
+  const bioMatch = markdown.match(/## Get to know[^\n]*\n+(?:Your Neighborhood Realtors\s*\n+)?(.+?)(?=\n\nShow more|\n\nSpecialties|\*\*|##)/is);
   if (bioMatch) {
-    data.bio = bioMatch[1].trim().replace(/\n+/g, ' ').substring(0, 2000);
+    data.bio = bioMatch[1]
+      .trim()
+      .replace(/\n+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .substring(0, 2000);
   }
 
   // Check for Premier Agent
-  data.isPremierAgent = markdown.toLowerCase().includes('premier agent');
+  data.isPremierAgent = /premier agent/i.test(markdown);
   
   // Check for Top Agent
-  data.isTopAgent = markdown.toLowerCase().includes('top agent');
+  data.isTopAgent = /top agent/i.test(markdown) || /What is Top Agent\?/i.test(markdown);
 
-  // Extract brokerage
-  const brokerageMatch = markdown.match(/(?:^|\n)([A-Za-z\s]+(?:Group|Realty|Real Estate|Brokerage|Properties))/i);
-  if (brokerageMatch) data.businessName = brokerageMatch[1].trim();
+  // Extract brokerage - look for pattern before "Lead of" or standalone
+  const brokerageMatch = markdown.match(/^([A-Za-z\s]+(?:Group|Realty|Real Estate|Brokerage|Properties|RE\/MAX|Keller Williams|Coldwell Banker|Century 21|eXp))(?:\s*Lead of|\s*$)/im);
+  if (brokerageMatch) {
+    data.businessName = brokerageMatch[1].trim();
+  }
 
-  // Extract listings count from "For Sale (236)"
-  const listingsMatch = markdown.match(/For Sale\s*\((\d+)\)/i);
+  // Extract address from maps link or text
+  const addressMatch = markdown.match(/\[([^\]]+(?:Drive|Dr|Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd)[^\]]*)\]\(https:\/\/maps\.google/i);
+  if (addressMatch) {
+    const addrParts = addressMatch[1].split(/\\n|,/).map(p => p.trim());
+    if (addrParts.length >= 2) {
+      const lastPart = addrParts[addrParts.length - 1];
+      const stateZipMatch = lastPart.match(/([A-Z]{2})\s*,?\s*(\d{5})/);
+      data.businessAddress = {
+        address1: addrParts[0],
+        city: addrParts.length > 2 ? addrParts[1].replace(/,/g, '') : null,
+        state: stateZipMatch ? stateZipMatch[1] : null,
+        postalCode: stateZipMatch ? stateZipMatch[2] : null
+      };
+    }
+  }
+
+  // Extract listings count from "## For Sale (236)"
+  const listingsMatch = markdown.match(/## For Sale\s*\((\d+)\)/i);
   if (listingsMatch) data.activeListingsCount = parseInt(listingsMatch[1]);
 
-  const rentalsMatch = markdown.match(/For Rent\s*\((\d+)\)/i);
+  const rentalsMatch = markdown.match(/## For Rent\s*\((\d+)\)/i);
   if (rentalsMatch) data.rentalListingsCount = parseInt(rentalsMatch[1]);
 
   return data;
@@ -364,12 +342,6 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
 
 // Main handler
 Deno.serve(async (req) => {
-  // CORS headers
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  };
-
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -416,7 +388,7 @@ Deno.serve(async (req) => {
           years_experience: agentData.yearsExperience,
           specialty: agentData.specialties,
           languages: agentData.languages,
-          get_to_know_me: agentData.bio,
+          description: agentData.bio,
           zillow_profile_url: profileUrl,
           raw_scraper_data: agentData,
           zillow_data_fetched_at: agentData.scrapedAt,
