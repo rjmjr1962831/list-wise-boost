@@ -209,10 +209,11 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId, rawResearch, skipIfNoPress = false, skipGeminiSearch = false } = await req.json();
+    const { professionalId, rawResearch, skipIfNoPress = false } = await req.json();
 
-    // skipGeminiSearch: If true, skip the Gemini search (useful when caller already ran it)
-    // Even without press research, we can extract achievements from existing bio data
+    // This function ONLY synthesizes from existing DB data.
+    // The caller (e.g., BatchSynthesisRefresher) is responsible for running 
+    // search-agent-press-gemini first if fresh press research is needed.
     if (skipIfNoPress && (!rawResearch || rawResearch.trim().length < 100)) {
       console.log('⏭️ Skipping synthesis - no substantial press research found');
       return new Response(
@@ -277,65 +278,29 @@ serve(async (req) => {
       supabaseKey
     );
 
-    // STEP 1: Call Gemini Flash for iterative web search (FREE) - SKIP if caller already did it
-    let geminiSearchResults = null;
-    
-    if (skipGeminiSearch) {
-      console.log(`\n⏭️ Skipping Gemini search (caller already ran it)`);
-      // Fetch the already-saved press mentions and community roles from DB
-      geminiSearchResults = {
-        pressMentions: professional.press_mentions || [],
-        communityRoles: professional.community_roles || [],
-        totalSearches: 0
-      };
-    } else {
-      console.log(`\n🔍 Running Gemini Flash iterative web search for: ${professional.name}`);
-      try {
-        const geminiResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press-gemini`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            agentName: professional.name,
-            brokerage: professional.company || professional.business_name,
-            city: professional.zillow_search_city,
-            state: 'Arizona',
-            zillowUrl: professional.zillow_profile_url,
-            professionalId: professionalId,
-            dryRun: true // Don't save press mentions yet - we'll do that after synthesis
-          }),
-        });
-
-        if (geminiResponse.ok) {
-          geminiSearchResults = await geminiResponse.json();
-          console.log(`   ✅ Gemini search complete: ${geminiSearchResults.totalSearches} searches, ${geminiSearchResults.pressMentions?.length || 0} press mentions found`);
-        } else {
-          console.log(`   ⚠️ Gemini search failed: ${geminiResponse.status}`);
-        }
-      } catch (searchError) {
-        console.log(`   ⚠️ Gemini search error: ${searchError instanceof Error ? searchError.message : 'Unknown'}`);
-      }
-    }
+    // Read existing press mentions and community roles from DB
+    // (The caller is responsible for running search-agent-press-gemini first if fresh data is needed)
+    const geminiSearchResults = {
+      pressMentions: professional.press_mentions || [],
+      communityRoles: professional.community_roles || [],
+      totalSearches: 0
+    };
 
     // Prepare context for AI - gather all available data sources
     const confirmedYearsExperience = professional.years_experience || extractedYears;
     
-    // Compile web search findings into a structured summary
-    const webSearchFindings = geminiSearchResults ? `
-=== WEB SEARCH FINDINGS (${geminiSearchResults.totalSearches} searches performed) ===
-${geminiSearchResults.phases?.map((phase: any) => `
-Phase ${phase.phase}: ${phase.queries?.length || 0} queries
-${phase.analysis || 'No analysis'}
-Results: ${phase.results?.map((r: any) => `- ${r.title}: ${r.snippet}`).join('\n') || 'None'}
-`).join('\n') || 'No phase data'}
-
-=== PRESS MENTIONS DISCOVERED ===
-${geminiSearchResults.pressMentions?.map((pm: any) => 
-  `- ${pm.title} (${pm.outlet || 'Unknown outlet'}, credibility: ${pm.credibilityScore || 'N/A'})`
-).join('\n') || 'No press mentions found'}
-` : '';
+    // Compile existing press mentions and community roles from DB
+    const pressMentionsSummary = geminiSearchResults.pressMentions.length > 0 
+      ? `=== PRESS MENTIONS ===\n${geminiSearchResults.pressMentions.map((pm: any) => 
+          `- ${pm.title} (${pm.outlet || 'Unknown outlet'})`
+        ).join('\n')}`
+      : '';
+    
+    const communityRolesSummary = geminiSearchResults.communityRoles.length > 0
+      ? `=== COMMUNITY ROLES ===\n${geminiSearchResults.communityRoles.map((cr: any) => 
+          `- ${cr.role || cr.organization}: ${cr.description || ''}`
+        ).join('\n')}`
+      : '';
     
     const context = {
       name: professional.name,
@@ -343,8 +308,9 @@ ${geminiSearchResults.pressMentions?.map((pm: any) =>
       existingPressData: professional.press_mentions || [],
       existingCommunityRoles: professional.community_roles || [],
       rawResearch: rawResearch || '',
-      webSearchFindings: webSearchFindings,
-      geminiPressMentions: geminiSearchResults?.pressMentions || [],
+      pressMentionsSummary,
+      communityRolesSummary,
+      geminiPressMentions: geminiSearchResults.pressMentions || [],
       professionalInformation: professional.professional_information || {},
       websiteContent: websiteData?.content || '',
       websiteSource: websiteData?.source || '',
@@ -360,12 +326,9 @@ ${geminiSearchResults.pressMentions?.map((pm: any) =>
 
     console.log('\n📝 Synthesizing profile for:', professional.name);
     console.log(`   Bio length: ${(context.existingBio || '').length} chars`);
-    console.log(`   Press mentions (existing): ${context.existingPressData.length}`);
-    console.log(`   Press mentions (from search): ${context.geminiPressMentions.length}`);
-    console.log(`   Raw research: ${context.rawResearch.length} chars`);
-    console.log(`   Web search findings: ${context.webSearchFindings.length} chars`);
+    console.log(`   Press mentions: ${context.existingPressData.length}`);
+    console.log(`   Community roles: ${context.existingCommunityRoles.length}`);
     console.log(`   Website content: ${context.websiteContent.length} chars`);
-    console.log(`   Website source: ${context.websiteSource || 'None'}`);
 
     // STEP 2: Call Claude Sonnet for profile synthesis
     const systemPrompt = `You are writing a professional biography for a real estate agent directory optimized for AI search engines.
@@ -444,8 +407,8 @@ ${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
 === EXISTING BIO (paraphrase, do NOT copy verbatim) ===
 ${context.existingBio || 'No bio available'}
 
-=== WEB SEARCH FINDINGS ===
-${context.webSearchFindings || 'No web search results available'}
+=== PRESS MENTIONS ===
+${context.pressMentionsSummary || 'No press mentions found'}
 
 === EXISTING COMMUNITY ROLES (include ALL of these in paragraph 4) ===
 ${context.existingCommunityRoles?.length > 0 ? JSON.stringify(context.existingCommunityRoles, null, 2) : 'No existing community roles - search bio and website for volunteer work, board seats, charity involvement'}

@@ -132,8 +132,7 @@ export function BatchSynthesisRefresher() {
       
       const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('synthesize-agent-profile', {
         body: {
-          professionalId: agent.id,
-          skipGeminiSearch: true // Already did press search
+          professionalId: agent.id
         }
       });
 
