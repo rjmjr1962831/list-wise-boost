@@ -278,15 +278,45 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
   const liMatch = markdown.match(/\[LinkedIn\]\(([^)]+)\)/i);
   if (liMatch) data.linkedinUrl = liMatch[1];
 
-  // Extract specialties - appears after "Specialties" header
-  const specialtiesSection = markdown.match(/Specialties\s*\n\s*([^\n]+)/i);
+  // Extract specialties - multiple patterns on Zillow
+  // Pattern 1: "Specialties\nBuyer's Agent, Listing Agent, Relocation"
+  // Pattern 2: "SpecialtiesBuyer's AgentListing AgentRelocation" (no spacing)
+  // Pattern 3: Look for common specialty terms anywhere
+  const specialtiesSection = markdown.match(/Specialties\s*[\n:]?\s*([^\n]+)/i);
   if (specialtiesSection) {
-    // Split on capital letters that start new words (BuyerAgent -> Buyer, Agent)
     const rawSpecialties = specialtiesSection[1];
-    data.specialties = rawSpecialties
-      .split(/(?=[A-Z][a-z])/)
-      .map(s => s.trim())
-      .filter(s => s.length > 2);
+    // Handle both comma-separated and CamelCase joined
+    let specs: string[] = [];
+    
+    if (rawSpecialties.includes(',')) {
+      specs = rawSpecialties.split(',').map(s => s.trim());
+    } else {
+      // Split on capital letters that start new words (BuyerAgent -> Buyer Agent)
+      specs = rawSpecialties
+        .replace(/([a-z])([A-Z])/g, '$1, $2')
+        .replace(/Buyer'?s?\s*Agent/gi, "Buyer's Agent")
+        .split(',')
+        .map(s => s.trim());
+    }
+    
+    data.specialties = specs.filter(s => s.length > 2 && !/Speaks?|Languages?/i.test(s));
+  }
+  
+  // Fallback: extract known specialty keywords from full markdown
+  if (!data.specialties || data.specialties.length === 0) {
+    const knownSpecialties = [
+      "Buyer's Agent", "Listing Agent", "Relocation", "Foreclosure",
+      "Property Management", "Short-Sale", "Consulting", "Land", "Commercial",
+      "Luxury", "New Construction", "Investment Properties", "First-Time Buyers",
+      "Senior Living", "Vacation Homes", "Condos", "Townhomes"
+    ];
+    const found: string[] = [];
+    for (const spec of knownSpecialties) {
+      if (new RegExp(spec.replace(/['-]/g, "['-]?"), 'i').test(markdown)) {
+        found.push(spec);
+      }
+    }
+    if (found.length > 0) data.specialties = found;
   }
 
   // Extract languages - "SpeaksEnglish, Spanish" or "Speaks English, Spanish"
