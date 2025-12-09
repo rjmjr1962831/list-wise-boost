@@ -67,42 +67,15 @@ export const ScraperComparison = () => {
   };
 
   const testMemo23Zillow = async () => {
-    setLoading('memo23');
-    const startTime = Date.now();
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
-        body: { profileUrl: zillowUrl }
-      });
-
-      const duration = Date.now() - startTime;
-
-      if (error) throw error;
-
-      setMemo23Result({
-        success: data.success !== false,
-        data: data.data || data,
-        error: data.error,
-        duration,
-        method: 'memo23'
-      });
-
-      if (data.success !== false) {
-        toast.success(`Memo23 completed in ${(duration / 1000).toFixed(2)}s`);
-      } else {
-        toast.error(`Memo23 failed: ${data.error}`);
-      }
-    } catch (error: any) {
-      setMemo23Result({
-        success: false,
-        error: error.message,
-        duration: Date.now() - startTime,
-        method: 'memo23'
-      });
-      toast.error(`Memo23 error: ${error.message}`);
-    } finally {
-      setLoading(null);
-    }
+    // Note: memo23 requires an existing professional in the database
+    // For comparison, we show a message explaining this limitation
+    setMemo23Result({
+      success: false,
+      error: 'Memo23 requires an existing professional record in the database (professionalId). Use Firecrawl for standalone profile scraping.',
+      duration: 0,
+      method: 'memo23'
+    });
+    toast.info('Memo23 requires a database record. Firecrawl can scrape standalone.');
   };
 
   const testBothZillow = async () => {
