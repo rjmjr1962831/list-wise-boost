@@ -105,9 +105,9 @@ export function BatchSynthesisRefresher() {
   async function processAgent(agent: AgentPreview): Promise<SynthesisResult> {
     try {
       // Step 1: Run Gemini press search (also extracts community roles)
-      setCurrentStep("Searching press & community...");
-      
       const cityData = agent.city as { name: string; state: string } | null;
+      
+      console.log(`[Batch] Starting press search for: ${agent.name}`);
       
       const { data: searchData, error: searchError } = await supabase.functions.invoke('search-agent-press-gemini', {
         body: {
@@ -127,8 +127,10 @@ export function BatchSynthesisRefresher() {
       const pressMentions = searchData?.pressMentions?.length || 0;
       const communityRoles = searchData?.communityRoles?.length || 0;
 
+      console.log(`[Batch] Press search complete for ${agent.name}: ${pressMentions} press, ${communityRoles} roles`);
+
       // Step 2: Run synthesis
-      setCurrentStep("Generating synthesis...");
+      console.log(`[Batch] Starting synthesis for: ${agent.name}`);
       
       const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('synthesize-agent-profile', {
         body: {
@@ -140,16 +142,20 @@ export function BatchSynthesisRefresher() {
         throw new Error(`Synthesis failed: ${synthesisError.message}`);
       }
 
+      const bioPreview = synthesisData?.data?.synthesized_bio?.substring(0, 150) || '';
+      console.log(`[Batch] Synthesis complete for ${agent.name}: ${bioPreview.length} chars`);
+
       return {
         id: agent.id,
         name: agent.name,
         success: true,
         pressMentions,
         communityRoles,
-        synthesisPreview: synthesisData?.data?.synthesized_bio?.substring(0, 150) + '...'
+        synthesisPreview: bioPreview ? bioPreview + '...' : 'No bio generated'
       };
 
     } catch (error) {
+      console.error(`[Batch] Error processing ${agent.name}:`, error);
       return {
         id: agent.id,
         name: agent.name,
@@ -181,10 +187,14 @@ export function BatchSynthesisRefresher() {
     const concurrency = 5; // Process 5 agents at a time
     const allResults: SynthesisResult[] = [];
 
+    console.log(`[Batch] Starting batch synthesis for ${agentsBatch.length} agents, concurrency: ${concurrency}`);
+
     // Process in concurrent batches
     for (let i = 0; i < agentsBatch.length; i += concurrency) {
       const batch = agentsBatch.slice(i, i + concurrency);
-      setCurrentAgent(`${batch.map(a => a.name).join(', ')}`);
+      setCurrentAgent(`Processing: ${batch.map(a => a.name).join(', ')}`);
+      
+      console.log(`[Batch] Processing batch ${Math.floor(i/concurrency) + 1}: ${batch.map(a => a.name).join(', ')}`);
       
       const batchResults = await Promise.allSettled(
         batch.map(agent => processAgent(agent))
@@ -192,8 +202,10 @@ export function BatchSynthesisRefresher() {
 
       const processedResults = batchResults.map((result, idx) => {
         if (result.status === 'fulfilled') {
+          console.log(`[Batch] ${batch[idx].name}: Success`);
           return result.value;
         }
+        console.log(`[Batch] ${batch[idx].name}: Failed - Promise rejected`);
         return {
           id: batch[idx].id,
           name: batch[idx].name,
@@ -203,9 +215,12 @@ export function BatchSynthesisRefresher() {
       });
 
       allResults.push(...processedResults);
+      console.log(`[Batch] Results so far: ${allResults.length}`, allResults);
       setResults([...allResults]);
       setProcessedCount(allResults.length);
     }
+
+    console.log(`[Batch] All results:`, allResults);
 
     const successful = allResults.filter(r => r.success).length;
     const failed = allResults.filter(r => !r.success).length;
