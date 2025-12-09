@@ -146,7 +146,7 @@ export function BatchSynthesisRefresher() {
         success: true,
         pressMentions,
         communityRoles,
-        synthesisPreview: synthesisData?.synthesizedBio?.substring(0, 150) + '...'
+        synthesisPreview: synthesisData?.data?.synthesized_bio?.substring(0, 150) + '...'
       };
 
     } catch (error) {
