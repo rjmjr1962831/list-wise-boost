@@ -187,8 +187,8 @@ export const ScraperComparison = () => {
     const startTime = Date.now();
     
     try {
-      // Scrape Zillow with Firecrawl - ONLY this step for fair comparison with Memo23
-      toast.info('Scraping Zillow with Firecrawl...');
+      // Step 1: Scrape Zillow with Firecrawl
+      toast.info('Step 1/2: Scraping Zillow with Firecrawl...');
       const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('fetch-zillow-agent-firecrawl', {
         body: { profileUrl: selectedProfessional.zillow_profile_url }
       });
@@ -196,20 +196,71 @@ export const ScraperComparison = () => {
       if (firecrawlError) throw firecrawlError;
       if (!firecrawlData.success) throw new Error(firecrawlData.error || 'Firecrawl scrape failed');
 
+      const scrapeTime = Date.now() - startTime;
+      toast.success(`Zillow scraped in ${(scrapeTime / 1000).toFixed(1)}s`);
+
+      // Step 2: Quick bio synthesis using ai-router (skip press search for speed)
+      toast.info('Step 2/2: Synthesizing bio...');
+      const synthesisStartTime = Date.now();
+      
+      const bioPrompt = `Write a 3-5 sentence professional bio for ${firecrawlData.data?.name || selectedProfessional.name}, a real estate agent in Arizona.
+
+FACTS:
+- ${firecrawlData.data?.ratingsAverage || 'N/A'} star rating with ${firecrawlData.data?.ratingsCount || 0} reviews
+- ${firecrawlData.data?.totalSales || 'Unknown'} total sales
+- ${firecrawlData.data?.yearsExperience || 'Many'} years of experience
+- Works at ${firecrawlData.data?.businessName || 'a local brokerage'}
+
+BACKGROUND (rework, don't quote verbatim):
+${(firecrawlData.data?.bio || '').substring(0, 800)}
+
+RULES:
+- Write ONLY the bio text, nothing else
+- Do NOT include URLs, phone numbers, or social media
+- Do NOT list specialties or bullet points
+- Write in third person, professional tone`;
+
+      const { data: synthesisData } = await supabase.functions.invoke('ai-router', {
+        body: {
+          task: 'bio-generation',
+          messages: [
+            { role: 'system', content: 'You are a professional bio writer. Output ONLY 3-5 sentences of professional prose. No headers, lists, or URLs.' },
+            { role: 'user', content: bioPrompt }
+          ]
+        }
+      });
+
+      const synthesizedBio = (synthesisData?.choices?.[0]?.message?.content || '')
+        .replace(/^#+\s*/gm, '')
+        .replace(/^\*+\s*/gm, '')
+        .replace(/https?:\/\/[^\s]+/g, '')
+        .trim();
+      
+      const synthesisTime = Date.now() - synthesisStartTime;
+      toast.success(`Bio synthesized in ${(synthesisTime / 1000).toFixed(1)}s`);
+
       const totalDuration = Date.now() - startTime;
+
+      const enrichedData = {
+        ...firecrawlData.data,
+        synthesizedBio,
+        timings: { scrape: scrapeTime, synthesis: synthesisTime, total: totalDuration }
+      };
 
       setFirecrawlResult({
         success: true,
-        data: firecrawlData.data,
+        data: enrichedData,
         duration: totalDuration,
         method: 'firecrawl'
       });
 
-      // Map to Professional format
-      const mapped = mapFirecrawlToProfessional(firecrawlData.data, currentDbProfessional);
+      const mapped = {
+        ...mapFirecrawlToProfessional(firecrawlData.data, currentDbProfessional),
+        synthesized_bio: synthesizedBio
+      };
       setFirecrawlProfessional(mapped as Professional);
       
-      toast.success(`Firecrawl completed in ${(totalDuration / 1000).toFixed(1)}s`);
+      toast.success(`Completed in ${(totalDuration / 1000).toFixed(1)}s`);
 
     } catch (error: any) {
       console.error('Firecrawl error:', error);

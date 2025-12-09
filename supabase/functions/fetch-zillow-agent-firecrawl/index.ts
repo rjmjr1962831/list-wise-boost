@@ -298,18 +298,45 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
       .filter(l => l.length > 0);
   }
 
-  // Extract bio from "Get to know" section - get full text, not just preview
-  // Pattern 1: Stop at ## (next section) or ** (bold stats)
-  // Pattern 2: Try to get everything after "Get to know" until next major section
+  // Extract bio from "Get to know" section - get full text, clean thoroughly
   const bioMatch = markdown.match(/## Get to know[^\n]*\n+(?:Your Neighborhood Realtors\s*\n+)?(.+?)(?=\n##|\n\*\*\d+\*\*|\n\[Show less\]|$)/is);
   if (bioMatch) {
-    // Clean up the bio text - preserve paragraphs but clean formatting
+    // Clean up the bio text - remove all non-bio content
     data.bio = bioMatch[1]
       .trim()
-      .replace(/\[Show more\]\([^)]+\)/gi, '') // Remove "Show more" links
-      .replace(/\[Show less\]\([^)]+\)/gi, '') // Remove "Show less" links  
-      .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines to double
-      .substring(0, 5000); // Increase limit to 5000 chars
+      // Stop at "Show more" or "Specialties" section
+      .split(/\n\s*Show more\b/i)[0]
+      .split(/\n\s*Specialties\b/i)[0]
+      .split(/\n\s*less\s*$/i)[0]
+      // Remove markdown links and their text
+      .replace(/\[Show more\]\([^)]+\)/gi, '')
+      .replace(/\[Show less\]\([^)]+\)/gi, '')
+      .replace(/\[Visit (?:team )?website\]\([^)]+\)/gi, '')
+      .replace(/\[Facebook\]\([^)]+\)/gi, '')
+      .replace(/\[LinkedIn\]\([^)]+\)/gi, '')
+      .replace(/\[Instagram\]\([^)]+\)/gi, '')
+      .replace(/\[Twitter\]\([^)]+\)/gi, '')
+      .replace(/\[YouTube\]\([^)]+\)/gi, '')
+      // Remove phone CTAs
+      .replace(/Call me @?\s*[\d-().\s]+\.?/gi, '')
+      // Remove years of experience line (we extract it separately)
+      .replace(/\d+\s+Years? of experience/gi, '')
+      // Remove URLs
+      .replace(/https?:\/\/[^\s]+/g, '')
+      // Remove specialty keywords that might leak through
+      .replace(/Buyer'?s?\s*Agent/gi, '')
+      .replace(/Listing\s*Agent/gi, '')
+      .replace(/Foreclosure/gi, '')
+      .replace(/Property\s*Management/gi, '')
+      .replace(/Short[\s-]*Sale/gi, '')
+      .replace(/Relocation/gi, '')
+      .replace(/Consulting/gi, '')
+      // Remove "Team Leader" if it appears standalone at start
+      .replace(/^Team Leader\s*\n+/i, '')
+      // Normalize whitespace
+      .replace(/\n{3,}/g, '\n\n')
+      .trim()
+      .substring(0, 2000);
   }
 
   // Check for Premier Agent
