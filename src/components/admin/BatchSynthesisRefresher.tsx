@@ -177,25 +177,38 @@ export function BatchSynthesisRefresher() {
       return;
     }
 
-    const newResults: SynthesisResult[] = [];
+    const agentsBatch = agentsToProcess.slice(0, totalAgents);
+    const concurrency = 5; // Process 5 agents at a time
+    const allResults: SynthesisResult[] = [];
 
-    for (let i = 0; i < totalAgents; i++) {
-      const agent = agentsToProcess[i];
-      setCurrentAgent(agent.name);
-      setProcessedCount(i + 1);
+    // Process in concurrent batches
+    for (let i = 0; i < agentsBatch.length; i += concurrency) {
+      const batch = agentsBatch.slice(i, i + concurrency);
+      setCurrentAgent(`${batch.map(a => a.name).join(', ')}`);
+      
+      const batchResults = await Promise.allSettled(
+        batch.map(agent => processAgent(agent))
+      );
 
-      const result = await processAgent(agent);
-      newResults.push(result);
-      setResults([...newResults]);
+      const processedResults = batchResults.map((result, idx) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        }
+        return {
+          id: batch[idx].id,
+          name: batch[idx].name,
+          success: false,
+          error: 'Promise rejected'
+        };
+      });
 
-      // Small delay between agents to avoid rate limiting
-      if (i < totalAgents - 1) {
-        await new Promise(r => setTimeout(r, 1000));
-      }
+      allResults.push(...processedResults);
+      setResults([...allResults]);
+      setProcessedCount(allResults.length);
     }
 
-    const successful = newResults.filter(r => r.success).length;
-    const failed = newResults.filter(r => !r.success).length;
+    const successful = allResults.filter(r => r.success).length;
+    const failed = allResults.filter(r => !r.success).length;
 
     toast.success(`Completed: ${successful} successful, ${failed} failed`);
     setCurrentAgent(null);
