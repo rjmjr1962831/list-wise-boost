@@ -199,44 +199,37 @@ export const ScraperComparison = () => {
       const scrapeTime = Date.now() - startTime;
       toast.success(`Zillow scraped in ${(scrapeTime / 1000).toFixed(1)}s`);
 
-      // Step 2: Search for press mentions using Gemini
-      toast.info('Step 2/3: Searching for press mentions...');
-      const pressStartTime = Date.now();
-      const { data: pressData, error: pressError } = await supabase.functions.invoke('search-agent-press-gemini', {
-        body: {
-          agentName: firecrawlData.data?.name || selectedProfessional.name,
-          brokerage: firecrawlData.data?.businessName || currentDbProfessional?.company,
-          city: (currentDbProfessional as any)?.cities?.name,
-          state: 'Arizona',
-          dryRun: true // Don't save to DB, just return results
-        }
-      });
-
-      const pressMentions = pressData?.pressMentions || [];
-      const pressTime = Date.now() - pressStartTime;
-      toast.success(`Found ${pressMentions.length} press mentions in ${(pressTime / 1000).toFixed(1)}s`);
-
-      // Step 3: Scrape agent website (Phase 4) - use existing scrape-html function
-      let websiteContent = '';
+      // Step 2: Run press search and website scrape IN PARALLEL for speed
+      toast.info('Step 2/3: Searching press & scraping website (parallel)...');
+      const parallelStartTime = Date.now();
+      
       const agentWebsite = firecrawlData.data?.website || currentDbProfessional?.website;
-      if (agentWebsite) {
-        toast.info('Step 3/4: Scraping agent website...');
-        const websiteStartTime = Date.now();
-        try {
-          const { data: websiteData } = await supabase.functions.invoke('scrape-html', {
-            body: { url: agentWebsite }
-          });
-          websiteContent = websiteData?.content || websiteData?.text || '';
-          const websiteTime = Date.now() - websiteStartTime;
-          if (websiteContent) {
-            toast.success(`Website scraped in ${(websiteTime / 1000).toFixed(1)}s`);
-          } else {
-            toast.info('No website content found, continuing...');
+      
+      // Run both in parallel
+      const [pressResult, websiteResult] = await Promise.all([
+        // Press search
+        supabase.functions.invoke('search-agent-press-gemini', {
+          body: {
+            agentName: firecrawlData.data?.name || selectedProfessional.name,
+            brokerage: firecrawlData.data?.businessName || currentDbProfessional?.company,
+            city: (currentDbProfessional as any)?.cities?.name,
+            state: 'Arizona',
+            dryRun: true
           }
-        } catch (e) {
-          console.log('Website scrape failed, continuing without:', e);
-        }
-      }
+        }),
+        // Website scrape (if URL exists)
+        agentWebsite 
+          ? supabase.functions.invoke('scrape-html', { body: { url: agentWebsite } }).catch(e => {
+              console.log('Website scrape failed:', e);
+              return { data: null };
+            })
+          : Promise.resolve({ data: null })
+      ]);
+
+      const pressMentions = pressResult.data?.pressMentions || [];
+      const websiteContent = websiteResult.data?.content || websiteResult.data?.text || '';
+      const parallelTime = Date.now() - parallelStartTime;
+      toast.success(`Found ${pressMentions.length} press mentions, website ${websiteContent ? 'scraped' : 'skipped'} in ${(parallelTime / 1000).toFixed(1)}s`);
 
       // Step 4: Synthesize bio using AI router
       toast.info(`Step ${agentWebsite ? '4/4' : '3/3'}: Synthesizing agent bio...`);
@@ -317,7 +310,7 @@ RULES:
         synthesizedBio,
         timings: {
           scrape: scrapeTime,
-          press: pressTime,
+          parallel: parallelTime,
           synthesis: synthesisTime,
           total: totalDuration
         }
