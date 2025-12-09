@@ -330,6 +330,7 @@ ${geminiSearchResults.pressMentions?.map((pm: any) =>
       name: professional.name,
       existingBio: professional.get_to_know_me || professional.description,
       existingPressData: professional.press_mentions || [],
+      existingCommunityRoles: professional.community_roles || [],
       rawResearch: rawResearch || '',
       webSearchFindings: webSearchFindings,
       geminiPressMentions: geminiSearchResults?.pressMentions || [],
@@ -435,13 +436,17 @@ ${context.existingBio || 'No bio available'}
 === WEB SEARCH FINDINGS ===
 ${context.webSearchFindings || 'No web search results available'}
 
+=== EXISTING COMMUNITY ROLES (include ALL of these in paragraph 4) ===
+${context.existingCommunityRoles?.length > 0 ? JSON.stringify(context.existingCommunityRoles, null, 2) : 'No existing community roles - search bio and website for volunteer work, board seats, charity involvement'}
+
 REMEMBER:
 - 4 paragraphs with blank lines between each
 - Bold numbers, certifications, awards, press outlets, community roles, charities
 - Do NOT bold names, brokerages, locations, or generic words
 - NEVER include cities, neighborhoods, or service areas
 - Skip paragraph 3 if no press/awards exist
-- Skip paragraph 4 if no community involvement exists`;
+- For paragraph 4: THOROUGHLY search all sources for community involvement - volunteer work, nonprofit boards, charity donations, church/faith community, youth sports coaching, school involvement, civic organizations, professional association leadership. Include EVERY community activity found with specific organization names.
+- Skip paragraph 4 ONLY if absolutely no community involvement exists anywhere in the data`;
 
     const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
