@@ -1,8 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Bell } from "lucide-react";
-import { useEffect } from "react";
 
 const CityComingSoon = () => {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
@@ -18,13 +18,25 @@ const CityComingSoon = () => {
 
   const cityName = formatCityName(citySlug);
   const stateName = formatCityName(stateSlug);
-
-  useEffect(() => {
-    // Set page title
-    document.title = `${cityName}, ${stateName} - Coming Soon | Top10Lists.us`;
-  }, [cityName, stateName]);
+  const pageTitle = `${cityName}, ${stateName} - Coming Soon | Top10Lists.us`;
+  const pageDescription = `Top 10 real estate agents in ${cityName}, ${stateName} coming soon. We're expanding our verified agent directory to your area.`;
+  const canonicalUrl = `https://top10lists.us/coming-soon/${stateSlug}/${citySlug}`;
 
   return (
+    <>
+      <Helmet>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta name="robots" content="noindex, follow" />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+      </Helmet>
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
       <Card className="p-8 max-w-2xl w-full text-center">
         <MapPin className="h-16 w-16 text-primary mx-auto mb-4" />
@@ -69,6 +81,7 @@ const CityComingSoon = () => {
         </p>
       </Card>
     </div>
+    </>
   );
 };
 
