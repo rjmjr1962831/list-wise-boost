@@ -116,7 +116,10 @@ Julie Calza is a former Marine and Air Force Crew Chief wife...
             
             <div className="space-y-2">
               <Label>Synthesized Bio (3-5 sentences)</Label>
-              <p className="text-sm bg-muted p-3 rounded-md whitespace-pre-line">{result.synthesized_bio}</p>
+              <div 
+                className="text-sm bg-muted p-3 rounded-md whitespace-pre-line"
+                dangerouslySetInnerHTML={{ __html: result.synthesized_bio }}
+              />
             </div>
 
             {result.areas_served?.length > 0 && (

@@ -890,7 +890,10 @@ export default function FullEnrichmentPipeline() {
                 </div>
               </div>
               {selectedAgent.synthesized_bio && (
-                <p className="text-xs text-muted-foreground line-clamp-2">{selectedAgent.synthesized_bio}</p>
+                <p 
+                  className="text-xs text-muted-foreground line-clamp-2"
+                  dangerouslySetInnerHTML={{ __html: selectedAgent.synthesized_bio }}
+                />
               )}
             </div>
           )}
