@@ -556,6 +556,7 @@ RULES:
                         <FileText className="h-4 w-4" />
                         Zillow Bio
                       </CardTitle>
+                      <p className="text-xs text-amber-600">⚠️ Truncated - Firecrawl cannot click "Show more" to expand</p>
                     </CardHeader>
                     <CardContent>
                       <ScrollArea className="h-48">
