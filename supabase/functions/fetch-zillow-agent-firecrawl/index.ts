@@ -98,7 +98,7 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
     throw new Error('FIRECRAWL_API_KEY not configured');
   }
 
-  // FAST MODE: Markdown only, no LLM extraction (2-4 sec vs 13+ sec)
+  // Scrape with waitFor to allow JS to expand content
   const response = await fetch(FIRECRAWL_API_URL, {
     method: 'POST',
     headers: {
@@ -109,7 +109,7 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
       url: profileUrl,
       formats: ['markdown'],
       onlyMainContent: true,
-      waitFor: 1000 // Reduced from 2000ms
+      waitFor: 3000 // Wait 3s for JS to expand "Show more" content
     })
   });
 
@@ -299,18 +299,20 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
   }
 
   // Extract bio from "Get to know" section - get full text, clean thoroughly
-  const bioMatch = markdown.match(/## Get to know[^\n]*\n+(?:Your Neighborhood Realtors\s*\n+)?(.+?)(?=\n##|\n\*\*\d+\*\*|\n\[Show less\]|$)/is);
+  // The bio can end with "[Show less]" if expanded, or continue to next section
+  const bioMatch = markdown.match(/## Get to know[^\n]*\n+(?:Your Neighborhood Realtors\s*\n+)?(.+?)(?=\n##|\n\*\*\d+\*\*|$)/is);
   if (bioMatch) {
     // Clean up the bio text - remove all non-bio content
     data.bio = bioMatch[1]
       .trim()
-      // Stop at "Show more" or "Specialties" section
-      .split(/\n\s*Show more\b/i)[0]
-      .split(/\n\s*Specialties\b/i)[0]
-      .split(/\n\s*less\s*$/i)[0]
-      // Remove markdown links and their text
+      // Remove Show more/less links with their markdown
       .replace(/\[Show more\]\([^)]+\)/gi, '')
       .replace(/\[Show less\]\([^)]+\)/gi, '')
+      .replace(/\bShow more\b/gi, '')
+      .replace(/\bless\s*$/gi, '')
+      // Stop at "Specialties" section if present
+      .split(/\n\s*Specialties\b/i)[0]
+      // Remove social media links
       .replace(/\[Visit (?:team )?website\]\([^)]+\)/gi, '')
       .replace(/\[Facebook\]\([^)]+\)/gi, '')
       .replace(/\[LinkedIn\]\([^)]+\)/gi, '')
@@ -336,7 +338,7 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
       // Normalize whitespace
       .replace(/\n{3,}/g, '\n\n')
       .trim()
-      .substring(0, 2000);
+      .substring(0, 3000);
   }
 
   // Check for Premier Agent
