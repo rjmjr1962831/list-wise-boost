@@ -42,6 +42,7 @@ const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
 const PaymentComingSoon = lazy(() => import("./pages/PaymentComingSoon"));
 const About = lazy(() => import("./pages/About"));
 const RankingMethodology = lazy(() => import("./pages/RankingMethodology"));
+const RankingMethodologyRedirect = lazy(() => import("./pages/RankingMethodologyRedirect"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
 const AgentProfile = lazy(() => import("./pages/AgentProfile"));
@@ -85,6 +86,7 @@ const App = () => (
                     <Route path="/" element={<Index />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
+                    <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
