@@ -9,7 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, Zap, Clock, CheckCircle2, XCircle, ArrowRight, User, Award, Newspaper, FileText, RefreshCw } from 'lucide-react';
+import { Loader2, Zap, Clock, CheckCircle2, XCircle, ArrowRight, User, Award, Newspaper, FileText, RefreshCw, Sparkles } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import type { Professional } from '@/types/professional';
 
@@ -490,43 +490,86 @@ export const ScraperComparison = () => {
 
             {/* Synthesis & Bio Tab */}
             <TabsContent value="synthesis" className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                {/* Firecrawl Bio */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Firecrawl Bio/Synthesis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-64">
-                      <div className="whitespace-pre-line text-sm">
-                        {firecrawlResult?.data?.bio || 'No bio data available'}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+              {/* Zillow Bio (From Agent) - What Zillow has */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">From {firecrawlProfessional?.name?.split(' ')[0] || memo23Professional?.name?.split(' ')[0] || 'Agent'} (Zillow Bio)</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Badge variant="default" className="mr-2">Firecrawl</Badge>
+                        <FileText className="h-4 w-4" />
+                        Zillow Bio
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-48">
+                        <div className="whitespace-pre-line text-sm">
+                          {firecrawlResult?.data?.bio || 'No Zillow bio data available'}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
 
-                {/* Memo23 Bio */}
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Memo23 Bio/Synthesis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-64">
-                      <div className="whitespace-pre-line text-sm">
-                        {memo23Professional?.synthesized_bio || 
-                         memo23Professional?.description || 
-                         (memo23Professional as any)?.get_to_know_me ||
-                         'No bio data available'}
-                      </div>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Badge variant="secondary" className="mr-2">Memo23</Badge>
+                        <FileText className="h-4 w-4" />
+                        Zillow Bio (getToKnowMe)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-48">
+                        <div className="whitespace-pre-line text-sm">
+                          {(memo23Professional as any)?.get_to_know_me || 'No Zillow bio data available'}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+
+              {/* Our Synthesis - What we generate */}
+              <div>
+                <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Our Synthesis (AI-generated)</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Badge variant="default" className="mr-2">Firecrawl</Badge>
+                        <Sparkles className="h-4 w-4" />
+                        Synthesized Bio
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-48">
+                        <div className="whitespace-pre-line text-sm text-muted-foreground italic">
+                          {firecrawlResult?.data?.synthesizedBio || 'Firecrawl does not generate synthesis (would need separate AI call)'}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Badge variant="secondary" className="mr-2">Memo23</Badge>
+                        <Sparkles className="h-4 w-4" />
+                        Synthesized Bio
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-48">
+                        <div className="whitespace-pre-line text-sm">
+                          {memo23Professional?.synthesized_bio || 
+                           memo23Professional?.description || 
+                           'No synthesized bio available'}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
 
               {/* Data Point Comparison */}
@@ -546,9 +589,11 @@ export const ScraperComparison = () => {
                   {renderDataComparison('Total Sales', firecrawlResult?.data?.totalSales, memo23Professional?.total_sales)}
                   {renderDataComparison('Years Exp', firecrawlResult?.data?.yearsExperience, memo23Professional?.years_experience)}
                   {renderDataComparison('Company', firecrawlResult?.data?.businessName, memo23Professional?.company)}
-                  {renderDataComparison('Bio Length', firecrawlResult?.data?.bio?.length || 0, 
-                    (memo23Professional?.synthesized_bio?.length || 0) + 
-                    ((memo23Professional as any)?.get_to_know_me?.length || 0)
+                  {renderDataComparison('Zillow Bio Length', firecrawlResult?.data?.bio?.length || 0, 
+                    (memo23Professional as any)?.get_to_know_me?.length || 0
+                  )}
+                  {renderDataComparison('Synthesis Length', 0, 
+                    memo23Professional?.synthesized_bio?.length || memo23Professional?.description?.length || 0
                   )}
                 </CardContent>
               </Card>
