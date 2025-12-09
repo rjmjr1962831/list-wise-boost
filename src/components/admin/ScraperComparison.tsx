@@ -115,13 +115,15 @@ export const ScraperComparison = () => {
       ...(base || {}),
       id: base?.id || 'firecrawl-preview',
       name: data.name || base?.name || 'Unknown',
-      description: data.bio || '',
-      synthesized_bio: data.bio || '',
+      // Firecrawl bio is the Zillow bio (get_to_know_me), NOT our synthesis
+      get_to_know_me: data.bio || '',
+      description: data.bio || '', // fallback for card display
+      synthesized_bio: '', // Firecrawl doesn't generate synthesis
       rating: data.ratingsAverage || 0,
       reviews: data.ratingsCount || 0,
       total_sales: data.totalSales || 0,
       years_experience: data.yearsExperience || 0,
-      image: data.imageUrl || base?.image_url || '',
+      image: data.imageUrl || data.profilePhotoUrl || base?.image_url || '',
       company: data.businessName || base?.company || '',
       specialties: data.specialties || [],
       notable_achievements: data.achievements || [],

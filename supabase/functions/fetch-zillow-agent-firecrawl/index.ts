@@ -292,14 +292,18 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
       .filter(l => l.length > 0);
   }
 
-  // Extract bio from "Get to know" section
-  const bioMatch = markdown.match(/## Get to know[^\n]*\n+(?:Your Neighborhood Realtors\s*\n+)?(.+?)(?=\n\nShow more|\n\nSpecialties|\*\*|##)/is);
+  // Extract bio from "Get to know" section - get full text, not just preview
+  // Pattern 1: Stop at ## (next section) or ** (bold stats)
+  // Pattern 2: Try to get everything after "Get to know" until next major section
+  const bioMatch = markdown.match(/## Get to know[^\n]*\n+(?:Your Neighborhood Realtors\s*\n+)?(.+?)(?=\n##|\n\*\*\d+\*\*|\n\[Show less\]|$)/is);
   if (bioMatch) {
+    // Clean up the bio text - preserve paragraphs but clean formatting
     data.bio = bioMatch[1]
       .trim()
-      .replace(/\n+/g, ' ')
-      .replace(/\s+/g, ' ')
-      .substring(0, 2000);
+      .replace(/\[Show more\]\([^)]+\)/gi, '') // Remove "Show more" links
+      .replace(/\[Show less\]\([^)]+\)/gi, '') // Remove "Show less" links  
+      .replace(/\n{3,}/g, '\n\n') // Normalize multiple newlines to double
+      .substring(0, 5000); // Increase limit to 5000 chars
   }
 
   // Check for Premier Agent
