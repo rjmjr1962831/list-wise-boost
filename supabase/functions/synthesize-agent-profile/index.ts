@@ -367,16 +367,17 @@ ${geminiSearchResults.pressMentions?.map((pm: any) =>
 Paragraph 1: Name, brokerage, years active, headline stat (transactions and/or reviews)
 Paragraph 2: Credentials — education, certifications, professional designations
 Paragraph 3: Recognition — press mentions, awards, rankings (cite specific publications by name)
-Paragraph 4: Community involvement — church/faith community, charities, nonprofit board seats, volunteer work, coaching, mentoring
+Paragraph 4: Community involvement — church/faith community, charities, nonprofit board seats, volunteer work, coaching, mentoring, sponsorships, fundraising, community events, school involvement, youth sports, civic organizations, professional associations leadership
 
 ### Formatting
 Use **bold** markdown for these CATEGORIES (apply to whatever data exists for each agent):
-- Numbers and statistics (transaction counts, review counts, ratings, years, percentages)
+- Numbers and statistics (transaction counts, review counts, ratings, years, percentages, dollar amounts raised)
 - Certifications and designations (any professional credential acronyms or full names)
 - Awards and honors (any named award, club, or recognition)
 - Press and media outlets (any publication, news source, or media mention)
-- Community roles (board positions, volunteer titles, leadership roles)
-- Named charitable organizations (any nonprofit, charity, church program, or civic group)
+- Community roles (board positions, volunteer titles, leadership roles, committee chairs)
+- Named charitable organizations (any nonprofit, charity, church program, civic group, foundation, school, youth organization)
+- Event names (galas, fundraisers, tournaments, drives)
 
 Do NOT bold:
 - People's names
@@ -398,6 +399,7 @@ Do NOT bold:
 - Name press outlets and awards specifically — generic "award-winning" is worthless
 - If no press mentions exist, skip paragraph 3 (do not invent)
 - If no community involvement data exists, skip paragraph 4 (do not invent)
+- For paragraph 4, include ALL community activities found: volunteer work, board memberships, sponsorships, coaching, faith community service, charitable donations, event organizing, mentoring programs
 
 ## EXAMPLE OUTPUT
 
@@ -407,7 +409,7 @@ An Arizona native with degrees from ASU and Ottawa University, Hamblen holds eli
 
 His market insights have been featured in **Phoenix Business Journal**, **AZCentral**, and **Phoenix Agent Magazine**. The Hamblen Team has earned Realty One Group's **President's Circle Award** three consecutive years and ranks in the **top 1% of agents nationwide**.
 
-Beyond real estate, Hamblen has served as a **volunteer youth pastor** for 29 years at his local church and mentors emerging agents through Realty One Group's **Regional Mentor Program**.`;
+Beyond real estate, Hamblen serves as a **board member** for **Habitat for Humanity** and has volunteered as a **youth pastor** for **29 years** at his local church. He sponsors the annual **Hamblen Team Little League Tournament**, has raised over **$150,000** for the **Make-A-Wish Foundation**, and mentors emerging agents through Realty One Group's **Regional Mentor Program**.`;
 
     const userPrompt = `Create a 150-200 word professional biography for this agent following the exact 4-paragraph structure.
 
