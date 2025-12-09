@@ -657,56 +657,43 @@ RULES:
 
             {/* Press & Awards Tab */}
             <TabsContent value="press" className="space-y-4">
+              <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-4">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  <strong>Note:</strong> Press mentions and awards are NOT available from Zillow profiles. 
+                  They require a separate web research step (Gemini search) after Zillow scraping. 
+                  Both scrapers only extract Zillow data—press/awards come from external enrichment.
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 {/* Firecrawl Press/Awards */}
-                <Card>
+                <Card className="opacity-50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Newspaper className="h-4 w-4" />
                       Firecrawl Press Mentions
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground">N/A - Not from Zillow</p>
                   </CardHeader>
                   <CardContent>
-                    <ScrollArea className="h-48">
-                      {firecrawlResult?.data?.pressMentions?.length > 0 ? (
-                        <ul className="space-y-2 text-sm">
-                          {firecrawlResult.data.pressMentions.map((mention: any, i: number) => (
-                            <li key={i} className="border-b pb-2 last:border-0">
-                              <div className="font-medium">{mention.title || mention.outlet || 'Press mention'}</div>
-                              <div className="text-muted-foreground text-xs">{mention.url || mention.source}</div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="text-muted-foreground text-sm">No press mentions found</div>
-                      )}
-                    </ScrollArea>
+                    <div className="text-muted-foreground text-sm italic">
+                      Press mentions require separate web research via search-agent-press-gemini function
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Memo23 Press/Awards */}
-                <Card>
+                {/* Memo23 Press/Awards - also doesn't include press */}
+                <Card className="opacity-50">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                       <Newspaper className="h-4 w-4" />
                       Memo23 Press Mentions
                     </CardTitle>
+                    <p className="text-xs text-muted-foreground">N/A - Not from Zillow</p>
                   </CardHeader>
                   <CardContent>
-                    <ScrollArea className="h-48">
-                      {(memo23Professional?.press_mentions as any[])?.length > 0 ? (
-                        <ul className="space-y-2 text-sm">
-                          {(memo23Professional?.press_mentions as any[]).map((mention: any, i: number) => (
-                            <li key={i} className="border-b pb-2 last:border-0">
-                              <div className="font-medium">{mention.title || mention.outlet || 'Press mention'}</div>
-                              <div className="text-muted-foreground text-xs">{mention.url || mention.source}</div>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <div className="text-muted-foreground text-sm">No press mentions found</div>
-                      )}
-                    </ScrollArea>
+                    <div className="text-muted-foreground text-sm italic">
+                      Press mentions require separate web research via search-agent-press-gemini function
+                    </div>
                   </CardContent>
                 </Card>
               </div>
