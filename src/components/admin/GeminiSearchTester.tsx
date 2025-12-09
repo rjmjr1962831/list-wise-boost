@@ -253,7 +253,7 @@ export const GeminiSearchTester: React.FC = () => {
               <Sparkles className="h-4 w-4 text-primary" />
               Claude Sonnet Synthesis (~300 words)
             </h3>
-            <p className="whitespace-pre-line text-sm">{synthesisResult}</p>
+            <div className="whitespace-pre-line text-sm" dangerouslySetInnerHTML={{ __html: synthesisResult }} />
           </div>
         )}
 
