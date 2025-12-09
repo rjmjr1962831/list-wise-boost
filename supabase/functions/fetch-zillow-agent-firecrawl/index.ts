@@ -247,9 +247,15 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
                    markdown.match(/(\d+)\s+Years? of experience/i);
   if (expMatch) data.yearsExperience = parseInt(expMatch[1]);
 
-  // Extract phone: [(623) 462-3017](tel:...)
-  const phoneMatch = markdown.match(/\[?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\]?/);
-  if (phoneMatch) data.phone = phoneMatch[0].replace(/[\[\]]/g, '');
+  // Extract phone: [(623) 462-3017](tel:...) - must be from tel: link to avoid false matches
+  const telLinkMatch = markdown.match(/\[([^\]]*\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}[^\]]*)\]\(tel:/);
+  if (telLinkMatch) {
+    // Extract just the digits from the link text
+    const phoneDigits = telLinkMatch[1].replace(/\D/g, '');
+    if (phoneDigits.length === 10) {
+      data.phone = `(${phoneDigits.slice(0,3)}) ${phoneDigits.slice(3,6)}-${phoneDigits.slice(6)}`;
+    }
+  }
 
   // Extract email from mailto link
   const emailMatch = markdown.match(/\[([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\]/);
