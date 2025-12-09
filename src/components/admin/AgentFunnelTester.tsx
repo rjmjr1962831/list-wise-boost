@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
-const TEST_PROFILE_ID = '45415a04-dffe-46d0-96c6-fe8dbf6cebff';
+const TEST_PROFILE_ID = '0efe9b64-b34d-4fd9-9a78-45a304ed190e'; // Adam Hamblen
 
 interface Professional {
   id: string;
