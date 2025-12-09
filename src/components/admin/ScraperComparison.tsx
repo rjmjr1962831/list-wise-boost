@@ -290,7 +290,12 @@ RULES:
       });
 
       // Clean any residual formatting from the response
-      let synthesizedBio = (synthesisData?.content || synthesisData?.text || '')
+      // ai-router returns OpenAI format: data.choices[0].message.content
+      const rawBio = synthesisData?.choices?.[0]?.message?.content 
+        || synthesisData?.content 
+        || synthesisData?.text 
+        || '';
+      let synthesizedBio = rawBio
         .replace(/^#+\s*/gm, '') // Remove markdown headers
         .replace(/^\*+\s*/gm, '') // Remove bullet points
         .replace(/https?:\/\/[^\s]+/g, '') // Remove any URLs
