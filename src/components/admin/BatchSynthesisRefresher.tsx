@@ -229,9 +229,7 @@ export function BatchSynthesisRefresher() {
     setCurrentAgent(null);
     setCurrentStep("");
     setIsProcessing(false);
-    
-    // Refresh agent list
-    await fetchAgents();
+    // Don't call fetchAgents() here - it resets the view and user loses results
   }
 
   const unsynthesizedCount = agents.filter(a => !a.synthesized_bio).length;
