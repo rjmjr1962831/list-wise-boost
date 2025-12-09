@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { Sparkles, RefreshCw, CheckCircle, XCircle, Loader2, Search, FileText } from "lucide-react";
+import { Sparkles, RefreshCw, CheckCircle, XCircle, Loader2, Search, FileText, ExternalLink } from "lucide-react";
 
 interface City {
   id: string;
@@ -361,7 +361,18 @@ export function BatchSynthesisRefresher() {
                           <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{result.name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{result.name}</p>
+                            <a 
+                              href={`/profile/${result.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary hover:underline flex items-center gap-1 text-xs"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              View
+                            </a>
+                          </div>
                           {result.success ? (
                             <div className="text-xs text-muted-foreground space-y-1">
                               <p>
