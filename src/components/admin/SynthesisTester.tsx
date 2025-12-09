@@ -29,9 +29,10 @@ function ResultCard({ result }: { result: SynthesisResult }) {
       </div>
       {result.success && result.synthesized_bio && (
         <div className="mt-1">
-          <p className={`text-muted-foreground ${expanded ? '' : 'line-clamp-2'}`}>
-            {result.synthesized_bio}
-          </p>
+          <p 
+            className={`text-muted-foreground ${expanded ? '' : 'line-clamp-2'}`}
+            dangerouslySetInnerHTML={{ __html: result.synthesized_bio }}
+          />
           {result.synthesized_bio.length > 150 && (
             <button 
               onClick={() => setExpanded(!expanded)}
