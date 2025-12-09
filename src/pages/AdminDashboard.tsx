@@ -40,6 +40,7 @@ import AIModelTester from '@/components/admin/AIModelTester';
 import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
+import { BatchSynthesisRefresher } from '@/components/admin/BatchSynthesisRefresher';
 import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
 import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
 import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
@@ -347,6 +348,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="bulk-synthesis" className="space-y-4">
+            <BatchSynthesisRefresher />
             <UnsynthesizedProfileRunner />
             <GeminiSearchTester />
             <SynthesisTester />

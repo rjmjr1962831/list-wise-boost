@@ -209,9 +209,9 @@ serve(async (req) => {
   }
 
   try {
-    const { professionalId, rawResearch, skipIfNoPress = false } = await req.json();
+    const { professionalId, rawResearch, skipIfNoPress = false, skipGeminiSearch = false } = await req.json();
 
-    // Note: skipIfNoPress is now false by default to ensure achievements are always extracted
+    // skipGeminiSearch: If true, skip the Gemini search (useful when caller already ran it)
     // Even without press research, we can extract achievements from existing bio data
     if (skipIfNoPress && (!rawResearch || rawResearch.trim().length < 100)) {
       console.log('⏭️ Skipping synthesis - no substantial press research found');
@@ -277,35 +277,46 @@ serve(async (req) => {
       supabaseKey
     );
 
-    // STEP 1: Call Gemini Flash for iterative web search (FREE)
-    console.log(`\n🔍 Running Gemini Flash iterative web search for: ${professional.name}`);
+    // STEP 1: Call Gemini Flash for iterative web search (FREE) - SKIP if caller already did it
     let geminiSearchResults = null;
-    try {
-      const geminiResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press-gemini`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          agentName: professional.name,
-          brokerage: professional.company || professional.business_name,
-          city: professional.zillow_search_city,
-          state: 'Arizona',
-          zillowUrl: professional.zillow_profile_url,
-          professionalId: professionalId,
-          dryRun: true // Don't save press mentions yet - we'll do that after synthesis
-        }),
-      });
+    
+    if (skipGeminiSearch) {
+      console.log(`\n⏭️ Skipping Gemini search (caller already ran it)`);
+      // Fetch the already-saved press mentions and community roles from DB
+      geminiSearchResults = {
+        pressMentions: professional.press_mentions || [],
+        communityRoles: professional.community_roles || [],
+        totalSearches: 0
+      };
+    } else {
+      console.log(`\n🔍 Running Gemini Flash iterative web search for: ${professional.name}`);
+      try {
+        const geminiResponse = await fetch(`${supabaseUrl}/functions/v1/search-agent-press-gemini`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${supabaseKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            agentName: professional.name,
+            brokerage: professional.company || professional.business_name,
+            city: professional.zillow_search_city,
+            state: 'Arizona',
+            zillowUrl: professional.zillow_profile_url,
+            professionalId: professionalId,
+            dryRun: true // Don't save press mentions yet - we'll do that after synthesis
+          }),
+        });
 
-      if (geminiResponse.ok) {
-        geminiSearchResults = await geminiResponse.json();
-        console.log(`   ✅ Gemini search complete: ${geminiSearchResults.totalSearches} searches, ${geminiSearchResults.pressMentions?.length || 0} press mentions found`);
-      } else {
-        console.log(`   ⚠️ Gemini search failed: ${geminiResponse.status}`);
+        if (geminiResponse.ok) {
+          geminiSearchResults = await geminiResponse.json();
+          console.log(`   ✅ Gemini search complete: ${geminiSearchResults.totalSearches} searches, ${geminiSearchResults.pressMentions?.length || 0} press mentions found`);
+        } else {
+          console.log(`   ⚠️ Gemini search failed: ${geminiResponse.status}`);
+        }
+      } catch (searchError) {
+        console.log(`   ⚠️ Gemini search error: ${searchError instanceof Error ? searchError.message : 'Unknown'}`);
       }
-    } catch (searchError) {
-      console.log(`   ⚠️ Gemini search error: ${searchError instanceof Error ? searchError.message : 'Unknown'}`);
     }
 
     // Prepare context for AI - gather all available data sources
