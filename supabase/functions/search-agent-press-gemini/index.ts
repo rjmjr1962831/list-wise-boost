@@ -144,8 +144,8 @@ function generateFoundationQueries(agentName: string, brokerage?: string, city?:
     queries.push(`"${agentName}" real estate broker ${location} career history`);
   }
   
-  // Query 4: DEDICATED community involvement search
-  queries.push(`"${agentName}" volunteer nonprofit board charity ${location}`);
+  // Query 4: Community involvement discovery (generic - no hardcoded orgs)
+  queries.push(`"${agentName}" volunteer OR nonprofit OR charity OR "giving back" ${location}`);
   
   return queries;
 }
@@ -237,11 +237,11 @@ Return ONLY a JSON array of 3 query strings. Be SPECIFIC about organization name
     console.log('Could not parse phase 3 queries');
   }
 
-  // Fallback queries - more specific for community involvement
+  // Fallback queries - generic community involvement discovery
   return [
-    `"${agentName}" Habitat for Humanity OR "Boys and Girls Club" OR Rotary OR Kiwanis`,
-    `"${agentName}" ${location} board member OR trustee OR volunteer`,
-    `"${agentName}" youth sports coach OR school fundraiser OR church`
+    `"${agentName}" volunteer OR "board member" OR nonprofit OR charity`,
+    `"${agentName}" ${location} coach OR sponsor OR fundraiser OR foundation`,
+    `"${agentName}" community service OR giving back OR philanthropy`
   ];
 }
 
