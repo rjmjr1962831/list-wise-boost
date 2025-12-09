@@ -219,10 +219,7 @@ export const ScraperComparison = () => {
       // Step 3: Synthesize bio using AI router
       toast.info('Step 3/3: Synthesizing agent bio...');
       const synthesisStartTime = Date.now();
-      const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('ai-router', {
-        body: {
-          task: 'bio-generation',
-          prompt: `Write a 3-5 sentence professional bio for ${firecrawlData.data?.name || selectedProfessional.name}, a real estate agent in Arizona.
+      const bioPrompt = `Write a 3-5 sentence professional bio for ${firecrawlData.data?.name || selectedProfessional.name}, a real estate agent in Arizona.
 
 Key facts:
 - Rating: ${firecrawlData.data?.ratingsAverage || 'N/A'} stars with ${firecrawlData.data?.ratingsCount || 0} reviews
@@ -235,7 +232,15 @@ Zillow bio excerpt: ${(firecrawlData.data?.bio || '').substring(0, 500)}
 
 Press mentions: ${pressMentions.slice(0, 3).map((p: any) => p.title).join('; ') || 'None found'}
 
-Write a compelling, factual summary that highlights their achievements and expertise. Do not quote the Zillow bio verbatim.`
+Write a compelling, factual summary that highlights their achievements and expertise. Do not quote the Zillow bio verbatim.`;
+
+      const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('ai-router', {
+        body: {
+          task: 'bio-generation',
+          messages: [
+            { role: 'system', content: 'You are a professional bio writer specializing in real estate agent profiles.' },
+            { role: 'user', content: bioPrompt }
+          ]
         }
       });
 
