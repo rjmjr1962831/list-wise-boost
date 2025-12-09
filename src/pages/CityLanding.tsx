@@ -103,11 +103,21 @@ export default function CityLanding() {
     return <Navigate to="/404" replace />;
   }
 
+  const canonicalUrl = `https://top10lists.us/arizona/${citySlug}/top10realestateagents`;
+  
   return (
     <>
       <Helmet>
         <title>{`Top 10 Real Estate Agents in ${cityName}, Arizona | Top10Lists.us`}</title>
         <meta name="description" content={`Discover the top 10 real estate agents in ${cityName}, Arizona. Our ranking highlights elite agents based on sales performance, client reviews, and industry recognition.`} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:title" content={`Top 10 Real Estate Agents in ${cityName}, Arizona`} />
+        <meta property="og:description" content={`Discover the top 10 real estate agents in ${cityName}, Arizona. Our ranking highlights elite agents based on sales performance, client reviews, and industry recognition.`} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`Top 10 Real Estate Agents in ${cityName}, Arizona`} />
+        <meta name="twitter:description" content={`Discover the top 10 real estate agents in ${cityName}, Arizona.`} />
       </Helmet>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
       {/* Hero Section */}
