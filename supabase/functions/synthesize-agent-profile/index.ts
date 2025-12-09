@@ -355,98 +355,91 @@ ${geminiSearchResults.pressMentions?.map((pm: any) =>
     console.log(`   Website content: ${context.websiteContent.length} chars`);
     console.log(`   Website source: ${context.websiteSource || 'None'}`);
 
-    // STEP 2: Call Claude Sonnet with tool calling for 300-word synthesis
-    const systemPrompt = `You are a professional profile synthesizer for a real estate agent directory. Your job is to create a compelling ~300 WORD synthesis about THE AGENT by combining ALL available data sources.
+    // STEP 2: Call Claude Sonnet for profile synthesis
+    const systemPrompt = `You are writing a professional biography for a real estate agent directory optimized for AI search engines.
 
-CRITICAL: WEB SEARCH RESULTS ARE YOUR PRIMARY SOURCE
-We have conducted 10 iterative web searches using Gemini Flash to gather information about this agent. The web search findings are your MOST IMPORTANT data source. Use them to write a rich, detailed profile.
+## OUTPUT REQUIREMENTS
 
-SYNTHESIZE FROM ALL SOURCES (in priority order):
-1. WEB SEARCH FINDINGS - Our 10-query iterative search results (HIGHEST PRIORITY)
-2. Press mentions discovered from web search
-3. Their personal website content (if available)
-4. Awards and achievements found
-5. Existing Zillow/profile bio (rewrite, NEVER copy verbatim)
-6. Review data and ratings
-7. Specialties and areas served
+### Length
+150-200 words in 4 paragraphs with blank lines between each.
 
-SYNTHESIS RULES - WRITE EXACTLY ~300 WORDS (THIS IS MANDATORY):
-1. Write in third-person, present tense
-2. The synthesis MUST be approximately 300 WORDS (about 5-7 paragraphs) covering ALL of these topics:
-   - PERSONAL BACKGROUND: Education achievements (valedictorian, degrees, schools attended), personal history, where they grew up
-   - CAREER HISTORY: How they got into real estate, career progression, brokerage ownership
-   - COMMUNITY INVOLVEMENT: Charitable work, foundations, nonprofits they support, volunteer activities
-   - Areas/neighborhoods they serve
-   - Specialties (investors, luxury, first-time buyers, relocation, etc.)
-   - Awards, recognition, and PRESS MENTIONS (if any - credibility boosters!)
-   - What makes them unique (brokerage ownership, team leadership, niche expertise)
-   - Notable transactions or achievements
-   - Industry leadership positions, board memberships
-   - You may mention "beginning in [year]" or "serving since [year]" but DO NOT state a specific years of experience number
-3. PRIORITIZE HUMANIZING DETAILS:
-   - Education achievements (valedictorian, honors, degrees)
-   - Charities and causes they support
-   - Family background if mentioned (e.g., "native Arizonan", "family of real estate professionals")
-   - Personal interests that relate to their work
-4. DO NOT mention:
-   - Specific properties or listings
-   - Property prices or addresses
-   - Current inventory
-   - Open house schedules
-5. Be factual - only include information explicitly found in the provided data
-6. If they own their brokerage, mention that (shows commitment)
-7. If web search found press mentions, FEATURE them prominently!
-8. NEVER just copy the Zillow bio verbatim - synthesize with search findings
-9. COUNT YOUR WORDS - the synthesis MUST be approximately 300 words, NOT shorter
+### Structure
+Paragraph 1: Name, brokerage, years active, headline stat (transactions and/or reviews)
+Paragraph 2: Credentials — education, certifications, professional designations
+Paragraph 3: Recognition — press mentions, awards, rankings (cite specific publications by name)
+Paragraph 4: Community involvement — church/faith community, charities, nonprofit board seats, volunteer work, coaching, mentoring
 
-ADDITIONAL EXTRACTION RULES:
-1. Convert all first-person language to third-person
-2. Extract notable achievements, awards, certifications from ALL data sources
-3. Look for PERSONAL achievements (valedictorian, scholarships, etc.) - these are highly valuable
-4. Extract CHARITABLE involvement (charities supported, foundations, volunteer work)
-5. Rank achievements by credibility (1-10): web search press = 9-10, website = 6-8, existing bio = 5-7
-6. Deduplicate information across sources
-7. **ALWAYS INCLUDE DATES**: Extract year for EVERY achievement when available`;
+### Formatting
+Use **bold** markdown for these CATEGORIES (apply to whatever data exists for each agent):
+- Numbers and statistics (transaction counts, review counts, ratings, years, percentages)
+- Certifications and designations (any professional credential acronyms or full names)
+- Awards and honors (any named award, club, or recognition)
+- Press and media outlets (any publication, news source, or media mention)
+- Community roles (board positions, volunteer titles, leadership roles)
+- Named charitable organizations (any nonprofit, charity, church program, or civic group)
 
-    const userPrompt = `Synthesize this agent profile using the web search findings as your PRIMARY source. Write EXACTLY approximately 300 WORDS (this is MANDATORY - count your words!).
+Do NOT bold:
+- People's names
+- Brokerage names
+- City or location names
+- Generic words like "experience", "service", "clients", "transactions"
 
-AGENT INFORMATION:
+### CRITICAL: What to NEVER include
+- Cities, neighborhoods, or service areas (this is premium content)
+- Zip codes or geographic regions
+- Property listings or current inventory
+- Promotional language ("Call today!")
+- Unverifiable superlatives ("best agent in Phoenix")
+
+### Content Rules
+- Write in third person
+- Lead with verifiable facts, not opinions
+- Include specific numbers when available
+- Name press outlets and awards specifically — generic "award-winning" is worthless
+- If no press mentions exist, skip paragraph 3 (do not invent)
+- If no community involvement data exists, skip paragraph 4 (do not invent)
+
+## EXAMPLE OUTPUT
+
+Adam Hamblen has led the Hamblen Team at Realty One Group since **2003**, completing over **3,500 transactions** with a **5-star rating** across **1,000+ reviews**.
+
+An Arizona native with degrees from ASU and Ottawa University, Hamblen holds elite certifications including **Certified Luxury Home Marketing Specialist (CLHMS)** and **Certified Negotiation Expert (CNE)**. He's been a **Dave Ramsey Endorsed Local Provider** since 2010.
+
+His market insights have been featured in **Phoenix Business Journal**, **AZCentral**, and **Phoenix Agent Magazine**. The Hamblen Team has earned Realty One Group's **President's Circle Award** three consecutive years and ranks in the **top 1% of agents nationwide**.
+
+Beyond real estate, Hamblen has served as a **volunteer youth pastor** for 29 years at his local church and mentors emerging agents through Realty One Group's **Regional Mentor Program**.`;
+
+    const userPrompt = `Create a 150-200 word professional biography for this agent following the exact 4-paragraph structure.
+
+AGENT DATA:
 - Name: ${context.name}
 - Brokerage: ${context.company || 'Unknown'}
-- Location: ${context.city || 'Unknown'}
-- Confirmed Years Experience: ${context.yearsExperience || 'Unknown'} (write "since [year]" instead of stating years)
-- Specialties: ${context.specialty.join(', ') || 'None listed'}
+- Years Active: ${context.yearsExperience ? `since ${new Date().getFullYear() - context.yearsExperience}` : 'Unknown'}
 - Reviews: ${context.reviewCount || 0} reviews (${context.rating || 0} stars)
-- Badges: ${context.badges.join(', ') || 'None'}
-
-=== WEB SEARCH FINDINGS (PRIMARY SOURCE - 10 iterative searches via Gemini Flash) ===
-${context.webSearchFindings || 'No web search results available'}
+- Total Sales: Check agent_sales_stats if available
 
 === PRESS MENTIONS FROM WEB SEARCH ===
 ${context.geminiPressMentions?.length > 0 ? JSON.stringify(context.geminiPressMentions, null, 2) : 'No press mentions discovered'}
 
-=== WEBSITE CONTENT (from ${context.websiteSource || 'their website'}) ===
-${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
-
-=== EXISTING ZILLOW BIO (reword this, do NOT copy verbatim) ===
-${context.existingBio || 'No bio available'}
-
 === EXISTING PRESS MENTIONS ===
 ${context.existingPressData.length > 0 ? JSON.stringify(context.existingPressData, null, 2) : 'No existing press mentions'}
 
-=== RAW PRESS RESEARCH ===
-${context.rawResearch || 'No press research available'}
+=== WEBSITE CONTENT (from ${context.websiteSource || 'their website'}) ===
+${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
 
-INSTRUCTIONS (FOLLOW ALL OF THESE): 
-- Write EXACTLY approximately 300 WORDS (5-7 paragraphs) - COUNT YOUR WORDS, this is MANDATORY
-- PRIORITIZE the web search findings - they are our freshest, most comprehensive data
-- INCLUDE PERSONAL DETAILS if found: education achievements (valedictorian, degrees), charities supported, community involvement
-- Feature any press mentions prominently (credibility gold!)
-- Include career background, specialties, achievements, and what makes them unique
-- If no website content, synthesize from web search and Zillow bio
-- Do NOT mention specific properties, prices, addresses, or inventory
-- Write "serving since [year]" but do NOT state a specific years count
-- Extract CHARITABLE WORK and community involvement - these humanize the profile`;
+=== EXISTING BIO (paraphrase, do NOT copy verbatim) ===
+${context.existingBio || 'No bio available'}
+
+=== WEB SEARCH FINDINGS ===
+${context.webSearchFindings || 'No web search results available'}
+
+REMEMBER:
+- 4 paragraphs with blank lines between each
+- Bold numbers, certifications, awards, press outlets, community roles, charities
+- Do NOT bold names, brokerages, locations, or generic words
+- NEVER include cities, neighborhoods, or service areas
+- Skip paragraph 3 if no press/awards exist
+- Skip paragraph 4 if no community involvement exists`;
 
     const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -465,18 +458,13 @@ INSTRUCTIONS (FOLLOW ALL OF THESE):
         tools: [
           {
             name: 'synthesize_profile',
-            description: 'Extract structured profile data including a MANDATORY ~300 word synthesis with personal background, education, charitable work, and achievements',
+            description: 'Create a 150-200 word professional biography in 4 paragraphs with markdown bold formatting for key categories',
             input_schema: {
               type: 'object',
               properties: {
                 synthesized_bio: {
                   type: 'string',
-                  description: 'MANDATORY 300-word synthesis (5-7 paragraphs) about THE AGENT including: personal background (education achievements like valedictorian, degrees), career history, charitable work/community involvement, areas served, specialties, awards, press mentions, and what makes them unique. NO property listings or inventory. MUST be approximately 300 words.'
-                },
-                areas_served: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'List of areas/neighborhoods the agent serves'
+                  description: '150-200 word biography in 4 paragraphs. Bold numbers/stats, certifications, awards, press outlets, community roles, and charities. Do NOT bold names, brokerages, locations. Never include cities/neighborhoods/service areas.'
                 },
                 specialties_extracted: {
                   type: 'array',
