@@ -60,9 +60,13 @@ serve(async (req) => {
       })
       .eq('id', professionalId)
       .select('id, name, email, verification_token, city_id, category_id, cities(name, slug), categories(name, slug)')
-      .single();
+      .maybeSingle();
 
     if (updateError) throw updateError;
+    
+    if (!professional) {
+      throw new Error(`Professional not found with ID: ${professionalId}`);
+    }
 
     console.log(`✅ Generated test token for ${professional.name}: ${verificationToken}`);
 
