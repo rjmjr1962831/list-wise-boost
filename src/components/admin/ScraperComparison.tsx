@@ -241,12 +241,20 @@ export const ScraperComparison = () => {
       toast.info(`Step ${agentWebsite ? '4/4' : '3/3'}: Synthesizing agent bio...`);
       const synthesisStartTime = Date.now();
       
-      // Clean bio - remove any URLs, social links, or team info
+      // Clean bio - extract only the actual biographical content
+      // Remove: "Show more", "Specialties" section, "X Years of experience", markdown links, phone numbers
       const cleanBioExcerpt = (firecrawlData.data?.bio || '')
+        .split(/\n\s*Specialties\b/i)[0] // Cut off at "Specialties" section
+        .split(/\n\s*Show more\b/i)[0] // Cut off at "Show more"
+        .replace(/\[.*?\]\(.*?\)/g, '') // Remove markdown links
+        .replace(/\d+\s*Years?\s+of\s+experience/gi, '') // Remove years of experience line
+        .replace(/Call me @?\s*[\d-().\s]+/gi, '') // Remove phone CTAs
         .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
         .replace(/\b(facebook|instagram|twitter|linkedin|youtube)\b[^\n]*/gi, '') // Remove social mentions
         .replace(/team\s+website[^\n]*/gi, '') // Remove team website lines
-        .substring(0, 400);
+        .replace(/\n{3,}/g, '\n\n') // Collapse multiple newlines
+        .trim()
+        .substring(0, 500);
 
       const bioPrompt = `Write a 3-5 sentence professional bio for ${firecrawlData.data?.name || selectedProfessional.name}, a real estate agent in Arizona.
 
