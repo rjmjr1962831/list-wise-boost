@@ -540,6 +540,13 @@ REMEMBER:
     }
 
     const synthesizedData = JSON.parse(toolCall.function.arguments);
+    
+    // Convert markdown bold (**text**) to HTML <strong> tags
+    if (synthesizedData.synthesized_bio) {
+      synthesizedData.synthesized_bio = synthesizedData.synthesized_bio
+        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    }
+    
     console.log('Synthesized data:', JSON.stringify(synthesizedData, null, 2));
 
     // Sort achievements by credibility and deduplicate similar titles
