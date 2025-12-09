@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 
 const TEST_PROFILE_ID = '0efe9b64-b34d-4fd9-9a78-45a304ed190e'; // Adam Hamblen
+const ADMIN_TEST_PROFILE_ID = '20e0b7f2-5652-424a-9d46-ba74a19cd9a8'; // Robert Maynard - for funnel testing
 
 interface Professional {
   id: string;
@@ -149,6 +150,37 @@ export const AgentFunnelTester = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Admin Quick Access - Robert Maynard Test Profile */}
+        <div className="p-4 bg-primary/10 rounded-lg border border-primary/20 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-primary">🧪 Your Funnel Test Profile</span>
+            <Badge variant="outline">Robert Maynard</Badge>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={() => navigate(`/profile/${ADMIN_TEST_PROFILE_ID}`)}
+              className="flex-1"
+            >
+              <ExternalLink className="mr-2 h-3 w-3" />
+              Open Funnel
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                navigator.clipboard.writeText(`https://top10lists.us/profile/${ADMIN_TEST_PROFILE_ID}`);
+                toast.success('Magic link copied!');
+              }}
+            >
+              <Copy className="h-3 w-3" />
+            </Button>
+          </div>
+          <code className="block text-xs bg-background p-2 rounded truncate">
+            https://top10lists.us/profile/{ADMIN_TEST_PROFILE_ID}
+          </code>
+        </div>
+
         <Alert>
           <AlertDescription>
             The agent funnel allows verified agents to edit their profile and purchase listing upgrades.
