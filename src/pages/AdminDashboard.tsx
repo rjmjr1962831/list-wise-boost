@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles, FlaskConical } from "lucide-react";
 import { toast } from "sonner";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
@@ -43,6 +43,7 @@ import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
 import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
 import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
 import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
+import { ScraperComparison } from '@/components/admin/ScraperComparison';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -269,6 +270,10 @@ const AdminDashboard = () => {
               <Sparkles className="mr-2 h-4 w-4" />
               Selection Rationales
             </TabsTrigger>
+            <TabsTrigger value="scraper-comparison">
+              <FlaskConical className="mr-2 h-4 w-4" />
+              Scraper Test
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -370,6 +375,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="selection-rationales" className="space-y-4">
             <SelectionRationaleGenerator />
+          </TabsContent>
+
+          <TabsContent value="scraper-comparison" className="space-y-4">
+            <ScraperComparison />
           </TabsContent>
         </Tabs>
       </div>
