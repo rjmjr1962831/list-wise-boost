@@ -216,35 +216,77 @@ export const ScraperComparison = () => {
       const pressTime = Date.now() - pressStartTime;
       toast.success(`Found ${pressMentions.length} press mentions in ${(pressTime / 1000).toFixed(1)}s`);
 
-      // Step 3: Synthesize bio using AI router
-      toast.info('Step 3/3: Synthesizing agent bio...');
+      // Step 3: Scrape agent website (Phase 4)
+      let websiteContent = '';
+      const agentWebsite = firecrawlData.data?.website || currentDbProfessional?.website;
+      if (agentWebsite) {
+        toast.info('Step 3/4: Scraping agent website...');
+        const websiteStartTime = Date.now();
+        try {
+          const { data: websiteData } = await supabase.functions.invoke('fetch-zillow-agent-firecrawl', {
+            body: {
+              profileUrl: agentWebsite,
+              scrapeWebsite: true // Flag to use onlyMainContent mode
+            }
+          });
+          websiteContent = websiteData?.markdown || '';
+          const websiteTime = Date.now() - websiteStartTime;
+          toast.success(`Website scraped in ${(websiteTime / 1000).toFixed(1)}s`);
+        } catch (e) {
+          console.log('Website scrape failed, continuing without:', e);
+        }
+      }
+
+      // Step 4: Synthesize bio using AI router
+      toast.info(`Step ${agentWebsite ? '4/4' : '3/3'}: Synthesizing agent bio...`);
       const synthesisStartTime = Date.now();
+      
+      // Clean bio - remove any URLs, social links, or team info
+      const cleanBioExcerpt = (firecrawlData.data?.bio || '')
+        .replace(/https?:\/\/[^\s]+/g, '') // Remove URLs
+        .replace(/\b(facebook|instagram|twitter|linkedin|youtube)\b[^\n]*/gi, '') // Remove social mentions
+        .replace(/team\s+website[^\n]*/gi, '') // Remove team website lines
+        .substring(0, 400);
+
       const bioPrompt = `Write a 3-5 sentence professional bio for ${firecrawlData.data?.name || selectedProfessional.name}, a real estate agent in Arizona.
 
-Key facts:
-- Rating: ${firecrawlData.data?.ratingsAverage || 'N/A'} stars with ${firecrawlData.data?.ratingsCount || 0} reviews
-- Total sales: ${firecrawlData.data?.totalSales || 'N/A'}
-- Years experience: ${firecrawlData.data?.yearsExperience || 'N/A'}
-- Company: ${firecrawlData.data?.businessName || 'N/A'}
-- Specialties: ${(firecrawlData.data?.specialties || []).join(', ') || 'N/A'}
+FACTS TO INCLUDE:
+- ${firecrawlData.data?.ratingsAverage || 'N/A'} star rating with ${firecrawlData.data?.ratingsCount || 0} reviews
+- ${firecrawlData.data?.totalSales || 'Unknown'} total sales
+- ${firecrawlData.data?.yearsExperience || 'Many'} years of experience
+- Works at ${firecrawlData.data?.businessName || 'a local brokerage'}
 
-Zillow bio excerpt: ${(firecrawlData.data?.bio || '').substring(0, 500)}
+BACKGROUND INFO (rework, don't quote):
+${cleanBioExcerpt}
 
-Press mentions: ${pressMentions.slice(0, 3).map((p: any) => p.title).join('; ') || 'None found'}
+${websiteContent ? `FROM THEIR WEBSITE:\n${websiteContent.substring(0, 800)}` : ''}
 
-Write a compelling, factual summary that highlights their achievements and expertise. Do not quote the Zillow bio verbatim.`;
+${pressMentions.length > 0 ? `PRESS COVERAGE: ${pressMentions.slice(0, 3).map((p: any) => p.title).join('; ')}` : ''}
+
+RULES:
+- Write ONLY the bio text, nothing else
+- Do NOT include URLs, website links, or social media
+- Do NOT list specialties or bullet points
+- Do NOT mention team members
+- Write in third person, professional tone
+- Focus on achievements and expertise`;
 
       const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('ai-router', {
         body: {
           task: 'bio-generation',
           messages: [
-            { role: 'system', content: 'You are a professional bio writer specializing in real estate agent profiles.' },
+            { role: 'system', content: 'You are a professional bio writer. Output ONLY the bio text - no headers, no lists, no URLs, no formatting. Just 3-5 sentences of professional prose.' },
             { role: 'user', content: bioPrompt }
           ]
         }
       });
 
-      const synthesizedBio = synthesisData?.content || synthesisData?.text || '';
+      // Clean any residual formatting from the response
+      let synthesizedBio = (synthesisData?.content || synthesisData?.text || '')
+        .replace(/^#+\s*/gm, '') // Remove markdown headers
+        .replace(/^\*+\s*/gm, '') // Remove bullet points
+        .replace(/https?:\/\/[^\s]+/g, '') // Remove any URLs
+        .trim();
       const synthesisTime = Date.now() - synthesisStartTime;
       toast.success(`Bio synthesized in ${(synthesisTime / 1000).toFixed(1)}s`);
 
