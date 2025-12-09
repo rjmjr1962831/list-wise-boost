@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Sparkles, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle, XCircle, Clock, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -229,6 +229,15 @@ export function BulkProfileSynthesizer() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">{prof.name}</p>
+                    <a 
+                      href={`/profile/${prof.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline flex items-center gap-1 text-xs"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      View
+                    </a>
                     {getStatusIcon(prof.id)}
                   </div>
                   <div className="flex items-center gap-2 mt-1">
