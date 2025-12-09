@@ -187,30 +187,97 @@ export const ScraperComparison = () => {
     const startTime = Date.now();
     
     try {
-      const { data, error } = await supabase.functions.invoke('fetch-zillow-agent-firecrawl', {
+      // Step 1: Scrape Zillow with Firecrawl
+      toast.info('Step 1/3: Scraping Zillow with Firecrawl...');
+      const { data: firecrawlData, error: firecrawlError } = await supabase.functions.invoke('fetch-zillow-agent-firecrawl', {
         body: { profileUrl: selectedProfessional.zillow_profile_url }
       });
 
-      const duration = Date.now() - startTime;
+      if (firecrawlError) throw firecrawlError;
+      if (!firecrawlData.success) throw new Error(firecrawlData.error || 'Firecrawl scrape failed');
 
-      if (error) throw error;
+      const scrapeTime = Date.now() - startTime;
+      toast.success(`Zillow scraped in ${(scrapeTime / 1000).toFixed(1)}s`);
+
+      // Step 2: Search for press mentions using Gemini
+      toast.info('Step 2/3: Searching for press mentions...');
+      const pressStartTime = Date.now();
+      const { data: pressData, error: pressError } = await supabase.functions.invoke('search-agent-press-gemini', {
+        body: {
+          agentName: firecrawlData.data?.name || selectedProfessional.name,
+          brokerage: firecrawlData.data?.businessName || currentDbProfessional?.company,
+          city: (currentDbProfessional as any)?.cities?.name,
+          state: 'Arizona',
+          dryRun: true // Don't save to DB, just return results
+        }
+      });
+
+      const pressMentions = pressData?.pressMentions || [];
+      const pressTime = Date.now() - pressStartTime;
+      toast.success(`Found ${pressMentions.length} press mentions in ${(pressTime / 1000).toFixed(1)}s`);
+
+      // Step 3: Synthesize bio using AI router
+      toast.info('Step 3/3: Synthesizing agent bio...');
+      const synthesisStartTime = Date.now();
+      const { data: synthesisData, error: synthesisError } = await supabase.functions.invoke('ai-router', {
+        body: {
+          task: 'bio-generation',
+          prompt: `Write a 3-5 sentence professional bio for ${firecrawlData.data?.name || selectedProfessional.name}, a real estate agent in Arizona.
+
+Key facts:
+- Rating: ${firecrawlData.data?.ratingsAverage || 'N/A'} stars with ${firecrawlData.data?.ratingsCount || 0} reviews
+- Total sales: ${firecrawlData.data?.totalSales || 'N/A'}
+- Years experience: ${firecrawlData.data?.yearsExperience || 'N/A'}
+- Company: ${firecrawlData.data?.businessName || 'N/A'}
+- Specialties: ${(firecrawlData.data?.specialties || []).join(', ') || 'N/A'}
+
+Zillow bio excerpt: ${(firecrawlData.data?.bio || '').substring(0, 500)}
+
+Press mentions: ${pressMentions.slice(0, 3).map((p: any) => p.title).join('; ') || 'None found'}
+
+Write a compelling, factual summary that highlights their achievements and expertise. Do not quote the Zillow bio verbatim.`
+        }
+      });
+
+      const synthesizedBio = synthesisData?.content || synthesisData?.text || '';
+      const synthesisTime = Date.now() - synthesisStartTime;
+      toast.success(`Bio synthesized in ${(synthesisTime / 1000).toFixed(1)}s`);
+
+      const totalDuration = Date.now() - startTime;
+
+      // Combine all data
+      const enrichedData = {
+        ...firecrawlData.data,
+        pressMentions,
+        synthesizedBio,
+        timings: {
+          scrape: scrapeTime,
+          press: pressTime,
+          synthesis: synthesisTime,
+          total: totalDuration
+        }
+      };
 
       setFirecrawlResult({
-        success: data.success,
-        data: data.data,
-        error: data.error,
-        duration,
+        success: true,
+        data: enrichedData,
+        duration: totalDuration,
         method: 'firecrawl'
       });
 
-      if (data.success && data.data) {
-        const mapped = mapFirecrawlToProfessional(data.data, currentDbProfessional);
-        setFirecrawlProfessional(mapped);
-        toast.success(`Firecrawl completed in ${(duration / 1000).toFixed(2)}s`);
-      } else {
-        toast.error(`Firecrawl failed: ${data.error}`);
-      }
+      // Map to Professional with enriched data
+      const mapped = {
+        ...mapFirecrawlToProfessional(firecrawlData.data, currentDbProfessional),
+        press_mentions: pressMentions,
+        synthesized_bio: synthesizedBio,
+        notable_achievements: pressMentions.filter((p: any) => p.credibilityScore >= 7)
+      };
+      setFirecrawlProfessional(mapped as Professional);
+      
+      toast.success(`Full enrichment completed in ${(totalDuration / 1000).toFixed(1)}s`);
+
     } catch (error: any) {
+      console.error('Firecrawl enrichment error:', error);
       setFirecrawlResult({
         success: false,
         error: error.message,
