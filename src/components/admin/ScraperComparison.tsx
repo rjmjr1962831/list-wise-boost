@@ -617,11 +617,14 @@ RULES:
                     </CardHeader>
                     <CardContent>
                       <ScrollArea className="h-48">
-                        <div className="whitespace-pre-line text-sm">
-                          {memo23Professional?.synthesized_bio || 
-                           memo23Professional?.description || 
-                           'No synthesized bio available'}
-                        </div>
+                        <div 
+                          className="whitespace-pre-line text-sm"
+                          dangerouslySetInnerHTML={{ 
+                            __html: memo23Professional?.synthesized_bio || 
+                                   memo23Professional?.description || 
+                                   'No synthesized bio available' 
+                          }}
+                        />
                       </ScrollArea>
                     </CardContent>
                   </Card>

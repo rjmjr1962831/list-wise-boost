@@ -380,7 +380,10 @@ export function BatchSynthesisRefresher() {
                                 <span className="font-medium ml-2">Community:</span> {result.communityRoles} roles
                               </p>
                               {result.synthesisPreview && (
-                                <p className="italic truncate">{result.synthesisPreview}</p>
+                                <p 
+                                  className="italic truncate"
+                                  dangerouslySetInnerHTML={{ __html: result.synthesisPreview }}
+                                />
                               )}
                             </div>
                           ) : (
