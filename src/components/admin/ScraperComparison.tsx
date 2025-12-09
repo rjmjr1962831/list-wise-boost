@@ -305,10 +305,14 @@ RULES:
 
       const totalDuration = Date.now() - startTime;
 
+      // Filter high-credibility press mentions as achievements
+      const achievements = pressMentions.filter((p: any) => p.credibilityScore >= 7);
+
       // Combine all data
       const enrichedData = {
         ...firecrawlData.data,
         pressMentions,
+        achievements,
         synthesizedBio,
         timings: {
           scrape: scrapeTime,
