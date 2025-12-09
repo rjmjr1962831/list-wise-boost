@@ -1606,7 +1606,10 @@ export const ProfessionalCard = ({
                 return (
                   <div className="border rounded-lg p-4 bg-primary/5 mt-3">
                     <h4 className="sr-only">Professional Summary</h4>
-                    <p className="text-sm text-foreground whitespace-pre-line">{displayText}</p>
+                    <div 
+                      className="text-sm text-foreground whitespace-pre-line"
+                      dangerouslySetInnerHTML={{ __html: displayText }}
+                    />
                     {needsTruncation && (
                       <button
                         onClick={() => setShowFullSynthesizedBio(!showFullSynthesizedBio)}
