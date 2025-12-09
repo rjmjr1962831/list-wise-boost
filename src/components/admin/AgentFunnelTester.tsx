@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Loader2, TestTube2, ExternalLink, Copy, RefreshCw } from 'lucide-react';
+import { Loader2, TestTube2, ExternalLink, Copy, RefreshCw, Play } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+
+const TEST_PROFILE_ID = '45415a04-dffe-46d0-96c6-fe8dbf6cebff';
 
 interface Professional {
   id: string;
@@ -20,9 +23,10 @@ interface Professional {
 }
 
 export const AgentFunnelTester = () => {
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [professionals, setProfessionals] = useState<Professional[]>([]);
-  const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>('');
+  const [selectedProfessionalId, setSelectedProfessionalId] = useState<string>(TEST_PROFILE_ID);
   const [testToken, setTestToken] = useState<string | null>(null);
   const [funnelUrl, setFunnelUrl] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
@@ -84,33 +88,31 @@ export const AgentFunnelTester = () => {
     toast.success(`${label} copied to clipboard`);
   };
 
-  const openFunnel = () => {
-    if (funnelUrl) {
-      window.open(funnelUrl, '_blank');
+  const openFunnel = (path?: string) => {
+    const url = path || funnelUrl;
+    if (url) {
+      navigate(url);
     }
   };
 
-  const quickTest = async () => {
-    if (professionals.length === 0) {
-      toast.error('No professionals available to test');
-      return;
-    }
-
-    const firstPro = professionals[0];
-    setSelectedProfessionalId(firstPro.id);
-    
+  const quickTest = async (targetPath?: string) => {
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('generate-test-profile-token', {
-        body: { professionalId: firstPro.id }
+        body: { professionalId: TEST_PROFILE_ID }
       });
 
       if (error) throw error;
 
-      // Open funnel immediately
-      window.open(data.funnelUrl, '_blank');
+      setTestToken(data.token);
+      setFunnelUrl(data.funnelUrl);
+      setExpiresAt(data.expiresAt);
+
+      // Navigate within the app
+      const basePath = `/profile/${TEST_PROFILE_ID}`;
+      navigate(targetPath || basePath);
       
-      toast.success(`Opening funnel for ${data.professionalName}`);
+      toast.success(`Opened funnel for ${data.professionalName}`);
       await fetchProfessionals();
     } catch (error: any) {
       console.error('Error in quick test:', error);
@@ -127,11 +129,12 @@ export const AgentFunnelTester = () => {
     : false;
 
   const funnelSteps = [
-    { path: '/profile/:token', name: 'Welcome', status: 'welcome' },
-    { path: '/profile/:token/edit', name: 'Edit Profile', status: 'edit_complete' },
-    { path: '/profile/:token/pricing', name: 'Pricing', status: 'pricing_viewed' },
-    { path: '/profile/:token/select', name: 'Selection', status: 'selection_made' },
-    { path: '/profile/:token/schedule', name: 'Schedule Call', status: 'call_scheduled' }
+    { path: `/profile/${TEST_PROFILE_ID}`, name: 'Welcome', status: 'welcome' },
+    { path: `/profile/${TEST_PROFILE_ID}/edit`, name: 'Edit Profile', status: 'edit_complete' },
+    { path: `/profile/${TEST_PROFILE_ID}/preview`, name: 'Preview', status: 'preview' },
+    { path: `/profile/${TEST_PROFILE_ID}/pricing`, name: 'Pricing', status: 'pricing_viewed' },
+    { path: `/profile/${TEST_PROFILE_ID}/select`, name: 'Selection', status: 'selection_made' },
+    { path: `/profile/${TEST_PROFILE_ID}/schedule`, name: 'Schedule Call', status: 'call_scheduled' }
   ];
 
   return (
@@ -154,8 +157,8 @@ export const AgentFunnelTester = () => {
         </Alert>
 
         <Button
-          onClick={quickTest}
-          disabled={loading || professionals.length === 0}
+          onClick={() => quickTest()}
+          disabled={loading}
           className="w-full"
           size="lg"
           variant="default"
@@ -283,7 +286,7 @@ export const AgentFunnelTester = () => {
                 <Button
                   size="sm"
                   className="flex-1"
-                  onClick={openFunnel}
+                  onClick={() => openFunnel()}
                 >
                   <ExternalLink className="mr-2 h-3 w-3" />
                   Open Funnel
@@ -301,15 +304,19 @@ export const AgentFunnelTester = () => {
         )}
 
         <div className="space-y-2 pt-4 border-t">
-          <h4 className="text-sm font-semibold">Funnel Steps:</h4>
-          <div className="space-y-1">
+          <h4 className="text-sm font-semibold">Jump to Funnel Step:</h4>
+          <div className="grid grid-cols-2 gap-2">
             {funnelSteps.map((step, index) => (
-              <div key={index} className="flex items-center justify-between text-xs p-2 bg-muted rounded">
-                <span className="font-mono">{step.path}</span>
-                <Badge variant="outline" className="text-xs">
-                  {step.name}
-                </Badge>
-              </div>
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                className="justify-start text-xs"
+                onClick={() => navigate(step.path)}
+              >
+                <Play className="mr-2 h-3 w-3" />
+                {step.name}
+              </Button>
             ))}
           </div>
         </div>
