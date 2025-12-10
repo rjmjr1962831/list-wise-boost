@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// No longer needs Supabase client - only warming static crawlable pages
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -127,43 +127,29 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
   return { success: true };
 }
 
-// Get URLs to warm based on region or fetch from database
+// Get URLs to warm - only crawlable pages (excludes noindex/nocrawl city pages)
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-  
-  // Get cities with qualified agents
-  let query = supabase
-    .from('cities')
-    .select('slug, state_slug')
-    .eq('active', true);
-
-  if (region) {
-    // Filter by state if region specified
-    query = query.eq('state_slug', region);
-  }
-
-  const { data: cities, error } = await query;
-  
-  if (error || !cities) {
-    console.error('Error fetching cities:', error);
-    return { urls: [], totalCount: 0 };
-  }
-
-  // Generate URLs for each city
-  const allUrls: string[] = [];
   const baseUrl = 'https://www.top10lists.us';
-
-  for (const city of cities) {
-    // Main category page
-    allUrls.push(`${baseUrl}/${city.state_slug}/${city.slug}/top10realestateagents`);
-  }
-
+  
+  // Only warm pages that are actually crawlable (not noindex/nocrawl)
+  const crawlablePages = [
+    '', // homepage
+    '/about',
+    '/faq',
+    '/for-agents',
+    '/opt-in',
+    '/llms.txt',
+    '/.well-known/ai-content-index.json',
+  ];
+  
+  const allUrls = crawlablePages.map(path => `${baseUrl}${path}`);
+  
   const totalCount = allUrls.length;
   const startIndex = offset || 0;
   const endIndex = limit ? startIndex + limit : allUrls.length;
   const urls = allUrls.slice(startIndex, endIndex);
   
-  console.log(`Generated ${urls.length} URLs to warm (offset: ${startIndex}, total: ${totalCount})`);
+  console.log(`Generated ${urls.length} crawlable URLs to warm (offset: ${startIndex}, total: ${totalCount})`);
   return { urls, totalCount };
 }
 
