@@ -12,7 +12,7 @@ const steps = [
   {
     icon: Search,
     title: 'AI Searches',
-    description: 'ChatGPT, Claude, and Perplexity scan authoritative sources',
+    description: 'ChatGPT, Claude, Perplexity, and other AI models scan authoritative sources',
     example: false,
   },
   {

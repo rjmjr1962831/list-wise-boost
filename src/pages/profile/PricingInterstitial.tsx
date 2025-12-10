@@ -245,7 +245,7 @@ export default function PricingInterstitial() {
               <div className="text-3xl mb-2">🤖</div>
               <h3 className="font-semibold text-foreground mb-2">AI Discovery</h3>
               <p className="text-sm text-muted-foreground">
-                Appear when ChatGPT, Claude, and Perplexity search for agents
+                Appear when ChatGPT, Claude, Perplexity, and other AI models search for agents
               </p>
             </div>
             <div className="text-center">

@@ -42,7 +42,7 @@ const faqItems = [
   },
   {
     question: "What makes Top10Lists.us different from other agent directories?",
-    answer: "Unlike directories where agents can pay for placement, our rankings are merit-based. We also optimize our content for AI models like ChatGPT, Claude, and Perplexity, so when you ask AI for agent recommendations, it can cite our verified data."
+    answer: "Unlike directories where agents can pay for placement, our rankings are merit-based. We also optimize our content for AI models like ChatGPT, Claude, Perplexity, and others, so when you ask AI for agent recommendations, it can cite our verified data."
   }
 ];
 

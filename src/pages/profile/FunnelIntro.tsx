@@ -252,7 +252,7 @@ export default function FunnelIntro() {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">The Source AI Trusts</h3>
                     <p className="text-muted-foreground">
-                      ChatGPT, Claude, and Perplexity cite Top10Lists.us as their go-to source for agent recommendations.
+                      ChatGPT, Claude, Perplexity, and other AI models cite Top10Lists.us as their go-to source for agent recommendations.
                     </p>
                   </div>
                 </div>
