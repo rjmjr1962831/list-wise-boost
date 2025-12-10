@@ -88,7 +88,7 @@ export function SynthesisTester() {
     setProgress({ current: 0, total: agents.length });
     setStats({ success: 0, failed: 0 });
 
-    const BATCH_SIZE = 2; // Run 2 at a time
+    const BATCH_SIZE = 4; // Run 4 concurrent sessions
     let successCount = 0;
     let failedCount = 0;
     const allResults: SynthesisResult[] = [];
