@@ -62,6 +62,7 @@ const ReviewListing = lazy(() => import("./pages/profile/ReviewListing"));
 const FreeCitySelection = lazy(() => import("./pages/profile/FreeCitySelection"));
 const FreeListingThankYou = lazy(() => import("./pages/profile/FreeListingThankYou"));
 const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
+const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 
 // Q&A Landing Pages for LLM optimization
 const QALandingPage = lazy(() => import("./pages/QALandingPage"));
@@ -124,6 +125,8 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
+                    {/* Short link redirect for magic links */}
+                    <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Agent funnel routes - Magic link landing page */}
                     <Route path="/profile/:token" element={<FunnelIntro />} />
                     <Route path="/profile/:token/listing" element={<VerifyListingByToken />} />
