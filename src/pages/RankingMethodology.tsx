@@ -826,7 +826,7 @@ const RankingMethodology = () => {
                       How do I get invited to the directory?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      Our team continuously monitors agent performance data from Google Business, Zillow, Realtor.com, Redfin, and press outlets. When an agent's verified metrics meet all three selection criteria (50+ reviews, 4.8+ rating, 6+ years experience), they become eligible for invitation consideration. Final selection involves editorial review to ensure directory quality and appropriate market coverage.
+                      Our team continuously monitors agent performance data from Google Business, Zillow, Realtor.com, Redfin, press outlets, public records, and regulatory actions. When an agent's verified metrics meet all three selection criteria (50+ reviews, 4.8+ rating, 6+ years experience), they become eligible for invitation consideration. Final selection involves editorial review to ensure directory quality and appropriate market coverage.
                     </AccordionContent>
                   </AccordionItem>
 
