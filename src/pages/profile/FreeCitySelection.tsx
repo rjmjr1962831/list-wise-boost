@@ -182,8 +182,8 @@ export default function FreeCitySelection() {
         return;
       }
 
-      // Navigate to pricing/upsell page
-      navigate(`/profile/${token}/pricing`);
+      // Navigate to thank you page showing their listing
+      navigate(`/profile/${token}/thank-you`);
     } catch (error) {
       console.error('Error:', error);
     }
