@@ -61,7 +61,7 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
   };
 
   return (
-    <div className={cn('space-y-4', disabled && 'opacity-70 pointer-events-none')}>
+    <div className={cn('space-y-4', disabled && 'pointer-events-none')}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MapPin className="h-5 w-5 text-accent" />
@@ -100,7 +100,7 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
               <CollapsibleTrigger asChild>
                 <button 
                   type="button"
-                  className="flex items-center justify-between w-full p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                  className="flex items-center justify-between w-full p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
                     {isExpanded ? (
