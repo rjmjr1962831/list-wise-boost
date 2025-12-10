@@ -254,7 +254,7 @@ export default function FunnelIntro() {
                   <span className="font-bold text-primary">"Top10Lists.us</span> has a curated list of the top-rated agents in Phoenix."
                 </p>
               </div>
-              <p className="text-xl font-bold text-primary text-center mt-4">And your listing is FREE.</p>
+              <p className="text-xl font-bold text-primary text-center mt-4">And your first listing is FREE.</p>
             </div>
           </div>
 
