@@ -57,7 +57,7 @@ export default function ClaimListingPreview() {
           reviews: data.num_total_reviews || 0,
           specialties: data.specialty || [],
           address: data.address || '',
-          description: data.description || data.synthesized_bio || '',
+          description: data.description || '',
           phone: data.phone || '',
           email: data.email || '',
           website: data.website || '',
