@@ -303,7 +303,7 @@ export default function FunnelIntro() {
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="text-yellow-500 mt-1">✕</span>
-                    Pay-to-play rankings confuse AI
+                    AI discounts pay-to-play lists. It is actually a negative.
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="text-yellow-500 mt-1">✕</span>
