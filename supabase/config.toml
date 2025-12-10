@@ -219,3 +219,6 @@ verify_jwt = false
 
 [functions.scrape-website-firecrawl]
 verify_jwt = false
+
+[functions.check-cache-health]
+verify_jwt = false
