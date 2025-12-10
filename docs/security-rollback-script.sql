@@ -10,7 +10,40 @@
 -- 3. After rollback, investigate the issue before re-attempting
 
 -- =============================================================================
--- STEP 1 ROLLBACK: Recreate prerender_recache_jobs table (if needed)
+-- WHAT WAS CHANGED (2025-12-10)
+-- =============================================================================
+-- 1. DROPPED: prerender_recache_jobs table (legacy, unused)
+-- 2. CREATED: professionals_public view (excludes sensitive internal fields)
+-- 3. FIXED: contacts - added admin-only SELECT, removed permissive SELECT
+-- 4. FIXED: review_requests - added admin ALL + public INSERT (had zero policies)
+-- 5. FIXED: agent_applications - removed user SELECT policy
+
+-- =============================================================================
+-- ROLLBACK: Drop professionals_public view
+-- =============================================================================
+DROP VIEW IF EXISTS public.professionals_public;
+
+-- =============================================================================
+-- ROLLBACK: Restore contacts table permissive SELECT
+-- =============================================================================
+DROP POLICY IF EXISTS "Admins can view contacts" ON public.contacts;
+CREATE POLICY "Authenticated users can view contacts" ON public.contacts
+FOR SELECT USING (true);
+
+-- =============================================================================
+-- ROLLBACK: Remove review_requests policies (restore to no policies)
+-- =============================================================================
+DROP POLICY IF EXISTS "Admins can manage review requests" ON public.review_requests;
+DROP POLICY IF EXISTS "Anyone can submit review requests" ON public.review_requests;
+
+-- =============================================================================
+-- ROLLBACK: Restore agent_applications user SELECT policy
+-- =============================================================================
+CREATE POLICY "Users can view their own applications" ON public.agent_applications
+FOR SELECT USING (auth.uid() = user_id);
+
+-- =============================================================================
+-- ROLLBACK: Recreate prerender_recache_jobs table (if needed)
 -- =============================================================================
 -- Note: This table was legacy/unused. Only recreate if absolutely necessary.
 /*
@@ -38,56 +71,18 @@ FOR ALL USING (true) WITH CHECK (true);
 */
 
 -- =============================================================================
--- STEP 2 ROLLBACK: Drop professionals_public view
--- =============================================================================
-DROP VIEW IF EXISTS public.professionals_public;
-
--- =============================================================================
--- STEP 5-6 ROLLBACK: Restore permissive policy on professionals table
--- =============================================================================
--- First, remove the restrictive policy if it exists
-DROP POLICY IF EXISTS "Restrict base table to admins" ON public.professionals;
-
--- Recreate the original permissive policy
-CREATE POLICY "Anyone can view active professionals" ON public.professionals
-FOR SELECT USING (active = true);
-
--- =============================================================================
--- STEP 7 ROLLBACK: Restore contacts table to original state
--- =============================================================================
-DROP POLICY IF EXISTS "Admins can view contacts" ON public.contacts;
-
-CREATE POLICY "Authenticated users can view contacts" ON public.contacts
-FOR SELECT USING (true);
-
--- =============================================================================
--- STEP 8 ROLLBACK: Remove review_requests policies
--- =============================================================================
-DROP POLICY IF EXISTS "Admins can manage review requests" ON public.review_requests;
-DROP POLICY IF EXISTS "Anyone can submit review requests" ON public.review_requests;
-
--- =============================================================================
--- STEP 9 ROLLBACK: Restore agent_applications user SELECT policy
--- =============================================================================
-CREATE POLICY "Users can view their own applications" ON public.agent_applications
-FOR SELECT USING (auth.uid() = user_id);
-
--- =============================================================================
 -- VERIFICATION QUERIES
--- Run these to verify rollback was successful
+-- Run these to verify current state
 -- =============================================================================
 
--- Check professionals policies
--- SELECT policyname, cmd, permissive, qual FROM pg_policies WHERE tablename = 'professionals';
-
--- Check contacts policies  
+-- Check contacts policies
 -- SELECT policyname, cmd, permissive, qual FROM pg_policies WHERE tablename = 'contacts';
 
--- Check review_requests policies
+-- Check review_requests policies  
 -- SELECT policyname, cmd, permissive, qual FROM pg_policies WHERE tablename = 'review_requests';
 
 -- Check agent_applications policies
 -- SELECT policyname, cmd, permissive, qual FROM pg_policies WHERE tablename = 'agent_applications';
 
--- Check if professionals_public view exists (should NOT exist after rollback)
+-- Check if professionals_public view exists
 -- SELECT * FROM information_schema.views WHERE table_name = 'professionals_public';
