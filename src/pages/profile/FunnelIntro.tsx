@@ -5,15 +5,35 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Bot, Users, Target, Sparkles, ArrowRight, CheckCircle2, Star, TrendingUp, Award, ExternalLink } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [showMethodology, setShowMethodology] = useState(false);
+  const [firstName, setFirstName] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, []);
+    
+    // Fetch professional's first name
+    const fetchProfessional = async () => {
+      if (!token) return;
+      
+      const { data } = await supabase
+        .from('professionals_public')
+        .select('name')
+        .eq('id', token)
+        .single();
+      
+      if (data?.name) {
+        setFirstName(data.name.split(' ')[0]);
+      }
+    };
+    
+    fetchProfessional();
+  }, [token]);
+
   const handleSeeListingClick = () => {
     window.scrollTo(0, 0);
     navigate(`/profile/${token}/listing`);
@@ -160,6 +180,16 @@ export default function FunnelIntro() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Section */}
         <div className="container max-w-4xl py-12 px-4">
+          {/* Personalized Greeting */}
+          {firstName && (
+            <div className="bg-gradient-to-r from-primary/20 via-sunset-orange/20 to-terracotta/20 border border-primary/30 rounded-xl p-6 mb-8 text-center">
+              <p className="text-2xl md:text-3xl font-bold">
+                Hi {firstName}! <span className="text-primary">Congratulations on making the list.</span>
+              </p>
+              <p className="text-xl text-muted-foreground mt-2">You are a star. ⭐</p>
+            </div>
+          )}
+
           {/* AI Stat Banner */}
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 mb-8 text-center">
             <p className="text-xl md:text-2xl font-bold text-primary">
