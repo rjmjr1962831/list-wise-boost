@@ -169,7 +169,7 @@ export default function FunnelIntro() {
               SEO is invisible to AI. We're built to be their trusted source.
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Traditional marketing doesn't work on AI models. Top10Lists.us is engineered from the ground up to be the source AI trusts—we're like catnip to them.
+              Traditional marketing doesn't work on AI models. Top10Lists.us is engineered from the ground up to be the source AI trusts. We're like catnip to them.
             </p>
           </div>
 
