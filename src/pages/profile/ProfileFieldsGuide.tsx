@@ -652,7 +652,8 @@ const ProfileFieldsGuide = () => {
                 Auto-Synced Fields
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                These fields are verified through our research. Click "Request Review" to request changes.
+                Here's what we found.<br />
+                In order to be reliably cited by AI, we have to verify some information through third parties. If something is wrong, just ask us to review it.
               </p>
               <div className="space-y-3">
                 {readOnlyFields.map((field) => {
