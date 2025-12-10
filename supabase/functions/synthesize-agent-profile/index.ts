@@ -376,6 +376,13 @@ Do NOT bold:
 - If no community involvement data exists, skip paragraph 4 (do not invent)
 - For paragraph 4, include ALL community activities found: volunteer work, board memberships, sponsorships, coaching, faith community service, charitable donations, event organizing, mentoring programs
 
+### CRITICAL: Paraphrasing Requirement
+- NEVER copy phrases verbatim from the existing bio — completely rephrase everything
+- If bio says "unwavering passion and integrity", write something like "a commitment to excellence and honest practice"
+- If bio says "extensive local knowledge", write something like "deep understanding of the market" or "years of hands-on experience"
+- Transform every phrase into your own words while preserving the meaning
+- Using the same adjectives or phrasing as the source is FORBIDDEN
+
 ## EXAMPLE OUTPUT
 
 Adam Hamblen has led the Hamblen Team at Realty One Group since **2003**, completing over **3,500 transactions** with a **5-star rating** across **1,000+ reviews**.
@@ -404,7 +411,7 @@ ${context.existingPressData.length > 0 ? JSON.stringify(context.existingPressDat
 === WEBSITE CONTENT (from ${context.websiteSource || 'their website'}) ===
 ${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
 
-=== EXISTING BIO (paraphrase, do NOT copy verbatim) ===
+=== EXISTING BIO (COMPLETELY REPHRASE - copying any phrases verbatim is FORBIDDEN) ===
 ${context.existingBio || 'No bio available'}
 
 === PRESS MENTIONS ===
