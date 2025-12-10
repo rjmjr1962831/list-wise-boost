@@ -240,7 +240,7 @@ export default function PremiumPricingPage() {
               <Separator />
 
               {/* Free vs Premium */}
-              <FreeVsPremium />
+              <FreeVsPremium onSelectFree={() => navigate(`/profile/${token}/select-free-city`)} />
 
               <Separator />
 

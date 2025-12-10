@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Check, X, Sparkles, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +23,11 @@ const features: FeatureItem[] = [
   { label: 'Multi-city coverage', free: false, premium: true },
 ];
 
-export function FreeVsPremium() {
+interface FreeVsPremiumProps {
+  onSelectFree?: () => void;
+}
+
+export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-foreground">Free vs Premium Placement</h3>
@@ -59,9 +64,20 @@ export function FreeVsPremium() {
               </div>
             ))}
             
-            <div className="pt-3 border-t mt-3">
-              <p className="text-2xl font-bold">$0</p>
-              <p className="text-xs text-muted-foreground">Forever free</p>
+            <div className="pt-3 border-t mt-3 space-y-3">
+              <div>
+                <p className="text-2xl font-bold">$0</p>
+                <p className="text-xs text-muted-foreground">Forever free</p>
+              </div>
+              {onSelectFree && (
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={onSelectFree}
+                >
+                  I'm ok, I'll stick with the Free offer
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
