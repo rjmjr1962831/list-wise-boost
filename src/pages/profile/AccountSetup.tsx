@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, Phone, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Loader2, Mail, Phone, CheckCircle2, ArrowRight, Eye, Edit, CreditCard, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { User } from '@supabase/supabase-js';
 
-type PageState = 'loading' | 'ready' | 'sending' | 'sent' | 'error';
+type PageState = 'loading' | 'ready' | 'sending' | 'sent' | 'error' | 'authenticated';
 
 export default function AccountSetup() {
   const { token } = useParams<{ token: string }>();
@@ -21,11 +22,39 @@ export default function AccountSetup() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [originalEmail, setOriginalEmail] = useState('');
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Check auth state
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setUser(session.user);
+      }
+    };
+    
+    checkAuth();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
     fetchProfessional();
+    
+    return () => subscription.unsubscribe();
   }, [token]);
+
+  // Update page state based on auth
+  useEffect(() => {
+    if (professional && user) {
+      setPageState('authenticated');
+    } else if (professional && !user) {
+      setPageState('ready');
+    }
+  }, [professional, user]);
 
   const fetchProfessional = async () => {
     if (!token) {
@@ -37,7 +66,7 @@ export default function AccountSetup() {
       // Try to find by verification_token first, then by id
       let { data, error } = await supabase
         .from('professionals')
-        .select('id, name, email, phone')
+        .select('id, name, email, phone, is_brand_builder, funnel_status')
         .eq('verification_token', token)
         .maybeSingle();
 
@@ -47,7 +76,7 @@ export default function AccountSetup() {
         if (isUUID) {
           const fallback = await supabase
             .from('professionals')
-            .select('id, name, email, phone')
+            .select('id, name, email, phone, is_brand_builder, funnel_status')
             .eq('id', token)
             .maybeSingle();
           data = fallback.data;
@@ -65,7 +94,6 @@ export default function AccountSetup() {
       setEmail(data.email || '');
       setOriginalEmail(data.email || '');
       setPhone(data.phone || '');
-      setPageState('ready');
     } catch (err) {
       console.error('Error:', err);
       setPageState('error');
@@ -82,7 +110,6 @@ export default function AccountSetup() {
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({
@@ -96,20 +123,14 @@ export default function AccountSetup() {
     setPageState('sending');
 
     try {
-      // If email was changed, update it in the database
       if (email !== originalEmail && professional?.id) {
-        const { error: updateError } = await supabase
+        await supabase
           .from('professionals')
           .update({ email, phone })
           .eq('id', professional.id);
-
-        if (updateError) {
-          console.error('Error updating email:', updateError);
-        }
       }
 
-      // Send magic link using Supabase Auth
-      const redirectUrl = `${window.location.origin}/profile/${token}/listing`;
+      const redirectUrl = `${window.location.origin}/profile/${token}/setup`;
       
       const { error } = await supabase.auth.signInWithOtp({
         email,
@@ -123,7 +144,6 @@ export default function AccountSetup() {
       });
 
       if (error) {
-        console.error('Error sending magic link:', error);
         toast({
           title: "Error sending email",
           description: error.message,
@@ -139,7 +159,6 @@ export default function AccountSetup() {
         description: "Check your email for the login link."
       });
     } catch (err: any) {
-      console.error('Error:', err);
       toast({
         title: "Error",
         description: err.message || "Failed to send magic link.",
@@ -149,8 +168,17 @@ export default function AccountSetup() {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setPageState('ready');
+    toast({
+      title: "Signed out",
+      description: "You have been signed out successfully."
+    });
+  };
+
   const handleSkip = () => {
-    // Allow skipping for now - they can still view their listing
     navigate(`/profile/${token}/listing`);
   };
 
@@ -180,6 +208,119 @@ export default function AccountSetup() {
           </CardContent>
         </Card>
       </div>
+    );
+  }
+
+  // Authenticated Dashboard View
+  if (pageState === 'authenticated' && user) {
+    const firstName = professional?.name?.split(' ')[0] || 'there';
+    const isPremium = professional?.is_brand_builder;
+
+    return (
+      <>
+        <Helmet>
+          <title>Your Account | Top10Lists</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-12 px-4">
+          <div className="max-w-2xl mx-auto space-y-8">
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl font-bold">Welcome back, {firstName}!</h1>
+              <p className="text-muted-foreground">
+                Manage your Top10Lists profile and subscription
+              </p>
+            </div>
+
+            <Card className={isPremium ? "border-primary/50 bg-primary/5" : ""}>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Current Plan</p>
+                    <p className="text-xl font-bold">
+                      {isPremium ? "Premium Placement" : "Free Listing"}
+                    </p>
+                  </div>
+                  {isPremium && (
+                    <span className="px-3 py-1 bg-primary/20 text-primary rounded-full text-sm font-medium">
+                      Active
+                    </span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid gap-4">
+              <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate(`/profile/${token}/listing`)}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-full bg-primary/10">
+                      <Eye className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">View Your Listing</h3>
+                      <p className="text-muted-foreground text-sm">
+                        See how your profile appears to potential clients
+                      </p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate(`/profile/${token}/fields`)}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-full bg-primary/10">
+                      <Edit className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">Edit Your Listing</h3>
+                      <p className="text-muted-foreground text-sm">
+                        Update your photo, bio, achievements, and more
+                      </p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:border-primary/50 transition-colors cursor-pointer" onClick={() => navigate(`/profile/${token}/pricing`)}>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-full bg-primary/10">
+                      <CreditCard className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {isPremium ? "Manage Plan & Billing" : "Upgrade to Premium"}
+                      </h3>
+                      <p className="text-muted-foreground text-sm">
+                        {isPremium 
+                          ? "View billing details, change plan, or update payment method"
+                          : "Get guaranteed placement in your city's Top 10 list"
+                        }
+                      </p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="text-center">
+              <Button variant="ghost" onClick={handleSignOut} className="text-muted-foreground">
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
+
+            <div className="text-center text-sm text-muted-foreground">
+              <p>Signed in as <span className="font-medium text-foreground">{user.email}</span></p>
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
@@ -213,10 +354,7 @@ export default function AccountSetup() {
                 <p className="text-sm text-muted-foreground">
                   Didn't receive it? Check your spam folder or
                 </p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setPageState('ready')}
-                >
+                <Button variant="outline" onClick={() => setPageState('ready')}>
                   Try again
                 </Button>
               </div>
@@ -238,7 +376,6 @@ export default function AccountSetup() {
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-12 px-4">
         <div className="max-w-lg mx-auto space-y-8">
-          {/* Header */}
           <div className="text-center space-y-2">
             <h1 className="text-3xl font-bold">Let's set up your account quickly</h1>
             <p className="text-muted-foreground">
@@ -246,7 +383,6 @@ export default function AccountSetup() {
             </p>
           </div>
 
-          {/* Form Card */}
           <Card>
             <CardHeader>
               <CardTitle>Confirm Your Contact Info</CardTitle>
@@ -255,7 +391,6 @@ export default function AccountSetup() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Email Field */}
               <div className="space-y-2">
                 <Label htmlFor="email" className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
@@ -276,7 +411,6 @@ export default function AccountSetup() {
                 )}
               </div>
 
-              {/* Phone Field */}
               <div className="space-y-2">
                 <Label htmlFor="phone" className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
@@ -295,7 +429,6 @@ export default function AccountSetup() {
                 </p>
               </div>
 
-              {/* Submit Button */}
               <Button 
                 className="w-full text-lg py-6 h-auto"
                 onClick={handleSendMagicLink}
@@ -314,7 +447,6 @@ export default function AccountSetup() {
                 )}
               </Button>
 
-              {/* Skip Option */}
               <div className="text-center">
                 <button 
                   onClick={handleSkip}
@@ -326,7 +458,6 @@ export default function AccountSetup() {
             </CardContent>
           </Card>
 
-          {/* Info */}
           <div className="text-center text-sm text-muted-foreground">
             <p>
               We use magic links for secure, passwordless authentication. 
