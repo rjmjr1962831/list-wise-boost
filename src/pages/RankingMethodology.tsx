@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { useEffect } from "react";
-import { CheckCircle2, Scale, TrendingUp, Award, Clock, AlertCircle, HelpCircle } from "lucide-react";
+import { CheckCircle2, Scale, TrendingUp, Award, Clock, AlertCircle, HelpCircle, Users } from "lucide-react";
 
 const RankingMethodology = () => {
   const { trackEvent } = useGA4Tracking();
@@ -366,7 +366,7 @@ const RankingMethodology = () => {
               To be considered for invitation, agents must demonstrate exceptional performance across all criteria. Agents who fall below these thresholds are removed from the directory immediately.
             </p>
             
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card>
                 <CardContent className="p-6 text-center space-y-3">
                   <div className="flex justify-center">
@@ -405,6 +405,20 @@ const RankingMethodology = () => {
                   <h3 className="text-xl font-semibold">6+ Years</h3>
                   <p className="text-sm text-muted-foreground">
                     Minimum 6 years of verified market experience
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6 text-center space-y-3">
+                  <div className="flex justify-center">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Users className="h-6 w-6 text-primary" />
+                    </div>
+                  </div>
+                  <h3 className="text-xl font-semibold">Community</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Well-established in the community with third-party verification of engagement and participation
                   </p>
                 </CardContent>
               </Card>
