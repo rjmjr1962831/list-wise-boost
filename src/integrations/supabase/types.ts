@@ -1064,57 +1064,6 @@ export type Database = {
           },
         ]
       }
-      prerender_recache_jobs: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          current_index: number
-          error_message: string | null
-          fail_count: number
-          id: string
-          processed_count: number
-          results: Json
-          started_at: string | null
-          status: string
-          success_count: number
-          total_urls: number
-          updated_at: string
-          urls: Json
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          current_index?: number
-          error_message?: string | null
-          fail_count?: number
-          id?: string
-          processed_count?: number
-          results?: Json
-          started_at?: string | null
-          status?: string
-          success_count?: number
-          total_urls?: number
-          updated_at?: string
-          urls?: Json
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          current_index?: number
-          error_message?: string | null
-          fail_count?: number
-          id?: string
-          processed_count?: number
-          results?: Json
-          started_at?: string | null
-          status?: string
-          success_count?: number
-          total_urls?: number
-          updated_at?: string
-          urls?: Json
-        }
-        Relationships: []
-      }
       pricing_plans: {
         Row: {
           cities_included: number | null
