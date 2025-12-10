@@ -20,6 +20,9 @@ export default function VerifyListingByToken() {
   const [pageState, setPageState] = useState<PageState>('loading');
   const [professional, setProfessional] = useState<any>(null);
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  useEffect(() => {
     const validateAndFetchProfessional = async () => {
       if (!token) {
         setPageState('invalid');
