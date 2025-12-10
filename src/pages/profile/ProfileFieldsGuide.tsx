@@ -216,7 +216,7 @@ const ProfileFieldsGuide = () => {
       label: "Bio (Your Version)",
       icon: <FileText className="h-5 w-5" />,
       editable: true,
-      description: "We suggest that you write this in the first person using I or We.",
+      description: "Your personal bio - you can edit this freely. We recommend you write in the first person.",
       type: 'textarea'
     },
     {
