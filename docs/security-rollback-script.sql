@@ -17,6 +17,9 @@
 -- 3. FIXED: contacts - added admin-only SELECT, removed permissive SELECT
 -- 4. FIXED: review_requests - added admin ALL + public INSERT (had zero policies)
 -- 5. FIXED: agent_applications - removed user SELECT policy
+-- 6. CONFIRMED: professionals base table retains public SELECT (business requirement)
+--    - Contact info (email, phone, website) is intentionally public
+--    - View excludes internal fields (verification_token, claim_notes, raw_scraper_data)
 
 -- =============================================================================
 -- ROLLBACK: Drop professionals_public view
