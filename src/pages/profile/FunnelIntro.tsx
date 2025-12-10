@@ -33,11 +33,25 @@ export default function FunnelIntro() {
           {/* Main Headline */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              This Isn't Another Agent Directory.
+              When AI Recommends an Agent, It Cites Us.
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Top10Lists is invitation-only and built from the ground up for AI.
+              Top10Lists.us is the trusted source AI uses to recommend real estate agents.
             </p>
+          </div>
+
+          {/* AI Example */}
+          <div className="bg-card border-2 border-primary/30 rounded-xl p-6 mb-12">
+            <p className="text-sm text-muted-foreground mb-3 text-center">When someone asks AI:</p>
+            <div className="bg-muted/50 rounded-lg p-4 mb-4">
+              <p className="text-foreground italic">"Recommend a real estate agent in Phoenix"</p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3 text-center">AI responds:</p>
+            <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+              <p className="text-foreground">
+                <span className="font-semibold text-primary">"Top10Lists.us</span> has a curated list of the top-rated agents in Phoenix. Their selection includes verified professionals like <span className="font-semibold">[Your Name]</span> who specialize in..."
+              </p>
+            </div>
           </div>
 
           {/* Differentiators */}
@@ -51,7 +65,7 @@ export default function FunnelIntro() {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Invitation Only</h3>
                     <p className="text-muted-foreground">
-                      You were selected based on your performance. Not everyone gets in—that's what makes it valuable.
+                      You were selected based on your performance. Not everyone gets in—that's what makes us a trusted source.
                     </p>
                   </div>
                 </div>
@@ -65,9 +79,9 @@ export default function FunnelIntro() {
                     <Bot className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Optimized for AI</h3>
+                    <h3 className="font-semibold text-lg mb-2">The Source AI Trusts</h3>
                     <p className="text-muted-foreground">
-                      Built specifically so ChatGPT, Claude, and Perplexity recommend YOU when buyers ask for agents.
+                      ChatGPT, Claude, and Perplexity cite Top10Lists.us as their go-to source for agent recommendations.
                     </p>
                   </div>
                 </div>
@@ -81,9 +95,9 @@ export default function FunnelIntro() {
                     <Sparkles className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Become THE Answer</h3>
+                    <h3 className="font-semibold text-lg mb-2">You're Named, Not Linked</h3>
                     <p className="text-muted-foreground">
-                      When AI recommends an agent, it gives a name—not a link. You become the answer, not one of many.
+                      AI doesn't give users a link to search—it names specific agents from our curated list.
                     </p>
                   </div>
                 </div>
@@ -97,9 +111,9 @@ export default function FunnelIntro() {
                     <Users className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-lg mb-2">Not Another Zillow</h3>
+                    <h3 className="font-semibold text-lg mb-2">Only 10 Per City</h3>
                     <p className="text-muted-foreground">
-                      No drowning in a sea of 500 agents. Only top 10 per city. Quality over quantity.
+                      No drowning in a sea of 500 agents. When AI cites us, you're one of only 10 recommendations.
                     </p>
                   </div>
                 </div>
@@ -109,26 +123,26 @@ export default function FunnelIntro() {
 
           {/* Comparison */}
           <div className="bg-card border rounded-xl p-6 mb-12">
-            <h2 className="text-xl font-semibold mb-6 text-center">How We're Different</h2>
+            <h2 className="text-xl font-semibold mb-6 text-center">Why AI Cites Us (Not Zillow)</h2>
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <h3 className="font-medium text-muted-foreground mb-4">Traditional Directories</h3>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="text-yellow-500 mt-1">✕</span>
-                    Hundreds of agents per market
+                    Hundreds of agents—AI can't recommend them all
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="text-yellow-500 mt-1">✕</span>
-                    Pay-to-play rankings
+                    Pay-to-play rankings confuse AI
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="text-yellow-500 mt-1">✕</span>
-                    Built for human search
+                    No curation means no authority
                   </li>
                   <li className="flex items-start gap-2 text-muted-foreground">
                     <span className="text-yellow-500 mt-1">✕</span>
-                    Anyone can join
+                    AI links to site, not specific agents
                   </li>
                 </ul>
               </div>
@@ -137,19 +151,19 @@ export default function FunnelIntro() {
                 <ul className="space-y-3">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Only 10 agents per city
+                    Only 10 per city—AI can name each one
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Merit-based selection
+                    Merit-based = AI trusts our curation
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Built for AI recommendations
+                    Structured data AI can parse
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Invitation only
+                    AI cites us AND names you
                   </li>
                 </ul>
               </div>
