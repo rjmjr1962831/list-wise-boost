@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles, FlaskConical } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles, FlaskConical, Send } from "lucide-react";
 import { toast } from "sonner";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
@@ -127,9 +127,26 @@ const AdminDashboard = () => {
 
         <div className="mb-6 p-4 bg-card rounded-lg border">
           <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <StopEnrichmentButton />
             <EnrichmentCostControls />
+            <Button
+              onClick={async () => {
+                toast.info("Pushing to IndexNow...");
+                try {
+                  const { data, error } = await supabase.functions.invoke('push-indexnow');
+                  if (error) throw error;
+                  toast.success(`IndexNow notified: ${data.urlsSubmitted} URLs submitted`);
+                } catch (err: any) {
+                  toast.error(`IndexNow failed: ${err.message}`);
+                }
+              }}
+              variant="outline"
+              className="h-auto py-3"
+            >
+              <Send className="mr-2 h-4 w-4" />
+              Push to IndexNow
+            </Button>
           </div>
           <h2 className="text-lg font-semibold mb-2 mt-4">Test Links</h2>
           <div className="flex gap-2 flex-wrap mb-4">
