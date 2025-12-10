@@ -72,6 +72,11 @@ export function PackageSelector({
                   <div className="flex items-center gap-2">
                     <Package className="h-4 w-4 text-primary" />
                     <span className="font-semibold">{pkg.name}</span>
+                    {pkg.isPremiumPackage && (
+                      <Badge variant="outline" className="border-amber-500 text-amber-600 text-xs">
+                        Luxury
+                      </Badge>
+                    )}
                   </div>
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
                     Save ${pkg.savings}/mo
