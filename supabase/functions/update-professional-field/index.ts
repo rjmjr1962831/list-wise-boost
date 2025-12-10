@@ -43,7 +43,8 @@ serve(async (req) => {
       'social_twitter',
       'social_instagram',
       'social_tiktok',
-      'social_linkedin'
+      'social_linkedin',
+      'city_id'
     ];
 
     if (!allowedFields.includes(field)) {
