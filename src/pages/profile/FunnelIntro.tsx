@@ -108,7 +108,7 @@ export default function FunnelIntro() {
             {/* Today - Zillow */}
             <div className="bg-muted/30 border border-muted rounded-xl p-6">
               <div className="text-center mb-4">
-                <span className="inline-block bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm font-semibold px-3 py-1 rounded-full">
+                <span className="inline-block bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-xl font-bold px-4 py-2 rounded-full">
                   TODAY
                 </span>
               </div>
@@ -129,7 +129,7 @@ export default function FunnelIntro() {
             {/* Tomorrow - Top10Lists */}
             <div className="bg-card border-2 border-primary/30 rounded-xl p-6">
               <div className="text-center mb-4">
-                <span className="inline-block bg-primary/20 text-primary text-sm font-semibold px-3 py-1 rounded-full">
+                <span className="inline-block bg-primary/20 text-primary text-xl font-bold px-4 py-2 rounded-full">
                   TOMORROW
                 </span>
               </div>
