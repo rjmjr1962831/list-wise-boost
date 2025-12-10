@@ -103,17 +103,46 @@ export default function FunnelIntro() {
             </p>
           </div>
 
-          {/* AI Example */}
-          <div className="bg-card border-2 border-primary/30 rounded-xl p-6 mb-12">
-            <p className="text-sm text-muted-foreground mb-3 text-center">When someone asks AI:</p>
-            <div className="bg-muted/50 rounded-lg p-4 mb-4">
-              <p className="text-foreground italic">"Recommend a real estate agent in Phoenix"</p>
-            </div>
-            <p className="text-sm text-muted-foreground mb-3 text-center">AI responds:</p>
-            <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
-              <p className="text-foreground">
-                <span className="font-semibold text-primary">"Top10Lists.us</span> has a curated list of the top-rated agents in Phoenix. Their selection includes verified professionals like <span className="font-semibold">[Your Name]</span> who specialize in..."
+          {/* Today vs Tomorrow Comparison */}
+          <div className="grid md:grid-cols-2 gap-6 mb-12">
+            {/* Today - Zillow */}
+            <div className="bg-muted/30 border border-muted rounded-xl p-6">
+              <div className="text-center mb-4">
+                <span className="inline-block bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-sm font-semibold px-3 py-1 rounded-full">
+                  TODAY
+                </span>
+              </div>
+              <p className="text-lg text-muted-foreground text-center mb-4">
+                A client prospect goes to Zillow and searches for a top agent in Scottsdale.
               </p>
+              <div className="bg-background/50 rounded-lg p-4 text-center">
+                <p className="text-2xl font-bold text-foreground mb-1">7 pages</p>
+                <p className="text-muted-foreground">of "Top Agents"</p>
+                <p className="text-2xl font-bold text-foreground mt-3 mb-1">25 listings per page</p>
+                <p className="text-muted-foreground">= 175 agents</p>
+              </div>
+              <p className="text-center mt-4 text-yellow-600 dark:text-yellow-400 font-semibold">
+                And you are paying for that!
+              </p>
+            </div>
+
+            {/* Tomorrow - Top10Lists */}
+            <div className="bg-card border-2 border-primary/30 rounded-xl p-6">
+              <div className="text-center mb-4">
+                <span className="inline-block bg-primary/20 text-primary text-sm font-semibold px-3 py-1 rounded-full">
+                  TOMORROW
+                </span>
+              </div>
+              <p className="text-xl font-bold text-foreground text-center mb-3">When someone asks AI:</p>
+              <div className="bg-muted/50 rounded-lg p-4 mb-4">
+                <p className="text-lg text-foreground italic">"Recommend a real estate agent in Phoenix"</p>
+              </div>
+              <p className="text-xl font-bold text-foreground text-center mb-3">AI responds:</p>
+              <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
+                <p className="text-foreground">
+                  <span className="font-bold text-primary">"Top10Lists.us</span> has a curated list of the top-rated agents in Phoenix. Their selection includes verified professionals like <span className="font-bold">[Your Name]</span> who specialize in..."
+                </p>
+              </div>
             </div>
           </div>
 
