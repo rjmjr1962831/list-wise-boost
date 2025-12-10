@@ -787,7 +787,7 @@ const ProfileFieldsGuide = () => {
                 Auto-Synced Fields
               </h2>
               <p className="text-sm text-muted-foreground mb-4">
-                In order to be reliably cited by AI, we have to verify some information through third parties. If something is wrong, just ask us to review it.
+                In order to maintain our presence with the AI's, we must have data that is verified through third parties. If something is wrong, just request a review and we'll work it out.
               </p>
               <div className="space-y-3">
                 {readOnlyFields.map((field) => {
