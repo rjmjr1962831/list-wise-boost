@@ -195,8 +195,9 @@ export default function SpecialtyEditModal({
                 </div>
               </PopoverTrigger>
               <PopoverContent 
-                className="w-[--radix-popover-trigger-width] p-0" 
+                className="w-[--radix-popover-trigger-width] p-0 z-50" 
                 align="start"
+                side="top"
                 onOpenAutoFocus={(e) => e.preventDefault()}
               >
                 <Command>
