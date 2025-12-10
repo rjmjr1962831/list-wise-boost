@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Pencil, Upload, ArrowRight, ArrowLeft, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus, Facebook, Twitter, Instagram } from "lucide-react";
+import { Loader2, Pencil, Upload, ArrowRight, ArrowLeft, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -48,6 +48,7 @@ interface Professional {
   social_twitter?: string;
   social_instagram?: string;
   social_tiktok?: string;
+  social_linkedin?: string;
 }
 
 interface FieldConfig {
@@ -58,6 +59,7 @@ interface FieldConfig {
   description: string;
   type: 'text' | 'textarea' | 'image' | 'video' | 'readonly' | 'array';
   requiresReview?: boolean;
+  groupStart?: 'social';
 }
 
 // Helper function to strip HTML tags
@@ -256,7 +258,8 @@ const ProfileFieldsGuide = () => {
       icon: <Facebook className="h-5 w-5" />,
       editable: true,
       description: "Your Facebook profile URL.",
-      type: 'text'
+      type: 'text',
+      groupStart: 'social'
     },
     {
       key: "social_twitter",
@@ -272,6 +275,14 @@ const ProfileFieldsGuide = () => {
       icon: <Instagram className="h-5 w-5" />,
       editable: true,
       description: "Your Instagram profile URL.",
+      type: 'text'
+    },
+    {
+      key: "social_linkedin",
+      label: "LinkedIn",
+      icon: <Linkedin className="h-5 w-5" />,
+      editable: true,
+      description: "Your LinkedIn profile URL.",
       type: 'text'
     },
     {
@@ -604,7 +615,13 @@ const ProfileFieldsGuide = () => {
               </h2>
               <div className="space-y-3">
                 {editableFields.map((field) => (
-                  <div key={field.key} className="flex items-start gap-3 p-4 rounded-lg bg-background/80 border border-border/50">
+                  <div key={field.key}>
+                    {field.groupStart === 'social' && (
+                      <p className="text-sm text-muted-foreground italic mb-3 px-4 py-2 bg-muted/30 rounded border border-border/30">
+                        The badge will not show if you don't put a profile link in the field.
+                      </p>
+                    )}
+                    <div className="flex items-start gap-3 p-4 rounded-lg bg-background/80 border border-border/50">
                     <div className="text-primary mt-0.5 shrink-0">{field.icon}</div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
@@ -683,6 +700,7 @@ const ProfileFieldsGuide = () => {
                       </div>
                     </div>
                   </div>
+                </div>
                 ))}
               </div>
             </CardContent>
