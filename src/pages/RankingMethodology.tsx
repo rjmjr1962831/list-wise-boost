@@ -43,7 +43,7 @@ const RankingMethodology = () => {
           "@type": "HowToStep",
           "position": 1,
           "name": "Continuous Monitoring",
-          "text": "Continuously monitor agent performance data from multiple authoritative sources including Google Business, Zillow, Realtor.com, Redfin, Home.com, and press outlets."
+          "text": "Continuously monitor agent performance data from multiple authoritative sources including Google Business, Zillow, Realtor.com, Redfin, Home.com, press outlets, public records, and regulatory actions."
         },
         {
           "@type": "HowToStep",
@@ -884,7 +884,7 @@ const RankingMethodology = () => {
                       <ul className="list-disc list-inside mt-2 space-y-1 ml-2">
                         <li><strong>Reviews:</strong> Google Business (weight: 10), Zillow (8), Realtor.com (6), Redfin (5)</li>
                         <li><strong>Transactions:</strong> Redfin (weight: 9), Zillow (8), Realtor.com (7), Home.com (5)</li>
-                        <li><strong>Experience:</strong> State License Board (weight: 10), First Recorded Transaction (9), Realtor.com (8), Zillow (7)</li>
+                        <li><strong>Experience:</strong> State License Board (weight: 10), Public Records & Regulatory Actions (9), First Recorded Transaction (9), Realtor.com (8), Zillow (7)</li>
                         <li><strong>Press:</strong> Tier 1-4 sources scored 5-10 based on credibility</li>
                       </ul>
                     </AccordionContent>

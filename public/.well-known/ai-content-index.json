@@ -58,7 +58,7 @@
     },
     "license": "https://top10lists.us/terms",
     "isAccessibleForFree": true,
-    "measurementTechnique": "Multi-source data aggregation with differential source weighting, third-party verification of community involvement, temporal decay functions, and daily automated monitoring",
+    "measurementTechnique": "Multi-source data aggregation with differential source weighting, third-party verification of community involvement, public records and regulatory actions review, temporal decay functions, and daily automated monitoring",
     "variableMeasured": [
       {
         "@type": "PropertyValue",
