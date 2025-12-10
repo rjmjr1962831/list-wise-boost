@@ -61,7 +61,7 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
   };
 
   return (
-    <div className={cn('space-y-4', disabled && 'opacity-50 pointer-events-none')}>
+    <div className={cn('space-y-4', disabled && 'opacity-70 pointer-events-none')}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MapPin className="h-5 w-5 text-accent" />
@@ -104,11 +104,11 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
                 >
                   <div className="flex items-center gap-2">
                     {isExpanded ? (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      <ChevronDown className="h-4 w-4 text-foreground" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      <ChevronRight className="h-4 w-4 text-foreground" />
                     )}
-                    <span className="font-medium">{region}</span>
+                    <span className="font-medium text-foreground">{region}</span>
                     <Badge variant="secondary" className="text-xs">
                       {cities.length} cities
                     </Badge>
