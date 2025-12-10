@@ -13,7 +13,7 @@ interface ComparisonRow {
 const comparisonData: ComparisonRow[] = [
   { feature: 'Guaranteed Top 10 placement', top10: true, zillowPremier: false, zillowFlex: false },
   { feature: 'AI search optimization', top10: true, zillowPremier: false, zillowFlex: false },
-  { feature: 'Lead exclusivity', top10: 'Exclusive', zillowPremier: 'Shared', zillowFlex: 'Shared' },
+  
   { feature: 'Per-deal referral fee', top10: 'None', zillowPremier: 'None', zillowFlex: '25-40%' },
   { feature: 'Monthly cost (Phoenix)', top10: '$250', zillowPremier: '$500+', zillowFlex: 'Variable' },
   { feature: 'Verified credentials displayed', top10: true, zillowPremier: false, zillowFlex: false },
