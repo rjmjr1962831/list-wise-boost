@@ -224,10 +224,10 @@ export default function FunnelIntro() {
                 A client prospect goes to Zillow and searches for a top agent in Scottsdale.
               </p>
               <div className="bg-background/50 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-foreground mb-1">7 pages</p>
+                <p className="text-2xl font-bold text-foreground mb-1">25 pages</p>
                 <p className="text-muted-foreground">of "Top Agents"</p>
                 <p className="text-2xl font-bold text-foreground mt-3 mb-1">25 listings per page</p>
-                <p className="text-muted-foreground">= 175 agents</p>
+                <p className="text-muted-foreground">= 625 agents</p>
               </div>
               <p className="text-xl font-bold text-primary text-center mt-4">
                 And you are PAYING for that!
