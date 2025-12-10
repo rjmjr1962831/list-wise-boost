@@ -38,7 +38,11 @@ serve(async (req) => {
       'description',
       'specialty',
       'notable_achievements',
-      'press_mentions'
+      'press_mentions',
+      'social_facebook',
+      'social_twitter',
+      'social_instagram',
+      'social_tiktok'
     ];
 
     if (!allowedFields.includes(field)) {

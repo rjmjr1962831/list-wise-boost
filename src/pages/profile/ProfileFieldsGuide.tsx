@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Pencil, Upload, ArrowRight, ArrowLeft, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus } from "lucide-react";
+import { Loader2, Pencil, Upload, ArrowRight, ArrowLeft, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus, Facebook, Twitter, Instagram } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,13 @@ import SpecialtyEditModal from "@/components/profile/SpecialtyEditModal";
 import AwardEditModal from "@/components/profile/AwardEditModal";
 import PressMentionEditModal from "@/components/profile/PressMentionEditModal";
 import { Badge } from "@/components/ui/badge";
+
+// TikTok icon component (lucide doesn't have one)
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
 interface Professional {
   id: string;
@@ -37,6 +44,10 @@ interface Professional {
   total_sales?: number;
   license_number?: string;
   verification_token?: string;
+  social_facebook?: string;
+  social_twitter?: string;
+  social_instagram?: string;
+  social_tiktok?: string;
 }
 
 interface FieldConfig {
@@ -238,6 +249,38 @@ const ProfileFieldsGuide = () => {
       editable: true,
       description: "Media coverage and press mentions.",
       type: 'array'
+    },
+    {
+      key: "social_facebook",
+      label: "Facebook",
+      icon: <Facebook className="h-5 w-5" />,
+      editable: true,
+      description: "Your Facebook profile URL.",
+      type: 'text'
+    },
+    {
+      key: "social_twitter",
+      label: "X (Twitter)",
+      icon: <Twitter className="h-5 w-5" />,
+      editable: true,
+      description: "Your X (Twitter) profile URL.",
+      type: 'text'
+    },
+    {
+      key: "social_instagram",
+      label: "Instagram",
+      icon: <Instagram className="h-5 w-5" />,
+      editable: true,
+      description: "Your Instagram profile URL.",
+      type: 'text'
+    },
+    {
+      key: "social_tiktok",
+      label: "TikTok",
+      icon: <TikTokIcon className="h-5 w-5" />,
+      editable: true,
+      description: "Your TikTok profile URL.",
+      type: 'text'
     },
     {
       key: "years_experience",

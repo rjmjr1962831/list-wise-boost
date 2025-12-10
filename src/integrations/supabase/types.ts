@@ -1394,6 +1394,8 @@ export type Database = {
           social_facebook: string | null
           social_instagram: string | null
           social_linkedin: string | null
+          social_tiktok: string | null
+          social_twitter: string | null
           specialty: string[] | null
           synthesized_bio: string | null
           team_display_information: Json | null
@@ -1497,6 +1499,8 @@ export type Database = {
           social_facebook?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_twitter?: string | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
@@ -1600,6 +1604,8 @@ export type Database = {
           social_facebook?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_twitter?: string | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
@@ -1988,6 +1994,8 @@ export type Database = {
           social_facebook: string | null
           social_instagram: string | null
           social_linkedin: string | null
+          social_tiktok: string | null
+          social_twitter: string | null
           specialty: string[] | null
           synthesized_bio: string | null
           team_display_information: Json | null
@@ -2063,6 +2071,8 @@ export type Database = {
           social_facebook?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_twitter?: string | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
@@ -2138,6 +2148,8 @@ export type Database = {
           social_facebook?: string | null
           social_instagram?: string | null
           social_linkedin?: string | null
+          social_tiktok?: string | null
+          social_twitter?: string | null
           specialty?: string[] | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
