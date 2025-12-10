@@ -36,7 +36,7 @@ export default function FunnelIntro() {
 
   const handleSeeListingClick = () => {
     window.scrollTo(0, 0);
-    navigate(`/profile/${token}/listing`);
+    navigate(`/profile/${token}/setup`);
   };
 
   return (

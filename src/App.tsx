@@ -62,6 +62,7 @@ const ReviewListing = lazy(() => import("./pages/profile/ReviewListing"));
 const FreeCitySelection = lazy(() => import("./pages/profile/FreeCitySelection"));
 const FreeListingThankYou = lazy(() => import("./pages/profile/FreeListingThankYou"));
 const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
+const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 
 // Q&A Landing Pages for LLM optimization
@@ -129,6 +130,7 @@ const App = () => (
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Agent funnel routes - Magic link landing page */}
                     <Route path="/profile/:token" element={<FunnelIntro />} />
+                    <Route path="/profile/:token/setup" element={<AccountSetup />} />
                     <Route path="/profile/:token/listing" element={<VerifyListingByToken />} />
                     <Route path="/profile/:token/fields" element={<ProfileFieldsGuide />} />
                     <Route path="/profile/:token/edit" element={<EditProfile />} />
