@@ -190,13 +190,6 @@ export default function FunnelIntro() {
             </div>
           )}
 
-          {/* AI Stat Banner */}
-          <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 mb-8 text-center">
-            <p className="text-xl md:text-2xl font-bold text-primary">
-              78% of all home buyers and sellers check for AI recommendations before choosing an agent.
-            </p>
-          </div>
-
           {/* Main Headline */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
