@@ -20,6 +20,10 @@ export default function ClaimListingPreview() {
   const TEST_PROFILE_ID = '45415a04-dffe-46d0-96c6-fe8dbf6cebff';
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const loadProfessional = async () => {
       // Use the token from URL, or fall back to test profile
       const id = token || TEST_PROFILE_ID;

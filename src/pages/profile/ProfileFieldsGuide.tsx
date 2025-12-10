@@ -326,6 +326,10 @@ const ProfileFieldsGuide = () => {
   ];
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const fetchProfessional = async () => {
       if (!token) return;
       try {
