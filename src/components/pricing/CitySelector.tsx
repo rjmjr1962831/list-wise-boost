@@ -24,7 +24,7 @@ const REGION_ORDER: Region[] = [
 ];
 
 export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelectorProps) {
-  const [expandedRegions, setExpandedRegions] = useState<Set<Region>>(new Set(['East Valley', 'West Valley']));
+  const [expandedRegions, setExpandedRegions] = useState<Set<Region>>(new Set());
   
   const nonPremiumCities = getNonPremiumCities();
   
@@ -61,7 +61,7 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
   };
 
   return (
-    <div className={cn('space-y-4', disabled && 'pointer-events-none')}>
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MapPin className="h-5 w-5 text-accent" />
@@ -141,6 +141,7 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
                             id={`city-${city.id}`}
                             checked={isSelected}
                             onCheckedChange={() => onToggle(city.id)}
+                            disabled={disabled}
                           />
                           <span className="text-sm font-medium">{city.cityName}</span>
                         </div>
