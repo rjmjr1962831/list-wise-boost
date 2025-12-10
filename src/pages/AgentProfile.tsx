@@ -10,14 +10,6 @@ import { generateAgentProfileSchema, professionalToSchemaData } from '@/utils/ag
 import { generateVerifiedAgentSchema, generateCitationText } from '@/utils/verifiedAgentSchema';
 import { professionalToVerifiedAgent } from '@/utils/professionalToVerifiedAgent';
 import { VerifiedAgent } from '@/types/verifiedAgent';
-import {
-  LicenseCard,
-  ReviewsCard,
-  PressMentionsCard,
-  AwardsCard,
-  CertificationsCard,
-  CardFooter,
-} from '@/components/verified';
 
 interface DBProfessional {
   id: string;
@@ -316,15 +308,6 @@ export default function AgentProfile() {
   const verifiedSchema = verifiedAgent ? generateVerifiedAgentSchema(verifiedAgent) : null;
   const citationText = verifiedAgent ? generateCitationText(verifiedAgent) : null;
 
-  // Check if we have enhanced verified data to display
-  const hasVerifiedData = verifiedAgent && (
-    verifiedAgent.license?.licenseNumber ||
-    verifiedAgent.aggregatedRating?.platformBreakdown?.length > 0 ||
-    verifiedAgent.certifications?.length > 0 ||
-    verifiedAgent.awards?.length > 0 ||
-    verifiedAgent.pressMentions?.length > 0
-  );
-
   return (
     <>
       <Helmet>
@@ -378,49 +361,6 @@ export default function AgentProfile() {
           quizCompleted={true}
         />
 
-        {/* Verified Data Sections */}
-        {hasVerifiedData && verifiedAgent && (
-          <div className="mt-8 space-y-6">
-            <h2 className="text-xl font-semibold border-b pb-2">Verified Credentials & Data</h2>
-            
-            <div className="grid gap-6 md:grid-cols-2">
-              {/* License Card */}
-              {verifiedAgent.license?.licenseNumber && verifiedAgent.license.licenseNumber !== 'N/A' && (
-                <LicenseCard 
-                  license={verifiedAgent.license}
-                  brokerage={verifiedAgent.brokerage?.value}
-                />
-              )}
-              
-              {/* Reviews Card */}
-              {verifiedAgent.aggregatedRating?.platformBreakdown?.length > 0 && (
-                <ReviewsCard rating={verifiedAgent.aggregatedRating} />
-              )}
-            </div>
-
-            {/* Certifications */}
-            {verifiedAgent.certifications?.length > 0 && (
-              <CertificationsCard certifications={verifiedAgent.certifications} />
-            )}
-
-            {/* Awards */}
-            {verifiedAgent.awards?.length > 0 && (
-              <AwardsCard awards={verifiedAgent.awards} />
-            )}
-
-            {/* Press Mentions */}
-            {verifiedAgent.pressMentions?.length > 0 && (
-              <PressMentionsCard mentions={verifiedAgent.pressMentions} />
-            )}
-
-            {/* Card Footer with Data Sources */}
-            <CardFooter
-              cardCreatedAt={verifiedAgent.cardCreatedAt}
-              cardUpdatedAt={verifiedAgent.cardUpdatedAt}
-              dataSources={verifiedAgent.dataSources}
-            />
-          </div>
-        )}
 
         {/* Hidden LLM Citation Block */}
         {citationText && (
