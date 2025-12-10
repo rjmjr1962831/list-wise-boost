@@ -134,6 +134,7 @@ const ProfileFieldsGuide = () => {
   const [currentField, setCurrentField] = useState<FieldConfig | null>(null);
   const [expandedFields, setExpandedFields] = useState<Set<string>>(new Set());
   const [communicationConsent, setCommunicationConsent] = useState(false);
+  const [pipedrivePersonId, setPipedrivePersonId] = useState<number | null>(null);
 
   const fields: FieldConfig[] = [
     {
@@ -351,6 +352,17 @@ const ProfileFieldsGuide = () => {
           return;
         }
         setProfessional(data as any);
+        
+        // Fetch Pipedrive person ID for linking tasks
+        const { data: syncState } = await supabase
+          .from("pipedrive_sync_state")
+          .select("pipedrive_person_id")
+          .eq("professional_id", data.id)
+          .maybeSingle();
+        
+        if (syncState?.pipedrive_person_id) {
+          setPipedrivePersonId(syncState.pipedrive_person_id);
+        }
       } catch (error) {
         console.error("Error fetching professional:", error);
         navigate("/");
@@ -911,6 +923,7 @@ const ProfileFieldsGuide = () => {
           profileLink={`https://top10lists.us/profile/${token}`}
           professionalName={professional.name}
           professionalEmail={professional.email}
+          pipedrivePersonId={pipedrivePersonId || undefined}
         />
       )}
 
