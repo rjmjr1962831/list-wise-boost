@@ -79,13 +79,13 @@ export function PackageSelector({
                     )}
                   </div>
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    Save ${pkg.savings}/mo
+                    Save ${pkg.bundleSavings}/mo vs à la carte
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{pkg.description}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">
-                    {pkg.includedCityIds.length} cities included
+                    {pkg.includedCityIds.length} cities • <span className="line-through">${pkg.alaCarteTotal}</span> if bought separately
                   </span>
                   <PriceDisplay 
                     retailPrice={pkg.retailTotal} 

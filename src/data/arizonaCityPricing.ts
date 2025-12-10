@@ -32,12 +32,13 @@ export const TIER_PRICING: Record<PricingTier, { retail: number; earlyAdopter: n
 export const PREMIUM_CITIES = ['scottsdale', 'north-scottsdale', 'paradise-valley', 'carefree', 'cave-creek'];
 
 export const ARIZONA_CITIES: CityPricingData[] = [
-  // === PREMIUM CITIES (Premium Cities Package) ===
-  { id: 'scottsdale', cityName: 'Scottsdale', citySlug: 'scottsdale', region: 'Scottsdale Area', tier: 'Premium', retailPrice: 500, earlyAdopterPrice: 250, spotsRemaining: 5, isPremium: true },
-  { id: 'north-scottsdale', cityName: 'North Scottsdale', citySlug: 'north-scottsdale', region: 'Scottsdale Area', tier: 'Premium', retailPrice: 500, earlyAdopterPrice: 250, spotsRemaining: 5, isPremium: true },
-  { id: 'paradise-valley', cityName: 'Paradise Valley', citySlug: 'paradise-valley', region: 'Scottsdale Area', tier: 'Luxury', retailPrice: 750, earlyAdopterPrice: 375, spotsRemaining: 3, isPremium: true },
-  { id: 'carefree', cityName: 'Carefree', citySlug: 'carefree', region: 'Scottsdale Area', tier: 'Premium', retailPrice: 500, earlyAdopterPrice: 250, spotsRemaining: 6, isPremium: true },
-  { id: 'cave-creek', cityName: 'Cave Creek', citySlug: 'cave-creek', region: 'Scottsdale Area', tier: 'Premium', retailPrice: 500, earlyAdopterPrice: 250, spotsRemaining: 6, isPremium: true },
+  // === PREMIUM CITIES (Luxury Package) ===
+  // Scottsdale & North Scottsdale: $600 retail, Paradise Valley: $800 retail
+  { id: 'scottsdale', cityName: 'Scottsdale', citySlug: 'scottsdale', region: 'Scottsdale Area', tier: 'Luxury', retailPrice: 600, earlyAdopterPrice: 300, spotsRemaining: 5, isPremium: true },
+  { id: 'north-scottsdale', cityName: 'North Scottsdale', citySlug: 'north-scottsdale', region: 'Scottsdale Area', tier: 'Luxury', retailPrice: 600, earlyAdopterPrice: 300, spotsRemaining: 5, isPremium: true },
+  { id: 'paradise-valley', cityName: 'Paradise Valley', citySlug: 'paradise-valley', region: 'Scottsdale Area', tier: 'Luxury', retailPrice: 800, earlyAdopterPrice: 400, spotsRemaining: 3, isPremium: true },
+  { id: 'carefree', cityName: 'Carefree', citySlug: 'carefree', region: 'Scottsdale Area', tier: 'Premium', retailPrice: 400, earlyAdopterPrice: 200, spotsRemaining: 6, isPremium: true },
+  { id: 'cave-creek', cityName: 'Cave Creek', citySlug: 'cave-creek', region: 'Scottsdale Area', tier: 'Premium', retailPrice: 400, earlyAdopterPrice: 200, spotsRemaining: 6, isPremium: true },
   
   // === EAST VALLEY === (per TripSavvy: Mesa, Chandler, Gilbert, Tempe, Queen Creek, Apache Junction, Sun Lakes, Fountain Hills)
   { id: 'mesa', cityName: 'Mesa', citySlug: 'mesa', region: 'East Valley', tier: 'Suburban', retailPrice: 250, earlyAdopterPrice: 125, spotsRemaining: 8, isPremium: false },
