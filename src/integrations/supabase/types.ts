@@ -165,6 +165,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "agent_city_subscriptions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       agent_subscriptions: {
@@ -585,6 +592,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "canonical_city_rankings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       categories: {
@@ -704,6 +718,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contact_enrichment_queue_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       contacts: {
@@ -791,6 +812,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: true
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_verification_queue_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]
@@ -894,6 +922,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "funnel_events_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1021,6 +1056,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pipedrive_sync_queue_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pipedrive_sync_state: {
@@ -1060,6 +1102,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: true
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pipedrive_sync_state_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: true
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1152,6 +1201,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "professional_cities_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       professional_claims: {
@@ -1199,6 +1255,13 @@ export type Database = {
             referencedRelation: "professionals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "professional_claims_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       professional_reviews: {
@@ -1238,6 +1301,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professional_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1852,7 +1922,249 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      professionals_public: {
+        Row: {
+          active: boolean | null
+          address: string | null
+          agent_licenses: Json | null
+          agent_sales_stats: Json | null
+          awards_verified: Json | null
+          badges: string[] | null
+          business_address: Json | null
+          business_name: string | null
+          card_created_at: string | null
+          category_id: string | null
+          certifications: Json | null
+          certifications_verified: Json | null
+          city_id: string | null
+          community_roles: Json | null
+          company: string | null
+          cpd_user_pronouns: string | null
+          created_at: string | null
+          current_listings: number | null
+          description: string | null
+          email: string | null
+          get_to_know_me: string | null
+          has_recent_review: boolean | null
+          headline: string | null
+          id: string | null
+          image_url: string | null
+          is_brand_builder: boolean | null
+          is_premier_agent: boolean | null
+          is_top_agent: boolean | null
+          languages: Json | null
+          license_expires_at: string | null
+          license_issued_at: string | null
+          license_number: string | null
+          license_status: string | null
+          license_type: string | null
+          most_recent_review_date: string | null
+          name: string | null
+          notable_achievements: Json | null
+          num_total_reviews: number | null
+          og_image_url: string | null
+          past_sales: Json | null
+          phone: string | null
+          platform_reviews: Json | null
+          press_mentions: Json | null
+          professional_data: Json | null
+          professional_information: Json | null
+          profile_link: string | null
+          profile_type_ids: Json | null
+          profile_types: Json | null
+          publications: Json | null
+          rank: number | null
+          ratings: Json | null
+          review_link: string | null
+          review_stars_rating: number | null
+          reviews_data: Json | null
+          reviews_text: string | null
+          selection_rationale: string | null
+          service_areas: Json | null
+          sidebar_video_url: string | null
+          social_facebook: string | null
+          social_instagram: string | null
+          social_linkedin: string | null
+          specialty: string[] | null
+          synthesized_bio: string | null
+          team_display_information: Json | null
+          title: string | null
+          total_sales: number | null
+          type: string | null
+          updated_at: string | null
+          website: string | null
+          years_experience: number | null
+          zillow_data_fetched_at: string | null
+          zillow_profile_url: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          address?: string | null
+          agent_licenses?: Json | null
+          agent_sales_stats?: Json | null
+          awards_verified?: Json | null
+          badges?: string[] | null
+          business_address?: Json | null
+          business_name?: string | null
+          card_created_at?: string | null
+          category_id?: string | null
+          certifications?: Json | null
+          certifications_verified?: Json | null
+          city_id?: string | null
+          community_roles?: Json | null
+          company?: string | null
+          cpd_user_pronouns?: string | null
+          created_at?: string | null
+          current_listings?: number | null
+          description?: string | null
+          email?: string | null
+          get_to_know_me?: string | null
+          has_recent_review?: boolean | null
+          headline?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_brand_builder?: boolean | null
+          is_premier_agent?: boolean | null
+          is_top_agent?: boolean | null
+          languages?: Json | null
+          license_expires_at?: string | null
+          license_issued_at?: string | null
+          license_number?: string | null
+          license_status?: string | null
+          license_type?: string | null
+          most_recent_review_date?: string | null
+          name?: string | null
+          notable_achievements?: Json | null
+          num_total_reviews?: number | null
+          og_image_url?: string | null
+          past_sales?: Json | null
+          phone?: string | null
+          platform_reviews?: Json | null
+          press_mentions?: Json | null
+          professional_data?: Json | null
+          professional_information?: Json | null
+          profile_link?: string | null
+          profile_type_ids?: Json | null
+          profile_types?: Json | null
+          publications?: Json | null
+          rank?: number | null
+          ratings?: Json | null
+          review_link?: string | null
+          review_stars_rating?: number | null
+          reviews_data?: Json | null
+          reviews_text?: string | null
+          selection_rationale?: string | null
+          service_areas?: Json | null
+          sidebar_video_url?: string | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          specialty?: string[] | null
+          synthesized_bio?: string | null
+          team_display_information?: Json | null
+          title?: string | null
+          total_sales?: number | null
+          type?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zillow_data_fetched_at?: string | null
+          zillow_profile_url?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          address?: string | null
+          agent_licenses?: Json | null
+          agent_sales_stats?: Json | null
+          awards_verified?: Json | null
+          badges?: string[] | null
+          business_address?: Json | null
+          business_name?: string | null
+          card_created_at?: string | null
+          category_id?: string | null
+          certifications?: Json | null
+          certifications_verified?: Json | null
+          city_id?: string | null
+          community_roles?: Json | null
+          company?: string | null
+          cpd_user_pronouns?: string | null
+          created_at?: string | null
+          current_listings?: number | null
+          description?: string | null
+          email?: string | null
+          get_to_know_me?: string | null
+          has_recent_review?: boolean | null
+          headline?: string | null
+          id?: string | null
+          image_url?: string | null
+          is_brand_builder?: boolean | null
+          is_premier_agent?: boolean | null
+          is_top_agent?: boolean | null
+          languages?: Json | null
+          license_expires_at?: string | null
+          license_issued_at?: string | null
+          license_number?: string | null
+          license_status?: string | null
+          license_type?: string | null
+          most_recent_review_date?: string | null
+          name?: string | null
+          notable_achievements?: Json | null
+          num_total_reviews?: number | null
+          og_image_url?: string | null
+          past_sales?: Json | null
+          phone?: string | null
+          platform_reviews?: Json | null
+          press_mentions?: Json | null
+          professional_data?: Json | null
+          professional_information?: Json | null
+          profile_link?: string | null
+          profile_type_ids?: Json | null
+          profile_types?: Json | null
+          publications?: Json | null
+          rank?: number | null
+          ratings?: Json | null
+          review_link?: string | null
+          review_stars_rating?: number | null
+          reviews_data?: Json | null
+          reviews_text?: string | null
+          selection_rationale?: string | null
+          service_areas?: Json | null
+          sidebar_video_url?: string | null
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_linkedin?: string | null
+          specialty?: string[] | null
+          synthesized_bio?: string | null
+          team_display_information?: Json | null
+          title?: string | null
+          total_sales?: number | null
+          type?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zillow_data_fetched_at?: string | null
+          zillow_profile_url?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professionals_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "professionals_city_id_fkey"
+            columns: ["city_id"]
+            isOneToOne: false
+            referencedRelation: "cities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       check_recent_reviews: { Args: { reviews_data: Json }; Returns: boolean }
