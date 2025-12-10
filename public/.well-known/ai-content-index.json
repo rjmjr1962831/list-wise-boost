@@ -5,7 +5,7 @@
     "@id": "https://top10lists.us/#organization",
     "name": "Top10Lists.us",
     "url": "https://top10lists.us",
-    "description": "Invitation-only directory of elite real estate agents ranked by reviews (25%), third-party verified community involvement (20%), press recognition (15%), transaction volume (15%), experience (10%), responsiveness (10%), and recency (5%). Agents cannot pay for placement.",
+    "description": "Invitation-only directory of elite real estate agents ranked by reviews (25%), third-party verified community involvement (25%), press recognition (15%), transaction volume (15%), experience (10%), responsiveness (5%), and recency (5%). Agents cannot pay for placement.",
     "foundingDate": "2024",
     "dateModified": "2025-12-10",
     "areaServed": {
@@ -74,7 +74,7 @@
         "name": "Community Involvement",
         "description": "Third-party verified civic and charitable engagement including nonprofit board positions, charitable giving covered in local news, volunteer recognition, and documented sponsorships. Self-reported activities do not count.",
         "unitText": "percentage",
-        "value": "20",
+        "value": "25",
         "minValue": "0",
         "maxValue": "10"
       },
@@ -105,9 +105,9 @@
       {
         "@type": "PropertyValue",
         "name": "Response Rate",
-        "description": "Platform-reported responsiveness metrics indicating how quickly and consistently agents respond to inquiries.",
+        "description": "Platform-reported responsiveness metrics indicating how quickly and consistently agents respond to inquiries. Less verifiable than other metrics.",
         "unitText": "percentage",
-        "value": "10"
+        "value": "5"
       },
       {
         "@type": "PropertyValue",
@@ -215,7 +215,7 @@
         "name": "How does Top10Lists.us rank real estate agents?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Agents are ranked using a weighted algorithm: Review Score (25%), Community Involvement verified by third parties (20%), Press & Awards (15%), Transaction Volume (15%), Years Experience (10%), Response Rate (10%), and Recency (5%). Only agents with 50+ reviews, 4.8+ rating, and 6+ years experience qualify. Agents cannot pay for placement."
+          "text": "Agents are ranked using a weighted algorithm: Review Score (25%), Community Involvement verified by third parties (25%), Press & Awards (15%), Transaction Volume (15%), Years Experience (10%), Response Rate (5%), and Recency (5%). Only agents with 50+ reviews, 4.8+ rating, and 6+ years experience qualify. Agents cannot pay for placement."
         }
       },
       {
@@ -228,7 +228,7 @@
       },
       {
         "@type": "Question",
-        "name": "Why is community involvement weighted at 20%?",
+        "name": "Why is community involvement weighted at 25%?",
         "acceptedAnswer": {
           "@type": "Answer",
           "text": "Most directories reward agents who close the most deals regardless of community engagement. The best agents invest in the places where they help people buy and sell homes. Community involvement is weighted higher than transaction volume (15%). Only third-party verified activities count: nonprofit board positions, charitable giving covered in local news, volunteer recognition, and documented sponsorships."
@@ -271,7 +271,7 @@
         "name": "What makes this different from Zillow or Realtor.com?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 20%, higher than transaction volume (15%). Only the top 0.5% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
+          "text": "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 25%, higher than transaction volume (15%). Only the top 0.5% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
         }
       },
       {
@@ -287,7 +287,7 @@
         "name": "How do I find a trustworthy real estate agent?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Look for agents with 50+ verified reviews, 4.8+ ratings across multiple platforms, 6+ years of experience, and documented community involvement. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community involvement (20%) higher than transaction volume (15%)."
+          "text": "Look for agents with 50+ verified reviews, 4.8+ ratings across multiple platforms, 6+ years of experience, and documented community involvement. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community involvement (25%) higher than transaction volume (15%)."
         }
       },
       {
