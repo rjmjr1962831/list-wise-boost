@@ -17,6 +17,10 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
  * Receives webhooks from Pipedrive when person records change.
  * Updates corresponding professional records in Supabase.
  * 
+ * SYNC STRATEGY:
+ * - Initial creation: Supabase is source of truth
+ * - After sync: Pipedrive edits become source of truth
+ * 
  * Setup in Pipedrive:
  * 1. Settings → Webhooks → Create webhook
  * 2. Event: person.updated, person.deleted, person.merged
@@ -38,6 +42,51 @@ interface PipedriveWebhookPayload {
   data?: any;
   current?: any;
   previous?: any;
+}
+
+// Fields that can be synced from Pipedrive back to Supabase
+const SYNCABLE_FIELDS = [
+  'name',
+  'email', 
+  'phone',
+  'website',
+  'business_name',
+  'synthesized_bio',
+  'license_number',
+  'years_experience',
+  'total_sales',
+  'current_listings',
+  'specialty',
+  'rank',
+  'is_top_agent',
+  'is_premier_agent',
+  'is_brand_builder',
+  'zillow_profile_url',
+  'zillow_rating',
+  'zillow_reviews',
+  'zillow_page',
+  'zillow_position',
+  'zillow_total_agents',
+  'agents_ahead',
+];
+
+// Fetch field mappings from database (pipedrive_key -> field_name)
+async function getFieldMappings(): Promise<Record<string, string>> {
+  const { data, error } = await supabase
+    .from("pipedrive_field_mapping")
+    .select("field_name, pipedrive_key");
+  
+  if (error || !data) {
+    console.error("Failed to fetch field mappings:", error);
+    return {};
+  }
+  
+  // Create reverse mapping: pipedrive_key -> field_name
+  const mapping: Record<string, string> = {};
+  for (const row of data) {
+    mapping[row.pipedrive_key] = row.field_name;
+  }
+  return mapping;
 }
 
 serve(async (req) => {
@@ -146,32 +195,85 @@ serve(async (req) => {
     if (action === "updated" || action === "update" || action === "added" || action === "add") {
       const personData = payload.data || payload.current;
       const updates: Record<string, any> = {};
-      let hasUpdates = false;
+      const fieldsUpdated: string[] = [];
 
-      // Only sync core contact fields from Pipedrive → Supabase
-      // (Pipedrive is authoritative for these when edited there)
+      // Get field mappings from database
+      const fieldMappings = await getFieldMappings();
       
+      // Sync core contact fields
       if (personData?.name) {
         updates.name = personData.name;
-        hasUpdates = true;
+        fieldsUpdated.push('name');
       }
 
       // Primary email
       const email = personData?.emails?.[0]?.value || personData?.email?.[0]?.value;
       if (email) {
         updates.email = email;
-        hasUpdates = true;
+        fieldsUpdated.push('email');
       }
 
       // Primary phone
       const phone = personData?.phones?.[0]?.value || personData?.phone?.[0]?.value;
       if (phone) {
         updates.phone = phone;
-        hasUpdates = true;
+        fieldsUpdated.push('phone');
       }
 
-      if (hasUpdates) {
-        console.log(`📤 Syncing to professional ${professionalId}:`, Object.keys(updates));
+      // Sync custom fields from Pipedrive
+      // Custom fields in Pipedrive v2 are nested under custom_fields object
+      const customFields = personData?.custom_fields || {};
+      
+      for (const [pipedriveKey, fieldName] of Object.entries(fieldMappings)) {
+        // Skip fields we already handled or that shouldn't be synced back
+        if (['name', 'email', 'phone', 'supabase_id', 'card_url', 'profile_link', 'city_name', 'state', 'email_verified'].includes(fieldName)) {
+          continue;
+        }
+        
+        // Check if this field is in the syncable list
+        if (!SYNCABLE_FIELDS.includes(fieldName)) {
+          continue;
+        }
+
+        // Look for the custom field value in the custom_fields object
+        const value = customFields[pipedriveKey];
+        
+        if (value !== undefined && value !== null) {
+          // Handle different field types
+          if (fieldName === 'specialty') {
+            // Specialty is stored as array in Supabase
+            if (typeof value === 'string' && value.trim()) {
+              updates.specialty = value.split(',').map((s: string) => s.trim()).filter(Boolean);
+              fieldsUpdated.push('specialty');
+            }
+          } else if (['years_experience', 'total_sales', 'current_listings', 'rank', 'zillow_reviews', 'zillow_page', 'zillow_position', 'zillow_total_agents', 'agents_ahead'].includes(fieldName)) {
+            // Numeric fields
+            const numValue = parseInt(String(value), 10);
+            if (!isNaN(numValue)) {
+              updates[fieldName] = numValue;
+              fieldsUpdated.push(fieldName);
+            }
+          } else if (['zillow_rating'].includes(fieldName)) {
+            // Decimal fields
+            const floatValue = parseFloat(String(value));
+            if (!isNaN(floatValue)) {
+              updates[fieldName] = floatValue;
+              fieldsUpdated.push(fieldName);
+            }
+          } else if (['is_top_agent', 'is_premier_agent', 'is_brand_builder'].includes(fieldName)) {
+            // Boolean fields - Pipedrive stores these as option IDs or strings
+            // Skip these as they're complex to parse from Pipedrive
+            continue;
+          } else if (typeof value === 'string' && value.trim()) {
+            // String fields (including synthesized_bio, website, etc.)
+            updates[fieldName] = value.trim();
+            fieldsUpdated.push(fieldName);
+          }
+        }
+      }
+
+      if (fieldsUpdated.length > 0) {
+        console.log(`📤 Syncing ${fieldsUpdated.length} fields to professional ${professionalId}:`, fieldsUpdated);
         
         // Set skip flag to prevent reverse sync loop
         const { error } = await supabase
@@ -194,13 +296,13 @@ serve(async (req) => {
           .update({ updated_at: new Date().toISOString() })
           .eq("professional_id", professionalId);
 
-        console.log(`✅ Professional ${professionalId} updated from Pipedrive`);
+        console.log(`✅ Professional ${professionalId} updated from Pipedrive with fields:`, fieldsUpdated);
 
         return new Response(
           JSON.stringify({ 
             success: true, 
             action: "updated",
-            fieldsUpdated: Object.keys(updates)
+            fieldsUpdated
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
