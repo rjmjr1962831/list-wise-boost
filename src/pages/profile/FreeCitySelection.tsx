@@ -267,16 +267,13 @@ export default function FreeCitySelection() {
                   <p className="text-sm">
                     <strong>{selectedCity.city_name}</strong> - {selectedCity.tier_name} tier
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {10 - selectedCity.brandBuilderCount} premium spots remaining
-                  </p>
                 </div>
               )}
 
               <Button
                 size="lg"
                 className="w-full"
-                disabled={!selectedCityId}
+                disabled={!selectedCity}
                 onClick={handleSelect}
               >
                 Select
