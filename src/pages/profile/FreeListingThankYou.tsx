@@ -241,6 +241,13 @@ export default function FreeListingThankYou() {
                 <span className="font-semibold text-foreground">{cityInfo.name}</span>{' '}
                 immediately.
               </p>
+              <Button
+                size="lg"
+                className="mt-6"
+                onClick={() => navigate('/')}
+              >
+                Ok, let's do this.
+              </Button>
             </CardContent>
           </Card>
 
@@ -285,12 +292,23 @@ export default function FreeListingThankYou() {
             </div>
           </div>
 
+          {/* Bottom CTA */}
+          <div className="text-center">
+            <Button
+              size="lg"
+              onClick={() => navigate('/')}
+            >
+              Ok, let's do this.
+            </Button>
+          </div>
+
           {/* Actions */}
           <Card>
             <CardContent className="pt-6 pb-6">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
                   size="lg"
+                  variant="outline"
                   onClick={() => navigate('/')}
                 >
                   <Home className="h-4 w-4 mr-2" />
