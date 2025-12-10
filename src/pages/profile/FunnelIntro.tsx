@@ -187,7 +187,7 @@ export default function FunnelIntro() {
               <p className="text-2xl md:text-3xl font-bold">
                 Hi {firstName}! <span className="text-primary">Congratulations on making the list.</span>
               </p>
-              <p className="text-xl text-muted-foreground mt-2">You are a star. ⭐</p>
+              <p className="text-xl text-muted-foreground mt-2">You are a star among stars. ⭐⭐⭐⭐⭐</p>
             </div>
           )}
 
