@@ -51,7 +51,7 @@ function convertToDisplayProfessional(db: DBProfessional, rank: number): Profess
     name: db.name,
     title: db.title || 'Real Estate Agent',
     company: db.company || '',
-    description: db.synthesized_bio || db.description || '',
+    description: db.description || '',
     image: db.image_url || '/placeholder.svg',
     rating: db.review_stars_rating || 0,
     reviews: db.num_total_reviews || 0,
