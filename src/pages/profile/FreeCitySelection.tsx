@@ -84,11 +84,12 @@ export default function FreeCitySelection() {
 
         setProfessional(profData);
 
-        // Fetch cities from the cities table (which professionals.city_id references)
+        // Fetch cities from the cities table - only Arizona for now
         const { data: citiesData, error: citiesError } = await supabase
           .from('cities')
-          .select('id, name, slug')
+          .select('id, name, slug, state')
           .eq('active', true)
+          .eq('state', 'Arizona')
           .order('name');
 
         if (citiesError) {
