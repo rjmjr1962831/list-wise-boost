@@ -1108,8 +1108,28 @@ export const ProfessionalCard = ({
                         
                         {/* Social Links */}
                         {(() => {
-                          const socialUrls = (professional as any).raw_scraper_data?.social_urls;
-                          if (!socialUrls || Object.keys(socialUrls).length === 0) return null;
+                          // Merge social URLs from raw_scraper_data AND direct database columns
+                          const scraperSocials = (professional as any).raw_scraper_data?.social_urls || {};
+                          const dbSocials = {
+                            facebook: (professional as any).social_facebook,
+                            instagram: (professional as any).social_instagram,
+                            linkedin: (professional as any).social_linkedin,
+                            x: (professional as any).social_twitter,
+                            tiktok: (professional as any).social_tiktok,
+                          };
+                          // DB columns take precedence over scraped data
+                          const socialUrls = {
+                            facebook: dbSocials.facebook || scraperSocials.facebook,
+                            instagram: dbSocials.instagram || scraperSocials.instagram,
+                            linkedin: dbSocials.linkedin || scraperSocials.linkedin,
+                            x: dbSocials.x || scraperSocials.x || scraperSocials.twitter,
+                            tiktok: dbSocials.tiktok || scraperSocials.tiktok,
+                            youtube: scraperSocials.youtube,
+                            pinterest: scraperSocials.pinterest,
+                          };
+                          
+                          const hasAnySocial = Object.values(socialUrls).some(v => !!v);
+                          if (!hasAnySocial) return null;
                           
                           const handleSocialClick = (platform: string, url: string) => (e: React.MouseEvent) => {
                             e.preventDefault();
