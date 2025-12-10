@@ -601,14 +601,14 @@ export function generateFAQSchema() {
 }
 
 export function generateHomepageSchema() {
-  // Return all 6 schema types for comprehensive LLM discovery
+  // Return 5 schema types for comprehensive LLM discovery
+  // FAQPage schema is now in static index.html for better crawler visibility
   return [
     generateOrganizationSchema(),
     generateWebsiteSchema(),
     generateDatasetSchema(),
     generateServiceSchema(),
-    generateCoverageSchema(),
-    generateFAQSchema()
+    generateCoverageSchema()
   ];
 }
 
