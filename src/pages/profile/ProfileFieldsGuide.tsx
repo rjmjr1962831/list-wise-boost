@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, Pencil, Upload, ArrowRight, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus } from "lucide-react";
+import { Loader2, Pencil, Upload, ArrowRight, ArrowLeft, User, Building2, Star, Phone, Mail, Globe, FileText, Award, MapPin, Image, Video, Trophy, MessageSquarePlus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
@@ -530,6 +530,16 @@ const ProfileFieldsGuide = () => {
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30 py-8 px-4">
         <div className="max-w-3xl mx-auto">
+          {/* Back Button */}
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(`/profile/${token}`)}
+            className="mb-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Listing Preview
+          </Button>
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
