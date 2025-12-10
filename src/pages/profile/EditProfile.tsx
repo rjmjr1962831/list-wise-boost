@@ -656,7 +656,7 @@ export default function EditProfile() {
                 <a href="/terms" target="_blank" className="text-primary hover:underline">Terms and Conditions</a>
                 {' '}and the{' '}
                 <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>
-                , and agree to receive marketing communications such as promotional emails and messages from top10lists.us. I know I can opt-out any time.
+                , and agree to receive marketing, account status and 2 factor authentication communications in emails and messages from top10lists.us. I know I can opt-out any time.
               </Label>
             </div>
 
