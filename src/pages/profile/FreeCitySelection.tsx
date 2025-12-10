@@ -84,12 +84,12 @@ export default function FreeCitySelection() {
 
         setProfessional(profData);
 
-        // Fetch all cities with brand builder counts
+        // Fetch cities from the cities table (which professionals.city_id references)
         const { data: citiesData, error: citiesError } = await supabase
-          .from('arizona_city_pricing')
-          .select('id, city_name, tier_name')
-          .eq('is_active', true)
-          .order('city_name');
+          .from('cities')
+          .select('id, name, slug')
+          .eq('active', true)
+          .order('name');
 
         if (citiesError) {
           console.error('Error fetching cities:', citiesError);
@@ -110,9 +110,11 @@ export default function FreeCitySelection() {
 
         // Filter out premium cities and add counts
         const eligibleCities = citiesData
-          ?.filter(city => !PREMIUM_CITY_NAMES.includes(city.city_name))
+          ?.filter(city => !PREMIUM_CITY_NAMES.includes(city.name))
           .map(city => ({
-            ...city,
+            id: city.id,
+            city_name: city.name,
+            tier_name: 'Standard',
             brandBuilderCount: countMap[city.id] || 0
           })) || [];
 
