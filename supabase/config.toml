@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.push-indexnow]
+verify_jwt = false
+
 [functions.complete-agent-subscription]
 verify_jwt = false
 
