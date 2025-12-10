@@ -133,7 +133,7 @@ export default function FunnelIntro() {
                         onClick={() => setShowMethodology(true)}
                         className="text-primary hover:underline inline-flex items-center gap-1"
                       >
-                        Check out selection criteria
+                        Check our selection criteria
                         <ExternalLink className="h-3 w-3" />
                       </button>
                     </p>
