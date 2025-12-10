@@ -217,7 +217,7 @@ export default function FreeCitySelection() {
               
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Your free listing will appear in <strong className="text-foreground">one city</strong> on a round-robin basis with other qualified agents.
+                  Your <strong className="font-bold text-foreground">FREE</strong> listing will appear in <strong className="text-foreground">one city</strong> on a round-robin basis with other qualified agents.
                 </p>
                 
                 <p>
