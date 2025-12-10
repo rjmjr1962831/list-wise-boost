@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { Sparkles, RefreshCw, CheckCircle, XCircle, Loader2, Search, FileText, ExternalLink } from "lucide-react";
+import { Sparkles, RefreshCw, Loader2, Search, FileText, ExternalLink, Square } from "lucide-react";
 
 interface City {
   id: string;
@@ -47,6 +47,7 @@ export function BatchSynthesisRefresher() {
   const [results, setResults] = useState<SynthesisResult[]>([]);
   const [processedCount, setProcessedCount] = useState(0);
   const [batchSize, setBatchSize] = useState(10);
+  const stoppedRef = useRef(false);
 
   useEffect(() => {
     fetchCities();
@@ -165,8 +166,15 @@ export function BatchSynthesisRefresher() {
     }
   }
 
+  function stopProcessing() {
+    stoppedRef.current = true;
+    setIsProcessing(false);
+    toast.info('Stopped.');
+  }
+
   async function runBatchSynthesis(regenerateAll: boolean) {
     setIsProcessing(true);
+    stoppedRef.current = false;
     setResults([]);
     setProcessedCount(0);
 
@@ -191,6 +199,8 @@ export function BatchSynthesisRefresher() {
 
     // Process in concurrent batches
     for (let i = 0; i < agentsBatch.length; i += concurrency) {
+      if (stoppedRef.current) break;
+      
       const batch = agentsBatch.slice(i, i + concurrency);
       setCurrentAgent(`Processing: ${batch.map(a => a.name).join(', ')}`);
       
@@ -291,38 +301,43 @@ export function BatchSynthesisRefresher() {
           {/* Stats */}
           <div className="flex gap-4 flex-wrap">
             <Badge variant="secondary">{agents.length} Qualified Agents</Badge>
-            <Badge variant="default" className="bg-green-600">
+            <Badge className="bg-blue-500 text-white">
               {agents.length - unsynthesizedCount} Synthesized
             </Badge>
-            <Badge variant="destructive">{unsynthesizedCount} Missing Synthesis</Badge>
+            <Badge className="bg-yellow-500 text-black">{unsynthesizedCount} Missing Synthesis</Badge>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-3 flex-wrap">
-            <Button
-              onClick={() => runBatchSynthesis(false)}
-              disabled={isProcessing || unsynthesizedCount === 0}
-            >
-              {isProcessing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <FileText className="h-4 w-4 mr-2" />
-              )}
-              Synthesize Missing ({Math.min(unsynthesizedCount, batchSize)})
-            </Button>
+            {!isProcessing ? (
+              <>
+                <Button
+                  onClick={() => runBatchSynthesis(false)}
+                  disabled={unsynthesizedCount === 0}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Synthesize Missing ({Math.min(unsynthesizedCount, batchSize)})
+                </Button>
 
-            <Button
-              variant="secondary"
-              onClick={() => runBatchSynthesis(true)}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4 mr-2" />
-              )}
-              Re-Synthesize All ({Math.min(agents.length, batchSize)})
-            </Button>
+                <Button
+                  variant="secondary"
+                  onClick={() => runBatchSynthesis(true)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Re-Synthesize All ({Math.min(agents.length, batchSize)})
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={stopProcessing}
+                className="bg-yellow-500 hover:bg-yellow-600 text-black"
+              >
+                <Square className="h-4 w-4 mr-2" />
+                Stop
+              </Button>
+            )}
           </div>
 
           {/* Progress */}
@@ -351,15 +366,13 @@ export function BatchSynthesisRefresher() {
                     <div 
                       key={result.id}
                       className={`p-3 rounded-md border ${
-                        result.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                        result.success ? 'bg-blue-500/10 border-blue-500/20' : 'bg-yellow-500/10 border-yellow-500/20'
                       }`}
                     >
                       <div className="flex items-start gap-2">
-                        {result.success ? (
-                          <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
-                        ) : (
-                          <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
-                        )}
+                        <span className={`mt-0.5 ${result.success ? 'text-blue-500' : 'text-yellow-500'}`}>
+                          {result.success ? '✓' : '✗'}
+                        </span>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <p className="font-medium text-sm">{result.name}</p>
@@ -387,7 +400,7 @@ export function BatchSynthesisRefresher() {
                               )}
                             </div>
                           ) : (
-                            <p className="text-xs text-red-600">{result.error}</p>
+                            <p className="text-xs text-yellow-600">{result.error}</p>
                           )}
                         </div>
                       </div>
