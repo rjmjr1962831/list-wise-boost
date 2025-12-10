@@ -166,7 +166,7 @@ export default function FunnelIntro() {
           {/* Main Headline */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              When AI Recommends an Agent, It Cites Us.
+              When AI recommends agents, it will cite us as the trusted source for recommendations.
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Top10Lists.us is the trusted source AI uses to recommend real estate agents.
