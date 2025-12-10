@@ -580,7 +580,8 @@ const ProfileFieldsGuide = () => {
       });
       return;
     }
-    navigate(`/profile/${token}/pricing`);
+    // Navigate to review page where they can accept or go back to edit
+    navigate(`/profile/${token}/review`);
   };
 
   if (loading) {
