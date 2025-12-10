@@ -76,7 +76,7 @@ export function PremiumAddons({ selectedCityIds, onToggle }: PremiumAddonsProps)
         <h3 className="text-lg font-semibold text-foreground">Premium Markets</h3>
       </div>
       <p className="text-sm text-muted-foreground">
-        Add high-value markets to reach luxury buyers. These are not included in packages.
+        Add high-value markets to reach luxury buyers. Available individually or as a Luxury Markets package.
       </p>
       
       {luxuryCities.length > 0 && (
