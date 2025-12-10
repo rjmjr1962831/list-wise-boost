@@ -42,7 +42,8 @@ serve(async (req) => {
       'social_facebook',
       'social_twitter',
       'social_instagram',
-      'social_tiktok'
+      'social_tiktok',
+      'social_linkedin'
     ];
 
     if (!allowedFields.includes(field)) {
