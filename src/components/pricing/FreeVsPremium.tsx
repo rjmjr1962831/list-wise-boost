@@ -117,11 +117,15 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
               </div>
             ))}
             
-            <div className="pt-3 border-t mt-3">
-              <p className="text-lg font-semibold text-primary">Choose your cities</p>
-              <p className="text-xs text-muted-foreground">Pricing varies by market</p>
-              <p className="text-xs text-muted-foreground">Three month minimum commitment</p>
-              <p className="text-xs text-muted-foreground">Your price won't change for 24 months</p>
+            <div className="pt-3 border-t mt-3 space-y-2">
+              <div className="flex items-center gap-2 text-primary">
+                <Check className="h-4 w-4" />
+                <span className="text-sm font-medium">50% Early Adopter Discount</span>
+              </div>
+              <div className="flex items-center gap-2 text-primary">
+                <Check className="h-4 w-4" />
+                <span className="text-sm font-medium">No price changes for 24 months</span>
+              </div>
             </div>
           </CardContent>
         </Card>
