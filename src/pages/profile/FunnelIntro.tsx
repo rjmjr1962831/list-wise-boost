@@ -1,12 +1,15 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Bot, Users, Target, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Bot, Users, Target, Sparkles, ArrowRight, CheckCircle2, Star, TrendingUp, Award, ExternalLink } from 'lucide-react';
 
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const [showMethodology, setShowMethodology] = useState(false);
 
   const handleSeeListingClick = () => {
     navigate(`/profile/${token}/listing`);
@@ -19,6 +22,66 @@ export default function FunnelIntro() {
         <meta name="description" content="Join the invitation-only agent directory optimized for AI recommendations." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
+
+      {/* Methodology Modal */}
+      <Dialog open={showMethodology} onOpenChange={setShowMethodology}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">How We Select the Top 10</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 pt-4">
+            <p className="text-muted-foreground">
+              Our selection process is merit-based and completely independent. No agent can pay their way onto our list.
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Star className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Minimum 4.8+ Star Rating</h4>
+                  <p className="text-sm text-muted-foreground">Only agents with exceptional client satisfaction are considered.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">50+ Verified Reviews</h4>
+                  <p className="text-sm text-muted-foreground">Consistent performance over time, not just a few good reviews.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Award className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-semibold">Top 0.5% in Arizona</h4>
+                  <p className="text-sm text-muted-foreground">Out of ~60,000 licensed agents, only ~300 meet our criteria.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-muted/50 rounded-lg p-4">
+              <h4 className="font-semibold mb-2">Data Sources</h4>
+              <ul className="text-sm text-muted-foreground space-y-1">
+                <li>• Arizona Department of Real Estate (license verification)</li>
+                <li>• Multiple review platforms (aggregated ratings)</li>
+                <li>• Public transaction records</li>
+                <li>• Press and media coverage</li>
+              </ul>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              This rigorous selection is why AI models trust us as a source—we've already done the vetting.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Section */}
@@ -65,7 +128,14 @@ export default function FunnelIntro() {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Invitation Only</h3>
                     <p className="text-muted-foreground">
-                      You were selected based on your performance. Not everyone gets in—that's what makes us a trusted source.
+                      No one can buy their way onto this list. You are in the top 0.5% of all agents in Arizona.{' '}
+                      <button 
+                        onClick={() => setShowMethodology(true)}
+                        className="text-primary hover:underline inline-flex items-center gap-1"
+                      >
+                        Check out selection criteria
+                        <ExternalLink className="h-3 w-3" />
+                      </button>
                     </p>
                   </div>
                 </div>
