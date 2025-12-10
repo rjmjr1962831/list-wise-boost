@@ -97,23 +97,28 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
               open={isExpanded}
               onOpenChange={() => toggleRegion(region)}
             >
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                <div className="flex items-center gap-2">
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <CollapsibleTrigger asChild>
+                <button 
+                  type="button"
+                  className="flex items-center justify-between w-full p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-2">
+                    {isExpanded ? (
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    )}
+                    <span className="font-medium">{region}</span>
+                    <Badge variant="secondary" className="text-xs">
+                      {cities.length} cities
+                    </Badge>
+                  </div>
+                  {selectedCount > 0 && (
+                    <Badge className="bg-primary text-primary-foreground">
+                      {selectedCount} selected
+                    </Badge>
                   )}
-                  <span className="font-medium">{region}</span>
-                  <Badge variant="secondary" className="text-xs">
-                    {cities.length} cities
-                  </Badge>
-                </div>
-                {selectedCount > 0 && (
-                  <Badge className="bg-primary text-primary-foreground">
-                    {selectedCount} selected
-                  </Badge>
-                )}
+                </button>
               </CollapsibleTrigger>
               
               <CollapsibleContent className="pt-2">
