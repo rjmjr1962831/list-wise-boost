@@ -225,3 +225,6 @@ verify_jwt = false
 
 [functions.check-cache-health]
 verify_jwt = false
+
+[functions.fetch-from-pipedrive]
+verify_jwt = false
