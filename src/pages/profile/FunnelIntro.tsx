@@ -166,10 +166,10 @@ export default function FunnelIntro() {
           {/* Main Headline */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              When AI recommends agents, it will cite us as the trusted source for recommendations.
+              SEO is invisible to AI. We're built to be their trusted source.
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Top10Lists.us is the trusted source AI uses to recommend real estate agents.
+              Traditional marketing doesn't work on AI models. Top10Lists.us is engineered from the ground up to be the source AI trusts—we're like catnip to them.
             </p>
           </div>
 
