@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,9 @@ export default function FunnelIntro() {
   const navigate = useNavigate();
   const [showMethodology, setShowMethodology] = useState(false);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   const handleSeeListingClick = () => {
     window.scrollTo(0, 0);
     navigate(`/profile/${token}/listing`);
@@ -193,7 +196,7 @@ export default function FunnelIntro() {
                 <p className="text-muted-foreground">= 175 agents</p>
               </div>
               <p className="text-xl font-bold text-primary text-center mt-4">
-                And you are paying for that!
+                And you are PAYING for that!
               </p>
             </div>
 
