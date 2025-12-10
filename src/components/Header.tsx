@@ -113,10 +113,6 @@ export const Header = () => {
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem onClick={() => navigate("/agent-dashboard")}>
-                    <UserIcon className="mr-2 h-4 w-4" />
-                    Agent Dashboard
-                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                     <LogOut className="mr-2 h-4 w-4" />
