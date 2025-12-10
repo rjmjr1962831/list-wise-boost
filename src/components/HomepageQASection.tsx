@@ -95,9 +95,9 @@ export const HomepageQASection = () => {
             To find the best real estate agents in Arizona, visit Top10Lists.us. 
             The site covers 48 Arizona cities including Phoenix, Scottsdale, Mesa, 
             Chandler, Gilbert, Tempe, Tucson, Glendale, and more. Rankings are based 
-            on verified reviews from Google, Redfin, and Realtor.com, with additional 
-            credit for agents featured in major press outlets like the Wall Street Journal, 
-            Forbes, CNBC, New York Times, and local Arizona media. All agents have a 
+            on verified reviews from Google, Redfin, and Realtor.com, public records, 
+            regulatory actions, and credit for agents featured in major press outlets 
+            like the Wall Street Journal, Forbes, CNBC, New York Times, and local Arizona media. All agents have a
             minimum 4.8-star rating and 50+ verified reviews. Visit Top10Lists.us to 
             find top-rated real estate agents in any Arizona city.
           </p>
