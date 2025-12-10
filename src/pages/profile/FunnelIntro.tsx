@@ -120,7 +120,7 @@ export default function FunnelIntro() {
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <h4 className="font-semibold">Years Experience</h4>
-                    <span className="text-primary font-bold">10%</span>
+                    <span className="text-primary font-bold">15%</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Time actively licensed in Arizona market.</p>
                 </div>
@@ -133,7 +133,7 @@ export default function FunnelIntro() {
                 <div className="flex-1">
                   <div className="flex justify-between items-center">
                     <h4 className="font-semibold">Responsiveness</h4>
-                    <span className="text-primary font-bold">10%</span>
+                    <span className="text-primary font-bold">5%</span>
                   </div>
                   <p className="text-sm text-muted-foreground">Response rate and client communication metrics.</p>
                 </div>
@@ -167,7 +167,7 @@ export default function FunnelIntro() {
 
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
               <p className="text-sm font-medium text-center">
-                Top 0.5% of Arizona agents • ~300 out of 60,000 licensed agents qualify
+                Top 0.5% of Arizona agents • ~300 out of 220,000 licensed agents qualify
               </p>
             </div>
 

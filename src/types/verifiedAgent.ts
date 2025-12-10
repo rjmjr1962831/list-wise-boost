@@ -140,10 +140,10 @@ export interface CommunityInvolvement {
  * Ranking score breakdown
  * Weights (v3 - Dec 2024):
  * - Review Score: 25%
- * - Community Involvement: 25%
+ * - Community Involvement: 20%
  * - Press & Awards: 15%
  * - Transaction Volume: 15%
- * - Years Experience: 10%
+ * - Years Experience: 15%
  * - Response Rate: 5%
  * - Recency Bonus: 5%
  */
