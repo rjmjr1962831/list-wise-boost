@@ -154,7 +154,7 @@ export function professionalToSchemaData(
     slug: agentSlug || professional.id || '',
     image: professional.image || extendedProf.image_url || '/placeholder.svg',
     brokerage: professional.company || 'Independent Agent',
-    description: professional.description || extendedProf.synthesized_bio || `Top-rated real estate agent in ${city}, ${stateAbbrev}`,
+    description: professional.description || `Top-rated real estate agent in ${city}, ${stateAbbrev}`,
     ratingValue: professional.rating || 0,
     reviewCount: professional.reviews || 0,
     city,

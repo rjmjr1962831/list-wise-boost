@@ -91,7 +91,7 @@ const QALandingPage = () => {
                 phone: p.phone || '',
                 email: p.email || '',
                 website: p.website || '',
-                description: p.description || p.synthesized_bio || p.get_to_know_me || '',
+                description: p.description || '',
                 stats: {
                   yearsExperience: p.years_experience,
                   totalSales: p.total_sales,

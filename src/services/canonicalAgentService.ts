@@ -230,7 +230,7 @@ function convertToProfessional(dbProf: any, rank: number): Professional {
     phone: dbProf.phone || 'NA',
     email: dbProf.email || 'NA',
     website: dbProf.website || 'NA',
-    description: dbProf.get_to_know_me || dbProf.synthesized_bio || dbProf.description || '',
+    description: dbProf.description || '',
     stats: {
       yearsExperience: dbProf.years_experience || 0,
       totalSales: dbProf.total_sales || 0,
