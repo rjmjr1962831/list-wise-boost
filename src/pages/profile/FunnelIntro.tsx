@@ -157,6 +157,7 @@ export default function FunnelIntro() {
               <h4 className="font-semibold mb-2">Data Sources</h4>
               <ul className="text-sm text-muted-foreground space-y-1">
                 <li>• Arizona Department of Real Estate (license verification)</li>
+                <li>• Regulatory actions and disciplinary records</li>
                 <li>• Multiple review platforms (aggregated ratings)</li>
                 <li>• Public transaction records</li>
                 <li>• Press and media coverage</li>
