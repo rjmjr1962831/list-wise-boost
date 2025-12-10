@@ -237,7 +237,7 @@ export default function FreeListingThankYou() {
                 You're all set!
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-                Here's your listing. It will come up in round-robin listings in{' '}
+                Here's your <strong className="font-bold text-foreground">FREE</strong> listing. It will come up in round-robin listings in{' '}
                 <span className="font-semibold text-foreground">{cityInfo.name}</span>{' '}
                 immediately.
               </p>
