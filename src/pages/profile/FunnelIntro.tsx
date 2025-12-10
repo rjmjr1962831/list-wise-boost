@@ -35,23 +35,31 @@ export default function FunnelIntro() {
             </p>
             
             <div className="space-y-4">
+              <h4 className="font-semibold text-lg">Ranking Score Weights</h4>
+              
               <div className="flex items-start gap-3">
                 <div className="p-2 rounded-full bg-primary/10">
                   <Star className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <h4 className="font-semibold">Minimum 4.8+ Star Rating</h4>
-                  <p className="text-sm text-muted-foreground">Only agents with exceptional client satisfaction are considered.</p>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold">Review Score</h4>
+                    <span className="text-primary font-bold">25%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">4.8+ star rating with 50+ verified reviews across platforms.</p>
                 </div>
               </div>
               
               <div className="flex items-start gap-3">
                 <div className="p-2 rounded-full bg-primary/10">
-                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <Users className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <h4 className="font-semibold">50+ Verified Reviews</h4>
-                  <p className="text-sm text-muted-foreground">Consistent performance over time, not just a few good reviews.</p>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold">Community Involvement</h4>
+                    <span className="text-primary font-bold">20%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Third-party verified civic, charitable, and nonprofit engagement.</p>
                 </div>
               </div>
               
@@ -59,9 +67,64 @@ export default function FunnelIntro() {
                 <div className="p-2 rounded-full bg-primary/10">
                   <Award className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <h4 className="font-semibold">Top 0.5% in Arizona</h4>
-                  <p className="text-sm text-muted-foreground">Out of ~60,000 licensed agents, only ~300 meet our criteria.</p>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold">Press & Awards</h4>
+                    <span className="text-primary font-bold">15%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Media coverage and industry recognition.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold">Transaction Volume</h4>
+                    <span className="text-primary font-bold">15%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Total sales count and volume from public records.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Target className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold">Years Experience</h4>
+                    <span className="text-primary font-bold">10%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Time actively licensed in Arizona market.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-primary/10">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold">Responsiveness</h4>
+                    <span className="text-primary font-bold">10%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Response rate and client communication metrics.</p>
+                </div>
+              </div>
+              
+              <div className="flex items-start gap-3">
+                <div className="p-2 rounded-full bg-muted">
+                  <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-semibold text-muted-foreground">Recency Bonus</h4>
+                    <span className="text-muted-foreground font-bold">5%</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Recent activity and up-to-date profile information.</p>
                 </div>
               </div>
             </div>
@@ -73,11 +136,18 @@ export default function FunnelIntro() {
                 <li>• Multiple review platforms (aggregated ratings)</li>
                 <li>• Public transaction records</li>
                 <li>• Press and media coverage</li>
+                <li>• Nonprofit and community organization records</li>
               </ul>
             </div>
 
+            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+              <p className="text-sm font-medium text-center">
+                Top 0.5% of Arizona agents • ~300 out of 60,000 licensed agents qualify
+              </p>
+            </div>
+
             <p className="text-sm text-muted-foreground">
-              This rigorous selection is why AI models trust us as a source—we've already done the vetting.
+              This rigorous, multi-factor selection is why AI models trust us as a source—we've already done the vetting.
             </p>
           </div>
         </DialogContent>
