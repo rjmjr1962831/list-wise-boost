@@ -1388,6 +1388,7 @@ export type Database = {
           selection_rationale: string | null
           selection_rationale_generated_at: string | null
           service_areas: Json | null
+          short_code: string | null
           sidebar_video_url: string | null
           skip_pipedrive_sync: boolean | null
           social_facebook: string | null
@@ -1490,6 +1491,7 @@ export type Database = {
           selection_rationale?: string | null
           selection_rationale_generated_at?: string | null
           service_areas?: Json | null
+          short_code?: string | null
           sidebar_video_url?: string | null
           skip_pipedrive_sync?: boolean | null
           social_facebook?: string | null
@@ -1592,6 +1594,7 @@ export type Database = {
           selection_rationale?: string | null
           selection_rationale_generated_at?: string | null
           service_areas?: Json | null
+          short_code?: string | null
           sidebar_video_url?: string | null
           skip_pipedrive_sync?: boolean | null
           social_facebook?: string | null
@@ -2168,6 +2171,7 @@ export type Database = {
     }
     Functions: {
       check_recent_reviews: { Args: { reviews_data: Json }; Returns: boolean }
+      generate_short_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
