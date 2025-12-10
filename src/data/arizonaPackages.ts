@@ -1,5 +1,6 @@
 // Regional Package Definitions
 // 3-month minimum commitment, billed monthly
+// Bundle discount: 40% off à la carte total for retail, then 50% off for early adopters
 
 import { ARIZONA_CITIES, CityPricingData, PREMIUM_CITIES, Region } from './arizonaCityPricing';
 
@@ -9,74 +10,82 @@ export interface RegionalPackage {
   description: string;
   includedCityIds: string[];
   excludedPremiumCities: string[];
-  retailTotal: number;
-  earlyAdopterPrice: number;
-  savings: number;
+  // Pricing breakdown
+  alaCarteTotal: number;      // Sum of individual city prices
+  retailTotal: number;        // 40% off à la carte
+  earlyAdopterPrice: number;  // 50% off retail
+  bundleSavings: number;      // How much saved vs à la carte
   isPremiumPackage?: boolean;
 }
 
-// Calculate package prices from included cities
-function calculatePackagePrice(cityIds: string[]): { retail: number; earlyAdopter: number } {
+// Calculate package prices with bundle discount
+// Formula: à la carte total → 40% discount = retail → 50% discount = early adopter
+function calculateBundlePrice(cityIds: string[]): { 
+  alaCarte: number; 
+  retail: number; 
+  earlyAdopter: number;
+  bundleSavings: number;
+} {
   const cities = ARIZONA_CITIES.filter(c => cityIds.includes(c.id));
-  const retail = cities.reduce((sum, c) => sum + c.retailPrice, 0);
-  const earlyAdopter = cities.reduce((sum, c) => sum + c.earlyAdopterPrice, 0);
-  return { retail, earlyAdopter };
+  const alaCarte = cities.reduce((sum, c) => sum + c.retailPrice, 0);
+  const retail = Math.round(alaCarte * 0.6); // 40% bundle discount
+  const earlyAdopter = Math.round(retail * 0.5); // 50% early adopter discount
+  const bundleSavings = alaCarte - earlyAdopter;
+  return { alaCarte, retail, earlyAdopter, bundleSavings };
 }
 
-// === PREMIUM CITIES PACKAGE ===
-// Scottsdale, North Scottsdale, Paradise Valley, Carefree, Cave Creek
-// Retail $999/mo, Early Adopter $499/mo
+// === PREMIUM CITIES PACKAGE (Luxury) ===
+// Scottsdale ($600), North Scottsdale ($600), Paradise Valley ($800), Carefree ($400), Cave Creek ($400)
+// Total à la carte: $2,800
+const premiumCityIds = ['scottsdale', 'north-scottsdale', 'paradise-valley', 'carefree', 'cave-creek'];
+const premiumPrices = calculateBundlePrice(premiumCityIds);
+
 const premiumCitiesPackage: RegionalPackage = {
   id: 'premium-cities',
-  name: 'Premium Cities',
+  name: 'Luxury Markets',
   description: 'Scottsdale, North Scottsdale, Paradise Valley, Carefree & Cave Creek',
-  includedCityIds: ['scottsdale', 'north-scottsdale', 'paradise-valley', 'carefree', 'cave-creek'],
+  includedCityIds: premiumCityIds,
   excludedPremiumCities: [],
-  retailTotal: 999,
-  earlyAdopterPrice: 499,
-  savings: 500,
+  alaCarteTotal: premiumPrices.alaCarte,
+  retailTotal: premiumPrices.retail,
+  earlyAdopterPrice: premiumPrices.earlyAdopter,
+  bundleSavings: premiumPrices.bundleSavings,
   isPremiumPackage: true,
 };
 
 // === EAST VALLEY PACKAGE ===
-// Mesa, Chandler, Gilbert, Tempe, Queen Creek, Apache Junction, San Tan Valley, Fountain Hills, Sun Lakes
 const eastValleyCities = [
   'mesa', 'chandler', 'gilbert', 'tempe', 'queen-creek', 
   'apache-junction', 'san-tan-valley', 'fountain-hills', 'sun-lakes'
 ];
-const eastValleyPrices = calculatePackagePrice(eastValleyCities);
+const eastValleyPrices = calculateBundlePrice(eastValleyCities);
 
 // === WEST VALLEY PACKAGE ===
-// Glendale, Peoria, Surprise, Goodyear, Buckeye, Avondale, Litchfield Park, El Mirage, Tolleson, Youngtown, Sun City, Sun City West
 const westValleyCities = [
   'glendale', 'peoria', 'surprise', 'goodyear', 'buckeye', 
   'avondale', 'litchfield-park', 'el-mirage', 'tolleson', 
   'youngtown', 'sun-city', 'sun-city-west'
 ];
-const westValleyPrices = calculatePackagePrice(westValleyCities);
+const westValleyPrices = calculateBundlePrice(westValleyCities);
 
 // === NORTH VALLEY PACKAGE ===
-// Anthem, New River
 const northValleyCities = ['anthem', 'new-river'];
-const northValleyPrices = calculatePackagePrice(northValleyCities);
+const northValleyPrices = calculateBundlePrice(northValleyCities);
 
 // === PHOENIX CENTRAL PACKAGE ===
-// Phoenix, Maricopa, Casa Grande
 const phoenixCentralCities = ['phoenix', 'maricopa', 'casa-grande'];
-const phoenixCentralPrices = calculatePackagePrice(phoenixCentralCities);
+const phoenixCentralPrices = calculateBundlePrice(phoenixCentralCities);
 
 // === NORTHERN ARIZONA PACKAGE ===
-// Sedona, Flagstaff, Prescott, Prescott Valley
 const northernAZCities = ['sedona', 'flagstaff', 'prescott', 'prescott-valley'];
-const northernAZPrices = calculatePackagePrice(northernAZCities);
+const northernAZPrices = calculateBundlePrice(northernAZCities);
 
 // === SOUTHERN ARIZONA PACKAGE ===
-// Tucson, Oro Valley, Marana, Green Valley, Sierra Vista
 const southernAZCities = ['tucson', 'oro-valley', 'marana', 'green-valley', 'sierra-vista'];
-const southernAZPrices = calculatePackagePrice(southernAZCities);
+const southernAZPrices = calculateBundlePrice(southernAZCities);
 
 export const REGIONAL_PACKAGES: RegionalPackage[] = [
-  // Premium package first
+  // Premium/Luxury package first
   premiumCitiesPackage,
   
   // Regional packages
@@ -86,9 +95,10 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     description: 'Mesa, Chandler, Gilbert, Tempe, Queen Creek & more',
     includedCityIds: eastValleyCities,
     excludedPremiumCities: [],
+    alaCarteTotal: eastValleyPrices.alaCarte,
     retailTotal: eastValleyPrices.retail,
     earlyAdopterPrice: eastValleyPrices.earlyAdopter,
-    savings: eastValleyPrices.retail - eastValleyPrices.earlyAdopter,
+    bundleSavings: eastValleyPrices.bundleSavings,
   },
   {
     id: 'west-valley',
@@ -96,9 +106,10 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     description: 'Glendale, Peoria, Surprise, Goodyear, Buckeye & more',
     includedCityIds: westValleyCities,
     excludedPremiumCities: [],
+    alaCarteTotal: westValleyPrices.alaCarte,
     retailTotal: westValleyPrices.retail,
     earlyAdopterPrice: westValleyPrices.earlyAdopter,
-    savings: westValleyPrices.retail - westValleyPrices.earlyAdopter,
+    bundleSavings: westValleyPrices.bundleSavings,
   },
   {
     id: 'north-valley',
@@ -106,9 +117,10 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     description: 'Anthem & New River (I-17 Corridor)',
     includedCityIds: northValleyCities,
     excludedPremiumCities: [],
+    alaCarteTotal: northValleyPrices.alaCarte,
     retailTotal: northValleyPrices.retail,
     earlyAdopterPrice: northValleyPrices.earlyAdopter,
-    savings: northValleyPrices.retail - northValleyPrices.earlyAdopter,
+    bundleSavings: northValleyPrices.bundleSavings,
   },
   {
     id: 'phoenix-central',
@@ -116,9 +128,10 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     description: 'Phoenix, Maricopa & Casa Grande',
     includedCityIds: phoenixCentralCities,
     excludedPremiumCities: [],
+    alaCarteTotal: phoenixCentralPrices.alaCarte,
     retailTotal: phoenixCentralPrices.retail,
     earlyAdopterPrice: phoenixCentralPrices.earlyAdopter,
-    savings: phoenixCentralPrices.retail - phoenixCentralPrices.earlyAdopter,
+    bundleSavings: phoenixCentralPrices.bundleSavings,
   },
   {
     id: 'northern-arizona',
@@ -126,9 +139,10 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     description: 'Sedona, Flagstaff, Prescott & Prescott Valley',
     includedCityIds: northernAZCities,
     excludedPremiumCities: [],
+    alaCarteTotal: northernAZPrices.alaCarte,
     retailTotal: northernAZPrices.retail,
     earlyAdopterPrice: northernAZPrices.earlyAdopter,
-    savings: northernAZPrices.retail - northernAZPrices.earlyAdopter,
+    bundleSavings: northernAZPrices.bundleSavings,
   },
   {
     id: 'southern-arizona',
@@ -136,9 +150,10 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     description: 'Tucson, Oro Valley, Marana, Green Valley & Sierra Vista',
     includedCityIds: southernAZCities,
     excludedPremiumCities: [],
+    alaCarteTotal: southernAZPrices.alaCarte,
     retailTotal: southernAZPrices.retail,
     earlyAdopterPrice: southernAZPrices.earlyAdopter,
-    savings: southernAZPrices.retail - southernAZPrices.earlyAdopter,
+    bundleSavings: southernAZPrices.bundleSavings,
   },
 ];
 
