@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, PartyPopper, Home } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { Professional } from '@/types/professional';
+import { ARIZONA_CITIES } from '@/data/arizonaCityPricing';
 
 interface DBProfessional {
   id: string;
@@ -129,7 +130,7 @@ export default function FreeListingThankYou() {
           setCityInfo(cityData);
 
           // Fetch other qualified agents from the same city (excluding current agent)
-          const { data: otherAgentsData } = await supabase
+          const { data: sameCityAgents } = await supabase
             .from('professionals_public')
             .select('*')
             .eq('city_id', cityData.id)
@@ -139,9 +140,50 @@ export default function FreeListingThankYou() {
             .gte('num_total_reviews', 50)
             .limit(9);
 
-          if (otherAgentsData) {
-            setOtherAgents(otherAgentsData as DBProfessional[]);
+          let allAgents: DBProfessional[] = (sameCityAgents || []) as DBProfessional[];
+
+          // If we don't have enough agents, fetch from same region
+          if (allAgents.length < 9) {
+            const cityPricing = ARIZONA_CITIES.find(c => c.citySlug === cityData.slug);
+            if (cityPricing) {
+              const regionCities = ARIZONA_CITIES
+                .filter(c => c.region === cityPricing.region && c.citySlug !== cityData.slug)
+                .map(c => c.citySlug);
+
+              if (regionCities.length > 0) {
+                // Get city IDs for the region
+                const { data: regionCityData } = await supabase
+                  .from('cities')
+                  .select('id, slug')
+                  .in('slug', regionCities);
+
+                if (regionCityData && regionCityData.length > 0) {
+                  const regionCityIds = regionCityData.map(c => c.id);
+                  const existingIds = allAgents.map(a => a.id);
+                  existingIds.push(profData.id);
+
+                  const { data: regionAgents } = await supabase
+                    .from('professionals_public')
+                    .select('*')
+                    .in('city_id', regionCityIds)
+                    .eq('active', true)
+                    .gte('review_stars_rating', 4.8)
+                    .gte('num_total_reviews', 50)
+                    .limit(9 - allAgents.length);
+
+                  if (regionAgents) {
+                    // Filter out duplicates
+                    const newAgents = (regionAgents as DBProfessional[]).filter(
+                      a => !existingIds.includes(a.id)
+                    );
+                    allAgents = [...allAgents, ...newAgents].slice(0, 9);
+                  }
+                }
+              }
+            }
           }
+
+          setOtherAgents(allAgents);
         }
       } catch (error) {
         console.error('Error fetching data:', error);
