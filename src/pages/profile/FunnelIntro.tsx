@@ -194,10 +194,13 @@ export default function FunnelIntro() {
           {/* AI Stat Banner */}
           <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 mb-8 text-center">
             <p className="text-xl md:text-2xl font-bold text-primary">
-              82% of homebuyers now use AI for real estate insights (Realtor.com, 2025).
+              82% of homebuyers now use AI for real estate insights.<sup className="text-xs font-normal">1</sup>
             </p>
             <p className="text-lg text-muted-foreground mt-2">
               When they ask ChatGPT "Who are the best agents in Phoenix?", will your name come up?
+            </p>
+            <p className="text-xs text-muted-foreground mt-3 opacity-70">
+              <sup>1</sup> Realtor.com, 2025
             </p>
           </div>
 
