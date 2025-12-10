@@ -23,9 +23,9 @@ function ResultCard({ result }: { result: SynthesisResult }) {
   const [expanded, setExpanded] = useState(false);
   
   return (
-    <div className={`p-3 rounded-lg text-sm ${result.success ? 'bg-green-500/10 border border-green-500/20' : 'bg-destructive/10 border border-destructive/20'}`}>
+    <div className={`p-3 rounded-lg text-sm ${result.success ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-yellow-500/10 border border-yellow-500/20'}`}>
       <div className="font-medium flex items-center gap-2">
-        {result.success ? '✓' : '✗'} {result.agentName}
+        <span className={result.success ? 'text-blue-500' : 'text-yellow-500'}>{result.success ? '✓' : '✗'}</span> {result.agentName}
       </div>
       {result.success && result.synthesized_bio && (
         <div className="mt-1">
@@ -154,11 +154,11 @@ export function SynthesisTester() {
           <span>Run ALL Agents (Gemini Search + Claude Synthesis) - {agents.length}</span>
           <div className="flex gap-2">
             {!running ? (
-              <Button onClick={runAllSynthesis} disabled={agents.length === 0}>
+              <Button onClick={runAllSynthesis} disabled={agents.length === 0} className="bg-blue-500 hover:bg-blue-600 text-white">
                 <Play className="w-4 h-4 mr-2" /> Run All {agents.length}
               </Button>
             ) : (
-              <Button variant="destructive" onClick={stopSynthesis}>
+              <Button onClick={stopSynthesis} className="bg-yellow-500 hover:bg-yellow-600 text-black">
                 <Square className="w-4 h-4 mr-2" /> Stop
               </Button>
             )}
