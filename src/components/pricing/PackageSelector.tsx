@@ -79,7 +79,7 @@ export function PackageSelector({
                     )}
                   </div>
                   <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    Save ${pkg.bundleSavings}/mo vs à la carte
+                    Early Adopter Discount: ${pkg.bundleSavings}/mo
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">{pkg.description}</p>
