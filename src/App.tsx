@@ -58,6 +58,8 @@ const SelectCities = lazy(() => import("./pages/profile/SelectCities"));
 const SelectionPlaceholder = lazy(() => import("./pages/profile/SelectionPlaceholder"));
 const ScheduleCall = lazy(() => import("./pages/profile/ScheduleCall"));
 const ClaimListingPreview = lazy(() => import("./pages/profile/ClaimListingPreview"));
+const ReviewListing = lazy(() => import("./pages/profile/ReviewListing"));
+const FreeCitySelection = lazy(() => import("./pages/profile/FreeCitySelection"));
 
 // Q&A Landing Pages for LLM optimization
 const QALandingPage = lazy(() => import("./pages/QALandingPage"));
@@ -125,6 +127,8 @@ const App = () => (
                     <Route path="/profile/:token/fields" element={<ProfileFieldsGuide />} />
                     <Route path="/profile/:token/edit" element={<EditProfile />} />
                     <Route path="/profile/:token/preview" element={<ClaimListingPreview />} />
+                    <Route path="/profile/:token/review" element={<ReviewListing />} />
+                    <Route path="/profile/:token/select-free-city" element={<FreeCitySelection />} />
                     <Route path="/profile/:token/pricing" element={<PremiumPricingPage />} />
                     <Route path="/profile/:token/select-cities" element={<SelectCities />} />
                     <Route path="/profile/:token/select" element={<SelectionPlaceholder />} />
