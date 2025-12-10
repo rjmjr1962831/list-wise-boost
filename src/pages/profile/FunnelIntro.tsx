@@ -291,55 +291,6 @@ export default function FunnelIntro() {
             </Card>
           </div>
 
-          {/* Comparison */}
-          <div className="bg-card border rounded-xl p-6 mb-12">
-            <h2 className="text-xl font-semibold mb-6 text-center">Why AI Cites Us (Not Zillow)</h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              <div>
-                <h3 className="font-medium text-muted-foreground mb-4">Traditional Directories</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <span className="text-yellow-500 mt-1">✕</span>
-                    Hundreds of agents—AI can't recommend them all
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <span className="text-yellow-500 mt-1">✕</span>
-                    AI discounts pay-to-play lists. It is actually a negative.
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <span className="text-yellow-500 mt-1">✕</span>
-                    No curation means no authority
-                  </li>
-                  <li className="flex items-start gap-2 text-muted-foreground">
-                    <span className="text-yellow-500 mt-1">✕</span>
-                    AI links to site, not specific agents
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-medium text-primary mb-4">Top10Lists.us</h3>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Only 10 per city—AI can name each one
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Scientific methodology and third party verification is what matters to AI
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Structured data AI can parse
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    AI cites us AND names you
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-
           {/* CTA */}
           <div className="text-center">
             <Button 
