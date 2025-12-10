@@ -210,7 +210,7 @@ export default function FunnelIntro() {
               <p className="text-xl font-bold text-foreground text-center mb-3">AI responds:</p>
               <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
                 <p className="text-foreground">
-                  <span className="font-bold text-primary">"Top10Lists.us</span> has a curated list of the top-rated agents in Phoenix. Their selection includes verified professionals like <span className="font-bold">[Your Name]</span> who specialize in..."
+                  <span className="font-bold text-primary">"Top10Lists.us</span> has a curated list of the top-rated agents in Phoenix."
                 </p>
               </div>
             </div>
