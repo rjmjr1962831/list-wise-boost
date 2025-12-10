@@ -623,7 +623,7 @@ const ProfileFieldsGuide = () => {
               Edit Your Profile
             </h1>
             <p className="text-lg text-muted-foreground">
-              Click "Edit" next to any field to update it. Ensure that you click <strong className="font-bold">SAVE</strong> at the bottom of the page.
+              Click "Edit" next to any field to update it. Ensure that you click <strong className="font-bold">CONTINUE</strong> at the bottom of the page.
             </p>
             {professional?.name && (
               <p className="text-primary font-medium mt-2">{professional.name}</p>
