@@ -287,7 +287,7 @@ export default function FunnelIntro() {
                   <div>
                     <h3 className="font-semibold text-lg mb-2">Only 10 Per City</h3>
                     <p className="text-muted-foreground">
-                      No drowning in a sea of 500 agents. When AI cites us, you're one of only 10 recommendations.
+                      No drowning in a sea of 500 agents. When AI cites us, you can be one of only 10 recommendations in that city.
                     </p>
                   </div>
                 </div>
