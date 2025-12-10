@@ -332,6 +332,16 @@ export default function FunnelIntro() {
             </Card>
           </div>
 
+          {/* Urgency Message */}
+          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 mb-8 text-center">
+            <p className="text-xl md:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+              ⚡ AI models are learning who to recommend right now.
+            </p>
+            <p className="text-lg text-muted-foreground mt-2">
+              If you don't stake your claim, another agent will—and once AI learns to cite them, you're out of the conversation.
+            </p>
+          </div>
+
           {/* CTA */}
           <div className="text-center">
             <Button 
