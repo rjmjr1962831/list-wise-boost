@@ -190,6 +190,16 @@ export default function FunnelIntro() {
             </div>
           )}
 
+          {/* AI Stat Banner */}
+          <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 mb-8 text-center">
+            <p className="text-xl md:text-2xl font-bold text-primary">
+              82% of homebuyers now use AI for real estate insights (Realtor.com, 2025).
+            </p>
+            <p className="text-lg text-muted-foreground mt-2">
+              When they ask ChatGPT "Who are the best agents in Phoenix?", will your name come up?
+            </p>
+          </div>
+
           {/* Main Headline */}
           <div className="text-center mb-12">
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
