@@ -40,6 +40,10 @@ export default function PremiumPricingPage() {
 
   // Fetch professional data
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     async function fetchProfessional() {
       if (!token) return;
       

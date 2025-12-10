@@ -90,6 +90,10 @@ export default function EditProfile() {
   const [communicationConsent, setCommunicationConsent] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const loadProfile = async () => {
       if (!token) {
         navigate('/404');

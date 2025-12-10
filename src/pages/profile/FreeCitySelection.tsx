@@ -52,6 +52,10 @@ export default function FreeCitySelection() {
   const [professional, setProfessional] = useState<any>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!token) {
         navigate('/');

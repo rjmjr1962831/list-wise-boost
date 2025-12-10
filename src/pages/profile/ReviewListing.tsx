@@ -20,6 +20,10 @@ export default function ReviewListing() {
   const [pendingReviews, setPendingReviews] = useState<PendingReview[]>([]);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!token) {
         navigate('/');

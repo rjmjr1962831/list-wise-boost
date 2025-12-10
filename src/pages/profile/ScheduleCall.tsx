@@ -14,6 +14,10 @@ export default function ScheduleCall() {
   const SCHEDULER_URL = 'https://pipedrive.com/scheduler/YOUR_SCHEDULER_ID';
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (token) {
       // Track schedule view
       supabase.functions.invoke('track-profile-event', {

@@ -84,6 +84,10 @@ export default function SelectCities() {
   const [freeCity, setFreeCity] = useState<CityPricing | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     loadCities();
   }, []);
 
