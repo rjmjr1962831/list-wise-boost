@@ -181,6 +181,14 @@ export default function PremiumPricingPage() {
       </Helmet>
 
       <div className="min-h-screen bg-background pb-24 lg:pb-8">
+        {/* AI Stat Banner */}
+        <div className="bg-primary/10 border-b border-primary/20">
+          <div className="container max-w-6xl py-4 text-center">
+            <p className="text-lg md:text-xl font-semibold text-primary">
+              78% of all home buyers and sellers check for AI recommendations before choosing an agent.
+            </p>
+          </div>
+        </div>
         {/* Header */}
         <div className="border-b bg-gradient-to-br from-primary/5 to-accent/5">
           <div className="container max-w-6xl py-8">
