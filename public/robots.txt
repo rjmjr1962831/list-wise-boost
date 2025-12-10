@@ -3,11 +3,13 @@
 User-agent: *
 Allow: /
 
-# Block admin, API, agent dashboard, and profile funnel routes
+# Block admin, API, agent dashboard, profile funnel, and city listing routes
 Disallow: /admin/
 Disallow: /api/
 Disallow: /agent/
 Disallow: /profile/
+Disallow: /arizona/
+Disallow: /az/
 
 # AI Crawler Declarations
 User-agent: GPTBot
