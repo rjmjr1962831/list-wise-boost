@@ -653,6 +653,72 @@ const ProfileFieldsGuide = () => {
                             alt={field.label}
                             className="w-16 h-16 object-cover rounded"
                           />
+                        ) : field.key === 'notable_achievements' ? (
+                          // Awards & Achievements - show detailed list
+                          <div className="space-y-2">
+                            {Array.isArray(professional?.notable_achievements) && professional.notable_achievements.length > 0 ? (
+                              professional.notable_achievements.map((award: any, idx: number) => (
+                                <div key={idx} className="flex items-start gap-2 p-2 bg-background rounded border border-border/30">
+                                  <Trophy className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                                  <div className="min-w-0">
+                                    <p className="font-medium text-sm">{award.title || 'Award'}</p>
+                                    {award.year && <p className="text-xs text-muted-foreground">{award.year}</p>}
+                                    {award.issuer && <p className="text-xs text-muted-foreground">From: {award.issuer}</p>}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-muted-foreground italic">No awards added yet</span>
+                            )}
+                          </div>
+                        ) : field.key === 'press_mentions' ? (
+                          // Press Mentions - show detailed list
+                          <div className="space-y-2">
+                            {Array.isArray(professional?.press_mentions) && professional.press_mentions.length > 0 ? (
+                              professional.press_mentions.map((mention: any, idx: number) => (
+                                <div key={idx} className="flex items-start gap-2 p-2 bg-background rounded border border-border/30">
+                                  <FileText className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="font-medium text-sm truncate">{mention.title || 'Press Mention'}</p>
+                                    {mention.outlet && <p className="text-xs text-muted-foreground">{mention.outlet}</p>}
+                                    {mention.url && (
+                                      <a href={mention.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate block">
+                                        {mention.url.substring(0, 50)}...
+                                      </a>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-muted-foreground italic">No press mentions added yet</span>
+                            )}
+                          </div>
+                        ) : field.key === 'specialty' ? (
+                          // Specialties - show badges
+                          <div className="flex flex-wrap gap-1">
+                            {Array.isArray(professional?.specialty) && professional.specialty.length > 0 ? (
+                              professional.specialty.map((spec: string, idx: number) => (
+                                <Badge key={idx} variant="secondary" className="text-xs">
+                                  {spec}
+                                </Badge>
+                              ))
+                            ) : (
+                              <span className="text-muted-foreground italic">No specialties added yet</span>
+                            )}
+                          </div>
+                        ) : field.key.startsWith('social_') ? (
+                          // Social links - show URL or status
+                          (() => {
+                            const value = (professional as any)[field.key];
+                            if (value) {
+                              return (
+                                <a href={value} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate block">
+                                  {value}
+                                </a>
+                              );
+                            }
+                            return <span className="text-muted-foreground italic">Not set - badge won't show</span>;
+                          })()
                         ) : field.type === 'array' ? (
                           <div className="flex flex-wrap gap-1">
                             {Array.isArray((professional as any)[field.key]) && (professional as any)[field.key].length > 0 ? (
