@@ -560,6 +560,14 @@ const ProfileFieldsGuide = () => {
   };
 
   const handleContinue = () => {
+    if (!communicationConsent) {
+      toast({
+        title: "Please accept the opt-in",
+        description: "You must accept the communication consent to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
     navigate(`/profile/${token}/pricing`);
   };
 
@@ -851,7 +859,7 @@ const ProfileFieldsGuide = () => {
             <Button variant="ghost" onClick={() => navigate(`/profile/${token}`)}>
               Back to Preview
             </Button>
-            <Button size="lg" onClick={handleContinue} disabled={!communicationConsent} className="gap-2 px-8">
+            <Button size="lg" onClick={handleContinue} className="gap-2 px-8">
               Continue
               <ArrowRight className="h-5 w-5" />
             </Button>
