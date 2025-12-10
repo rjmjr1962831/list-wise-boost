@@ -11,7 +11,8 @@ const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const URL_TIMEOUT_MS = 60000; // 60 seconds per URL
+const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
+const MAX_CONCURRENT = 3; // Process 3 URLs at a time
 
 interface WarmRequest {
   urls?: string[];
@@ -219,24 +220,32 @@ serve(async (req) => {
       nextOffset,
     };
 
-    // Process URLs sequentially to avoid overwhelming the server
-    for (let i = 0; i < urls.length; i++) {
-      const url = urls[i];
-      console.log(`[${i + 1}/${urls.length}] Warming: ${url}`);
+    // Process URLs in parallel batches for speed
+    for (let i = 0; i < urls.length; i += MAX_CONCURRENT) {
+      const batch = urls.slice(i, i + MAX_CONCURRENT);
+      console.log(`Processing batch ${Math.floor(i/MAX_CONCURRENT) + 1}: ${batch.length} URLs`);
       
-      const warmResult = await warmUrl(url);
+      const batchResults = await Promise.all(
+        batch.map(async (url, idx) => {
+          console.log(`[${i + idx + 1}/${urls.length}] Warming: ${url}`);
+          const warmResult = await warmUrl(url);
+          return { url, ...warmResult };
+        })
+      );
       
-      if (warmResult.success) {
-        result.warmed++;
-      } else {
-        result.failed++;
-        result.errors.push(`${url}: ${warmResult.error}`);
-        console.error(`  ✗ Failed: ${warmResult.error}`);
+      for (const res of batchResults) {
+        if (res.success) {
+          result.warmed++;
+        } else {
+          result.failed++;
+          result.errors.push(`${res.url}: ${res.error}`);
+          console.error(`  ✗ Failed: ${res.error}`);
+        }
       }
-
-      // Small delay between requests
-      if (i < urls.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Small delay between batches
+      if (i + MAX_CONCURRENT < urls.length) {
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
     }
 
