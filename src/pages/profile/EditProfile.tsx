@@ -648,7 +648,11 @@ export default function EditProfile() {
                 className="mt-1"
               />
               <Label htmlFor="communicationConsent" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                We will send you periodic updates by mail and text. Please check the box to say you understand.
+                By checking this box, I confirm that I have read and agree to the{' '}
+                <a href="/terms" target="_blank" className="text-primary hover:underline">Terms and Conditions</a>
+                {' '}and the{' '}
+                <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>
+                , and agree to receive marketing communications such as promotional emails and messages from top10lists.us. I know I can opt-out any time.
               </Label>
             </div>
 
