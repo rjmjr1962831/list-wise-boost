@@ -15,6 +15,7 @@ import SpecialtyEditModal from "@/components/profile/SpecialtyEditModal";
 import AwardEditModal from "@/components/profile/AwardEditModal";
 import PressMentionEditModal from "@/components/profile/PressMentionEditModal";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 // TikTok icon component (lucide doesn't have one)
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -135,6 +136,7 @@ const ProfileFieldsGuide = () => {
   const [expandedFields, setExpandedFields] = useState<Set<string>>(new Set());
   const [communicationConsent, setCommunicationConsent] = useState(false);
   const [pipedrivePersonId, setPipedrivePersonId] = useState<number | null>(null);
+  const [showOptInAlert, setShowOptInAlert] = useState(false);
 
   const fields: FieldConfig[] = [
     {
@@ -573,11 +575,7 @@ const ProfileFieldsGuide = () => {
 
   const handleContinue = () => {
     if (!communicationConsent) {
-      toast({
-        title: "Please accept the opt-in",
-        description: "You must accept the communication consent to continue.",
-        variant: "destructive"
-      });
+      setShowOptInAlert(true);
       return;
     }
     // Navigate to review page where they can accept or go back to edit
@@ -966,6 +964,21 @@ const ProfileFieldsGuide = () => {
           currentMentions={professional.press_mentions || []}
         />
       )}
+
+      {/* Opt-in Required Alert */}
+      <AlertDialog open={showOptInAlert} onOpenChange={setShowOptInAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Please accept the opt-in</AlertDialogTitle>
+            <AlertDialogDescription>
+              You must check the communication consent checkbox before continuing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowOptInAlert(false)}>OK</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
