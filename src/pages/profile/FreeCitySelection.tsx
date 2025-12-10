@@ -158,11 +158,14 @@ export default function FreeCitySelection() {
     if (!selectedCityId || !professional) return;
 
     try {
-      // Update the professional's city
-      const { error } = await supabase
-        .from('professionals')
-        .update({ city_id: selectedCityId })
-        .eq('id', professional.id);
+      // Update the professional's city via edge function (bypasses RLS)
+      const { error } = await supabase.functions.invoke('update-professional-field', {
+        body: {
+          token,
+          field: 'city_id',
+          value: selectedCityId
+        }
+      });
 
       if (error) {
         console.error('Error updating city:', error);
