@@ -6,13 +6,14 @@ import { cn } from '@/lib/utils';
 
 interface FeatureItem {
   label: string;
+  premiumLabel?: string;
   free: boolean;
   premium: boolean;
 }
 
 const features: FeatureItem[] = [
   // Enabled items first
-  { label: 'Basic profile listing', free: true, premium: true },
+  { label: 'Basic profile listing', premiumLabel: 'Enhanced profile listing', free: true, premium: true },
   { label: 'Verified license display', free: true, premium: true },
   { label: 'AI search optimization', free: true, premium: true },
   { label: 'Enhanced profile (awards, press)', free: true, premium: true },
@@ -112,7 +113,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
                 <span className={cn(
                   feature.premium && !feature.free && 'font-medium'
                 )}>
-                  {feature.label}
+                  {feature.premiumLabel || feature.label}
                 </span>
               </div>
             ))}
