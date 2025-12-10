@@ -244,7 +244,7 @@ export default function FreeListingThankYou() {
               <Button
                 size="lg"
                 className="mt-6"
-                onClick={() => navigate('/')}
+                onClick={() => navigate(`/profile/${token}/pricing`)}
               >
                 Ok, let's do this.
               </Button>
@@ -296,7 +296,7 @@ export default function FreeListingThankYou() {
           <div className="text-center">
             <Button
               size="lg"
-              onClick={() => navigate('/')}
+              onClick={() => navigate(`/profile/${token}/pricing`)}
             >
               Ok, let's do this.
             </Button>
