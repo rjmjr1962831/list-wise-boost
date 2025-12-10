@@ -191,7 +191,7 @@ export default function FunnelIntro() {
                 <p className="text-2xl font-bold text-foreground mt-3 mb-1">25 listings per page</p>
                 <p className="text-muted-foreground">= 175 agents</p>
               </div>
-              <p className="text-center mt-4 text-yellow-600 dark:text-yellow-400 font-semibold">
+              <p className="text-xl font-bold text-primary text-center mt-4">
                 And you are paying for that!
               </p>
             </div>
