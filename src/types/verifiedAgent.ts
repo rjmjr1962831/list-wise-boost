@@ -112,6 +112,56 @@ export interface ExperienceMetrics {
 }
 
 /**
+ * Community activity with third-party verification
+ */
+export interface CommunityActivity {
+  role: string;                    // "Board Member", "Volunteer Coordinator", "Sponsor"
+  organizationName: string;        // "Phoenix Children's Hospital Foundation"
+  organizationType: 'nonprofit' | 'civic' | 'educational' | 'charitable';
+  organizationUrl?: string;
+  description?: string;            // "Serves on fundraising committee"
+  startDate: string;               // "2019"
+  endDate?: string;                // null = ongoing
+  verificationSource: string;      // "Arizona Republic", "Organization website"
+  verificationUrl?: string;
+  verifiedAt: string;              // ISO date
+}
+
+/**
+ * Community involvement score and activities
+ */
+export interface CommunityInvolvement {
+  score: number;                   // 1-10
+  activities: CommunityActivity[];
+  lastVerified: string;            // ISO date
+}
+
+/**
+ * Ranking score breakdown
+ * Weights (v2 - Dec 2024):
+ * - Review Score: 25%
+ * - Community Involvement: 20%
+ * - Press & Awards: 15%
+ * - Transaction Volume: 15%
+ * - Years Experience: 10%
+ * - Response Rate: 10%
+ * - Recency Bonus: 5%
+ */
+export interface RankingScore {
+  composite: number;               // Final weighted score
+  components: {
+    reviews: number;               // 25%
+    community: number;             // 20%
+    press: number;                 // 15%
+    transactions: number;          // 15%
+    experience: number;            // 10%
+    response: number;              // 10%
+    recency: number;               // 5%
+  };
+  calculatedAt: string;            // ISO date
+}
+
+/**
  * Complete verified agent profile
  */
 export interface VerifiedAgent {
@@ -145,6 +195,12 @@ export interface VerifiedAgent {
   
   // Press & Media
   pressMentions: PressMention[];
+  
+  // Community Involvement (third-party verified)
+  communityInvolvement?: CommunityInvolvement;
+  
+  // Ranking Score
+  rankingScore?: RankingScore;
   
   // Service area
   serviceAreas: {
