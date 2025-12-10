@@ -324,7 +324,7 @@ export default function FunnelIntro() {
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                    Merit-based = AI trusts our curation
+                    Scientific methodology and third party verification is what matters to AI
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
