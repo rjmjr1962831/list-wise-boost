@@ -15,6 +15,7 @@ import { CitySelector } from '@/components/pricing/CitySelector';
 import { PricingCalculator } from '@/components/pricing/PricingCalculator';
 import { MobileCalculator } from '@/components/pricing/MobileCalculator';
 import { ZillowComparison } from '@/components/pricing/ZillowComparison';
+import { ZillowPayToPlay } from '@/components/pricing/ZillowPayToPlay';
 import { WhyThreeMonths } from '@/components/pricing/WhyThreeMonths';
 import { HowItWorks } from '@/components/pricing/HowItWorks';
 import { FreeVsPremium } from '@/components/pricing/FreeVsPremium';
@@ -271,7 +272,12 @@ export default function PremiumPricingPage() {
 
               <Separator />
 
-              {/* Zillow Comparison */}
+              {/* Zillow Pay-to-Play Explanation */}
+              <ZillowPayToPlay />
+
+              <Separator />
+
+              {/* Zillow Comparison Table */}
               <ZillowComparison />
 
               <Separator />
