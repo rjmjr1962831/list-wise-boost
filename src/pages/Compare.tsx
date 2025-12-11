@@ -152,12 +152,35 @@ const Compare = () => {
         {/* Yesterday/Today/Tomorrow Section */}
         <section className="container mx-auto px-4 pb-12">
           <div className="max-w-5xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0">
+            {/* Timeline Progress Line - Desktop Only */}
+            <div className="hidden md:flex justify-center mb-6">
+              <div className="flex items-center w-full max-w-3xl">
+                {/* Circle 1 */}
+                <div className="w-12 h-12 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center z-10">
+                  <Search className="w-5 h-5 text-primary" />
+                </div>
+                {/* Line 1 */}
+                <div className="flex-1 h-0.5 bg-gradient-to-r from-primary to-primary/60" />
+                {/* Circle 2 */}
+                <div className="w-12 h-12 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center z-10">
+                  <MessageCircle className="w-5 h-5 text-primary" />
+                </div>
+                {/* Line 2 */}
+                <div className="flex-1 h-0.5 bg-gradient-to-r from-primary/60 to-primary" />
+                {/* Circle 3 */}
+                <div className="w-12 h-12 rounded-full bg-primary border-2 border-primary flex items-center justify-center z-10">
+                  <ShieldCheck className="w-5 h-5 text-primary-foreground" />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 md:gap-6">
               {/* Block 1: Yesterday */}
               <div className="bg-muted/50 border border-border rounded-xl p-6 text-center flex-1 max-w-sm">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Search className="w-6 h-6 text-primary" />
+                {/* Mobile icon only */}
+                <div className="flex justify-center mb-4 md:hidden">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
+                    <Search className="w-5 h-5 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Yesterday</h3>
@@ -166,17 +189,17 @@ const Compare = () => {
                 </p>
               </div>
 
-              {/* Arrow 1 */}
-              <div className="flex items-center justify-center px-2">
-                <ArrowRight className="hidden md:block w-8 h-8 text-primary/60" />
-                <ArrowDown className="md:hidden w-8 h-8 text-primary/60" />
+              {/* Arrow 1 - Mobile Only */}
+              <div className="flex items-center justify-center md:hidden">
+                <ArrowDown className="w-6 h-6 text-primary/60" />
               </div>
 
               {/* Block 2: Today */}
               <div className="bg-muted/50 border border-border rounded-xl p-6 text-center flex-1 max-w-sm">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <MessageCircle className="w-6 h-6 text-primary" />
+                {/* Mobile icon only */}
+                <div className="flex justify-center mb-4 md:hidden">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center">
+                    <MessageCircle className="w-5 h-5 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Today</h3>
@@ -185,17 +208,17 @@ const Compare = () => {
                 </p>
               </div>
 
-              {/* Arrow 2 */}
-              <div className="flex items-center justify-center px-2">
-                <ArrowRight className="hidden md:block w-8 h-8 text-primary/60" />
-                <ArrowDown className="md:hidden w-8 h-8 text-primary/60" />
+              {/* Arrow 2 - Mobile Only */}
+              <div className="flex items-center justify-center md:hidden">
+                <ArrowDown className="w-6 h-6 text-primary/60" />
               </div>
 
               {/* Block 3: Tomorrow */}
               <div className="bg-muted/50 border border-border rounded-xl p-6 text-center flex-1 max-w-sm">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ShieldCheck className="w-6 h-6 text-primary" />
+                {/* Mobile icon only */}
+                <div className="flex justify-center mb-4 md:hidden">
+                  <div className="w-12 h-12 rounded-full bg-primary border-2 border-primary flex items-center justify-center">
+                    <ShieldCheck className="w-5 h-5 text-primary-foreground" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Tomorrow</h3>
