@@ -266,7 +266,13 @@ const Compare = () => {
                     </div>
                   </div>
                   <p className="text-muted-foreground mt-4">
-                    Only agents meeting minimum quality gates (50+ reviews, 4.8+ rating) are eligible. Agents cannot pay for inclusion, cannot apply, and cannot influence their ranking position.
+                    Only agents meeting minimum quality gates (50+ reviews, 4.8+ rating) are eligible for our deeper review. Only after passing that review are they invited to the list.
+                  </p>
+                  <p className="text-muted-foreground mt-3">
+                    No one can pay to be on our list. However, they can pay for preferred placement and visibility.
+                  </p>
+                  <p className="text-muted-foreground mt-3">
+                    Everyone on the list gets a free listing in their city of choice. It is pooled with other free listings and they are published on a round-robin basis.
                   </p>
                 </CardContent>
               </Card>
