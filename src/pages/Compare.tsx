@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Check, Search, MessageCircle, ShieldCheck } from "lucide-react";
+import { Check, Globe, Brain, BadgeCheck } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
@@ -157,7 +157,7 @@ const Compare = () => {
               <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
                 <div className="flex justify-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Search className="w-6 h-6 text-primary" />
+                    <Globe className="w-6 h-6 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Yesterday</h3>
@@ -170,7 +170,7 @@ const Compare = () => {
               <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
                 <div className="flex justify-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <MessageCircle className="w-6 h-6 text-primary" />
+                    <Brain className="w-6 h-6 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Today</h3>
@@ -183,7 +183,7 @@ const Compare = () => {
               <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
                 <div className="flex justify-center mb-4">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <ShieldCheck className="w-6 h-6 text-primary" />
+                    <BadgeCheck className="w-6 h-6 text-primary" />
                   </div>
                 </div>
                 <h3 className="text-xl font-bold mb-3">Tomorrow</h3>
