@@ -70,6 +70,7 @@ const QALandingPage = lazy(() => import("./pages/QALandingPage"));
 
 // FAQ page
 const FAQ = lazy(() => import("./pages/FAQ"));
+const ZillowPayToPlayPage = lazy(() => import("./pages/ZillowPayToPlayPage"));
 
 const queryClient = new QueryClient();
 
@@ -106,6 +107,7 @@ const App = () => (
                     <Route path="/terms" element={<TermsOfService />} />
                     <Route path="/sms-terms" element={<SMSTerms />} />
                     <Route path="/opt-in" element={<OptInPolicy />} />
+                    <Route path="/zillow-explained" element={<ZillowPayToPlayPage />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
