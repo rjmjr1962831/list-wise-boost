@@ -9,7 +9,7 @@ const Compare = () => {
   usePrerenderReady();
 
   const comparisonData = [
-    { factor: "Can agents pay for ranking?", top10lists: false, zillow: true, realtorCom: true, homelight: true, realtrends: true },
+    { factor: "Must agents pay for ranking?", top10lists: false, zillow: true, realtorCom: true, homelight: true, realtrends: true },
     { factor: "Referral fees", top10lists: "None", zillow: "40% (Flex)", realtorCom: "35%", homelight: "33%", realtrends: "$100 fee" },
     { factor: "Selection method", top10lists: "Invitation-only", zillow: "Pay for visibility", realtorCom: "Pay for visibility", homelight: "Any agent", realtrends: "Self-apply" },
     { factor: "Data verification", top10lists: "Third-party verified", zillow: "Self-reported", realtorCom: "Internal metrics", homelight: "Self-reported", realtrends: "Self-reported" },
@@ -90,9 +90,9 @@ const Compare = () => {
   const renderCell = (value: boolean | string) => {
     if (typeof value === "boolean") {
       return value ? (
-        <X className="h-5 w-5 text-destructive mx-auto" />
+        <span className="text-sm font-medium text-destructive">Yes</span>
       ) : (
-        <Check className="h-5 w-5 text-primary mx-auto" />
+        <span className="text-sm font-medium text-primary">No</span>
       );
     }
     return <span className="text-sm">{value}</span>;
