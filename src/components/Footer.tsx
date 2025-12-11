@@ -49,10 +49,34 @@ export const Footer = () => {
             </div>
           </div>
 
-          {/* Legal Links */}
+          {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4 text-white">Legal</h3>
+            <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
             <div className="space-y-2 text-sm">
+              <Link 
+                to="/about" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                About Us
+              </Link>
+              <Link 
+                to="/about/ranking-methodology" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Methodology
+              </Link>
+              <Link 
+                to="/compare" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Compare Platforms
+              </Link>
+              <Link 
+                to="/faq" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                FAQ
+              </Link>
               <Link 
                 to="/privacy" 
                 className="block text-slate-300 hover:text-white transition-colors"
