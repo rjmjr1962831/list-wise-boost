@@ -323,6 +323,22 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Are You an Agent? Section */}
+        <section className="container mx-auto px-4 py-12 bg-muted/30">
+          <div className="max-w-2xl mx-auto text-center space-y-4">
+            <h2 className="text-2xl font-bold">Are You an Agent?</h2>
+            <p className="text-muted-foreground">
+              Learn about our invitation-only selection process and minimum requirements.
+            </p>
+            <Link 
+              to="/are-you-an-agent" 
+              className="inline-block text-primary hover:underline font-medium"
+            >
+              Learn More →
+            </Link>
+          </div>
+        </section>
+
         {/* Latest Updates */}
         <HomepageUpdates />
 
