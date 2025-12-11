@@ -64,8 +64,8 @@ export const HomepageFAQSection = () => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !hasTrackedView.current) {
             trackEvent("faq_section_view", {
-              section: "homepage_faq",
-              question_count: faqItems.length
+              page_path: "/",
+              block_type: "homepage_faq"
             });
             hasTrackedView.current = true;
           }
@@ -86,8 +86,8 @@ export const HomepageFAQSection = () => {
     if (value) {
       const itemIndex = parseInt(value.replace("item-", ""));
       trackEvent("faq_item_expand", {
-        question: faqItems[itemIndex]?.question,
-        index: itemIndex
+        page_path: "/",
+        block_type: faqItems[itemIndex]?.question?.substring(0, 50)
       });
     }
   };
