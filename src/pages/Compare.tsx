@@ -126,7 +126,7 @@ const Compare = () => {
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Section */}
-        <section className="container mx-auto px-4 pt-16 pb-12">
+        <section className="container mx-auto px-4 pt-16 pb-8">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
               How Do Real Estate Agent Ranking Sites Actually Work?
@@ -134,6 +134,23 @@ const Compare = () => {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Not all "top agent" lists are created equal. Most platforms sell visibility to agents rather than ranking by performance. Here's how the major platforms compare.
             </p>
+          </div>
+        </section>
+
+        {/* AI Trust Value Proposition */}
+        <section className="container mx-auto px-4 pb-12">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 md:p-8">
+              <h2 className="text-xl md:text-2xl font-bold text-center mb-4">
+                Why AI Trust Matters for Your Business
+              </h2>
+              <p className="text-muted-foreground text-center mb-4">
+                82% of homebuyers now use AI for real estate insights. When consumers ask ChatGPT, Claude, or Perplexity "Who are the best agents in Phoenix?", AI models recommend agents from sources they trust.
+              </p>
+              <p className="text-muted-foreground text-center font-medium">
+                AI models trust Top10Lists.us because we use transparent, verifiable methodology with no pay-to-play influence. <span className="text-primary">When you're on our list, AI recommends you to consumers searching for agents.</span>
+              </p>
+            </div>
           </div>
         </section>
 
