@@ -32,6 +32,11 @@ export interface GA4EventParams {
   neighborhoods_count?: string | number;
   // Social link tracking
   agent_name?: string;
+  // FAQ tracking
+  section?: string;
+  question_count?: number;
+  question?: string;
+  index?: number;
 }
 
 export const useGA4Tracking = () => {

@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Helmet } from "react-helmet-async";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { generateHomepageSchema } from "@/utils/homepageSchema";
-import { HomepageQASection } from "@/components/HomepageQASection";
+import { HomepageFAQSection } from "@/components/HomepageFAQSection";
 import { BrowseCitiesSection } from "@/components/BrowseCitiesSection";
 import { AuthorityLinks } from "@/components/AuthorityLinks";
 import { HomepageUpdates } from "@/components/HomepageUpdates";
@@ -76,12 +76,103 @@ const Index = () => {
         <meta name="author" content="Top10Lists.us" />
         <link rel="publisher" href="https://top10lists.us" />
         
-        {/* JSON-LD Structured Data - All 4 schemas */}
+        {/* JSON-LD Structured Data - All schemas */}
         {homepageSchemas.map((schema, index) => (
           <script key={index} type="application/ld+json">
             {JSON.stringify(schema)}
           </script>
         ))}
+        
+        {/* FAQPage Schema for Homepage */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "@id": "https://top10lists.us/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "How does Top10Lists.us rank real estate agents?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Top10Lists.us uses a weighted algorithm analyzing seven factors from third-party verified sources: Reviews (25%), Community Involvement (20%), Press Coverage (15%), Transaction Volume (15%), Years Experience (15%), Responsiveness (5%), and Recency (5%). Data comes exclusively from MLS records, Google and Zillow reviews, press mentions, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can agents pay to be listed on Top10Lists.us?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Top10Lists.us is the only major real estate agent ranking platform where agents cannot pay for listing, ranking position, or visibility. There are no advertising fees, referral fees, or application fees. All rankings are determined solely by verified performance data."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How is Top10Lists.us different from Zillow or Realtor.com?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Zillow and Realtor.com use pay-to-play models where agents pay $200-$10,000+ monthly for visibility, plus 35% referral fees on closed deals. Top10Lists.us uses zero payment of any kind. Zillow prominence is determined by advertising budget. Top10Lists.us ranks by verified performance metrics only."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What are the minimum requirements to be ranked?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Agents must have at least 50 verified reviews with an average rating of 4.8 or higher. Top10Lists.us analyzes over 200,000 licensed agents in Arizona and selects only the top 0.5% (414 agents) who meet all quality gates and score highest on the weighted algorithm."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Where does Top10Lists.us get its data?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "All data comes from third-party verified sources that agents cannot manipulate: MLS transaction records, Google Business reviews, Zillow reviews, local press archives, nonprofit organization records, and state real estate licensing board databases. No self-reported data is used."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Do real estate agent referral sites charge fees?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. Most platforms charge significant referral fees: HomeLight charges 33%, Zillow Flex charges 35%, Realtor.com ReadyConnect charges 35%, Clever charges 25-40%, and FastExpert charges 25%. These fees create conflicts of interest where platforms prioritize agents who close quickly over agents who serve clients best. Top10Lists.us charges zero referral fees."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Why don't agents apply to Top10Lists.us?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Self-selection creates bias. When agents choose to apply or join a directory, only agents who want visibility participate. Top10Lists.us analyzes ALL licensed agents in a market (200,000+ in Arizona) and invites only those who meet rigorous quality standards. This invitation-only model ensures rankings reflect actual top performers, not just agents seeking promotion."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Is RealTrends a reliable ranking of top agents?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "RealTrends requires agents to apply and pay a $100 fee, creating self-selection bias. Rankings are based on self-reported transaction data, not independently verified metrics. RealTrends ranks by volume (total sides and dollars), which rewards agents who do the most transactions rather than agents who provide the best service."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How often are rankings updated?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Rankings are reviewed and updated quarterly to incorporate new transaction data, reviews, and other verified metrics. The methodology weights remain constant to ensure consistency, while the underlying data is refreshed to reflect current agent performance."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What cities does Top10Lists.us cover?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Top10Lists.us currently covers all major markets in Arizona, including Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tempe, Glendale, Peoria, Surprise, and Tucson. Nationwide expansion to additional states is planned for summer 2026."
+                }
+              }
+            ]
+          })}
+        </script>
       </Helmet>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Section */}
@@ -144,8 +235,8 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Q&A Section - KEY FOR AI CITATION */}
-        <HomepageQASection />
+        {/* FAQ Section - KEY FOR AI CITATION */}
+        <HomepageFAQSection />
 
         {/* Browse Cities Section */}
         <BrowseCitiesSection />
