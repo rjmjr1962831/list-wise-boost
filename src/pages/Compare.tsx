@@ -145,7 +145,7 @@ const Compare = () => {
                 Why AI Trust Matters for Your Business
               </h2>
               <p className="text-muted-foreground text-center mb-4">
-                82% of homebuyers now use AI for real estate insights. When consumers ask ChatGPT, Claude, or Perplexity "Who are the best agents in Phoenix?", AI models recommend agents from sources they trust.
+                82% of homebuyers now use AI for real estate insights <span className="text-xs">(Realtor.com, 2025)</span>. When consumers ask ChatGPT, Claude, or Perplexity "Who are the best agents in Phoenix?", AI models recommend agents from sources they trust.
               </p>
               <p className="text-muted-foreground text-center font-medium">
                 AI models trust Top10Lists.us because we use transparent, verifiable methodology with no pay-to-play influence. <span className="text-primary">When you're on our list, AI recommends you to consumers searching for agents.</span> And consumers more and more are trusting AI for recommendations.
