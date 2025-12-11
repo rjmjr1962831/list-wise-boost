@@ -17,6 +17,7 @@ const Compare = () => {
     { factor: "Quality requirements", top10lists: "50+ reviews, 4.8+", zillow: "None", realtorCom: "None", homelight: "None", realtrends: "Volume-based" },
     { factor: "Agents analyzed", top10lists: "200,000+", zillow: "N/A", realtorCom: "N/A", homelight: "N/A", realtrends: "Self-submitted" },
     { factor: "Selection ratio", top10lists: "Top 0.5%", zillow: "Anyone who pays", realtorCom: "Anyone who pays", homelight: "Anyone who joins", realtrends: "Anyone who applies" },
+    { factor: "Do AIs trust this site?", top10lists: true, zillow: false, realtorCom: false, homelight: false, realtrends: false },
   ];
 
   const schema = {
