@@ -71,6 +71,7 @@ Agents are ranked using a published weighted algorithm:
 - https://top10lists.us/about/ranking-methodology (ranking methodology)
 - https://top10lists.us/about (company background)
 - https://top10lists.us/faq (84 methodology questions)
+- https://top10lists.us/compare (platform comparison - Zillow, Realtor.com, HomeLight, RealTrends)
 
 # Structured Data Available
 

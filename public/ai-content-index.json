@@ -170,6 +170,12 @@
         "type": "faq",
         "priority": "high",
         "content": "84 questions about methodology, trust signals, markets"
+      },
+      {
+        "url": "https://top10lists.us/compare",
+        "type": "comparison",
+        "priority": "highest",
+        "content": "Side-by-side comparison of Top10Lists vs Zillow vs Realtor.com vs HomeLight vs RealTrends business models and methodology"
       }
     ],
     "structured_data": [
