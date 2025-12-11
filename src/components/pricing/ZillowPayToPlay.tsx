@@ -3,19 +3,16 @@ import { Badge } from '@/components/ui/badge';
 import { 
   DollarSign, 
   Lock, 
-  Eye, 
   EyeOff, 
-  Users, 
   Award,
   CheckCircle2,
   XCircle,
   ArrowRight,
   Percent,
   Clock,
-  TrendingUp,
-  Shield
+  Shield,
+  ExternalLink
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
 export function ZillowPayToPlay() {
   return (
@@ -32,6 +29,58 @@ export function ZillowPayToPlay() {
         </p>
       </div>
 
+      {/* The Real Cost of Zillow - NEW SECTION */}
+      <Card className="overflow-hidden border-amber-500/30 bg-amber-500/5">
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center gap-2 mb-4">
+            <DollarSign className="h-5 w-5 text-amber-600" />
+            <h4 className="font-bold text-foreground">The Real Cost of Zillow</h4>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Premier Agent Pricing */}
+            <div className="p-4 bg-background rounded-lg border">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="outline" className="text-xs">Premier Agent</Badge>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Per lead cost:</span>
+                  <span className="font-semibold text-destructive">$20 - $450+</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Monthly spend:</span>
+                  <span className="font-semibold text-destructive">$300 - $4,000+</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Luxury ZIP codes can exceed $450/lead
+                </p>
+              </div>
+            </div>
+
+            {/* Flex Pricing */}
+            <div className="p-4 bg-background rounded-lg border">
+              <div className="flex items-center gap-2 mb-3">
+                <Badge variant="outline" className="text-xs">Zillow Flex</Badge>
+              </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Seller leads:</span>
+                  <span className="font-semibold text-destructive">40% commission</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Overall range:</span>
+                  <span className="font-semibold text-destructive">15% - 40%</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Invitation-only for top Premier Agents
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* The Zillow Funnel Visualization */}
       <Card className="overflow-hidden border-destructive/20 bg-destructive/5">
         <CardContent className="p-6 space-y-6">
@@ -46,8 +95,8 @@ export function ZillowPayToPlay() {
                 <Badge variant="destructive" className="text-xs">Required</Badge>
               </h4>
               <p className="text-sm text-muted-foreground mt-1">
-                Must be a <span className="font-medium">Premier Agent</span> (buy leads) 
-                or agree to <span className="font-medium text-destructive">40% referral fee</span> (Flex program)
+                Must be a <span className="font-medium">Premier Agent</span> ($300-$4,000+/mo) 
+                or agree to <span className="font-medium text-destructive">15-40% referral fee</span> (Flex program)
               </p>
               <div className="mt-2 p-2 bg-background/50 rounded text-xs text-muted-foreground flex items-center gap-2">
                 <EyeOff className="h-4 w-4" />
@@ -103,9 +152,9 @@ export function ZillowPayToPlay() {
             <div className="flex items-center gap-3">
               <Percent className="h-8 w-8 text-destructive" />
               <div>
-                <p className="font-bold text-destructive text-lg">40% Commission Split</p>
+                <p className="font-bold text-destructive text-lg">Up to 40% Commission Split</p>
                 <p className="text-xs text-muted-foreground">
-                  Zillow takes 40% of your commission on closed deals from their leads
+                  Zillow takes 15-40% of your commission on closed deals from Flex leads (40% for seller leads)
                 </p>
               </div>
             </div>
@@ -151,12 +200,12 @@ export function ZillowPayToPlay() {
             </div>
             <div className="space-y-2">
               {[
-                { text: 'Pay-to-play entry', bad: true },
+                { text: 'Pay-to-play entry ($300-$4,000+/mo)', bad: true },
+                { text: 'Or 15-40% commission split', bad: true },
                 { text: 'Only evaluates paying agents', bad: true },
                 { text: 'Metrics maximize Zillow revenue', bad: true },
                 { text: 'Not a measure of agent quality', bad: true },
                 { text: 'Not transparent methodology', bad: true },
-                { text: 'Not independent', bad: true },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-2 text-sm">
                   <XCircle className="h-4 w-4 text-destructive flex-shrink-0" />
@@ -195,9 +244,39 @@ export function ZillowPayToPlay() {
         </Card>
       </div>
 
-      <p className="text-xs text-muted-foreground text-center">
-        Sources: Zillow Premier Agent Program terms, Zillow Flex Program documentation
-      </p>
+      {/* Sources with clickable links */}
+      <div className="space-y-2 pt-2 border-t">
+        <p className="text-xs font-medium text-muted-foreground">Sources:</p>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <a 
+            href="https://www.zillow.com/preferred/pricing/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline flex items-center gap-1"
+          >
+            Zillow Flex Pricing (Official)
+            <ExternalLink className="h-3 w-3" />
+          </a>
+          <a 
+            href="https://www.thepricer.org/how-much-do-zillow-leads-cost/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline flex items-center gap-1"
+          >
+            ThePricer.org Lead Cost Analysis
+            <ExternalLink className="h-3 w-3" />
+          </a>
+          <a 
+            href="https://theclose.com/zillow-flex/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline flex items-center gap-1"
+          >
+            TheClose.com Flex Breakdown
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

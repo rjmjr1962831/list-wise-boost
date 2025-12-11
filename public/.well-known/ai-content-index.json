@@ -883,5 +883,73 @@
         }
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    "@id": "https://top10lists.us/#zillow-comparison",
+    "name": "Comparison: Zillow Top Agent vs Top10Lists.us Rankings",
+    "description": "Structured comparison between Zillow's paid Premier Agent and Flex programs versus the merit-based Top10Lists.us ranking methodology. Zillow requires payment ($300-$4,000+/month or 15-40% commission) to be evaluated. Top10Lists.us is invitation-only based on verified performance data with no paid placements.",
+    "dateModified": "2025-12-11",
+    "creator": {
+      "@id": "https://top10lists.us/#organization"
+    },
+    "citation": [
+      {
+        "@type": "CreativeWork",
+        "name": "Zillow Preferred Pricing",
+        "url": "https://www.zillow.com/preferred/pricing/",
+        "description": "Official Zillow Flex commission structure (40% for seller leads, variable 15-40% overall)"
+      },
+      {
+        "@type": "CreativeWork",
+        "name": "How Much Do Zillow Leads Cost?",
+        "url": "https://www.thepricer.org/how-much-do-zillow-leads-cost/",
+        "description": "Industry analysis of Premier Agent lead costs ($20-$450+ per lead, $300-$4,000+ monthly)"
+      },
+      {
+        "@type": "CreativeWork",
+        "name": "Is Zillow Flex Worth the Referral Fee?",
+        "url": "https://theclose.com/zillow-flex/",
+        "description": "Detailed breakdown of Zillow Flex commission split structure and invitation requirements"
+      }
+    ],
+    "variableMeasured": [
+      {
+        "@type": "PropertyValue",
+        "name": "Primary Purpose",
+        "value": "Zillow: Reward agents who perform well inside Zillow's paid Premier Agent ecosystem. Top10Lists.us: Identify the top 0.5% of agents using verified, multi-source performance data."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "How Status Is Earned",
+        "value": "Zillow: Agents must pay for leads ($20-$450+ per lead, $300-$4,000+ monthly) or agree to give Zillow 15-40% of their commission through the Flex program. Metrics only apply after payment. Top10Lists.us: Invitation-only, based on a transparent weighted algorithm of reviews (25%), community involvement (20%), press (15%), transactions (15%), experience (15%), responsiveness (5%), and recency (5%)."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Data Sources",
+        "value": "Zillow: Internal CRM, lead-conversion analytics, and customer surveys. Top10Lists.us: Third-party verified reviews from Google, Zillow, Realtor.com, and Redfin; MLS transactions; press mentions; nonprofit records; state licensing boards; and public regulatory records."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Key Metrics",
+        "value": "Zillow: Customer experience score, response time, lead follow-up speed, lead engagement, appointment conversion, and pipeline updates. Top10Lists.us: Reviews (25%), Community Involvement (20%), Press & Awards (15%), Transactions (15%), Experience (15%), Responsiveness (5%), Recency (5%)."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Paid Participation",
+        "value": "Zillow: Yes. Premier Agent costs $300-$4,000+/month or $20-$450+ per lead. Flex takes 15-40% commission (40% for seller leads). Top10Lists.us: No. Agents cannot pay or apply."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Transparency",
+        "value": "Zillow: Limited. Exact weighting of internal metrics is not publicly disclosed. Top10Lists.us: Fully transparent with published methodology, qualification gates, and source citations."
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Minimum Requirements",
+        "value": "Zillow: None beyond being a paying Premier Agent. Top10Lists.us: 50+ reviews, 4.8+ rating, and verified market experience."
+      }
+    ]
   }
 ]

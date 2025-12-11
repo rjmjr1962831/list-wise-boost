@@ -13,10 +13,11 @@ interface ComparisonRow {
 const comparisonData: ComparisonRow[] = [
   { feature: 'Guaranteed Top 10 placement', top10: true, zillowPremier: false, zillowFlex: false },
   { feature: 'AI search optimization', top10: true, zillowPremier: false, zillowFlex: false },
-  
-  { feature: 'Per-deal referral fee', top10: 'None', zillowPremier: 'None', zillowFlex: '25-40%' },
-  { feature: 'Monthly cost (Phoenix)', top10: '$250', zillowPremier: '$500+', zillowFlex: 'Variable' },
+  { feature: 'Per-lead cost', top10: 'None', zillowPremier: '$20-$450+', zillowFlex: 'N/A' },
+  { feature: 'Per-deal referral fee', top10: 'None', zillowPremier: 'None', zillowFlex: '15-40%' },
+  { feature: 'Monthly cost', top10: '$250-$600', zillowPremier: '$300-$4,000+', zillowFlex: 'Variable' },
   { feature: 'Verified credentials displayed', top10: true, zillowPremier: false, zillowFlex: false },
+  { feature: 'Transparent methodology', top10: true, zillowPremier: false, zillowFlex: false },
   { feature: 'Cancel anytime (after min.)', top10: '3 months', zillowPremier: '6-12 months', zillowFlex: 'N/A' },
 ];
 
@@ -90,9 +91,23 @@ export function ZillowComparison() {
         </div>
       </Card>
 
-      <p className="text-xs text-muted-foreground text-center">
-        * Comparison based on publicly available pricing as of December 2025. Zillow pricing varies by market.
-      </p>
+      <div className="text-xs text-muted-foreground text-center space-y-1">
+        <p>* Comparison based on publicly available pricing as of December 2025. Zillow pricing varies by market.</p>
+        <p>
+          Sources:{' '}
+          <a href="https://www.zillow.com/preferred/pricing/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            Zillow.com
+          </a>
+          {', '}
+          <a href="https://www.thepricer.org/how-much-do-zillow-leads-cost/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            ThePricer.org
+          </a>
+          {', '}
+          <a href="https://theclose.com/zillow-flex/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+            TheClose.com
+          </a>
+        </p>
+      </div>
     </div>
   );
 }
