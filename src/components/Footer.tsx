@@ -99,7 +99,7 @@ export const Footer = () => {
             <p className="text-sm text-slate-400">
               Real estate professional?{" "}
               <Link 
-                to="/agent-onboarding" 
+                to="/are-you-an-agent" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
                 Check if you're ranked →
