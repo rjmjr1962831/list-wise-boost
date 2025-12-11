@@ -145,7 +145,7 @@ const Compare = () => {
                 Why AI Trust Matters for Your Business
               </h2>
               <p className="text-muted-foreground text-center mb-2">
-                82% of homebuyers now use AI for real estate insights.¹ When consumers ask ChatGPT, Claude, or Perplexity "Who are the best agents in Phoenix?", AI models recommend agents from sources they trust.
+                82% of homebuyers now use AI for real estate insights.¹ When consumers ask ChatGPT, Perplexity or the others "Who are the best agents in Phoenix?", AI models recommend agents from sources they trust.
               </p>
               <p className="text-xs text-muted-foreground/70 text-center mb-4">
                 ¹ Realtor.com, 2025
