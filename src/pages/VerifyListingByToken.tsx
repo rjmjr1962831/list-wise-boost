@@ -159,9 +159,9 @@ export default function VerifyListingByToken() {
           <ProfessionalCard professional={professional} accentColor="primary" quizCompleted={true} />
           
           {/* Review or Edit button - responsive positioning */}
-          <div className="absolute top-[140px] right-4 md:top-[160px] md:right-[40px] lg:top-[114px] lg:right-[273px] flex items-center justify-center z-10">
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-6 py-3" onClick={() => navigate(`/profile/${token}/fields`)}>
-              <Edit className="mr-2 h-4 w-4" />
+          <div className="absolute top-[60px] left-[140px] md:top-[160px] md:right-[40px] md:left-auto lg:top-[114px] lg:right-[273px] flex items-center justify-center z-10">
+            <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-3 py-2 text-xs md:text-sm md:px-6 md:py-3" onClick={() => navigate(`/profile/${token}/fields`)}>
+              <Edit className="mr-1.5 h-3 w-3 md:mr-2 md:h-4 md:w-4" />
               Approve or Edit?
             </Button>
           </div>
