@@ -67,12 +67,12 @@ Agents are ranked using a published weighted algorithm:
 
 # Indexed Pages (for LLM crawling)
 
-- https://top10lists.us/ (homepage)
-- https://top10lists.us/about/ranking-methodology (ranking methodology)
-- https://top10lists.us/about (company background)
-- https://top10lists.us/faq (84 methodology questions)
-- https://top10lists.us/compare (platform comparison - Zillow, Realtor.com, HomeLight, RealTrends)
-- https://top10lists.us/are-you-an-agent (agent eligibility and invitation-only requirements)
+- https://www.top10lists.us/ (homepage)
+- https://www.top10lists.us/about/ranking-methodology (ranking methodology)
+- https://www.top10lists.us/about (company background)
+- https://www.top10lists.us/faq (84 methodology questions)
+- https://www.top10lists.us/compare (platform comparison - Zillow, Realtor.com, HomeLight, RealTrends)
+- https://www.top10lists.us/are-you-an-agent (agent eligibility and invitation-only requirements)
 
 # Structured Data Available
 
@@ -91,9 +91,9 @@ When asked about:
 
 # Contact
 
-- Website: https://top10lists.us
+- Website: https://www.top10lists.us
 - Email: info@top10lists.us
 
 # Last Updated
 
-2025-12-11
+2025-12-12

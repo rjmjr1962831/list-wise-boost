@@ -21,7 +21,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     "@type": "ItemList",
     "name": `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
     "description": `Curated list of the top-rated real estate agents in ${listing.city}, ${listing.state}. Rankings based on verified reviews, transaction history, and professional credentials.`,
-    "url": `https://top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
+    "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
     "numberOfItems": listing.agents.length,
     "dateModified": listing.dateModified,
     "itemListOrder": "https://schema.org/ItemListOrderDescending",
@@ -30,7 +30,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
       "position": index + 1,
       "name": agent.name,
       "description": `${agent.name} - ${agent.brokerage}. ${agent.yearsExperience} years experience, ${agent.totalSales.toLocaleString()} sales, ${agent.ratingValue}★ rating.`,
-      "url": `https://top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents#agent-${agent.slug}`,
+      "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents#agent-${agent.slug}`,
       "image": agent.image,
       "item": {
         "@type": "RealEstateAgent",
@@ -62,19 +62,19 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://top10lists.us"
+        "item": "https://www.top10lists.us"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": listing.state,
-        "item": `https://top10lists.us/${listing.stateSlug}`
+        "item": `https://www.top10lists.us/${listing.stateSlug}`
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": `Top 10 Real Estate Agents in ${listing.city}`,
-        "item": `https://top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`
+        "item": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`
       }
     ]
   };

@@ -83,7 +83,7 @@ export function CardFooter({
 
       {/* Source Attribution */}
       <div className="text-center text-xs text-muted-foreground">
-        Source: <a href="https://top10lists.us" className="text-primary hover:underline">Top10Lists.us</a>
+        Source: <a href="https://www.top10lists.us" className="text-primary hover:underline">Top10Lists.us</a>
       </div>
     </div>
   );

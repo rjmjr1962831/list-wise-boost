@@ -6,17 +6,17 @@ const corsHeaders = {
 };
 
 const INDEXNOW_KEY = 'c24fefbb226c4059afbfa6c5cbce8639';
-const SITE_HOST = 'top10lists.us';
+const SITE_HOST = 'www.top10lists.us';
 
 // Key pages to submit to IndexNow
 const KEY_URLS = [
-  'https://top10lists.us/',
-  'https://top10lists.us/about',
-  'https://top10lists.us/faq',
-  'https://top10lists.us/for-agents',
-  'https://top10lists.us/llms.txt',
-  'https://top10lists.us/.well-known/ai-content-index.json',
-  'https://top10lists.us/sitemap.xml',
+  'https://www.top10lists.us/',
+  'https://www.top10lists.us/about',
+  'https://www.top10lists.us/faq',
+  'https://www.top10lists.us/for-agents',
+  'https://www.top10lists.us/llms.txt',
+  'https://www.top10lists.us/.well-known/ai-content-index.json',
+  'https://www.top10lists.us/sitemap.xml',
 ];
 
 serve(async (req) => {

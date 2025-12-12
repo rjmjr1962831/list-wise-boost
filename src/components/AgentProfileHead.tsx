@@ -14,7 +14,7 @@ export function AgentProfileHead({ agent }: AgentProfileHeadProps) {
   
   const title = `${agent.name} - Top Real Estate Agent in ${agent.city}, ${agent.stateAbbrev} | Top10Lists.us`;
   const description = `${agent.name} is a top-rated real estate agent in ${agent.city}, ${agent.stateAbbrev} with ${agent.yearsExperience} years experience and ${agent.totalSales.toLocaleString()} sales. ${agent.ratingValue}★ rating from ${agent.reviewCount} reviews.`;
-  const url = `https://top10lists.us/profile/${agent.slug}`;
+  const url = `https://www.top10lists.us/profile/${agent.slug}`;
   
   return (
     <Helmet>

@@ -8,7 +8,7 @@ const corsHeaders = {
 
 // IndexNow API configuration
 const INDEXNOW_KEY = "c24fefbb226c4059afbfa6c5cbce8639";
-const INDEXNOW_HOST = "top10lists.us";
+const INDEXNOW_HOST = "www.top10lists.us";
 const INDEXNOW_ENDPOINT = "https://api.indexnow.org/indexnow";
 
 serve(async (req) => {
@@ -45,16 +45,16 @@ serve(async (req) => {
 
       // Generate city page URLs
       for (const city of cities || []) {
-        urlList.push(`https://top10lists.us/${city.state_slug}/${city.slug}/top10realestateagents`);
-        urlList.push(`https://top10lists.us/${city.state_slug}/${city.slug}`);
+        urlList.push(`https://www.top10lists.us/${city.state_slug}/${city.slug}/top10realestateagents`);
+        urlList.push(`https://www.top10lists.us/${city.state_slug}/${city.slug}`);
       }
 
       // Add static pages
-      urlList.push('https://top10lists.us/');
-      urlList.push('https://top10lists.us/about');
-      urlList.push('https://top10lists.us/about/ranking-methodology');
-      urlList.push('https://top10lists.us/faq');
-      urlList.push('https://top10lists.us/for-agents');
+      urlList.push('https://www.top10lists.us/');
+      urlList.push('https://www.top10lists.us/about');
+      urlList.push('https://www.top10lists.us/about/ranking-methodology');
+      urlList.push('https://www.top10lists.us/faq');
+      urlList.push('https://www.top10lists.us/for-agents');
 
       console.log(`[IndexNow] Generated ${urlList.length} URLs from ${cities?.length} cities`);
     } else if (urls && Array.isArray(urls)) {

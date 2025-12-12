@@ -46,7 +46,7 @@ User-agent: Bytespider
 Allow: /
 
 # Sitemap
-Sitemap: https://top10lists.us/sitemap.xml
+Sitemap: https://www.top10lists.us/sitemap.xml
 
 # LLM-specific content
-# See https://top10lists.us/llms.txt for AI-readable site documentation
+# See https://www.top10lists.us/llms.txt for AI-readable site documentation
