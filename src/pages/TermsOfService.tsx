@@ -18,7 +18,7 @@ const TermsOfService = () => {
       <Helmet>
         <title>Terms of Service - Top10Lists.us</title>
         <meta name="description" content="Terms of Service for Top10Lists.us - Professional directory and listing service" />
-        <link rel="canonical" href="https://top10lists.us/terms" />
+        <link rel="canonical" href="https://www.top10lists.us/terms" />
       </Helmet>
 
       <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">

@@ -39,7 +39,7 @@ function generateCardUrl(
   const categorySlug = category.slug;
   const agentSlug = generateSlug(professional.name);
   
-  return `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`;
+  return `https://www.top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`;
 }
 
 async function getFieldMapping(): Promise<Record<string, string>> {

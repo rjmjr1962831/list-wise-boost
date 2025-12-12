@@ -1038,8 +1038,8 @@ export default function DynamicCategoryList() {
 
   // Get city coordinates for geo tags
   const cityCoords = getCityCoordinates(city.slug);
-  const pageUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
-  const ogImageUrl = `https://top10lists.us/og-${city.slug}.png`;
+  const pageUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
+  const ogImageUrl = `https://www.top10lists.us/og-${city.slug}.png`;
   
   // Freshness signals for LLM optimization
   const lastUpdated = getLastUpdatedTimestamp();
@@ -1113,7 +1113,7 @@ export default function DynamicCategoryList() {
         <meta property="og:url" content={pageUrl} />
         <meta property="og:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`} />
         <meta property="og:description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings.`} />
-        <meta property="og:image" content="https://top10lists.us/og-image.png" />
+        <meta property="og:image" content="https://www.top10lists.us/og-image.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Top10Lists.us" />
@@ -1123,7 +1123,7 @@ export default function DynamicCategoryList() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`} />
         <meta name="twitter:description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings.`} />
-        <meta name="twitter:image" content="https://top10lists.us/og-image.png" />
+        <meta name="twitter:image" content="https://www.top10lists.us/og-image.png" />
         
         {/* Geo Tags - City-Specific */}
         <meta name="geo.region" content={`US-${city.state_slug.toUpperCase()}`} />

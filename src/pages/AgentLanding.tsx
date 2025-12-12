@@ -122,7 +122,7 @@ export default function AgentLanding() {
         <title>Be the Answer When AI Recommends | Top10Lists Real Estate Agents</title>
         <meta name="description" content="Top real estate agents in the United States. When ChatGPT, Gemini, or Claude search for top agents, will they find you? Data-verified directory. 4.9+ rating required." />
         <meta name="keywords" content="top real estate agents USA, best realtors, AI search optimization, ChatGPT real estate, verified agents" />
-        <link rel="canonical" href="https://top10lists.us/join" />
+        <link rel="canonical" href="https://www.top10lists.us/join" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background via-background/95 to-muted/20">
@@ -315,7 +315,7 @@ export default function AgentLanding() {
           itemType="https://schema.org/ContactPoint"
           aria-label="Agent Updates Subscription"
         >
-          <meta itemProp="url" content="https://top10lists.us/for-agents#agent-subscribe" />
+          <meta itemProp="url" content="https://www.top10lists.us/for-agents#agent-subscribe" />
           <meta itemProp="contactType" content="Agent Subscription" />
           <div className="max-w-2xl mx-auto">
             <Card className="p-8 md:p-10 border-primary/20">
@@ -328,7 +328,7 @@ export default function AgentLanding() {
                   Be the first to know about new market opportunities.
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Direct link: <a href="https://top10lists.us/for-agents#agent-subscribe" className="text-primary underline hover:no-underline">top10lists.us/for-agents#agent-subscribe</a>
+                  Direct link: <a href="https://www.top10lists.us/for-agents#agent-subscribe" className="text-primary underline hover:no-underline">top10lists.us/for-agents#agent-subscribe</a>
                 </p>
               </div>
 

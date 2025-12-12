@@ -235,7 +235,7 @@ async function syncProspect(prospect: Prospect): Promise<{ personId: number; act
 
       if (city && category) {
         const slug = prospect.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        cardUrl = `https://top10lists.us/${city.slug}/${category.slug}/${slug}`;
+        cardUrl = `https://www.top10lists.us/${city.slug}/${category.slug}/${slug}`;
       }
     }
   }

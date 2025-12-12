@@ -69,8 +69,8 @@ serve(async (req) => {
           slug: city.slug,
           stateSlug: city.state_slug,
           agentCount,
-          listUrl: `https://top10lists.us/${city.state_slug}/${city.slug}/top10realestateagents`,
-          qaUrl: `https://top10lists.us/${city.state_slug}/${city.slug}/best-real-estate-agents-${new Date().getFullYear()}`,
+          listUrl: `https://www.top10lists.us/${city.state_slug}/${city.slug}/top10realestateagents`,
+          qaUrl: `https://www.top10lists.us/${city.state_slug}/${city.slug}/best-real-estate-agents-${new Date().getFullYear()}`,
           lastUpdated: city.updated_at,
         };
       })
