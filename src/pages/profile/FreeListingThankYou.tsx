@@ -251,6 +251,20 @@ export default function FreeListingThankYou() {
             </CardContent>
           </Card>
 
+          {/* User's Card */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-center text-foreground">
+              Your Listing
+            </h2>
+            <ProfessionalCard
+              professional={convertToDisplayProfessional(professional, 1)}
+              market={cityInfo.name}
+              stateAbbr={cityInfo.state_slug}
+              citySlug={cityInfo.slug}
+              categorySlug="top10realestateagents"
+            />
+          </div>
+
 
           {/* Actions */}
           <Card>
