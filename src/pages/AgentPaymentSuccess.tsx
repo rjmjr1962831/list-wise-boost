@@ -138,7 +138,7 @@ export default function AgentPaymentSuccess() {
                 <CheckCircle2 className="h-16 w-16 text-green-600" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold mb-2">You're a Brand Builder! 🎉</h1>
+            <h1 className="text-4xl font-bold mb-2">You're on the list!</h1>
             <p className="text-muted-foreground text-lg">
               Your Premium Placement subscription is now active
             </p>
