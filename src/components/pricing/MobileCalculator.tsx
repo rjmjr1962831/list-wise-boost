@@ -54,7 +54,7 @@ export function MobileCalculator({ calculator, onCheckout, isLoading }: MobileCa
             </SheetTitle>
           </SheetHeader>
 
-          <div className="mt-4 space-y-4 overflow-y-auto max-h-[calc(80vh-200px)] pb-20">
+          <div className="mt-4 space-y-4 overflow-y-auto max-h-[calc(80vh-120px)]">
             {/* Line Items */}
             <div className="space-y-2">
               {lineItems.map((item, index) => (
@@ -120,21 +120,21 @@ export function MobileCalculator({ calculator, onCheckout, isLoading }: MobileCa
                 Pay ${monthlyTotal}/month for at least 3 months. Cancel anytime after.
               </p>
             </div>
-          </div>
 
-          {/* CTA */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t">
-            <Button
-              className="w-full gradient-button"
-              size="lg"
-              onClick={() => {
-                setIsOpen(false);
-                onCheckout();
-              }}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Processing...' : 'Secure My Premium Placement'}
-            </Button>
+            {/* CTA */}
+            <div className="pt-2">
+              <Button
+                className="w-full gradient-button"
+                size="lg"
+                onClick={() => {
+                  setIsOpen(false);
+                  onCheckout();
+                }}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Processing...' : 'Secure My Premium Placement'}
+              </Button>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
