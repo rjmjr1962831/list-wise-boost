@@ -125,6 +125,7 @@ export function PricingCalculator({ calculator, onCheckout, isLoading }: Pricing
                 <span className="text-muted-foreground">Early Adopter discount</span>
                 <span className="text-primary font-medium">-${totalSavings}/mo</span>
               </div>
+              <p className="text-sm font-bold text-foreground">For the next 24 months</p>
               <Separator />
               <div className="flex justify-between items-baseline">
                 <span className="font-semibold">Monthly Total</span>
