@@ -195,7 +195,7 @@ export default function AgentPaymentSuccess() {
                 <div>
                   <h3 className="font-semibold mb-1">AI-Optimized</h3>
                   <p className="text-sm text-muted-foreground">
-                    Your profile is optimized for AI search – when buyers ask ChatGPT, Claude, Perplexity, or any other AI for agent recommendations, you'll be featured.
+                    You are now featured on our AI-centered list. It will take a couple of months to warm up your profile. We'll let you know every time someone sees it.
                   </p>
                 </div>
               </div>
