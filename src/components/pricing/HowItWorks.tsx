@@ -57,15 +57,6 @@ export function HowItWorks() {
           </div>
         ))}
       </div>
-      
-      <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-primary/20">
-        <CardContent className="p-4">
-          <p className="text-sm text-center">
-            <span className="font-semibold">82% of homebuyers</span> now use AI for real estate insights (Realtor.com, 2025).{' '}
-            <span className="text-primary font-medium">Is your profile optimized to be found?</span>
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }
