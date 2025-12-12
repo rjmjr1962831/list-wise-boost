@@ -118,6 +118,15 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
               </div>
             ))}
             
+            {/* Early adopter benefits */}
+            <div className="flex items-center gap-2 text-sm text-accent">
+              <Check className="h-4 w-4 text-accent" />
+              <span className="font-medium">50% Early Adopter Discount</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-accent">
+              <Check className="h-4 w-4 text-accent" />
+              <span className="font-medium">No price changes for 24 months</span>
+            </div>
           </CardContent>
         </Card>
       </div>
