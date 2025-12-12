@@ -1,8 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 
 export const Footer = () => {
+  const location = useLocation();
+  
+  // Hide footer on pricing pages
+  if (location.pathname.includes('/pricing')) {
+    return null;
+  }
+
   return (
     <footer className="bg-gradient-to-br from-slate-900 to-slate-800 text-white mt-auto">
       <div className="container mx-auto px-4 py-12">
