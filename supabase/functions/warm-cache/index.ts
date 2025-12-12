@@ -135,9 +135,10 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
   const crawlablePages = [
     '', // homepage
     '/about',
+    '/about/ranking-methodology',
     '/faq',
     '/for-agents',
-    '/opt-in',
+    '/compare',
     '/llms.txt',
     '/.well-known/ai-content-index.json',
   ];
