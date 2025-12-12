@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles, FlaskConical, Send } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles, FlaskConical, Send, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
@@ -146,6 +146,42 @@ const AdminDashboard = () => {
             >
               <Send className="mr-2 h-4 w-4" />
               Push to IndexNow
+            </Button>
+            <Button
+              onClick={async () => {
+                toast.info("Creating Stripe test checkout...");
+                try {
+                  const { data, error } = await supabase.functions.invoke('create-agent-checkout', {
+                    body: {
+                      professionalId: 'test-admin-checkout',
+                      email: 'admin@top10lists.us',
+                      selectedCities: [{
+                        cityId: 'test-city',
+                        cityName: 'Test City',
+                        price: 1
+                      }],
+                      allCityIds: ['test-city'],
+                      monthlyTotal: 1,
+                      successUrl: `${window.location.origin}/agent-payment-success`,
+                      cancelUrl: `${window.location.origin}/admin`
+                    }
+                  });
+                  if (error) throw error;
+                  if (data?.url) {
+                    window.open(data.url, '_blank');
+                    toast.success('Stripe checkout opened in new tab');
+                  } else {
+                    throw new Error('No checkout URL returned');
+                  }
+                } catch (err: any) {
+                  toast.error(`Stripe test failed: ${err.message}`);
+                }
+              }}
+              variant="outline"
+              className="h-auto py-3 border-amber-500 text-amber-600 hover:bg-amber-50"
+            >
+              <CreditCard className="mr-2 h-4 w-4" />
+              Test Stripe ($1)
             </Button>
           </div>
           <h2 className="text-lg font-semibold mb-2 mt-4">Test Links</h2>
