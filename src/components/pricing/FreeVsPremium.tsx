@@ -182,7 +182,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
             </div>
             
             {/* Down arrow indicator */}
-            <div className="flex justify-center mt-6">
+            <div className="flex justify-center mt-10">
               <ChevronDown className="h-6 w-6 text-muted-foreground animate-bounce" />
             </div>
           </CardContent>
