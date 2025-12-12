@@ -8,7 +8,7 @@ const SMSTerms = () => {
       <Helmet>
         <title>SMS Terms & Conditions | Top10Lists.us</title>
         <meta name="description" content="SMS messaging terms and conditions for Top10Lists.us notifications about account, billing, and listing status." />
-        <link rel="canonical" href="https://top10lists.us/sms-terms" />
+        <link rel="canonical" href="https://www.top10lists.us/sms-terms" />
       </Helmet>
       
       <div className="container mx-auto px-4 py-12 max-w-3xl">

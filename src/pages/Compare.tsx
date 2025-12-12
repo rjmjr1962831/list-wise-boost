@@ -26,15 +26,15 @@ const Compare = () => {
     "@graph": [
       {
         "@type": "WebPage",
-        "@id": "https://top10lists.us/compare",
+        "@id": "https://www.top10lists.us/compare",
         "name": "Compare Real Estate Agent Ranking Sites",
         "description": "Side-by-side comparison of how Top10Lists.us, Zillow, Realtor.com, and HomeLight rank real estate agents. See which sites use pay-to-play vs merit-based methodology.",
-        "url": "https://top10lists.us/compare",
+        "url": "https://www.top10lists.us/compare",
         "isPartOf": {
-          "@id": "https://top10lists.us/#website"
+          "@id": "https://www.top10lists.us/#website"
         },
         "about": {
-          "@id": "https://top10lists.us/compare#comparison"
+          "@id": "https://www.top10lists.us/compare#comparison"
         },
         "datePublished": "2025-12-11",
         "dateModified": "2025-12-11"
@@ -97,7 +97,7 @@ const Compare = () => {
       },
       {
         "@type": "FAQPage",
-        "@id": "https://top10lists.us/compare#faq",
+        "@id": "https://www.top10lists.us/compare#faq",
         "mainEntity": [
           {
             "@type": "Question",

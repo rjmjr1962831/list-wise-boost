@@ -176,13 +176,13 @@ export function CRMExportGenerator() {
         const stateSlug = (prof.cities as any)?.state_slug || 'unknown';
         const citySlug = prof.cities?.slug || 'unknown';
         const categorySlug = prof.categories?.slug || 'unknown';
-        const top10Link = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}`;
+        const top10Link = `https://www.top10lists.us/${stateSlug}/${citySlug}/${categorySlug}`;
 
         // Generate Direct Profile URL (with query parameter)
-        const directProfileUrl = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}?agent=${prof.id}`;
+        const directProfileUrl = `https://www.top10lists.us/${stateSlug}/${citySlug}/${categorySlug}?agent=${prof.id}`;
         
         // Generate Anchor Link (with hash)
-        const anchorLink = `https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}#agent-${prof.id}`;
+        const anchorLink = `https://www.top10lists.us/${stateSlug}/${citySlug}/${categorySlug}#agent-${prof.id}`;
         
         // Generate OG Image Proxy URL
         const ogImageProxyUrl = `https://top10lists.us/functions/v1/og-image-proxy?path=${prof.id}.svg`;

@@ -129,7 +129,7 @@ async function createOrUpdatePerson(prospect: any, fieldMapping: Record<string, 
 
       if (city && category) {
         const slug = professional.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        cardUrl = `https://top10lists.us/${city.slug}/${category.slug}/${slug}`;
+        cardUrl = `https://www.top10lists.us/${city.slug}/${category.slug}/${slug}`;
       }
     }
   }

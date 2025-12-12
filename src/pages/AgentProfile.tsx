@@ -320,7 +320,7 @@ export default function AgentProfile() {
         <meta property="og:image" content={professional.image} />
         <meta property="article:modified_time" content={new Date().toISOString()} />
         <meta property="og:updated_time" content={new Date().toISOString()} />
-        <link rel="canonical" href={`https://top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`} />
+        <link rel="canonical" href={`https://www.top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`} />
         
         {/* Standard JSON-LD Schema */}
         <script type="application/ld+json">

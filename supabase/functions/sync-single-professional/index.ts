@@ -230,7 +230,7 @@ serve(async (req) => {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    const cardUrl = `https://top10lists.us/${city.state_slug}/${city.slug}/${category.slug}/${agentSlug}`;
+    const cardUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}/${agentSlug}`;
     
     const syncData: Record<string, any> = {
       name: professional.name,

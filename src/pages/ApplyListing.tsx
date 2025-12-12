@@ -32,7 +32,7 @@ const ApplyListing = () => {
         <meta name="description" content="Apply to be featured as a top real estate agent in your area. Join our curated directory of premier professionals." />
         <meta property="og:title" content="Apply to be Listed - Top10Lists.us" />
         <meta property="og:description" content="Apply to be featured as a top real estate agent in your area." />
-        <link rel="canonical" href="https://top10lists.us/apply-listing" />
+        <link rel="canonical" href="https://www.top10lists.us/apply-listing" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

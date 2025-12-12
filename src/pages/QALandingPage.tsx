@@ -166,7 +166,7 @@ const QALandingPage = () => {
         <meta property="article:modified_time" content={lastUpdated} />
         <meta property="og:updated_time" content={lastUpdated} />
         <meta name="last-modified" content={lastUpdated} />
-        <link rel="canonical" href={`https://top10lists.us/${stateSlug}/${citySlug}/best-real-estate-agents-${targetYear}`} />
+        <link rel="canonical" href={`https://www.top10lists.us/${stateSlug}/${citySlug}/best-real-estate-agents-${targetYear}`} />
         <script type="application/ld+json">
           {JSON.stringify(listSchema)}
         </script>
