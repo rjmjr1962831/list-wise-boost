@@ -5,8 +5,8 @@ import { Logo } from "@/components/brand/Logo";
 export const Footer = () => {
   const location = useLocation();
   
-  // Hide footer on pricing pages
-  if (location.pathname.includes('/pricing')) {
+  // Hide footer on all funnel pages (profile paths and pricing)
+  if (location.pathname.startsWith('/profile/') || location.pathname.includes('/pricing')) {
     return null;
   }
 
