@@ -228,3 +228,6 @@ verify_jwt = false
 
 [functions.fetch-from-pipedrive]
 verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false

@@ -19,6 +19,7 @@ import { HowItWorks } from '@/components/pricing/HowItWorks';
 import { FreeVsPremium } from '@/components/pricing/FreeVsPremium';
 import { usePricingCalculator } from '@/hooks/usePricingCalculator';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
+import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 
 interface Professional {
   id: string;
@@ -30,6 +31,7 @@ export default function PremiumPricingPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { trackEvent } = useGA4Tracking();
+  const { trackEvent: trackFunnelEvent } = useFunnelTracking(token);
   
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,6 +75,19 @@ export default function PremiumPricingPage() {
         }
 
         setProfessional(data);
+        
+        // Track pricing page viewed
+        trackFunnelEvent(FUNNEL_EVENTS.PRICING_VIEWED, { 
+          professional_id: data.id 
+        });
+        
+        // Update checkout_started_at timestamp
+        supabase
+          .from('professionals')
+          .update({ checkout_started_at: new Date().toISOString() })
+          .eq('id', data.id)
+          .then(() => {});
+          
       } catch (err) {
         console.error('Error fetching professional:', err);
         toast.error('Something went wrong');
@@ -82,7 +97,7 @@ export default function PremiumPricingPage() {
     }
 
     fetchProfessional();
-  }, [token, navigate]);
+  }, [token, navigate, trackFunnelEvent]);
 
   // Handle checkout
   const handleCheckout = async () => {
@@ -90,13 +105,20 @@ export default function PremiumPricingPage() {
 
     setCheckoutLoading(true);
     
-    // Track checkout event
+    // Track checkout event (GA4)
     trackEvent('checkout_started', {
       professional_id: professional.id,
       professional_name: professional.name,
       city: calculator.cityCount.toString(),
     });
-
+    
+    // Track checkout event (Funnel)
+    trackFunnelEvent(FUNNEL_EVENTS.CHECKOUT_STARTED, {
+      monthly_total: calculator.monthlyTotal,
+      city_count: calculator.cityCount,
+      package_name: calculator.selectedPackage?.name || 'build-your-own',
+      total_savings: calculator.totalSavings,
+    });
     try {
       // Build checkout payload with package info if selected
       const checkoutPayload: any = {
