@@ -232,11 +232,11 @@ export default function FunnelIntro() {
                 <div key={index} className="bg-card border border-border rounded-lg p-4">
                   <h4 className="font-semibold mb-3">{row.label}</h4>
                   <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="flex items-center gap-2 bg-primary/10 rounded p-2 overflow-visible min-w-0">
+                    <div className={`flex items-center gap-2 bg-primary/10 rounded p-2 ${typeof row.top10 === 'number' ? 'col-span-2' : ''}`}>
                       <span className="font-medium text-primary shrink-0">Top10Lists:</span>
                       <span className="shrink-0">{renderTop10Cell(row.top10)}</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-muted rounded p-2">
+                    <div className={`flex items-center gap-2 bg-muted rounded p-2 ${typeof row.top10 === 'number' ? 'col-span-2' : ''}`}>
                       <span className="text-muted-foreground">Zillow:</span>
                       {renderCell(row.zillow)}
                     </div>
