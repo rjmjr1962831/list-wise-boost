@@ -84,7 +84,7 @@ export function PackageSelector({
                 <p className="text-sm text-muted-foreground">{pkg.description}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">
-                    {pkg.includedCityIds.length} cities • <span className="line-through">${pkg.alaCarteTotal}</span> if bought separately
+                    {pkg.includedCityIds.length} cities • ${pkg.alaCarteTotal} if bought separately
                   </span>
                   <PriceDisplay 
                     retailPrice={pkg.retailTotal} 
