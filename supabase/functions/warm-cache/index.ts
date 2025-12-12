@@ -141,6 +141,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/compare',
     '/llms.txt',
     '/.well-known/ai-content-index.json',
+    '/sitemap.xml',
   ];
   
   const allUrls = crawlablePages.map(path => `${baseUrl}${path}`);
