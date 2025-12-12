@@ -161,6 +161,7 @@ export default function FunnelIntro() {
                   <span className="font-bold text-primary shrink-0">Tomorrow:</span>
                   <p className="text-muted-foreground">As AI becomes more and more intelligent, it is demanding comprehensive data and rigorous science before giving an answer for "find a real estate agent in Scottsdale that I can rely on."</p>
                 </div>
+                <p className="text-xl font-bold text-primary text-center pt-4">AI is searching now. This is the year that it will find its answers.</p>
               </div>
             </div>
 
