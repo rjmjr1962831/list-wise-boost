@@ -43,16 +43,6 @@ export function PackageSelector({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2 text-primary">
-          <CheckCircle2 className="h-4 w-4" />
-          <span className="font-medium">50% Early Adopter Discount</span>
-        </div>
-        <div className="flex items-center gap-2 text-primary">
-          <CheckCircle2 className="h-4 w-4" />
-          <span className="font-medium">No price changes for 24 months</span>
-        </div>
-      </div>
       
       <div className="space-y-3">
         {/* Regional Packages */}
