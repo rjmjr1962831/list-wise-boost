@@ -89,16 +89,16 @@ export default function FunnelIntro() {
           
           {/* Personalized Greeting */}
           {firstName && (
-            <p className="text-2xl md:text-3xl font-bold text-center mb-8">
-              Hello {firstName}. I have been looking forward to meeting you.
-            </p>
+            <h1 className="text-2xl md:text-3xl font-bold text-center mb-8">
+              Hello {firstName}. AI has been looking forward to meeting you.
+            </h1>
           )}
 
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
               No, This Is Not Another "Top Agent" Award.
-            </h1>
+            </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
               We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. You are here because the data says you belong here.
             </p>
