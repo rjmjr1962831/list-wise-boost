@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Check, X, ArrowRight } from 'lucide-react';
@@ -9,9 +9,23 @@ export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    const checkAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', session.user.id)
+          .eq('role', 'admin')
+          .single();
+        setIsAdmin(!!data);
+      }
+    };
     
     const fetchProfessional = async () => {
       if (!token) return;
@@ -27,6 +41,7 @@ export default function FunnelIntro() {
       }
     };
     
+    checkAdmin();
     fetchProfessional();
   }, [token]);
 
@@ -85,6 +100,16 @@ export default function FunnelIntro() {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
+        {isAdmin && (
+          <div className="fixed top-2 right-2 z-50">
+            <Link 
+              to="/admin" 
+              className="text-xs bg-primary text-primary-foreground px-3 py-1 rounded-full hover:bg-primary/90 transition-colors"
+            >
+              Admin
+            </Link>
+          </div>
+        )}
         <div className="container max-w-4xl py-12 px-4">
           
           {/* Personalized Greeting */}
