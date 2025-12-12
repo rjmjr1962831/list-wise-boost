@@ -208,7 +208,7 @@ export default function PremiumPricingPage() {
               Secure Your Premium Placement
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
-              Get guaranteed Top 10 placement when buyers ask AI assistants for agent recommendations.
+              Get guaranteed Top 10 placement in the cities of your choice when buyers ask AI assistants for agent recommendations.
               <span className="font-medium text-foreground"> Limited spots available.</span>
             </p>
 
