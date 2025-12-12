@@ -82,7 +82,7 @@ export const Header = () => {
               FAQ
             </Link>
             <Link to="/compare" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-              Compare
+              Compare Us
             </Link>
             {!user && (
               <Link 
