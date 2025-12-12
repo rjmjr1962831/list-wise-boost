@@ -140,7 +140,7 @@ export default function FunnelIntro() {
           {/* Hero Section */}
           <div className="text-center mb-16">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
-              No, This Is Not Another "Top Agent" Award.
+              No, It Is Not Another "Top Agent" Award.
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
               We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. We don't have networking meetings.
