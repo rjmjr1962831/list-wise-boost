@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Check, X, Sparkles, User } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Check, X, Sparkles, User, Phone, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FeatureItem {
@@ -29,6 +32,16 @@ interface FreeVsPremiumProps {
 }
 
 export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
+  const [showContact, setShowContact] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
+
+  const handleDone = () => {
+    setPopoverOpen(false);
+    if (onSelectFree) {
+      onSelectFree();
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-foreground">Free vs Premium Placement</h3>
@@ -71,13 +84,53 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
                 <p className="text-xs text-muted-foreground">Forever free</p>
               </div>
               {onSelectFree && (
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={onSelectFree}
-                >
-                  I'm ok, I'll stick with the Free offer
-                </Button>
+                <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      I'm ok, I'll stick with the Free offer
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72 p-4 bg-background" align="center">
+                    <div className="space-y-3">
+                      <Button 
+                        className="w-full"
+                        onClick={handleDone}
+                      >
+                        I'm Done
+                      </Button>
+                      
+                      <Collapsible open={showContact} onOpenChange={setShowContact}>
+                        <CollapsibleTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            className="w-full justify-between"
+                          >
+                            Let's Talk
+                            <ChevronDown className={cn(
+                              "h-4 w-4 transition-transform",
+                              showContact && "rotate-180"
+                            )} />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-3">
+                          <div className="p-3 rounded-lg bg-muted text-center space-y-2">
+                            <p className="text-sm text-muted-foreground">Call or text us at</p>
+                            <a 
+                              href="tel:6027599600" 
+                              className="flex items-center justify-center gap-2 text-lg font-semibold text-primary hover:underline"
+                            >
+                              <Phone className="h-4 w-4" />
+                              (602) 759-9600
+                            </a>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
             </div>
           </CardContent>
