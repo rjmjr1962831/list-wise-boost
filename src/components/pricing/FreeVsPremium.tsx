@@ -180,6 +180,11 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
               <Check className="h-4 w-4 text-accent" />
               <span className="font-medium">No price changes for 24 months</span>
             </div>
+            
+            {/* Down arrow indicator */}
+            <div className="flex justify-center mt-6">
+              <ChevronDown className="h-6 w-6 text-muted-foreground animate-bounce" />
+            </div>
           </CardContent>
         </Card>
       </div>
