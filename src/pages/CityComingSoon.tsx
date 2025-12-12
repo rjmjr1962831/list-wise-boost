@@ -20,7 +20,7 @@ const CityComingSoon = () => {
   const stateName = formatCityName(stateSlug);
   const pageTitle = `${cityName}, ${stateName} - Coming Soon | Top10Lists.us`;
   const pageDescription = `Top 10 real estate agents in ${cityName}, ${stateName} coming soon. We're expanding our verified agent directory to your area.`;
-  const canonicalUrl = `https://top10lists.us/coming-soon/${stateSlug}/${citySlug}`;
+  const canonicalUrl = `https://www.top10lists.us/coming-soon/${stateSlug}/${citySlug}`;
 
   return (
     <>

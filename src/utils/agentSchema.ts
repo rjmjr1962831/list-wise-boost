@@ -43,7 +43,7 @@ export function generateAgentProfileSchema(agent: AgentSchemaData): object {
       "name": agent.brokerage || "Independent Agent"
     },
     // Use city page anchor instead of profile URL to prevent profile indexing
-    "url": `https://top10lists.us/${agent.stateAbbrev.toLowerCase()}/${agent.city.toLowerCase().replace(/\s+/g, '-')}/top10realestateagents#agent-${agent.slug}`,
+    "url": `https://www.top10lists.us/${agent.stateAbbrev.toLowerCase()}/${agent.city.toLowerCase().replace(/\s+/g, '-')}/top10realestateagents#agent-${agent.slug}`,
     "image": agent.image,
     "description": `Top ${agent.city} real estate agent with ${agent.yearsExperience || 'extensive'} years of experience and ${agent.totalSales > 0 ? `${agent.totalSales.toLocaleString()} verified sales` : 'proven track record'}.`,
     "areaServed": {
@@ -195,7 +195,7 @@ export function generateCityAgentListSchema(
     "@type": "ItemList",
     "name": `Top 10 Real Estate Agents in ${city}, ${stateAbbrev} (${currentYear})`,
     "description": `Curated list of the top-rated real estate agents serving ${city}, ${state}. Updated daily with verified ratings and reviews.`,
-    "url": `https://top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}/best-real-estate-agents-${currentYear}`,
+    "url": `https://www.top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}/best-real-estate-agents-${currentYear}`,
     "numberOfItems": agents.length,
     "dateModified": dateModified,
     "itemListElement": agents.slice(0, 10).map((agent, index) => ({
@@ -203,7 +203,7 @@ export function generateCityAgentListSchema(
       "position": index + 1,
       "name": agent.name,
       // Use city page anchor instead of profile URL to prevent profile indexing
-      "url": `https://top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}/top10realestateagents#agent-${agent.slug}`,
+      "url": `https://www.top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}/top10realestateagents#agent-${agent.slug}`,
       "item": {
         "@type": "RealEstateAgent",
         "name": agent.name,
@@ -274,25 +274,25 @@ export function generateCityAgentListSchema(
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://top10lists.us"
+        "item": "https://www.top10lists.us"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": state,
-        "item": `https://top10lists.us/${stateAbbrev.toLowerCase()}`
+        "item": `https://www.top10lists.us/${stateAbbrev.toLowerCase()}`
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": city,
-        "item": `https://top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}`
+        "item": `https://www.top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}`
       },
       {
         "@type": "ListItem",
         "position": 4,
         "name": `Best Real Estate Agents ${currentYear}`,
-        "item": `https://top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}/best-real-estate-agents-${currentYear}`
+        "item": `https://www.top10lists.us/${stateAbbrev.toLowerCase()}/${city.toLowerCase().replace(/\s+/g, '-')}/best-real-estate-agents-${currentYear}`
       }
     ]
   };

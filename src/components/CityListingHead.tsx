@@ -13,7 +13,7 @@ export function CityListingHead({ listing }: CityListingHeadProps) {
   const currentYear = new Date().getFullYear();
   
   const topAgent = listing.agents[0];
-  const url = `https://top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`;
+  const url = `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`;
   
   const title = `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev} (${currentYear}) | Top10Lists.us`;
   const description = topAgent
@@ -31,13 +31,13 @@ export function CityListingHead({ listing }: CityListingHeadProps) {
       <meta property="og:url" content={url} />
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="Top10Lists.us" />
-      <meta property="og:image" content="https://top10lists.us/og-image.png" />
+      <meta property="og:image" content="https://www.top10lists.us/og-image.png" />
       
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={title} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content="https://top10lists.us/og-image.png" />
+      <meta name="twitter:image" content="https://www.top10lists.us/og-image.png" />
       
       {/* Freshness signals */}
       <meta property="article:modified_time" content={listing.dateModified} />

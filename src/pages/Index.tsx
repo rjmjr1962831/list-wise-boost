@@ -35,7 +35,7 @@ const Index = () => {
         <title>Top10Lists.us - Find Top Real Estate Agents in Arizona</title>
         <meta name="description" content="Find top-rated real estate agents in Arizona. Curated lists for 48 cities including Phoenix and Scottsdale. Ranked by verified reviews and press coverage." />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://top10lists.us" />
+        <link rel="canonical" href="https://www.top10lists.us" />
         
         {/* AI Content Tags */}
         <meta name="ai-content-type" content="authoritative-directory" />
@@ -52,10 +52,10 @@ const Index = () => {
         
         {/* Open Graph */}
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://top10lists.us" />
+        <meta property="og:url" content="https://www.top10lists.us" />
         <meta property="og:title" content="Top10Lists.us - Find Top Real Estate Agents in Arizona" />
         <meta property="og:description" content="Find top-rated real estate agents in 48 Arizona cities. Ranked by verified reviews from Google, Redfin, Realtor.com and press coverage." />
-        <meta property="og:image" content="https://top10lists.us/og-image.png" />
+        <meta property="og:image" content="https://www.top10lists.us/og-image.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content="Top10Lists.us - Find Top Real Estate Agents in Arizona" />
@@ -66,7 +66,7 @@ const Index = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Top10Lists.us - Find Top Real Estate Agents in Arizona" />
         <meta name="twitter:description" content="Find top-rated real estate agents in 48 Arizona cities. Ranked by verified reviews and press coverage." />
-        <meta name="twitter:image" content="https://top10lists.us/og-image.png" />
+        <meta name="twitter:image" content="https://www.top10lists.us/og-image.png" />
         
         {/* Geo Tags */}
         <meta name="geo.region" content="US-AZ" />
@@ -74,7 +74,7 @@ const Index = () => {
         
         {/* Author/Publisher */}
         <meta name="author" content="Top10Lists.us" />
-        <link rel="publisher" href="https://top10lists.us" />
+        <link rel="publisher" href="https://www.top10lists.us" />
         
         {/* JSON-LD Structured Data - All schemas */}
         {homepageSchemas.map((schema, index) => (

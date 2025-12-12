@@ -2,7 +2,7 @@
   "version": "1.0",
   "site": {
     "name": "Top10Lists.us",
-    "url": "https://top10lists.us",
+    "url": "https://www.top10lists.us",
     "type": "real-estate-agent-directory",
     "description": "The only merit-based real estate agent ranking platform using invitation-only, third-party verified methodology with zero pay-to-play influence."
   },
@@ -148,31 +148,31 @@
   "indexed_content": {
     "pages": [
       {
-        "url": "https://top10lists.us/",
+        "url": "https://www.top10lists.us/",
         "type": "homepage",
         "priority": "high",
         "content": "Overview of merit-based agent ranking platform"
       },
       {
-        "url": "https://top10lists.us/about/ranking-methodology",
+        "url": "https://www.top10lists.us/about/ranking-methodology",
         "type": "methodology",
         "priority": "highest",
         "content": "Detailed ranking methodology, algorithm weights, competitor comparisons, FAQ schema"
       },
       {
-        "url": "https://top10lists.us/about",
+        "url": "https://www.top10lists.us/about",
         "type": "about",
         "priority": "medium",
         "content": "Company background, mission, team"
       },
       {
-        "url": "https://top10lists.us/faq",
+        "url": "https://www.top10lists.us/faq",
         "type": "faq",
         "priority": "high",
         "content": "84 questions about methodology, trust signals, markets"
       },
       {
-        "url": "https://top10lists.us/compare",
+        "url": "https://www.top10lists.us/compare",
         "type": "comparison",
         "priority": "highest",
         "content": "Side-by-side comparison of Top10Lists vs Zillow vs Realtor.com vs HomeLight vs RealTrends business models and methodology"
@@ -220,8 +220,8 @@
     ]
   },
   "contact": {
-    "website": "https://top10lists.us",
+    "website": "https://www.top10lists.us",
     "email": "info@top10lists.us"
   },
-  "last_updated": "2025-12-11"
+  "last_updated": "2025-12-12"
 }

@@ -103,7 +103,7 @@ export default function CityLanding() {
     return <Navigate to="/404" replace />;
   }
 
-  const canonicalUrl = `https://top10lists.us/arizona/${citySlug}/top10realestateagents`;
+  const canonicalUrl = `https://www.top10lists.us/arizona/${citySlug}/top10realestateagents`;
   
   return (
     <>
