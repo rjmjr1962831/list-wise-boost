@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Check, X, ArrowRight, Globe, Brain, BadgeCheck } from 'lucide-react';
+import { Check, X, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function FunnelIntro() {
@@ -112,65 +112,6 @@ export default function FunnelIntro() {
             </Button>
           </div>
 
-          {/* The Shift Section */}
-          <div className="mb-16">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
-              The Way People Find Agents Is Changing
-            </h2>
-            
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {/* Yesterday */}
-              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Globe className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Yesterday</h3>
-                <p className="text-muted-foreground">
-                  Buyers Googled and clicked ads. Zillow owned that search. You paid to play.
-                </p>
-              </div>
-
-              {/* Today */}
-              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Brain className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Today</h3>
-                <p className="text-muted-foreground">
-                  Buyers ask ChatGPT, "Who is the best agent in Scottsdale?" AI sees the data, but it is still figuring out which sources to trust.
-                </p>
-              </div>
-
-              {/* Tomorrow */}
-              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <BadgeCheck className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Tomorrow</h3>
-                <p className="text-muted-foreground">
-                  AI will stop trusting pay-to-play sites. It will look for sources with verified data and published methodology. We are building that source now.
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border rounded-xl p-6 text-center">
-              <p className="text-lg text-muted-foreground mb-4">
-                For 20 years, Google was the gatekeeper. Zillow rented you a spot in their window. You paid per lead, per click, per impression.
-              </p>
-              <p className="text-lg text-muted-foreground mb-4">
-                That era is ending. AI does not click links. It reads, synthesizes, and recommends. And it is learning who to trust.
-              </p>
-              <p className="text-xl font-bold text-primary">
-                You are in the top 0.05%. You are the agent AI wants to cite.
-              </p>
-            </div>
-          </div>
 
           {/* Comparison Table Section */}
           <div className="mb-16">
