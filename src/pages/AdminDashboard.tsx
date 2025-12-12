@@ -3,18 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Sparkles, FlaskConical, Send, CreditCard } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Send, CreditCard } from "lucide-react";
 import { toast } from "sonner";
-import { CRMExportGenerator } from "@/components/admin/CRMExportGenerator";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
-import { EnrichmentProgressDashboard } from "@/components/admin/EnrichmentProgressDashboard";
 import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
 import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
 import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResultsDashboard";
 import { StopEnrichmentButton } from "@/components/admin/StopEnrichmentButton";
 import { EnrichmentCostControls } from "@/components/admin/EnrichmentCostControls";
-import { EnrichmentPipelineStatus } from "@/components/admin/EnrichmentPipelineStatus";
-import { AdminHubSpotSync } from "@/components/admin/AdminHubSpotSync";
 import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
@@ -25,26 +21,18 @@ import { BulkPipedriveSyncAll } from "@/components/admin/BulkPipedriveSyncAll";
 import { BulkPipedriveReQueue } from "@/components/admin/BulkPipedriveReQueue";
 import { PipedriveCleanupDuplicates } from "@/components/admin/PipedriveCleanupDuplicates";
 import { AdminPipedriveFieldInspector } from "@/components/admin/AdminPipedriveFieldInspector";
-import { QueuedEmailVerifier } from '@/components/admin/QueuedEmailVerifier';
-import { EmailVerificationBackfill } from '@/components/admin/EmailVerificationBackfill';
-import { BulkEmailVerifier } from '@/components/admin/BulkEmailVerifier';
 import { MagicLinkGenerator } from '@/components/admin/MagicLinkGenerator';
 import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
-import BulkPressEnricher from '@/components/admin/BulkPressEnricher';
 import CacheManagement from '@/components/admin/CacheManagement';
-import ArizonaPricingSetup from '@/components/admin/ArizonaPricingSetup';
 import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManager';
-
 import AIModelTester from '@/components/admin/AIModelTester';
-import { SelectionRationaleGenerator } from '@/components/admin/SelectionRationaleGenerator';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
 import { BatchSynthesisRefresher } from '@/components/admin/BatchSynthesisRefresher';
 import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
 import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
 import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
-import { ScraperComparison } from '@/components/admin/ScraperComparison';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -240,14 +228,6 @@ const AdminDashboard = () => {
               <Users className="mr-2 h-4 w-4" />
               Prospects
             </TabsTrigger>
-            <TabsTrigger value="hubspot-sync">
-              <Database className="mr-2 h-4 w-4" />
-              HubSpot Sync
-            </TabsTrigger>
-            <TabsTrigger value="crm-export">
-              <Download className="mr-2 h-4 w-4" />
-              CRM Export
-            </TabsTrigger>
             <TabsTrigger value="pipedrive-sync">
               <Database className="mr-2 h-4 w-4" />
               Pipedrive Sync
@@ -263,10 +243,6 @@ const AdminDashboard = () => {
             <TabsTrigger value="pipedrive-cleanup">
               <RefreshCw className="mr-2 h-4 w-4" />
               Pipedrive Cleanup
-            </TabsTrigger>
-            <TabsTrigger value="enrichment-progress">
-              <Zap className="mr-2 h-4 w-4" />
-              Enrichment Progress
             </TabsTrigger>
             <TabsTrigger value="enrichment-queue">
               <Zap className="mr-2 h-4 w-4" />
@@ -284,14 +260,6 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Results Dashboard
             </TabsTrigger>
-            <TabsTrigger value="pipeline-status">
-              <Zap className="mr-2 h-4 w-4" />
-              Pipeline Status
-            </TabsTrigger>
-            <TabsTrigger value="email-verification">
-              <Database className="mr-2 h-4 w-4" />
-              Email Verification
-            </TabsTrigger>
             <TabsTrigger value="magic-links">
               <Database className="mr-2 h-4 w-4" />
               Magic Links
@@ -300,17 +268,9 @@ const AdminDashboard = () => {
               <Zap className="mr-2 h-4 w-4" />
               Profile Synthesis
             </TabsTrigger>
-            <TabsTrigger value="bulk-press">
-              <Zap className="mr-2 h-4 w-4" />
-              Bulk Press Enrichment
-            </TabsTrigger>
             <TabsTrigger value="cache-management">
               <RefreshCw className="mr-2 h-4 w-4" />
               Cache Management
-            </TabsTrigger>
-            <TabsTrigger value="arizona-pricing">
-              <Database className="mr-2 h-4 w-4" />
-              Arizona Pricing
             </TabsTrigger>
             <TabsTrigger value="cache-warming">
               <Globe className="mr-2 h-4 w-4" />
@@ -320,26 +280,10 @@ const AdminDashboard = () => {
               <Bot className="mr-2 h-4 w-4" />
               AI Router
             </TabsTrigger>
-            <TabsTrigger value="selection-rationales">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Selection Rationales
-            </TabsTrigger>
-            <TabsTrigger value="scraper-comparison">
-              <FlaskConical className="mr-2 h-4 w-4" />
-              Scraper Test
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
             <AdminProspectsManager />
-          </TabsContent>
-
-          <TabsContent value="hubspot-sync" className="space-y-4">
-            <AdminHubSpotSync />
-          </TabsContent>
-
-          <TabsContent value="crm-export" className="space-y-4">
-            <CRMExportGenerator />
           </TabsContent>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
@@ -363,10 +307,6 @@ const AdminDashboard = () => {
             <PipedriveCleanupDuplicates />
           </TabsContent>
 
-          <TabsContent value="enrichment-progress" className="space-y-4">
-            <EnrichmentProgressDashboard />
-          </TabsContent>
-
           <TabsContent value="enrichment-queue" className="space-y-4">
             <ContactEnrichmentQueue />
           </TabsContent>
@@ -385,16 +325,6 @@ const AdminDashboard = () => {
             <EnrichmentResultsDashboard />
           </TabsContent>
 
-          <TabsContent value="pipeline-status" className="space-y-4">
-            <EnrichmentPipelineStatus />
-          </TabsContent>
-
-          <TabsContent value="email-verification" className="space-y-4">
-            <EmailVerificationBackfill />
-            <QueuedEmailVerifier />
-            <BulkEmailVerifier />
-          </TabsContent>
-
           <TabsContent value="magic-links" className="space-y-4">
             <AgentFunnelTester />
             <MagicLinkGenerator />
@@ -408,16 +338,8 @@ const AdminDashboard = () => {
             <BulkProfileSynthesizer />
           </TabsContent>
 
-          <TabsContent value="bulk-press" className="space-y-4">
-            <BulkPressEnricher />
-          </TabsContent>
-
           <TabsContent value="cache-management" className="space-y-4">
             <CacheManagement />
-          </TabsContent>
-
-          <TabsContent value="arizona-pricing" className="space-y-4">
-            <ArizonaPricingSetup />
           </TabsContent>
 
           <TabsContent value="cache-warming" className="space-y-4">
@@ -426,14 +348,6 @@ const AdminDashboard = () => {
 
           <TabsContent value="ai-router" className="space-y-4">
             <AIModelTester />
-          </TabsContent>
-
-          <TabsContent value="selection-rationales" className="space-y-4">
-            <SelectionRationaleGenerator />
-          </TabsContent>
-
-          <TabsContent value="scraper-comparison" className="space-y-4">
-            <ScraperComparison />
           </TabsContent>
         </Tabs>
       </div>
