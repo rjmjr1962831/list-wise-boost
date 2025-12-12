@@ -258,7 +258,7 @@ export default function FunnelIntro() {
           {/* Final CTA Section */}
           <div className="bg-card border-2 border-primary/30 rounded-xl p-8 text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Your Profile Is Going Live. Make Sure It Is Right.
+              Your Profile Is Live. Make Sure It Is Right.
             </h2>
             <p className="text-lg text-muted-foreground mb-4">
               Databases make mistakes. Details get outdated. We have built your profile from public data, but we want you to verify it.
