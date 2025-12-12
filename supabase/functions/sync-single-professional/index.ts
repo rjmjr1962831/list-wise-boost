@@ -322,6 +322,7 @@ serve(async (req) => {
       zillow_reviews: syncData.zillow_reviews,
       zillow_page: professional.zillow_search_page ?? null,
       zillow_position: professional.zillow_search_position ?? null,
+      zillow_total_agents: professional.zillow_search_total ?? null,
       agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1) : null,
       license_number: truncate(syncData.license_number),
       business_name: truncate(syncData.company),
@@ -331,6 +332,11 @@ serve(async (req) => {
       city_name: truncate(syncData.city_name),
       state: truncate(syncData.state),
       zillow_profile_url: truncate(professional.zillow_profile_url || ''),
+      // Status flags
+      email_verified: professional.email_verified_at ? true : false,
+      is_brand_builder: professional.is_brand_builder ?? false,
+      is_premier_agent: professional.is_premier_agent ?? false,
+      is_top_agent: professional.is_top_agent ?? false,
       // Funnel & subscription tracking fields
       funnel_status: truncate(syncData.funnel_status),
       funnel_started_at: syncData.funnel_started_at,
