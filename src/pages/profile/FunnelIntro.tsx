@@ -159,7 +159,7 @@ export default function FunnelIntro() {
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="font-bold text-primary shrink-0">Tomorrow:</span>
-                  <p className="text-muted-foreground">As AI becomes more and more intelligent. It is demanding comprehensive data and rigorous science before giving an answer for "find a real estate agent in Scottsdale that I can rely on."</p>
+                  <p className="text-muted-foreground">As AI becomes more and more intelligent, it is demanding comprehensive data and rigorous science before giving an answer for "find a real estate agent in Scottsdale that I can rely on."</p>
                 </div>
               </div>
             </div>
