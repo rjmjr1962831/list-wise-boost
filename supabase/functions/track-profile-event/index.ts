@@ -28,15 +28,30 @@ serve(async (req) => {
 
     console.log('📊 Tracking event:', event_name, 'for token:', token.substring(0, 8) + '...');
 
-    // Validate token and get professional
-    const { data: professional, error: fetchError } = await supabase
+    // Try to find professional by verification_token first, then by id
+    let professional = null;
+    
+    // First try verification_token
+    const { data: byToken } = await supabase
       .from('professionals')
       .select('id, name')
       .eq('verification_token', token)
       .single();
+    
+    if (byToken) {
+      professional = byToken;
+    } else {
+      // Fallback: try by professional id directly
+      const { data: byId } = await supabase
+        .from('professionals')
+        .select('id, name')
+        .eq('id', token)
+        .single();
+      professional = byId;
+    }
 
-    if (fetchError || !professional) {
-      console.error('❌ Invalid token');
+    if (!professional) {
+      console.error('❌ Invalid token - not found by verification_token or id');
       return new Response(
         JSON.stringify({ 
           success: false,
