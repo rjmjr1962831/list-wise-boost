@@ -53,6 +53,7 @@ export default function FunnelIntro() {
   const comparisonData = [
     { label: 'Pay to get ranked?', top10: false, zillow: true, realtor: true, homelight: true },
     { label: 'Referral fees', top10: 'None', zillow: '35%', realtor: '35%', homelight: '33%' },
+    { label: 'Commission split', top10: false, zillow: true, realtor: true, homelight: true },
     { label: 'Selection method', top10: 'Invitation-only', zillow: 'Pay for visibility', realtor: 'Pay for visibility', homelight: 'Any agent' },
     { label: 'Data verification', top10: 'Third-party verified', zillow: 'Self-reported', realtor: 'Internal metrics', homelight: 'Self-reported' },
     { label: 'Methodology published', top10: true, zillow: false, realtor: false, homelight: false },
