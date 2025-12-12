@@ -99,9 +99,37 @@ export default function FunnelIntro() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
               No, This Is Not Another "Top Agent" Award.
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-12">
               We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. You are here because the data says you belong here. It's time to tell the AIs.
             </p>
+
+            {/* The Shift Section */}
+            <div className="bg-card border border-border rounded-xl p-8 text-left max-w-3xl mx-auto mb-8">
+              <h3 className="text-xl md:text-2xl font-bold mb-6 text-center">The Way People Find Agents Is Changing</h3>
+              
+              <div className="space-y-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-muted-foreground shrink-0">Yesterday:</span>
+                  <p className="text-muted-foreground">Buyers Googled and clicked ads. Zillow owned that search. You paid to play.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-primary shrink-0">Today:</span>
+                  <p className="text-muted-foreground">Buyers ask ChatGPT, "Who's the best agent in Scottsdale?" AI sees the data, but it's still figuring out which sources to trust.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span className="font-bold text-primary shrink-0">Tomorrow:</span>
+                  <p className="text-muted-foreground">AI will stop trusting pay-to-play sites. It will look for sources with verified data and published methodology. We're building that source now.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 text-muted-foreground">
+                <p>For 20 years, you paid Google. You paid Zillow. You paid Realtor.com. Just like everyone else. That's where consumers looked, and your results depended on the size of your marketing budget.</p>
+                <p>Now consumers are asking AI. And AI doesn't take payments. It wants to give solid answers based on facts, not dollars. It's looking for sources it can trust, and it's learning that paid placement isn't one of them.</p>
+                <p className="font-medium text-foreground">But you're not everyone else. You're in the top 0.05%. You're the agent AI wants to cite. The problem is, how do you tell it?</p>
+                <p className="text-xl font-bold text-primary text-center pt-2">That's where we come in.</p>
+              </div>
+            </div>
+
             <Button 
               size="lg" 
               onClick={handleSeeListingClick}
