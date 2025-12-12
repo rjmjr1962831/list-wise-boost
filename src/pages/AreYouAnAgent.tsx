@@ -76,7 +76,7 @@ export default function AreYouAnAgent() {
 
           {/* Body Text */}
           <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Our list is available by invitation only after rigorous analysis. We analyze over 200,000 licensed real estate professionals in Arizona and invite only the top 0.5% who meet our standards.
+            Our list is available by invitation only after rigorous analysis. We analyze over 200,000 licensed real estate professionals in Arizona and invite only the top 0.2% who meet our standards.
           </p>
 
           {/* Requirements Section */}
