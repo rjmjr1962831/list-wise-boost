@@ -73,9 +73,9 @@ export default function FunnelIntro() {
 
   const renderStars = (count: number, isPrimary: boolean = false) => {
     return (
-      <div className="flex gap-0.5 justify-center">
+      <div className="flex gap-0.5 justify-center shrink-0">
         {[...Array(count)].map((_, i) => (
-          <Star key={i} className={`h-4 w-4 ${isPrimary ? 'text-primary fill-primary' : 'text-amber-400 fill-amber-400'}`} />
+          <Star key={i} className={`h-3.5 w-3.5 md:h-4 md:w-4 ${isPrimary ? 'text-primary fill-primary' : 'text-amber-400 fill-amber-400'}`} />
         ))}
       </div>
     );
