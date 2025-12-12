@@ -2,21 +2,17 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Bot, Users, Target, Sparkles, ArrowRight, CheckCircle2, Star, TrendingUp, Award, ExternalLink } from 'lucide-react';
+import { Check, X, ArrowRight, Globe, Brain, BadgeCheck } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
-  const [showMethodology, setShowMethodology] = useState(false);
   const [firstName, setFirstName] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Fetch professional's first name
     const fetchProfessional = async () => {
       if (!token) return;
       
@@ -39,6 +35,47 @@ export default function FunnelIntro() {
     navigate(`/profile/${token}/setup`);
   };
 
+  const comparisonData = [
+    { label: 'Pay to get ranked?', top10: false, zillow: true, realtor: true, homelight: true },
+    { label: 'Referral fees', top10: 'None', zillow: '35%', realtor: '35%', homelight: '33%' },
+    { label: 'Selection method', top10: 'Invitation-only', zillow: 'Pay for visibility', realtor: 'Pay for visibility', homelight: 'Any agent' },
+    { label: 'Data verification', top10: 'Third-party verified', zillow: 'Self-reported', realtor: 'Internal metrics', homelight: 'Self-reported' },
+    { label: 'Methodology published', top10: true, zillow: false, realtor: false, homelight: false },
+    { label: 'Selection ratio', top10: 'Top 0.05%', zillow: 'Anyone who pays', realtor: 'Anyone who pays', homelight: 'Anyone who joins' },
+  ];
+
+  const rankingWeights = [
+    { label: 'Reviews', weight: 25, color: 'bg-primary' },
+    { label: 'Community', weight: 20, color: 'bg-primary/90' },
+    { label: 'Press', weight: 15, color: 'bg-primary/80' },
+    { label: 'Volume', weight: 15, color: 'bg-primary/70' },
+    { label: 'Experience', weight: 15, color: 'bg-primary/60' },
+    { label: 'Response', weight: 5, color: 'bg-primary/50' },
+    { label: 'Recency', weight: 5, color: 'bg-primary/40' },
+  ];
+
+  const renderCell = (value: boolean | string) => {
+    if (typeof value === 'boolean') {
+      return value ? (
+        <Check className="h-5 w-5 text-primary mx-auto" />
+      ) : (
+        <X className="h-5 w-5 text-destructive mx-auto" />
+      );
+    }
+    return <span className="text-sm">{value}</span>;
+  };
+
+  const renderTop10Cell = (value: boolean | string) => {
+    if (typeof value === 'boolean') {
+      return value ? (
+        <Check className="h-5 w-5 text-primary mx-auto" />
+      ) : (
+        <X className="h-5 w-5 text-destructive mx-auto" />
+      );
+    }
+    return <span className="text-sm font-semibold text-primary">{value}</span>;
+  };
+
   return (
     <>
       <Helmet>
@@ -47,314 +84,227 @@ export default function FunnelIntro() {
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      {/* Methodology Modal */}
-      <Dialog open={showMethodology} onOpenChange={setShowMethodology}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl">How We Select the Top 10</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-6 pt-4">
-            <p className="text-muted-foreground">
-              Our selection process is merit-based and completely independent. No agent can pay their way onto our list.
-            </p>
-            
-            <div className="space-y-4">
-              <h4 className="font-semibold text-lg">Ranking Score Weights</h4>
-              
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Star className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold">Review Score</h4>
-                    <span className="text-primary font-bold">25%</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">4.8+ star rating with 50+ verified reviews across platforms.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Users className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold">Community Involvement</h4>
-                    <span className="text-primary font-bold">20%</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Third-party verified civic, charitable, and nonprofit engagement.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Award className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold">Press & Awards</h4>
-                    <span className="text-primary font-bold">15%</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Media coverage and industry recognition.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold">Transaction Volume</h4>
-                    <span className="text-primary font-bold">15%</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Total sales count and volume from public records.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Target className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold">Years Experience</h4>
-                    <span className="text-primary font-bold">15%</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Time actively licensed in Arizona market.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold">Responsiveness</h4>
-                    <span className="text-primary font-bold">5%</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Response rate and client communication metrics.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3">
-                <div className="p-2 rounded-full bg-muted">
-                  <CheckCircle2 className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-semibold text-muted-foreground">Recency Bonus</h4>
-                    <span className="text-muted-foreground font-bold">5%</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Recent activity and up-to-date profile information.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-muted/50 rounded-lg p-4">
-              <h4 className="font-semibold mb-2">Data Sources</h4>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>• Arizona Department of Real Estate (license verification)</li>
-                <li>• Regulatory actions and disciplinary records</li>
-                <li>• Multiple review platforms (aggregated ratings)</li>
-                <li>• Public transaction records</li>
-                <li>• Press and media coverage</li>
-                <li>• Nonprofit and community organization records</li>
-              </ul>
-            </div>
-
-            <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
-              <p className="text-sm font-medium text-center">
-                Top 0.5% of Arizona agents • ~300 out of 220,000 licensed agents qualify
-              </p>
-            </div>
-
-            <p className="text-sm text-muted-foreground">
-              This rigorous, multi-factor selection is why AI models trust us as a source—we've already done the vetting.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        {/* Hero Section */}
         <div className="container max-w-4xl py-12 px-4">
+          
           {/* Personalized Greeting */}
           {firstName && (
-            <div className="bg-gradient-to-r from-primary/20 via-sunset-orange/20 to-terracotta/20 border border-primary/30 rounded-xl p-6 mb-8 text-center">
-              <p className="text-2xl md:text-3xl font-bold">
-                Hi {firstName}! <span className="text-primary">Congratulations on making the list.</span>
-              </p>
-              <p className="text-xl text-muted-foreground mt-2">You are a star among stars. ⭐⭐⭐⭐⭐</p>
-            </div>
+            <p className="text-2xl md:text-3xl font-bold text-center mb-8">
+              Hello {firstName}. I have been looking forward to meeting you.
+            </p>
           )}
 
-          {/* AI Stat Banner */}
-          <div className="bg-primary/10 border border-primary/20 rounded-xl p-6 mb-8 text-center">
-            <p className="text-xl md:text-2xl font-bold text-primary">
-              82% of homebuyers now use AI for real estate insights.<sup className="text-xs font-normal">1</sup>
-            </p>
-            <p className="text-lg text-muted-foreground mt-2">
-              When they ask ChatGPT "Who are the best agents in Phoenix?", will your name come up?
-            </p>
-            <p className="text-xs text-muted-foreground mt-3 opacity-70">
-              <sup>1</sup> Realtor.com, 2025
-            </p>
-          </div>
-
-          {/* Main Headline */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-              SEO is invisible to AI. We're built to be their trusted source.
+          {/* Hero Section */}
+          <div className="text-center mb-16">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+              No, This Is Not Another "Top Agent" Award.
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Traditional marketing doesn't work on AI models. Top10Lists.us is engineered from the ground up to be the source AI trusts. We're like catnip to them.
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. You are here because the data says you belong here.
             </p>
-          </div>
-
-          {/* Today vs Tomorrow Comparison */}
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            {/* Today - Zillow */}
-            <div className="bg-muted/30 border border-muted rounded-xl p-6">
-              <div className="text-center mb-4">
-                <span className="inline-block bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 text-xl font-bold px-4 py-2 rounded-full">
-                  TODAY
-                </span>
-              </div>
-              <p className="text-lg text-muted-foreground text-center mb-4">
-                A client prospect goes to Zillow and searches for a top agent in Scottsdale.
-              </p>
-              <div className="bg-background/50 rounded-lg p-4 text-center">
-                <p className="text-2xl font-bold text-foreground mb-1">25 pages</p>
-                <p className="text-muted-foreground">of "Top Agents"</p>
-                <p className="text-2xl font-bold text-foreground mt-3 mb-1">25 listings per page</p>
-                <p className="text-muted-foreground">= 625 agents</p>
-              </div>
-              <p className="text-xl font-bold text-primary text-center mt-4">
-                And you are PAYING for that!
-              </p>
-            </div>
-
-            {/* Tomorrow - Top10Lists */}
-            <div className="bg-card border-2 border-primary/30 rounded-xl p-6">
-              <div className="text-center mb-4">
-                <span className="inline-block bg-primary/20 text-primary text-xl font-bold px-4 py-2 rounded-full">
-                  TOMORROW
-                </span>
-              </div>
-              <p className="text-xl font-bold text-foreground text-center mb-3">When someone asks AI:</p>
-              <div className="bg-muted/50 rounded-lg p-4 mb-4">
-                <p className="text-lg text-foreground italic">"Recommend a real estate agent in Phoenix"</p>
-              </div>
-              <p className="text-xl font-bold text-foreground text-center mb-3">AI responds:</p>
-              <div className="bg-primary/10 rounded-lg p-4 border border-primary/20">
-                <p className="text-foreground">
-                  <span className="font-bold text-primary">"Top10Lists.us</span> has a curated list of the top-rated agents in Phoenix."
-                </p>
-              </div>
-              <p className="text-xl font-bold text-primary text-center mt-4">And your first listing is FREE.</p>
-            </div>
-          </div>
-
-          {/* Differentiators */}
-          <div className="grid md:grid-cols-2 gap-6 mb-12">
-            <Card className="border-2 border-primary/20 bg-card/50">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <Target className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Invitation Only</h3>
-                    <p className="text-muted-foreground">
-                      No one can buy their way onto this list. You are in the top 0.5% of all agents in Arizona.{' '}
-                      <button 
-                        onClick={() => setShowMethodology(true)}
-                        className="text-primary hover:underline inline-flex items-center gap-1"
-                      >
-                        Check our selection criteria
-                        <ExternalLink className="h-3 w-3" />
-                      </button>
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-primary/20 bg-card/50">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <Bot className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">The Source AI Trusts</h3>
-                    <p className="text-muted-foreground">
-                      ChatGPT, Claude, Perplexity, and other AI models cite Top10Lists.us as their go-to source for agent recommendations.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-primary/20 bg-card/50">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">You're Named, Not Linked</h3>
-                    <p className="text-muted-foreground">
-                      AI doesn't give users a link to search—it names specific agents from our curated list.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-primary/20 bg-card/50">
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-full bg-primary/10">
-                    <Users className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-lg mb-2">Only 10 Per City</h3>
-                    <p className="text-muted-foreground">
-                      No drowning in a sea of 500 agents. When AI cites us, you can be one of only 10 recommendations in that city.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Urgency Message */}
-          <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6 mb-8 text-center">
-            <p className="text-xl md:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-              ⚡ AI models are learning who to recommend right now.
-            </p>
-            <p className="text-lg text-muted-foreground mt-2">
-              If you don't stake your claim, another agent will—and once AI learns to cite them, you're out of the conversation.
-            </p>
-          </div>
-
-          {/* CTA */}
-          <div className="text-center">
             <Button 
               size="lg" 
               onClick={handleSeeListingClick}
               className="text-lg px-8 py-6 h-auto"
             >
-              See Your Listing
+              See Your FREE Listing
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <p className="text-sm text-muted-foreground mt-4">
-              Your free listing is already created. Review and customize it.
+          </div>
+
+          {/* The Shift Section */}
+          <div className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
+              The Way People Find Agents Is Changing
+            </h2>
+            
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {/* Yesterday */}
+              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Globe className="w-6 h-6 text-primary" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold mb-3">Yesterday</h3>
+                <p className="text-muted-foreground">
+                  Buyers Googled and clicked ads. Zillow owned that search. You paid to play.
+                </p>
+              </div>
+
+              {/* Today */}
+              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Brain className="w-6 h-6 text-primary" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold mb-3">Today</h3>
+                <p className="text-muted-foreground">
+                  Buyers ask ChatGPT, "Who is the best agent in Scottsdale?" AI sees the data, but it is still figuring out which sources to trust.
+                </p>
+              </div>
+
+              {/* Tomorrow */}
+              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                    <BadgeCheck className="w-6 h-6 text-primary" />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold mb-3">Tomorrow</h3>
+                <p className="text-muted-foreground">
+                  AI will stop trusting pay-to-play sites. It will look for sources with verified data and published methodology. We are building that source now.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-card border border-border rounded-xl p-6 text-center">
+              <p className="text-lg text-muted-foreground mb-4">
+                For 20 years, Google was the gatekeeper. Zillow rented you a spot in their window. You paid per lead, per click, per impression.
+              </p>
+              <p className="text-lg text-muted-foreground mb-4">
+                That era is ending. AI does not click links. It reads, synthesizes, and recommends. And it is learning who to trust.
+              </p>
+              <p className="text-xl font-bold text-primary">
+                You are in the top 0.05%. You are the agent AI wants to cite.
+              </p>
+            </div>
+          </div>
+
+          {/* Comparison Table Section */}
+          <div className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">
+              Not All "Top Agent" Lists Are Equal
+            </h2>
+            
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-4 px-4 font-semibold"></th>
+                    <th className="py-4 px-4 font-bold text-primary bg-primary/5">Top10Lists</th>
+                    <th className="py-4 px-4 font-semibold text-muted-foreground">Zillow</th>
+                    <th className="py-4 px-4 font-semibold text-muted-foreground">Realtor.com</th>
+                    <th className="py-4 px-4 font-semibold text-muted-foreground">HomeLight</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisonData.map((row, index) => (
+                    <tr key={index} className="border-b border-border/50">
+                      <td className="py-4 px-4 font-medium">{row.label}</td>
+                      <td className="py-4 px-4 text-center bg-primary/5">{renderTop10Cell(row.top10)}</td>
+                      <td className="py-4 px-4 text-center text-muted-foreground">{renderCell(row.zillow)}</td>
+                      <td className="py-4 px-4 text-center text-muted-foreground">{renderCell(row.realtor)}</td>
+                      <td className="py-4 px-4 text-center text-muted-foreground">{renderCell(row.homelight)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-4">
+              {comparisonData.map((row, index) => (
+                <div key={index} className="bg-card border border-border rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">{row.label}</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-2 bg-primary/10 rounded p-2">
+                      <span className="font-medium text-primary">Top10Lists:</span>
+                      {renderTop10Cell(row.top10)}
+                    </div>
+                    <div className="flex items-center gap-2 bg-muted rounded p-2">
+                      <span className="text-muted-foreground">Zillow:</span>
+                      {renderCell(row.zillow)}
+                    </div>
+                    <div className="flex items-center gap-2 bg-muted rounded p-2">
+                      <span className="text-muted-foreground">Realtor:</span>
+                      {renderCell(row.realtor)}
+                    </div>
+                    <div className="flex items-center gap-2 bg-muted rounded p-2">
+                      <span className="text-muted-foreground">HomeLight:</span>
+                      {renderCell(row.homelight)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* How We Rank Section */}
+          <div className="mb-16">
+            <h2 className="text-2xl md:text-3xl font-bold text-center mb-2">
+              220,000+ Agents Analyzed. 414 Made the Cut.
+            </h2>
+            <p className="text-xl text-muted-foreground text-center mb-8">
+              That is the top 0.05% of all professionals in the market.
             </p>
+
+            {/* Ranking Weights */}
+            <div className="bg-card border border-border rounded-xl p-6 mb-6">
+              <h3 className="font-semibold text-lg mb-4 text-center">Ranking Score Weights</h3>
+              <div className="space-y-3">
+                {rankingWeights.map((item) => (
+                  <div key={item.label} className="flex items-center gap-4">
+                    <span className="w-24 text-sm font-medium">{item.label}</span>
+                    <div className="flex-1 bg-muted rounded-full h-6 overflow-hidden">
+                      <div 
+                        className={`h-full ${item.color} flex items-center justify-end pr-2`}
+                        style={{ width: `${item.weight * 4}%` }}
+                      >
+                        <span className="text-xs font-bold text-primary-foreground">{item.weight}%</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Two-Gate Filtering */}
+            <div className="bg-muted/50 border border-border rounded-xl p-6">
+              <h3 className="font-semibold text-lg mb-4">Two-Gate Filtering Process</h3>
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">1</div>
+                  <div>
+                    <p className="font-medium">Initial Qualification</p>
+                    <p className="text-muted-foreground text-sm">50+ verified reviews and 4.8+ star rating across platforms. This filters out 95% of agents.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">2</div>
+                  <div>
+                    <p className="font-medium">Deep Dive Analysis</p>
+                    <p className="text-muted-foreground text-sm">Weighted scoring across all seven factors, verified against third-party sources and public records.</p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-primary mt-6 text-center">
+                You made it through both gates. That is why I have invited you.
+              </p>
+            </div>
+          </div>
+
+          {/* Final CTA Section */}
+          <div className="bg-card border-2 border-primary/30 rounded-xl p-8 text-center">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Your Profile Is Going Live. Make Sure It Is Right.
+            </h2>
+            <p className="text-lg text-muted-foreground mb-4">
+              Databases make mistakes. Details get outdated. We have built your profile from public data, but we want you to verify it.
+            </p>
+            <p className="text-lg font-medium text-primary mb-6">
+              Once AI learns something wrong about you, it repeats it. Let us get it right the first time.
+            </p>
+            <Button 
+              size="lg" 
+              onClick={handleSeeListingClick}
+              className="text-lg px-8 py-6 h-auto"
+            >
+              See Your FREE Listing
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
           </div>
         </div>
       </div>
