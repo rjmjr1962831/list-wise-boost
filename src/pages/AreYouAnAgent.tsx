@@ -62,7 +62,7 @@ export default function AreYouAnAgent() {
     <>
       <Helmet>
         <title>Are You an Agent? | Top10Lists.us</title>
-        <meta name="description" content="Learn about our invitation-only selection process for top real estate agents. We analyze 200,000+ agents and invite only the top 0.5% who meet our rigorous standards." />
+        <meta name="description" content="Learn about our invitation-only selection process for top real estate agents. We analyze 200,000+ agents and invite only the top 0.2% who meet our rigorous standards." />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://top10lists.us/are-you-an-agent" />
       </Helmet>

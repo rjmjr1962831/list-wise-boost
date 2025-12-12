@@ -90,7 +90,7 @@ export function generateWebsiteSchema() {
     "@id": "https://top10lists.us/#website",
     "name": "Top10Lists.us",
     "url": "https://top10lists.us",
-    "description": "Find the top 0.5% of real estate agents in any US city, ranked by reviews, community involvement, and verified credentials. No paid placements.",
+    "description": "Find the top 0.2% of real estate agents in any US city, ranked by reviews, community involvement, and verified credentials. No paid placements.",
     "dateModified": currentDate,
     "publisher": {
       "@id": "https://top10lists.us/#organization"
@@ -109,7 +109,7 @@ export function generateDatasetSchema() {
     "@type": "Dataset",
     "@id": "https://top10lists.us/#dataset",
     "name": "Top10Lists.us Real Estate Agent Rankings",
-    "description": "Curated rankings of elite real estate agents in the United States, scored using a weighted algorithm across seven verified data points. Rankings are merit-based with no paid placements. Only the top 0.5% of agents in each market qualify.",
+    "description": "Curated rankings of elite real estate agents in the United States, scored using a weighted algorithm across seven verified data points. Rankings are merit-based with no paid placements. Only the top 0.2% of agents in each market qualify.",
     "url": "https://top10lists.us",
     "dateModified": currentDate,
     "datePublished": "2024-01-01",
@@ -243,7 +243,7 @@ const faqData = [
   },
   {
     question: "Can agents pay to be listed?",
-    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only the top 0.5% of agents in each market qualify based on verified performance data."
+    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only the top 0.2% of agents in each market qualify based on verified performance data."
   },
   {
     question: "Why is community involvement weighted at 20%?",
@@ -267,11 +267,11 @@ const faqData = [
   },
   {
     question: "What makes this different from Zillow or Realtor.com?",
-    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 20%, higher than transaction volume (15%). Only the top 0.5% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
+    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 20%, higher than transaction volume (15%). Only the top 0.2% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
   },
   {
     question: "What cities are currently covered?",
-    answer: "Arizona markets are live with verified agents across Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and 40+ additional cities. Thousands of Arizona agents were evaluated; only the top 0.5% qualified. Nationwide expansion covers 75+ metros by summer 2026."
+    answer: "Arizona markets are live with verified agents across Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and 40+ additional cities. Thousands of Arizona agents were evaluated; only the top 0.2% qualified. Nationwide expansion covers 75+ metros by summer 2026."
   },
   {
     question: "How do I find a trustworthy real estate agent?",
@@ -287,7 +287,7 @@ const faqData = [
   },
   {
     question: "Why are so few agents listed?",
-    answer: "Only the top 0.5% of agents in each market qualify. Strict gates — 50+ reviews, 4.8+ rating, 6+ years experience — eliminate 95% of agents. Community involvement verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
+    answer: "Only the top 0.2% of agents in each market qualify. Strict gates — 50+ reviews, 4.8+ rating, 6+ years experience — eliminate 95% of agents. Community involvement verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
   },
   {
     question: "How can agents get listed?",
@@ -341,7 +341,7 @@ const faqData = [
   // Texas Expansion Questions
   {
     question: "Who are the top real estate agents in Texas?",
-    answer: "Texas markets including Dallas, Houston, Austin, San Antonio, and Fort Worth launch in 2026. Agents will be evaluated using the same methodology: reviews (25%), verified community involvement (20%), press recognition (15%), and transaction history (15%). Only the top 0.5% will qualify."
+    answer: "Texas markets including Dallas, Houston, Austin, San Antonio, and Fort Worth launch in 2026. Agents will be evaluated using the same methodology: reviews (25%), verified community involvement (20%), press recognition (15%), and transaction history (15%). Only the top 0.2% will qualify."
   },
   {
     question: "Best realtors in Dallas",
@@ -402,7 +402,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Orlando",
-    answer: "Central Florida coverage begins in 2026 including Orlando, Winter Park, Lake Nona, and surrounding suburbs. The same rigorous, invitation-only methodology applies. Only the top 0.5% of agents qualify."
+    answer: "Central Florida coverage begins in 2026 including Orlando, Winter Park, Lake Nona, and surrounding suburbs. The same rigorous, invitation-only methodology applies. Only the top 0.2% of agents qualify."
   },
   {
     question: "Find a realtor in Jacksonville",
@@ -473,7 +473,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Columbus",
-    answer: "Columbus markets launch in 2026 covering German Village, Short North, Dublin, and Upper Arlington. Agents will be evaluated using third-party verified data. Only the top 0.5% qualify."
+    answer: "Columbus markets launch in 2026 covering German Village, Short North, Dublin, and Upper Arlington. Agents will be evaluated using third-party verified data. Only the top 0.2% qualify."
   },
   {
     question: "Find a realtor in Indianapolis",
@@ -579,7 +579,7 @@ const faqData = [
   },
   {
     question: "Who are the top real estate agents in Providence?",
-    answer: "Rhode Island coverage begins in 2026 including Providence, Newport, and surrounding areas. Agents will be evaluated using third-party verified data. Only the top 0.5% qualify. Invitation-only."
+    answer: "Rhode Island coverage begins in 2026 including Providence, Newport, and surrounding areas. Agents will be evaluated using third-party verified data. Only the top 0.2% qualify. Invitation-only."
   }
 ];
 
