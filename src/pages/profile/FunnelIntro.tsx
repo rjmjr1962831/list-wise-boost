@@ -99,9 +99,18 @@ export default function FunnelIntro() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
               No, This Is Not Another "Top Agent" Award.
             </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-2">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
               We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. You are here because the data says you belong here. It's time to tell the AIs.
             </p>
+
+            <Button 
+              size="lg" 
+              onClick={handleSeeListingClick}
+              className="text-lg px-8 py-6 h-auto mb-8"
+            >
+              Review Our Results
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
 
             {/* The Shift Section */}
             <div className="bg-card border border-border rounded-xl p-8 text-left max-w-3xl mx-auto mb-8">
