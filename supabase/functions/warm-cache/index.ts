@@ -238,6 +238,36 @@ serve(async (req) => {
 
     console.log(`✅ Cache warming complete: ${result.warmed}/${result.total} successful, ${result.failed} failed`);
 
+    // Trigger IndexNow after cache warming completes (only on final batch or single batch)
+    if (!hasMore && result.warmed > 0) {
+      console.log('🔔 Triggering IndexNow to notify search engines...');
+      try {
+        const indexNowResponse = await fetch(`${SUPABASE_URL}/functions/v1/push-indexnow`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({}),
+        });
+        
+        if (indexNowResponse.ok) {
+          const indexNowResult = await indexNowResponse.json();
+          console.log(`✅ IndexNow triggered successfully: ${indexNowResult.urlsSubmitted || 0} URLs pushed`);
+          (result as any).indexNowTriggered = true;
+          (result as any).indexNowUrls = indexNowResult.urlsSubmitted || 0;
+        } else {
+          console.error(`⚠️ IndexNow failed: ${indexNowResponse.status}`);
+          (result as any).indexNowTriggered = false;
+          (result as any).indexNowError = `HTTP ${indexNowResponse.status}`;
+        }
+      } catch (indexNowError) {
+        console.error('⚠️ IndexNow error:', indexNowError);
+        (result as any).indexNowTriggered = false;
+        (result as any).indexNowError = indexNowError instanceof Error ? indexNowError.message : 'Unknown error';
+      }
+    }
+
     return new Response(
       JSON.stringify(result),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
