@@ -4,12 +4,14 @@ import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Check, X, ArrowRight, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const { trackEvent } = useFunnelTracking(token);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -38,14 +40,29 @@ export default function FunnelIntro() {
       
       if (data?.name) {
         setFirstName(data.name.split(' ')[0]);
+        
+        // Track funnel started and update funnel_started_at
+        trackEvent(FUNNEL_EVENTS.FUNNEL_STARTED, { source: 'magic_link' });
+        
+        // Update professional.funnel_started_at if not already set
+        supabase
+          .from('professionals')
+          .update({ 
+            funnel_started_at: new Date().toISOString(),
+            funnel_status: 'started' 
+          })
+          .eq('id', token)
+          .is('funnel_started_at', null)
+          .then(() => {});
       }
     };
     
     checkAdmin();
     fetchProfessional();
-  }, [token]);
+  }, [token, trackEvent]);
 
   const handleSeeListingClick = () => {
+    trackEvent(FUNNEL_EVENTS.SEE_LISTING_CLICKED);
     window.scrollTo(0, 0);
     navigate(`/profile/${token}/setup`);
   };

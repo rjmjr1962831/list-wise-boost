@@ -251,6 +251,15 @@ serve(async (req) => {
       synthesized_bio: professional.synthesized_bio || professional.description || '',
       city_name: city.name || '',
       state: city.state || '',
+      // Funnel & subscription tracking fields
+      funnel_status: professional.funnel_status || '',
+      funnel_started_at: professional.funnel_started_at || null,
+      subscription_status: professional.subscription_status || 'none',
+      monthly_revenue: professional.monthly_revenue_cents ? (professional.monthly_revenue_cents / 100) : null,
+      promo_code_used: professional.promo_code_used || '',
+      last_payment_date: professional.last_payment_at || null,
+      last_payment_status: professional.last_payment_status || '',
+      cities_subscribed: Array.isArray(professional.cities_subscribed) ? professional.cities_subscribed.join(', ') : '',
     };
 
     // Generate hash for change detection
@@ -322,6 +331,15 @@ serve(async (req) => {
       city_name: truncate(syncData.city_name),
       state: truncate(syncData.state),
       zillow_profile_url: truncate(professional.zillow_profile_url || ''),
+      // Funnel & subscription tracking fields
+      funnel_status: truncate(syncData.funnel_status),
+      funnel_started_at: syncData.funnel_started_at,
+      subscription_status: truncate(syncData.subscription_status),
+      monthly_revenue: syncData.monthly_revenue,
+      promo_code_used: truncate(syncData.promo_code_used),
+      last_payment_date: syncData.last_payment_date,
+      last_payment_status: truncate(syncData.last_payment_status),
+      cities_subscribed: truncate(syncData.cities_subscribed),
     };
     
     personData.custom_fields = {};

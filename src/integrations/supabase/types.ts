@@ -966,6 +966,78 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_transactions: {
+        Row: {
+          amount_cents: number
+          cities_purchased: string[] | null
+          created_at: string | null
+          currency: string | null
+          discount_amount_cents: number | null
+          event_type: string
+          failure_reason: string | null
+          id: string
+          package_name: string | null
+          professional_id: string | null
+          promo_code: string | null
+          status: string
+          stripe_charge_id: string | null
+          stripe_event_id: string
+          stripe_invoice_id: string | null
+          stripe_subscription_id: string | null
+        }
+        Insert: {
+          amount_cents: number
+          cities_purchased?: string[] | null
+          created_at?: string | null
+          currency?: string | null
+          discount_amount_cents?: number | null
+          event_type: string
+          failure_reason?: string | null
+          id?: string
+          package_name?: string | null
+          professional_id?: string | null
+          promo_code?: string | null
+          status: string
+          stripe_charge_id?: string | null
+          stripe_event_id: string
+          stripe_invoice_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Update: {
+          amount_cents?: number
+          cities_purchased?: string[] | null
+          created_at?: string | null
+          currency?: string | null
+          discount_amount_cents?: number | null
+          event_type?: string
+          failure_reason?: string | null
+          id?: string
+          package_name?: string | null
+          professional_id?: string | null
+          promo_code?: string | null
+          status?: string
+          stripe_charge_id?: string | null
+          stripe_event_id?: string
+          stripe_invoice_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pipedrive_field_mapping: {
         Row: {
           created_at: string | null
@@ -1326,6 +1398,8 @@ export type Database = {
           category_id: string
           certifications: Json | null
           certifications_verified: Json | null
+          checkout_started_at: string | null
+          cities_subscribed: string[] | null
           city_id: string
           claim_notes: string | null
           claim_status: Database["public"]["Enums"]["claim_status"]
@@ -1342,6 +1416,7 @@ export type Database = {
           email_verified_at: string | null
           encoded_zuid: string | null
           funnel_completed_at: string | null
+          funnel_started_at: string | null
           funnel_status: string | null
           get_to_know_me: string | null
           has_recent_review: boolean | null
@@ -1353,12 +1428,15 @@ export type Database = {
           is_premier_agent: boolean | null
           is_top_agent: boolean | null
           languages: Json | null
+          last_payment_at: string | null
+          last_payment_status: string | null
           license_expires_at: string | null
           license_issued_at: string | null
           license_number: string | null
           license_status: string | null
           license_type: string | null
           license_verified_at: string | null
+          monthly_revenue_cents: number | null
           most_recent_review_date: string | null
           name: string
           notable_achievements: Json | null
@@ -1376,6 +1454,7 @@ export type Database = {
           profile_link: string | null
           profile_type_ids: Json | null
           profile_types: Json | null
+          promo_code_used: string | null
           publications: Json | null
           rank: number
           ratings: Json | null
@@ -1397,6 +1476,7 @@ export type Database = {
           social_tiktok: string | null
           social_twitter: string | null
           specialty: string[] | null
+          subscription_status: string | null
           synthesized_bio: string | null
           team_display_information: Json | null
           title: string | null
@@ -1431,6 +1511,8 @@ export type Database = {
           category_id: string
           certifications?: Json | null
           certifications_verified?: Json | null
+          checkout_started_at?: string | null
+          cities_subscribed?: string[] | null
           city_id: string
           claim_notes?: string | null
           claim_status?: Database["public"]["Enums"]["claim_status"]
@@ -1447,6 +1529,7 @@ export type Database = {
           email_verified_at?: string | null
           encoded_zuid?: string | null
           funnel_completed_at?: string | null
+          funnel_started_at?: string | null
           funnel_status?: string | null
           get_to_know_me?: string | null
           has_recent_review?: boolean | null
@@ -1458,12 +1541,15 @@ export type Database = {
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
           languages?: Json | null
+          last_payment_at?: string | null
+          last_payment_status?: string | null
           license_expires_at?: string | null
           license_issued_at?: string | null
           license_number?: string | null
           license_status?: string | null
           license_type?: string | null
           license_verified_at?: string | null
+          monthly_revenue_cents?: number | null
           most_recent_review_date?: string | null
           name: string
           notable_achievements?: Json | null
@@ -1481,6 +1567,7 @@ export type Database = {
           profile_link?: string | null
           profile_type_ids?: Json | null
           profile_types?: Json | null
+          promo_code_used?: string | null
           publications?: Json | null
           rank: number
           ratings?: Json | null
@@ -1502,6 +1589,7 @@ export type Database = {
           social_tiktok?: string | null
           social_twitter?: string | null
           specialty?: string[] | null
+          subscription_status?: string | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
           title?: string | null
@@ -1536,6 +1624,8 @@ export type Database = {
           category_id?: string
           certifications?: Json | null
           certifications_verified?: Json | null
+          checkout_started_at?: string | null
+          cities_subscribed?: string[] | null
           city_id?: string
           claim_notes?: string | null
           claim_status?: Database["public"]["Enums"]["claim_status"]
@@ -1552,6 +1642,7 @@ export type Database = {
           email_verified_at?: string | null
           encoded_zuid?: string | null
           funnel_completed_at?: string | null
+          funnel_started_at?: string | null
           funnel_status?: string | null
           get_to_know_me?: string | null
           has_recent_review?: boolean | null
@@ -1563,12 +1654,15 @@ export type Database = {
           is_premier_agent?: boolean | null
           is_top_agent?: boolean | null
           languages?: Json | null
+          last_payment_at?: string | null
+          last_payment_status?: string | null
           license_expires_at?: string | null
           license_issued_at?: string | null
           license_number?: string | null
           license_status?: string | null
           license_type?: string | null
           license_verified_at?: string | null
+          monthly_revenue_cents?: number | null
           most_recent_review_date?: string | null
           name?: string
           notable_achievements?: Json | null
@@ -1586,6 +1680,7 @@ export type Database = {
           profile_link?: string | null
           profile_type_ids?: Json | null
           profile_types?: Json | null
+          promo_code_used?: string | null
           publications?: Json | null
           rank?: number
           ratings?: Json | null
@@ -1607,6 +1702,7 @@ export type Database = {
           social_tiktok?: string | null
           social_twitter?: string | null
           specialty?: string[] | null
+          subscription_status?: string | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
           title?: string | null
