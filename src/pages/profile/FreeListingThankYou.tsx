@@ -251,56 +251,6 @@ export default function FreeListingThankYou() {
             </CardContent>
           </Card>
 
-          {/* Sample List Preview */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-foreground">
-                Top 10 Real Estate Agents in {cityInfo.name}, {cityInfo.state}
-              </h2>
-              <span className="text-sm text-muted-foreground">Sample view</span>
-            </div>
-            
-            <p className="text-sm text-muted-foreground">
-              Your listing rotates with other qualified agents. Here's an example of how it might appear:
-            </p>
-
-            <div className="space-y-4">
-              {rankedAgents.map((agent, index) => {
-                const isCurrentUser = agent.id === professional.id;
-                const displayProfessional = convertToDisplayProfessional(agent, index + 1);
-                
-                return (
-                  <div 
-                    key={agent.id} 
-                    className={isCurrentUser ? 'ring-2 ring-primary ring-offset-2 rounded-lg' : ''}
-                  >
-                    {isCurrentUser && (
-                      <div className="bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-t-lg inline-block">
-                        Your Listing
-                      </div>
-                    )}
-                    <ProfessionalCard
-                      professional={displayProfessional}
-                      market={`${cityInfo.name}, ${cityInfo.state}`}
-                      stateAbbr={cityInfo.state_slug === 'arizona' ? 'AZ' : cityInfo.state_slug.toUpperCase()}
-                      citySlug={cityInfo.slug}
-                      categorySlug="top10realestateagents"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Bottom CTA */}
-          <div className="text-center">
-            <Button
-              size="lg"
-              onClick={() => navigate(`/profile/${token}/pricing`)}
-            >
-              Ok, let's do this.
-            </Button>
-          </div>
 
           {/* Actions */}
           <Card>
