@@ -105,9 +105,16 @@ export default function FunnelIntro() {
 
             {/* The Shift Section */}
             <div className="bg-card border border-border rounded-xl p-8 text-left max-w-3xl mx-auto mb-8">
+              <div className="space-y-4 text-muted-foreground mb-8">
+                <p>For 30 years, you paid Google. You paid Zillow. You paid Realtor.com. Just like everyone else. That's where consumers looked, and your results depended on the size of your marketing budget.</p>
+                <p>Now consumers are asking AI. And AI doesn't take payments. It wants to give solid answers based on facts, not dollars. It's looking for sources it can trust, and it's learning that paid placement isn't one of them.</p>
+                <p className="font-medium text-foreground">But you're not everyone else. You're in the top 0.05%. You're the agent AI wants to cite. The problem is, how do you tell it?</p>
+                <p className="text-xl font-bold text-primary text-center pt-2">That's where we come in.</p>
+              </div>
+
               <h3 className="text-xl md:text-2xl font-bold mb-6 text-center">The Way People Find Agents Is Changing</h3>
               
-              <div className="space-y-4 mb-6">
+              <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <span className="font-bold text-muted-foreground shrink-0">Yesterday:</span>
                   <p className="text-muted-foreground">Buyers Googled and clicked ads. Zillow and their ilk owned that search. So you had to pay them.</p>
@@ -120,13 +127,6 @@ export default function FunnelIntro() {
                   <span className="font-bold text-primary shrink-0">Tomorrow:</span>
                   <p className="text-muted-foreground">As AI becomes more and more intelligent. It is demanding comprehensive data and rigorous science before giving an answer for "find a real estate agent in Scottsdale that I can rely on."</p>
                 </div>
-              </div>
-
-              <div className="space-y-4 text-muted-foreground">
-                <p>For 30 years, you paid Google. You paid Zillow. You paid Realtor.com. Just like everyone else. That's where consumers looked, and your results depended on the size of your marketing budget.</p>
-                <p>Now consumers are asking AI. And AI doesn't take payments. It wants to give solid answers based on facts, not dollars. It's looking for sources it can trust, and it's learning that paid placement isn't one of them.</p>
-                <p className="font-medium text-foreground">But you're not everyone else. You're in the top 0.05%. You're the agent AI wants to cite. The problem is, how do you tell it?</p>
-                <p className="text-xl font-bold text-primary text-center pt-2">That's where we come in.</p>
               </div>
             </div>
 
