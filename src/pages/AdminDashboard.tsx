@@ -3,13 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, Send, CreditCard } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
 import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
 import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResultsDashboard";
-import { StopEnrichmentButton } from "@/components/admin/StopEnrichmentButton";
 
 import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
@@ -115,25 +114,7 @@ const AdminDashboard = () => {
 
         <div className="mb-6 p-4 bg-card rounded-lg border">
           <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <StopEnrichmentButton />
-            <Button
-              onClick={async () => {
-                toast.info("Pushing to IndexNow...");
-                try {
-                  const { data, error } = await supabase.functions.invoke('push-indexnow');
-                  if (error) throw error;
-                  toast.success(`IndexNow notified: ${data.urlsSubmitted} URLs submitted`);
-                } catch (err: any) {
-                  toast.error(`IndexNow failed: ${err.message}`);
-                }
-              }}
-              variant="outline"
-              className="h-auto py-3"
-            >
-              <Send className="mr-2 h-4 w-4" />
-              Push to IndexNow
-            </Button>
+          <div className="flex gap-4">
             <Button
               onClick={async () => {
                 toast.info("Creating Stripe test checkout...");
@@ -170,54 +151,6 @@ const AdminDashboard = () => {
               <CreditCard className="mr-2 h-4 w-4" />
               Test Stripe ($1)
             </Button>
-          </div>
-          <h2 className="text-lg font-semibold mb-2 mt-4">Test Links</h2>
-          <div className="flex gap-2 flex-wrap mb-4">
-            <a 
-              href="/arizona/phoenix/top10realestateagents/robert-maynard" 
-              target="_blank"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
-              Robert Maynard Card
-            </a>
-            <a 
-              href="/profile/45415a04-dffe-46d0-96c6-fe8dbf6cebff" 
-              target="_blank"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
-              Robert Maynard Edit Profile
-            </a>
-            <a 
-              href="/profile/45415a04-dffe-46d0-96c6-fe8dbf6cebff/pricing" 
-              target="_blank"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-primary bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-            >
-              Premium Pricing Page
-            </a>
-            <a 
-              href="/profile/45415a04-dffe-46d0-96c6-fe8dbf6cebff/preview" 
-              target="_blank"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-green-600 text-white hover:bg-green-700 h-10 px-4 py-2"
-            >
-              Claim Listing Preview
-            </a>
-          </div>
-          <h2 className="text-lg font-semibold mb-2">Download Files</h2>
-          <div className="flex gap-2">
-            <a 
-              href="/newly-added-cities-enriched.csv" 
-              download="newly-added-cities-enriched.csv"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
-              Download Cities CSV
-            </a>
-            <a 
-              href="/qualified-agents-crm.csv" 
-              download="qualified-agents-crm.csv"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
-            >
-              Download CRM Export (129 Agents)
-            </a>
           </div>
         </div>
 
