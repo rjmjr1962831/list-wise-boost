@@ -162,7 +162,7 @@ const AdminDashboard = () => {
                       }],
                       allCityIds: ['test-city'],
                       monthlyTotal: 1,
-                      successUrl: `${window.location.origin}/admin?stripe_test=success`,
+                      successUrl: `${window.location.origin}/agent-payment-success`,
                       cancelUrl: `${window.location.origin}/admin`
                     }
                   });
