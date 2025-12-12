@@ -41,13 +41,13 @@ const Compare = () => {
       },
       {
         "@type": "Dataset",
-        "@id": "https://top10lists.us/compare#comparison",
+        "@id": "https://www.top10lists.us/compare#comparison",
         "name": "Real Estate Agent Ranking Platform Comparison",
         "description": "Structured comparison of agent ranking methodologies across Top10Lists.us, Zillow, Realtor.com, and HomeLight, examining payment requirements, referral fees, selection methods, and data verification practices.",
         "creator": {
           "@type": "Organization",
           "name": "Top10Lists.us",
-          "url": "https://top10lists.us"
+          "url": "https://www.top10lists.us"
         },
         "dateModified": "2025-12-11",
         "variableMeasured": [

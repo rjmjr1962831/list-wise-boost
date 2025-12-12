@@ -161,7 +161,7 @@ serve(async (req) => {
                 <h2 style="color: #1a1a1a; font-size: 18px; margin-top: 32px;">How to See Your Listing</h2>
                 
                 <ol style="color: #4b5563; font-size: 16px; line-height: 1.8; padding-left: 20px;">
-                  <li>Go to <a href="https://top10lists.us" style="color: #2563eb;">top10lists.us</a></li>
+                  <li>Go to <a href="https://www.top10lists.us" style="color: #2563eb;">www.top10lists.us</a></li>
                   <li>Search for your city (e.g., "${cityName}")</li>
                   <li>You'll see your profile featured in the Top 10 results!</li>
                 </ol>

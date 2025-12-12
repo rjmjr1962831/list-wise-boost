@@ -1079,7 +1079,7 @@ export default function DynamicCategoryList() {
     "isPartOf": {
       "@type": "WebSite",
       "name": "Top10Lists.us",
-      "url": "https://top10lists.us"
+      "url": "https://www.top10lists.us"
     },
     "about": {
       "@type": "Place",

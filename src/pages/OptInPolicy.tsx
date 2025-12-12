@@ -138,8 +138,8 @@ const OptInPolicy = () => {
               <div className="flex gap-2">
                 <dt className="font-medium text-foreground">Website:</dt>
                 <dd className="text-muted-foreground">
-                  <a href="https://top10lists.us" className="text-primary hover:underline">
-                    https://top10lists.us
+                  <a href="https://www.top10lists.us" className="text-primary hover:underline">
+                    https://www.top10lists.us
                   </a>
                 </dd>
               </div>
