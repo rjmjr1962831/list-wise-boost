@@ -110,7 +110,7 @@ export default function FunnelIntro() {
               <div className="space-y-4 mb-6">
                 <div className="flex items-start gap-3">
                   <span className="font-bold text-muted-foreground shrink-0">Yesterday:</span>
-                  <p className="text-muted-foreground">Buyers Googled and clicked ads. Zillow owned that search. You paid to play.</p>
+                  <p className="text-muted-foreground">Buyers Googled and clicked ads. Zillow and their ilk owned that search. So you had to pay them.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="font-bold text-primary shrink-0">Today:</span>
