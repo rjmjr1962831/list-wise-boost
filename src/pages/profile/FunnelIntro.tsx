@@ -114,7 +114,7 @@ export default function FunnelIntro() {
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="font-bold text-primary shrink-0">Today:</span>
-                  <p className="text-muted-foreground">Buyers ask ChatGPT, "Who's the best agent in Scottsdale?" AI sees the data, but it's still figuring out which sources to trust.</p>
+                  <p className="text-muted-foreground">Buyers ask ChatGPT, "Who's the best agent in Scottsdale?" AI cites the Zillows of the world, but AI knows that this is a pay-to-play site and it yearns for hard data with rigorous standards.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <span className="font-bold text-primary shrink-0">Tomorrow:</span>
