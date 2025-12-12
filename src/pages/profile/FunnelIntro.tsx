@@ -57,7 +57,7 @@ export default function FunnelIntro() {
     { label: 'Selection method', top10: 'Invitation', zillow: 'Paid', realtor: 'Paid', homelight: 'Any agent' },
     { label: 'Data verification', top10: 'Verified', zillow: 'Self-reported', realtor: 'Internal metrics', homelight: 'Self-reported' },
     { label: 'Methodology published', top10: true, zillow: false, realtor: false, homelight: false },
-    { label: 'Selection ratio', top10: '0.2%', zillow: 'Anyone who pays', realtor: 'Anyone who pays', homelight: 'Anyone who joins' },
+    { label: 'Selection ratio', top10: 'Top 0.2%', zillow: 'Anyone who pays', realtor: 'Anyone who pays', homelight: 'Anyone who joins' },
     { label: 'Optimized for AI', top10: 5, zillow: 2, realtor: 2, homelight: 1 },
   ];
 
