@@ -89,14 +89,14 @@ export default function FunnelIntro() {
           
           {/* Personalized Greeting */}
           {firstName && (
-            <h1 className="text-2xl md:text-3xl font-bold text-center mb-8">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-8">
               Hello {firstName}. AI has been looking forward to meeting you.
             </h1>
           )}
 
           {/* Hero Section */}
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-6">
               No, This Is Not Another "Top Agent" Award.
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
