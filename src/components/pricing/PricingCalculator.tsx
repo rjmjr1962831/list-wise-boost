@@ -1,9 +1,9 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { X, Sparkles, ArrowRight, Clock, CreditCard, Receipt } from 'lucide-react';
 import { PricingCalculatorResult } from '@/hooks/usePricingCalculator';
+import { getPackageCities } from '@/data/arizonaPackages';
 import { cn } from '@/lib/utils';
 
 interface PricingCalculatorProps {
@@ -59,20 +59,18 @@ export function PricingCalculator({ calculator, onCheckout, isLoading }: Pricing
   
   const stripeLineItems = getStripeLineItems(calculator);
 
+  // Get city names for a package
+  const getPackageCityNames = () => {
+    if (!calculator.selectedPackage) return '';
+    const packageCities = calculator.selectedCities.filter(city => 
+      calculator.selectedPackage?.includedCityIds?.includes(city.id)
+    );
+    return packageCities.map(c => c.cityName).join(', ');
+  };
+
   return (
     <Card className="sticky top-4 border-2 border-primary/20 shadow-lg">
-      <CardHeader className="pb-3 bg-gradient-to-br from-primary/5 to-accent/5">
-        <CardTitle className="flex items-center justify-between">
-          <span className="text-lg">Your Selection</span>
-          {cityCount > 0 && (
-            <Badge className="bg-primary text-primary-foreground">
-              {cityCount} {cityCount === 1 ? 'city' : 'cities'}
-            </Badge>
-          )}
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pt-6">
         {lineItems.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-4">
             Select a package or cities to get started
@@ -84,25 +82,32 @@ export function PricingCalculator({ calculator, onCheckout, isLoading }: Pricing
               {lineItems.map((item, index) => (
                 <div 
                   key={`${item.type}-${item.cityId || index}`}
-                  className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50"
+                  className="p-2 rounded-lg bg-muted/50"
                 >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.label}</p>
-                    <p className="text-xs text-muted-foreground">
-                      <span className="line-through">${item.retailPrice}</span>
-                      {' → '}
-                      <span className="text-primary font-medium">${item.price}/mo</span>
-                    </p>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">
+                        <span className="line-through">${item.retailPrice}</span>
+                        {' → '}
+                        <span className="text-primary font-medium">${item.price}/mo</span>
+                      </p>
+                    </div>
+                    {item.cityId && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        onClick={() => removeCity(item.cityId!)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
-                  {item.cityId && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 shrink-0"
-                      onClick={() => removeCity(item.cityId!)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
+                  {item.type === 'package' && getPackageCityNames() && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {getPackageCityNames()}
+                    </p>
                   )}
                 </div>
               ))}
