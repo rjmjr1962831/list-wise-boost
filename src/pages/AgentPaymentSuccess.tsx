@@ -13,12 +13,19 @@ export default function AgentPaymentSuccess() {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const professionalId = searchParams.get('professional_id');
+  const isTestMode = professionalId === 'test-admin-checkout';
   
-  const [isProcessing, setIsProcessing] = useState(true);
-  const [isComplete, setIsComplete] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(!isTestMode);
+  const [isComplete, setIsComplete] = useState(isTestMode);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Skip subscription completion for admin test mode
+    if (isTestMode) {
+      toast.success('Test mode: Showing success page for design review');
+      return;
+    }
+
     async function completeSubscription() {
       if (!sessionId || !professionalId) {
         setError('Missing payment information');
@@ -61,7 +68,7 @@ export default function AgentPaymentSuccess() {
     }
 
     completeSubscription();
-  }, [sessionId, professionalId]);
+  }, [sessionId, professionalId, isTestMode]);
 
   if (isProcessing) {
     return (
