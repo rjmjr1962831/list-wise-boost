@@ -123,7 +123,7 @@ export default function FunnelIntro() {
               </div>
 
               <div className="space-y-4 text-muted-foreground">
-                <p>For 20 years, you paid Google. You paid Zillow. You paid Realtor.com. Just like everyone else. That's where consumers looked, and your results depended on the size of your marketing budget.</p>
+                <p>For 30 years, you paid Google. You paid Zillow. You paid Realtor.com. Just like everyone else. That's where consumers looked, and your results depended on the size of your marketing budget.</p>
                 <p>Now consumers are asking AI. And AI doesn't take payments. It wants to give solid answers based on facts, not dollars. It's looking for sources it can trust, and it's learning that paid placement isn't one of them.</p>
                 <p className="font-medium text-foreground">But you're not everyone else. You're in the top 0.05%. You're the agent AI wants to cite. The problem is, how do you tell it?</p>
                 <p className="text-xl font-bold text-primary text-center pt-2">That's where we come in.</p>
