@@ -166,6 +166,18 @@ export default function VerifyListingByToken() {
             </Button>
           </div>
         </div>
+
+        {/* Bottom CTA button */}
+        <div className="flex justify-center pt-4">
+          <Button 
+            size="lg" 
+            className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-8 py-4"
+            onClick={() => navigate(`/profile/${token}/fields`)}
+          >
+            <Edit className="mr-2 h-5 w-5" />
+            Approve or Edit
+          </Button>
+        </div>
       </div>
     </div>;
 }
