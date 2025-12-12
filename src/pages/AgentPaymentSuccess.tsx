@@ -241,7 +241,7 @@ export default function AgentPaymentSuccess() {
                 <div>
                   <h3 className="font-semibold mb-1">24-Month Price Lock</h3>
                   <p className="text-sm text-muted-foreground">
-                    Your early adopter pricing is locked in for 24 months – your rate will never increase.
+                    Your early adopter pricing is locked in for 24 months.
                   </p>
                 </div>
               </div>
