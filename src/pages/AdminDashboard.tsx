@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, Download, RefreshCw, Search, Globe, Bot, Send, CreditCard } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, Send, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
 import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
 import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResultsDashboard";
 import { StopEnrichmentButton } from "@/components/admin/StopEnrichmentButton";
-import { EnrichmentCostControls } from "@/components/admin/EnrichmentCostControls";
+
 import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
@@ -117,7 +117,6 @@ const AdminDashboard = () => {
           <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <StopEnrichmentButton />
-            <EnrichmentCostControls />
             <Button
               onClick={async () => {
                 toast.info("Pushing to IndexNow...");
