@@ -19,7 +19,7 @@ const features: FeatureItem[] = [
   { label: 'Basic profile listing', premiumLabel: 'Enhanced profile listing', free: true, premium: true },
   { label: 'Verified license display', free: true, premium: true },
   { label: 'AI search optimization', free: true, premium: true },
-  { label: 'Enhanced profile (awards, press)', free: true, premium: true },
+  
   { label: 'Video introduction', free: true, premium: true },
   // Premium-only items
   { label: 'Guaranteed Top 10 placement', free: false, premium: true },
