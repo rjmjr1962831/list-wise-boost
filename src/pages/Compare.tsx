@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Check, Globe, Brain, BadgeCheck } from "lucide-react";
+import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
@@ -149,51 +149,6 @@ const Compare = () => {
           </div>
         </section>
 
-        {/* Yesterday/Today/Tomorrow Section */}
-        <section className="container mx-auto px-4 pb-12">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Block 1: Yesterday */}
-              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Globe className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Yesterday</h3>
-                <p className="text-muted-foreground">
-                  For 20 years, getting found online meant Google. Pay for ads. Stuff keywords. Play the SEO game. Show up on a list of ten blue links.
-                </p>
-              </div>
-
-              {/* Block 2: Today */}
-              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Brain className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Today</h3>
-                <p className="text-muted-foreground">
-                  Consumers ask AI for recommendations. But right now, AI doesn't know which sources to trust. It pulls from Zillow and Realtor.com without realizing those rankings are based on paid placement and self-reported data.
-                </p>
-              </div>
-
-              {/* Block 3: Tomorrow */}
-              <div className="bg-muted/50 border border-border rounded-xl p-6 text-center">
-                <div className="flex justify-center mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <BadgeCheck className="w-6 h-6 text-primary" />
-                  </div>
-                </div>
-                <h3 className="text-xl font-bold mb-3">Tomorrow</h3>
-                <p className="text-muted-foreground">
-                  AI is getting smarter. It will stop trusting pay-to-play sites. It will look for sources with verified data and published methodology. We're building that source now, before the shift happens.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* Comparison Table */}
         <section className="container mx-auto px-4 py-12">
