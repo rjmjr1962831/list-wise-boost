@@ -54,7 +54,7 @@ export default function FunnelIntro() {
     { label: 'Pay to get ranked?', top10: false, zillow: true, realtor: true, homelight: true },
     { label: 'Commission split', top10: false, zillow: true, realtor: true, homelight: true },
     { label: 'Paid Leads', top10: false, zillow: true, realtor: true, homelight: true },
-    { label: 'Selection method', top10: 'Invitation-only', zillow: 'Pay for visibility', realtor: 'Pay for visibility', homelight: 'Any agent' },
+    { label: 'Selection method', top10: 'Invite-only', zillow: 'Paid', realtor: 'Paid', homelight: 'Any agent' },
     { label: 'Data verification', top10: 'Third-party verified', zillow: 'Self-reported', realtor: 'Internal metrics', homelight: 'Self-reported' },
     { label: 'Methodology published', top10: true, zillow: false, realtor: false, homelight: false },
     { label: 'Selection ratio', top10: 'Top 0.05%', zillow: 'Anyone who pays', realtor: 'Anyone who pays', homelight: 'Anyone who joins' },
