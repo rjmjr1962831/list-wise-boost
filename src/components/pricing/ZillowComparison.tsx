@@ -15,6 +15,7 @@ const comparisonData: ComparisonRow[] = [
   { feature: 'AI search optimization', top10: true, zillowPremier: false, zillowFlex: false },
   { feature: 'Per-lead cost', top10: 'None', zillowPremier: '$20-$450+', zillowFlex: 'N/A' },
   { feature: 'Per-deal referral fee', top10: 'None', zillowPremier: 'None', zillowFlex: '15-40%' },
+  { feature: 'Commission split', top10: false, zillowPremier: true, zillowFlex: true },
   { feature: 'Monthly cost', top10: '$250-$600', zillowPremier: '$300-$4,000+', zillowFlex: 'Variable' },
   { feature: 'Verified credentials displayed', top10: true, zillowPremier: false, zillowFlex: false },
   { feature: 'Transparent methodology', top10: true, zillowPremier: false, zillowFlex: false },
