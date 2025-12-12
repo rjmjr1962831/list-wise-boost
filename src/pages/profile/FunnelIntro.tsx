@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Check, X, ArrowRight } from 'lucide-react';
+import { Check, X, ArrowRight, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function FunnelIntro() {
@@ -58,6 +58,7 @@ export default function FunnelIntro() {
     { label: 'Data verification', top10: 'Third-party verified', zillow: 'Self-reported', realtor: 'Internal metrics', homelight: 'Self-reported' },
     { label: 'Methodology published', top10: true, zillow: false, realtor: false, homelight: false },
     { label: 'Selection ratio', top10: 'Top 0.05%', zillow: 'Anyone who pays', realtor: 'Anyone who pays', homelight: 'Anyone who joins' },
+    { label: 'Optimized for AI', top10: 5, zillow: 2, realtor: 2, homelight: 1 },
   ];
 
   const rankingWeights = [
@@ -70,7 +71,20 @@ export default function FunnelIntro() {
     { label: 'Recency', weight: 5, color: 'bg-primary/40' },
   ];
 
-  const renderCell = (value: boolean | string) => {
+  const renderStars = (count: number, isPrimary: boolean = false) => {
+    return (
+      <div className="flex gap-0.5 justify-center">
+        {[...Array(count)].map((_, i) => (
+          <Star key={i} className={`h-4 w-4 ${isPrimary ? 'text-primary fill-primary' : 'text-amber-400 fill-amber-400'}`} />
+        ))}
+      </div>
+    );
+  };
+
+  const renderCell = (value: boolean | string | number) => {
+    if (typeof value === 'number') {
+      return renderStars(value, false);
+    }
     if (typeof value === 'boolean') {
       return value ? (
         <span className="text-sm font-medium text-destructive">Yes</span>
@@ -81,7 +95,10 @@ export default function FunnelIntro() {
     return <span className="text-sm">{value}</span>;
   };
 
-  const renderTop10Cell = (value: boolean | string) => {
+  const renderTop10Cell = (value: boolean | string | number) => {
+    if (typeof value === 'number') {
+      return renderStars(value, true);
+    }
     if (typeof value === 'boolean') {
       return value ? (
         <span className="text-sm font-medium text-primary">Yes</span>
