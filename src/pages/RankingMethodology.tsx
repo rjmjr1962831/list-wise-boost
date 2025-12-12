@@ -28,11 +28,11 @@ const RankingMethodology = () => {
     "@type": "WebPage",
     "name": "Selection Methodology",
     "description": "Multi-source data analysis methodology for identifying and inviting elite real estate agents in Arizona. Featured placement affects visibility only, not scores or selection criteria.",
-    "url": "https://top10lists.us/about/ranking-methodology",
+    "url": "https://www.top10lists.us/about/ranking-methodology",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Top10Lists.us",
-      "url": "https://top10lists.us"
+      "url": "https://www.top10lists.us"
     },
     "mainEntity": {
       "@type": "HowTo",
@@ -87,19 +87,19 @@ const RankingMethodology = () => {
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://top10lists.us"
+        "item": "https://www.top10lists.us"
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "About",
-        "item": "https://top10lists.us/about"
+        "item": "https://www.top10lists.us/about"
       },
       {
         "@type": "ListItem",
         "position": 3,
         "name": "Selection Methodology",
-        "item": "https://top10lists.us/about/ranking-methodology"
+        "item": "https://www.top10lists.us/about/ranking-methodology"
       }
     ]
   };
@@ -114,7 +114,7 @@ const RankingMethodology = () => {
           content="Learn how Top10Lists.us identifies and invites Arizona's elite real estate agents using multi-source data analysis, rigorous selection criteria, and daily monitoring." 
         />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://top10lists.us/about/ranking-methodology" />
+        <link rel="canonical" href="https://www.top10lists.us/about/ranking-methodology" />
         
         {/* Topic Hints */}
         <meta name="subject" content="Real Estate Agent Selection Methodology" />
@@ -123,20 +123,20 @@ const RankingMethodology = () => {
         
         {/* Open Graph */}
         <meta property="og:type" content="article" />
-        <meta property="og:url" content="https://top10lists.us/about/ranking-methodology" />
+        <meta property="og:url" content="https://www.top10lists.us/about/ranking-methodology" />
         <meta property="og:title" content="Selection Methodology | Top10Lists.us" />
         <meta property="og:description" content="Our rigorous, data-driven methodology for identifying Arizona's elite real estate agents." />
-        <meta property="og:image" content="https://top10lists.us/og-methodology.png" />
+        <meta property="og:image" content="https://www.top10lists.us/og-methodology.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Top10Lists.us" />
         
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:url" content="https://top10lists.us/about/ranking-methodology" />
+        <meta name="twitter:url" content="https://www.top10lists.us/about/ranking-methodology" />
         <meta name="twitter:title" content="Selection Methodology | Top10Lists.us" />
         <meta name="twitter:description" content="How we identify Arizona's elite real estate agents." />
-        <meta name="twitter:image" content="https://top10lists.us/og-methodology.png" />
+        <meta name="twitter:image" content="https://www.top10lists.us/og-methodology.png" />
         
         {/* Geo Tags */}
         <meta name="geo.region" content="US-AZ" />
@@ -164,11 +164,11 @@ const RankingMethodology = () => {
             "@type": "Dataset",
             "name": "Real Estate Agent Directory Industry Comparison",
             "description": "Comparison of Top10Lists.us merit-based ranking methodology vs pay-to-play competitors",
-            "url": "https://top10lists.us/about/ranking-methodology",
+            "url": "https://www.top10lists.us/about/ranking-methodology",
             "creator": {
               "@type": "Organization",
               "name": "Top10Lists.us",
-              "url": "https://top10lists.us"
+              "url": "https://www.top10lists.us"
             },
             "variableMeasured": [
               {

@@ -57,13 +57,13 @@ const AgentInfo = () => {
               "@type": "ListItem",
               "position": 1,
               "name": "Home",
-              "item": typeof window !== 'undefined' ? window.location.origin : "https://top10lists.us"
+              "item": typeof window !== 'undefined' ? window.location.origin : "https://www.top10lists.us"
             },
             {
               "@type": "ListItem",
               "position": 2,
               "name": "Agent Information",
-              "item": typeof window !== 'undefined' ? window.location.href : "https://top10lists.us/agent-info"
+              "item": typeof window !== 'undefined' ? window.location.href : "https://www.top10lists.us/agent-info"
             }
           ]
         })}
