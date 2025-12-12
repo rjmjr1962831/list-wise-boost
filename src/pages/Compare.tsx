@@ -91,7 +91,7 @@ const Compare = () => {
             "@type": "PropertyValue",
             "name": "Selection Ratio",
             "description": "Percentage of agents who qualify for listing",
-            "value": "Top10Lists.us: Top 0.05% (414 of 220,000+ analyzed). Zillow: Anyone who pays. Realtor.com: Anyone who pays. HomeLight: Anyone who joins."
+            "value": "Top10Lists.us: Top 0.2% (414 of 220,000+ analyzed). Zillow: Anyone who pays. Realtor.com: Anyone who pays. HomeLight: Anyone who joins."
           }
         ]
       },
@@ -104,7 +104,7 @@ const Compare = () => {
             "name": "How is Top10Lists.us different from Zillow?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Zillow is a pay-to-play advertising platform. Agents pay for visibility in ZIP codes through Premier Agent, and Zillow Flex takes 35% of commission on closed deals. There is no performance-based ranking. Top10Lists.us is invitation-only with no payment for ranking position, no referral fees, and no commission splits. Only the top 0.05% of agents qualify based on third-party verified data."
+              "text": "Zillow is a pay-to-play advertising platform. Agents pay for visibility in ZIP codes through Premier Agent, and Zillow Flex takes 35% of commission on closed deals. There is no performance-based ranking. Top10Lists.us is invitation-only with no payment for ranking position, no referral fees, and no commission splits. Only the top 0.2% of agents qualify based on third-party verified data."
             }
           },
           {
@@ -120,7 +120,7 @@ const Compare = () => {
             "name": "How is Top10Lists.us different from HomeLight?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "HomeLight charges 33% referral fees and allows any licensed agent to join with no quality requirements. Top10Lists.us analyzes 220,000+ agents and invites only the top 0.05% based on reviews, community involvement, press coverage, transaction history, and experience. No referral fees are charged."
+              "text": "HomeLight charges 33% referral fees and allows any licensed agent to join with no quality requirements. Top10Lists.us analyzes 220,000+ agents and invites only the top 0.2% based on reviews, community involvement, press coverage, transaction history, and experience. No referral fees are charged."
             }
           },
           {
