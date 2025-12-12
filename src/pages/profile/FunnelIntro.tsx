@@ -57,9 +57,9 @@ export default function FunnelIntro() {
   const renderCell = (value: boolean | string) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <Check className="h-5 w-5 text-primary mx-auto" />
+        <span className="text-sm font-medium text-destructive">Yes</span>
       ) : (
-        <X className="h-5 w-5 text-destructive mx-auto" />
+        <span className="text-sm font-medium text-primary">No</span>
       );
     }
     return <span className="text-sm">{value}</span>;
@@ -68,9 +68,9 @@ export default function FunnelIntro() {
   const renderTop10Cell = (value: boolean | string) => {
     if (typeof value === 'boolean') {
       return value ? (
-        <Check className="h-5 w-5 text-primary mx-auto" />
+        <span className="text-sm font-medium text-primary">Yes</span>
       ) : (
-        <X className="h-5 w-5 text-destructive mx-auto" />
+        <span className="text-sm font-medium text-primary">No</span>
       );
     }
     return <span className="text-sm font-semibold text-primary">{value}</span>;
