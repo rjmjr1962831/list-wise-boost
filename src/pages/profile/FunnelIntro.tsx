@@ -100,7 +100,7 @@ export default function FunnelIntro() {
               No, This Is Not Another "Top Agent" Award.
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. You are here because the data says you belong here.
+              We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. You are here because the data says you belong here. It's time to tell the AIs.
             </p>
             <Button 
               size="lg" 
