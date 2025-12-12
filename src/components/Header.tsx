@@ -84,6 +84,11 @@ export const Header = () => {
             <Link to="/compare" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Compare Us
             </Link>
+            {isAdmin && (
+              <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
+                Admin
+              </Link>
+            )}
             {!user && (
               <Link 
                 to="/are-you-an-agent" 
