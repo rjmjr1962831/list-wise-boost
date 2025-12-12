@@ -18,6 +18,40 @@ export default function AgentPaymentSuccess() {
   const [isProcessing, setIsProcessing] = useState(!isTestMode);
   const [isComplete, setIsComplete] = useState(isTestMode);
   const [error, setError] = useState<string | null>(null);
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+
+  // Fetch selected cities after subscription completes
+  useEffect(() => {
+    async function fetchSelectedCities() {
+      if (!professionalId || isTestMode) {
+        if (isTestMode) {
+          setSelectedCities(['Test City']);
+        }
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('agent_city_subscriptions')
+          .select('city_id, arizona_city_pricing(city_name)')
+          .eq('professional_id', professionalId)
+          .eq('is_active', true);
+
+        if (!error && data) {
+          const cityNames = data
+            .map((sub: any) => sub.arizona_city_pricing?.city_name)
+            .filter(Boolean);
+          setSelectedCities(cityNames);
+        }
+      } catch (err) {
+        console.error('Error fetching cities:', err);
+      }
+    }
+
+    if (isComplete) {
+      fetchSelectedCities();
+    }
+  }, [isComplete, professionalId, isTestMode]);
 
   useEffect(() => {
     // Skip subscription completion for admin test mode
@@ -140,7 +174,7 @@ export default function AgentPaymentSuccess() {
             </div>
             <h1 className="text-4xl font-bold mb-2">You're on the list!</h1>
             <p className="text-muted-foreground text-lg">
-              Your Premium Placement subscription is now active
+              You will now appear on the list every time your {selectedCities.length === 1 ? 'city' : 'cities'} {selectedCities.length > 0 ? selectedCities.join(', ') : 'are'} {selectedCities.length === 1 ? 'is' : 'are'} published.
             </p>
           </div>
 
