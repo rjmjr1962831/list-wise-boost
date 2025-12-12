@@ -54,7 +54,7 @@ export function MobileCalculator({ calculator, onCheckout, isLoading }: MobileCa
             </SheetTitle>
           </SheetHeader>
 
-          <div className="mt-4 space-y-4 overflow-y-auto max-h-[calc(80vh-200px)]">
+          <div className="mt-4 space-y-4 overflow-y-auto max-h-[calc(80vh-200px)] pb-20">
             {/* Line Items */}
             <div className="space-y-2">
               {lineItems.map((item, index) => (
