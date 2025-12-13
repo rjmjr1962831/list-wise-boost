@@ -300,33 +300,15 @@ export default function TestAI() {
                                   Here's Why
                                 </h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
-                                  {/* Split into paragraphs - break on existing newlines or after ~2-3 sentences */}
-                                  {reasoning.split(/\n\n+/).flatMap((block, blockIdx) => {
-                                    // Further split long blocks into smaller paragraphs (roughly 2-3 sentences each)
-                                    const sentences = block.match(/[^.!?]+[.!?]+\s*/g) || [block];
-                                    const paragraphs: string[] = [];
-                                    let current = '';
-                                    
-                                    sentences.forEach((sentence, i) => {
-                                      current += sentence;
-                                      // Create a new paragraph every 2-3 sentences or if it gets too long
-                                      if ((i + 1) % 2 === 0 || current.length > 350 || i === sentences.length - 1) {
-                                        if (current.trim()) {
-                                          paragraphs.push(current.trim());
-                                        }
-                                        current = '';
-                                      }
-                                    });
-                                    
-                                    return paragraphs.map((para, paraIdx) => (
-                                      <p 
-                                        key={`${blockIdx}-${paraIdx}`}
-                                        className="text-foreground/80 leading-relaxed text-sm"
-                                      >
-                                        {para}
-                                      </p>
-                                    ));
-                                  })}
+                                  {/* Split on double newlines for paragraphs */}
+                                  {reasoning.split(/\n\n+/).filter(p => p.trim()).map((para, idx) => (
+                                    <p 
+                                      key={idx}
+                                      className="text-foreground/80 leading-relaxed text-sm"
+                                    >
+                                      {para.trim()}
+                                    </p>
+                                  ))}
                                 </div>
                               </div>
                             )}

@@ -121,7 +121,8 @@ Based on the ACTUAL CONTENT above (not assumptions), provide your assessment of 
 IMPORTANT: Structure your response in exactly this format:
 CONCLUSION: [One clear sentence stating which site you would cite]
 
-REASONING: [Your detailed analysis explaining why, based on the actual content above]
+REASONING:
+[Your detailed analysis explaining why. Use short paragraphs (2-3 sentences each) separated by blank lines for readability. Avoid long walls of text.]
 
 Base your answer on the fetched content above.`;
 
