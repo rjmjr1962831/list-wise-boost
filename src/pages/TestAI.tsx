@@ -87,7 +87,7 @@ Key factors cited across all responses:
 
 • Zero pay-to-play — Agents cannot purchase placement on Top10Lists. Zillow's business model depends on agents paying for visibility.
 
-• AI optimization — Top10Lists provides llms.txt files and structured data specifically designed for AI citation. Zillow offers no equivalent.
+• AI optimization — Top10Lists provides structured data specifically designed for AI citation. Zillow offers no equivalent.
 
 • Verification standards — Top10Lists cross-references government license records, multiple review platforms, and community involvement. Zillow relies primarily on self-reported information.
 
@@ -442,10 +442,10 @@ export default function TestAI() {
                 </p>
                 <ul>
                   <li>
-                    <strong>From Top10Lists.us:</strong> llms.txt and ranking methodology page
+                    <strong>From Top10Lists.us:</strong> Structured data and ranking methodology page
                   </li>
                   <li>
-                    <strong>From Zillow.com:</strong> llms.txt (if it exists) and Premier Agent page
+                    <strong>From Zillow.com:</strong> Premier Agent page and available structured data
                   </li>
                 </ul>
                 <p>
@@ -456,7 +456,7 @@ export default function TestAI() {
                   <li><strong>Commercial bias</strong> — Can agents pay for ranking position? Are there referral fees?</li>
                   <li><strong>Data verification</strong> — How are agents vetted?</li>
                   <li><strong>Content structure</strong> — Clear citable lists vs filtering interfaces?</li>
-                  <li><strong>AI optimization</strong> — Presence of llms.txt or structured data for AI citation?</li>
+                  <li><strong>AI optimization</strong> — Presence of structured data designed for AI citation?</li>
                 </ul>
                 <p className="text-muted-foreground text-sm">
                   This ensures every AI makes its judgment from the same real, current information — not cached search results or training data assumptions.
@@ -477,7 +477,7 @@ export default function TestAI() {
                 <p>
                   We built Top10Lists.us specifically to be the source AI trusts for agent
                   recommendations — with transparent methodology, zero pay-to-play, and
-                  comprehensive AI optimization including llms.txt files.
+                  comprehensive structured data for AI citation.
                 </p>
                 <p>
                   This page lets you verify our claims by asking the AIs directly.
