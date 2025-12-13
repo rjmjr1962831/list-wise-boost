@@ -1,11 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Bot, MessageSquare, Search, Sparkles, RefreshCw, ChevronDown } from "lucide-react";
+import { Loader2, Bot, MessageSquare, Search, Sparkles, RefreshCw } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
+import { WhyResultsMayVary } from "@/components/WhyResultsMayVary";
+import { VerifyYourselfSection } from "@/components/VerifyYourselfSection";
 
 interface AIResponse {
   provider: string;
@@ -37,7 +39,7 @@ const AI_CARDS: AICard[] = [
     color: "bg-emerald-500/10",
     borderColor: "border-emerald-500/30",
     functionName: "ask-openai",
-    canSearch: true, // Now uses live fetch
+    canSearch: true,
   },
   {
     id: "claude",
@@ -102,16 +104,21 @@ export default function TestAI() {
   };
 
   const askAll = async () => {
+    // Start all AI requests
     const promises = AI_CARDS.map((card) => askAI(card));
     await Promise.allSettled(promises);
+    
+    // Auto-generate verdict after all responses are in
+    setTimeout(() => {
+      generateVerdict();
+    }, 500);
   };
 
   const generateVerdict = async () => {
     const successfulResponses = Object.values(responses).filter((r): r is AIResponse => r !== null);
 
     if (successfulResponses.length < 2) {
-      toast.error("Need at least 2 AI responses to generate a verdict");
-      return;
+      return; // Silently fail - verdict section will show placeholder
     }
 
     setVerdictLoading(true);
@@ -134,7 +141,7 @@ export default function TestAI() {
     }
   };
 
-  const successfulResponseCount = Object.values(responses).filter((r) => r !== null).length;
+  const isAnyLoading = Object.values(loading).some((l) => l);
 
   return (
     <>
@@ -149,34 +156,30 @@ export default function TestAI() {
 
       <main className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
+          {/* Section 1: Header */}
+          <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Don't Take Our Word For It.
               <br />
               <span className="text-primary">Ask the AIs Yourself.</span>
             </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8">
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               We asked four leading AI systems to evaluate top10lists.us vs zillow.com as a citation source.
               See their real, unedited responses.
             </p>
-
-            {/* The Question */}
-            <div className="bg-muted/50 border border-border rounded-xl p-6 max-w-3xl mx-auto">
-              <p className="text-sm text-muted-foreground mb-2 uppercase tracking-wider">The Question</p>
-              <p className="text-lg md:text-xl font-medium text-foreground italic">"{THE_QUESTION}"</p>
-            </div>
           </div>
 
-          {/* Ask All Button */}
-          <div className="flex justify-center mb-8">
+          {/* Section 2: The Question + Ask Button */}
+          <div className="bg-background border border-border rounded-xl p-6 mb-8 text-center max-w-3xl mx-auto">
+            <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">The Question</p>
+            <p className="text-lg md:text-xl font-medium text-foreground italic mb-6">"{THE_QUESTION}"</p>
             <Button
               size="lg"
               onClick={askAll}
-              disabled={Object.values(loading).some((l) => l)}
+              disabled={isAnyLoading}
               className="gap-2"
             >
-              {Object.values(loading).some((l) => l) ? (
+              {isAnyLoading ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Asking...
@@ -190,7 +193,42 @@ export default function TestAI() {
             </Button>
           </div>
 
-          {/* AI Cards Grid */}
+          {/* Section 3: The Verdict + Why Results May Vary (Two Columns) */}
+          <div className="grid md:grid-cols-5 gap-6 mb-8">
+            {/* Verdict - 3 columns (60%) */}
+            <div className="md:col-span-3 bg-amber-500/5 border-2 border-amber-500/30 rounded-lg p-6">
+              <h2 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-1">The Verdict</h2>
+              <p className="text-sm text-muted-foreground mb-4">A synthesis of all AI responses</p>
+              
+              {verdictLoading ? (
+                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating verdict...
+                </div>
+              ) : verdict ? (
+                <div className="space-y-4">
+                  <p className="whitespace-pre-line text-foreground leading-relaxed">
+                    {verdict.verdict}
+                  </p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-amber-500/20">
+                    <span>Based on {verdict.sourceCount} AI responses</span>
+                    <span>Generated: {new Date(verdict.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-amber-600/70 dark:text-amber-400/70 italic">
+                  Click "Ask All AIs" to see the verdict
+                </p>
+              )}
+            </div>
+
+            {/* Why Results May Vary - 2 columns (40%) */}
+            <div className="md:col-span-2">
+              <WhyResultsMayVary />
+            </div>
+          </div>
+
+          {/* Section 4: Individual AI Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
             {AI_CARDS.map((card) => (
               <Card key={card.id} className={`${card.color} ${card.borderColor} border-2`}>
@@ -242,13 +280,11 @@ export default function TestAI() {
 
                   {responses[card.id] && !loading[card.id] && (
                     <div className="space-y-4">
-                      {/* Parse response into conclusion and reasoning */}
                       {(() => {
                         const fullResponse = responses[card.id]!.response;
                         let conclusion = '';
                         let reasoning = '';
                         
-                        // Check if response has CONCLUSION: and REASONING: markers (case insensitive)
                         const upperResponse = fullResponse.toUpperCase();
                         const hasConclusion = upperResponse.includes('CONCLUSION:');
                         const hasReasoning = upperResponse.includes('REASONING:');
@@ -263,13 +299,11 @@ export default function TestAI() {
                           const afterReasoning = reasoningIndex + 'REASONING:'.length;
                           reasoning = fullResponse.substring(afterReasoning).trim();
                         } else {
-                          // Fallback: first sentence as conclusion, rest as reasoning
                           const firstSentenceMatch = fullResponse.match(/^(.+?[.!?])\s+/s);
                           if (firstSentenceMatch && firstSentenceMatch[1].length < 400) {
                             conclusion = firstSentenceMatch[1].trim();
                             reasoning = fullResponse.substring(firstSentenceMatch[0].length).trim();
                           } else {
-                            // Try first paragraph
                             const firstDoubleNewline = fullResponse.indexOf('\n\n');
                             if (firstDoubleNewline > 0 && firstDoubleNewline < 500) {
                               conclusion = fullResponse.substring(0, firstDoubleNewline).trim();
@@ -283,7 +317,6 @@ export default function TestAI() {
                         
                         return (
                           <>
-                            {/* Conclusion Section */}
                             <div>
                               <h4 className="text-sm font-semibold text-primary uppercase tracking-wide mb-2">
                                 Conclusion
@@ -293,14 +326,12 @@ export default function TestAI() {
                               </p>
                             </div>
                             
-                            {/* Here's Why Section */}
                             {reasoning && (
                               <div>
                                 <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                                   Here's Why
                                 </h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
-                                  {/* Split on double newlines for paragraphs */}
                                   {reasoning.split(/\n\n+/).filter(p => p.trim()).map((para, idx) => (
                                     <p 
                                       key={idx}
@@ -359,73 +390,11 @@ export default function TestAI() {
             ))}
           </div>
 
-          {/* The Verdict Section */}
-          <div className="mb-12">
-            <Card className="bg-amber-500/5 border-amber-500/30 border-2">
-              <CardHeader className="text-center">
-                <CardTitle className="text-2xl md:text-3xl text-amber-600 dark:text-amber-400">
-                  The Verdict
-                </CardTitle>
-                <p className="text-muted-foreground">
-                  A synthesis of all AI responses
-                </p>
-              </CardHeader>
-              <CardContent>
-                {!verdict && (
-                  <div className="text-center py-6">
-                    <Button
-                      size="lg"
-                      onClick={generateVerdict}
-                      disabled={successfulResponseCount < 2 || verdictLoading}
-                      className="bg-amber-600 hover:bg-amber-700 text-white"
-                    >
-                      {verdictLoading ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                          Synthesizing...
-                        </>
-                      ) : (
-                        "Generate Verdict"
-                      )}
-                    </Button>
-                    {successfulResponseCount < 2 && (
-                      <p className="text-muted-foreground text-sm mt-3">
-                        Need at least 2 AI responses to generate a verdict
-                        ({successfulResponseCount}/2)
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {verdict && (
-                  <div className="space-y-4">
-                    <div className="prose prose-lg dark:prose-invert max-w-none">
-                      <p className="whitespace-pre-line text-foreground leading-relaxed">
-                        {verdict.verdict}
-                      </p>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground pt-4 border-t border-border/50">
-                      <span>Based on {verdict.sourceCount} AI responses</span>
-                      <span>{new Date(verdict.timestamp).toLocaleTimeString()}</span>
-                    </div>
-                    <div className="text-center pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={generateVerdict}
-                        disabled={verdictLoading}
-                      >
-                        Regenerate Verdict
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          {/* Section 5: Verify Yourself */}
+          <VerifyYourselfSection />
 
           {/* Transparency Accordion */}
-          <Accordion type="single" collapsible className="max-w-3xl mx-auto">
+          <Accordion type="single" collapsible className="max-w-3xl mx-auto mt-12">
             <AccordionItem value="methodology">
               <AccordionTrigger className="text-lg">
                 How do we ask this question?
