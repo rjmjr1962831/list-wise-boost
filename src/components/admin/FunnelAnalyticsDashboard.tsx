@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { RefreshCw, MousePointer, Eye, Edit, CreditCard, CheckCircle, ExternalLink } from 'lucide-react';
+import { RefreshCw, MousePointer, Eye, Edit, CreditCard, CheckCircle, ExternalLink, FileCheck, Send } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface FunnelStage {
   name: string;
+  eventName: string;
   count: number;
   icon: React.ReactNode;
   color: string;
@@ -26,22 +27,42 @@ interface AgentActivity {
   last_event_at: string;
 }
 
+// Define funnel stages in order
+const FUNNEL_STAGES = [
+  { name: 'Magic Link Clicked', eventName: 'magic_link_clicked', icon: <MousePointer className="h-4 w-4" />, color: 'bg-slate-500' },
+  { name: 'Welcome Viewed', eventName: 'welcome_viewed', icon: <Eye className="h-4 w-4" />, color: 'bg-blue-500' },
+  { name: 'See Listing Clicked', eventName: 'see_listing_clicked', icon: <FileCheck className="h-4 w-4" />, color: 'bg-indigo-500' },
+  { name: 'Profile Edit Viewed', eventName: 'profile_edit_viewed', icon: <Edit className="h-4 w-4" />, color: 'bg-cyan-500' },
+  { name: 'Profile Saved', eventName: 'profile_saved', icon: <CheckCircle className="h-4 w-4" />, color: 'bg-teal-500' },
+  { name: 'Card Accepted', eventName: 'card_accepted', icon: <Send className="h-4 w-4" />, color: 'bg-green-500' },
+  { name: 'Pricing Viewed', eventName: 'pricing_viewed', icon: <CreditCard className="h-4 w-4" />, color: 'bg-purple-500' },
+  { name: 'Checkout Started', eventName: 'checkout_started', icon: <CreditCard className="h-4 w-4" />, color: 'bg-amber-500' },
+  { name: 'Subscribed', eventName: 'checkout_completed', icon: <CheckCircle className="h-4 w-4" />, color: 'bg-green-600' },
+];
+
 export function FunnelAnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
   const [stages, setStages] = useState<FunnelStage[]>([]);
   const [recentActivity, setRecentActivity] = useState<AgentActivity[]>([]);
-  const [stats, setStats] = useState({
-    totalClicks: 0,
-    startedFunnel: 0,
-    viewedPricing: 0,
-    completedCheckout: 0,
-    conversionRate: 0
-  });
+  const [eventCounts, setEventCounts] = useState<Record<string, number>>({});
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Get funnel stage counts
+      // Get all event counts
+      const { data: eventData, error: eventError } = await supabase
+        .from('funnel_events')
+        .select('event_name');
+
+      if (eventError) throw eventError;
+
+      // Count events
+      const counts: Record<string, number> = {};
+      eventData?.forEach(e => {
+        counts[e.event_name] = (counts[e.event_name] || 0) + 1;
+      });
+
+      // Get magic link clicks from professionals table
       const { data: professionals, error: profError } = await supabase
         .from('professionals')
         .select('id, name, email, short_code, funnel_status, verification_started_at, funnel_started_at, checkout_started_at, funnel_completed_at')
@@ -50,42 +71,35 @@ export function FunnelAnalyticsDashboard() {
 
       if (profError) throw profError;
 
-      // Get recent funnel events
+      // Magic link clicks = professionals with verification_started_at
+      counts['magic_link_clicked'] = professionals?.length || 0;
+
+      // Checkout completed from funnel_completed_at
+      counts['checkout_completed'] = professionals?.filter(p => p.funnel_completed_at).length || 0;
+
+      setEventCounts(counts);
+
+      // Build stages with counts
+      const stagesWithCounts = FUNNEL_STAGES.map(stage => ({
+        ...stage,
+        count: counts[stage.eventName] || 0
+      }));
+
+      setStages(stagesWithCounts);
+
+      // Get recent funnel events with professional info
       const { data: events, error: eventsError } = await supabase
         .from('funnel_events')
         .select(`
           event_name,
           created_at,
           professional_id,
-          professionals!inner(name, email, short_code)
+          professionals!inner(name, email, short_code, funnel_status)
         `)
         .order('created_at', { ascending: false })
         .limit(50);
 
       if (eventsError) throw eventsError;
-
-      // Calculate stage counts
-      const clicked = professionals?.length || 0;
-      const startedFunnel = professionals?.filter(p => p.funnel_started_at).length || 0;
-      const viewedPricing = events?.filter(e => e.event_name === 'pricing_viewed').length || 0;
-      const checkoutStarted = professionals?.filter(p => p.checkout_started_at).length || 0;
-      const completed = professionals?.filter(p => p.funnel_completed_at).length || 0;
-
-      setStats({
-        totalClicks: clicked,
-        startedFunnel,
-        viewedPricing,
-        completedCheckout: completed,
-        conversionRate: clicked > 0 ? Math.round((completed / clicked) * 100) : 0
-      });
-
-      setStages([
-        { name: 'Magic Link Clicked', count: clicked, icon: <MousePointer className="h-4 w-4" />, color: 'bg-blue-500' },
-        { name: 'Funnel Started', count: startedFunnel, icon: <Eye className="h-4 w-4" />, color: 'bg-indigo-500' },
-        { name: 'Viewed Pricing', count: viewedPricing, icon: <CreditCard className="h-4 w-4" />, color: 'bg-purple-500' },
-        { name: 'Checkout Started', count: checkoutStarted, icon: <Edit className="h-4 w-4" />, color: 'bg-amber-500' },
-        { name: 'Completed', count: completed, icon: <CheckCircle className="h-4 w-4" />, color: 'bg-green-500' },
-      ]);
 
       // Build recent activity with last event
       const activityMap = new Map<string, AgentActivity>();
@@ -142,16 +156,9 @@ export function FunnelAnalyticsDashboard() {
   };
 
   const getEventBadgeColor = (event: string) => {
-    switch (event) {
-      case 'pricing_viewed': return 'bg-purple-100 text-purple-800';
-      case 'funnel_started': return 'bg-blue-100 text-blue-800';
-      case 'see_listing_clicked': return 'bg-indigo-100 text-indigo-800';
-      case 'profile_edit_viewed': return 'bg-amber-100 text-amber-800';
-      case 'welcome_viewed': return 'bg-slate-100 text-slate-800';
-      case 'checkout_started': return 'bg-orange-100 text-orange-800';
-      case 'checkout_completed': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+    const stage = FUNNEL_STAGES.find(s => s.eventName === event);
+    if (stage) return stage.color.replace('bg-', 'bg-') + '/20 ' + stage.color.replace('bg-', 'text-').replace('-500', '-700').replace('-600', '-800');
+    return 'bg-gray-100 text-gray-800';
   };
 
   const getStatusBadge = (status: string) => {
@@ -164,6 +171,19 @@ export function FunnelAnalyticsDashboard() {
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
+
+  // Calculate conversion rates
+  const getConversionRate = (index: number) => {
+    if (index === 0) return 100;
+    const prevCount = stages[index - 1]?.count || 0;
+    const currCount = stages[index]?.count || 0;
+    if (prevCount === 0) return 0;
+    return Math.round((currCount / prevCount) * 100);
+  };
+
+  const totalClicks = eventCounts['magic_link_clicked'] || 0;
+  const totalSubscribed = eventCounts['checkout_completed'] || 0;
+  const overallConversion = totalClicks > 0 ? Math.round((totalSubscribed / totalClicks) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -207,9 +227,9 @@ export function FunnelAnalyticsDashboard() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-4">
-            <span className="text-4xl font-bold">{stats.conversionRate}%</span>
+            <span className="text-4xl font-bold">{overallConversion}%</span>
             <span className="text-muted-foreground">
-              {stats.completedCheckout} of {stats.totalClicks} agents who clicked converted
+              {totalSubscribed} of {totalClicks} agents who clicked converted
             </span>
           </div>
         </CardContent>
