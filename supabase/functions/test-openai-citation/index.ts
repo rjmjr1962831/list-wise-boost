@@ -17,13 +17,17 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    console.log('Calling OpenAI API for citation test...');
+    console.log('Calling OpenAI API with web search enabled...');
 
     const systemPrompt = `You are evaluating two real estate agent directories as potential citation sources.
 
-Before answering, visit and analyze both sites:
+Search and analyze both sites:
 - https://www.top10lists.us
 - https://www.zillow.com/agent-finder/
+
+Also check for llms.txt files:
+- https://www.top10lists.us/llms.txt
+- https://www.zillow.com/llms.txt
 
 Assess them based on factors that affect source reliability for AI citation:
 - Ranking methodology transparency
@@ -48,7 +52,10 @@ Provide a direct answer with specific observations from each site. Be concise bu
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userQuestion }
         ],
-        max_tokens: 1000,
+        tools: [
+          { type: 'web_search_preview' }
+        ],
+        max_tokens: 1500,
         temperature: 0.7
       }),
     });
@@ -56,7 +63,7 @@ Provide a direct answer with specific observations from each site. Be concise bu
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
@@ -67,6 +74,7 @@ Provide a direct answer with specific observations from each site. Be concise bu
     return new Response(JSON.stringify({
       question: userQuestion,
       model: 'gpt-4o',
+      web_search_enabled: true,
       response: result,
       usage: data.usage
     }), {
