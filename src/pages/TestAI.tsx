@@ -59,15 +59,15 @@ const AI_CARDS: AICard[] = [
     functionName: "ask-perplexity",
     canSearch: true,
   },
-  {
+{
     id: "gemini",
     name: "Gemini",
-    model: "2.5 Flash",
+    model: "2.0 Flash",
     icon: <Sparkles className="h-8 w-8" />,
     color: "bg-blue-500/10",
     borderColor: "border-blue-500/30",
     functionName: "ask-gemini",
-    canSearch: false,
+    canSearch: true,
   },
 ];
 
