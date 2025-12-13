@@ -31,6 +31,9 @@ const Index = () => {
   return (
     <>
       <Helmet>
+        {/* AI Rank Lab Tracking */}
+        <script src="https://www.airanklab.com/tracking.min.js?track_id=515d55c5bba8ea046059bd698af76f1e&domain=top10lists.us" async defer></script>
+        
         {/* Primary Meta Tags */}
         <title>Top10Lists.us - Find Top Real Estate Agents in Arizona</title>
         <meta name="description" content="Find top-rated real estate agents in Arizona. Curated lists for 48 cities including Phoenix and Scottsdale. Ranked by verified reviews and press coverage." />
