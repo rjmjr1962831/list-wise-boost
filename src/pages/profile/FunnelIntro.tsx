@@ -162,8 +162,11 @@ export default function FunnelIntro() {
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
               We do not sell plaques. We do not charge for rankings. We do not sell leads. We do not take part of your commission. We don't have networking meetings.
             </p>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-4">
               You are here because the data says you belong here. It's time to tell the AIs.
+            </p>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-6">
+              We did a deep dive on your professional background because you are one of the top 0.2% of agents practicing in Arizona. Check out what we've found.
             </p>
 
             <Button 
