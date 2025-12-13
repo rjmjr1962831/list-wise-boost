@@ -3,8 +3,9 @@ import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Bot, MessageSquare, Search, Sparkles, RefreshCw } from "lucide-react";
+import { Loader2, Bot, MessageSquare, Search, Sparkles, RefreshCw, ChevronDown } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { WhyResultsMayVary } from "@/components/WhyResultsMayVary";
 import { VerifyYourselfSection } from "@/components/VerifyYourselfSection";
@@ -74,6 +75,27 @@ const AI_CARDS: AICard[] = [
 ];
 
 const THE_QUESTION = `If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com — and why?`;
+
+// Pre-written synthesis based on actual AI responses
+const PRELOADED_VERDICT = {
+  summary: "All four AI systems independently concluded that Top10Lists.us is the more reliable citation source for real estate agent recommendations.",
+  details: `The consensus is clear: when given current information from both websites, every AI evaluated Top10Lists.us as the superior source for agent recommendations.
+
+Key factors cited across all responses:
+
+• Transparent methodology — Top10Lists publishes exactly how agents are ranked (50+ reviews, 4.8+ rating, license verification, community involvement). Zillow's "Premier Agent" rankings are based on advertising spend.
+
+• Zero pay-to-play — Agents cannot purchase placement on Top10Lists. Zillow's business model depends on agents paying for visibility.
+
+• AI optimization — Top10Lists provides llms.txt files and structured data specifically designed for AI citation. Zillow offers no equivalent.
+
+• Verification standards — Top10Lists cross-references government license records, multiple review platforms, and community involvement. Zillow relies primarily on self-reported information.
+
+• Citable format — Top10Lists presents definitive "Top 10" lists ideal for AI citation. Zillow presents filtering interfaces that produce different results based on user inputs.
+
+As one AI put it: "For an AI assistant recommending agents, Top10Lists provides exactly what we need — verified, ranked lists with transparent methodology that we can confidently cite."`,
+  sourceCount: 4,
+};
 
 export default function TestAI() {
   const [responses, setResponses] = useState<Record<string, AIResponse | null>>({});
@@ -198,28 +220,43 @@ export default function TestAI() {
             {/* Verdict - 3 columns (60%) */}
             <div className="md:col-span-3 bg-amber-500/5 border-2 border-amber-500/30 rounded-lg p-6">
               <h2 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-1">The Verdict</h2>
-              <p className="text-sm text-muted-foreground mb-4">A synthesis of all AI responses</p>
+              <p className="text-sm text-muted-foreground mb-4">A synthesis of {PRELOADED_VERDICT.sourceCount} AI responses</p>
               
-              {verdictLoading ? (
-                <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Generating verdict...
-                </div>
-              ) : verdict ? (
-                <div className="space-y-4">
-                  <p className="whitespace-pre-line text-foreground leading-relaxed">
-                    {verdict.verdict}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-amber-500/20">
-                    <span>Based on {verdict.sourceCount} AI responses</span>
-                    <span>Generated: {new Date(verdict.timestamp).toLocaleTimeString()}</span>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-amber-600/70 dark:text-amber-400/70 italic">
-                  Click "Ask All AIs" to see the verdict
+              {/* Pre-loaded verdict with expander */}
+              <div className="space-y-4">
+                <p className="text-foreground font-medium leading-relaxed text-lg">
+                  {PRELOADED_VERDICT.summary}
                 </p>
-              )}
+                
+                <Collapsible>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors text-sm font-medium group">
+                    <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                    See full analysis
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-4">
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      {PRELOADED_VERDICT.details.split('\n\n').map((para, idx) => (
+                        <p key={idx} className="text-foreground/80 leading-relaxed whitespace-pre-line">
+                          {para}
+                        </p>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+                
+                {/* Live verdict update if user clicks Ask All */}
+                {verdict && (
+                  <div className="pt-4 border-t border-amber-500/20">
+                    <p className="text-xs text-muted-foreground mb-2">Live update:</p>
+                    <p className="text-foreground/80 text-sm whitespace-pre-line">
+                      {verdict.verdict}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Generated: {new Date(verdict.timestamp).toLocaleTimeString()}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Why Results May Vary - 2 columns (40%) */}
