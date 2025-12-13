@@ -308,6 +308,14 @@ serve(async (req) => {
     // Helper to truncate strings to Pipedrive's 255 char limit
     const truncate = (str: string, max = 255) => str && str.length > max ? str.substring(0, max - 3) + '...' : str;
 
+    // Extract address components from business_address JSON
+    const businessAddress = professional.business_address || {};
+    const streetAddress = businessAddress.address1 || professional.address || '';
+    const street2 = businessAddress.address2 || '';
+    const addressCity = businessAddress.city || city.name || '';
+    const addressState = businessAddress.state || city.state || '';
+    const zipCode = businessAddress.postalCode || professional.zip_code || '';
+
     const dynamicFields: Record<string, any> = {
       supabase_id: professional.id,
       card_url: truncate(syncData.card_url),
@@ -330,8 +338,13 @@ serve(async (req) => {
       website: truncate(syncData.website),
       synthesized_bio: syncData.synthesized_bio, // Text field - no truncation needed
       city_name: truncate(syncData.city_name),
-      state: truncate(syncData.state),
+      state: truncate(addressState),
       zillow_profile_url: truncate(professional.zillow_profile_url || ''),
+      // Address fields
+      street_address: truncate(streetAddress),
+      street2: truncate(street2),
+      city: truncate(addressCity),
+      zip_code: truncate(zipCode),
       // Status flags - convert booleans to strings for Pipedrive text fields
       email_verified: professional.email_verified_at ? 'true' : 'false',
       is_brand_builder: professional.is_brand_builder ? 'true' : 'false',
