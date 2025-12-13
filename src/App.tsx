@@ -73,6 +73,7 @@ const QALandingPage = lazy(() => import("./pages/QALandingPage"));
 const FAQ = lazy(() => import("./pages/FAQ"));
 const ZillowPayToPlayPage = lazy(() => import("./pages/ZillowPayToPlayPage"));
 const Compare = lazy(() => import("./pages/Compare"));
+const TestAI = lazy(() => import("./pages/TestAI"));
 
 const queryClient = new QueryClient();
 
@@ -111,6 +112,7 @@ const App = () => (
                     <Route path="/opt-in" element={<OptInPolicy />} />
                     <Route path="/zillow-explained" element={<ZillowPayToPlayPage />} />
                     <Route path="/compare" element={<Compare />} />
+                    <Route path="/test" element={<TestAI />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
