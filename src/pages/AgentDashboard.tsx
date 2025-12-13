@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -41,6 +41,7 @@ interface CitySubscription {
 
 export default function AgentDashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
@@ -51,10 +52,11 @@ export default function AgentDashboard() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [loadingPortal, setLoadingPortal] = useState(false);
+  const [isAdminViewing, setIsAdminViewing] = useState(false);
 
   useEffect(() => {
     checkAuthAndLoadProfile();
-  }, []);
+  }, [searchParams]);
 
   const checkAuthAndLoadProfile = async () => {
     try {
@@ -66,7 +68,48 @@ export default function AgentDashboard() {
         return;
       }
 
-      // Fetch professional profile
+      // Check if admin is viewing a specific professional via query param
+      const viewId = searchParams.get('id');
+      
+      if (viewId) {
+        // Verify user is admin
+        const { data: roleData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .single();
+
+        if (roleData) {
+          setIsAdminViewing(true);
+          // Fetch specific professional by ID
+          const { data, error } = await supabase
+            .from('professionals')
+            .select(`
+              *,
+              city_id (
+                id,
+                name,
+                slug,
+                state,
+                state_slug
+              ),
+              category_id (
+                id,
+                name,
+                slug
+              )
+            `)
+            .eq('id', viewId)
+            .single();
+
+          if (!error && data) {
+            return loadProfileData(data);
+          }
+        }
+      }
+
+      // Normal flow: fetch by email
       const { data, error } = await supabase
         .from('professionals')
         .select(`
@@ -91,9 +134,20 @@ export default function AgentDashboard() {
       if (error || !data) {
         console.error('Error fetching profile:', error);
         toast.error('Could not load your profile. Please contact support.');
+        setLoading(false);
         return;
       }
 
+      loadProfileData(data);
+    } catch (error) {
+      console.error('Error in checkAuthAndLoadProfile:', error);
+      toast.error('An error occurred. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  const loadProfileData = async (data: any) => {
+    try {
       setProfessionalId(data.id);
 
       // Fetch city subscriptions
@@ -161,9 +215,6 @@ export default function AgentDashboard() {
       } as any;
 
       setProfessional(transformedProfessional);
-    } catch (error) {
-      console.error('Error in checkAuthAndLoadProfile:', error);
-      toast.error('An error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -296,18 +347,38 @@ export default function AgentDashboard() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {professional.name.split(' ')[0]}</h1>
-              <p className="text-muted-foreground mt-1">Manage your Top10Lists profile and subscription</p>
+              {isAdminViewing && (
+                <div className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded mb-2 inline-block">
+                  Admin View: {professional.email}
+                </div>
+              )}
+              <h1 className="text-2xl md:text-3xl font-bold">
+                {isAdminViewing ? professional.name : `Welcome back, ${professional.name.split(' ')[0]}`}
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                {isAdminViewing ? 'Viewing agent dashboard' : 'Manage your Top10Lists profile and subscription'}
+              </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSignOut}
-              className="gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
+            <div className="flex gap-2">
+              {isAdminViewing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/admin')}
+                >
+                  Back to Admin
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
