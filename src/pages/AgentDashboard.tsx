@@ -29,6 +29,18 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+interface AvailableCity {
+  id: string;
+  name: string;
+}
 
 interface CitySubscription {
   id: string;
@@ -53,10 +65,64 @@ export default function AgentDashboard() {
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [isAdminViewing, setIsAdminViewing] = useState(false);
+  const [availableCities, setAvailableCities] = useState<AvailableCity[]>([]);
+  const [selectedFreeCityId, setSelectedFreeCityId] = useState<string>('');
+  const [savingFreeCity, setSavingFreeCity] = useState(false);
+
+  // Premium cities not eligible for free listing
+  const PREMIUM_CITY_NAMES = ['Scottsdale', 'Paradise Valley', 'Carefree', 'Cave Creek', 'Sedona'];
 
   useEffect(() => {
     checkAuthAndLoadProfile();
   }, [searchParams]);
+
+  useEffect(() => {
+    // Load available cities for free city selector
+    const loadCities = async () => {
+      const { data } = await supabase
+        .from('cities')
+        .select('id, name')
+        .eq('active', true)
+        .eq('state', 'Arizona')
+        .order('name');
+      
+      if (data) {
+        const filtered = data.filter(c => !PREMIUM_CITY_NAMES.includes(c.name));
+        setAvailableCities(filtered);
+      }
+    };
+    loadCities();
+  }, []);
+
+  const handleSaveFreeCity = async () => {
+    if (!selectedFreeCityId || !professionalId) return;
+    
+    setSavingFreeCity(true);
+    try {
+      const { error } = await supabase.functions.invoke('update-professional-field', {
+        body: {
+          token: professionalId,
+          field: 'city_id',
+          value: selectedFreeCityId
+        }
+      });
+
+      if (error) throw error;
+
+      const selectedCity = availableCities.find(c => c.id === selectedFreeCityId);
+      setFreeCity(selectedCity?.name || null);
+      setSelectedFreeCityId('');
+      toast.success('Free city updated successfully');
+      
+      // Reload to refresh subscriptions
+      checkAuthAndLoadProfile();
+    } catch (error: any) {
+      console.error('Error saving free city:', error);
+      toast.error(error.message || 'Failed to update free city');
+    } finally {
+      setSavingFreeCity(false);
+    }
+  };
 
   const checkAuthAndLoadProfile = async () => {
     try {
@@ -460,7 +526,7 @@ export default function AgentDashboard() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Free City */}
-                  {freeCity && (
+                  {freeCity ? (
                     <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
                       <div className="flex items-center gap-3">
                         <CheckCircle2 className="h-5 w-5 text-primary" />
@@ -472,6 +538,33 @@ export default function AgentDashboard() {
                       <Button variant="ghost" size="sm" onClick={handleChangeFreeCity}>
                         Change
                       </Button>
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-muted/50 rounded-lg border space-y-3">
+                      <div>
+                        <div className="font-medium">Select Your Free City</div>
+                        <div className="text-xs text-muted-foreground">Choose a city for your free round-robin listing</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Select value={selectedFreeCityId} onValueChange={setSelectedFreeCityId}>
+                          <SelectTrigger className="flex-1 bg-background">
+                            <SelectValue placeholder="Select a city..." />
+                          </SelectTrigger>
+                          <SelectContent className="bg-background border z-50">
+                            {availableCities.map(city => (
+                              <SelectItem key={city.id} value={city.id}>
+                                {city.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button 
+                          onClick={handleSaveFreeCity} 
+                          disabled={!selectedFreeCityId || savingFreeCity}
+                        >
+                          {savingFreeCity ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Save'}
+                        </Button>
+                      </div>
                     </div>
                   )}
 
