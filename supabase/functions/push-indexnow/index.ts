@@ -14,6 +14,8 @@ const KEY_URLS = [
   'https://www.top10lists.us/about',
   'https://www.top10lists.us/faq',
   'https://www.top10lists.us/for-agents',
+  'https://www.top10lists.us/compare',
+  'https://www.top10lists.us/test',
   'https://www.top10lists.us/llms.txt',
   'https://www.top10lists.us/.well-known/ai-content-index.json',
   'https://www.top10lists.us/sitemap.xml',

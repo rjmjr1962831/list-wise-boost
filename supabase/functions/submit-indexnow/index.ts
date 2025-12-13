@@ -55,6 +55,8 @@ serve(async (req) => {
       urlList.push('https://www.top10lists.us/about/ranking-methodology');
       urlList.push('https://www.top10lists.us/faq');
       urlList.push('https://www.top10lists.us/for-agents');
+      urlList.push('https://www.top10lists.us/compare');
+      urlList.push('https://www.top10lists.us/test');
 
       console.log(`[IndexNow] Generated ${urlList.length} URLs from ${cities?.length} cities`);
     } else if (urls && Array.isArray(urls)) {
