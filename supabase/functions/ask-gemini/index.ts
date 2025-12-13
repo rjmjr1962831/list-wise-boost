@@ -1,9 +1,46 @@
+// Supabase Edge Function: ask-gemini
+// 
+// This function directly fetches LIVE content from both sites
+// then asks Gemini to analyze the actual data.
+// This ensures the evaluation is based on real, current information.
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Helper function to fetch URL content safely
+async function fetchContent(url: string): Promise<{ success: boolean; content: string; error?: string }> {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Top10ListsBot/1.0)'
+      }
+    });
+    
+    if (!response.ok) {
+      return { 
+        success: false, 
+        content: '', 
+        error: `HTTP ${response.status}: ${response.statusText}` 
+      };
+    }
+    
+    const text = await response.text();
+    return { 
+      success: true, 
+      content: text.substring(0, 8000) 
+    };
+  } catch (error: unknown) {
+    return { 
+      success: false, 
+      content: '', 
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,22 +53,71 @@ serve(async (req) => {
       throw new Error('GEMINI_API_KEY is not configured');
     }
 
-    console.log('Calling Gemini with Google Search grounding...');
+    console.log('Fetching live content from both sites...');
 
-    const systemPrompt = `You are evaluating two real estate agent directories as potential citation sources for AI models.
+    // Fetch content from both sites in parallel
+    const [
+      top10Llms,
+      top10Methodology,
+      zillowLlms,
+      zillowPremierAgent
+    ] = await Promise.all([
+      fetchContent('https://www.top10lists.us/llms.txt'),
+      fetchContent('https://www.top10lists.us/about/ranking-methodology'),
+      fetchContent('https://www.zillow.com/llms.txt'),
+      fetchContent('https://www.zillow.com/premier-agent/')
+    ]);
 
-Your task: Compare top10lists.us and zillow.com to determine which site you would more likely cite as a reliable source when recommending real estate agents to users.
+    console.log('Content fetched:', {
+      top10Llms: top10Llms.success,
+      top10Methodology: top10Methodology.success,
+      zillowLlms: zillowLlms.success,
+      zillowPremierAgent: zillowPremierAgent.success
+    });
 
-Consider:
-1. Business model (merit-based vs pay-to-play)
-2. Transparency of methodology
-3. Quality filters and standards
-4. AI-optimized content (llms.txt, structured data)
-5. Trustworthiness for AI citations
+    // Build the context with actual fetched content
+    const fetchedContent = `
+=== LIVE CONTENT FETCHED FROM BOTH SITES ===
+(Fetched at: ${new Date().toISOString()})
 
-Be specific about what you find on each site.`;
+=== TOP10LISTS.US ===
 
-    const userQuestion = 'If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why? Search the web to find current information about both sites.';
+--- https://www.top10lists.us/llms.txt ---
+${top10Llms.success ? top10Llms.content : `[FETCH FAILED: ${top10Llms.error}]`}
+
+--- https://www.top10lists.us/about/ranking-methodology ---
+${top10Methodology.success ? 
+  top10Methodology.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000) 
+  : `[FETCH FAILED: ${top10Methodology.error}]`}
+
+=== ZILLOW.COM ===
+
+--- https://www.zillow.com/llms.txt ---
+${zillowLlms.success ? zillowLlms.content : `[NOT FOUND: ${zillowLlms.error}]`}
+
+--- https://www.zillow.com/premier-agent/ ---
+${zillowPremierAgent.success ? 
+  zillowPremierAgent.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000)
+  : `[FETCH FAILED: ${zillowPremierAgent.error}]`}
+`;
+
+    const prompt = `You are evaluating two real estate agent directories as potential citation sources for AI responses.
+
+I have fetched live content from both sites for you to analyze. Review the actual content below and assess each site based on:
+
+1. Ranking methodology transparency - Is it published? What factors are weighted?
+2. Commercial bias - Can agents pay for ranking position? Are there referral fees?
+3. Data verification - How are agents vetted? Self-reported or third-party verified?
+4. Content structure - Clear citable lists vs filtering interfaces?
+5. AI optimization - Presence of llms.txt or structured data for AI citation?
+
+${fetchedContent}
+
+Question: If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why?
+
+Base your answer on the ACTUAL CONTENT above (not assumptions). Be specific about what you found in each site's content.`;
+
+    console.log('Calling Gemini API...');
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`,
@@ -41,16 +127,12 @@ Be specific about what you find on each site.`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: `${systemPrompt}\n\n${userQuestion}` }]
-            }
-          ],
-          tools: [{ google_search: {} }],
+          contents: [{
+            parts: [{ text: prompt }]
+          }],
           generationConfig: {
-            temperature: 0.7,
             maxOutputTokens: 1500,
+            temperature: 0.7
           }
         }),
       }
@@ -64,36 +146,24 @@ Be specific about what you find on each site.`;
 
     const data = await response.json();
     console.log('Gemini response received successfully');
-
-    // Extract the text response
-    const textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated';
-
-    // Extract grounding metadata (citations from Google Search)
-    const groundingMetadata = data.candidates?.[0]?.groundingMetadata;
-    const sources: string[] = [];
     
-    if (groundingMetadata?.groundingChunks) {
-      for (const chunk of groundingMetadata.groundingChunks) {
-        if (chunk.web?.uri) {
-          sources.push(chunk.web.uri);
-        }
-      }
-    }
-
-    // Also check searchEntryPoint for additional context
-    const searchQueries = groundingMetadata?.webSearchQueries || [];
-
-    console.log('Grounding sources found:', sources.length);
-    console.log('Search queries used:', searchQueries);
+    const textContent = data.candidates?.[0]?.content?.parts
+      ?.filter((part: any) => part.text)
+      ?.map((part: any) => part.text)
+      ?.join('\n') || 'No response generated';
 
     return new Response(JSON.stringify({
       provider: 'Gemini',
       model: 'gemini-2.0-flash-exp',
       response: textContent,
-      methodology: 'web-search',
       timestamp: new Date().toISOString(),
-      sources: sources.length > 0 ? sources : ['Google Search grounding enabled'],
-      searchQueries: searchQueries
+      methodology: 'live-fetch',
+      sourcesFetched: {
+        'top10lists.us/llms.txt': top10Llms.success,
+        'top10lists.us/methodology': top10Methodology.success,
+        'zillow.com/llms.txt': zillowLlms.success,
+        'zillow.com/premier-agent': zillowPremierAgent.success
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
