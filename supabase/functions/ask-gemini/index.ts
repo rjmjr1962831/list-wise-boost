@@ -115,6 +115,11 @@ ${fetchedContent}
 
 Question: If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why?
 
+IMPORTANT: Structure your response in exactly this format:
+CONCLUSION: [One clear sentence stating which site you would cite]
+
+REASONING: [Your detailed analysis explaining why, based on the actual content above]
+
 Base your answer on the ACTUAL CONTENT above (not assumptions). Be specific about what you found in each site's content.`;
 
     console.log('Calling Gemini API...');
