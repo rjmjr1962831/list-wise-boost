@@ -332,11 +332,9 @@ serve(async (req) => {
       city_name: truncate(syncData.city_name),
       state: truncate(syncData.state),
       zillow_profile_url: truncate(professional.zillow_profile_url || ''),
-      // Status flags
-      email_verified: professional.email_verified_at ? true : false,
-      is_brand_builder: professional.is_brand_builder ?? false,
-      is_premier_agent: professional.is_premier_agent ?? false,
-      is_top_agent: professional.is_top_agent ?? false,
+      // Status flags - convert booleans to strings for Pipedrive text fields
+      email_verified: professional.email_verified_at ? 'true' : 'false',
+      is_brand_builder: professional.is_brand_builder ? 'true' : 'false',
       // Funnel & subscription tracking fields
       funnel_status: truncate(syncData.funnel_status),
       funnel_started_at: syncData.funnel_started_at,
