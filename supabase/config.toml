@@ -234,3 +234,6 @@ verify_jwt = false
 
 [functions.bulk-confirm-emails]
 verify_jwt = false
+
+[functions.notify-profile-accepted]
+verify_jwt = false

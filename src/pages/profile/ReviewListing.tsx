@@ -86,7 +86,24 @@ export default function ReviewListing() {
     fetchData();
   }, [token, navigate]);
 
-  const handleAccept = () => {
+  const handleAccept = async () => {
+    // Send notification email to admin
+    try {
+      const city = Array.isArray(professional.cities) ? professional.cities[0] : professional.cities;
+      await supabase.functions.invoke('notify-profile-accepted', {
+        body: {
+          professionalId: professional.id,
+          professionalName: professional.name,
+          professionalEmail: professional.email || '',
+          city: city?.name || '',
+          state: city?.state || '',
+        }
+      });
+    } catch (error) {
+      console.error('Failed to send notification:', error);
+      // Continue anyway - don't block the user
+    }
+    
     navigate(`/profile/${token}/select-free-city`);
   };
 
