@@ -199,7 +199,7 @@ const Compare = () => {
               How Do Real Estate Agent Ranking Sites Actually Work?
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Not all "top agent" lists are created equal. Every other major platform sells visibility to agents rather than ranking by performance. Here's how they compare. None are built to be trusted by AI, except us.
+              Not all "top agent" lists are created equal. Every other major platform sells visibility to agents rather than ranking by performance. None are built to be trusted by AI, except us.
             </p>
           </div>
         </section>
