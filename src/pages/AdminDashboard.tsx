@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard, TrendingUp } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard, TrendingUp, LayoutDashboard } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
@@ -115,7 +115,20 @@ const AdminDashboard = () => {
 
         <div className="mb-6 p-4 bg-card rounded-lg border">
           <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
+            <Button
+              onClick={() => {
+                const id = prompt('Enter professional ID (UUID):');
+                if (id?.trim()) {
+                  navigate(`/dashboard?id=${id.trim()}`);
+                }
+              }}
+              variant="outline"
+              className="h-auto py-3 border-primary text-primary hover:bg-primary/10"
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              View Agent Dashboard
+            </Button>
             <Button
               onClick={async () => {
                 toast.info("Creating Stripe test checkout...");
