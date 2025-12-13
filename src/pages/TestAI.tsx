@@ -248,22 +248,36 @@ export default function TestAI() {
                         let conclusion = '';
                         let reasoning = '';
                         
-                        // Look for explicit CONCLUSION: and REASONING: markers
-                        const conclusionMatch = fullResponse.match(/CONCLUSION:\s*(.+?)(?=\n\n|\nREASONING:|$)/is);
-                        const reasoningMatch = fullResponse.match(/REASONING:\s*([\s\S]*)/i);
+                        // Check if response has CONCLUSION: and REASONING: markers (case insensitive)
+                        const upperResponse = fullResponse.toUpperCase();
+                        const hasConclusion = upperResponse.includes('CONCLUSION:');
+                        const hasReasoning = upperResponse.includes('REASONING:');
                         
-                        if (conclusionMatch) {
-                          conclusion = conclusionMatch[1].trim();
-                          reasoning = reasoningMatch ? reasoningMatch[1].trim() : '';
+                        if (hasConclusion && hasReasoning) {
+                          const conclusionIndex = upperResponse.indexOf('CONCLUSION:');
+                          const reasoningIndex = upperResponse.indexOf('REASONING:');
+                          
+                          const afterConclusion = conclusionIndex + 'CONCLUSION:'.length;
+                          conclusion = fullResponse.substring(afterConclusion, reasoningIndex).trim();
+                          
+                          const afterReasoning = reasoningIndex + 'REASONING:'.length;
+                          reasoning = fullResponse.substring(afterReasoning).trim();
                         } else {
-                          // Fallback: take first paragraph as conclusion
-                          const firstBreak = fullResponse.indexOf('\n\n');
-                          if (firstBreak > 0 && firstBreak < 500) {
-                            conclusion = fullResponse.substring(0, firstBreak).trim();
-                            reasoning = fullResponse.substring(firstBreak).trim();
+                          // Fallback: first sentence as conclusion, rest as reasoning
+                          const firstSentenceMatch = fullResponse.match(/^(.+?[.!?])\s+/s);
+                          if (firstSentenceMatch && firstSentenceMatch[1].length < 400) {
+                            conclusion = firstSentenceMatch[1].trim();
+                            reasoning = fullResponse.substring(firstSentenceMatch[0].length).trim();
                           } else {
-                            conclusion = fullResponse;
-                            reasoning = '';
+                            // Try first paragraph
+                            const firstDoubleNewline = fullResponse.indexOf('\n\n');
+                            if (firstDoubleNewline > 0 && firstDoubleNewline < 500) {
+                              conclusion = fullResponse.substring(0, firstDoubleNewline).trim();
+                              reasoning = fullResponse.substring(firstDoubleNewline + 2).trim();
+                            } else {
+                              conclusion = fullResponse.substring(0, 300).trim();
+                              reasoning = fullResponse.substring(300).trim();
+                            }
                           }
                         }
                         
