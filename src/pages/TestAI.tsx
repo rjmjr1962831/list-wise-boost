@@ -245,32 +245,25 @@ export default function TestAI() {
                       {/* Parse response into conclusion and reasoning */}
                       {(() => {
                         const fullResponse = responses[card.id]!.response;
-                        // Try to split at common patterns - look for first sentence or conclusion-like statement
-                        const lines = fullResponse.split('\n').filter(l => l.trim());
                         let conclusion = '';
                         let reasoning = '';
                         
-                        // Check if response has explicit sections
-                        const conclusionMatch = fullResponse.match(/(?:conclusion|recommendation|answer|verdict)[:\s]*(.+?)(?:\n\n|$)/i);
+                        // Look for explicit CONCLUSION: and REASONING: markers
+                        const conclusionMatch = fullResponse.match(/CONCLUSION:\s*(.+?)(?=\n\n|\nREASONING:|$)/is);
+                        const reasoningMatch = fullResponse.match(/REASONING:\s*([\s\S]*)/i);
+                        
                         if (conclusionMatch) {
                           conclusion = conclusionMatch[1].trim();
-                          reasoning = fullResponse.replace(conclusionMatch[0], '').trim();
+                          reasoning = reasoningMatch ? reasoningMatch[1].trim() : '';
                         } else {
-                          // Take first paragraph/sentence as conclusion, rest as reasoning
+                          // Fallback: take first paragraph as conclusion
                           const firstBreak = fullResponse.indexOf('\n\n');
                           if (firstBreak > 0 && firstBreak < 500) {
                             conclusion = fullResponse.substring(0, firstBreak).trim();
                             reasoning = fullResponse.substring(firstBreak).trim();
                           } else {
-                            // Just take first ~200 chars or first sentence
-                            const firstSentenceEnd = fullResponse.search(/[.!?]\s/);
-                            if (firstSentenceEnd > 0 && firstSentenceEnd < 300) {
-                              conclusion = fullResponse.substring(0, firstSentenceEnd + 1).trim();
-                              reasoning = fullResponse.substring(firstSentenceEnd + 1).trim();
-                            } else {
-                              conclusion = fullResponse;
-                              reasoning = '';
-                            }
+                            conclusion = fullResponse;
+                            reasoning = '';
                           }
                         }
                         

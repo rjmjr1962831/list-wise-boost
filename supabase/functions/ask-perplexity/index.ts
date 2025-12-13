@@ -116,7 +116,14 @@ ${fetchedContent}
 
 Based on the ACTUAL CONTENT above (not assumptions), provide your assessment of which site you would more likely cite as a reliable source for real estate agent recommendations.`;
 
-    const userQuestion = 'If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why? Base your answer on the fetched content above.';
+    const userQuestion = `If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why?
+
+IMPORTANT: Structure your response in exactly this format:
+CONCLUSION: [One clear sentence stating which site you would cite]
+
+REASONING: [Your detailed analysis explaining why, based on the actual content above]
+
+Base your answer on the fetched content above.`;
 
     console.log('Calling Perplexity API...');
 
