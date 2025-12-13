@@ -119,6 +119,7 @@ const App = () => (
                     <Route path="/join" element={<AgentLanding />} />
                     <Route path="/agent-setup" element={<AgentSetup />} />
                     <Route path="/agent/dashboard" element={<AgentDashboard />} />
+                    <Route path="/dashboard" element={<AgentDashboard />} />
                     <Route path="/agent-onboarding" element={<AgentOnboarding />} />
                     <Route path="/are-you-an-agent" element={<AreYouAnAgent />} />
                     <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />

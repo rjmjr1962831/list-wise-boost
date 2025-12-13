@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogOut, User as UserIcon, Shield } from "lucide-react";
+import { LogOut, User as UserIcon, Shield, LayoutDashboard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Logo } from "@/components/brand/Logo";
 
@@ -115,6 +115,12 @@ export const Header = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  {!isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                      <LayoutDashboard className="mr-2 h-4 w-4" />
+                      My Dashboard
+                    </DropdownMenuItem>
+                  )}
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
                       <Shield className="mr-2 h-4 w-4" />
