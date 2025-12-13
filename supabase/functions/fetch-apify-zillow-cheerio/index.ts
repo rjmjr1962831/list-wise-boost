@@ -153,7 +153,11 @@ serve(async (req) => {
       
       // Business info
       if (agent.businessName) updateData.company = agent.businessName;
-      if (agent.email) updateData.email = agent.email;
+      if (agent.email) {
+        updateData.email = agent.email;
+        // Auto-confirm all discovered emails
+        updateData.email_verified_at = new Date().toISOString();
+      }
       if (agent.profilePhotoSrc) updateData.image_url = agent.profilePhotoSrc;
       
       // Phone number (prefer cell, fallback to business)
