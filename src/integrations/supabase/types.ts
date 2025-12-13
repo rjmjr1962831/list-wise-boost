@@ -667,6 +667,30 @@ export type Database = {
         }
         Relationships: []
       }
+      city_agent_counts: {
+        Row: {
+          agent_count: number
+          city_name: string
+          city_slug: string
+          id: string
+          last_updated: string | null
+        }
+        Insert: {
+          agent_count?: number
+          city_name: string
+          city_slug: string
+          id?: string
+          last_updated?: string | null
+        }
+        Update: {
+          agent_count?: number
+          city_name?: string
+          city_slug?: string
+          id?: string
+          last_updated?: string | null
+        }
+        Relationships: []
+      }
       contact_enrichment_queue: {
         Row: {
           attempts: number
