@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard, TrendingUp, LayoutDashboard } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard, TrendingUp, LayoutDashboard, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
@@ -159,6 +159,23 @@ const AdminDashboard = () => {
             >
               <CreditCard className="mr-2 h-4 w-4" />
               Test Stripe ($1)
+            </Button>
+            <Button
+              onClick={async () => {
+                toast.info("Confirming all emails and syncing to Pipedrive...");
+                try {
+                  const { data, error } = await supabase.functions.invoke('bulk-confirm-emails');
+                  if (error) throw error;
+                  toast.success(`Confirmed ${data.confirmed} emails, queued ${data.pipedriveQueued} for Pipedrive sync`);
+                } catch (err: any) {
+                  toast.error(`Failed: ${err.message}`);
+                }
+              }}
+              variant="outline"
+              className="h-auto py-3 border-primary text-primary hover:bg-primary/10"
+            >
+              <MailCheck className="mr-2 h-4 w-4" />
+              Confirm All Emails
             </Button>
           </div>
         </div>
