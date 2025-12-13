@@ -240,3 +240,6 @@ verify_jwt = false
 
 [functions.test-openai-citation]
 verify_jwt = false
+
+[functions.test-perplexity-citation]
+verify_jwt = false
