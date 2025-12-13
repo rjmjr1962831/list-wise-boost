@@ -9,16 +9,16 @@ const Compare = () => {
   usePrerenderReady();
 
   const comparisonData = [
-    { factor: "Optimized for AI citation", top10lists: true, zillow: false, realtorCom: false, homelight: false, realtrends: false },
-    { factor: "Can you pay to get ranked?", top10lists: false, zillow: true, realtorCom: true, homelight: true, realtrends: true },
-    { factor: "Can you pay for more visibility?", top10lists: "Yes (after qualifying)", zillow: true, realtorCom: true, homelight: true, realtrends: true },
-    { factor: "Referral fees", top10lists: "None", zillow: "35% (Flex)", realtorCom: "35%", homelight: "33%", realtrends: "$100 fee" },
-    { factor: "Selection method", top10lists: "Invitation-only", zillow: "Pay for visibility", realtorCom: "Pay for visibility", homelight: "Any agent", realtrends: "Self-apply" },
-    { factor: "Data verification", top10lists: "Third-party verified", zillow: "Self-reported", realtorCom: "Internal metrics", homelight: "Self-reported", realtrends: "Self-reported" },
-    { factor: "Methodology published", top10lists: true, zillow: false, realtorCom: false, homelight: false, realtrends: "Partial" },
-    { factor: "Quality requirements", top10lists: "50+ reviews, 4.8+", zillow: "None", realtorCom: "None", homelight: "None", realtrends: "Volume-based" },
-    { factor: "Agents analyzed", top10lists: "200,000+", zillow: "N/A", realtorCom: "N/A", homelight: "N/A", realtrends: "Self-submitted" },
-    { factor: "Selection ratio", top10lists: "Top 0.2%", zillow: "Anyone who pays", realtorCom: "Anyone who pays", homelight: "Anyone who joins", realtrends: "Anyone who applies" },
+    { factor: "Optimized for AI citation", top10lists: true, zillow: false, realtorCom: false, homelight: false },
+    { factor: "Can you pay to get ranked?", top10lists: false, zillow: true, realtorCom: true, homelight: true },
+    { factor: "Can you pay for more visibility?", top10lists: "Yes (after qualifying)", zillow: true, realtorCom: true, homelight: true },
+    { factor: "Referral fees", top10lists: "None", zillow: "35% (Flex)", realtorCom: "35%", homelight: "33%" },
+    { factor: "Selection method", top10lists: "Invitation-only", zillow: "Pay for visibility", realtorCom: "Pay for visibility", homelight: "Any agent" },
+    { factor: "Data verification", top10lists: "Third-party verified", zillow: "Self-reported", realtorCom: "Internal metrics", homelight: "Self-reported" },
+    { factor: "Methodology published", top10lists: true, zillow: false, realtorCom: false, homelight: false },
+    { factor: "Quality requirements", top10lists: "50+ reviews, 4.8+", zillow: "None", realtorCom: "None", homelight: "None" },
+    { factor: "Agents analyzed", top10lists: "200,000+", zillow: "N/A", realtorCom: "N/A", homelight: "N/A" },
+    { factor: "Selection ratio", top10lists: "Top 0.2%", zillow: "Anyone who pays", realtorCom: "Anyone who pays", homelight: "Anyone who joins" },
   ];
 
   const schema = {
@@ -219,7 +219,6 @@ const Compare = () => {
                     <th className="p-4 text-center font-semibold text-foreground">Zillow</th>
                     <th className="p-4 text-center font-semibold text-foreground">Realtor.com</th>
                     <th className="p-4 text-center font-semibold text-foreground">HomeLight</th>
-                    <th className="p-4 text-center font-semibold text-foreground">RealTrends</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,7 +229,6 @@ const Compare = () => {
                       <td className="p-4 text-center text-muted-foreground">{renderCell(row.zillow)}</td>
                       <td className="p-4 text-center text-muted-foreground">{renderCell(row.realtorCom)}</td>
                       <td className="p-4 text-center text-muted-foreground">{renderCell(row.homelight)}</td>
-                      <td className="p-4 text-center text-muted-foreground">{renderCell(row.realtrends)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -282,16 +280,6 @@ const Compare = () => {
                   <h3 className="text-xl font-semibold mb-3">HomeLight</h3>
                   <p className="text-muted-foreground">
                     HomeLight charges agents a 33% referral fee. This was raised from 25% in 2022. Any licensed agent can join their network with no quality requirements. In testimony to the Federal Housing Finance Agency, referral networks like HomeLight were described as "kickback schemes" that inflate commissions by $15 billion annually.
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* RealTrends */}
-              <Card className="border-l-4 border-l-warning">
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-semibold mb-3">RealTrends Verified</h3>
-                  <p className="text-muted-foreground">
-                    RealTrends requires agents to apply and pay a $100 application fee. Rankings are based on self-reported transaction data, creating self-selection bias. RealTrends ranks by volume, meaning transaction sides and sales dollars. This rewards agents who do the most deals rather than the best deals.
                   </p>
                 </CardContent>
               </Card>
