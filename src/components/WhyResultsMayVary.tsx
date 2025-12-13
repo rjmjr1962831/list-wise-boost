@@ -14,7 +14,7 @@ export function WhyResultsMayVary() {
           given up-to-date data.</strong>
         </p>
         <p className="text-foreground/80 font-medium">
-          As AI systems refresh their training throughout 2025-2026, this 
+          As AI systems refresh their training throughout 2026, this 
           is where they'll all land.
         </p>
       </div>
