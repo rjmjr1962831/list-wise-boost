@@ -220,14 +220,15 @@ export default function CheckProfile() {
         {/* Found State */}
         {pageState === 'found' && foundProfessional && (
           <div className="space-y-6">
-            {/* Fixed Accept Now Button */}
+            {/* Fixed Review/Edit Button */}
             <div className="fixed top-4 right-4 z-50">
               <Button 
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-8"
-                onClick={() => navigate(`/profile/${foundToken}/pricing`)}
+                onClick={() => navigate(`/profile/${foundToken}/fields`)}
               >
-                Accept Now
+                <Edit className="mr-2 h-4 w-4" />
+                Approve or Edit
               </Button>
             </div>
 
@@ -276,13 +277,14 @@ export default function CheckProfile() {
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="py-6 text-center">
                 <p className="text-lg mb-4">
-                  Ready to claim your listing and get started?
+                  Ready to review and claim your listing?
                 </p>
                 <Button 
                   size="lg"
-                  onClick={() => navigate(`/profile/${foundToken}/pricing`)}
+                  onClick={() => navigate(`/profile/${foundToken}/fields`)}
                 >
-                  Accept Now & View Pricing
+                  <Edit className="mr-2 h-4 w-4" />
+                  Review & Edit Profile
                 </Button>
               </CardContent>
             </Card>
