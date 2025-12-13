@@ -127,12 +127,12 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
   return { success: true };
 }
 
-// Get URLs to warm - only crawlable pages (excludes noindex/nocrawl city pages)
+// Get URLs to warm - includes static pages AND all active city/category pages
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
   const baseUrl = 'https://www.top10lists.us';
   
-  // Only warm pages that are actually crawlable (not noindex/nocrawl)
-  const crawlablePages = [
+  // Static crawlable pages
+  const staticPages = [
     '', // homepage
     '/about',
     '/about/ranking-methodology',
@@ -145,14 +145,43 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/sitemap.xml',
   ];
   
-  const allUrls = crawlablePages.map(path => `${baseUrl}${path}`);
+  const allUrls = staticPages.map(path => `${baseUrl}${path}`);
+  
+  // Fetch active cities and categories from database
+  try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    
+    // Fetch active cities
+    const citiesRes = await fetch(`${supabaseUrl}/rest/v1/cities?active=eq.true&select=slug,state_slug`, {
+      headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+    });
+    const cities = await citiesRes.json();
+    
+    // Fetch active categories
+    const categoriesRes = await fetch(`${supabaseUrl}/rest/v1/categories?active=eq.true&select=slug`, {
+      headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+    });
+    const categories = await categoriesRes.json();
+    
+    // Generate city/category URLs
+    for (const city of cities) {
+      for (const category of categories) {
+        allUrls.push(`${baseUrl}/${city.state_slug}/${city.slug}/${category.slug}`);
+      }
+    }
+    
+    console.log(`Generated ${allUrls.length} URLs to warm (${staticPages.length} static + ${cities.length * categories.length} city pages)`);
+  } catch (error) {
+    console.error('Error fetching cities/categories, using static pages only:', error);
+  }
   
   const totalCount = allUrls.length;
   const startIndex = offset || 0;
   const endIndex = limit ? startIndex + limit : allUrls.length;
   const urls = allUrls.slice(startIndex, endIndex);
   
-  console.log(`Generated ${urls.length} crawlable URLs to warm (offset: ${startIndex}, total: ${totalCount})`);
+  console.log(`Returning ${urls.length} URLs (offset: ${startIndex}, limit: ${limit || 'none'}, total: ${totalCount})`);
   return { urls, totalCount };
 }
 
