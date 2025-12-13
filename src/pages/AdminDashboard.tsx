@@ -117,17 +117,12 @@ const AdminDashboard = () => {
           <h2 className="text-lg font-semibold mb-2">Quick Actions</h2>
           <div className="flex flex-wrap gap-4">
             <Button
-              onClick={() => {
-                const id = prompt('Enter professional ID (UUID):');
-                if (id?.trim()) {
-                  navigate(`/dashboard?id=${id.trim()}`);
-                }
-              }}
+              onClick={() => navigate('/dashboard?id=20e0b7f2-5652-424a-9d46-ba74a19cd9a8')}
               variant="outline"
               className="h-auto py-3 border-primary text-primary hover:bg-primary/10"
             >
               <LayoutDashboard className="mr-2 h-4 w-4" />
-              View Agent Dashboard
+              Test Dashboard (Robert)
             </Button>
             <Button
               onClick={async () => {
