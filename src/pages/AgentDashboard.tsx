@@ -1,19 +1,56 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { BarChart3, Edit, LogOut, Settings } from 'lucide-react';
+import { 
+  CreditCard, 
+  Edit, 
+  LogOut, 
+  MapPin, 
+  Eye, 
+  Lock,
+  ArrowUpCircle,
+  CheckCircle2,
+  Loader2
+} from 'lucide-react';
 import { Professional } from '@/types/professional';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+
+interface CitySubscription {
+  id: string;
+  city_name: string;
+  subscription_type: string;
+  is_active: boolean;
+  started_at: string;
+  expires_at: string | null;
+}
 
 export default function AgentDashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
-  const [userEmail, setUserEmail] = useState<string>('');
+  const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [subscriptions, setSubscriptions] = useState<CitySubscription[]>([]);
+  const [freeCity, setFreeCity] = useState<string | null>(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [loadingPortal, setLoadingPortal] = useState(false);
 
   useEffect(() => {
     checkAuthAndLoadProfile();
@@ -21,18 +58,15 @@ export default function AgentDashboard() {
 
   const checkAuthAndLoadProfile = async () => {
     try {
-      // Check if user is authenticated
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         toast.error('Please sign in to access your dashboard');
-        navigate('/agent-setup');
+        navigate('/auth');
         return;
       }
 
-      setUserEmail(user.email || '');
-
-      // Fetch professional profile using user's email
+      // Fetch professional profile
       const { data, error } = await supabase
         .from('professionals')
         .select(`
@@ -54,48 +88,79 @@ export default function AgentDashboard() {
         .eq('active', true)
         .single();
 
-      if (error) {
+      if (error || !data) {
         console.error('Error fetching profile:', error);
         toast.error('Could not load your profile. Please contact support.');
         return;
       }
 
-      if (data) {
-        // Transform the data to match Professional type
-        const transformedProfessional: Professional = {
-          id: data.id,
-          rank: data.rank,
-          name: data.name,
-          title: data.title || '',
-          company: data.company || '',
-          rating: data.review_stars_rating || 0,
-          reviews: data.num_total_reviews || 0,
-          specialties: data.specialty || [],
-          address: data.address || '',
-          phone: data.phone || '',
-          email: data.email || '',
-          website: data.website || '',
-          description: data.get_to_know_me || data.description || '',
-          stats: {
-            totalSales: data.total_sales || (data.agent_sales_stats as any)?.countAllTime || 0,
-            currentListings: data.current_listings || 0,
-            yearsExperience: data.years_experience || 0,
-          },
-          verified: !!data.license_verified_at,
-          image: data.image_url || '',
-          license_number: data.license_number || '',
-          license_verified_at: data.license_verified_at || '',
-          zuid: data.zuid,
-          years_experience: data.years_experience,
-          // Pass through raw fields used by ProfessionalCard for stats & external links
-          ...(data.total_sales !== null && { total_sales: data.total_sales }),
-          agent_sales_stats: data.agent_sales_stats as any,
-          zillow_profile_url: data.zillow_profile_url || null,
-          sidebar_video_url: data.sidebar_video_url || null,
-        } as any;
+      setProfessionalId(data.id);
 
-        setProfessional(transformedProfessional);
+      // Fetch city subscriptions
+      const { data: subs } = await supabase
+        .from('agent_city_subscriptions')
+        .select(`
+          id,
+          subscription_type,
+          is_active,
+          started_at,
+          expires_at,
+          city_id (
+            city_name
+          )
+        `)
+        .eq('professional_id', data.id);
+
+      if (subs) {
+        const formattedSubs = subs.map((sub: any) => ({
+          id: sub.id,
+          city_name: sub.city_id?.city_name || 'Unknown',
+          subscription_type: sub.subscription_type,
+          is_active: sub.is_active,
+          started_at: sub.started_at,
+          expires_at: sub.expires_at,
+        }));
+        setSubscriptions(formattedSubs);
+        
+        // Find free city
+        const freeSub = formattedSubs.find(s => s.subscription_type === 'free');
+        if (freeSub) setFreeCity(freeSub.city_name);
       }
+
+      // Transform data
+      const transformedProfessional: Professional = {
+        id: data.id,
+        rank: data.rank,
+        name: data.name,
+        title: data.title || '',
+        company: data.company || '',
+        rating: data.review_stars_rating || 0,
+        reviews: data.num_total_reviews || 0,
+        specialties: data.specialty || [],
+        address: data.address || '',
+        phone: data.phone || '',
+        email: data.email || '',
+        website: data.website || '',
+        description: data.get_to_know_me || data.description || '',
+        stats: {
+          totalSales: data.total_sales || (data.agent_sales_stats as any)?.countAllTime || 0,
+          currentListings: data.current_listings || 0,
+          yearsExperience: data.years_experience || 0,
+        },
+        verified: !!data.license_verified_at,
+        image: data.image_url || '',
+        license_number: data.license_number || '',
+        license_verified_at: data.license_verified_at || '',
+        zuid: data.zuid,
+        years_experience: data.years_experience,
+        ...(data.total_sales !== null && { total_sales: data.total_sales }),
+        agent_sales_stats: data.agent_sales_stats as any,
+        zillow_profile_url: data.zillow_profile_url || null,
+        sidebar_video_url: data.sidebar_video_url || null,
+        short_code: data.short_code,
+      } as any;
+
+      setProfessional(transformedProfessional);
     } catch (error) {
       console.error('Error in checkAuthAndLoadProfile:', error);
       toast.error('An error occurred. Please try again.');
@@ -110,12 +175,91 @@ export default function AgentDashboard() {
     navigate('/');
   };
 
+  const handleManagePayment = async () => {
+    setLoadingPortal(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal', {
+        body: { professionalId }
+      });
+
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      } else {
+        toast.error('Could not open payment portal');
+      }
+    } catch (error: any) {
+      console.error('Error opening portal:', error);
+      toast.error(error.message || 'Failed to open payment portal');
+    } finally {
+      setLoadingPortal(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+    if (newPassword.length < 8) {
+      toast.error('Password must be at least 8 characters');
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      
+      if (error) throw error;
+      
+      toast.success('Password updated successfully');
+      setShowPasswordModal(false);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      toast.error(error.message || 'Failed to update password');
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
+  const handleEditProfile = () => {
+    if (professional && (professional as any).short_code) {
+      navigate(`/profile/p/${(professional as any).short_code}/fields`);
+    } else if (professionalId) {
+      navigate(`/profile/${professionalId}/fields`);
+    }
+  };
+
+  const handleUpgradePackage = () => {
+    if (professional && (professional as any).short_code) {
+      navigate(`/profile/p/${(professional as any).short_code}/pricing`);
+    } else if (professionalId) {
+      navigate(`/profile/${professionalId}/pricing`);
+    }
+  };
+
+  const handleChangeFreeCity = () => {
+    if (professional && (professional as any).short_code) {
+      navigate(`/profile/p/${(professional as any).short_code}/free-city`);
+    } else if (professionalId) {
+      navigate(`/profile/${professionalId}/free-city`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background py-12">
-        <div className="container mx-auto px-4 max-w-4xl">
+        <div className="container mx-auto px-4 max-w-6xl">
           <Skeleton className="h-12 w-64 mb-8" />
-          <Skeleton className="h-96 w-full" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <Skeleton className="h-48 w-full" />
+              <Skeleton className="h-64 w-full" />
+            </div>
+            <Skeleton className="h-96 w-full" />
+          </div>
         </div>
       </div>
     );
@@ -128,8 +272,8 @@ export default function AgentDashboard() {
           <Card>
             <CardContent className="pt-6 text-center">
               <p className="text-muted-foreground mb-4">No profile found for your account.</p>
-              <Button onClick={() => navigate('/agent-setup')}>
-                Set Up Your Profile
+              <Button onClick={() => navigate('/')}>
+                Return Home
               </Button>
             </CardContent>
           </Card>
@@ -138,88 +282,238 @@ export default function AgentDashboard() {
     );
   }
 
+  const paidCities = subscriptions.filter(s => s.subscription_type !== 'free' && s.is_active);
+
   return (
-    <div className="min-h-screen bg-background py-12">
-      <div className="container mx-auto px-4 max-w-4xl">
-        {/* Header with actions */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Agent Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Welcome back, {professional.name}</p>
+    <>
+      <Helmet>
+        <title>Agent Dashboard | Top10Lists.us</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+      
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8 md:py-12">
+        <div className="container mx-auto px-4 max-w-6xl">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {professional.name.split(' ')[0]}</h1>
+              <p className="text-muted-foreground mt-1">Manage your Top10Lists profile and subscription</p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSignOut}
+              className="gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Sign Out
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleSignOut}
-            className="gap-2"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </Button>
-        </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card className="hover:border-primary transition-colors cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Edit className="h-5 w-5 text-primary" />
-                Edit Profile
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Update your information, specialties, and bio
-              </p>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column - Actions & Subscriptions */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Button 
+                      variant="outline" 
+                      className="h-auto py-4 justify-start gap-3"
+                      onClick={handleEditProfile}
+                    >
+                      <Edit className="h-5 w-5 text-primary" />
+                      <div className="text-left">
+                        <div className="font-medium">Edit Profile</div>
+                        <div className="text-xs text-muted-foreground">Update your listing details</div>
+                      </div>
+                    </Button>
 
-          <Card className="hover:border-primary transition-colors cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                View Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Track your profile views and engagement
-              </p>
-            </CardContent>
-          </Card>
+                    <Button 
+                      variant="outline" 
+                      className="h-auto py-4 justify-start gap-3"
+                      onClick={handleManagePayment}
+                      disabled={loadingPortal}
+                    >
+                      {loadingPortal ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      )}
+                      <div className="text-left">
+                        <div className="font-medium">Payment Method</div>
+                        <div className="text-xs text-muted-foreground">Update billing information</div>
+                      </div>
+                    </Button>
 
-          <Card className="hover:border-primary transition-colors cursor-pointer">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Settings className="h-5 w-5 text-primary" />
-                Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Manage your listing preferences and visibility
-              </p>
-            </CardContent>
-          </Card>
-        </div>
+                    <Button 
+                      variant="outline" 
+                      className="h-auto py-4 justify-start gap-3"
+                      onClick={handleUpgradePackage}
+                    >
+                      <ArrowUpCircle className="h-5 w-5 text-primary" />
+                      <div className="text-left">
+                        <div className="font-medium">Upgrade Package</div>
+                        <div className="text-xs text-muted-foreground">Add more cities</div>
+                      </div>
+                    </Button>
 
-        {/* Professional Card Preview */}
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Your Public Profile</h2>
-          <ProfessionalCard
-            professional={professional}
-            accentColor="primary"
-            schemaType="RealEstateAgent"
-            market={professional.address}
-            stateAbbr="AZ"
-            agentType="established"
-            citySlug=""
-            categorySlug=""
-            quizCompleted={false}
-            showContactModal={false}
-          />
+                    <Button 
+                      variant="outline" 
+                      className="h-auto py-4 justify-start gap-3"
+                      onClick={() => setShowPasswordModal(true)}
+                    >
+                      <Lock className="h-5 w-5 text-primary" />
+                      <div className="text-left">
+                        <div className="font-medium">Change Password</div>
+                        <div className="text-xs text-muted-foreground">Update your credentials</div>
+                      </div>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* City Subscriptions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Your Cities
+                  </CardTitle>
+                  <CardDescription>
+                    Cities where your listing appears
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Free City */}
+                  {freeCity && (
+                    <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg border">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-primary" />
+                        <div>
+                          <div className="font-medium">{freeCity}</div>
+                          <div className="text-xs text-muted-foreground">Free Listing (Round-Robin)</div>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={handleChangeFreeCity}>
+                        Change
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Paid Cities */}
+                  {paidCities.length > 0 ? (
+                    paidCities.map((sub) => (
+                      <div 
+                        key={sub.id} 
+                        className="flex items-center justify-between p-4 bg-primary/5 rounded-lg border border-primary/20"
+                      >
+                        <div className="flex items-center gap-3">
+                          <CheckCircle2 className="h-5 w-5 text-primary" />
+                          <div>
+                            <div className="font-medium">{sub.city_name}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Premium Placement • {sub.subscription_type === 'annual' ? 'Annual' : 'Monthly'}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-xs text-primary font-medium px-2 py-1 bg-primary/10 rounded">
+                          Active
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6 text-muted-foreground">
+                      <p className="mb-3">No premium city placements yet</p>
+                      <Button size="sm" onClick={handleUpgradePackage}>
+                        <ArrowUpCircle className="h-4 w-4 mr-2" />
+                        Get Premium Placement
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right Column - Listing Preview */}
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="h-5 w-5" />
+                    Your Listing
+                  </CardTitle>
+                  <CardDescription>
+                    How you appear on Top10Lists
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="scale-[0.85] origin-top -mb-16">
+                    <ProfessionalCard
+                      professional={professional}
+                      accentColor="primary"
+                      schemaType="RealEstateAgent"
+                      market={professional.address}
+                      stateAbbr="AZ"
+                      agentType="established"
+                      citySlug=""
+                      categorySlug=""
+                      quizCompleted={false}
+                      showContactModal={false}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Password Change Modal */}
+      <Dialog open={showPasswordModal} onOpenChange={setShowPasswordModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+            <DialogDescription>
+              Enter your new password below. Password must be at least 8 characters.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">New Password</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Enter new password"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Confirm Password</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm new password"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleChangePassword} disabled={updatingPassword}>
+              {updatingPassword && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Update Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
