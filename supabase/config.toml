@@ -237,3 +237,6 @@ verify_jwt = false
 
 [functions.notify-profile-accepted]
 verify_jwt = false
+
+[functions.test-openai-citation]
+verify_jwt = false
