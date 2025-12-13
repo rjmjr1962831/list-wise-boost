@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard } from "lucide-react";
+import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard, TrendingUp } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
@@ -32,6 +32,7 @@ import { BatchSynthesisRefresher } from '@/components/admin/BatchSynthesisRefres
 import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
 import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
 import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
+import { FunnelAnalyticsDashboard } from '@/components/admin/FunnelAnalyticsDashboard';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -212,6 +213,10 @@ const AdminDashboard = () => {
               <Bot className="mr-2 h-4 w-4" />
               AI Router
             </TabsTrigger>
+            <TabsTrigger value="funnel-analytics">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Funnel Analytics
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -280,6 +285,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="ai-router" className="space-y-4">
             <AIModelTester />
+          </TabsContent>
+
+          <TabsContent value="funnel-analytics" className="space-y-4">
+            <FunnelAnalyticsDashboard />
           </TabsContent>
         </Tabs>
       </div>
