@@ -293,9 +293,9 @@ export default function AgentDashboard() {
 
   const handleChangeFreeCity = () => {
     if (professional && (professional as any).short_code) {
-      navigate(`/profile/p/${(professional as any).short_code}/free-city`);
+      navigate(`/profile/p/${(professional as any).short_code}/select-free-city`);
     } else if (professionalId) {
-      navigate(`/profile/${professionalId}/free-city`);
+      navigate(`/profile/${professionalId}/select-free-city`);
     }
   };
 
