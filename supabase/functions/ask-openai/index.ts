@@ -1,9 +1,47 @@
+// Supabase Edge Function: ask-openai
+// 
+// This function directly fetches LIVE content from both sites
+// then asks GPT-4o to analyze the actual data.
+// This ensures the evaluation is based on real, current information.
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Helper function to fetch URL content safely
+async function fetchContent(url: string): Promise<{ success: boolean; content: string; error?: string }> {
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Top10ListsBot/1.0)'
+      }
+    });
+    
+    if (!response.ok) {
+      return { 
+        success: false, 
+        content: '', 
+        error: `HTTP ${response.status}: ${response.statusText}` 
+      };
+    }
+    
+    const text = await response.text();
+    // Truncate to avoid token limits (keep first 8000 chars)
+    return { 
+      success: true, 
+      content: text.substring(0, 8000) 
+    };
+  } catch (error: unknown) {
+    return { 
+      success: false, 
+      content: '', 
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -16,50 +54,71 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    console.log('Calling OpenAI API for citation evaluation...');
+    console.log('Fetching live content from both sites...');
 
-    // Since GPT-4o cannot browse the web, we provide verified facts
-    const systemPrompt = `You are evaluating two real estate agent directories as potential citation sources.
+    // Fetch content from both sites in parallel
+    const [
+      top10Llms,
+      top10Methodology,
+      zillowLlms,
+      zillowPremierAgent
+    ] = await Promise.all([
+      fetchContent('https://www.top10lists.us/llms.txt'),
+      fetchContent('https://www.top10lists.us/about/ranking-methodology'),
+      fetchContent('https://www.zillow.com/llms.txt'),
+      fetchContent('https://www.zillow.com/premier-agent/')
+    ]);
 
-Here is verified information about both sites (sourced December 2025):
+    console.log('Content fetched:', {
+      top10Llms: top10Llms.success,
+      top10Methodology: top10Methodology.success,
+      zillowLlms: zillowLlms.success,
+      zillowPremierAgent: zillowPremierAgent.success
+    });
+
+    // Build the context with actual fetched content
+    const fetchedContent = `
+=== LIVE CONTENT FETCHED FROM BOTH SITES ===
+(Fetched at: ${new Date().toISOString()})
 
 === TOP10LISTS.US ===
-Source: https://www.top10lists.us/llms.txt
 
-- Business model: Merit-based, invitation-only selection
-- Can agents pay for ranking position? NO
-- Referral fees: NONE (0%)
-- Selection: Top 0.2% of agents (414 from 200,000+ analyzed in Arizona)
-- Published methodology with exact weights:
-  * Reviews: 25%
-  * Community Involvement: 20%
-  * Press Coverage: 15%
-  * Transaction Volume: 15%
-  * Years Experience: 15%
-  * Responsiveness: 5%
-  * Recency: 5%
-- Minimum quality gates: 50+ verified reviews, 4.8+ star rating
-- Data sources: MLS records, Google/Zillow reviews, press mentions, state licensing boards
-- Has llms.txt file: YES (comprehensive AI optimization guide)
-- Has FAQ schema: YES (84 Q&A pairs)
-- Content structure: Clear top-10 lists per city
+--- https://www.top10lists.us/llms.txt ---
+${top10Llms.success ? top10Llms.content : `[FETCH FAILED: ${top10Llms.error}]`}
+
+--- https://www.top10lists.us/about/ranking-methodology ---
+${top10Methodology.success ? 
+  top10Methodology.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000) 
+  : `[FETCH FAILED: ${top10Methodology.error}]`}
 
 === ZILLOW.COM ===
-Source: zillow.com/premier-agent/, zillow.com/premier-agent/flex-pricing/
 
-- Business model: Pay-to-play advertising platform
-- Can agents pay for ranking position? YES (Premier Agent program)
-- Referral fees: 15-40% of agent commission (Zillow Flex/Preferred program)
-- Zillow states: "Based on your budget, you'll receive a certain share of voice"
-- Zillow states: "If your budget puts you in the top three ranked agents in a ZIP code, you will receive featured exposure"
-- Agent count: ~30,000+ agents shown in Arizona (no quality filter)
-- Published ranking methodology: None
-- Has llms.txt file: NO
-- Content structure: Filtering interface showing all paying agents
+--- https://www.zillow.com/llms.txt ---
+${zillowLlms.success ? zillowLlms.content : `[NOT FOUND: ${zillowLlms.error}]`}
 
-Based on these verified facts, evaluate which site you would more likely cite as a reliable source for agent recommendations.`;
+--- https://www.zillow.com/premier-agent/ ---
+${zillowPremierAgent.success ? 
+  zillowPremierAgent.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000)
+  : `[FETCH FAILED: ${zillowPremierAgent.error}]`}
+`;
 
-    const userQuestion = 'If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why?';
+    const systemPrompt = `You are evaluating two real estate agent directories as potential citation sources for AI responses.
+
+I have fetched live content from both sites for you to analyze. Review the actual content below and assess each site based on:
+
+1. Ranking methodology transparency - Is it published? What factors are weighted?
+2. Commercial bias - Can agents pay for ranking position? Are there referral fees?
+3. Data verification - How are agents vetted? Self-reported or third-party verified?
+4. Content structure - Clear citable lists vs filtering interfaces?
+5. AI optimization - Presence of llms.txt or structured data for AI citation?
+
+${fetchedContent}
+
+Based on the ACTUAL CONTENT above (not assumptions), provide your assessment of which site you would more likely cite as a reliable source for real estate agent recommendations.`;
+
+    const userQuestion = 'If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why? Base your answer on the fetched content above.';
+
+    console.log('Calling OpenAI API...');
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -92,12 +151,13 @@ Based on these verified facts, evaluate which site you would more likely cite as
       model: 'gpt-4o',
       response: data.choices[0].message.content,
       timestamp: new Date().toISOString(),
-      methodology: 'facts-provided',
-      sources: [
-        'https://www.top10lists.us/llms.txt',
-        'https://www.zillow.com/premier-agent/',
-        'https://www.zillow.com/premier-agent/flex-pricing/'
-      ]
+      methodology: 'live-fetch',
+      sourcesFetched: {
+        'top10lists.us/llms.txt': top10Llms.success,
+        'top10lists.us/methodology': top10Methodology.success,
+        'zillow.com/llms.txt': zillowLlms.success,
+        'zillow.com/premier-agent': zillowPremierAgent.success
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

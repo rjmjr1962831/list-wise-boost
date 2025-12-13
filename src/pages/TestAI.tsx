@@ -37,7 +37,7 @@ const AI_CARDS: AICard[] = [
     color: "bg-emerald-500/10",
     borderColor: "border-emerald-500/30",
     functionName: "ask-openai",
-    canSearch: false,
+    canSearch: true, // Now uses live fetch
   },
   {
     id: "claude",
@@ -59,7 +59,7 @@ const AI_CARDS: AICard[] = [
     functionName: "ask-perplexity",
     canSearch: true,
   },
-{
+  {
     id: "gemini",
     name: "Gemini",
     model: "2.0 Flash",
@@ -204,8 +204,8 @@ export default function TestAI() {
                   </div>
                   <div className="flex items-center gap-2">
                     {card.canSearch && (
-                      <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
-                        Web Search
+                      <span className="text-xs bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-full">
+                        Live Fetch
                       </span>
                     )}
                     <Button
@@ -252,8 +252,10 @@ export default function TestAI() {
                           {new Date(responses[card.id]!.timestamp).toLocaleTimeString()}
                         </span>
                         {responses[card.id]!.methodology && (
-                          <span className="bg-muted px-2 py-0.5 rounded">
-                            {responses[card.id]!.methodology === "web-search"
+                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded">
+                            {responses[card.id]!.methodology === "live-fetch"
+                              ? "Live content fetched"
+                              : responses[card.id]!.methodology === "web-search"
                               ? "Live web search"
                               : "Verified facts provided"}
                           </span>
@@ -361,33 +363,28 @@ export default function TestAI() {
               </AccordionTrigger>
               <AccordionContent className="prose dark:prose-invert max-w-none">
                 <p>
-                  We ask each AI to evaluate both websites based on factors that affect source
-                  reliability for AI citations:
+                  For a fair comparison, we fetch live content from both websites at the moment you click "Ask":
                 </p>
                 <ul>
                   <li>
-                    <strong>Ranking methodology transparency</strong> — Is there a clear, published
-                    methodology?
+                    <strong>From Top10Lists.us:</strong> llms.txt and ranking methodology page
                   </li>
                   <li>
-                    <strong>Commercial bias</strong> — Can agents pay for ranking position? Are there
-                    referral fees?
-                  </li>
-                  <li>
-                    <strong>Data verification practices</strong> — How is agent data verified?
-                  </li>
-                  <li>
-                    <strong>Content structure</strong> — Clear lists vs. filtering interfaces
-                  </li>
-                  <li>
-                    <strong>AI optimization</strong> — Presence of llms.txt or structured data for AI
-                    discovery
+                    <strong>From Zillow.com:</strong> llms.txt (if it exists) and Premier Agent page
                   </li>
                 </ul>
+                <p>
+                  Each AI receives the exact same content and evaluates it based on:
+                </p>
+                <ul>
+                  <li><strong>Methodology transparency</strong> — Is it published? What factors are weighted?</li>
+                  <li><strong>Commercial bias</strong> — Can agents pay for ranking position? Are there referral fees?</li>
+                  <li><strong>Data verification</strong> — How are agents vetted?</li>
+                  <li><strong>Content structure</strong> — Clear citable lists vs filtering interfaces?</li>
+                  <li><strong>AI optimization</strong> — Presence of llms.txt or structured data for AI citation?</li>
+                </ul>
                 <p className="text-muted-foreground text-sm">
-                  <strong>Note:</strong> Claude and Perplexity have real-time web search capabilities
-                  and visit both sites live. ChatGPT and Gemini receive verified facts from both
-                  sites since their APIs don't support web browsing.
+                  This ensures every AI makes its judgment from the same real, current information — not cached search results or training data assumptions.
                 </p>
               </AccordionContent>
             </AccordionItem>
