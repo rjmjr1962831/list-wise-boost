@@ -258,3 +258,6 @@ verify_jwt = false
 
 [functions.ask-verdict]
 verify_jwt = false
+
+[functions.refresh-city-agent-counts]
+verify_jwt = false

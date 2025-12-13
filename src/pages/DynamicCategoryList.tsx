@@ -19,6 +19,9 @@ import { toast } from 'sonner';
 import { isBot, getBotType } from '@/utils/botDetection';
 import { getCanonicalRankings } from '@/services/canonicalAgentService';
 import { signalPrerenderReady } from '@/hooks/usePrerenderReady';
+import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
+import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
+import { CityContentSection } from '@/components/CityContentSection';
 
 interface City {
   id: string;
@@ -1162,6 +1165,13 @@ export default function DynamicCategoryList() {
           </p>
         </div>
       </div>
+      
+      {/* City Content Section - Unique per city for SEO */}
+      <CityContentSection 
+        citySlug={city.slug} 
+        cityName={city.name} 
+        categoryName={category.plural_name}
+      />
       
       {categorySlug === 'top10realestateagents' && city && (
         <RealEstateAgentQuizModal
