@@ -75,6 +75,85 @@
     }
     </script>
     
+    <!-- WebSite Schema with SearchAction for sitelinks searchbox -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Top10Lists.us",
+      "url": "https://www.top10lists.us/",
+      "description": "Merit-based directory of top real estate agents in Arizona and nationwide",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://www.top10lists.us/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    
+    <!-- Dynamic BreadcrumbList Schema - generated per page -->
+    <script type="application/ld+json" id="breadcrumb-schema">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.top10lists.us/"}
+      ]
+    }
+    </script>
+    
+    <!-- Script to update BreadcrumbList dynamically -->
+    <script>
+    (function() {
+      var path = window.location.pathname;
+      var parts = path.split('/').filter(function(p) { return p; });
+      if (parts.length >= 2) {
+        var states = {
+          'arizona': 'Arizona', 'al': 'Alabama', 'ak': 'Alaska', 'ar': 'Arkansas',
+          'ca': 'California', 'co': 'Colorado', 'ct': 'Connecticut', 'de': 'Delaware',
+          'fl': 'Florida', 'ga': 'Georgia', 'hi': 'Hawaii', 'id': 'Idaho',
+          'il': 'Illinois', 'in': 'Indiana', 'ia': 'Iowa', 'ks': 'Kansas',
+          'ky': 'Kentucky', 'la': 'Louisiana', 'me': 'Maine', 'md': 'Maryland',
+          'ma': 'Massachusetts', 'mi': 'Michigan', 'mn': 'Minnesota', 'ms': 'Mississippi',
+          'mo': 'Missouri', 'mt': 'Montana', 'ne': 'Nebraska', 'nv': 'Nevada',
+          'nh': 'New Hampshire', 'nj': 'New Jersey', 'nm': 'New Mexico', 'ny': 'New York',
+          'nc': 'North Carolina', 'nd': 'North Dakota', 'oh': 'Ohio', 'ok': 'Oklahoma',
+          'or': 'Oregon', 'pa': 'Pennsylvania', 'ri': 'Rhode Island', 'sc': 'South Carolina',
+          'sd': 'South Dakota', 'tn': 'Tennessee', 'tx': 'Texas', 'ut': 'Utah',
+          'vt': 'Vermont', 'va': 'Virginia', 'wa': 'Washington', 'wv': 'West Virginia',
+          'wi': 'Wisconsin', 'wy': 'Wyoming'
+        };
+        function toTitleCase(str) {
+          return str.split('-').map(function(word) {
+            return word.charAt(0).toUpperCase() + word.slice(1);
+          }).join(' ');
+        }
+        var stateSlug = parts[0].toLowerCase();
+        var stateName = states[stateSlug] || toTitleCase(stateSlug);
+        var breadcrumbs = [
+          {"@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.top10lists.us/"}
+        ];
+        breadcrumbs.push({"@type": "ListItem", "position": 2, "name": stateName, "item": "https://www.top10lists.us/" + parts[0]});
+        if (parts.length >= 2) {
+          var cityName = toTitleCase(parts[1]);
+          breadcrumbs.push({"@type": "ListItem", "position": 3, "name": cityName, "item": "https://www.top10lists.us/" + parts[0] + "/" + parts[1]});
+        }
+        if (parts.length >= 3) {
+          breadcrumbs.push({"@type": "ListItem", "position": 4, "name": "Top Real Estate Agents", "item": "https://www.top10lists.us" + path});
+        }
+        var schema = {
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          "itemListElement": breadcrumbs
+        };
+        document.getElementById('breadcrumb-schema').textContent = JSON.stringify(schema);
+      }
+    })();
+    </script>
+    
     <!-- Dynamic meta tags script - runs before React -->
     <script>
     (function() {
