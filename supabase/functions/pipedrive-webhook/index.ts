@@ -245,16 +245,12 @@ serve(async (req) => {
       }
 
       // Sync custom fields from Pipedrive
-      // In REST API v2, custom fields are under personData.custom_fields
-      // In webhooks, custom field keys may be flattened on the person object
-      const rawCustomFieldsSource =
-        personData && typeof personData.custom_fields === "object" && personData.custom_fields !== null
-          ? personData.custom_fields
-          : personData || {};
-      const customFields = rawCustomFieldsSource as Record<string, unknown>;
+      // In webhooks, custom_fields is an object with keys like { "abc123": "value" }
+      const customFields = (personData?.custom_fields || {}) as Record<string, unknown>;
 
-      console.log("🔎 Pipedrive personData keys:", Object.keys(personData || {}));
-      console.log("🔎 Pipedrive customFields keys:", Object.keys(customFields || {}));
+      // Debug: log years_experience key lookup
+      const yearsKey = '7cadd870f1f4e976fceb908facf6291e7aab0a0d';
+      console.log(`🔎 years_experience key value:`, customFields[yearsKey], typeof customFields[yearsKey]);
       for (const [pipedriveKey, fieldName] of Object.entries(fieldMappings)) {
         // Skip fields we already handled or that are agent-editable (not synced from Pipedrive)
         // Agent-editable fields: email, phone, website, specialty, business_name, company, social links, etc.
