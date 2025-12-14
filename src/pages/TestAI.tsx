@@ -340,6 +340,22 @@ export default function TestAI() {
 
                   {responses[card.id] && !loading[card.id] && (
                     <div className="space-y-4">
+                      {/* Timestamp first */}
+                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pb-2 border-b border-border/50">
+                        <span>
+                          Fetched: {new Date(responses[card.id]!.timestamp).toLocaleString()}
+                        </span>
+                        {responses[card.id]!.methodology && (
+                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded">
+                            {responses[card.id]!.methodology === "live-fetch"
+                              ? "Live content fetched"
+                              : responses[card.id]!.methodology === "web-search"
+                              ? "Live web search"
+                              : "Verified facts provided"}
+                          </span>
+                        )}
+                      </div>
+                      
                       {(() => {
                         const fullResponse = responses[card.id]!.response;
                         let conclusion = '';
@@ -407,20 +423,6 @@ export default function TestAI() {
                         );
                       })()}
                       
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pt-2 border-t border-border/50">
-                        <span>
-                          Fetched: {new Date(responses[card.id]!.timestamp).toLocaleString()}
-                        </span>
-                        {responses[card.id]!.methodology && (
-                          <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded">
-                            {responses[card.id]!.methodology === "live-fetch"
-                              ? "Live content fetched"
-                              : responses[card.id]!.methodology === "web-search"
-                              ? "Live web search"
-                              : "Verified facts provided"}
-                          </span>
-                        )}
-                      </div>
                       {responses[card.id]!.citations && responses[card.id]!.citations!.length > 0 && (
                         <div className="text-xs text-muted-foreground">
                           <span className="font-medium">Citations: </span>

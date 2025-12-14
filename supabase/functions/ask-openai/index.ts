@@ -147,8 +147,29 @@ Base your answer on the fetched content above.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+      const statusCode = response.status;
+      console.error('OpenAI API error:', statusCode, errorText);
+      
+      // Return graceful error for overloaded/rate-limited scenarios
+      if (statusCode === 429 || statusCode === 503 || statusCode === 529) {
+        return new Response(JSON.stringify({
+          error: 'ChatGPT is temporarily unavailable (provider overloaded). Please try again in a moment.',
+          provider: 'ChatGPT',
+          model: 'gpt-4o',
+          timestamp: new Date().toISOString(),
+          methodology: 'live-fetch',
+          sourcesFetched: {
+            'top10lists.us/llms.txt': top10Llms.success,
+            'top10lists.us/methodology': top10Methodology.success,
+            'zillow.com/llms.txt': zillowLlms.success,
+            'zillow.com/premier-agent': zillowPremierAgent.success
+          }
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      throw new Error(`OpenAI API error: ${statusCode} - ${errorText}`);
     }
 
     const data = await response.json();
