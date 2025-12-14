@@ -83,13 +83,8 @@ const REVIEW_REQUIRED_FIELDS = [
   'is_premier_agent',
   'is_brand_builder',
   
-  // Zillow metrics (scraped, verified)
+  // Zillow profile URL only (other zillow fields not in professionals table)
   'zillow_profile_url',
-  'zillow_rating',
-  'zillow_reviews',
-  'zillow_page',
-  'zillow_position',
-  'zillow_total_agents',
 ];
 
 // Fetch field mappings from database (pipedrive_key -> field_name)
