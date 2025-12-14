@@ -127,7 +127,8 @@ serve(async (req) => {
     
     const entity = payload.meta?.entity || payload.meta?.object;
     const action = payload.meta?.action;
-    const personId = payload.meta?.id || payload.data?.id || payload.current?.id;
+    // Prefer person ID from current/data; meta.id can be the webhook/event id, not the person id
+    const personId = (payload.data || payload.current)?.id ?? payload.meta?.id;
 
     console.log(`📥 Pipedrive webhook: ${action} ${entity} ID:${personId}`);
 
