@@ -118,8 +118,9 @@ export default function TestAI() {
       toast.success(`${card.name} responded`);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to get response";
-      setErrors((prev) => ({ ...prev, [card.id]: message }));
-      toast.error(`${card.name} error: ${message}`);
+      const isOverloaded = message.includes("529") || message.toLowerCase().includes("overloaded");
+      setErrors((prev) => ({ ...prev, [card.id]: isOverloaded ? "Unavailable" : message }));
+      toast.error(`${card.name} error: ${isOverloaded ? "temporarily unavailable (provider overloaded)" : message}`);
     } finally {
       setLoading((prev) => ({ ...prev, [card.id]: false }));
     }
@@ -144,8 +145,9 @@ export default function TestAI() {
         toast.success(`${card.name} responded`);
       } catch (err) {
         const message = err instanceof Error ? err.message : "Failed to get response";
-        setErrors((prev) => ({ ...prev, [card.id]: message }));
-        toast.error(`${card.name} error: ${message}`);
+        const isOverloaded = message.includes("529") || message.toLowerCase().includes("overloaded");
+        setErrors((prev) => ({ ...prev, [card.id]: isOverloaded ? "Unavailable" : message }));
+        toast.error(`${card.name} error: ${isOverloaded ? "temporarily unavailable (provider overloaded)" : message}`);
       } finally {
         setLoading((prev) => ({ ...prev, [card.id]: false }));
       }
@@ -265,7 +267,7 @@ export default function TestAI() {
                     {verdict.verdict}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Generated: {new Date(verdict.timestamp).toLocaleTimeString()}
+                    Generated: {new Date(verdict.timestamp).toLocaleString()}
                   </p>
                 </div>
               ) : verdictLoading ? (
@@ -407,7 +409,7 @@ export default function TestAI() {
                       
                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pt-2 border-t border-border/50">
                         <span>
-                          {new Date(responses[card.id]!.timestamp).toLocaleTimeString()}
+                          Fetched: {new Date(responses[card.id]!.timestamp).toLocaleString()}
                         </span>
                         {responses[card.id]!.methodology && (
                           <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded">
