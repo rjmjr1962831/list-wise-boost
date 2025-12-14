@@ -248,13 +248,15 @@ serve(async (req) => {
       const customFields = personData?.custom_fields || {};
       
       for (const [pipedriveKey, fieldName] of Object.entries(fieldMappings)) {
-        // Skip fields we already handled or that shouldn't be synced back
-        if (['name', 'email', 'phone', 'supabase_id', 'card_url', 'profile_link', 'city_name', 'state', 'email_verified'].includes(fieldName)) {
+        // Skip fields we already handled or that are agent-editable (not synced from Pipedrive)
+        // Agent-editable fields: email, phone, website, specialty, business_name, company, social links, etc.
+        if (['supabase_id', 'card_url', 'profile_link', 'city_name', 'state', 'email_verified'].includes(fieldName)) {
           continue;
         }
         
-        // Check if this field is in the syncable list
-        if (!SYNCABLE_FIELDS.includes(fieldName)) {
+        // Only sync REVIEW-REQUIRED fields from Pipedrive
+        // These are fields where Pipedrive is the source of truth
+        if (!REVIEW_REQUIRED_FIELDS.includes(fieldName)) {
           continue;
         }
 
