@@ -253,6 +253,8 @@ serve(async (req) => {
           : personData || {};
       const customFields = rawCustomFieldsSource as Record<string, unknown>;
 
+      console.log("🔎 Pipedrive personData keys:", Object.keys(personData || {}));
+      console.log("🔎 Pipedrive customFields keys:", Object.keys(customFields || {}));
       for (const [pipedriveKey, fieldName] of Object.entries(fieldMappings)) {
         // Skip fields we already handled or that are agent-editable (not synced from Pipedrive)
         // Agent-editable fields: email, phone, website, specialty, business_name, company, social links, etc.
