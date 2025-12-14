@@ -265,7 +265,12 @@ serve(async (req) => {
         }
 
         // Look for the custom field value in the custom_fields object
-        const value = customFields[pipedriveKey];
+        // Pipedrive webhook sends custom fields as { type: "double", value: 7 } or similar
+        const rawValue = customFields[pipedriveKey];
+        // Extract the actual value - could be a direct value or nested in { value: X }
+        const value = (rawValue && typeof rawValue === 'object' && 'value' in rawValue) 
+          ? (rawValue as { value: unknown }).value 
+          : rawValue;
         
         if (value !== undefined && value !== null) {
           // Handle different field types
