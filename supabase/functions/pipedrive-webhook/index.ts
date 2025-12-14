@@ -90,7 +90,6 @@ const REVIEW_REQUIRED_FIELDS = [
   'zillow_page',
   'zillow_position',
   'zillow_total_agents',
-  'agents_ahead',
 ];
 
 // Fetch field mappings from database (pipedrive_key -> field_name)
