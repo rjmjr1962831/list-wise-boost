@@ -259,39 +259,39 @@ export default function TestAI() {
               <h2 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-1">The Verdict</h2>
               <p className="text-sm text-muted-foreground mb-4">A synthesis of {PRELOADED_VERDICT.sourceCount} AI responses</p>
               
-              {/* Pre-loaded verdict with expander */}
+              {/* Show live verdict if available, otherwise show preloaded */}
               <div className="space-y-4">
-                <p className="text-foreground font-medium leading-relaxed text-lg">
-                  {PRELOADED_VERDICT.summary}
-                </p>
-                
-                <Collapsible>
-                  <CollapsibleTrigger className="flex items-center gap-2 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors text-sm font-medium group">
-                    <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
-                    See full analysis
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pt-4">
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {PRELOADED_VERDICT.details.split('\n\n').map((para, idx) => (
-                        <p key={idx} className="text-foreground/80 leading-relaxed whitespace-pre-line">
-                          {para}
-                        </p>
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-                
-                {/* Live verdict update if user clicks Ask All */}
-                {verdict && (
-                  <div className="pt-4 border-t border-amber-500/20">
-                    <p className="text-xs text-muted-foreground mb-2">Live update:</p>
-                    <p className="text-foreground/80 text-sm whitespace-pre-line">
+                {verdict ? (
+                  <>
+                    <p className="text-foreground whitespace-pre-line leading-relaxed">
                       {verdict.verdict}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs text-muted-foreground">
                       Generated: {new Date(verdict.timestamp).toLocaleTimeString()}
                     </p>
-                  </div>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-foreground font-medium leading-relaxed text-lg">
+                      {PRELOADED_VERDICT.summary}
+                    </p>
+                    
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center gap-2 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors text-sm font-medium group">
+                        <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                        See full analysis
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="pt-4">
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          {PRELOADED_VERDICT.details.split('\n\n').map((para, idx) => (
+                            <p key={idx} className="text-foreground/80 leading-relaxed whitespace-pre-line">
+                              {para}
+                            </p>
+                          ))}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </>
                 )}
               </div>
             </div>
