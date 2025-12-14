@@ -9,8 +9,11 @@ export function WhyResultsMayVary() {
         <p>
           This comparison bypasses that delay by feeding live content directly to each AI. <strong className="text-foreground">You're seeing what they'll say once their data catches up.</strong>
         </p>
-        <p className="text-foreground/80 font-medium">
+        <p>
           The question isn't <em>if</em> AI will recommend merit-based rankings over pay-to-play. It's <em>when</em>. The lists are building now.
+        </p>
+        <p>
+          Could Zillow catch up? Not easily. Their business runs on agents paying for placement. To match our trust signals, they'd have to stop selling rankings and rebuild around actual performance data. That's not a feature update. It's a business model rewrite that would gut their revenue. Same story for Realtor.com and HomeLight. We built for AI trust from day one. They'd have to start over.
         </p>
       </div>
     </div>
