@@ -1304,8 +1304,8 @@ export const ProfessionalCard = ({
                   toNum((liveStats as any)?.total_sales) ??
                   toNum((liveStats as any)?.sold);
 
-                // Years of experience: use database/structured values only, never fall back to bio text
-                const dbYears = (professional as any).years_experience ?? statFromObj(professional, 'stats.yearsExperience');
+                // Years of experience: use ONLY verified database value
+                const dbYears = (professional as any).years_experience;
                 const yearsExperience = typeof dbYears === 'number' && dbYears > 0 ? dbYears : null;
                 
 
