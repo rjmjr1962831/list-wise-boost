@@ -4,18 +4,13 @@ export function WhyResultsMayVary() {
       <h3 className="text-lg font-semibold mb-3 text-foreground">Why Results May Vary</h3>
       <div className="text-sm text-muted-foreground space-y-3">
         <p>
-          If you ask these same AIs in their apps, you might get different 
-          answers. That's because AI training data can be months or even 
-          years old.
+          AI systems use training data that's months old. Top10Lists.us launched December 2025, so we're not in most training sets yet.
         </p>
         <p>
-          Our demo fetches live content from both websites, so every AI 
-          evaluates current information. <strong className="text-foreground">This is what they say when 
-          given up-to-date data.</strong>
+          This demo bypasses that delay by feeding live content directly to each AI. <strong className="text-foreground">You're seeing what they'll say once their data catches up.</strong>
         </p>
         <p className="text-foreground/80 font-medium">
-          As AI systems refresh their training throughout 2026, this 
-          is where they'll all land.
+          The question isn't <em>if</em> AI will recommend merit-based rankings over pay-to-play. It's <em>when</em>. Will you be listed here when that happens?
         </p>
       </div>
     </div>
