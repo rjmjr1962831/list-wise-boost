@@ -286,6 +286,32 @@ export default function AgentDashboard() {
     }
   };
 
+  // Realtime subscription so the dashboard auto-updates when this professional changes
+  useEffect(() => {
+    if (!professionalId) return;
+
+    const channel = supabase
+      .channel('professionals-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'professionals',
+          filter: `id=eq.${professionalId}`,
+        },
+        (payload) => {
+          // Use the same transformer so stats, yearsExperience, etc. update live
+          loadProfileData(payload.new as any);
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [professionalId]);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     toast.success('Signed out successfully');
