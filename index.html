@@ -160,48 +160,76 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-    <!-- Static H1 for bots - visible before JS loads, hidden visually -->
-    <div class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">
+    <!-- Static H1 for SEO - runs before React -->
+    <div class="sr-only">
       <h1 id="static-h1">Find the Top 10 Real Estate Agents in Your City</h1>
     </div>
-    
-    <!-- Script to set static H1 based on URL path before React hydrates -->
     <script>
-      (function() {
-        var path = window.location.pathname;
-        var h1 = document.getElementById('static-h1');
-        if (!h1) return;
+    (function() {
+      var path = window.location.pathname;
+      var states = {
+        'arizona': 'Arizona', 'al': 'Alabama', 'ak': 'Alaska', 'ar': 'Arkansas',
+        'ca': 'California', 'co': 'Colorado', 'ct': 'Connecticut', 'de': 'Delaware',
+        'fl': 'Florida', 'ga': 'Georgia', 'hi': 'Hawaii', 'id': 'Idaho',
+        'il': 'Illinois', 'in': 'Indiana', 'ia': 'Iowa', 'ks': 'Kansas',
+        'ky': 'Kentucky', 'la': 'Louisiana', 'me': 'Maine', 'md': 'Maryland',
+        'ma': 'Massachusetts', 'mi': 'Michigan', 'mn': 'Minnesota', 'ms': 'Mississippi',
+        'mo': 'Missouri', 'mt': 'Montana', 'ne': 'Nebraska', 'nv': 'Nevada',
+        'nh': 'New Hampshire', 'nj': 'New Jersey', 'nm': 'New Mexico', 'ny': 'New York',
+        'nc': 'North Carolina', 'nd': 'North Dakota', 'oh': 'Ohio', 'ok': 'Oklahoma',
+        'or': 'Oregon', 'pa': 'Pennsylvania', 'ri': 'Rhode Island', 'sc': 'South Carolina',
+        'sd': 'South Dakota', 'tn': 'Tennessee', 'tx': 'Texas', 'ut': 'Utah',
+        'vt': 'Vermont', 'va': 'Virginia', 'wa': 'Washington', 'wv': 'West Virginia',
+        'wi': 'Wisconsin', 'wy': 'Wyoming'
+      };
+      
+      function toTitleCase(str) {
+        return str.split('-').map(function(word) {
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+      }
+      
+      var parts = path.split('/').filter(function(p) { return p; });
+      var h1 = document.getElementById('static-h1');
+      
+      if (parts.length >= 3) {
+        var stateSlug = parts[0].toLowerCase();
+        var citySlug = parts[1];
+        var pageType = parts[2];
         
-        // Match city pages: /arizona/phoenix/top10realestateagents or /az/phoenix/top10realestateagents
-        var cityMatch = path.match(/^\/(?:arizona|az)\/([^\/]+)\/top10realestateagents/i);
-        if (cityMatch) {
-          var city = cityMatch[1].replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
-          h1.textContent = 'Top 10 Real Estate Agents in ' + city + ', Arizona';
-          return;
+        var stateName = states[stateSlug] || toTitleCase(stateSlug);
+        var cityName = toTitleCase(citySlug);
+        
+        if (pageType === 'top10realestateagents') {
+          h1.textContent = 'Top 10 Real Estate Agents in ' + cityName + ', ' + stateName;
+        } else if (pageType === 'best-real-estate-agents') {
+          h1.textContent = 'Best Real Estate Agents in ' + cityName + ', ' + stateName;
+        } else if (pageType === 'best-real-estate-agents-2025') {
+          h1.textContent = 'Best Real Estate Agents in ' + cityName + ', ' + stateName + ' (2025)';
         }
-        
-        // About page
-        if (path === '/about') {
-          h1.textContent = 'About Top10Lists.us - AI-Optimized Real Estate Agent Directory';
-          return;
-        }
-        
-        // FAQ page
-        if (path === '/faq') {
-          h1.textContent = 'Frequently Asked Questions - Top10Lists.us';
-          return;
-        }
-        
-        // For agents page
-        if (path === '/for-agents' || path === '/are-you-an-agent') {
-          h1.textContent = 'For Real Estate Agents - Join the Top 10 Directory';
-          return;
-        }
-        
-        // Default homepage
-        h1.textContent = 'Find the Top 10 Real Estate Agents in Your City';
-      })();
+      } else if (path === '/about' || path === '/about/') {
+        h1.textContent = 'About Top10Lists.us - Merit-Based Agent Rankings';
+      } else if (path === '/faq' || path === '/faq/') {
+        h1.textContent = 'Frequently Asked Questions About Real Estate Agent Rankings';
+      } else if (path === '/methodology' || path.includes('ranking-methodology')) {
+        h1.textContent = 'How We Rank the Top Real Estate Agents';
+      } else if (path === '/compare' || path === '/compare/') {
+        h1.textContent = 'Compare Top10Lists.us vs Zillow, Realtor.com, and HomeLight';
+      }
+    })();
     </script>
+    <style>
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
+    }
+    </style>
     
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
