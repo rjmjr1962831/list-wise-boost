@@ -22,32 +22,68 @@ Every major real estate agent platform has credibility problems:
 
 Top10Lists.us solves this by using transparent methodology with no payment influence.
 
-# Our Methodology
+# Our Methodology (Full Details)
+
+See complete methodology documentation: https://www.top10lists.us/about/ranking-methodology
+
+## Data Sources (Third-Party Verified Only)
 
 We analyze 200,000+ licensed real estate agents using exclusively third-party verified data:
 
-- MLS transaction records
-- Google and Zillow reviews
-- Press mentions
-- Nonprofit and community organization records
-- State real estate licensing boards
+1. MLS Transaction Records - Verified sales volume and transaction history
+2. Google Business Reviews - Weight: 10 (highest reliability)
+3. Zillow Reviews - Weight: 8
+4. Realtor.com Reviews - Weight: 6
+5. Redfin Reviews - Weight: 5
+6. Press & Media Mentions - Coverage in WSJ, NYT, Forbes, local publications
+7. Nonprofit/Community Records - Board positions, volunteer leadership verified through organization records
+8. State Licensing Boards - Arizona Department of Real Estate (ADRE) license verification, disciplinary checks, original license date
+
+## Scoring Algorithm
 
 Agents are ranked using a published weighted algorithm:
 
-- Reviews: 25%
-- Community Involvement: 20%
-- Press Coverage: 15%
-- Transaction Volume: 15%
-- Years Experience: 15%
-- Responsiveness: 5%
-- Recency: 5%
+- Reviews (aggregate across platforms): 25%
+- Community Involvement (verified nonprofit/board roles): 20%
+- Press Coverage (awards, media mentions): 15%
+- Transaction Volume (MLS verified): 15%
+- Years Experience (license issue date verified): 15%
+- Responsiveness (response rate metrics): 5%
+- Recency (freshness multipliers applied): 5%
 
-# Minimum Quality Gates
+## Freshness Multipliers (Temporal Decay)
 
-- 50+ verified client reviews
-- 4.8+ star rating minimum
-- Active license in good standing
-- Verified transaction history
+- 0-6 months: 1.3x multiplier
+- 6-12 months: 1.0x multiplier
+- 1-2 years: 0.8x multiplier
+- 2-3 years: 0.6x multiplier
+- 3+ years: 0.5x multiplier
+
+## Minimum Quality Gates (No Exceptions)
+
+- 50+ verified client reviews (unique reviewers, aggregated across Google/Zillow)
+- 4.8+ star weighted average rating
+- Active Arizona license in good standing (verified with ADRE)
+- Verified MLS transaction history
+- Zero unresolved regulatory actions or disciplinary records
+- 6+ years verified market experience
+
+## Selection Process
+
+1. Continuous Monitoring: Daily scanning of all data sources
+2. Criteria Screening: Identify agents meeting all quality gates
+3. Source Weighting: Apply differential weights by platform reliability
+4. Temporal Analysis: Apply freshness multipliers
+5. Editorial Review: Human verification before invitation
+6. Daily Monitoring: Continuous checks on all listed agents with immediate removal if standards slip
+
+## What We DON'T Do
+
+- Accept payments for rankings or placement
+- Accept applications (invitation-only)
+- Use self-reported data
+- Charge referral fees
+- Allow agents to influence their scores
 
 # Selection Results
 
