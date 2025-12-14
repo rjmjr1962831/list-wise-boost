@@ -165,20 +165,38 @@ async function updateSyncState(
 }
 
 // Only search Pipedrive if we don't have a cached person ID
+// CRITICAL: This function must throw on API errors to prevent duplicate creation
 async function searchPersonByEmail(email: string): Promise<number | null> {
   const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=email&exact_match=true&api_token=${PIPEDRIVE_API_TOKEN}`;
 
   const response = await fetch(url);
+  
+  // CRITICAL: Check for non-JSON responses (rate limits, auth errors)
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await response.text();
+    console.error(`❌ Pipedrive search returned non-JSON (${response.status}): ${text.substring(0, 200)}`);
+    throw new Error(`Pipedrive API error during email search (${response.status})`);
+  }
+  
   const data = await response.json();
+  
+  // Check for API-level errors
+  if (!response.ok || data.error) {
+    console.error(`❌ Pipedrive search API error:`, data);
+    throw new Error(`Pipedrive search failed: ${data.error || response.status}`);
+  }
 
   const items = data?.data?.items;
   if (data.success && Array.isArray(items) && items.length > 0) {
     const personId = items[0]?.item?.id ?? items[0]?.id;
     if (typeof personId === "number") {
+      console.log(`🔍 Found existing person for ${email}: ID ${personId}`);
       return personId;
     }
   }
 
+  console.log(`🔍 No existing person found for ${email}`);
   return null;
 }
 
