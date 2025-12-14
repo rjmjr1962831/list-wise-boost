@@ -131,10 +131,11 @@ serve(async (req) => {
           if (!isNaN(numValue)) {
             updates[fieldName] = numValue;
           }
-        } else if (['zillow_rating'].includes(fieldName)) {
+        } else if (['zillow_rating', 'review_stars_rating'].includes(fieldName)) {
           const floatValue = parseFloat(String(value));
           if (!isNaN(floatValue)) {
-            updates[fieldName] = floatValue;
+            // zillow_rating maps to review_stars_rating in database
+            updates['review_stars_rating'] = floatValue;
           }
         } else if (typeof value === 'string') {
           updates[fieldName] = value.trim();

@@ -2303,6 +2303,7 @@ export type Database = {
     }
     Functions: {
       check_recent_reviews: { Args: { reviews_data: Json }; Returns: boolean }
+      check_warm_cache_cron: { Args: never; Returns: Json }
       generate_short_code: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -2311,6 +2312,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      start_warm_cache_cron: { Args: never; Returns: undefined }
+      stop_warm_cache_cron: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer"
