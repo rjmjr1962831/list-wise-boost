@@ -37,6 +37,15 @@ async function getAllContacts(): Promise<Contact[]> {
     }
 
     const response = await fetch(url.toString());
+    
+    // Check for non-JSON responses (rate limits, errors)
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error(`❌ Pipedrive returned non-JSON (${response.status}): ${text.substring(0, 200)}`);
+      throw new Error(`Pipedrive API error (${response.status}): Rate limited or authentication failed`);
+    }
+    
     const data = await response.json();
 
     if (data.success && data.data && data.data.length > 0) {
@@ -123,6 +132,14 @@ async function mergeContact(primaryId: number, duplicateId: number): Promise<boo
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ merge_with_id: duplicateId }),
     });
+
+    // Check for non-JSON responses
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const text = await response.text();
+      console.error(`❌ Merge API returned non-JSON (${response.status}): ${text.substring(0, 200)}`);
+      return false;
+    }
 
     const result = await response.json();
 
