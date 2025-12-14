@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-// No longer needs Supabase client - only warming static crawlable pages
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,8 +11,52 @@ const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
 const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
 const SEQUENTIAL_DELAY_MS = 3000; // 3 seconds between each URL
+
+// Send failure notification email
+async function sendFailureEmail(result: WarmResult, errorMessage?: string): Promise<void> {
+  if (!RESEND_API_KEY) {
+    console.error('RESEND_API_KEY not configured, cannot send failure email');
+    return;
+  }
+
+  try {
+    const resend = new Resend(RESEND_API_KEY);
+    const timestamp = new Date().toISOString();
+    
+    await resend.emails.send({
+      from: 'Top10Lists Cache Monitor <hello@top10lists.us>',
+      to: [ADMIN_EMAIL],
+      subject: `⚠️ Cache Warming Failed - ${result.failed} URLs failed`,
+      html: `
+        <h2>Cache Warming Failure Alert</h2>
+        <p><strong>Time:</strong> ${timestamp}</p>
+        <p><strong>Summary:</strong></p>
+        <ul>
+          <li>Total URLs: ${result.total}</li>
+          <li>Successfully warmed: ${result.warmed}</li>
+          <li>Failed: ${result.failed}</li>
+        </ul>
+        ${errorMessage ? `<p><strong>Error:</strong> ${errorMessage}</p>` : ''}
+        ${result.errors.length > 0 ? `
+          <p><strong>Failed URLs:</strong></p>
+          <ul>
+            ${result.errors.slice(0, 20).map(e => `<li>${e}</li>`).join('')}
+            ${result.errors.length > 20 ? `<li>... and ${result.errors.length - 20} more</li>` : ''}
+          </ul>
+        ` : ''}
+        <p>Please check the edge function logs for more details.</p>
+      `,
+    });
+    
+    console.log('📧 Failure notification email sent to', ADMIN_EMAIL);
+  } catch (emailError) {
+    console.error('Failed to send failure notification email:', emailError);
+  }
+}
 
 interface WarmRequest {
   urls?: string[];
@@ -270,6 +314,12 @@ serve(async (req) => {
 
     console.log(`✅ Cache warming complete: ${result.warmed}/${result.total} successful, ${result.failed} failed`);
 
+    // Send failure email if any URLs failed
+    if (result.failed > 0) {
+      result.success = false;
+      await sendFailureEmail(result);
+    }
+
     // Trigger IndexNow after cache warming completes (only on final batch or single batch)
     if (!hasMore && result.warmed > 0) {
       console.log('🔔 Triggering IndexNow to notify search engines...');
@@ -308,6 +358,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Cache warming error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Send failure email for catastrophic errors
+    await sendFailureEmail(
+      { success: false, total: 0, warmed: 0, failed: 1, errors: [errorMessage], hasMore: false, nextOffset: 0 },
+      errorMessage
+    );
+    
     return new Response(
       JSON.stringify({ success: false, error: errorMessage }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
