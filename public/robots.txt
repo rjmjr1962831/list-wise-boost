@@ -8,8 +8,8 @@ Disallow: /admin/
 Disallow: /api/
 Disallow: /agent/
 Disallow: /profile/
-Disallow: /arizona/
-Disallow: /az/
+Allow: /arizona/
+Allow: /az/
 
 # AI Crawler Declarations
 User-agent: GPTBot
