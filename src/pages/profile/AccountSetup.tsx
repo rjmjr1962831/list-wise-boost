@@ -441,7 +441,7 @@ export default function AccountSetup() {
                   </>
                 ) : (
                   <>
-                    Send Magic Link
+                    Review My Profile
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </>
                 )}
