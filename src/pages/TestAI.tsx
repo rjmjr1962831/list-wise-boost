@@ -126,14 +126,51 @@ export default function TestAI() {
   };
 
   const askAll = async () => {
-    // Start all AI requests
-    const promises = AI_CARDS.map((card) => askAI(card));
+    // Collect all responses directly instead of relying on state
+    const collectedResponses: AIResponse[] = [];
+    
+    const promises = AI_CARDS.map(async (card) => {
+      try {
+        setLoading((prev) => ({ ...prev, [card.id]: true }));
+        setErrors((prev) => ({ ...prev, [card.id]: null }));
+
+        const { data, error } = await supabase.functions.invoke(card.functionName);
+
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
+
+        setResponses((prev) => ({ ...prev, [card.id]: data }));
+        collectedResponses.push(data);
+        toast.success(`${card.name} responded`);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to get response";
+        setErrors((prev) => ({ ...prev, [card.id]: message }));
+        toast.error(`${card.name} error: ${message}`);
+      } finally {
+        setLoading((prev) => ({ ...prev, [card.id]: false }));
+      }
+    });
+    
     await Promise.allSettled(promises);
     
-    // Auto-generate verdict after all responses are in
-    setTimeout(() => {
-      generateVerdict();
-    }, 500);
+    // Generate verdict with collected responses directly
+    if (collectedResponses.length >= 2) {
+      setVerdictLoading(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("ask-verdict", {
+          body: { responses: collectedResponses },
+        });
+        if (error) throw error;
+        if (data.error) throw new Error(data.error);
+        setVerdict(data);
+        toast.success("Verdict generated");
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to generate verdict";
+        toast.error(message);
+      } finally {
+        setVerdictLoading(false);
+      }
+    }
   };
 
   const generateVerdict = async () => {
