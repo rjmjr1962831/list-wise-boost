@@ -127,7 +127,7 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
   return { success: true };
 }
 
-// Get URLs to warm - includes static pages AND all active city/category pages
+// Get URLs to warm - includes static pages AND only city pages that have agent data
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
   const baseUrl = 'https://www.top10lists.us';
   
@@ -147,16 +147,24 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
   
   const allUrls = staticPages.map(path => `${baseUrl}${path}`);
   
-  // Fetch active cities and categories from database
+  // Fetch only cities that have agent data from city_agent_counts
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Fetch active cities
+    // Fetch cities with agent data (agent_count > 0)
+    const citiesWithDataRes = await fetch(`${supabaseUrl}/rest/v1/city_agent_counts?agent_count=gt.0&select=city_slug`, {
+      headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
+    });
+    const citiesWithData = await citiesWithDataRes.json();
+    const citySlugsWithData = new Set(citiesWithData.map((c: { city_slug: string }) => c.city_slug));
+    
+    // Fetch active cities (to get state_slug) that have data
     const citiesRes = await fetch(`${supabaseUrl}/rest/v1/cities?active=eq.true&select=slug,state_slug`, {
       headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
     });
-    const cities = await citiesRes.json();
+    const allCities = await citiesRes.json();
+    const cities = allCities.filter((city: { slug: string }) => citySlugsWithData.has(city.slug));
     
     // Fetch active categories
     const categoriesRes = await fetch(`${supabaseUrl}/rest/v1/categories?active=eq.true&select=slug`, {
@@ -164,14 +172,14 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     });
     const categories = await categoriesRes.json();
     
-    // Generate city/category URLs
+    // Generate city/category URLs only for cities with agent data
     for (const city of cities) {
       for (const category of categories) {
         allUrls.push(`${baseUrl}/${city.state_slug}/${city.slug}/${category.slug}`);
       }
     }
     
-    console.log(`Generated ${allUrls.length} URLs to warm (${staticPages.length} static + ${cities.length * categories.length} city pages)`);
+    console.log(`Generated ${allUrls.length} URLs to warm (${staticPages.length} static + ${cities.length * categories.length} city pages from ${cities.length} cities with data)`);
   } catch (error) {
     console.error('Error fetching cities/categories, using static pages only:', error);
   }
