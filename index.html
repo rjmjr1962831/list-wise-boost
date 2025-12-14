@@ -160,7 +160,49 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
     
-    <!-- H1 is set dynamically per page via React components -->
+    <!-- Static H1 for bots - visible before JS loads, hidden visually -->
+    <div class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0;">
+      <h1 id="static-h1">Find the Top 10 Real Estate Agents in Your City</h1>
+    </div>
+    
+    <!-- Script to set static H1 based on URL path before React hydrates -->
+    <script>
+      (function() {
+        var path = window.location.pathname;
+        var h1 = document.getElementById('static-h1');
+        if (!h1) return;
+        
+        // Match city pages: /arizona/phoenix/top10realestateagents or /az/phoenix/top10realestateagents
+        var cityMatch = path.match(/^\/(?:arizona|az)\/([^\/]+)\/top10realestateagents/i);
+        if (cityMatch) {
+          var city = cityMatch[1].replace(/-/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+          h1.textContent = 'Top 10 Real Estate Agents in ' + city + ', Arizona';
+          return;
+        }
+        
+        // About page
+        if (path === '/about') {
+          h1.textContent = 'About Top10Lists.us - AI-Optimized Real Estate Agent Directory';
+          return;
+        }
+        
+        // FAQ page
+        if (path === '/faq') {
+          h1.textContent = 'Frequently Asked Questions - Top10Lists.us';
+          return;
+        }
+        
+        // For agents page
+        if (path === '/for-agents' || path === '/are-you-an-agent') {
+          h1.textContent = 'For Real Estate Agents - Join the Top 10 Directory';
+          return;
+        }
+        
+        // Default homepage
+        h1.textContent = 'Find the Top 10 Real Estate Agents in Your City';
+      })();
+    </script>
+    
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
