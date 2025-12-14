@@ -216,7 +216,7 @@ serve(async (req) => {
       );
     }
 
-    if (action === "updated" || action === "update" || action === "added" || action === "add") {
+    if (action === "updated" || action === "update" || action === "added" || action === "add" || action === "change") {
       const personData = payload.data || payload.current;
       const updates: Record<string, any> = {};
       const fieldsUpdated: string[] = [];
