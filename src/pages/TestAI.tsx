@@ -257,43 +257,27 @@ export default function TestAI() {
             {/* Verdict - 3 columns (60%) */}
             <div className="md:col-span-3 bg-amber-500/5 border-2 border-amber-500/30 rounded-lg p-6">
               <h2 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-1">The Verdict</h2>
-              <p className="text-sm text-muted-foreground mb-4">A synthesis of {PRELOADED_VERDICT.sourceCount} AI responses</p>
               
-              {/* Show live verdict if available, otherwise show preloaded */}
-              <div className="space-y-4">
-                {verdict ? (
-                  <>
-                    <p className="text-foreground whitespace-pre-line leading-relaxed">
-                      {verdict.verdict}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Generated: {new Date(verdict.timestamp).toLocaleTimeString()}
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="text-foreground font-medium leading-relaxed text-lg">
-                      {PRELOADED_VERDICT.summary}
-                    </p>
-                    
-                    <Collapsible>
-                      <CollapsibleTrigger className="flex items-center gap-2 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 transition-colors text-sm font-medium group">
-                        <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
-                        See full analysis
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="pt-4">
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                          {PRELOADED_VERDICT.details.split('\n\n').map((para, idx) => (
-                            <p key={idx} className="text-foreground/80 leading-relaxed whitespace-pre-line">
-                              {para}
-                            </p>
-                          ))}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </>
-                )}
-              </div>
+              {verdict ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground mb-4">A synthesis of {verdict.sourceCount} AI responses</p>
+                  <p className="text-foreground whitespace-pre-line leading-relaxed">
+                    {verdict.verdict}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Generated: {new Date(verdict.timestamp).toLocaleTimeString()}
+                  </p>
+                </div>
+              ) : verdictLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-amber-500" />
+                  <span className="ml-3 text-muted-foreground">Synthesizing verdict...</span>
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="text-muted-foreground">Click "Ask All AIs" to generate a live verdict from all four AI systems.</p>
+                </div>
+              )}
             </div>
 
             {/* Why Results May Vary - 2 columns (40%) */}
