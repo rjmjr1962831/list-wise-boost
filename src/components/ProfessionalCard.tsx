@@ -1305,7 +1305,10 @@ export const ProfessionalCard = ({
                   toNum((liveStats as any)?.sold);
 
                 // Use verified years_experience first; fall back to parsed/extracted only when missing
-                const yearsExperience = professional.years_experience ?? parsedProfInfo?.yearsInIndustry ?? extractedYears ?? null;
+                // Database value takes absolute priority over bio-extracted values
+                const dbYears = professional.years_experience;
+                const yearsExperience = (dbYears != null && dbYears > 0) ? dbYears : (parsedProfInfo?.yearsInIndustry ?? extractedYears ?? null);
+                console.log(`[${professional.name}] Years display: DB=${dbYears}, parsed=${parsedProfInfo?.yearsInIndustry}, extracted=${extractedYears}, final=${yearsExperience}`);
                 
                 // Support both Professional interface (rating/reviews) and raw DB fields (review_stars_rating/num_total_reviews)
                 const displayRating = professional.rating || (professional as any).review_stars_rating || 0;
