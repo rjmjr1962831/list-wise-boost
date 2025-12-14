@@ -44,23 +44,46 @@ interface PipedriveWebhookPayload {
   previous?: any;
 }
 
-// Fields that can be synced from Pipedrive back to Supabase
-const SYNCABLE_FIELDS = [
+/**
+ * REVIEW-REQUIRED FIELDS (Pipedrive is source of truth)
+ * 
+ * These fields can ONLY be synced FROM Pipedrive → Supabase.
+ * They require admin review before changes are applied.
+ * 
+ * Agent-editable fields (Supabase is source of truth) are NOT in this list:
+ * - image_url, sidebar_video_url, description, specialty
+ * - notable_achievements, press_mentions, company
+ * - phone, email, website (contact info agents can update)
+ * - social_facebook, social_twitter, social_instagram, social_tiktok, social_linkedin
+ */
+const REVIEW_REQUIRED_FIELDS = [
+  // Identity (verified)
   'name',
-  'email', 
-  'phone',
-  'website',
-  'business_name',
-  'synthesized_bio',
-  'license_number',
+  
+  // Metrics (third-party verified)
+  'review_stars_rating',
+  'num_total_reviews',
   'years_experience',
   'total_sales',
   'current_listings',
-  'specialty',
+  
+  // License info (verified via ADRE)
+  'license_number',
+  'license_type',
+  'license_status',
+  'license_issued_at',
+  'license_expires_at',
+  
+  // AI-generated content (admin-reviewed)
+  'synthesized_bio',
+  
+  // Rankings and status (admin-controlled)
   'rank',
   'is_top_agent',
   'is_premier_agent',
   'is_brand_builder',
+  
+  // Zillow metrics (scraped, verified)
   'zillow_profile_url',
   'zillow_rating',
   'zillow_reviews',
