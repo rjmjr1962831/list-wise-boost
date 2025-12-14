@@ -8,9 +8,8 @@ import { Badge } from '@/components/ui/badge';
 
 interface CronStatus {
   running: boolean;
-  jobId?: number;
+  jobid?: number;
   schedule?: string;
-  lastRun?: string;
 }
 
 export function WarmCacheCronManager() {
@@ -21,30 +20,13 @@ export function WarmCacheCronManager() {
   const checkCronStatus = async () => {
     setIsChecking(true);
     try {
-      // Query cron.job table directly
-      const { data, error } = await supabase
-        .from('cron.job' as any)
-        .select('jobid, jobname, schedule')
-        .eq('jobname', 'warm-cache-continuous')
-        .maybeSingle();
-
+      const { data, error } = await supabase.rpc('check_warm_cache_cron' as any);
       if (error) {
         console.error('Error checking cron:', error);
-        // Try alternative query
-        const result = await supabase.rpc('check_warm_cache_cron' as any);
-        if (result.data) {
-          setCronStatus(result.data);
-        } else {
-          setCronStatus({ running: false });
-        }
+        setCronStatus({ running: false });
         return;
       }
-
-      setCronStatus({
-        running: !!data,
-        jobId: data?.jobid,
-        schedule: data?.schedule,
-      });
+      setCronStatus(data || { running: false });
     } catch (err) {
       console.error('Cron check failed:', err);
       setCronStatus({ running: false });
