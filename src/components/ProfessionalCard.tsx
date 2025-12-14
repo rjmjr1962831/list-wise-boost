@@ -614,9 +614,9 @@ export const ProfessionalCard = ({
       if (bioYears !== null) {
         setExtractedYears(bioYears);
         
-        // Update database if extracted value differs from stored value
-        if (bioYears !== professional.years_experience && professional.id) {
-          console.log(`[${professional.name}] Updating database: ${bioYears} years`);
+        // Only backfill database when no verified value exists yet
+        if ((professional.years_experience == null || professional.years_experience <= 0) && professional.id && bioYears !== professional.years_experience) {
+          console.log(`[${professional.name}] Backfilling database years_experience from bio: ${bioYears} years`);
           supabase
             .from('professionals')
             .update({ years_experience: bioYears })
@@ -625,7 +625,7 @@ export const ProfessionalCard = ({
               if (error) {
                 console.error(`[${professional.name}] Error updating years_experience:`, error);
               } else {
-                console.log(`[${professional.name}] Successfully updated years_experience to ${bioYears}`);
+                console.log(`[${professional.name}] Successfully backfilled years_experience to ${bioYears}`);
               }
             });
         }
@@ -1304,8 +1304,8 @@ export const ProfessionalCard = ({
                   toNum((liveStats as any)?.total_sales) ??
                   toNum((liveStats as any)?.sold);
 
-                // Use extracted years if available, otherwise fall back to stored value
-                const yearsExperience = extractedYears ?? parsedProfInfo?.yearsInIndustry ?? professional.years_experience ?? null;
+                // Use verified years_experience first; fall back to parsed/extracted only when missing
+                const yearsExperience = professional.years_experience ?? parsedProfInfo?.yearsInIndustry ?? extractedYears ?? null;
                 
                 // Support both Professional interface (rating/reviews) and raw DB fields (review_stars_rating/num_total_reviews)
                 const displayRating = professional.rating || (professional as any).review_stars_rating || 0;
