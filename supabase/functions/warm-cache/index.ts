@@ -12,7 +12,7 @@ const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
-const MAX_CONCURRENT = 3; // Process 3 URLs at a time
+const SEQUENTIAL_DELAY_MS = 3000; // 3 seconds between each URL
 
 interface WarmRequest {
   urls?: string[];
@@ -246,32 +246,25 @@ serve(async (req) => {
       nextOffset,
     };
 
-    // Process URLs in parallel batches for speed
-    for (let i = 0; i < urls.length; i += MAX_CONCURRENT) {
-      const batch = urls.slice(i, i + MAX_CONCURRENT);
-      console.log(`Processing batch ${Math.floor(i/MAX_CONCURRENT) + 1}: ${batch.length} URLs`);
+    // Process URLs sequentially with 3-second intervals
+    for (let i = 0; i < urls.length; i++) {
+      const url = urls[i];
+      console.log(`[${i + 1}/${urls.length}] Warming: ${url}`);
       
-      const batchResults = await Promise.all(
-        batch.map(async (url, idx) => {
-          console.log(`[${i + idx + 1}/${urls.length}] Warming: ${url}`);
-          const warmResult = await warmUrl(url);
-          return { url, ...warmResult };
-        })
-      );
+      const warmResult = await warmUrl(url);
       
-      for (const res of batchResults) {
-        if (res.success) {
-          result.warmed++;
-        } else {
-          result.failed++;
-          result.errors.push(`${res.url}: ${res.error}`);
-          console.error(`  ✗ Failed: ${res.error}`);
-        }
+      if (warmResult.success) {
+        result.warmed++;
+      } else {
+        result.failed++;
+        result.errors.push(`${url}: ${warmResult.error}`);
+        console.error(`  ✗ Failed: ${warmResult.error}`);
       }
       
-      // Small delay between batches
-      if (i + MAX_CONCURRENT < urls.length) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+      // 3-second delay between each URL (except after the last one)
+      if (i < urls.length - 1) {
+        console.log(`  ⏱️ Waiting ${SEQUENTIAL_DELAY_MS / 1000}s before next URL...`);
+        await new Promise(resolve => setTimeout(resolve, SEQUENTIAL_DELAY_MS));
       }
     }
 
