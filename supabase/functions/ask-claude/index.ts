@@ -130,27 +130,54 @@ Base your answer on the fetched content above.`;
 
     console.log('Calling Claude API...');
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: userQuestion }
-        ]
-      }),
-    });
-
-    if (!response.ok) {
+    // Retry logic with exponential backoff for 529 overloaded errors
+    let response: Response | null = null;
+    let lastError = '';
+    const maxRetries = 3;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      if (attempt > 0) {
+        const delay = Math.pow(2, attempt) * 1000; // 2s, 4s
+        console.log(`Retry attempt ${attempt + 1}/${maxRetries} after ${delay}ms delay...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+      
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          system: systemPrompt,
+          messages: [
+            { role: 'user', content: userQuestion }
+          ]
+        }),
+      });
+      
+      if (response.ok) {
+        break;
+      }
+      
       const errorText = await response.text();
-      console.error('Claude API error:', response.status, errorText);
-      throw new Error(`Claude API error: ${response.status} - ${errorText}`);
+      lastError = `${response.status} - ${errorText}`;
+      
+      // Only retry on 529 overloaded errors
+      if (response.status !== 529) {
+        console.error('Claude API error (non-retryable):', response.status, errorText);
+        throw new Error(`Claude API error: ${lastError}`);
+      }
+      
+      console.warn(`Claude API overloaded (529), attempt ${attempt + 1}/${maxRetries}`);
+    }
+
+    if (!response || !response.ok) {
+      console.error('Claude API error after retries:', lastError);
+      throw new Error(`Claude API error: ${lastError}`);
     }
 
     const data = await response.json();
