@@ -267,7 +267,7 @@ export default function TestAI() {
                     {verdict.verdict}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    Generated: {new Date(verdict.timestamp).toLocaleString()}
+                    <strong>Generated:</strong> {new Date(verdict.timestamp).toLocaleString()}
                   </p>
                 </div>
               ) : verdictLoading ? (
@@ -343,7 +343,7 @@ export default function TestAI() {
                       {/* Timestamp first */}
                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground pb-2 border-b border-border/50">
                         <span>
-                          Fetched: {new Date(responses[card.id]!.timestamp).toLocaleString()}
+                          <strong>Fetched:</strong> {new Date(responses[card.id]!.timestamp).toLocaleString()}
                         </span>
                         {responses[card.id]!.methodology && (
                           <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded">
