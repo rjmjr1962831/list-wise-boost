@@ -25,6 +25,7 @@ import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
 import CacheManagement from '@/components/admin/CacheManagement';
 import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManager';
+import { WarmCacheCronManager } from '@/components/admin/WarmCacheCronManager';
 import AIModelTester from '@/components/admin/AIModelTester';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
@@ -305,6 +306,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="cache-warming" className="space-y-4">
+            <WarmCacheCronManager />
             <CloudflareCacheManager />
           </TabsContent>
 
