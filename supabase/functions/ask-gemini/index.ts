@@ -146,8 +146,29 @@ Base your answer on the ACTUAL CONTENT above (not assumptions). Be specific abou
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Gemini API error:', response.status, errorText);
-      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+      const statusCode = response.status;
+      console.error('Gemini API error:', statusCode, errorText);
+      
+      // Return graceful error for overloaded/rate-limited scenarios
+      if (statusCode === 429 || statusCode === 503 || statusCode === 529) {
+        return new Response(JSON.stringify({
+          error: 'Gemini is temporarily unavailable (provider overloaded). Please try again in a moment.',
+          provider: 'Gemini',
+          model: 'gemini-2.0-flash-exp',
+          timestamp: new Date().toISOString(),
+          methodology: 'live-fetch',
+          sourcesFetched: {
+            'top10lists.us/llms.txt': top10Llms.success,
+            'top10lists.us/methodology': top10Methodology.success,
+            'zillow.com/llms.txt': zillowLlms.success,
+            'zillow.com/premier-agent': zillowPremierAgent.success
+          }
+        }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      throw new Error(`Gemini API error: ${statusCode} - ${errorText}`);
     }
 
     const data = await response.json();
