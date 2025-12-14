@@ -28,24 +28,128 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
-    <title>Top 10 Real Estate Agents in Arizona | Top10Lists.us</title>
+    <title id="static-title">Top 10 Real Estate Agents in Arizona | Top10Lists.us</title>
     <!-- Meta description is set dynamically per page via React Helmet -->
     <meta name="author" content="Top10Lists.us" />
     <meta name="keywords" content="top real estate agents, best realtors USA, elite agents, verified agents, realtor reviews, AI search optimization" />
     
+    <!-- Dynamic canonical URL -->
+    <link rel="canonical" id="static-canonical" href="https://www.top10lists.us/" />
+    
+    <!-- LLMs.txt reference for AI crawlers -->
+    <link rel="llms" href="/llms.txt" />
+    
     <!-- Bing Webmaster Tools Verification -->
     <meta name="msvalidate.01" content="3CAD374258A8E9EF0BBC74846A63E712" />
 
-    <meta property="og:title" content="Top 10 Real Estate Agents in Arizona | Top10Lists.us" />
-    <meta property="og:description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings." />
+    <meta property="og:title" id="static-og-title" content="Top 10 Real Estate Agents in Arizona | Top10Lists.us" />
+    <meta property="og:description" id="static-og-description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings." />
     <meta property="og:type" content="website" />
+    <meta property="og:url" id="static-og-url" content="https://www.top10lists.us/" />
     <meta property="og:image" content="https://www.top10lists.us/og-image.png" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@Top10Lists" />
-    <meta name="twitter:title" content="Top 10 Real Estate Agents in Arizona | Top10Lists.us" />
-    <meta name="twitter:description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings." />
+    <meta name="twitter:title" id="static-twitter-title" content="Top 10 Real Estate Agents in Arizona | Top10Lists.us" />
+    <meta name="twitter:description" id="static-twitter-description" content="Find Arizona's top-rated real estate agents. Invitation-only directory with multi-source verified rankings." />
     <meta name="twitter:image" content="https://www.top10lists.us/og-image.png" />
+    
+    <!-- Organization Schema for entity identity -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Top10Lists.us",
+      "url": "https://www.top10lists.us",
+      "logo": "https://www.top10lists.us/og-image.png",
+      "description": "AI and human curated directory of the top 10 real estate agents in every major U.S. city. Merit-based, invitation-only rankings with verified credentials.",
+      "sameAs": ["https://twitter.com/Top10Lists"],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "hello@top10lists.us",
+        "contactType": "customer service"
+      },
+      "foundingDate": "2024",
+      "areaServed": "United States",
+      "knowsAbout": ["Real Estate", "Real Estate Agents", "Realtors", "Home Buying", "Home Selling"]
+    }
+    </script>
+    
+    <!-- Dynamic meta tags script - runs before React -->
+    <script>
+    (function() {
+      var path = window.location.pathname;
+      var baseUrl = 'https://www.top10lists.us';
+      var states = {
+        'arizona': 'Arizona', 'al': 'Alabama', 'ak': 'Alaska', 'ar': 'Arkansas',
+        'ca': 'California', 'co': 'Colorado', 'ct': 'Connecticut', 'de': 'Delaware',
+        'fl': 'Florida', 'ga': 'Georgia', 'hi': 'Hawaii', 'id': 'Idaho',
+        'il': 'Illinois', 'in': 'Indiana', 'ia': 'Iowa', 'ks': 'Kansas',
+        'ky': 'Kentucky', 'la': 'Louisiana', 'me': 'Maine', 'md': 'Maryland',
+        'ma': 'Massachusetts', 'mi': 'Michigan', 'mn': 'Minnesota', 'ms': 'Mississippi',
+        'mo': 'Missouri', 'mt': 'Montana', 'ne': 'Nebraska', 'nv': 'Nevada',
+        'nh': 'New Hampshire', 'nj': 'New Jersey', 'nm': 'New Mexico', 'ny': 'New York',
+        'nc': 'North Carolina', 'nd': 'North Dakota', 'oh': 'Ohio', 'ok': 'Oklahoma',
+        'or': 'Oregon', 'pa': 'Pennsylvania', 'ri': 'Rhode Island', 'sc': 'South Carolina',
+        'sd': 'South Dakota', 'tn': 'Tennessee', 'tx': 'Texas', 'ut': 'Utah',
+        'vt': 'Vermont', 'va': 'Virginia', 'wa': 'Washington', 'wv': 'West Virginia',
+        'wi': 'Wisconsin', 'wy': 'Wyoming'
+      };
+      
+      function toTitleCase(str) {
+        return str.split('-').map(function(word) {
+          return word.charAt(0).toUpperCase() + word.slice(1);
+        }).join(' ');
+      }
+      
+      var parts = path.split('/').filter(function(p) { return p; });
+      var title = document.getElementById('static-title');
+      var canonical = document.getElementById('static-canonical');
+      var ogTitle = document.getElementById('static-og-title');
+      var ogDesc = document.getElementById('static-og-description');
+      var ogUrl = document.getElementById('static-og-url');
+      var twitterTitle = document.getElementById('static-twitter-title');
+      var twitterDesc = document.getElementById('static-twitter-description');
+      
+      // Set canonical URL
+      canonical.href = baseUrl + path;
+      ogUrl.content = baseUrl + path;
+      
+      if (parts.length >= 3) {
+        var stateSlug = parts[0].toLowerCase();
+        var citySlug = parts[1];
+        var pageType = parts[2];
+        
+        var stateName = states[stateSlug] || toTitleCase(stateSlug);
+        var cityName = toTitleCase(citySlug);
+        
+        var pageTitle = 'Top 10 Real Estate Agents in ' + cityName + ', ' + stateName + ' | Top10Lists.us';
+        var pageDesc = 'Find the best real estate agents in ' + cityName + ', ' + stateName + '. Merit-based, invitation-only rankings with verified credentials.';
+        
+        if (pageType === 'best-real-estate-agents-2025') {
+          pageTitle = 'Best Real Estate Agents in ' + cityName + ', ' + stateName + ' (2025) | Top10Lists.us';
+        }
+        
+        title.textContent = pageTitle;
+        ogTitle.content = pageTitle;
+        ogDesc.content = pageDesc;
+        twitterTitle.content = pageTitle;
+        twitterDesc.content = pageDesc;
+      } else if (path === '/about' || path === '/about/') {
+        title.textContent = 'About Top10Lists.us - Merit-Based Agent Rankings';
+        ogTitle.content = 'About Top10Lists.us - Merit-Based Agent Rankings';
+      } else if (path === '/faq' || path === '/faq/') {
+        title.textContent = 'FAQ - Real Estate Agent Rankings | Top10Lists.us';
+        ogTitle.content = 'FAQ - Real Estate Agent Rankings | Top10Lists.us';
+      } else if (path === '/compare' || path === '/compare/') {
+        title.textContent = 'Compare Top10Lists.us vs Zillow, Realtor.com | Top10Lists.us';
+        ogTitle.content = 'Compare Top10Lists.us vs Zillow, Realtor.com | Top10Lists.us';
+      } else if (path === '/for-agents' || path === '/for-agents/') {
+        title.textContent = 'For Real Estate Agents | Top10Lists.us';
+        ogTitle.content = 'For Real Estate Agents | Top10Lists.us';
+      }
+    })();
+    </script>
     
     
     <!-- Google Analytics 4 - Replace GA_MEASUREMENT_ID with your actual GA4 ID -->
