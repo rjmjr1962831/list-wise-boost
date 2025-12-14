@@ -176,8 +176,23 @@ Base your answer on the fetched content above.`;
     }
 
     if (!response || !response.ok) {
-      console.error('Claude API error after retries:', lastError);
-      throw new Error(`Claude API error: ${lastError}`);
+      console.error('Claude API error after retries (returning graceful error):', lastError || 'unknown error');
+      return new Response(JSON.stringify({
+        error: 'Claude is temporarily unavailable (provider overloaded). Please try again in a moment.',
+        provider: 'Claude',
+        model: 'claude-sonnet-4-20250514',
+        timestamp: new Date().toISOString(),
+        methodology: 'live-fetch',
+        sourcesFetched: {
+          'top10lists.us/llms.txt': top10Llms.success,
+          'top10lists.us/methodology': top10Methodology.success,
+          'zillow.com/llms.txt': zillowLlms.success,
+          'zillow.com/premier-agent': zillowPremierAgent.success
+        }
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const data = await response.json();
