@@ -32,44 +32,8 @@ serve(async (req) => {
       throw new Error('APIFY_API_TOKEN not configured');
     }
 
-    // Step 1: Scrape profile with memo23
-    console.log('🔍 Scraping Zillow profile with memo23...');
-    
-    const memo23ActorId = 'memo23~apify-zillow-agents-cheerio';
-    const memo23Input = {
-      startUrls: [{ url: zillowUrl }],
-      maxConcurrency: 1,
-      proxyConfiguration: { 
-        useApifyProxy: true,
-        apifyProxyGroups: ['RESIDENTIAL']
-      }
-    };
-
-    const memo23Response = await fetch(
-      `https://api.apify.com/v2/acts/${memo23ActorId}/runs?token=${apifyToken}&waitForFinish=180`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(memo23Input)
-      }
-    );
-
-    if (!memo23Response.ok) {
-      throw new Error(`memo23 scraping failed: ${memo23Response.status}`);
-    }
-
-    const memo23Data = await memo23Response.json();
-    const agentDatasetId = memo23Data.data.defaultDatasetId;
-
-    const agentDataResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${agentDatasetId}/items?token=${apifyToken}`
-    );
-
-    if (!agentDataResponse.ok) {
-      throw new Error('Failed to get scraped agent data');
-    }
-
-    const agentDataResults = await agentDataResponse.json();
+    // Step 1: Try to scrape profile with memo23 (but don't fail if scraping fails)
+    console.log('🔍 Attempting to scrape Zillow profile with memo23...');
     
     let agentData: any = null;
     let agentName = 'Unknown Agent';
@@ -80,40 +44,93 @@ serve(async (req) => {
     let agentEmail = 'N/A';
     let agentYearsExp = 'N/A';
     let agentTotalSales = 'N/A';
+    let scraperFailed = false;
 
-    if (agentDataResults && agentDataResults.length > 0) {
-      agentData = agentDataResults[0];
-      agentName = agentData.name || 'Unknown Agent';
-      
-      if (agentData.ratings) {
-        agentRating = agentData.ratings.starRating?.toString() || 'N/A';
-        agentReviews = agentData.ratings.numReviews?.toString() || 'N/A';
-      }
-      
-      agentCompany = agentData.businessName || 'N/A';
-      
-      if (agentData.phoneNumbers && agentData.phoneNumbers.length > 0) {
-        const primaryPhone = agentData.phoneNumbers.find((p: any) => p.primary) || agentData.phoneNumbers[0];
-        agentPhone = primaryPhone?.formattedPhoneNumber || 'N/A';
-      }
-      
-      if (agentData.agentSalesStats) {
-        agentTotalSales = agentData.agentSalesStats.countAllTime?.toString() || 'N/A';
-      }
-      
-      // Try to extract years of experience from professional information
-      if (agentData.professionalInformation && Array.isArray(agentData.professionalInformation)) {
-        const yearsEntry = agentData.professionalInformation.find((info: any) => 
-          info.term?.toLowerCase().includes('year') || info.term?.toLowerCase().includes('experience')
+    try {
+      const memo23ActorId = 'memo23~apify-zillow-agents-cheerio';
+      const memo23Input = {
+        startUrls: [{ url: zillowUrl }],
+        maxConcurrency: 1,
+        proxyConfiguration: { 
+          useApifyProxy: true,
+          apifyProxyGroups: ['RESIDENTIAL']
+        }
+      };
+
+      const memo23Response = await fetch(
+        `https://api.apify.com/v2/acts/${memo23ActorId}/runs?token=${apifyToken}&waitForFinish=180`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(memo23Input)
+        }
+      );
+
+      if (!memo23Response.ok) {
+        console.warn(`⚠️ memo23 scraping failed with status: ${memo23Response.status}, continuing with URL only`);
+        scraperFailed = true;
+      } else {
+        const memo23Data = await memo23Response.json();
+        const agentDatasetId = memo23Data.data.defaultDatasetId;
+
+        const agentDataResponse = await fetch(
+          `https://api.apify.com/v2/datasets/${agentDatasetId}/items?token=${apifyToken}`
         );
-        if (yearsEntry?.description) {
-          agentYearsExp = yearsEntry.description;
+
+        if (!agentDataResponse.ok) {
+          console.warn('⚠️ Failed to get scraped agent data, continuing with URL only');
+          scraperFailed = true;
+        } else {
+          const agentDataResults = await agentDataResponse.json();
+          
+          if (agentDataResults && agentDataResults.length > 0) {
+            agentData = agentDataResults[0];
+            agentName = agentData.name || 'Unknown Agent';
+            
+            if (agentData.ratings) {
+              agentRating = agentData.ratings.starRating?.toString() || 'N/A';
+              agentReviews = agentData.ratings.numReviews?.toString() || 'N/A';
+            }
+            
+            agentCompany = agentData.businessName || 'N/A';
+            
+            if (agentData.phoneNumbers && agentData.phoneNumbers.length > 0) {
+              const primaryPhone = agentData.phoneNumbers.find((p: any) => p.primary) || agentData.phoneNumbers[0];
+              agentPhone = primaryPhone?.formattedPhoneNumber || 'N/A';
+            }
+            
+            if (agentData.agentSalesStats) {
+              agentTotalSales = agentData.agentSalesStats.countAllTime?.toString() || 'N/A';
+            }
+            
+            // Try to extract years of experience from professional information
+            if (agentData.professionalInformation && Array.isArray(agentData.professionalInformation)) {
+              const yearsEntry = agentData.professionalInformation.find((info: any) => 
+                info.term?.toLowerCase().includes('year') || info.term?.toLowerCase().includes('experience')
+              );
+              if (yearsEntry?.description) {
+                agentYearsExp = yearsEntry.description;
+              }
+            }
+            
+            console.log(`✅ Scraped data for: ${agentName} (${agentRating}⭐, ${agentReviews} reviews)`);
+          } else {
+            console.log('⚠️ No data returned from scraper, continuing with URL only');
+            scraperFailed = true;
+          }
         }
       }
-      
-      console.log(`✅ Scraped data for: ${agentName} (${agentRating}⭐, ${agentReviews} reviews)`);
-    } else {
-      console.log('⚠️ No data returned from scraper, continuing with URL only');
+    } catch (scraperError) {
+      console.warn('⚠️ Scraper error:', scraperError instanceof Error ? scraperError.message : 'Unknown error');
+      scraperFailed = true;
+    }
+
+    // Extract agent name from URL as fallback
+    if (agentName === 'Unknown Agent') {
+      const urlMatch = zillowUrl.match(/\/profile\/([^\/\?]+)/);
+      if (urlMatch) {
+        agentName = urlMatch[1].replace(/-/g, ' ');
+      }
     }
 
     // Step 2: Save review request to database
@@ -125,7 +142,7 @@ serve(async (req) => {
         phone: agentPhone !== 'N/A' ? agentPhone : 'Pending',
         license_number: 'Pending Review',
         brokerage: agentCompany !== 'N/A' ? agentCompany : 'Pending',
-        message: `Zillow URL: ${zillowUrl}\n\nScraped Data:\n- Rating: ${agentRating}\n- Reviews: ${agentReviews}\n- Total Sales: ${agentTotalSales}\n- Years Experience: ${agentYearsExp}`,
+        message: `Zillow URL: ${zillowUrl}\n\n${scraperFailed ? '⚠️ SCRAPER FAILED - Manual review needed\n\n' : ''}Scraped Data:\n- Rating: ${agentRating}\n- Reviews: ${agentReviews}\n- Total Sales: ${agentTotalSales}\n- Years Experience: ${agentYearsExp}`,
         status: 'pending'
       })
       .select()
