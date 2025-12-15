@@ -12,10 +12,10 @@ serve(async (req) => {
 
   try {
     const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
-    const CLOUDFLARE_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN');
+    const CLOUDFLARE_GLOBAL_API_KEY = Deno.env.get('CLOUDFLARE_GLOBAL_API_KEY');
 
-    if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_API_TOKEN) {
-      throw new Error('Missing Cloudflare credentials');
+    if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_GLOBAL_API_KEY) {
+      throw new Error('Missing Cloudflare credentials (CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_GLOBAL_API_KEY)');
     }
 
     const { scriptName = 'orange-truth-a103' } = await req.json().catch(() => ({}));
@@ -24,7 +24,8 @@ serve(async (req) => {
       `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/workers/scripts/${scriptName}`,
       {
         headers: {
-          'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
+          'X-Auth-Email': 'robert@aryah.ai',
+          'X-Auth-Key': CLOUDFLARE_GLOBAL_API_KEY,
         },
       }
     );
