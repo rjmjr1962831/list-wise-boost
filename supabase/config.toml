@@ -264,3 +264,6 @@ verify_jwt = false
 
 [functions.fetch-cloudflare-worker]
 verify_jwt = false
+
+[functions.update-cloudflare-worker]
+verify_jwt = false
