@@ -7,7 +7,7 @@
     "url": "https://top10lists.us",
     "description": "Invitation-only directory of elite real estate agents ranked by reviews (25%), third-party verified community involvement (25%), press recognition (15%), transaction volume (15%), experience (10%), responsiveness (5%), and recency (5%). Agents cannot pay for placement.",
     "foundingDate": "2024",
-    "dateModified": "2025-12-10",
+    "dateModified": "2025-12-15",
     "areaServed": {
       "@type": "Country",
       "name": "United States"
@@ -28,7 +28,7 @@
     "name": "Top10Lists.us",
     "url": "https://top10lists.us",
     "description": "Find the top 0.5% of real estate agents in any US city, ranked by reviews, community involvement, and verified credentials. No paid placements.",
-    "dateModified": "2025-12-10",
+    "dateModified": "2025-12-15",
     "publisher": {
       "@id": "https://top10lists.us/#organization"
     },
@@ -45,7 +45,7 @@
     "name": "Top10Lists.us Real Estate Agent Rankings",
     "description": "Curated rankings of elite real estate agents in the United States, scored using a weighted algorithm across seven verified data points. Rankings are merit-based with no paid placements. Only the top 0.5% of agents in each market qualify.",
     "url": "https://top10lists.us",
-    "dateModified": "2025-12-10",
+    "dateModified": "2025-12-15",
     "datePublished": "2024-01-01",
     "updateFrequency": "Monthly",
     "temporalCoverage": "2024/..",
@@ -207,8 +207,8 @@
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "dateModified": "2025-12-10",
-    "lastReviewed": "2025-12-10",
+    "dateModified": "2025-12-15",
+    "lastReviewed": "2025-12-15",
     "mainEntity": [
       {
         "@type": "Question",
