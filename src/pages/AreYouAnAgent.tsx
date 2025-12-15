@@ -1,15 +1,23 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Check } from "lucide-react";
+import { Check, PartyPopper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+interface FoundAgent {
+  id: string;
+  name: string;
+  short_code: string | null;
+}
+
 export default function AreYouAnAgent() {
   const [zillowUrl, setZillowUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [foundAgent, setFoundAgent] = useState<FoundAgent | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,8 +33,32 @@ export default function AreYouAnAgent() {
     }
 
     setIsSubmitting(true);
+    setFoundAgent(null);
     
     try {
+      // First check if this agent is already on our list
+      const normalizedUrl = zillowUrl.toLowerCase().trim();
+      
+      const { data: existingAgent, error: searchError } = await supabase
+        .from("professionals")
+        .select("id, name, short_code")
+        .eq("active", true)
+        .or(`zillow_profile_url.ilike.%${normalizedUrl.split('/profile/')[1]?.split('/')[0] || normalizedUrl}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (searchError) {
+        console.error("Search error:", searchError);
+      }
+
+      if (existingAgent) {
+        // Agent found on the list!
+        setFoundAgent(existingAgent);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Not found - submit review request
       const { error } = await supabase.from("review_requests").insert({
         full_name: "Review Request",
         email: "review@top10lists.us",
@@ -46,6 +78,14 @@ export default function AreYouAnAgent() {
       toast.error("Failed to submit request. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleReviewProfile = () => {
+    if (foundAgent?.short_code) {
+      navigate(`/p/${foundAgent.short_code}`);
+    } else if (foundAgent?.id) {
+      navigate(`/profile/${foundAgent.id}`);
     }
   };
 
@@ -99,23 +139,52 @@ export default function AreYouAnAgent() {
 
           {/* Think You Should Be Included Section */}
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 mb-12">
-            <h2 className="text-2xl font-semibold mb-4">Think you should have been included?</h2>
-            <p className="text-muted-foreground mb-6">
-              If you believe you meet our requirements but haven't received an invitation, submit your Zillow profile link below. We'll review your qualifications and respond within 24 hours.
-            </p>
-            
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
-              <Input
-                type="url"
-                placeholder="Your Zillow Profile URL"
-                value={zillowUrl}
-                onChange={(e) => setZillowUrl(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Request Review"}
-              </Button>
-            </form>
+            {foundAgent ? (
+              // Agent found on the list!
+              <div className="text-center">
+                <PartyPopper className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h2 className="text-2xl font-semibold mb-2 text-primary">Good News!</h2>
+                <p className="text-lg mb-2">You're on the list, {foundAgent.name}!</p>
+                <p className="text-muted-foreground mb-6">
+                  You've already been selected as one of Arizona's top real estate agents.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Button onClick={handleReviewProfile} size="lg">
+                    Review Your Profile
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setFoundAgent(null);
+                      setZillowUrl("");
+                    }}
+                  >
+                    Check Another URL
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // Form to submit URL
+              <>
+                <h2 className="text-2xl font-semibold mb-4">Think you should have been included?</h2>
+                <p className="text-muted-foreground mb-6">
+                  If you believe you meet our requirements but haven't received an invitation, submit your Zillow profile link below. We'll review your qualifications and respond within 24 hours.
+                </p>
+                
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+                  <Input
+                    type="url"
+                    placeholder="Your Zillow Profile URL"
+                    value={zillowUrl}
+                    onChange={(e) => setZillowUrl(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Checking..." : "Request Review"}
+                  </Button>
+                </form>
+              </>
+            )}
           </div>
 
           {/* Methodology Link Section */}
