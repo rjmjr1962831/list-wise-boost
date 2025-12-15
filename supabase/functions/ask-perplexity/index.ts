@@ -148,12 +148,16 @@ Base your answer on the fetched content above.`;
     if (!response.ok) {
       const errorText = await response.text();
       const statusCode = response.status;
-      console.error('Perplexity API error:', statusCode, errorText);
+      console.error('Perplexity API error:', statusCode, errorText.substring(0, 500));
       
-      // Return graceful error for overloaded/rate-limited scenarios
-      if (statusCode === 429 || statusCode === 503 || statusCode === 529) {
+      // Return graceful error for overloaded/rate-limited/blocked scenarios
+      if (statusCode === 429 || statusCode === 503 || statusCode === 529 || statusCode === 403) {
+        const errorMessage = statusCode === 403 
+          ? 'Perplexity API is currently blocking requests from this server. This may be a temporary Cloudflare protection issue.'
+          : 'Perplexity is temporarily unavailable (provider overloaded). Please try again in a moment.';
+        
         return new Response(JSON.stringify({
-          error: 'Perplexity is temporarily unavailable (provider overloaded). Please try again in a moment.',
+          error: errorMessage,
           provider: 'Perplexity',
           model: 'sonar',
           timestamp: new Date().toISOString(),
@@ -169,7 +173,7 @@ Base your answer on the fetched content above.`;
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      throw new Error(`Perplexity API error: ${statusCode} - ${errorText}`);
+      throw new Error(`Perplexity API error: ${statusCode} - ${errorText.substring(0, 200)}`);
     }
 
     const data = await response.json();
