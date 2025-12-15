@@ -122,7 +122,7 @@ const Index = () => {
                 "name": "What are the minimum requirements to be ranked?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Agents must have at least 50 verified reviews with an average rating of 4.8 or higher. Top10Lists.us analyzes over 200,000 licensed agents in Arizona and selects only the top 0.2% (414 agents) who meet all quality gates and score highest on the weighted algorithm."
+                  "text": "Agents must have at least 50 verified reviews with an average rating of 4.8 or higher. Top10Lists.us analyzes over 200,000 licensed agents in Arizona and selects only the top 0.2% (414 agents) who meet all quality gates and score highest on the weighted algorithm and thorough human review."
                 }
               },
               {
