@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 declare const EdgeRuntime: {
   waitUntil(promise: Promise<any>): void;
 };
@@ -190,9 +190,14 @@ ${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentRev
     }
   }
 
-  // Send email notification
-  const resendApiKey = Deno.env.get('RESEND_API_KEY');
-  if (resendApiKey) {
+  // Send email notification via SMTP
+  const smtpUsername = Deno.env.get('SMTP_USERNAME');
+  const smtpPassword = Deno.env.get('SMTP_PASSWORD');
+  const smtpPort = Deno.env.get('SMTP_PORT');
+  const smtpFromEmail = Deno.env.get('SMTP_FROM_EMAIL');
+  const adminEmail = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
+
+  if (smtpUsername && smtpPassword) {
     const qualificationStatus = parseFloat(agentRating) >= 4.8 && parseInt(agentReviews) >= 50 
       ? '✅ LIKELY QUALIFIES' 
       : '⚠️ MAY NOT QUALIFY';
@@ -247,29 +252,33 @@ ${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentRev
     `;
 
     try {
-      const emailResponse = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json'
+      const client = new SMTPClient({
+        connection: {
+          hostname: "mail.top10lists.us",
+          port: parseInt(smtpPort || '587'),
+          tls: true,
+          auth: {
+            username: smtpUsername,
+            password: smtpPassword,
+          },
         },
-        body: JSON.stringify({
-          from: 'Top10Lists <notifications@top10lists.us>',
-          to: ['robert@top10lists.us'],
-          subject: `🆕 Agent Review Request: ${agentName} (${qualificationStatus})`,
-          html: emailHtml
-        })
       });
-      
-      const emailResult = await emailResponse.json();
-      if (emailResponse.ok) {
-        console.log('📧 Email notification sent successfully:', emailResult.id);
-      } else {
-        console.error('❌ Resend API error:', JSON.stringify(emailResult));
-      }
+
+      await client.send({
+        from: smtpFromEmail || 'hello@top10lists.us',
+        to: adminEmail,
+        subject: `🆕 Agent Review Request: ${agentName} (${qualificationStatus})`,
+        content: "auto",
+        html: emailHtml,
+      });
+
+      await client.close();
+      console.log('📧 Email notification sent successfully to', adminEmail);
     } catch (emailError) {
-      console.error('⚠️ Email failed:', emailError);
+      console.error('⚠️ SMTP Email failed:', emailError instanceof Error ? emailError.message : emailError);
     }
+  } else {
+    console.warn('⚠️ SMTP credentials not configured');
   }
 
   console.log(`✅ Background processing complete for: ${reviewRequestId}`);
