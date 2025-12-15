@@ -262,15 +262,13 @@ export default function TestAI() {
               
               {verdict ? (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground mb-4">A synthesis of {verdict.sourceCount} AI responses</p>
+                  <p className="text-sm text-muted-foreground">A synthesis of {verdict.sourceCount} AI responses</p>
+                  <p className="text-sm text-muted-foreground italic mb-4">Detailed results below ↓</p>
                   <p className="text-foreground whitespace-pre-line leading-relaxed">
                     {verdict.verdict}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     <strong>Generated:</strong> {new Date(verdict.timestamp).toLocaleString()}
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-4 text-center italic">
-                    Detailed results below ↓
                   </p>
                 </div>
               ) : verdictLoading ? (
