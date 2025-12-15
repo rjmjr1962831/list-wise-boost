@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Check, PartyPopper } from "lucide-react";
+import { Check, PartyPopper, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ export default function AreYouAnAgent() {
   const [zillowUrl, setZillowUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [foundAgent, setFoundAgent] = useState<FoundAgent | null>(null);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,6 +35,7 @@ export default function AreYouAnAgent() {
 
     setIsSubmitting(true);
     setFoundAgent(null);
+    setReviewSubmitted(false);
     
     try {
       // First check if this agent is already on our list
@@ -71,7 +73,7 @@ export default function AreYouAnAgent() {
 
       if (error) throw error;
 
-      toast.success("Review request submitted! We'll respond within 24 hours.");
+      setReviewSubmitted(true);
       setZillowUrl("");
     } catch (error) {
       console.error("Error submitting review request:", error);
@@ -162,6 +164,24 @@ export default function AreYouAnAgent() {
                     Check Another URL
                   </Button>
                 </div>
+              </div>
+            ) : reviewSubmitted ? (
+              // Review request submitted
+              <div className="text-center">
+                <Clock className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h2 className="text-2xl font-semibold mb-4">Thank You</h2>
+                <p className="text-lg text-muted-foreground mb-6">
+                  We have begun our review. We will reach out to you with our decision within 24 hours.
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setReviewSubmitted(false);
+                    setZillowUrl("");
+                  }}
+                >
+                  Check Another URL
+                </Button>
               </div>
             ) : (
               // Form to submit URL
