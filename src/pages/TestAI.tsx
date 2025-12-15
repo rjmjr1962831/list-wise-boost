@@ -8,7 +8,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { WhyResultsMayVary } from "@/components/WhyResultsMayVary";
-import { VerifyYourselfSection } from "@/components/VerifyYourselfSection";
+
 
 interface AIResponse {
   provider: string;
@@ -453,8 +453,6 @@ export default function TestAI() {
             ))}
           </div>
 
-          {/* Section 5: Verify Yourself */}
-          <VerifyYourselfSection />
 
           {/* Transparency Accordion */}
           <Accordion type="single" collapsible className="max-w-3xl mx-auto mt-12">
