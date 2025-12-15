@@ -153,7 +153,7 @@ Base your answer on the fetched content above.`;
       // Return graceful error for overloaded/rate-limited/blocked scenarios
       if (statusCode === 429 || statusCode === 503 || statusCode === 529 || statusCode === 403) {
         const errorMessage = statusCode === 403 
-          ? 'Perplexity API is currently blocking requests from this server. This may be a temporary Cloudflare protection issue.'
+          ? 'Perplexity is currently unavailable.'
           : 'Perplexity is temporarily unavailable (provider overloaded). Please try again in a moment.';
         
         return new Response(JSON.stringify({
