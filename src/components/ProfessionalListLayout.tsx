@@ -244,23 +244,6 @@ export const ProfessionalListLayout = ({
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-card py-16 border-t">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold">
-              Are You a Top {metadata.profession.singular}?
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Apply to be featured on our verified list of top professionals in {metadata.location.city}. 
-              Boost your talent and connect with more clients.
-            </p>
-            <Button asChild size="lg">
-              <Link to="/">Apply for Listing</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="border-t bg-muted/30 py-6">
