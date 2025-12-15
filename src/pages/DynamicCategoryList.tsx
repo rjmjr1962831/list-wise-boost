@@ -380,8 +380,8 @@ export default function DynamicCategoryList() {
           // Start from DB professionals
           let baseProfessionals: DBProfessional[] = professionalsData;
 
-          // Scottsdale & Phoenix special case: ensure Beauvais-Real-Estate is ALWAYS present
-          if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && categoryData.slug === 'top10realestateagents') {
+          // Scottsdale-only special case: ensure Beauvais-Real-Estate is ALWAYS present
+          if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
             const hasBeauvais = baseProfessionals.some(p =>
               (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
               (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
