@@ -267,3 +267,6 @@ verify_jwt = false
 
 [functions.update-cloudflare-worker]
 verify_jwt = false
+
+[functions.process-review-request]
+verify_jwt = false
