@@ -60,18 +60,14 @@ export default function AreYouAnAgent() {
         return;
       }
 
-      // Not found - submit review request
-      const { error } = await supabase.from("review_requests").insert({
-        full_name: "Review Request",
-        email: "review@top10lists.us",
-        phone: "",
-        license_number: "",
-        brokerage: "",
-        message: `Zillow Profile Review Request: ${zillowUrl}`,
-        status: "pending"
+      // Not found - call edge function to process review request
+      // This will scrape the profile, create Pipedrive task, and send email notification
+      const { data, error } = await supabase.functions.invoke('process-review-request', {
+        body: { zillowUrl }
       });
 
       if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Failed to process request');
 
       setReviewSubmitted(true);
       setZillowUrl("");
