@@ -165,9 +165,9 @@ export default function AreYouAnAgent() {
               // Review request submitted
               <div className="text-center">
                 <Clock className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold mb-4">Thank You</h2>
+                <h2 className="text-2xl font-semibold mb-4">Thank You For Your Interest</h2>
                 <p className="text-lg text-muted-foreground mb-6">
-                  We have begun our review. We will reach out to you with our decision within 24 hours.
+                  We will do our analysis and get back to you within 24 hours.
                 </p>
                 <Button 
                   variant="outline" 
