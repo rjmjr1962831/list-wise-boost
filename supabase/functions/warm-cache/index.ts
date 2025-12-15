@@ -114,6 +114,11 @@ async function writeToKV(key: string, value: string): Promise<boolean> {
   }
 }
 
+// Check if URL is a non-HTML static file
+function isStaticFile(url: string): boolean {
+  return url.endsWith('.txt') || url.endsWith('.xml') || url.endsWith('.json');
+}
+
 // Fetch rendered HTML from Cloudflare Worker (with bot user-agent)
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
   try {
@@ -133,11 +138,20 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
     clearTimeout(timeoutId);
 
     if (response.ok) {
-      const html = await response.text();
+      const content = await response.text();
       
-      // Basic validation - should have actual content, not just JS shell
-      if (html.length > 1000 && html.includes('</html>')) {
-        return { success: true, html };
+      // Skip HTML validation for static files (txt, xml, json)
+      if (isStaticFile(url)) {
+        if (content.length > 100) {
+          return { success: true, html: content };
+        } else {
+          return { success: false, error: 'Static file appears empty' };
+        }
+      }
+      
+      // HTML validation - should have actual content, not just JS shell
+      if (content.length > 1000 && content.includes('</html>')) {
+        return { success: true, html: content };
       } else {
         return { success: false, error: 'Response appears to be empty or JS shell only' };
       }
@@ -244,8 +258,9 @@ serve(async (req) => {
   }
 
   try {
-    const body = await req.json() as WarmRequest;
-    const { urls: providedUrls, region, limit = 10, offset = 0 } = body;
+    const body = await req.json().catch(() => ({})) as WarmRequest;
+    // No default limit - warm all URLs in one run
+    const { urls: providedUrls, region, limit, offset = 0 } = body;
 
     // Validate Cloudflare credentials
     if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
