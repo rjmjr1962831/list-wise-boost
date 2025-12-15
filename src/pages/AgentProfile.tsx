@@ -172,6 +172,10 @@ export default function AgentProfile() {
   const [rawDbProf, setRawDbProf] = useState<DBProfessional | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const fetchAgent = async () => {
       if (!stateSlug || !citySlug || !categorySlug || !agentSlug) {
         setNotFound(true);

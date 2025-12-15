@@ -25,6 +25,10 @@ export default function CityLanding() {
   const cityName = city ? formatCityName(city) : '';
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (!city || didStart.current) return;
     didStart.current = true;
 

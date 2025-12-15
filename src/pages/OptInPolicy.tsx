@@ -1,8 +1,13 @@
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { CheckCircle, MessageSquare, Mail, Shield } from "lucide-react";
 
 const OptInPolicy = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>

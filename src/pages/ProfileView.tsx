@@ -49,6 +49,10 @@ export default function ProfileView() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (!token) {
       setError("Invalid magic link");
       setLoading(false);
