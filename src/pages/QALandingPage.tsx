@@ -44,6 +44,10 @@ const QALandingPage = () => {
   const stateAbbr = stateSlug?.toUpperCase().slice(0, 2) || '';
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!citySlug || !stateSlug) return;
 

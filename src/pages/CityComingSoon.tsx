@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
@@ -7,6 +8,10 @@ import { MapPin, Bell } from "lucide-react";
 const CityComingSoon = () => {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Format city name from slug
   const formatCityName = (slug: string = "") => {

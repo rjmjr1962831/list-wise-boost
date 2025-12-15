@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 const TermsOfService = () => {
   useEffect(() => {
+    window.scrollTo(0, 0);
     // Track page view
     if (typeof window.gtag === 'function') {
       window.gtag('event', 'page_view', {

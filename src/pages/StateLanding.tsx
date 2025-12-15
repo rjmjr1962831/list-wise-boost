@@ -23,6 +23,10 @@ export default function StateLanding() {
   }
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const fetchCities = async () => {
       const { data } = await supabase
         .from('cities')

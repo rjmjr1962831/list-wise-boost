@@ -20,6 +20,10 @@ export default function AgentPaymentSuccess() {
   const [error, setError] = useState<string | null>(null);
   const [selectedCities, setSelectedCities] = useState<string[]>([]);
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Fetch selected cities after subscription completes
   useEffect(() => {
     async function fetchSelectedCities() {

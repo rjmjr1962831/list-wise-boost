@@ -1,7 +1,12 @@
+import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { ZillowPayToPlay } from '@/components/pricing/ZillowPayToPlay';
 
 export default function ZillowPayToPlayPage() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <>
       <Helmet>

@@ -18,6 +18,7 @@ const RankingMethodology = () => {
   const { trackEvent } = useGA4Tracking();
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     trackEvent('page_view', {
       page_path: '/about/ranking-methodology'
     });

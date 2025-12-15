@@ -201,6 +201,11 @@ export default function DynamicCategoryList() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
+  // Scroll to top on page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Signal Prerender.io when meta tags are ready (after city/category load)
   useEffect(() => {
     if (!loading && city && category) {

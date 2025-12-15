@@ -27,6 +27,10 @@ export default function PricingInterstitial() {
   const [isAnnual, setIsAnnual] = useState(true);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const loadData = async () => {
       if (!token) {
         navigate('/404');

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -103,6 +103,10 @@ export default function TestAI() {
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [verdict, setVerdict] = useState<{ verdict: string; sourceCount: number; timestamp: string } | null>(null);
   const [verdictLoading, setVerdictLoading] = useState(false);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const askAI = async (card: AICard) => {
     setLoading((prev) => ({ ...prev, [card.id]: true }));

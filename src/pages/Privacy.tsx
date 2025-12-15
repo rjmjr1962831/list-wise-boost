@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 const Privacy = () => {
   useEffect(() => {
+    window.scrollTo(0, 0);
     // Track page view
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'page_view', {

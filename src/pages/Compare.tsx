@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
@@ -6,6 +7,10 @@ import { Button } from "@/components/ui/button";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 
 const Compare = () => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   usePrerenderReady();
 
   const comparisonData = [

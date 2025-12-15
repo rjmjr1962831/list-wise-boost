@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { CheckCircle2, Bot, MapPin, TrendingUp } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
@@ -12,6 +13,10 @@ import { HomepageUpdates } from "@/components/HomepageUpdates";
 
 const Index = () => {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   // Signal Prerender.io that meta tags are ready
   usePrerenderReady();

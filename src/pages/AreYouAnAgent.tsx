@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Check, PartyPopper, Clock } from "lucide-react";
@@ -19,6 +19,10 @@ export default function AreYouAnAgent() {
   const [foundAgent, setFoundAgent] = useState<FoundAgent | null>(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

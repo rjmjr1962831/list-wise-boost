@@ -14,6 +14,10 @@ export default function WelcomeInterstitial() {
   const [professional, setProfessional] = useState<any>(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     const validateToken = async () => {
       if (!token) {
         navigate('/404');

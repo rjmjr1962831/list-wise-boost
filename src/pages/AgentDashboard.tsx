@@ -73,6 +73,10 @@ export default function AgentDashboard() {
   const PREMIUM_CITY_NAMES = ['Scottsdale', 'Paradise Valley', 'Carefree', 'Cave Creek', 'Sedona'];
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     checkAuthAndLoadProfile();
   }, [searchParams]);
 
