@@ -247,7 +247,7 @@ ${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentRev
     `;
 
     try {
-      await fetch('https://api.resend.com/emails', {
+      const emailResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${resendApiKey}`,
@@ -260,7 +260,13 @@ ${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentRev
           html: emailHtml
         })
       });
-      console.log('📧 Email notification sent');
+      
+      const emailResult = await emailResponse.json();
+      if (emailResponse.ok) {
+        console.log('📧 Email notification sent successfully:', emailResult.id);
+      } else {
+        console.error('❌ Resend API error:', JSON.stringify(emailResult));
+      }
     } catch (emailError) {
       console.error('⚠️ Email failed:', emailError);
     }
