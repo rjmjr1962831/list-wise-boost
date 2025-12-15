@@ -213,6 +213,9 @@ export default function TestAI() {
           content="Don't take our word for it. Ask ChatGPT, Claude, Perplexity, and Gemini which real estate agent directory they would cite."
         />
         <link rel="canonical" href="https://www.top10lists.us/test" />
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
       </Helmet>
 
       <main className="min-h-screen bg-background py-12 px-4">
