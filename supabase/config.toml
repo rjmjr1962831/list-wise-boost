@@ -261,3 +261,6 @@ verify_jwt = false
 
 [functions.refresh-city-agent-counts]
 verify_jwt = false
+
+[functions.fetch-cloudflare-worker]
+verify_jwt = false
