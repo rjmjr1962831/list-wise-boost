@@ -269,6 +269,9 @@ export default function TestAI() {
                   <p className="text-xs text-muted-foreground">
                     <strong>Generated:</strong> {new Date(verdict.timestamp).toLocaleString()}
                   </p>
+                  <p className="text-sm text-muted-foreground mt-4 text-center italic">
+                    Detailed results below ↓
+                  </p>
                 </div>
               ) : verdictLoading ? (
                 <div className="flex items-center justify-center py-8">
