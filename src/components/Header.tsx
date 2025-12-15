@@ -84,6 +84,9 @@ export const Header = () => {
             <Link to="/compare" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Compare Us
             </Link>
+            <Link to="/test" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Test Us
+            </Link>
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Admin
