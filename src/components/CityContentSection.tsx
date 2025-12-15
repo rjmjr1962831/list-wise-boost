@@ -48,17 +48,6 @@ export function CityContentSection({ citySlug, cityName, categoryName }: CityCon
         )}
       </div>
 
-      {/* Zillow Contrast Callout */}
-      <div className="max-w-3xl mx-auto mb-8">
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-          <p className="text-amber-900 dark:text-amber-100 text-sm">
-            <strong>The difference:</strong> Zillow shows tens of thousands of agents — 
-            anyone who pays for placement. We show only agents who earned an invitation 
-            through verified performance. No pay-to-play. No referral fees.
-          </p>
-        </div>
-      </div>
-
       {/* Qualification Criteria */}
       <div className="max-w-3xl mx-auto mb-8">
         <details className="group">
