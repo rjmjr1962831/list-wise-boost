@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+declare const EdgeRuntime: {
+  waitUntil(promise: Promise<any>): void;
+};
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -9,44 +13,34 @@ const corsHeaders = {
 const PIPEDRIVE_API_TOKEN = Deno.env.get('PIPEDRIVE_API_TOKEN');
 const PIPEDRIVE_DOMAIN = Deno.env.get('PIPEDRIVE_DOMAIN');
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+async function processInBackground(zillowUrl: string, reviewRequestId: string) {
+  console.log(`🔄 Starting background processing for review request: ${reviewRequestId}`);
+  
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  const apifyToken = Deno.env.get('APIFY_API_TOKEN');
+
+  let agentData: any = null;
+  let agentName = 'Unknown Agent';
+  let agentRating = 'N/A';
+  let agentReviews = 'N/A';
+  let agentCompany = 'N/A';
+  let agentPhone = 'N/A';
+  let agentYearsExp = 'N/A';
+  let agentTotalSales = 'N/A';
+  let scraperFailed = false;
+
+  // Extract agent name from URL as initial fallback
+  const urlMatch = zillowUrl.match(/\/profile\/([^\/\?]+)/);
+  if (urlMatch) {
+    agentName = urlMatch[1].replace(/-/g, ' ');
   }
 
-  try {
-    const { zillowUrl } = await req.json();
-
-    if (!zillowUrl) {
-      throw new Error('zillowUrl is required');
-    }
-
-    console.log(`📝 Processing review request for: ${zillowUrl}`);
-
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const apifyToken = Deno.env.get('APIFY_API_TOKEN');
-    if (!apifyToken) {
-      throw new Error('APIFY_API_TOKEN not configured');
-    }
-
-    // Step 1: Try to scrape profile with memo23 (but don't fail if scraping fails)
-    console.log('🔍 Attempting to scrape Zillow profile with memo23...');
-    
-    let agentData: any = null;
-    let agentName = 'Unknown Agent';
-    let agentRating = 'N/A';
-    let agentReviews = 'N/A';
-    let agentCompany = 'N/A';
-    let agentPhone = 'N/A';
-    let agentEmail = 'N/A';
-    let agentYearsExp = 'N/A';
-    let agentTotalSales = 'N/A';
-    let scraperFailed = false;
-
+  if (apifyToken) {
     try {
+      console.log('🔍 Scraping Zillow profile with memo23...');
+      
       const memo23ActorId = 'memo23~apify-zillow-agents-cheerio';
       const memo23Input = {
         startUrls: [{ url: zillowUrl }],
@@ -66,10 +60,7 @@ serve(async (req) => {
         }
       );
 
-      if (!memo23Response.ok) {
-        console.warn(`⚠️ memo23 scraping failed with status: ${memo23Response.status}, continuing with URL only`);
-        scraperFailed = true;
-      } else {
+      if (memo23Response.ok) {
         const memo23Data = await memo23Response.json();
         const agentDatasetId = memo23Data.data.defaultDatasetId;
 
@@ -77,15 +68,12 @@ serve(async (req) => {
           `https://api.apify.com/v2/datasets/${agentDatasetId}/items?token=${apifyToken}`
         );
 
-        if (!agentDataResponse.ok) {
-          console.warn('⚠️ Failed to get scraped agent data, continuing with URL only');
-          scraperFailed = true;
-        } else {
+        if (agentDataResponse.ok) {
           const agentDataResults = await agentDataResponse.json();
           
           if (agentDataResults && agentDataResults.length > 0) {
             agentData = agentDataResults[0];
-            agentName = agentData.name || 'Unknown Agent';
+            agentName = agentData.name || agentName;
             
             if (agentData.ratings) {
               agentRating = agentData.ratings.starRating?.toString() || 'N/A';
@@ -103,7 +91,6 @@ serve(async (req) => {
               agentTotalSales = agentData.agentSalesStats.countAllTime?.toString() || 'N/A';
             }
             
-            // Try to extract years of experience from professional information
             if (agentData.professionalInformation && Array.isArray(agentData.professionalInformation)) {
               const yearsEntry = agentData.professionalInformation.find((info: any) => 
                 info.term?.toLowerCase().includes('year') || info.term?.toLowerCase().includes('experience')
@@ -113,53 +100,47 @@ serve(async (req) => {
               }
             }
             
-            console.log(`✅ Scraped data for: ${agentName} (${agentRating}⭐, ${agentReviews} reviews)`);
+            console.log(`✅ Scraped: ${agentName} (${agentRating}⭐, ${agentReviews} reviews)`);
           } else {
-            console.log('⚠️ No data returned from scraper, continuing with URL only');
             scraperFailed = true;
           }
+        } else {
+          scraperFailed = true;
         }
+      } else {
+        console.warn(`⚠️ memo23 failed with status: ${memo23Response.status}`);
+        scraperFailed = true;
       }
     } catch (scraperError) {
       console.warn('⚠️ Scraper error:', scraperError instanceof Error ? scraperError.message : 'Unknown error');
       scraperFailed = true;
     }
+  } else {
+    scraperFailed = true;
+  }
 
-    // Extract agent name from URL as fallback
-    if (agentName === 'Unknown Agent') {
-      const urlMatch = zillowUrl.match(/\/profile\/([^\/\?]+)/);
-      if (urlMatch) {
-        agentName = urlMatch[1].replace(/-/g, ' ');
-      }
-    }
+  // Update review request with scraped data
+  const { error: updateError } = await supabase
+    .from('review_requests')
+    .update({
+      full_name: agentName,
+      brokerage: agentCompany !== 'N/A' ? agentCompany : 'Pending',
+      phone: agentPhone !== 'N/A' ? agentPhone : 'Pending',
+      message: `Zillow URL: ${zillowUrl}\n\n${scraperFailed ? '⚠️ SCRAPER FAILED - Manual review needed\n\n' : ''}Scraped Data:\n- Rating: ${agentRating}\n- Reviews: ${agentReviews}\n- Total Sales: ${agentTotalSales}\n- Years Experience: ${agentYearsExp}`
+    })
+    .eq('id', reviewRequestId);
 
-    // Step 2: Save review request to database
-    const { data: reviewRequest, error: dbError } = await supabase
-      .from('review_requests')
-      .insert({
-        full_name: agentName,
-        email: agentEmail !== 'N/A' ? agentEmail : `review-request-${Date.now()}@pending.top10lists.us`,
-        phone: agentPhone !== 'N/A' ? agentPhone : 'Pending',
-        license_number: 'Pending Review',
-        brokerage: agentCompany !== 'N/A' ? agentCompany : 'Pending',
-        message: `Zillow URL: ${zillowUrl}\n\n${scraperFailed ? '⚠️ SCRAPER FAILED - Manual review needed\n\n' : ''}Scraped Data:\n- Rating: ${agentRating}\n- Reviews: ${agentReviews}\n- Total Sales: ${agentTotalSales}\n- Years Experience: ${agentYearsExp}`,
-        status: 'pending'
-      })
-      .select()
-      .single();
+  if (updateError) {
+    console.error('❌ Failed to update review request:', updateError);
+  } else {
+    console.log(`💾 Updated review request: ${reviewRequestId}`);
+  }
 
-    if (dbError) {
-      console.error('❌ Database error:', dbError);
-      throw new Error(`Failed to save review request: ${dbError.message}`);
-    }
-
-    console.log(`💾 Saved review request to database: ${reviewRequest.id}`);
-
-    // Step 3: Create Pipedrive task (pending state = done: false)
-    if (PIPEDRIVE_API_TOKEN && PIPEDRIVE_DOMAIN) {
-      const taskSubject = `🆕 Agent Review Request: ${agentName}`;
-      
-      const taskNote = `
+  // Create Pipedrive task
+  if (PIPEDRIVE_API_TOKEN && PIPEDRIVE_DOMAIN) {
+    const taskSubject = `🆕 Agent Review Request: ${agentName}`;
+    
+    const taskNote = `
 **New Agent Review Request**
 
 **Agent Name:** ${agentName}
@@ -179,20 +160,19 @@ ${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentRev
 
 ---
 *Submitted via Top10Lists.us - Are You an Agent? page*
-*Review Request ID: ${reviewRequest.id}*
-      `.trim();
+*Review Request ID: ${reviewRequestId}*
+    `.trim();
 
-      const activityData = {
-        subject: taskSubject,
-        type: 'task',
-        public_description: taskNote,
-        due_date: new Date().toISOString().split('T')[0],
-        due_time: '09:00',
-        done: false // Pending state
-      };
+    const activityData = {
+      subject: taskSubject,
+      type: 'task',
+      public_description: taskNote,
+      due_date: new Date().toISOString().split('T')[0],
+      due_time: '09:00',
+      done: false
+    };
 
-      console.log('📤 Creating Pipedrive task...');
-
+    try {
       const pipedriveResponse = await fetch(
         `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
         {
@@ -202,108 +182,149 @@ ${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentRev
         }
       );
 
-      const pipedriveResult = await pipedriveResponse.json();
-
-      if (pipedriveResponse.ok && pipedriveResult.success) {
-        console.log(`✅ Pipedrive task created: ${pipedriveResult.data?.id}`);
-      } else {
-        console.error('⚠️ Pipedrive task creation failed:', pipedriveResult);
+      if (pipedriveResponse.ok) {
+        console.log('✅ Pipedrive task created');
       }
-    } else {
-      console.log('⚠️ Pipedrive not configured, skipping task creation');
+    } catch (e) {
+      console.error('⚠️ Pipedrive task creation failed:', e);
+    }
+  }
+
+  // Send email notification
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  if (resendApiKey) {
+    const qualificationStatus = parseFloat(agentRating) >= 4.8 && parseInt(agentReviews) >= 50 
+      ? '✅ LIKELY QUALIFIES' 
+      : '⚠️ MAY NOT QUALIFY';
+
+    const emailHtml = `
+      <h2>🆕 New Agent Review Request</h2>
+      
+      <p><strong>Status:</strong> ${qualificationStatus}</p>
+      
+      <h3>Agent Information</h3>
+      <table style="border-collapse: collapse; width: 100%; max-width: 500px;">
+        <tr style="background: #f5f5f5;">
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Name</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${agentName}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Zillow URL</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;"><a href="${zillowUrl}">${zillowUrl}</a></td>
+        </tr>
+        <tr style="background: #f5f5f5;">
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Rating</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${agentRating} ⭐</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Reviews</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${agentReviews}</td>
+        </tr>
+        <tr style="background: #f5f5f5;">
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Company</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${agentCompany}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Phone</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${agentPhone}</td>
+        </tr>
+        <tr style="background: #f5f5f5;">
+          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Sales</strong></td>
+          <td style="padding: 8px; border: 1px solid #ddd;">${agentTotalSales}</td>
+        </tr>
+      </table>
+      
+      <h3>Qualification Check</h3>
+      <ul>
+        <li>${parseFloat(agentRating) >= 4.8 ? '✅' : '❌'} Rating 4.8+ (Current: ${agentRating})</li>
+        <li>${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentReviews})</li>
+      </ul>
+      
+      <p><strong>Next Steps:</strong> Review this agent in Pipedrive and respond within 24 hours.</p>
+      
+      <hr>
+      <p style="color: #666; font-size: 12px;">Review Request ID: ${reviewRequestId}</p>
+    `;
+
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendApiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: 'Top10Lists <notifications@top10lists.us>',
+          to: ['robert@top10lists.us'],
+          subject: `🆕 Agent Review Request: ${agentName} (${qualificationStatus})`,
+          html: emailHtml
+        })
+      });
+      console.log('📧 Email notification sent');
+    } catch (emailError) {
+      console.error('⚠️ Email failed:', emailError);
+    }
+  }
+
+  console.log(`✅ Background processing complete for: ${reviewRequestId}`);
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { zillowUrl } = await req.json();
+
+    if (!zillowUrl) {
+      throw new Error('zillowUrl is required');
     }
 
-    // Step 4: Send email notification via Resend API
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (resendApiKey) {
-      const qualificationStatus = parseFloat(agentRating) >= 4.8 && parseInt(agentReviews) >= 50 
-        ? '✅ LIKELY QUALIFIES' 
-        : '⚠️ MAY NOT QUALIFY';
+    console.log(`📝 Processing review request for: ${zillowUrl}`);
 
-      const emailHtml = `
-        <h2>🆕 New Agent Review Request</h2>
-        
-        <p><strong>Status:</strong> ${qualificationStatus}</p>
-        
-        <h3>Agent Information</h3>
-        <table style="border-collapse: collapse; width: 100%; max-width: 500px;">
-          <tr style="background: #f5f5f5;">
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Name</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${agentName}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Zillow URL</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;"><a href="${zillowUrl}">${zillowUrl}</a></td>
-          </tr>
-          <tr style="background: #f5f5f5;">
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Rating</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${agentRating} ⭐</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Reviews</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${agentReviews}</td>
-          </tr>
-          <tr style="background: #f5f5f5;">
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Company</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${agentCompany}</td>
-          </tr>
-          <tr>
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Phone</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${agentPhone}</td>
-          </tr>
-          <tr style="background: #f5f5f5;">
-            <td style="padding: 8px; border: 1px solid #ddd;"><strong>Total Sales</strong></td>
-            <td style="padding: 8px; border: 1px solid #ddd;">${agentTotalSales}</td>
-          </tr>
-        </table>
-        
-        <h3>Qualification Check</h3>
-        <ul>
-          <li>${parseFloat(agentRating) >= 4.8 ? '✅' : '❌'} Rating 4.8+ (Current: ${agentRating})</li>
-          <li>${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentReviews})</li>
-        </ul>
-        
-        <p><strong>Next Steps:</strong> Review this agent in Pipedrive and respond within 24 hours.</p>
-        
-        <hr>
-        <p style="color: #666; font-size: 12px;">Review Request ID: ${reviewRequest.id}</p>
-      `;
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-      try {
-        const emailResponse = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${resendApiKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            from: 'Top10Lists <notifications@top10lists.us>',
-            to: ['robert@top10lists.us'],
-            subject: `🆕 Agent Review Request: ${agentName} (${qualificationStatus})`,
-            html: emailHtml
-          })
-        });
-        
-        if (emailResponse.ok) {
-          console.log('📧 Email notification sent to robert@top10lists.us');
-        } else {
-          const emailError = await emailResponse.text();
-          console.error('⚠️ Email failed:', emailError);
-        }
-      } catch (emailError) {
-        console.error('⚠️ Email failed:', emailError);
-      }
-    } else {
-      console.log('⚠️ RESEND_API_KEY not configured, skipping email');
+    // Extract agent name from URL for initial record
+    let agentName = 'Unknown Agent';
+    const urlMatch = zillowUrl.match(/\/profile\/([^\/\?]+)/);
+    if (urlMatch) {
+      agentName = urlMatch[1].replace(/-/g, ' ');
     }
 
+    // Save initial review request to database immediately
+    const { data: reviewRequest, error: dbError } = await supabase
+      .from('review_requests')
+      .insert({
+        full_name: agentName,
+        email: `review-request-${Date.now()}@pending.top10lists.us`,
+        phone: 'Pending',
+        license_number: 'Pending Review',
+        brokerage: 'Pending',
+        message: `Zillow URL: ${zillowUrl}\n\n⏳ Scraping in progress...`,
+        status: 'pending'
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('❌ Database error:', dbError);
+      throw new Error(`Failed to save review request: ${dbError.message}`);
+    }
+
+    console.log(`💾 Created review request: ${reviewRequest.id}, starting background processing...`);
+
+    // Run memo23 scraping and notifications in background
+    EdgeRuntime.waitUntil(processInBackground(zillowUrl, reviewRequest.id));
+
+    // Return success immediately
     return new Response(
       JSON.stringify({
         success: true,
         reviewRequestId: reviewRequest.id,
-        agentName,
-        agentRating,
-        agentReviews
+        agentName
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
