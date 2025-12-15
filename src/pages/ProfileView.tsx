@@ -116,6 +116,9 @@ export default function ProfileView() {
         <title>{professional.name} - Professional Profile | Top10Lists</title>
         <meta name="description" content={`View the professional profile of ${professional.name}`} />
         <meta name="robots" content="noindex, nofollow" />
+        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta http-equiv="Pragma" content="no-cache" />
+        <meta http-equiv="Expires" content="0" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 py-12 px-4">
