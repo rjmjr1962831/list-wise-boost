@@ -52,7 +52,7 @@ async function processInBackground(zillowUrl: string, reviewRequestId: string) {
       };
 
       const memo23Response = await fetch(
-        `https://api.apify.com/v2/acts/${memo23ActorId}/runs?token=${apifyToken}&waitForFinish=180`,
+        `https://api.apify.com/v2/acts/${memo23ActorId}/runs?token=${apifyToken}&waitForFinish=300`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

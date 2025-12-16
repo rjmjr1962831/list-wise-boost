@@ -19,7 +19,7 @@ const REGION_ORDER: Region[] = [
   'East Valley', 
   'West Valley',
   'North Valley',
-  'Phoenix Central',
+  'Central Phoenix Corridor',
   'Northern Arizona',
   'Southern Arizona',
 ];

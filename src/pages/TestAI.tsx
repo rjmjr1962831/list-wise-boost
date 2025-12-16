@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -399,6 +399,8 @@ export default function TestAI() {
                           }
                         }
                         
+                        const [showReasoning, setShowReasoning] = React.useState(false);
+                        
                         return (
                           <>
                             <div>
@@ -411,21 +413,41 @@ export default function TestAI() {
                             </div>
                             
                             {reasoning && (
-                              <div>
-                                <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                                  Here's Why
-                                </h4>
-                                <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
-                                  {reasoning.split(/\n\n+/).filter(p => p.trim()).map((para, idx) => (
-                                    <p 
-                                      key={idx}
-                                      className="text-foreground/80 leading-relaxed text-sm"
-                                    >
-                                      {para.trim()}
-                                    </p>
-                                  ))}
-                                </div>
-                              </div>
+                              <>
+                                {showReasoning && (
+                                  <div>
+                                    <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                                      Here's Why
+                                    </h4>
+                                    <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
+                                      {reasoning.split(/\n\n+/).filter(p => p.trim()).map((para, idx) => (
+                                        <p 
+                                          key={idx}
+                                          className="text-foreground/80 leading-relaxed text-sm"
+                                        >
+                                          {para.trim()}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                <button
+                                  onClick={() => setShowReasoning(!showReasoning)}
+                                  className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors mt-2"
+                                >
+                                  {showReasoning ? (
+                                    <>
+                                      <ChevronDown className="h-4 w-4 rotate-180" />
+                                      Show less
+                                    </>
+                                  ) : (
+                                    <>
+                                      <ChevronDown className="h-4 w-4" />
+                                      Read more
+                                    </>
+                                  )}
+                                </button>
+                              </>
                             )}
                           </>
                         );

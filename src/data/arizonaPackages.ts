@@ -72,8 +72,8 @@ const westValleyPrices = calculateBundlePrice(westValleyCities);
 const northValleyCities = ['anthem', 'new-river'];
 const northValleyPrices = calculateBundlePrice(northValleyCities);
 
-// === PHOENIX CENTRAL PACKAGE ===
-const phoenixCentralCities = ['phoenix', 'maricopa', 'casa-grande'];
+// === CENTRAL PHOENIX CORRIDOR PACKAGE ===
+const phoenixCentralCities = ['phoenix'];
 const phoenixCentralPrices = calculateBundlePrice(phoenixCentralCities);
 
 // === NORTHERN ARIZONA PACKAGE ===
@@ -81,7 +81,7 @@ const northernAZCities = ['sedona', 'flagstaff', 'prescott', 'prescott-valley'];
 const northernAZPrices = calculateBundlePrice(northernAZCities);
 
 // === SOUTHERN ARIZONA PACKAGE ===
-const southernAZCities = ['tucson', 'oro-valley', 'marana', 'green-valley', 'sierra-vista'];
+const southernAZCities = ['tucson', 'oro-valley', 'marana', 'green-valley', 'sierra-vista', 'maricopa', 'casa-grande'];
 const southernAZPrices = calculateBundlePrice(southernAZCities);
 
 export const REGIONAL_PACKAGES: RegionalPackage[] = [
@@ -123,9 +123,9 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     bundleSavings: northValleyPrices.bundleSavings,
   },
   {
-    id: 'phoenix-central',
-    name: 'Phoenix Central',
-    description: 'Phoenix, Maricopa & Casa Grande',
+    id: 'central-phoenix-corridor',
+    name: 'Central Phoenix Corridor',
+    description: 'Phoenix Metro',
     includedCityIds: phoenixCentralCities,
     excludedPremiumCities: [],
     alaCarteTotal: phoenixCentralPrices.alaCarte,
@@ -147,7 +147,7 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
   {
     id: 'southern-arizona',
     name: 'Southern Arizona',
-    description: 'Tucson, Oro Valley, Marana, Green Valley & Sierra Vista',
+    description: 'Tucson, Oro Valley, Marana, Green Valley, Sierra Vista, Maricopa & Casa Grande',
     includedCityIds: southernAZCities,
     excludedPremiumCities: [],
     alaCarteTotal: southernAZPrices.alaCarte,

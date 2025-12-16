@@ -60,6 +60,7 @@ export function CityContentSection({ citySlug, cityName, categoryName }: CityCon
               <li><strong>4.8+ star rating minimum</strong></li>
               <li><strong>Active license</strong> verified with Arizona Department of Real Estate</li>
               <li><strong>Deep-dive background review</strong> of professional history</li>
+              <li><strong>Established and Respected in the Community</strong></li>
               <li><strong>Invitation only</strong> — agents cannot pay to get on this list</li>
             </ul>
           </div>
