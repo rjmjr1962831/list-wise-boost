@@ -16,6 +16,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
+const AICompare = lazy(() => import("./pages/AICompare"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const SMSTerms = lazy(() => import("./pages/SMSTerms"));
 const OptInPolicy = lazy(() => import("./pages/OptInPolicy"));
@@ -115,6 +116,7 @@ const App = () => (
                     <Route path="/zillow-explained" element={<ZillowPayToPlayPage />} />
                     <Route path="/compare" element={<Compare />} />
                     <Route path="/test" element={<TestAI />} />
+                    <Route path="/ai-compare" element={<AICompare />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
