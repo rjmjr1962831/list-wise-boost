@@ -121,18 +121,44 @@ function isStaticFile(url: string): boolean {
   return url.endsWith('.txt') || url.endsWith('.xml') || url.endsWith('.json');
 }
 
-// Fetch rendered HTML from Cloudflare Worker (with bot user-agent)
+// Fetch rendered HTML via Prerender.io
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
+  const PRERENDER_TOKEN = Deno.env.get('PRERENDER_TOKEN');
+  
+  if (!PRERENDER_TOKEN) {
+    return { success: false, error: 'PRERENDER_TOKEN not configured' };
+  }
+  
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
 
-    // Use Googlebot user-agent to trigger Cloudflare's bot rendering
-    const response = await fetch(url, {
+    // Skip prerendering for static files - fetch directly
+    if (isStaticFile(url)) {
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const content = await response.text();
+        if (content.length > 100) {
+          return { success: true, html: content };
+        }
+        return { success: false, error: 'Static file appears empty' };
+      }
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+
+    // Use Prerender.io for HTML pages
+    const prerenderUrl = `https://service.prerender.io/${url}`;
+    console.log(`  Fetching via Prerender.io: ${prerenderUrl}`);
+    
+    const response = await fetch(prerenderUrl, {
       method: 'GET',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'X-Prerender-Token': PRERENDER_TOKEN,
       },
       signal: controller.signal,
     });
@@ -142,23 +168,23 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
     if (response.ok) {
       const content = await response.text();
       
-      // Skip HTML validation for static files (txt, xml, json)
-      if (isStaticFile(url)) {
-        if (content.length > 100) {
-          return { success: true, html: content };
-        } else {
-          return { success: false, error: 'Static file appears empty' };
-        }
-      }
+      // Validate rendered content - should have actual HTML, not empty shell
+      const hasContent = content.length > 1000 && 
+        content.includes('</html>') && 
+        !content.includes('<div id="root"></div>'); // Empty React shell check
       
-      // HTML validation - should have actual content, not just JS shell
-      if (content.length > 1000 && content.includes('</html>')) {
-        return { success: true, html: content };
+      if (hasContent) {
+        // Replace lovable.app URLs with canonical domain
+        const canonicalContent = content.replace(
+          /https:\/\/list-wise-boost\.lovable\.app/g, 
+          'https://www.top10lists.us'
+        );
+        return { success: true, html: canonicalContent };
       } else {
-        return { success: false, error: 'Response appears to be empty or JS shell only' };
+        return { success: false, error: 'Prerender returned empty shell or insufficient content' };
       }
     } else {
-      return { success: false, error: `HTTP ${response.status}` };
+      return { success: false, error: `Prerender HTTP ${response.status}` };
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
