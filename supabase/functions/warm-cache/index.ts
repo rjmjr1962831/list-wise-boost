@@ -167,29 +167,30 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
 }
 
 // Warm a single URL: fetch rendered HTML and store in KV
-async function warmUrl(url: string): Promise<{ success: boolean; error?: string }> {
-  // Fetch rendered page from Cloudflare Worker
+async function warmUrl(url: string, canonicalUrl: string): Promise<{ success: boolean; error?: string }> {
+  // Fetch from origin (lovable.app)
   const fetchResult = await fetchRenderedPage(url);
   
   if (!fetchResult.success || !fetchResult.html) {
     return { success: false, error: fetchResult.error || 'No HTML returned' };
   }
 
-  // Store in Cloudflare KV
-  const cacheKey = urlToCacheKey(url);
+  // Store in Cloudflare KV using the CANONICAL URL (www.top10lists.us) for the key
+  const cacheKey = urlToCacheKey(canonicalUrl);
   const kvSuccess = await writeToKV(cacheKey, fetchResult.html);
   
   if (!kvSuccess) {
     return { success: false, error: 'Failed to write to KV' };
   }
 
-  console.log(`  ✓ Cached ${url} (${fetchResult.html.length} bytes)`);
+  console.log(`  ✓ Cached ${canonicalUrl} (${fetchResult.html.length} bytes)`);
   return { success: true };
 }
 
 // Get URLs to warm - includes static pages AND only city/category pages that actually have content
-async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
-  const baseUrl = 'https://list-wise-boost.lovable.app';
+async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: { fetchUrl: string; canonicalUrl: string }[]; totalCount: number }> {
+  const fetchBaseUrl = 'https://list-wise-boost.lovable.app';
+  const canonicalBaseUrl = 'https://www.top10lists.us';
   const regionNormalized = region?.toLowerCase().trim();
 
   // Static crawlable pages (React pages only - Worker skips .txt, .json, .xml files)
@@ -207,7 +208,10 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/arizona', // state landing page
   ];
 
-  const staticUrls = staticPages.map((path) => `${baseUrl}${path}`);
+  const staticUrls = staticPages.map((path) => ({
+    fetchUrl: `${fetchBaseUrl}${path}`,
+    canonicalUrl: `${canonicalBaseUrl}${path}`,
+  }));
   let allUrls = [...staticUrls];
 
   try {
@@ -220,7 +224,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
 
     if (error) throw error;
 
-    const dynamicUrls: string[] = [];
+    const dynamicUrls: { fetchUrl: string; canonicalUrl: string }[] = [];
 
     for (const row of data ?? []) {
       const cityRel: any = (row as any).cities;
@@ -237,10 +241,21 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
 
       if (regionNormalized && String(city.state_slug).toLowerCase() !== regionNormalized) continue;
 
-      dynamicUrls.push(`${baseUrl}/${city.state_slug}/${city.slug}/${category.slug}`);
+      const path = `/${city.state_slug}/${city.slug}/${category.slug}`;
+      dynamicUrls.push({
+        fetchUrl: `${fetchBaseUrl}${path}`,
+        canonicalUrl: `${canonicalBaseUrl}${path}`,
+      });
     }
 
-    const uniqueDynamicUrls = Array.from(new Set(dynamicUrls)).sort();
+    // Deduplicate by canonicalUrl
+    const seen = new Set<string>();
+    const uniqueDynamicUrls = dynamicUrls.filter(u => {
+      if (seen.has(u.canonicalUrl)) return false;
+      seen.add(u.canonicalUrl);
+      return true;
+    }).sort((a, b) => a.canonicalUrl.localeCompare(b.canonicalUrl));
+
     allUrls = [...staticUrls, ...uniqueDynamicUrls];
 
     console.log(
@@ -279,11 +294,12 @@ serve(async (req) => {
     }
 
     // Get URLs to warm
-    let urls: string[];
+    let urls: { fetchUrl: string; canonicalUrl: string }[];
     let totalCount: number;
     
     if (providedUrls && providedUrls.length > 0) {
-      urls = providedUrls;
+      // If URLs are provided directly, assume they're canonical URLs and use them for both
+      urls = providedUrls.map(u => ({ fetchUrl: u, canonicalUrl: u }));
       totalCount = providedUrls.length;
     } else {
       const result = await getUrlsToWarm(region, limit, offset);
@@ -315,16 +331,16 @@ serve(async (req) => {
 
     // Process URLs sequentially with 3-second intervals
     for (let i = 0; i < urls.length; i++) {
-      const url = urls[i];
-      console.log(`[${i + 1}/${urls.length}] Warming: ${url}`);
+      const { fetchUrl, canonicalUrl } = urls[i];
+      console.log(`[${i + 1}/${urls.length}] Warming: ${canonicalUrl} (from ${fetchUrl})`);
       
-      const warmResult = await warmUrl(url);
+      const warmResult = await warmUrl(fetchUrl, canonicalUrl);
       
       if (warmResult.success) {
         result.warmed++;
       } else {
         result.failed++;
-        result.errors.push(`${url}: ${warmResult.error}`);
+        result.errors.push(`${canonicalUrl}: ${warmResult.error}`);
         console.error(`  ✗ Failed: ${warmResult.error}`);
       }
       
