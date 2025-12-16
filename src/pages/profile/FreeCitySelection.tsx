@@ -163,12 +163,11 @@ export default function FreeCitySelection() {
     if (!selectedCityId || !professional) return;
 
     try {
-      // Update the professional's city via edge function (bypasses RLS)
-      const { error } = await supabase.functions.invoke('update-professional-field', {
+      // Update the professional's city AND create subscription via edge function
+      const { error } = await supabase.functions.invoke('save-free-city-selection', {
         body: {
-          token,
-          field: 'city_id',
-          value: selectedCityId
+          professionalId: professional.id,
+          cityId: selectedCityId
         }
       });
 
