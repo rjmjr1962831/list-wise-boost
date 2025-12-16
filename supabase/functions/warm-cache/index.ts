@@ -197,6 +197,8 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/faq',
     '/for-agents',
     '/compare',
+    '/press',
+    '/for-ai',
     '/test',
     '/ai-compare',
     '/llms.txt',
