@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,7 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
 const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
 const SEQUENTIAL_DELAY_MS = 3000; // 3 seconds between each URL
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Send failure notification email
 async function sendFailureEmail(result: WarmResult, errorMessage?: string): Promise<void> {
@@ -185,10 +187,11 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
   return { success: true };
 }
 
-// Get URLs to warm - includes static pages AND only city pages that have agent data
+// Get URLs to warm - includes static pages AND only city/category pages that actually have content
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
   const baseUrl = 'https://www.top10lists.us';
-  
+  const regionNormalized = region?.toLowerCase().trim();
+
   // Static crawlable pages
   const staticPages = [
     '', // homepage
@@ -206,51 +209,55 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/.well-known/ai-content-index.json',
     '/sitemap.xml',
   ];
-  
-  const allUrls = staticPages.map(path => `${baseUrl}${path}`);
-  
-  // Fetch only cities that have agent data from city_agent_counts
+
+  const staticUrls = staticPages.map((path) => `${baseUrl}${path}`);
+  let allUrls = [...staticUrls];
+
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    // Fetch cities with agent data (agent_count > 0)
-    const citiesWithDataRes = await fetch(`${supabaseUrl}/rest/v1/city_agent_counts?agent_count=gt.0&select=city_slug`, {
-      headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
-    });
-    const citiesWithData = await citiesWithDataRes.json();
-    const citySlugsWithData = new Set(citiesWithData.map((c: { city_slug: string }) => c.city_slug));
-    
-    // Fetch active cities (to get state_slug) that have data
-    const citiesRes = await fetch(`${supabaseUrl}/rest/v1/cities?active=eq.true&select=slug,state_slug`, {
-      headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
-    });
-    const allCities = await citiesRes.json();
-    const cities = allCities.filter((city: { slug: string }) => citySlugsWithData.has(city.slug));
-    
-    // Fetch active categories
-    const categoriesRes = await fetch(`${supabaseUrl}/rest/v1/categories?active=eq.true&select=slug`, {
-      headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` }
-    });
-    const categories = await categoriesRes.json();
-    
-    // Generate city/category URLs only for cities with agent data
-    for (const city of cities) {
-      for (const category of categories) {
-        allUrls.push(`${baseUrl}/${city.state_slug}/${city.slug}/${category.slug}`);
-      }
+    // Source of truth for "page has content": canonical rankings exist.
+    // We fetch only rank=1 to get one row per city/category pair.
+    const { data, error } = await supabaseAdmin
+      .from('canonical_city_rankings')
+      .select('city_id,category_id,rank,cities:city_id(slug,state_slug,active),categories:category_id(slug,active)')
+      .eq('rank', 1);
+
+    if (error) throw error;
+
+    const dynamicUrls: string[] = [];
+
+    for (const row of data ?? []) {
+      const cityRel: any = (row as any).cities;
+      const categoryRel: any = (row as any).categories;
+
+      const city = Array.isArray(cityRel) ? cityRel[0] : cityRel;
+      const category = Array.isArray(categoryRel) ? categoryRel[0] : categoryRel;
+
+      if (!city?.slug || !city?.state_slug) continue;
+      if (city?.active === false) continue;
+
+      if (!category?.slug) continue;
+      if (category?.active === false) continue;
+
+      if (regionNormalized && String(city.state_slug).toLowerCase() !== regionNormalized) continue;
+
+      dynamicUrls.push(`${baseUrl}/${city.state_slug}/${city.slug}/${category.slug}`);
     }
-    
-    console.log(`Generated ${allUrls.length} URLs to warm (${staticPages.length} static + ${cities.length * categories.length} city pages from ${cities.length} cities with data)`);
+
+    const uniqueDynamicUrls = Array.from(new Set(dynamicUrls)).sort();
+    allUrls = [...staticUrls, ...uniqueDynamicUrls];
+
+    console.log(
+      `Generated ${allUrls.length} URLs to warm (${staticUrls.length} static + ${uniqueDynamicUrls.length} content city pages${regionNormalized ? ` for region=${regionNormalized}` : ''})`
+    );
   } catch (error) {
-    console.error('Error fetching cities/categories, using static pages only:', error);
+    console.error('Error fetching content city pages, using static pages only:', error);
   }
-  
+
   const totalCount = allUrls.length;
   const startIndex = offset || 0;
   const endIndex = limit ? startIndex + limit : allUrls.length;
   const urls = allUrls.slice(startIndex, endIndex);
-  
+
   console.log(`Returning ${urls.length} URLs (offset: ${startIndex}, limit: ${limit || 'none'}, total: ${totalCount})`);
   return { urls, totalCount };
 }
@@ -343,24 +350,19 @@ serve(async (req) => {
     if (!hasMore && result.warmed > 0) {
       console.log('🔔 Triggering IndexNow to notify search engines...');
       try {
-        const indexNowResponse = await fetch(`${SUPABASE_URL}/functions/v1/push-indexnow`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-          },
-          body: JSON.stringify({}),
+        const { data: indexNowResult, error: indexNowError } = await supabaseAdmin.functions.invoke('push-indexnow', {
+          body: {},
         });
-        
-        if (indexNowResponse.ok) {
-          const indexNowResult = await indexNowResponse.json();
-          console.log(`✅ IndexNow triggered successfully: ${indexNowResult.urlsSubmitted || 0} URLs pushed`);
-          (result as any).indexNowTriggered = true;
-          (result as any).indexNowUrls = indexNowResult.urlsSubmitted || 0;
-        } else {
-          console.error(`⚠️ IndexNow failed: ${indexNowResponse.status}`);
+
+        if (indexNowError) {
+          console.error('⚠️ IndexNow failed:', indexNowError);
           (result as any).indexNowTriggered = false;
-          (result as any).indexNowError = `HTTP ${indexNowResponse.status}`;
+          (result as any).indexNowError = indexNowError.message;
+        } else {
+          const urlsSubmitted = (indexNowResult as any)?.urlsSubmitted || 0;
+          console.log(`✅ IndexNow triggered successfully: ${urlsSubmitted} URLs pushed`);
+          (result as any).indexNowTriggered = true;
+          (result as any).indexNowUrls = urlsSubmitted;
         }
       } catch (indexNowError) {
         console.error('⚠️ IndexNow error:', indexNowError);
