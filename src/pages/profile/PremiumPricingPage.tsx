@@ -27,6 +27,7 @@ interface Professional {
   id: string;
   name: string;
   email: string | null;
+  phone: string | null;
 }
 
 export default function PremiumPricingPage() {
@@ -69,7 +70,7 @@ export default function PremiumPricingPage() {
         // Try verification token first
         let { data, error } = await supabase
           .from('professionals')
-          .select('id, name, email')
+          .select('id, name, email, phone')
           .ilike('verification_token', `%${token}%`)
           .single();
 
@@ -77,7 +78,7 @@ export default function PremiumPricingPage() {
           // Fallback to ID
           const result = await supabase
             .from('professionals')
-            .select('id, name, email')
+            .select('id, name, email, phone')
             .eq('id', token)
             .single();
           
@@ -338,7 +339,15 @@ export default function PremiumPricingPage() {
           <RegistrationGateModal
             isOpen={showRegistrationModal}
             onClose={() => setShowRegistrationModal(false)}
+            onProceedToCheckout={(email) => {
+              setShowRegistrationModal(false);
+              // Update professional email locally and proceed
+              setProfessional({ ...professional, email });
+              // Continue with checkout
+              setTimeout(() => handleCheckout(), 100);
+            }}
             professionalEmail={professional.email}
+            professionalPhone={professional.phone}
             professionalName={professional.name}
             professionalId={professional.id}
             token={token}

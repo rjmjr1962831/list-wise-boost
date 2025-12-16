@@ -9,14 +9,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Mail, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Loader2, Mail, Phone, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 interface RegistrationGateModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onProceedToCheckout: (email: string) => void;
   professionalEmail: string | null;
+  professionalPhone: string | null;
   professionalName: string;
   professionalId: string;
   token: string;
@@ -25,16 +27,18 @@ interface RegistrationGateModalProps {
 export function RegistrationGateModal({
   isOpen,
   onClose,
+  onProceedToCheckout,
   professionalEmail,
+  professionalPhone,
   professionalName,
   professionalId,
   token,
 }: RegistrationGateModalProps) {
   const [email, setEmail] = useState(professionalEmail || '');
-  const [sending, setSending] = useState(false);
-  const [sent, setSent] = useState(false);
+  const [phone, setPhone] = useState(professionalPhone || '');
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSendMagicLink = async () => {
+  const handleSubmit = async () => {
     if (!email) {
       toast.error('Please enter your email address');
       return;
@@ -46,21 +50,25 @@ export function RegistrationGateModal({
       return;
     }
 
-    setSending(true);
+    if (!phone) {
+      toast.error('Please enter your phone number');
+      return;
+    }
+
+    setSubmitting(true);
 
     try {
-      // Update email if different
-      if (email !== professionalEmail && professionalId) {
+      // Update email and phone in database
+      if (professionalId) {
         await supabase
           .from('professionals')
-          .update({ email })
+          .update({ email, phone })
           .eq('id', professionalId);
       }
 
-      // Send magic link - redirect back to pricing page after auth
+      // Send magic link in background (don't wait for it)
       const redirectUrl = `${window.location.origin}/profile/${token}/pricing`;
-
-      const { error } = await supabase.auth.signInWithOtp({
+      supabase.auth.signInWithOtp({
         email,
         options: {
           emailRedirectTo: redirectUrl,
@@ -69,49 +77,21 @@ export function RegistrationGateModal({
             funnel_token: token,
           },
         },
+      }).then(() => {
+        // Magic link sent in background
+      }).catch((err) => {
+        console.error('Magic link send error:', err);
       });
 
-      if (error) {
-        toast.error(error.message);
-        setSending(false);
-        return;
-      }
-
-      setSent(true);
-      toast.success('Check your email for the login link!');
+      // Immediately proceed to checkout
+      onProceedToCheckout(email);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to send magic link');
-      setSending(false);
+      toast.error(err.message || 'Something went wrong');
+      setSubmitting(false);
     }
   };
 
   const firstName = professionalName?.split(' ')[0] || 'there';
-
-  if (sent) {
-    return (
-      <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
-          <div className="text-center py-6 space-y-4">
-            <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-primary" />
-            </div>
-            <DialogHeader>
-              <DialogTitle className="text-center">Check Your Email</DialogTitle>
-              <DialogDescription className="text-center">
-                We sent a magic link to <span className="font-medium text-foreground">{email}</span>
-              </DialogDescription>
-            </DialogHeader>
-            <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-              <p>Click the link in your email to continue to checkout. The link will expire in 1 hour.</p>
-            </div>
-            <Button variant="outline" onClick={() => { setSent(false); setSending(false); }}>
-              Try a different email
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -119,8 +99,8 @@ export function RegistrationGateModal({
         <DialogHeader>
           <DialogTitle>Please Register Your Account</DialogTitle>
           <DialogDescription>
-            Hi {firstName}! Before we proceed to checkout, we need to verify your email. 
-            We'll send you a magic link — no password needed.
+            Hi {firstName}! Enter your contact info to continue to checkout. 
+            We'll also send you a login link for future access.
           </DialogDescription>
         </DialogHeader>
 
@@ -140,15 +120,30 @@ export function RegistrationGateModal({
             />
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              Phone Number
+            </Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="(555) 555-5555"
+              className="text-lg"
+            />
+          </div>
+
           <Button
             className="w-full"
-            onClick={handleSendMagicLink}
-            disabled={sending || !email}
+            onClick={handleSubmit}
+            disabled={submitting || !email || !phone}
           >
-            {sending ? (
+            {submitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Sending...
+                Processing...
               </>
             ) : (
               <>
@@ -159,7 +154,7 @@ export function RegistrationGateModal({
           </Button>
 
           <p className="text-xs text-center text-muted-foreground">
-            We use secure, passwordless authentication. Just click the link we send to your email.
+            A login link will be sent to your email for future account access.
           </p>
         </div>
       </DialogContent>
