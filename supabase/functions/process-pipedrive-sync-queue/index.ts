@@ -54,67 +54,31 @@ async function sendFailureAlert(
     await client.send({
       from: SMTP_FROM_EMAIL!,
       to: ADMIN_EMAIL,
-      subject: "🚨 URGENT: Pipedrive Sync Failure",
-      content: "text/html",
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            h2 { color: #d32f2f; }
-            h3 { color: #1976d2; margin-top: 20px; }
-            ul, ol { margin: 10px 0; padding-left: 20px; }
-            li { margin: 5px 0; }
-            pre { background: #f4f4f4; padding: 12px; border-radius: 4px; overflow-x: auto; border: 1px solid #ddd; }
-            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px; }
-            .alert-box { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 4px; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h2>🚨 Pipedrive Sync Failure Alert</h2>
-            
-            <div class="alert-box">
-              <strong>A professional record has permanently failed to sync to Pipedrive after ${attempts} attempts.</strong>
-            </div>
-            
-            <h3>Failure Details:</h3>
-            <ul>
-              <li><strong>Professional:</strong> ${professionalName}</li>
-              <li><strong>Professional ID:</strong> ${professionalId}</li>
-              <li><strong>Time:</strong> ${timestamp}</li>
-              <li><strong>Error Type:</strong> Max retry attempts exceeded</li>
-            </ul>
-            
-            <h3>Error Message:</h3>
-            <pre>${errorMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
-            
-            <h3>Recommended Resolution:</h3>
-            <ol>
-              <li><strong>Verify Professional Data:</strong> Check that the professional has a valid email address and all required fields are populated in the database</li>
-              <li><strong>Check Pipedrive Connection:</strong> Verify that Pipedrive API credentials (PIPEDRIVE_API_TOKEN, PIPEDRIVE_DOMAIN) are valid and the service is accessible</li>
-              <li><strong>Review Field Mappings:</strong> Ensure all custom field mappings in the pipedrive_field_mapping table are correct and match Pipedrive's field keys</li>
-              <li><strong>Check Professional Email:</strong> Confirm the professional has a valid, non-generic email address (Pipedrive sync skips professionals without emails)</li>
-              <li><strong>Manual Retry:</strong> After fixing the issue, you can manually retry the sync from the Admin Dashboard → Pipedrive section</li>
-              <li><strong>Check Edge Function Logs:</strong> Review detailed error logs at: https://supabase.com/dashboard/project/${projectId}/logs/edge-functions</li>
-            </ol>
-            
-            <h3>Next Steps:</h3>
-            <ul>
-              <li>Review the professional's data in the database for completeness</li>
-              <li>Test the Pipedrive API connection manually if needed</li>
-              <li>After fixing, the sync will be retried automatically or can be triggered manually</li>
-            </ul>
-            
-            <div class="footer">
-              This is an automated alert from Top10Lists Pipedrive Sync Queue Processor
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
+      subject: "URGENT: Pipedrive Sync Failure - Action Required",
+      content: "auto",
+      html: `<pre style="font-family: monospace; white-space: pre-wrap;">
+PIPEDRIVE SYNC FAILURE ALERT
+
+A professional record has permanently failed to sync to Pipedrive after ${attempts} attempts.
+
+FAILURE DETAILS:
+- Professional: ${professionalName}
+- Professional ID: ${professionalId}
+- Time: ${timestamp}
+- Error Type: Max retry attempts exceeded
+
+ERROR MESSAGE:
+${errorMessage.replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+
+RECOMMENDED RESOLUTION:
+1. Verify Professional Data: Check that the professional has a valid email address
+2. Check Pipedrive Connection: Verify API credentials are valid
+3. Review Field Mappings: Ensure custom field mappings are correct
+4. Manual Retry: After fixing, retry from Admin Dashboard
+
+--
+Automated alert from Top10Lists Sync Queue
+</pre>`,
     });
 
     await client.close();
