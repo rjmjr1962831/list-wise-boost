@@ -182,8 +182,8 @@ export default function FreeCitySelection() {
         return;
       }
 
-      // Navigate to thank you page showing their listing
-      navigate(`/profile/${token}/thank-you`);
+      // Navigate to confirmation page with city ID
+      navigate(`/profile/${token}/free-confirmed?city=${selectedCityId}`);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -210,33 +210,6 @@ export default function FreeCitySelection() {
 
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-2xl mx-auto space-y-8">
-          {/* How It Works Section */}
-          <Card>
-            <CardContent className="pt-6 space-y-6">
-              <h1 className="text-2xl font-bold">Here's how it works.</h1>
-              
-              <div className="space-y-4 text-muted-foreground">
-                <p>
-                  Your <strong className="font-bold text-foreground">FREE</strong> listing will appear in <strong className="text-foreground">one city</strong> on a round-robin basis with other qualified agents.
-                </p>
-                
-                <p>
-                  The premium cities of <strong className="text-foreground">{PREMIUM_CITY_NAMES.join(', ')}</strong> are not eligible for a free listing.
-                </p>
-                
-                <p>
-                  To get <strong className="text-foreground">guaranteed placement</strong> in one or more cities, you have the option to buy the spot on that city's list on the next page.
-                </p>
-                
-                <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                  <p className="text-foreground font-medium">
-                    🎉 We are offering early adopter pricing that is <strong>half price for 2 years</strong>.
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* City Selection */}
           <Card>
             <CardContent className="pt-6 space-y-6">
