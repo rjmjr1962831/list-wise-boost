@@ -3,7 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Helmet } from 'react-helmet-async';
-import { MessageCircle, Search, ListOrdered, ArrowRight, ArrowDown, Zap } from 'lucide-react';
+import { MessageCircle, Search, ListOrdered, ArrowRight, ArrowDown, Zap, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const steps = [
@@ -23,6 +23,12 @@ const steps = [
     icon: ListOrdered,
     title: 'Top 10 Cited',
     description: 'Your verified profile is recommended with your credentials',
+    example: false,
+  },
+  {
+    icon: Eye,
+    title: 'Your Listing Appears',
+    description: 'Buyers see your profile with reviews, credentials, and contact info',
     example: false,
   },
 ];

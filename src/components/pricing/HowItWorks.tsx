@@ -1,5 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageCircle, Search, ListOrdered, ArrowRight } from 'lucide-react';
+import { MessageCircle, Search, ListOrdered, ArrowRight, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const steps = [
@@ -19,6 +19,12 @@ const steps = [
     icon: ListOrdered,
     title: 'Top 10 Cited',
     description: 'Your verified profile is recommended with your credentials',
+    example: false,
+  },
+  {
+    icon: Eye,
+    title: 'Your Listing Appears',
+    description: 'Buyers see your profile with reviews, credentials, and contact info',
     example: false,
   },
 ];
