@@ -6,7 +6,7 @@ export type SelectionMode = 'package' | 'build-your-own';
 
 export interface PricingCalculatorState {
   mode: SelectionMode;
-  selectedPackageId: string | null;
+  selectedPackageIds: string[]; // Changed to array for multiple packages
   selectedPremiumCityIds: string[];
   selectedAlaCarte: string[];
 }
@@ -21,7 +21,10 @@ export interface PricingCalculatorResult {
   totalSavings: number;
   cityCount: number;
   selectedCities: CityPricingData[];
-  selectedPackage: RegionalPackage | null;
+  selectedPackages: RegionalPackage[]; // Changed to array
+  
+  // All city IDs that are covered by selected packages (for filtering)
+  packageCoveredCityIds: string[];
   
   // Line items for display
   lineItems: Array<{
@@ -30,14 +33,16 @@ export interface PricingCalculatorResult {
     price: number;
     retailPrice: number;
     cityId?: string;
+    packageId?: string;
   }>;
   
   // Actions
   setMode: (mode: SelectionMode) => void;
-  selectPackage: (packageId: string | null) => void;
+  togglePackage: (packageId: string) => void; // Changed from selectPackage
   togglePremiumCity: (cityId: string) => void;
   toggleAlaCarteCity: (cityId: string) => void;
   removeCity: (cityId: string) => void;
+  removePackage: (packageId: string) => void;
   clearAll: () => void;
   
   // Smart suggestions
@@ -46,12 +51,16 @@ export interface PricingCalculatorResult {
     cityName: string;
     reason: string;
   }>;
+  
+  // Legacy compatibility
+  selectedPackage: RegionalPackage | null;
+  selectPackage: (packageId: string | null) => void;
 }
 
 export function usePricingCalculator(): PricingCalculatorResult {
   const [state, setState] = useState<PricingCalculatorState>({
     mode: 'package',
-    selectedPackageId: null,
+    selectedPackageIds: [],
     selectedPremiumCityIds: [],
     selectedAlaCarte: [],
   });
@@ -61,23 +70,68 @@ export function usePricingCalculator(): PricingCalculatorResult {
     setState(prev => ({
       ...prev,
       mode,
-      selectedPackageId: mode === 'build-your-own' ? null : prev.selectedPackageId,
       selectedAlaCarte: mode === 'package' ? [] : prev.selectedAlaCarte,
     }));
   }, []);
 
-  // Select a package
+  // Toggle package selection (multi-select)
+  const togglePackage = useCallback((packageId: string) => {
+    setState(prev => {
+      const isSelected = prev.selectedPackageIds.includes(packageId);
+      const newPackageIds = isSelected
+        ? prev.selectedPackageIds.filter(id => id !== packageId)
+        : [...prev.selectedPackageIds, packageId];
+      
+      // Get all cities covered by newly selected packages
+      const coveredCityIds = newPackageIds.flatMap(pkgId => {
+        const pkg = REGIONAL_PACKAGES.find(p => p.id === pkgId);
+        return pkg?.includedCityIds || [];
+      });
+      
+      // Remove premium cities that are now covered by a package
+      const filteredPremiumCities = prev.selectedPremiumCityIds.filter(
+        cityId => !coveredCityIds.includes(cityId)
+      );
+      
+      return {
+        ...prev,
+        mode: 'package',
+        selectedPackageIds: newPackageIds,
+        selectedPremiumCityIds: filteredPremiumCities,
+      };
+    });
+  }, []);
+
+  // Legacy selectPackage for compatibility (toggles a single package)
   const selectPackage = useCallback((packageId: string | null) => {
+    if (packageId === null) {
+      setState(prev => ({ ...prev, selectedPackageIds: [] }));
+    } else {
+      togglePackage(packageId);
+    }
+  }, [togglePackage]);
+
+  // Remove a package
+  const removePackage = useCallback((packageId: string) => {
     setState(prev => ({
       ...prev,
-      selectedPackageId: packageId,
-      mode: 'package',
+      selectedPackageIds: prev.selectedPackageIds.filter(id => id !== packageId),
     }));
   }, []);
 
   // Toggle premium city
   const togglePremiumCity = useCallback((cityId: string) => {
     setState(prev => {
+      // Don't allow selecting premium cities that are already in a selected package
+      const packageCoveredIds = prev.selectedPackageIds.flatMap(pkgId => {
+        const pkg = REGIONAL_PACKAGES.find(p => p.id === pkgId);
+        return pkg?.includedCityIds || [];
+      });
+      
+      if (packageCoveredIds.includes(cityId)) {
+        return prev; // City already in package, don't toggle
+      }
+      
       const isSelected = prev.selectedPremiumCityIds.includes(cityId);
       return {
         ...prev,
@@ -91,6 +145,16 @@ export function usePricingCalculator(): PricingCalculatorResult {
   // Toggle à la carte city
   const toggleAlaCarteCity = useCallback((cityId: string) => {
     setState(prev => {
+      // Don't allow selecting cities that are already in a selected package
+      const packageCoveredIds = prev.selectedPackageIds.flatMap(pkgId => {
+        const pkg = REGIONAL_PACKAGES.find(p => p.id === pkgId);
+        return pkg?.includedCityIds || [];
+      });
+      
+      if (packageCoveredIds.includes(cityId)) {
+        return prev; // City already in package, don't toggle
+      }
+      
       const isSelected = prev.selectedAlaCarte.includes(cityId);
       return {
         ...prev,
@@ -114,96 +178,125 @@ export function usePricingCalculator(): PricingCalculatorResult {
   const clearAll = useCallback(() => {
     setState({
       mode: 'package',
-      selectedPackageId: null,
+      selectedPackageIds: [],
       selectedPremiumCityIds: [],
       selectedAlaCarte: [],
     });
   }, []);
 
-  // Get selected package
+  // Get selected packages
+  const selectedPackages = useMemo(() => {
+    return state.selectedPackageIds
+      .map(id => REGIONAL_PACKAGES.find(p => p.id === id))
+      .filter((p): p is RegionalPackage => p !== undefined);
+  }, [state.selectedPackageIds]);
+
+  // Legacy selectedPackage (first selected package or null)
   const selectedPackage = useMemo(() => {
-    if (!state.selectedPackageId) return null;
-    return REGIONAL_PACKAGES.find(p => p.id === state.selectedPackageId) || null;
-  }, [state.selectedPackageId]);
+    return selectedPackages.length > 0 ? selectedPackages[0] : null;
+  }, [selectedPackages]);
+
+  // All city IDs covered by selected packages
+  const packageCoveredCityIds = useMemo(() => {
+    return selectedPackages.flatMap(pkg => pkg.includedCityIds);
+  }, [selectedPackages]);
 
   // Build line items
   const lineItems = useMemo(() => {
     const items: PricingCalculatorResult['lineItems'] = [];
 
-    // Package line item
-    if (selectedPackage) {
+    // Package line items
+    selectedPackages.forEach(pkg => {
       items.push({
         type: 'package',
-        label: selectedPackage.name,
-        price: selectedPackage.earlyAdopterPrice,
-        retailPrice: selectedPackage.retailTotal,
+        label: pkg.name,
+        price: pkg.earlyAdopterPrice,
+        retailPrice: pkg.retailTotal,
+        packageId: pkg.id,
       });
-    }
-
-    // Premium city line items
-    state.selectedPremiumCityIds.forEach(cityId => {
-      const city = ARIZONA_CITIES.find(c => c.id === cityId);
-      if (city) {
-        items.push({
-          type: 'premium',
-          label: city.cityName,
-          price: city.earlyAdopterPrice,
-          retailPrice: city.retailPrice,
-          cityId: city.id,
-        });
-      }
     });
 
-    // À la carte line items (only in build-your-own mode)
-    if (state.mode === 'build-your-own') {
-      state.selectedAlaCarte.forEach(cityId => {
+    // Premium city line items (excluding those in packages)
+    state.selectedPremiumCityIds.forEach(cityId => {
+      if (!packageCoveredCityIds.includes(cityId)) {
         const city = ARIZONA_CITIES.find(c => c.id === cityId);
         if (city) {
           items.push({
-            type: 'city',
+            type: 'premium',
             label: city.cityName,
             price: city.earlyAdopterPrice,
             retailPrice: city.retailPrice,
             cityId: city.id,
           });
         }
+      }
+    });
+
+    // À la carte line items (only in build-your-own mode)
+    if (state.mode === 'build-your-own') {
+      state.selectedAlaCarte.forEach(cityId => {
+        if (!packageCoveredCityIds.includes(cityId)) {
+          const city = ARIZONA_CITIES.find(c => c.id === cityId);
+          if (city) {
+            items.push({
+              type: 'city',
+              label: city.cityName,
+              price: city.earlyAdopterPrice,
+              retailPrice: city.retailPrice,
+              cityId: city.id,
+            });
+          }
+        }
       });
     }
 
     return items;
-  }, [selectedPackage, state.selectedPremiumCityIds, state.selectedAlaCarte, state.mode]);
+  }, [selectedPackages, state.selectedPremiumCityIds, state.selectedAlaCarte, state.mode, packageCoveredCityIds]);
 
   // Calculate totals
   const { monthlyTotal, retailTotal, totalSavings, cityCount, selectedCities } = useMemo(() => {
     let monthly = 0;
     let retail = 0;
     const cities: CityPricingData[] = [];
+    const addedCityIds = new Set<string>();
 
-    // Package contribution
-    if (selectedPackage) {
-      monthly += selectedPackage.earlyAdopterPrice;
-      retail += selectedPackage.retailTotal;
-      cities.push(...getPackageCities(selectedPackage.id));
-    }
+    // Package contributions
+    selectedPackages.forEach(pkg => {
+      monthly += pkg.earlyAdopterPrice;
+      retail += pkg.retailTotal;
+      const packageCities = getPackageCities(pkg.id);
+      packageCities.forEach(city => {
+        if (!addedCityIds.has(city.id)) {
+          cities.push(city);
+          addedCityIds.add(city.id);
+        }
+      });
+    });
 
-    // Premium cities
+    // Premium cities (not in packages)
     state.selectedPremiumCityIds.forEach(cityId => {
-      const city = ARIZONA_CITIES.find(c => c.id === cityId);
-      if (city) {
-        monthly += city.earlyAdopterPrice;
-        retail += city.retailPrice;
-        cities.push(city);
+      if (!addedCityIds.has(cityId)) {
+        const city = ARIZONA_CITIES.find(c => c.id === cityId);
+        if (city) {
+          monthly += city.earlyAdopterPrice;
+          retail += city.retailPrice;
+          cities.push(city);
+          addedCityIds.add(cityId);
+        }
       }
     });
 
     // À la carte (only in build-your-own mode)
     if (state.mode === 'build-your-own') {
       state.selectedAlaCarte.forEach(cityId => {
-        const city = ARIZONA_CITIES.find(c => c.id === cityId);
-        if (city && !cities.some(c => c.id === cityId)) {
-          monthly += city.earlyAdopterPrice;
-          retail += city.retailPrice;
-          cities.push(city);
+        if (!addedCityIds.has(cityId)) {
+          const city = ARIZONA_CITIES.find(c => c.id === cityId);
+          if (city) {
+            monthly += city.earlyAdopterPrice;
+            retail += city.retailPrice;
+            cities.push(city);
+            addedCityIds.add(cityId);
+          }
         }
       });
     }
@@ -215,7 +308,7 @@ export function usePricingCalculator(): PricingCalculatorResult {
       cityCount: cities.length,
       selectedCities: cities,
     };
-  }, [selectedPackage, state.selectedPremiumCityIds, state.selectedAlaCarte, state.mode]);
+  }, [selectedPackages, state.selectedPremiumCityIds, state.selectedAlaCarte, state.mode]);
 
   // Smart suggestions
   const suggestions = useMemo(() => {
@@ -237,35 +330,44 @@ export function usePricingCalculator(): PricingCalculatorResult {
       }
     }
 
-    // Suggest premium cities if they have a package
-    if (selectedPackage && state.selectedPremiumCityIds.length === 0) {
+    // Suggest premium cities if they have packages but no premium add-ons
+    if (selectedPackages.length > 0 && state.selectedPremiumCityIds.length === 0) {
       const premiumCities = getPremiumCities();
-      if (premiumCities.length > 0) {
+      const availablePremium = premiumCities.filter(c => !packageCoveredCityIds.includes(c.id));
+      if (availablePremium.length > 0) {
         suggestions.push({
-          cityId: premiumCities[0].id,
-          cityName: premiumCities[0].cityName,
+          cityId: availablePremium[0].id,
+          cityName: availablePremium[0].cityName,
           reason: 'Add premium market for luxury buyers',
         });
       }
     }
 
     return suggestions.slice(0, 2);
-  }, [state, selectedPackage]);
+  }, [state, selectedPackages, packageCoveredCityIds]);
 
   return {
-    state,
+    state: {
+      ...state,
+      // For compatibility, expose selectedPackageId as first selected package
+      selectedPackageId: state.selectedPackageIds[0] || null,
+    } as any,
     monthlyTotal,
     retailTotal,
     totalSavings,
     cityCount,
     selectedCities,
     selectedPackage,
+    selectedPackages,
+    packageCoveredCityIds,
     lineItems,
     setMode,
+    togglePackage,
     selectPackage,
     togglePremiumCity,
     toggleAlaCarteCity,
     removeCity,
+    removePackage,
     clearAll,
     suggestions,
   };

@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronRight, MapPin } from 'lucide-react';
+import { ChevronDown, ChevronRight, MapPin, Lock } from 'lucide-react';
 import { ARIZONA_CITIES, CityPricingData, getNonPremiumCities, Region } from '@/data/arizonaCityPricing';
 import { cn } from '@/lib/utils';
 
@@ -12,6 +12,7 @@ interface CitySelectorProps {
   selectedCityIds: string[];
   onToggle: (cityId: string) => void;
   disabled?: boolean;
+  packageCoveredCityIds?: string[]; // Cities covered by selected packages
 }
 
 const REGION_ORDER: Region[] = [
@@ -23,7 +24,12 @@ const REGION_ORDER: Region[] = [
   'Southern Arizona',
 ];
 
-export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelectorProps) {
+export function CitySelector({ 
+  selectedCityIds, 
+  onToggle, 
+  disabled,
+  packageCoveredCityIds = [] 
+}: CitySelectorProps) {
   const [expandedRegions, setExpandedRegions] = useState<Set<Region>>(new Set());
   
   const nonPremiumCities = getNonPremiumCities();
@@ -83,13 +89,22 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
         </p>
       )}
 
+      {packageCoveredCityIds.length > 0 && !disabled && (
+        <p className="text-sm text-muted-foreground italic flex items-center gap-1">
+          <Lock className="h-3 w-3" />
+          Cities included in your selected packages are already covered and shown as locked
+        </p>
+      )}
+
       <div className="space-y-2">
         {REGION_ORDER.map(region => {
           const cities = citiesByRegion[region];
           if (!cities || cities.length === 0) return null;
           
           const isExpanded = expandedRegions.has(region);
-          const selectedCount = cities.filter(c => selectedCityIds.includes(c.id)).length;
+          const availableCities = cities.filter(c => !packageCoveredCityIds.includes(c.id));
+          const coveredCities = cities.filter(c => packageCoveredCityIds.includes(c.id));
+          const selectedCount = availableCities.filter(c => selectedCityIds.includes(c.id)).length;
 
           return (
             <Collapsible
@@ -110,8 +125,13 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
                     )}
                     <span className="font-medium text-foreground">{region}</span>
                     <Badge variant="secondary" className="text-xs">
-                      {cities.length} cities
+                      {availableCities.length} available
                     </Badge>
+                    {coveredCities.length > 0 && (
+                      <Badge variant="outline" className="text-xs text-muted-foreground">
+                        {coveredCities.length} in package
+                      </Badge>
+                    )}
                   </div>
                   {selectedCount > 0 && (
                     <Badge className="bg-primary text-primary-foreground">
@@ -123,7 +143,24 @@ export function CitySelector({ selectedCityIds, onToggle, disabled }: CitySelect
               
               <CollapsibleContent className="pt-2">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-6">
-                  {cities.map(city => {
+                  {/* Show covered cities first (disabled) */}
+                  {coveredCities.map(city => (
+                    <div
+                      key={city.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-muted/20 opacity-60"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Lock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">{city.cityName}</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        In package
+                      </Badge>
+                    </div>
+                  ))}
+                  
+                  {/* Show available cities */}
+                  {availableCities.map(city => {
                     const isSelected = selectedCityIds.includes(city.id);
                     return (
                       <Label
