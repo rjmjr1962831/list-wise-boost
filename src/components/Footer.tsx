@@ -100,7 +100,17 @@ export const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-slate-700 space-y-6">
+        <div className="mt-8 pt-8 border-t border-slate-700 space-y-4">
+          {/* Merit-based rankings link */}
+          <div className="text-center">
+            <Link 
+              to="/about/ranking-methodology" 
+              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Rankings are merit-based. How we select agents →
+            </Link>
+          </div>
+
           {/* Subtle Agent Note */}
           <div className="text-center py-4 border-t border-slate-600">
             <p className="text-sm text-slate-400">
