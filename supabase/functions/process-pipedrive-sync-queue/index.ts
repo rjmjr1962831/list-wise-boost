@@ -14,6 +14,7 @@ const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "465");
 const SMTP_USERNAME = Deno.env.get("SMTP_USERNAME");
 const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD");
 const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") || "robert@top10lists.us";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -52,8 +53,8 @@ async function sendFailureAlert(
 
     await client.send({
       from: SMTP_FROM_EMAIL!,
-      to: "contentforms@top10lists.us",
-      subject: "Sync failure",
+      to: ADMIN_EMAIL,
+      subject: "🚨 URGENT: Pipedrive Sync Failure",
       content: "text/html",
       html: `
         <!DOCTYPE html>
