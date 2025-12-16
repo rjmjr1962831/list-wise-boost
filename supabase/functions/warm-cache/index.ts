@@ -192,7 +192,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
   const baseUrl = 'https://www.top10lists.us';
   const regionNormalized = region?.toLowerCase().trim();
 
-  // Static crawlable pages
+  // Static crawlable pages (React pages only - Worker skips .txt, .json, .xml files)
   const staticPages = [
     '', // homepage
     '/about',
@@ -204,10 +204,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/for-ai',
     '/test',
     '/ai-compare',
-    '/llms.txt',
-    '/llms-full.txt',
-    '/.well-known/ai-content-index.json',
-    '/sitemap.xml',
+    '/arizona', // state landing page
   ];
 
   const staticUrls = staticPages.map((path) => `${baseUrl}${path}`);
