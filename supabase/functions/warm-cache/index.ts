@@ -202,6 +202,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/test',
     '/ai-compare',
     '/llms.txt',
+    '/llms-full.txt',
     '/.well-known/ai-content-index.json',
     '/sitemap.xml',
   ];
