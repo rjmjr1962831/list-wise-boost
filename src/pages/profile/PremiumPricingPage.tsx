@@ -260,9 +260,12 @@ export default function PremiumPricingPage() {
               {/* Package Selector */}
               <PackageSelector
                 mode={calculator.state.mode}
-                selectedPackageId={calculator.state.selectedPackageId}
+                selectedPackageId={calculator.state.selectedPackageIds?.[0] || null}
+                selectedPackageIds={calculator.state.selectedPackageIds || []}
                 onModeChange={calculator.setMode}
                 onPackageSelect={calculator.selectPackage}
+                onTogglePackage={calculator.togglePackage}
+                packageCoveredCityIds={calculator.packageCoveredCityIds}
               />
 
               <Separator />
@@ -271,6 +274,7 @@ export default function PremiumPricingPage() {
               <PremiumAddons
                 selectedCityIds={calculator.state.selectedPremiumCityIds}
                 onToggle={calculator.togglePremiumCity}
+                packageCoveredCityIds={calculator.packageCoveredCityIds}
               />
 
               <Separator />
@@ -280,6 +284,7 @@ export default function PremiumPricingPage() {
                 selectedCityIds={calculator.state.selectedAlaCarte}
                 onToggle={calculator.toggleAlaCarteCity}
                 disabled={calculator.state.mode !== 'build-your-own'}
+                packageCoveredCityIds={calculator.packageCoveredCityIds}
               />
 
 

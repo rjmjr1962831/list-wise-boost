@@ -1,7 +1,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { X, Sparkles, ArrowRight, Clock, CreditCard, Receipt } from 'lucide-react';
+import { X, Sparkles, ArrowRight, Clock, CreditCard, Receipt, Package } from 'lucide-react';
 import { PricingCalculatorResult } from '@/hooks/usePricingCalculator';
 import { getPackageCities } from '@/data/arizonaPackages';
 import { cn } from '@/lib/utils';
@@ -16,30 +16,36 @@ interface PricingCalculatorProps {
 function getStripeLineItems(calculator: PricingCalculatorResult) {
   const items: { name: string; price: number; description?: string }[] = [];
   
-  // If package selected, add as single line item
-  if (calculator.selectedPackage) {
-    const cityCount = calculator.selectedPackage.includedCityIds?.length || 0;
+  // Add all selected packages
+  const selectedPackages = calculator.selectedPackages || (calculator.selectedPackage ? [calculator.selectedPackage] : []);
+  
+  selectedPackages.forEach(pkg => {
+    const cityCount = pkg.includedCityIds?.length || 0;
     items.push({
-      name: `${calculator.selectedPackage.name} Package`,
-      price: calculator.selectedPackage.earlyAdopterPrice,
+      name: `${pkg.name} Package`,
+      price: pkg.earlyAdopterPrice,
       description: `Top 10 placement in ${cityCount} cities`,
     });
-    
-    // Get premium cities NOT in package
-    const packageCityIds = calculator.selectedPackage.includedCityIds || [];
-    calculator.state.selectedPremiumCityIds
-      .filter(cityId => !packageCityIds.includes(cityId))
-      .forEach(cityId => {
-        const city = calculator.selectedCities.find(c => c.id === cityId);
-        if (city) {
-          items.push({
-            name: `${city.cityName} (Premium Add-on)`,
-            price: city.earlyAdopterPrice,
-          });
-        }
-      });
-  } else if (calculator.state.mode === 'build-your-own') {
-    // À la carte cities
+  });
+  
+  // Get all package city IDs
+  const allPackageCityIds = selectedPackages.flatMap(pkg => pkg.includedCityIds || []);
+  
+  // Premium cities NOT in any package
+  calculator.state.selectedPremiumCityIds
+    .filter(cityId => !allPackageCityIds.includes(cityId))
+    .forEach(cityId => {
+      const city = calculator.selectedCities.find(c => c.id === cityId);
+      if (city) {
+        items.push({
+          name: `${city.cityName} (Premium Add-on)`,
+          price: city.earlyAdopterPrice,
+        });
+      }
+    });
+  
+  // À la carte cities (in build-your-own mode)
+  if (calculator.state.mode === 'build-your-own') {
     calculator.state.selectedAlaCarte.forEach(cityId => {
       const city = calculator.selectedCities.find(c => c.id === cityId);
       if (city) {
@@ -55,16 +61,15 @@ function getStripeLineItems(calculator: PricingCalculatorResult) {
 }
 
 export function PricingCalculator({ calculator, onCheckout, isLoading }: PricingCalculatorProps) {
-  const { lineItems, monthlyTotal, retailTotal, totalSavings, cityCount, removeCity, suggestions } = calculator;
+  const { lineItems, monthlyTotal, retailTotal, totalSavings, cityCount, removeCity, removePackage, suggestions } = calculator;
   
   const stripeLineItems = getStripeLineItems(calculator);
 
-  // Get city names for a package
-  const getPackageCityNames = () => {
-    if (!calculator.selectedPackage) return '';
-    const packageCities = calculator.selectedCities.filter(city => 
-      calculator.selectedPackage?.includedCityIds?.includes(city.id)
-    );
+  // Get city names for a specific package
+  const getPackageCityNames = (packageId: string) => {
+    const pkg = calculator.selectedPackages?.find(p => p.id === packageId) || calculator.selectedPackage;
+    if (!pkg) return '';
+    const packageCities = getPackageCities(pkg.id);
     return packageCities.map(c => c.cityName).join(', ');
   };
 
@@ -81,12 +86,17 @@ export function PricingCalculator({ calculator, onCheckout, isLoading }: Pricing
             <div className="space-y-2">
               {lineItems.map((item, index) => (
                 <div 
-                  key={`${item.type}-${item.cityId || index}`}
+                  key={`${item.type}-${item.packageId || item.cityId || index}`}
                   className="p-2 rounded-lg bg-muted/50"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{item.label}</p>
+                      <div className="flex items-center gap-2">
+                        {item.type === 'package' && (
+                          <Package className="h-4 w-4 text-primary shrink-0" />
+                        )}
+                        <p className="text-sm font-medium">{item.label}</p>
+                      </div>
                       <p className="text-xs text-muted-foreground">
                         <span className="line-through">${item.retailPrice}</span>
                         {' → '}
@@ -103,10 +113,20 @@ export function PricingCalculator({ calculator, onCheckout, isLoading }: Pricing
                         <X className="h-3 w-3" />
                       </Button>
                     )}
+                    {item.packageId && removePackage && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        onClick={() => removePackage(item.packageId!)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    )}
                   </div>
-                  {item.type === 'package' && getPackageCityNames() && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {getPackageCityNames()}
+                  {item.type === 'package' && item.packageId && getPackageCityNames(item.packageId) && (
+                    <p className="text-xs text-muted-foreground mt-1 pl-6">
+                      {getPackageCityNames(item.packageId)}
                     </p>
                   )}
                 </div>
