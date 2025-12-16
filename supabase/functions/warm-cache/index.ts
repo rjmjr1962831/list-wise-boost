@@ -189,7 +189,7 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
 
 // Get URLs to warm - includes static pages AND only city/category pages that actually have content
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
-  const baseUrl = 'https://www.top10lists.us';
+  const baseUrl = 'https://list-wise-boost.lovable.app';
   const regionNormalized = region?.toLowerCase().trim();
 
   // Static crawlable pages (React pages only - Worker skips .txt, .json, .xml files)
