@@ -117,12 +117,13 @@ export default function PremiumPricingPage() {
     fetchProfessional();
   }, [token, navigate, trackFunnelEvent]);
 
-  // Handle checkout
-  const handleCheckout = async () => {
+  // Handle checkout - emailOverride bypasses auth check (from registration modal)
+  const handleCheckout = async (emailOverride?: string) => {
     if (!professional || calculator.lineItems.length === 0) return;
 
     // Check if user is authenticated - if not, show registration modal
-    if (!user) {
+    // Skip this check if emailOverride is provided (user just registered)
+    if (!user && !emailOverride) {
       setShowRegistrationModal(true);
       return;
     }
@@ -144,10 +145,13 @@ export default function PremiumPricingPage() {
       total_savings: calculator.totalSavings,
     });
     try {
+      // Use emailOverride if provided, otherwise use professional's email
+      const checkoutEmail = emailOverride || professional.email;
+      
       // Build checkout payload with package info if selected
       const checkoutPayload: any = {
         professionalId: professional.id,
-        email: professional.email,
+        email: checkoutEmail,
         monthlyTotal: calculator.monthlyTotal,
         successUrl: `${window.location.origin}/agent-payment-success`,
         cancelUrl: window.location.href,
@@ -341,10 +345,8 @@ export default function PremiumPricingPage() {
             onClose={() => setShowRegistrationModal(false)}
             onProceedToCheckout={(email) => {
               setShowRegistrationModal(false);
-              // Update professional email locally and proceed
-              setProfessional({ ...professional, email });
-              // Continue with checkout
-              setTimeout(() => handleCheckout(), 100);
+              // Pass email directly to checkout, bypassing user auth check
+              handleCheckout(email);
             }}
             professionalEmail={professional.email}
             professionalPhone={professional.phone}
