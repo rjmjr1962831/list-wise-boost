@@ -267,7 +267,6 @@ serve(async (req) => {
       specialty: Array.isArray(professional.specialty) ? professional.specialty.join(', ') : '',
       website: professional.website || '',
       synthesized_bio: professional.synthesized_bio || professional.description || '',
-      city_name: city.name || '',
       state: city.state || '',
       // Funnel & subscription tracking fields
       funnel_status: professional.funnel_status || '',
@@ -334,35 +333,42 @@ serve(async (req) => {
     const addressState = businessAddress.state || city.state || '';
     const zipCode = businessAddress.postalCode || professional.zip_code || '';
 
+    // Helper to ensure numbers are numbers (not strings), null if invalid
+    const toNumber = (val: any): number | null => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    };
+
     const dynamicFields: Record<string, any> = {
       supabase_id: professional.id,
       card_url: truncate(syncData.card_url),
       profile_link: syncData.profile_link 
         ? truncate(syncData.profile_link.startsWith('http') ? syncData.profile_link : `https://top10lists.us${syncData.profile_link}`)
         : null,
-      years_experience: syncData.years_experience,
-      current_listings: syncData.current_listings,
-      total_sales: syncData.total_sales,
-      rank: syncData.rank,
-      zillow_rating: syncData.zillow_rating,
-      zillow_reviews: syncData.zillow_reviews,
-      zillow_page: professional.zillow_search_page ?? null,
-      zillow_position: professional.zillow_search_position ?? null,
-      zillow_total_agents: professional.zillow_search_total ?? null,
-      agents_ahead: professional.zillow_search_position ? (professional.zillow_search_position - 1) : null,
+      // Numerical fields - ensure proper number type
+      years_experience: toNumber(syncData.years_experience),
+      current_listings: toNumber(syncData.current_listings),
+      total_sales: toNumber(syncData.total_sales),
+      rank: toNumber(syncData.rank),
+      zillow_rating: toNumber(syncData.zillow_rating),
+      zillow_reviews: toNumber(syncData.zillow_reviews),
+      zillow_page: toNumber(professional.zillow_search_page),
+      zillow_position: toNumber(professional.zillow_search_position),
+      zillow_total_agents: toNumber(professional.zillow_search_total),
+      agents_ahead: professional.zillow_search_position ? toNumber(professional.zillow_search_position - 1) : null,
+      monthly_revenue: toNumber(syncData.monthly_revenue),
+      // String fields
       license_number: truncate(syncData.license_number),
       business_name: truncate(syncData.company),
       specialty: truncate(syncData.specialty),
       website: truncate(syncData.website),
       synthesized_bio: syncData.synthesized_bio, // Text field - no truncation needed
-      city_name: truncate(syncData.city_name),
       state: truncate(addressState),
       zillow_profile_url: truncate(professional.zillow_profile_url || ''),
       // Address fields
       street_address: truncate(streetAddress),
       street2: truncate(street2),
-      city: truncate(addressCity),
-      zip_code: truncate(zipCode),
       // Status flags - convert booleans to strings for Pipedrive text fields
       email_verified: professional.email_verified_at ? 'true' : 'false',
       is_brand_builder: professional.is_brand_builder ? 'true' : 'false',
@@ -370,7 +376,6 @@ serve(async (req) => {
       funnel_status: truncate(syncData.funnel_status),
       funnel_started_at: syncData.funnel_started_at,
       subscription_status: truncate(syncData.subscription_status),
-      monthly_revenue: syncData.monthly_revenue,
       promo_code_used: truncate(syncData.promo_code_used),
       last_payment_date: syncData.last_payment_date,
       last_payment_status: truncate(syncData.last_payment_status),
