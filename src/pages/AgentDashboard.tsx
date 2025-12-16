@@ -235,7 +235,7 @@ export default function AgentDashboard() {
         `)
         .eq('professional_id', data.id);
 
-      if (subs) {
+      if (subs && subs.length > 0) {
         const formattedSubs = subs.map((sub: any) => ({
           id: sub.id,
           city_name: sub.city_id?.city_name || 'Unknown',
@@ -246,9 +246,16 @@ export default function AgentDashboard() {
         }));
         setSubscriptions(formattedSubs);
         
-        // Find free city
+        // Find free city from subscriptions
         const freeSub = formattedSubs.find(s => s.subscription_type === 'free');
         if (freeSub) setFreeCity(freeSub.city_name);
+      } else {
+        // Fallback: show city from professional's city_id if no subscriptions
+        if (data.city_id?.name) {
+          setFreeCity(data.city_id.name);
+        } else if (data.cities_subscribed?.length > 0) {
+          setFreeCity(data.cities_subscribed[0]);
+        }
       }
 
       // Transform data
