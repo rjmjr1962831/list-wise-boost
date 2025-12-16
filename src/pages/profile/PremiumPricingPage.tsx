@@ -16,7 +16,7 @@ import { CitySelector } from '@/components/pricing/CitySelector';
 import { PricingCalculator } from '@/components/pricing/PricingCalculator';
 import { MobileCalculator } from '@/components/pricing/MobileCalculator';
 import { WhyThreeMonths } from '@/components/pricing/WhyThreeMonths';
-import { HowItWorks } from '@/components/pricing/HowItWorks';
+
 import { FreeVsPremium } from '@/components/pricing/FreeVsPremium';
 import { usePricingCalculator } from '@/hooks/usePricingCalculator';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
@@ -275,11 +275,6 @@ export default function PremiumPricingPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Selection */}
             <div className="lg:col-span-2 space-y-8">
-              {/* How It Works */}
-              <HowItWorks />
-
-              <Separator />
-
               {/* Free vs Premium */}
               <FreeVsPremium onSelectFree={() => navigate(`/profile/${token}/select-free-city`)} />
 
