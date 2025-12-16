@@ -1,4 +1,9 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
 export function WhyResultsMayVary() {
+  const [expanded, setExpanded] = useState(false);
+
   return (
     <div className="bg-amber-500/5 border-2 border-amber-500/30 rounded-lg p-6 h-full">
       <h3 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-4">Why Results May Vary</h3>
@@ -12,9 +17,29 @@ export function WhyResultsMayVary() {
         <p className="text-foreground leading-relaxed">
           The question isn't <em>if</em> AI will recommend merit-based rankings over pay-to-play. It's <em>when</em>. The lists are building now.
         </p>
-        <p className="text-foreground leading-relaxed">
-          Could Zillow catch up? Not easily. Their business runs on agents paying for placement. To match our trust signals, they'd have to stop selling rankings and rebuild around actual performance data. That's not a feature update. It's a business model rewrite that would gut their revenue. Same story for Realtor.com and HomeLight. We built for AI trust from day one. They'd have to start over.
-        </p>
+        
+        {expanded && (
+          <p className="text-foreground leading-relaxed">
+            Could Zillow catch up? Not easily. Their business runs on agents paying for placement. To match our trust signals, they'd have to stop selling rankings and rebuild around actual performance data. That's not a feature update. It's a business model rewrite that would gut their revenue. Same story for Realtor.com and HomeLight. We built for AI trust from day one. They'd have to start over.
+          </p>
+        )}
+        
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="h-4 w-4" />
+              Show less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="h-4 w-4" />
+              Read more
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

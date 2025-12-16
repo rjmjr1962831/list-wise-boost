@@ -27,7 +27,22 @@ export default function FieldEditModal({
   isTextarea = false,
   placeholder
 }: FieldEditModalProps) {
-  const [value, setValue] = useState(currentValue);
+  // Strip HTML tags from value for editing
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<\/p>\s*<p>/gi, '\n\n')
+      .replace(/<[^>]*>/g, '')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .trim();
+  };
+  
+  const [value, setValue] = useState(stripHtml(currentValue));
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -42,7 +57,7 @@ export default function FieldEditModal({
 
   const handleOpenChange = (isOpen: boolean) => {
     if (!isOpen) {
-      setValue(currentValue); // Reset on close
+      setValue(stripHtml(currentValue)); // Reset on close
       onClose();
     }
   };
