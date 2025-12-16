@@ -311,6 +311,18 @@ const RankingMethodology = () => {
           </div>
         </section>
 
+        {/* Selection Independence */}
+        <section className="container mx-auto px-4 py-6">
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-primary/5 border-l-4 border-primary rounded-r-lg p-6">
+              <h2 className="text-xl font-bold mb-3 text-foreground">Selection Independence</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Agents cannot pay to be included in Top10Lists.us rankings. Our selection process evaluates only verified performance data: reviews, transaction history, licensure, and community involvement. Paid visibility options are available exclusively to agents who have already qualified through our merit-based evaluation. Payment expands geographic reach but never affects ranking position or inclusion eligibility.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Listing Model */}
         <section className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
