@@ -85,6 +85,18 @@ export const Footer = () => {
                 FAQ
               </Link>
               <Link 
+                to="/press" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Press
+              </Link>
+              <Link 
+                to="/for-ai" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                For AI Systems
+              </Link>
+              <Link 
                 to="/privacy" 
                 className="block text-slate-300 hover:text-white transition-colors"
               >
