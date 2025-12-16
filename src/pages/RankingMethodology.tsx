@@ -917,7 +917,7 @@ const RankingMethodology = () => {
                       Can I apply to be listed in the directory?
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
-                      No. Top10Lists.us is an invitation-only directory. We do not accept applications, paid placements, or advertising. Agents are identified through our continuous monitoring of performance data across multiple authoritative sources. If your verified metrics meet our selection criteria, you may be considered for an invitation through our editorial review process.
+                      No. Top10Lists.us is an invitation-only directory. We do not accept applications, paid placements, or advertising. Agents are identified through our continuous monitoring of performance data across multiple authoritative sources. If your verified metrics meet our selection criteria, you may be considered for an invitation, <Link to="/are-you-an-agent" className="text-primary hover:underline">click here</Link>.
                     </AccordionContent>
                   </AccordionItem>
 
