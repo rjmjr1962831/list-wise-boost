@@ -80,8 +80,12 @@ const phoenixCentralPrices = calculateBundlePrice(phoenixCentralCities);
 const northernAZCities = ['sedona', 'flagstaff', 'prescott', 'prescott-valley'];
 const northernAZPrices = calculateBundlePrice(northernAZCities);
 
-// === SOUTHERN ARIZONA PACKAGE ===
-const southernAZCities = ['tucson', 'oro-valley', 'marana', 'green-valley', 'sierra-vista', 'maricopa', 'casa-grande'];
+// === SOUTH VALLEY PACKAGE ===
+const southValleyCities = ['maricopa'];
+const southValleyPrices = calculateBundlePrice(southValleyCities);
+
+// === SOUTHERN ARIZONA PACKAGE (Tucson Area) ===
+const southernAZCities = ['tucson', 'casa-grande', 'oro-valley', 'marana', 'green-valley', 'sierra-vista'];
 const southernAZPrices = calculateBundlePrice(southernAZCities);
 
 export const REGIONAL_PACKAGES: RegionalPackage[] = [
@@ -145,9 +149,20 @@ export const REGIONAL_PACKAGES: RegionalPackage[] = [
     bundleSavings: northernAZPrices.bundleSavings,
   },
   {
+    id: 'south-valley',
+    name: 'South Valley',
+    description: 'Maricopa',
+    includedCityIds: southValleyCities,
+    excludedPremiumCities: [],
+    alaCarteTotal: southValleyPrices.alaCarte,
+    retailTotal: southValleyPrices.retail,
+    earlyAdopterPrice: southValleyPrices.earlyAdopter,
+    bundleSavings: southValleyPrices.bundleSavings,
+  },
+  {
     id: 'southern-arizona',
     name: 'Southern Arizona',
-    description: 'Tucson, Oro Valley, Marana, Green Valley, Sierra Vista, Maricopa & Casa Grande',
+    description: 'Tucson, Casa Grande, Oro Valley, Marana, Green Valley & Sierra Vista',
     includedCityIds: southernAZCities,
     excludedPremiumCities: [],
     alaCarteTotal: southernAZPrices.alaCarte,

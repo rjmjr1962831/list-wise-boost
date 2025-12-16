@@ -231,10 +231,12 @@ export default function TestAI() {
               <br />
               <span className="text-primary">Ask the AIs Yourself.</span>
             </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              We asked four leading AI systems to evaluate top10lists.us vs zillow.com as a citation source.
-              See their real, unedited responses.
-            </p>
+            <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 max-w-2xl mx-auto">
+              <p className="text-foreground text-lg font-medium">
+                Ask four leading AI systems to evaluate top10lists.us vs zillow.com as a citation source.
+                See their real, unedited responses.
+              </p>
+            </div>
           </div>
 
           {/* Section 2: The Question + Ask Button */}

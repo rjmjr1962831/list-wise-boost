@@ -4,7 +4,7 @@
 
 export type PricingTier = 'Luxury' | 'Premium' | 'Major Market' | 'Suburban' | 'Growth' | 'Emerging' | 'Entry';
 
-export type Region = 'East Valley' | 'West Valley' | 'North Valley' | 'Scottsdale Area' | 'Central Phoenix Corridor' | 'Northern Arizona' | 'Southern Arizona';
+export type Region = 'East Valley' | 'West Valley' | 'North Valley' | 'South Valley' | 'Scottsdale Area' | 'Central Phoenix Corridor' | 'Northern Arizona' | 'Southern Arizona';
 
 export interface CityPricingData {
   id: string;
@@ -73,7 +73,7 @@ export const ARIZONA_CITIES: CityPricingData[] = [
   { id: 'new-river', cityName: 'New River', citySlug: 'new-river', region: 'North Valley', tier: 'Entry', retailPrice: 100, earlyAdopterPrice: 50, spotsRemaining: 10, isPremium: false, medianHomePrice: 485000, marketDescription: "Rural desert living with larger lots and mountain views" },
   
   // === CENTRAL PHOENIX CORRIDOR ===
-  { id: 'phoenix', cityName: 'Phoenix', citySlug: 'phoenix', region: 'Central Phoenix Corridor', tier: 'Major Market', retailPrice: 350, earlyAdopterPrice: 175, spotsRemaining: 8, isPremium: false, medianHomePrice: 425000, marketDescription: "Arizona's capital and largest city with a diverse housing market ranging from urban condos to sprawling desert estates" },
+  { id: 'phoenix', cityName: 'Phoenix', citySlug: 'phoenix', region: 'Central Phoenix Corridor', tier: 'Major Market', retailPrice: 900, earlyAdopterPrice: 450, spotsRemaining: 8, isPremium: false, medianHomePrice: 425000, marketDescription: "Arizona's capital and largest city with a diverse housing market ranging from urban condos to sprawling desert estates" },
   
   // === NORTHERN ARIZONA ===
   { id: 'sedona', cityName: 'Sedona', citySlug: 'sedona', region: 'Northern Arizona', tier: 'Premium', retailPrice: 500, earlyAdopterPrice: 250, spotsRemaining: 4, isPremium: false, medianHomePrice: 875000, marketDescription: "World-famous red rock destination with luxury and vacation properties" },
@@ -88,9 +88,11 @@ export const ARIZONA_CITIES: CityPricingData[] = [
   { id: 'kingman', cityName: 'Kingman', citySlug: 'kingman', region: 'Northern Arizona', tier: 'Entry', retailPrice: 100, earlyAdopterPrice: 50, spotsRemaining: 10, isPremium: false, medianHomePrice: 295000, marketDescription: "Route 66 heritage city with affordable housing and desert mountain scenery" },
   { id: 'bullhead-city', cityName: 'Bullhead City', citySlug: 'bullhead-city', region: 'Northern Arizona', tier: 'Entry', retailPrice: 100, earlyAdopterPrice: 50, spotsRemaining: 10, isPremium: false, medianHomePrice: 325000, marketDescription: "Colorado River community across from Laughlin casinos" },
   
-  // === SOUTHERN ARIZONA ===
+  // === SOUTH VALLEY ===
+  { id: 'maricopa', cityName: 'Maricopa', citySlug: 'maricopa', region: 'South Valley', tier: 'Growth', retailPrice: 175, earlyAdopterPrice: 88, spotsRemaining: 10, isPremium: false, medianHomePrice: 335000, marketDescription: "Master-planned community living with affordable new construction" },
+  
+  // === SOUTHERN ARIZONA (Tucson Area) ===
   { id: 'tucson', cityName: 'Tucson', citySlug: 'tucson', region: 'Southern Arizona', tier: 'Major Market', retailPrice: 350, earlyAdopterPrice: 175, spotsRemaining: 10, isPremium: false, medianHomePrice: 325000, marketDescription: "Arizona's second-largest city with rich cultural heritage and University of Arizona" },
-  { id: 'maricopa', cityName: 'Maricopa', citySlug: 'maricopa', region: 'Southern Arizona', tier: 'Growth', retailPrice: 175, earlyAdopterPrice: 88, spotsRemaining: 10, isPremium: false, medianHomePrice: 335000, marketDescription: "Master-planned community living with affordable new construction" },
   { id: 'casa-grande', cityName: 'Casa Grande', citySlug: 'casa-grande', region: 'Southern Arizona', tier: 'Entry', retailPrice: 100, earlyAdopterPrice: 50, spotsRemaining: 10, isPremium: false, medianHomePrice: 295000, marketDescription: "Affordable alternative between Phoenix and Tucson with growing employment" },
   { id: 'oro-valley', cityName: 'Oro Valley', citySlug: 'oro-valley', region: 'Southern Arizona', tier: 'Growth', retailPrice: 175, earlyAdopterPrice: 88, spotsRemaining: 10, isPremium: false, medianHomePrice: 485000, marketDescription: "Tucson's upscale suburb with mountain views and excellent schools" },
   { id: 'marana', cityName: 'Marana', citySlug: 'marana', region: 'Southern Arizona', tier: 'Emerging', retailPrice: 125, earlyAdopterPrice: 63, spotsRemaining: 10, isPremium: false, medianHomePrice: 385000, marketDescription: "Fast-growing Tucson suburb with new development and Ritz-Carlton Dove Mountain" },
