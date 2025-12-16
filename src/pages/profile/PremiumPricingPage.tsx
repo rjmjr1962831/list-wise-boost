@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { User } from '@supabase/supabase-js';
 
 // Pricing components
 import { PackageSelector } from '@/components/pricing/PackageSelector';
@@ -20,6 +21,7 @@ import { FreeVsPremium } from '@/components/pricing/FreeVsPremium';
 import { usePricingCalculator } from '@/hooks/usePricingCalculator';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
+import { RegistrationGateModal } from '@/components/pricing/RegistrationGateModal';
 
 interface Professional {
   id: string;
@@ -36,12 +38,27 @@ export default function PremiumPricingPage() {
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false);
   
   const calculator = usePricingCalculator();
 
-  // Fetch professional data
+  // Check auth state
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUser(session?.user ?? null);
+    };
+    
+    checkAuth();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+    
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -102,6 +119,12 @@ export default function PremiumPricingPage() {
   // Handle checkout
   const handleCheckout = async () => {
     if (!professional || calculator.lineItems.length === 0) return;
+
+    // Check if user is authenticated - if not, show registration modal
+    if (!user) {
+      setShowRegistrationModal(true);
+      return;
+    }
 
     setCheckoutLoading(true);
     
@@ -309,6 +332,18 @@ export default function PremiumPricingPage() {
           onCheckout={handleCheckout}
           isLoading={checkoutLoading}
         />
+
+        {/* Registration Gate Modal */}
+        {professional && token && (
+          <RegistrationGateModal
+            isOpen={showRegistrationModal}
+            onClose={() => setShowRegistrationModal(false)}
+            professionalEmail={professional.email}
+            professionalName={professional.name}
+            professionalId={professional.id}
+            token={token}
+          />
+        )}
       </div>
     </>
   );
