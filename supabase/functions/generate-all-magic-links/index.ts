@@ -31,10 +31,8 @@ serve(async (req) => {
     // Only filter by null profile_link if NOT regenerating all
     if (!regenerate_all) {
       query = query.is('profile_link', null);
-    } else {
-      // For regenerate, only process those with phone numbers (required for new format)
-      query = query.not('phone', 'is', null);
     }
+    // When regenerate_all is true, process ALL active professionals (no additional filters)
 
     if (limit) {
       query = query.limit(limit);
