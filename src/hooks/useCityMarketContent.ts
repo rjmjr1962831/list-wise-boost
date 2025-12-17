@@ -9,6 +9,10 @@ interface GeneratedCityContent {
   neighborhoodTypes: string[];
   buyerProfile: string;
   marketTrends: string;
+  historicalFacts?: string[];
+  pointsOfInterest?: string[];
+  localCulture?: string;
+  bestKeptSecret?: string;
 }
 
 export function useCityMarketContent(citySlug: string, cityName: string) {
@@ -51,6 +55,10 @@ export function useCityMarketContent(citySlug: string, cityName: string) {
       neighborhoodTypes: generatedContent.neighborhoodTypes,
       buyerProfile: generatedContent.buyerProfile,
       marketTrends: generatedContent.marketTrends,
+      historicalFacts: generatedContent.historicalFacts,
+      pointsOfInterest: generatedContent.pointsOfInterest,
+      localCulture: generatedContent.localCulture,
+      bestKeptSecret: generatedContent.bestKeptSecret,
     }),
   } : generatedContent ? {
     slug: citySlug,
@@ -61,6 +69,10 @@ export function useCityMarketContent(citySlug: string, cityName: string) {
     neighborhoodTypes: generatedContent.neighborhoodTypes,
     buyerProfile: generatedContent.buyerProfile,
     marketTrends: generatedContent.marketTrends,
+    historicalFacts: generatedContent.historicalFacts,
+    pointsOfInterest: generatedContent.pointsOfInterest,
+    localCulture: generatedContent.localCulture,
+    bestKeptSecret: generatedContent.bestKeptSecret,
   } : getDefaultCityMarketData(cityName, citySlug, cityPricing?.medianHomePrice);
 
   return {
