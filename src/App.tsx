@@ -144,8 +144,8 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
-                    {/* New magic link format: /real-estate-agent-/city/agentcard-XXXX */}
-                    <Route path="/real-estate-agent-/:citySlug/agentcard-:phoneDigits" element={<AgentCardRedirect />} />
+                    {/* Magic link format: /arizona/city/firstname-lastname-1234 */}
+                    <Route path="/arizona/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
                     {/* Short link redirect for magic links */}
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Agent funnel routes - Magic link landing page */}
