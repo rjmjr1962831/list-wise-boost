@@ -206,7 +206,7 @@ async function createOrUpdatePerson(
     email_verified: professional.email_verified_at ? 'YES' : 'NO',
     
     // Status
-    active_status: professional.active ? 'Active' : 'Inactive',
+    active_status: professional.active ? 'active' : 'inactive',
     
     // Location
     city_name: city?.name,
