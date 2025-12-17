@@ -80,7 +80,7 @@ export default function CityLanding() {
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
                 <Button asChild size="lg">
-                  <Link to={`/${city.stateSlug}/${city.slug}/top10realestateagents`}>See verified recommendations</Link>
+                  <Link to={`/arizona/${city.slug}/top10realestateagents`}>See verified recommendations</Link>
                 </Button>
                 <Button asChild size="lg" variant="outline">
                   <Link to="/">Search another city</Link>
