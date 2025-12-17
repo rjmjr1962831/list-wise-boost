@@ -28,24 +28,17 @@ serve(async (req) => {
 
     console.log('🔗 Generating magic link for professional:', professional_id);
 
-    // Helper function to extract last 4 digits from phone
-    const getLastFourDigits = (phone: string | null): string | null => {
-      if (!phone) return null;
-      const digits = phone.replace(/\D/g, '');
-      return digits.length >= 4 ? digits.slice(-4) : null;
-    };
-
-    // Fetch professional with city info
+    // Fetch professional with short_code
     const { data: existing, error: fetchError } = await supabase
       .from('professionals')
       .select(`
         verification_token, 
         verification_token_expires_at, 
         profile_link, 
+        short_code,
         name, 
         email, 
-        phone,
-        cities:city_id (slug)
+        phone
       `)
       .eq('id', professional_id)
       .single();
@@ -53,44 +46,43 @@ serve(async (req) => {
     if (fetchError) throw fetchError;
 
     let token = existing.verification_token;
+    let shortCode = existing.short_code;
     let profileLink = existing.profile_link;
-    
-    // Get city slug and phone digits for new format
-    const cityData = existing.cities as any;
-    const citySlug = cityData?.slug;
-    const phoneDigits = getLastFourDigits(existing.phone);
 
-    // Generate name slug (firstname-lastname)
-    const generateNameSlug = (name: string | null): string | null => {
-      if (!name) return null;
-      return name
-        .toLowerCase()
-        .replace(/[^a-z\s-]/g, '') // Remove non-alpha chars except spaces and hyphens
-        .trim()
-        .replace(/\s+/g, '-'); // Replace spaces with hyphens
+    // Generate short code if missing (6 random alphanumeric chars)
+    const generateShortCode = (): string => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+      let result = '';
+      for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
     };
-    const nameSlug = generateNameSlug(existing.name);
 
     // Check if token exists and is valid (not expired or will expire before 2050)
     const hasValidToken = token && existing.verification_token_expires_at && 
       new Date(existing.verification_token_expires_at) > new Date('2050-01-01');
 
-    // Generate the new format profile link: /arizona/city/firstname-lastname-1234
-    const generateNewFormatLink = () => {
-      if (citySlug && nameSlug && phoneDigits) {
-        return `${appUrl}/arizona/${citySlug}/${nameSlug}-${phoneDigits}`;
+    // Generate short code if needed
+    if (!shortCode) {
+      shortCode = generateShortCode();
+      console.log('🆕 Generated new short_code:', shortCode);
+    }
+
+    // Profile link should always use short code format
+    const expectedProfileLink = `${appUrl}/p/${shortCode}`;
+
+    if (!hasValidToken || profileLink !== expectedProfileLink) {
+      // Generate new permanent token if needed
+      if (!hasValidToken) {
+        token = crypto.randomUUID();
+        console.log('🆕 Creating new permanent token');
       }
-      // Fallback to old format if missing data
-      return `${appUrl}/profile/${token}`;
-    };
-
-    if (!hasValidToken) {
-      // Generate new permanent token (expires in 2099)
-      token = crypto.randomUUID();
+      
       const permanentExpiry = new Date('2099-12-31T23:59:59Z');
-      profileLink = generateNewFormatLink();
+      profileLink = expectedProfileLink;
 
-      console.log('🆕 Creating new permanent token with link:', profileLink);
+      console.log('📝 Updating profile with link:', profileLink);
 
       const { error: updateError } = await supabase
         .from('professionals')
@@ -98,24 +90,14 @@ serve(async (req) => {
           verification_token: token,
           verification_token_expires_at: permanentExpiry.toISOString(),
           verification_started_at: new Date().toISOString(),
-          profile_link: profileLink
+          profile_link: profileLink,
+          short_code: shortCode
         })
         .eq('id', professional_id);
 
       if (updateError) throw updateError;
     } else {
-      console.log('♻️ Reusing existing permanent token');
-      
-      // Always update profile_link to new format if we have city and phone
-      const newFormatLink = generateNewFormatLink();
-      if (profileLink !== newFormatLink) {
-        profileLink = newFormatLink;
-        await supabase
-          .from('professionals')
-          .update({ profile_link: profileLink })
-          .eq('id', professional_id);
-        console.log('📝 Updated profile_link to new format:', profileLink);
-      }
+      console.log('♻️ Reusing existing token and link');
     }
 
     // Sync to Pipedrive if pipedrive_person_id provided
