@@ -1,15 +1,21 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link, Navigate, useParams } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { MapPin, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { CityMarketOverview } from "@/components/CityMarketOverview";
-import { getCityBySlug } from "@/data/cities";
+import { getCityBySlug, getCitiesByState } from "@/data/cities";
 import { formatCityName } from "@/utils/routeHelpers";
 
 export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   // Redirect to coming soon page if not Arizona (accept both 'arizona' and 'az')
   if (stateSlug && stateSlug !== "arizona" && stateSlug !== "az") {
@@ -17,6 +23,17 @@ export default function CityLanding() {
   }
 
   const city = getCityBySlug(citySlug || "", stateSlug);
+  
+  // Get Arizona cities for the dialog
+  const arizonaCities = getCitiesByState("az").filter(c => 
+    c.slug !== citySlug && c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCitySelect = (selectedCity: typeof arizonaCities[0]) => {
+    setDialogOpen(false);
+    setSearchQuery("");
+    navigate(`/arizona/${selectedCity.slug}`);
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -82,9 +99,47 @@ export default function CityLanding() {
                 <Button asChild size="lg">
                   <Link to={`/arizona/${city.slug}/top10realestateagents`}>See verified recommendations</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link to="/">Search another city</Link>
-                </Button>
+                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button size="lg" variant="outline">
+                      <Search className="h-4 w-4 mr-2" />
+                      Search another city
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Search Arizona Cities</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <Input
+                        placeholder="Start typing a city name..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        autoFocus
+                      />
+                      <ScrollArea className="h-64">
+                        <div className="space-y-1">
+                          {arizonaCities.length > 0 ? (
+                            arizonaCities.map((c) => (
+                              <button
+                                key={c.slug}
+                                onClick={() => handleCitySelect(c)}
+                                className="w-full text-left px-3 py-2 rounded-md hover:bg-primary/10 transition-colors flex items-center gap-2"
+                              >
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                {c.name}, AZ
+                              </button>
+                            ))
+                          ) : (
+                            <p className="text-sm text-muted-foreground text-center py-4">
+                              No cities found matching "{searchQuery}"
+                            </p>
+                          )}
+                        </div>
+                      </ScrollArea>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </div>
