@@ -3,14 +3,26 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
+/**
+ * AgentCardRedirect handles magic links in format: /arizona/city-slug/firstname-lastname-1234
+ * Extracts last 4 digits from the agentSlug and matches by city + phone
+ */
 const AgentCardRedirect = () => {
-  const { citySlug, phoneDigits } = useParams<{ citySlug: string; phoneDigits: string }>();
+  const { citySlug, agentSlug } = useParams<{ citySlug: string; agentSlug: string }>();
   const navigate = useNavigate();
   const [error, setError] = useState(false);
 
   useEffect(() => {
     const lookupAndRedirect = async () => {
-      if (!citySlug || !phoneDigits) {
+      if (!citySlug || !agentSlug) {
+        setError(true);
+        return;
+      }
+
+      // Extract last 4 digits from agentSlug (e.g., "john-smith-1234" -> "1234")
+      const phoneDigits = agentSlug.slice(-4);
+      if (!/^\d{4}$/.test(phoneDigits)) {
+        console.error("Invalid phone digits in slug:", agentSlug);
         setError(true);
         return;
       }
@@ -29,10 +41,9 @@ const AgentCardRedirect = () => {
       }
 
       // Look up the professional by city and last 4 digits of phone
-      // We need to find a professional whose phone ends with these digits
       const { data: professionals, error: profError } = await supabase
         .from("professionals")
-        .select("id, phone")
+        .select("id, phone, name")
         .eq("city_id", city.id)
         .eq("active", true);
 
@@ -55,12 +66,12 @@ const AgentCardRedirect = () => {
         return;
       }
 
-      // Redirect to the full profile URL
+      // Redirect to the funnel intro page (magic link landing)
       navigate(`/profile/${matchingProfessional.id}`, { replace: true });
     };
 
     lookupAndRedirect();
-  }, [citySlug, phoneDigits, navigate]);
+  }, [citySlug, agentSlug, navigate]);
 
   if (error) {
     return (

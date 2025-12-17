@@ -60,16 +60,27 @@ serve(async (req) => {
     const citySlug = cityData?.slug;
     const phoneDigits = getLastFourDigits(existing.phone);
 
+    // Generate name slug (firstname-lastname)
+    const generateNameSlug = (name: string | null): string | null => {
+      if (!name) return null;
+      return name
+        .toLowerCase()
+        .replace(/[^a-z\s-]/g, '') // Remove non-alpha chars except spaces and hyphens
+        .trim()
+        .replace(/\s+/g, '-'); // Replace spaces with hyphens
+    };
+    const nameSlug = generateNameSlug(existing.name);
+
     // Check if token exists and is valid (not expired or will expire before 2050)
     const hasValidToken = token && existing.verification_token_expires_at && 
       new Date(existing.verification_token_expires_at) > new Date('2050-01-01');
 
-    // Generate the new format profile link if we have all required data
+    // Generate the new format profile link: /arizona/city/firstname-lastname-1234
     const generateNewFormatLink = () => {
-      if (citySlug && phoneDigits) {
-        return `${appUrl}/real-estate-agent-/${citySlug}/agentcard-${phoneDigits}`;
+      if (citySlug && nameSlug && phoneDigits) {
+        return `${appUrl}/arizona/${citySlug}/${nameSlug}-${phoneDigits}`;
       }
-      // Fallback to old format if missing city or phone
+      // Fallback to old format if missing data
       return `${appUrl}/profile/${token}`;
     };
 
