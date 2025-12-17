@@ -21,7 +21,7 @@ import { getCanonicalRankings } from '@/services/canonicalAgentService';
 import { signalPrerenderReady } from '@/hooks/usePrerenderReady';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
 import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
-import { CityContentSection } from '@/components/CityContentSection';
+import { CityMarketOverview } from '@/components/CityMarketOverview';
 
 interface City {
   id: string;
@@ -1073,8 +1073,8 @@ export default function DynamicCategoryList() {
     totalAgentsInCity: 500 // Approximate number of licensed agents in city
   };
   
-  // Get ItemList and BreadcrumbList schemas (FAQ consolidated to /faq page)
-  const [itemListSchema, breadcrumbSchema] = generateCityListingSchema(cityListingData);
+  // Get all schemas: Place, Service, ItemList, FAQ, Breadcrumb (no individual agent names)
+  const citySchemas = generateCityListingSchema(cityListingData);
 
   // Enhanced JSON-LD schema for city page (CollectionPage wrapper)
   const collectionPageSchema = {
@@ -1151,12 +1151,12 @@ export default function DynamicCategoryList() {
         <script type="application/ld+json">
           {JSON.stringify(collectionPageSchema)}
         </script>
-        <script type="application/ld+json">
-          {JSON.stringify(itemListSchema)}
-        </script>
-        <script type="application/ld+json">
-          {JSON.stringify(breadcrumbSchema)}
-        </script>
+        {/* City market schemas - Place, Service, ItemList, FAQ, Breadcrumb */}
+        {citySchemas.map((schema, index) => (
+          <script key={index} type="application/ld+json">
+            {JSON.stringify(schema)}
+          </script>
+        ))}
       </Helmet>
       
       {/* SEO H1 - Visible heading for search engine compliance */}
@@ -1171,11 +1171,11 @@ export default function DynamicCategoryList() {
         </div>
       </div>
       
-      {/* City Content Section - Unique per city for SEO */}
-      <CityContentSection 
+      {/* City Market Overview - Comprehensive city info for SEO & LLM optimization */}
+      <CityMarketOverview 
         citySlug={city.slug} 
         cityName={city.name} 
-        categoryName={category.plural_name}
+        stateName={city.state}
       />
       
       {categorySlug === 'top10realestateagents' && city && (
