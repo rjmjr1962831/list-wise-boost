@@ -18,16 +18,23 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { limit = null, sync_to_pipedrive = false } = await req.json();
+    const { limit = null, sync_to_pipedrive = false, regenerate_all = false } = await req.json();
 
-    console.log('🚀 Starting batch magic link generation...');
+    console.log('🚀 Starting batch magic link generation...', { regenerate_all });
 
-    // Fetch all active professionals without profile_link
+    // Fetch professionals - either those without links OR all active ones if regenerating
     let query = supabase
       .from('professionals')
-      .select('id, name, email')
-      .eq('active', true)
-      .is('profile_link', null);
+      .select('id, name, email, phone')
+      .eq('active', true);
+
+    // Only filter by null profile_link if NOT regenerating all
+    if (!regenerate_all) {
+      query = query.is('profile_link', null);
+    } else {
+      // For regenerate, only process those with phone numbers (required for new format)
+      query = query.not('phone', 'is', null);
+    }
 
     if (limit) {
       query = query.limit(limit);
