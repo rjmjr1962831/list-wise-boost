@@ -99,6 +99,17 @@ export default function PremiumPricingPage() {
           professional_id: data.id 
         });
         
+        // Send email notification that agent is viewing pricing
+        supabase.functions.invoke('send-funnel-notification', {
+          body: {
+            event_type: 'pricing_viewed',
+            agent_name: data.name,
+            agent_email: data.email,
+            agent_id: data.id,
+            profile_link: `https://top10lists.us/profile/${token}`
+          }
+        }).catch(err => console.error('Failed to send funnel notification:', err));
+        
         // Update checkout_started_at timestamp
         supabase
           .from('professionals')

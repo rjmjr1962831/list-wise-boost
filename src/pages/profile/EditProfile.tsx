@@ -151,6 +151,18 @@ export default function EditProfile() {
         supabase.functions.invoke('track-profile-event', {
           body: { token, event_name: 'profile_edit_viewed' }
         });
+        
+        // Send email notification that agent is viewing edit page
+        supabase.functions.invoke('send-funnel-notification', {
+          body: {
+            event_type: 'profile_edit_viewed',
+            agent_name: prof.name,
+            agent_email: prof.email,
+            agent_id: prof.id,
+            city_name: prof.cities?.name,
+            profile_link: prof.profile_link
+          }
+        }).catch(err => console.error('Failed to send funnel notification:', err));
       } catch (err) {
         console.error('Error loading profile:', err);
         toast({

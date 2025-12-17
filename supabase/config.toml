@@ -279,3 +279,6 @@ verify_jwt = true
 
 [functions.generate-magic-link]
 verify_jwt = true
+
+[functions.send-funnel-notification]
+verify_jwt = false

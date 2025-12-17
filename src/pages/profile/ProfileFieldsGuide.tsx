@@ -359,6 +359,17 @@ const ProfileFieldsGuide = () => {
         }
         setProfessional(data as any);
         
+        // Send email notification that agent is viewing edit page
+        supabase.functions.invoke('send-funnel-notification', {
+          body: {
+            event_type: 'profile_edit_viewed',
+            agent_name: data.name,
+            agent_email: data.email,
+            agent_id: data.id,
+            city_name: (data as any).cities?.name,
+            profile_link: data.profile_link
+          }
+        }).catch(err => console.error('Failed to send funnel notification:', err));
         // Fetch Pipedrive person ID for linking tasks
         const { data: syncState } = await supabase
           .from("pipedrive_sync_state")
