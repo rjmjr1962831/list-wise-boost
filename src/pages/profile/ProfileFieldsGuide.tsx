@@ -929,8 +929,10 @@ const ProfileFieldsGuide = () => {
           fieldName={currentField.label}
           profileLink={`https://top10lists.us/profile/${token}`}
           professionalName={professional.name}
+          professionalId={professional.id}
           professionalEmail={professional.email}
           pipedrivePersonId={pipedrivePersonId || undefined}
+          currentValue={(professional as any)[currentField.key] || ''}
         />
       )}
 

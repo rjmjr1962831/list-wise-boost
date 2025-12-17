@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,24 +21,35 @@ serve(async (req) => {
       profileLink, 
       professionalName, 
       professionalEmail,
+      professionalId,
       pipedrivePersonId,
-      changeRequest 
+      changeRequest,
+      currentValue,
+      proposedValue
     } = await req.json();
 
     console.log('📝 Creating Pipedrive task for field change request:', {
       fieldName,
       professionalName,
-      pipedrivePersonId
+      professionalId,
+      pipedrivePersonId,
+      hasCurrentValue: !!currentValue,
+      hasProposedValue: !!proposedValue
     });
 
-    if (!PIPEDRIVE_API_TOKEN || !PIPEDRIVE_DOMAIN) {
-      throw new Error('Pipedrive credentials not configured');
-    }
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Build task subject and note
-    const taskSubject = `Profile Change Request: ${fieldName} - ${professionalName}`;
-    
-    const taskNote = `
+    let pipedriveActivityId: number | null = null;
+
+    // Create Pipedrive task if credentials are available
+    if (PIPEDRIVE_API_TOKEN && PIPEDRIVE_DOMAIN) {
+      // Build task subject and note
+      const taskSubject = `Profile Change Request: ${fieldName} - ${professionalName}`;
+      
+      const taskNote = `
 **Field Change Request**
 
 **Agent Name:** ${professionalName}
@@ -48,51 +60,80 @@ serve(async (req) => {
 **Change Request:**
 ${changeRequest}
 
+${currentValue ? `**Current Value:**
+${currentValue.substring(0, 500)}${currentValue.length > 500 ? '...' : ''}` : ''}
+
+${proposedValue ? `**Proposed Value:**
+${proposedValue.substring(0, 500)}${proposedValue.length > 500 ? '...' : ''}` : ''}
+
 ---
 *Submitted via Top10Lists.us self-service portal*
-    `.trim();
+*Review in Admin Dashboard: Field Change Requests tab*
+      `.trim();
 
-    // Create activity (task) in Pipedrive using v2 API
-    const activityData: Record<string, any> = {
-      subject: taskSubject,
-      type: 'task',
-      public_description: taskNote,
-      due_date: new Date().toISOString().split('T')[0], // Today
-      due_time: '09:00',
-      done: false // v2 uses boolean instead of 0/1
-    };
+      // Create activity (task) in Pipedrive using v2 API
+      const activityData: Record<string, any> = {
+        subject: taskSubject,
+        type: 'task',
+        public_description: taskNote,
+        due_date: new Date().toISOString().split('T')[0], // Today
+        due_time: '09:00',
+        done: false // v2 uses boolean instead of 0/1
+      };
 
-    // Link to person if we have their Pipedrive ID
-    if (pipedrivePersonId) {
-      activityData.person_id = Number(pipedrivePersonId); // v2 requires numeric type
-    }
-
-    console.log('📤 Creating Pipedrive activity (v2 API):', activityData);
-
-    const response = await fetch(
-      `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(activityData)
+      // Link to person if we have their Pipedrive ID
+      if (pipedrivePersonId) {
+        activityData.person_id = Number(pipedrivePersonId); // v2 requires numeric type
       }
-    );
 
-    const result = await response.json();
+      console.log('📤 Creating Pipedrive activity (v2 API):', activityData);
 
-    if (!response.ok || !result.success) {
-      console.error('❌ Pipedrive API error:', result);
-      throw new Error(result.error || 'Failed to create Pipedrive task');
+      const response = await fetch(
+        `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(activityData)
+        }
+      );
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        pipedriveActivityId = result.data?.id;
+        console.log('✅ Pipedrive task created:', pipedriveActivityId);
+      } else {
+        console.error('⚠️ Pipedrive API error (non-fatal):', result);
+      }
     }
 
-    console.log('✅ Pipedrive task created:', result.data?.id);
+    // Store the request in the database
+    if (professionalId) {
+      const { error: dbError } = await supabase
+        .from('field_change_requests')
+        .insert({
+          professional_id: professionalId,
+          field_name: fieldName,
+          current_value: currentValue || null,
+          proposed_value: proposedValue || null,
+          change_request: changeRequest,
+          status: 'pending',
+          pipedrive_activity_id: pipedriveActivityId
+        });
+
+      if (dbError) {
+        console.error('⚠️ Database insert error (non-fatal):', dbError);
+      } else {
+        console.log('✅ Change request stored in database');
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        activityId: result.data?.id,
+        activityId: pipedriveActivityId,
         message: 'Task created successfully'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
