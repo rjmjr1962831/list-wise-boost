@@ -56,6 +56,7 @@ CRITICAL REQUIREMENTS:
 - Mention actual place names, landmarks, restaurants, parks, historical events
 - NO generic phrases like "family-friendly community" or "growing area"
 - If it's a smaller city, explain its relationship to Phoenix metro and nearby cities
+- NEVER use markdown asterisks (**) for bold text. Use HTML <strong> tags instead if emphasis is needed.
 
 Return a JSON object with these exact fields:
 {
@@ -78,7 +79,7 @@ Return a JSON object with these exact fields:
   "bestKeptSecret": "One insider tip or lesser-known fact that locals love about ${cityName}"
 }
 
-Write like a knowledgeable local, not a real estate agent. Make readers excited to learn about ${cityName}.`;
+Write like a knowledgeable local, not a real estate agent. Make readers excited to learn about ${cityName}. Do NOT use markdown formatting.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
