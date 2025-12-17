@@ -28,28 +28,24 @@ serve(async (req) => {
 
     console.log('🔗 Generating magic link for professional:', professional_id);
 
-    // Fetch professional with short_code
-    const { data: existing, error: fetchError } = await supabase
-      .from('professionals')
-      .select(`
-        verification_token, 
-        verification_token_expires_at, 
-        profile_link, 
-        short_code,
-        name, 
-        email, 
-        phone
-      `)
-      .eq('id', professional_id)
-      .single();
+    // Helper function to extract last 4 digits from phone
+    const getLastFourDigits = (phone: string | null): string | null => {
+      if (!phone) return null;
+      const digits = phone.replace(/\D/g, '');
+      return digits.length >= 4 ? digits.slice(-4) : null;
+    };
 
-    if (fetchError) throw fetchError;
+    // Generate name slug (firstname-lastname)
+    const generateNameSlug = (name: string | null): string | null => {
+      if (!name) return null;
+      return name
+        .toLowerCase()
+        .replace(/[^a-z\s-]/g, '') // Remove non-alpha chars except spaces and hyphens
+        .trim()
+        .replace(/\s+/g, '-'); // Replace spaces with hyphens
+    };
 
-    let token = existing.verification_token;
-    let shortCode = existing.short_code;
-    let profileLink = existing.profile_link;
-
-    // Generate short code if missing (6 random alphanumeric chars)
+    // Generate short code (6 random alphanumeric chars) for legacy support
     const generateShortCode = (): string => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       let result = '';
@@ -59,18 +55,54 @@ serve(async (req) => {
       return result;
     };
 
+    // Fetch professional with city info
+    const { data: existing, error: fetchError } = await supabase
+      .from('professionals')
+      .select(`
+        verification_token, 
+        verification_token_expires_at, 
+        profile_link, 
+        short_code,
+        name, 
+        email, 
+        phone,
+        cities:city_id (slug)
+      `)
+      .eq('id', professional_id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    let token = existing.verification_token;
+    let shortCode = existing.short_code;
+    let profileLink = existing.profile_link;
+    
+    // Get city slug and phone digits for SEO-friendly format
+    const cityData = existing.cities as any;
+    const citySlug = cityData?.slug;
+    const phoneDigits = getLastFourDigits(existing.phone);
+    const nameSlug = generateNameSlug(existing.name);
+
     // Check if token exists and is valid (not expired or will expire before 2050)
     const hasValidToken = token && existing.verification_token_expires_at && 
       new Date(existing.verification_token_expires_at) > new Date('2050-01-01');
 
-    // Generate short code if needed
+    // Generate short code if missing (for legacy link support)
     if (!shortCode) {
       shortCode = generateShortCode();
-      console.log('🆕 Generated new short_code:', shortCode);
+      console.log('🆕 Generated new short_code for legacy support:', shortCode);
     }
 
-    // Profile link should always use short code format
-    const expectedProfileLink = `${appUrl}/p/${shortCode}`;
+    // Generate the SEO-friendly profile link: /arizona/city/firstname-lastname-1234
+    const generateSEOLink = () => {
+      if (citySlug && nameSlug && phoneDigits) {
+        return `${appUrl}/arizona/${citySlug}/${nameSlug}-${phoneDigits}`;
+      }
+      // Fallback to short code format if missing data
+      return `${appUrl}/p/${shortCode}`;
+    };
+
+    const expectedProfileLink = generateSEOLink();
 
     if (!hasValidToken || profileLink !== expectedProfileLink) {
       // Generate new permanent token if needed
@@ -82,7 +114,7 @@ serve(async (req) => {
       const permanentExpiry = new Date('2099-12-31T23:59:59Z');
       profileLink = expectedProfileLink;
 
-      console.log('📝 Updating profile with link:', profileLink);
+      console.log('📝 Updating profile with SEO link:', profileLink);
 
       const { error: updateError } = await supabase
         .from('professionals')
@@ -91,7 +123,7 @@ serve(async (req) => {
           verification_token_expires_at: permanentExpiry.toISOString(),
           verification_started_at: new Date().toISOString(),
           profile_link: profileLink,
-          short_code: shortCode
+          short_code: shortCode // Always keep short_code for legacy support
         })
         .eq('id', professional_id);
 
@@ -139,6 +171,7 @@ serve(async (req) => {
         success: true,
         token,
         profile_link: profileLink,
+        legacy_link: `${appUrl}/p/${shortCode}`, // Include legacy link for reference
         professional_name: existing.name,
         is_new_token: !hasValidToken
       }),
