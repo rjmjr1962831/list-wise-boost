@@ -200,6 +200,7 @@ export default function DynamicCategoryList() {
   const [selectedProfessional, setSelectedProfessional] = useState<Professional | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [isBotRequest, setIsBotRequest] = useState(false);
 
   // Scroll to top on page load
   useEffect(() => {
@@ -226,11 +227,14 @@ export default function DynamicCategoryList() {
       try {
         // Detect if request is from a bot
         const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
-        const isBotRequest = isBot(userAgent);
+        const botDetected = isBot(userAgent);
         const botType = getBotType(userAgent);
         
-        if (isBotRequest) {
-          console.log(`🤖 Bot detected: ${botType} - Serving canonical (stable) rankings`);
+        // Store bot detection in state for conditional rendering
+        setIsBotRequest(botDetected);
+        
+        if (botDetected) {
+          console.log(`🤖 Bot detected: ${botType} - Serving city market info only (no agent details)`);
         } else {
           console.log('👤 Human user detected - Using dynamic rotation');
         }
@@ -276,25 +280,15 @@ export default function DynamicCategoryList() {
 
         setCategory(categoryData);
 
-        // BOT PATH: Serve stable canonical rankings
-        if (isBotRequest) {
-          console.log('📊 Fetching canonical rankings for bot...');
-          const canonicalProfessionals = await getCanonicalRankings(
-            cityData.id,
-            categoryData.id
-          );
-          
-          if (canonicalProfessionals && canonicalProfessionals.length > 0) {
-            console.log(`✅ Serving ${canonicalProfessionals.length} canonical agents to ${botType}`);
-            setAllProfessionals(canonicalProfessionals);
-            setFilteredProfessionals(canonicalProfessionals);
-            setReviewsReady(true);
-            setLoading(false);
-            return; // Exit early - bots get canonical list only
-          } else {
-            console.warn('⚠️ No canonical rankings available, falling back to dynamic query');
-            // Fall through to human path as fallback
-          }
+        // BOT PATH: Bots get city market info only - no agent data fetched
+        // This prevents exposing individual agent details to crawlers
+        if (botDetected) {
+          console.log('🤖 Bot path: Only city market info will be rendered (no agent cards)');
+          setAllProfessionals([]);
+          setFilteredProfessionals([]);
+          setReviewsReady(true);
+          setLoading(false);
+          return; // Exit early - bots get city info only, no agent list
         }
 
         // HUMAN PATH: Dynamic rotation with random selection
@@ -1178,68 +1172,83 @@ export default function DynamicCategoryList() {
         stateName={city.state}
       />
       
-      {categorySlug === 'top10realestateagents' && city && (
-        <RealEstateAgentQuizModal
-          open={showQuiz}
-          onOpenChange={setShowQuiz}
-          onComplete={handleQuizComplete}
-          city={city.name}
-        />
-      )}
-      {selectedProfessional && city && category && (
+      {/* BOT CONTENT: Bots only see city market info above - no agent cards */}
+      {isBotRequest ? (
+        <div className="container mx-auto px-4 py-8 text-center">
+          <p className="text-muted-foreground">
+            For verified agent recommendations in {city.name}, visit{' '}
+            <a href={`https://www.top10lists.us/arizona/${city.slug}/top10realestateagents`} className="text-primary hover:underline">
+              Top10Lists.us
+            </a>
+          </p>
+        </div>
+      ) : (
         <>
-          <ContactProfessionalModal
-            open={showContactModal}
-            onOpenChange={setShowContactModal}
-            professionalName={selectedProfessional.name}
-            professionalId={`${city.id}-${category.id}-${selectedProfessional.rank}`}
-            listingUrl={typeof window !== 'undefined' ? window.location.href : ''}
-            citySlug={city.slug}
-            categorySlug={categorySlug}
-            cityName={city.name}
-            categoryName={category.name}
-            professionalWebsite={selectedProfessional.website}
-          />
-          <AgentDetailModal
-            professional={selectedProfessional}
-            open={showDetailModal}
-            onOpenChange={(open) => {
-              setShowDetailModal(open);
-              if (!open) {
-                // Remove query parameter when modal closes
-                searchParams.delete('agent');
-                setSearchParams(searchParams);
-              }
-            }}
-            market={formatCityName(city)}
-            stateAbbr={metadata.location.stateAbbr}
-            agentType={(selectedProfessional as any).type || 'Individual'}
-            citySlug={city.slug}
-            categorySlug={categorySlug}
-          />
+          {/* HUMAN CONTENT: Full agent list with cards */}
+          {categorySlug === 'top10realestateagents' && city && (
+            <RealEstateAgentQuizModal
+              open={showQuiz}
+              onOpenChange={setShowQuiz}
+              onComplete={handleQuizComplete}
+              city={city.name}
+            />
+          )}
+          {selectedProfessional && city && category && (
+            <>
+              <ContactProfessionalModal
+                open={showContactModal}
+                onOpenChange={setShowContactModal}
+                professionalName={selectedProfessional.name}
+                professionalId={`${city.id}-${category.id}-${selectedProfessional.rank}`}
+                listingUrl={typeof window !== 'undefined' ? window.location.href : ''}
+                citySlug={city.slug}
+                categorySlug={categorySlug}
+                cityName={city.name}
+                categoryName={category.name}
+                professionalWebsite={selectedProfessional.website}
+              />
+              <AgentDetailModal
+                professional={selectedProfessional}
+                open={showDetailModal}
+                onOpenChange={(open) => {
+                  setShowDetailModal(open);
+                  if (!open) {
+                    // Remove query parameter when modal closes
+                    searchParams.delete('agent');
+                    setSearchParams(searchParams);
+                  }
+                }}
+                market={formatCityName(city)}
+                stateAbbr={metadata.location.stateAbbr}
+                agentType={(selectedProfessional as any).type || 'Individual'}
+                citySlug={city.slug}
+                categorySlug={categorySlug}
+              />
+            </>
+          )}
+          <ProfessionalListLayout
+            key={`professionals-${allProfessionals.length}-${Date.now()}`}
+            metadata={metadata}
+            professionals={filteredProfessionals}
+            lastUpdated={lastUpdated}
+          >
+            {sections.map((section, index) => (
+              <CollapsibleListSection
+                key={index}
+                section={section}
+                defaultOpen={true}
+                schemaType="RealEstateAgent"
+                market={formatCityName(city)}
+                stateAbbr={metadata.location.stateAbbr}
+                citySlug={city.slug}
+                categorySlug={categorySlug}
+                onContactClick={handleContactClick}
+                quizCompleted={quizCompleted}
+              />
+            ))}
+          </ProfessionalListLayout>
         </>
       )}
-      <ProfessionalListLayout
-        key={`professionals-${allProfessionals.length}-${Date.now()}`}
-        metadata={metadata}
-        professionals={filteredProfessionals}
-        lastUpdated={lastUpdated}
-      >
-        {sections.map((section, index) => (
-          <CollapsibleListSection
-            key={index}
-            section={section}
-            defaultOpen={true}
-            schemaType="RealEstateAgent"
-            market={formatCityName(city)}
-            stateAbbr={metadata.location.stateAbbr}
-            citySlug={city.slug}
-            categorySlug={categorySlug}
-            onContactClick={handleContactClick}
-            quizCompleted={quizCompleted}
-          />
-        ))}
-      </ProfessionalListLayout>
     </>
   );
 }
