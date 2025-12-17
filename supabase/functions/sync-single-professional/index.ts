@@ -372,7 +372,7 @@ serve(async (req) => {
       // Status flags - convert booleans to strings for Pipedrive text fields
       email_verified: professional.email_verified_at ? 'true' : 'false',
       is_brand_builder: professional.is_brand_builder ? 'true' : 'false',
-      status: professional.active ? 'active' : 'inactive',
+      active_status: professional.active ? 'active' : 'inactive',
       // Funnel & subscription tracking fields
       funnel_status: truncate(syncData.funnel_status),
       funnel_started_at: syncData.funnel_started_at,
