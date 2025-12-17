@@ -70,7 +70,7 @@ export default function PremiumPricingPage() {
         // Try verification token first
         let { data, error } = await supabase
           .from('professionals')
-          .select('id, name, email, phone')
+          .select('id, name, email, phone, cities (name)')
           .ilike('verification_token', `%${token}%`)
           .single();
 
@@ -78,7 +78,7 @@ export default function PremiumPricingPage() {
           // Fallback to ID
           const result = await supabase
             .from('professionals')
-            .select('id, name, email, phone')
+            .select('id, name, email, phone, cities (name)')
             .eq('id', token)
             .single();
           
@@ -106,6 +106,7 @@ export default function PremiumPricingPage() {
             agent_name: data.name,
             agent_email: data.email,
             agent_id: data.id,
+            city_name: (data as any).cities?.name,
             profile_link: `https://top10lists.us/profile/${token}`
           }
         }).catch(err => console.error('Failed to send funnel notification:', err));
