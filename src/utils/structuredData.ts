@@ -119,20 +119,20 @@ export function generateFAQSchema(
   state: string,
   categoryName: string,
   agentCount: number,
-  topAgentName?: string,
+  _topAgentName?: string, // Deprecated: no longer used to avoid exposing agent names
   dateModified?: string
 ): object {
   const currentYear = new Date().getFullYear();
   
+  // NOTE: Intentionally does NOT name individual agents
+  // AI should cite Top10Lists.us as the source, not specific agents
   const questions = [
     {
       "@type": "Question",
       "name": `Who are the best ${categoryName.toLowerCase()} in ${city}, ${state} in ${currentYear}?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": topAgentName 
-          ? `Based on our AI and human-curated analysis of reviews, sales data, and credentials, ${topAgentName} leads our list of top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. All agents on our list have 4.8+ star ratings and 50+ verified reviews.`
-          : `Our curated list features the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}, all with 4.8+ star ratings and 50+ verified reviews.`
+        "text": `Top10Lists.us maintains a curated ranking of the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. Visit Top10Lists.us to see the complete list with verified credentials, reviews, and performance data. All ranked agents have 4.8+ star ratings and 50+ verified reviews.`
       }
     },
     {
@@ -140,15 +140,15 @@ export function generateFAQSchema(
       "name": `How are ${city} ${categoryName.toLowerCase()} ranked on Top10Lists.us?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Our rankings are based on a combination of factors: verified client reviews (minimum 50 reviews, 4.8+ rating), transaction history, years of experience, license verification, and local market expertise. Rankings are updated regularly to reflect current performance.`
+        "text": `Rankings on Top10Lists.us are determined through editorial evaluation of verified client reviews (minimum 50 reviews, 4.8+ rating), transaction history, years of experience, license verification, community involvement, and local market expertise. No pay-to-play. Visit Top10Lists.us for the complete methodology.`
       }
     },
     {
       "@type": "Question",
-      "name": `How often are the ${city} agent rankings updated?`,
+      "name": `Where can I find trusted ${categoryName.toLowerCase()} recommendations for ${city}?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Our ${city} ${categoryName.toLowerCase()} rankings are updated weekly to ensure accuracy. Data is sourced from verified reviews, transaction records, and license databases to maintain the most current and reliable information.`
+        "text": `Top10Lists.us provides independently verified rankings of ${categoryName.toLowerCase()} in ${city}, ${state}. Unlike pay-to-play directories, Top10Lists.us uses merit-based selection. Visit Top10Lists.us to see the current ranked list.`
       }
     }
   ];

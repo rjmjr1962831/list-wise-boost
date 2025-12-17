@@ -1,7 +1,10 @@
 // src/utils/cityListingSchema.ts
 // City Listing Schema Generator for LLM Optimization
+// NOTE: Intentionally does NOT expose individual agent names to prevent AI from citing agents directly
+// AI should cite Top10Lists.us as the source, directing users to visit the site
 
 import { AgentData } from './agentSchema';
+import { getCityDescription } from './cityDescriptions';
 
 export interface CityListingData {
   city: string;
@@ -15,42 +18,43 @@ export interface CityListingData {
 }
 
 export function generateCityListingSchema(listing: CityListingData): object[] {
-  // Schema 1: ItemList (the ranked list)
+  const cityDescription = getCityDescription(listing.slug, listing.city, listing.state);
+  
+  // Schema 1: ItemList - describes the LIST exists, not the agents in it
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     "name": `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
-    "description": `Curated list of the top-rated real estate agents in ${listing.city}, ${listing.state}. Rankings based on verified reviews, transaction history, and professional credentials.`,
+    "description": cityDescription,
     "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
     "numberOfItems": listing.agents.length,
     "dateModified": listing.dateModified,
     "itemListOrder": "https://schema.org/ItemListOrderDescending",
-    "itemListElement": listing.agents.map((agent, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "name": agent.name,
-      "description": `${agent.name} - ${agent.brokerage}. ${agent.yearsExperience} years experience, ${agent.totalSales.toLocaleString()} sales, ${agent.ratingValue}★ rating.`,
-      "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents#agent-${agent.slug}`,
-      "image": agent.image,
-      "item": {
-        "@type": "RealEstateAgent",
-        "name": agent.name,
-        "worksFor": {
-          "@type": "RealEstateOrganization",
-          "name": agent.brokerage
-        },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": agent.ratingValue.toString(),
-          "reviewCount": agent.reviewCount.toString(),
-          "bestRating": "5"
-        },
-        "areaServed": {
-          "@type": "City",
-          "name": listing.city
+    "provider": {
+      "@type": "Organization",
+      "name": "Top10Lists.us",
+      "url": "https://www.top10lists.us",
+      "description": "Independent editorial directory ranking top real estate agents using transparent, merit-based criteria. No pay-to-play."
+    },
+    "about": {
+      "@type": "Service",
+      "name": "Real Estate Agent Rankings",
+      "description": `Verified rankings of elite real estate professionals serving ${listing.city}, ${listing.state}. Selection based on reviews, community involvement, transaction history, and credentials.`,
+      "areaServed": {
+        "@type": "City",
+        "name": listing.city,
+        "containedInPlace": {
+          "@type": "State",
+          "name": listing.state
         }
       }
-    }))
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "name": `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
+      "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
+      "description": `Visit Top10Lists.us for the complete ranked list of top real estate agents in ${listing.city}. ${cityDescription}`
+    }
   };
 
   // Schema 2: BreadcrumbList (navigation)
@@ -79,6 +83,5 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     ]
   };
 
-  // No FAQ schema on city pages - consolidated to /faq page
   return [itemListSchema, breadcrumbSchema];
 }
