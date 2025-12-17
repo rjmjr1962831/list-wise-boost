@@ -379,25 +379,19 @@ export default function AgentDashboard() {
   };
 
   const handleEditProfile = () => {
-    if (professional && (professional as any).short_code) {
-      navigate(`/profile/p/${(professional as any).short_code}/fields`);
-    } else if (professionalId) {
+    if (professionalId) {
       navigate(`/profile/${professionalId}/fields`);
     }
   };
 
   const handleUpgradePackage = () => {
-    if (professional && (professional as any).short_code) {
-      navigate(`/profile/p/${(professional as any).short_code}/pricing`);
-    } else if (professionalId) {
+    if (professionalId) {
       navigate(`/profile/${professionalId}/pricing`);
     }
   };
 
   const handleChangeFreeCity = () => {
-    if (professional && (professional as any).short_code) {
-      navigate(`/profile/p/${(professional as any).short_code}/select-free-city`);
-    } else if (professionalId) {
+    if (professionalId) {
       navigate(`/profile/${professionalId}/select-free-city`);
     }
   };
