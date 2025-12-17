@@ -19,15 +19,13 @@ const corsHeaders = {
 
 interface CacheContentCheck {
   url: string;
-  cacheKey: string;
+  city: string;
   hasContent: boolean;
   isPrerendered: boolean;
-  contentSize: number;
+  contentSizeKB: number;
   issues: string[];
-  agentCount: number;
   hasStructuredData: boolean;
   hasAgentCards: boolean;
-  sampleAgentName?: string;
 }
 
 interface HealthCheckResult {
@@ -43,6 +41,12 @@ function urlToCacheKey(url: string): string {
     .replace(/^https?:\/\//, '')
     .replace(/[^a-zA-Z0-9]/g, '_')
     .substring(0, 512);
+}
+
+// Extract city name from URL
+function extractCity(url: string): string {
+  const match = url.match(/arizona\/([^/]+)\//);
+  return match ? match[1].charAt(0).toUpperCase() + match[1].slice(1) : "Unknown";
 }
 
 // Fetch content directly from KV cache
@@ -69,33 +73,25 @@ async function fetchFromKV(cacheKey: string): Promise<string | null> {
   }
 }
 
-// Analyze cached HTML content for quality
+// Analyze cached HTML content - NO AGENT DETAILS EXPOSED
 function analyzeContent(html: string, url: string): CacheContentCheck {
   const issues: string[] = [];
-  const cacheKey = urlToCacheKey(url);
+  const city = extractCity(url);
+  const contentSizeKB = Math.round(html.length / 1024);
   
   // Check for empty React shell indicators
   const isEmptyShell = html.includes('<div id="root"></div>') && 
-                       !html.includes('class="professional-card"') &&
+                       !html.includes('itemtype="https://schema.org/RealEstateAgent"') &&
                        html.length < 50000;
   
-  // Check for agent cards (the rendered content)
-  const hasAgentCards = html.includes('ProfessionalCard') || 
-                        html.includes('professional-card') ||
+  // Check for agent cards (the rendered content) - generic check, no names
+  const hasAgentCards = html.includes('itemtype="https://schema.org/RealEstateAgent"') ||
                         html.includes('data-professional-id') ||
-                        html.includes('itemtype="https://schema.org/RealEstateAgent"');
+                        html.includes('professional-card');
   
   // Check for structured data (JSON-LD)
   const hasStructuredData = html.includes('application/ld+json') && 
                            (html.includes('ItemList') || html.includes('RealEstateAgent'));
-  
-  // Count agent mentions by looking for common patterns
-  const agentNameMatches = html.match(/class="[^"]*agent-name[^"]*"|itemProp="name"/g) || [];
-  const agentCount = agentNameMatches.length;
-  
-  // Extract a sample agent name if present
-  const nameMatch = html.match(/<h3[^>]*>([A-Z][a-z]+ [A-Z][a-z]+)<\/h3>/);
-  const sampleAgentName = nameMatch ? nameMatch[1] : undefined;
   
   // Check for proper meta tags
   const hasMetaTags = html.includes('<meta name="description"') && 
@@ -104,36 +100,34 @@ function analyzeContent(html: string, url: string): CacheContentCheck {
   // Determine if content is properly prerendered
   const isPrerendered = !isEmptyShell && 
                         html.length > 50000 && 
-                        (hasAgentCards || hasStructuredData || agentCount > 0);
+                        (hasAgentCards || hasStructuredData);
   
   // Build issues list
   if (isEmptyShell) {
-    issues.push("Content appears to be empty React shell (not prerendered)");
+    issues.push("Empty React shell - NOT prerendered");
   }
   if (html.length < 30000) {
-    issues.push(`Content too small (${Math.round(html.length / 1024)}KB) - likely incomplete`);
+    issues.push(`Content too small (${contentSizeKB}KB) - likely incomplete`);
   }
   if (!hasStructuredData) {
     issues.push("Missing JSON-LD structured data");
   }
   if (!hasMetaTags) {
-    issues.push("Missing meta description or title tags");
+    issues.push("Missing meta tags");
   }
-  if (agentCount === 0 && url.includes('top10realestateagents')) {
-    issues.push("No agent content detected on agent listing page");
+  if (!hasAgentCards && url.includes('top10realestateagents')) {
+    issues.push("No agent content detected");
   }
   
   return {
     url,
-    cacheKey,
+    city,
     hasContent: html.length > 0,
     isPrerendered,
-    contentSize: html.length,
+    contentSizeKB,
     issues,
-    agentCount,
     hasStructuredData,
     hasAgentCards,
-    sampleAgentName,
   };
 }
 
@@ -151,19 +145,18 @@ async function checkCachedContent(): Promise<HealthCheckResult> {
   
   for (const url of testUrls) {
     const cacheKey = urlToCacheKey(url);
-    console.log(`Checking cache for: ${url} (key: ${cacheKey})`);
+    console.log(`Checking cache for: ${url}`);
     
     const html = await fetchFromKV(cacheKey);
     
     if (!html) {
       results.push({
         url,
-        cacheKey,
+        city: extractCity(url),
         hasContent: false,
         isPrerendered: false,
-        contentSize: 0,
+        contentSizeKB: 0,
         issues: ["Page not found in cache"],
-        agentCount: 0,
         hasStructuredData: false,
         hasAgentCards: false,
       });
@@ -179,10 +172,7 @@ async function checkCachedContent(): Promise<HealthCheckResult> {
     }
     totalIssues += check.issues.length;
     
-    console.log(`  - Size: ${Math.round(check.contentSize / 1024)}KB`);
-    console.log(`  - Prerendered: ${check.isPrerendered}`);
-    console.log(`  - Agent cards: ${check.hasAgentCards}`);
-    console.log(`  - Sample agent: ${check.sampleAgentName || 'none found'}`);
+    console.log(`  - ${check.city}: ${check.contentSizeKB}KB, Prerendered: ${check.isPrerendered}`);
     if (check.issues.length > 0) {
       console.log(`  - Issues: ${check.issues.join(', ')}`);
     }
@@ -190,24 +180,14 @@ async function checkCachedContent(): Promise<HealthCheckResult> {
   
   const isHealthy = prerenderedCount === testUrls.length && totalIssues === 0;
   
-  const summaryLines = results.map(r => {
-    const status = r.isPrerendered ? "✅" : "❌";
-    const size = Math.round(r.contentSize / 1024);
-    const cityMatch = r.url.match(/arizona\/([^/]+)\//);
-    const city = cityMatch ? cityMatch[1] : r.url;
-    const agent = r.sampleAgentName ? ` (e.g. ${r.sampleAgentName})` : '';
-    return `${status} ${city}: ${size}KB${agent}${r.issues.length > 0 ? ' - ' + r.issues[0] : ''}`;
-  });
-  
   return {
-    component: "Cached Content Quality",
+    component: "Prerender Status",
     healthy: isHealthy,
     message: isHealthy 
-      ? `All ${testUrls.length} pages properly prerendered with agent content`
+      ? `All ${testUrls.length} pages properly prerendered`
       : `${prerenderedCount}/${testUrls.length} pages prerendered, ${totalIssues} issues found`,
     details: {
       results,
-      summary: summaryLines,
       prerenderedCount,
       totalPages: testUrls.length,
       totalIssues,
@@ -215,12 +195,12 @@ async function checkCachedContent(): Promise<HealthCheckResult> {
   };
 }
 
-// Check KV is accessible and count keys
+// Check KV is accessible
 async function checkKVHealth(): Promise<HealthCheckResult> {
   try {
     if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
       return {
-        component: "Cloudflare KV Access",
+        component: "Cloudflare KV",
         healthy: false,
         message: "Missing Cloudflare credentials",
       };
@@ -240,27 +220,25 @@ async function checkKVHealth(): Promise<HealthCheckResult> {
     
     if (!response.ok || !data.success) {
       return {
-        component: "Cloudflare KV Access",
+        component: "Cloudflare KV",
         healthy: false,
         message: `KV API error: ${data.errors?.[0]?.message || "Unknown error"}`,
-        details: data.errors,
       };
     }
 
     const keyCount = data.result?.length || 0;
-    const sampleKeys = data.result?.slice(0, 5).map((k: any) => k.name) || [];
     
     return {
-      component: "Cloudflare KV Access",
+      component: "Cloudflare KV",
       healthy: keyCount > 0,
       message: keyCount > 0 
         ? `KV accessible with ${keyCount}+ cached pages`
         : "KV accessible but no cached pages found",
-      details: { keyCount, sampleKeys },
+      details: { keyCount },
     };
   } catch (error: any) {
     return {
-      component: "Cloudflare KV Access",
+      component: "Cloudflare KV",
       healthy: false,
       message: `KV check failed: ${error.message}`,
     };
@@ -281,7 +259,7 @@ async function checkCacheQueueHealth(): Promise<HealthCheckResult> {
 
     if (error) {
       return {
-        component: "Cache Invalidation Queue",
+        component: "Cache Queue",
         healthy: false,
         message: `Database query failed: ${error.message}`,
       };
@@ -294,7 +272,7 @@ async function checkCacheQueueHealth(): Promise<HealthCheckResult> {
     const isHealthy = failed < 10 && processing < 5;
     
     return {
-      component: "Cache Invalidation Queue",
+      component: "Cache Queue",
       healthy: isHealthy,
       message: isHealthy 
         ? `Queue healthy: ${pending} pending, ${processing} processing, ${failed} failed`
@@ -303,7 +281,7 @@ async function checkCacheQueueHealth(): Promise<HealthCheckResult> {
     };
   } catch (error: any) {
     return {
-      component: "Cache Invalidation Queue",
+      component: "Cache Queue",
       healthy: false,
       message: `Queue check failed: ${error.message}`,
     };
@@ -324,74 +302,78 @@ async function sendHealthEmail(results: HealthCheckResult[], overallHealthy: boo
   });
 
   const statusEmoji = overallHealthy ? "✅" : "🚨";
-  const statusText = overallHealthy ? "HEALTHY - Prerendered Content Verified" : "ISSUES DETECTED";
+  const statusText = overallHealthy ? "HEALTHY" : "ISSUES DETECTED";
   
-  // Build detailed results HTML
-  let resultsHtml = "";
-  for (const r of results) {
-    const statusIcon = r.healthy ? "✅" : "❌";
-    let detailsHtml = "";
-    
-    // Special formatting for content quality check
-    if (r.component === "Cached Content Quality" && r.details?.summary) {
-      detailsHtml = `
-        <ul style="margin: 5px 0; padding-left: 20px;">
-          ${r.details.summary.map((s: string) => `<li>${s}</li>`).join("")}
-        </ul>
-      `;
-    }
-    
-    resultsHtml += `
-      <tr>
-        <td style="padding: 10px; border: 1px solid #ddd; vertical-align: top;">${statusIcon}</td>
-        <td style="padding: 10px; border: 1px solid #ddd; vertical-align: top;"><strong>${r.component}</strong></td>
-        <td style="padding: 10px; border: 1px solid #ddd;">
-          ${r.message}
-          ${detailsHtml}
-        </td>
-      </tr>
+  // Build page status table for prerender check
+  const prerenderResult = results.find(r => r.component === "Prerender Status");
+  let pageStatusHtml = "";
+  
+  if (prerenderResult?.details?.results) {
+    pageStatusHtml = `
+      <h3>Page Status</h3>
+      <table style="border-collapse: collapse; width: 100%;">
+        <tr style="background: #f5f5f5;">
+          <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">City</th>
+          <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Prerendered</th>
+          <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Size</th>
+          <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Issues</th>
+        </tr>
+        ${prerenderResult.details.results.map((r: CacheContentCheck) => `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">${r.city}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.isPrerendered ? "✅" : "❌"}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${r.contentSizeKB}KB</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${r.issues.length > 0 ? r.issues.join(", ") : "None"}</td>
+          </tr>
+        `).join("")}
+      </table>
     `;
   }
 
+  // Build component status
+  const componentStatusHtml = results.map(r => `
+    <tr>
+      <td style="padding: 8px; border: 1px solid #ddd;">${r.healthy ? "✅" : "❌"}</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">${r.component}</td>
+      <td style="padding: 8px; border: 1px solid #ddd;">${r.message}</td>
+    </tr>
+  `).join("");
+
+  // Troubleshooting for unhealthy components
   const unhealthyComponents = results.filter(r => !r.healthy);
   const troubleshootingHtml = unhealthyComponents.length > 0 ? `
     <hr />
     <h2>🔧 Troubleshooting</h2>
     ${unhealthyComponents.map(r => `
-      <h3>${r.component}</h3>
-      <p>${getTroubleshootingAdvice(r)}</p>
-      ${r.details?.results ? `
-        <h4>Page Details:</h4>
-        <ul>
-          ${r.details.results.filter((p: CacheContentCheck) => p.issues.length > 0).map((p: CacheContentCheck) => `
-            <li><strong>${p.url}</strong>: ${p.issues.join(', ')}</li>
-          `).join('')}
-        </ul>
-      ` : ''}
+      <p><strong>${r.component}:</strong> ${getTroubleshootingAdvice(r)}</p>
     `).join("")}
   ` : "";
 
   await client.send({
     from: SMTP_FROM_EMAIL!,
     to: "robert@top10lists.us",
-    subject: `${statusEmoji} Cache Health: ${statusText}`,
+    subject: `${statusEmoji} Cache Health: ${statusText} - ${new Date().toLocaleDateString()}`,
     html: `
       <h1>${statusEmoji} Cache Health Report</h1>
       <p><strong>Status:</strong> ${statusText}</p>
       <p><strong>Time:</strong> ${new Date().toISOString()}</p>
       <hr />
+      
       <h2>Component Status</h2>
       <table style="border-collapse: collapse; width: 100%;">
         <tr style="background: #f5f5f5;">
-          <th style="padding: 10px; border: 1px solid #ddd;">Status</th>
-          <th style="padding: 10px; border: 1px solid #ddd;">Component</th>
-          <th style="padding: 10px; border: 1px solid #ddd;">Details</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">Status</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">Component</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">Details</th>
         </tr>
-        ${resultsHtml}
+        ${componentStatusHtml}
       </table>
+      
+      ${pageStatusHtml}
       ${troubleshootingHtml}
+      
       <hr />
-      <p style="color: #666; font-size: 12px;">Automated cache health check from Top10Lists monitoring system.</p>
+      <p style="color: #666; font-size: 12px;">Automated 12-hour cache health check from Top10Lists.</p>
     `,
   });
 
@@ -400,14 +382,14 @@ async function sendHealthEmail(results: HealthCheckResult[], overallHealthy: boo
 
 function getTroubleshootingAdvice(result: HealthCheckResult): string {
   switch (result.component) {
-    case "Cloudflare KV Access":
-      return "Check Cloudflare dashboard for KV namespace status. Verify API token has correct permissions.";
-    case "Cache Invalidation Queue":
-      return "Review failed queue items in Admin Dashboard > Cache Management. Clear stuck items and retry.";
-    case "Cached Content Quality":
-      return "Run the warm-cache function manually to refresh cached content. Verify Prerender.io is working correctly. Check that pages have agent data in the database.";
+    case "Cloudflare KV":
+      return "Check Cloudflare dashboard. Verify API token permissions.";
+    case "Cache Queue":
+      return "Review failed items in Admin Dashboard > Cache Management.";
+    case "Prerender Status":
+      return "Run warm-cache manually. Verify Prerender.io is working.";
     default:
-      return "Review logs for this component in Supabase Edge Function logs.";
+      return "Review edge function logs.";
   }
 }
 
@@ -416,7 +398,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  console.log("🏥 Starting comprehensive cache health check...");
+  console.log("🏥 Starting cache health check...");
 
   try {
     // Run all health checks in parallel
@@ -426,10 +408,9 @@ const handler = async (req: Request): Promise<Response> => {
       checkCachedContent(),
     ]);
 
-    const results = [contentResult, kvResult, queueResult]; // Content check first
+    const results = [contentResult, kvResult, queueResult];
     const overallHealthy = results.every(r => r.healthy);
 
-    console.log(`Health check results:`, JSON.stringify(results, null, 2));
     console.log(`Overall status: ${overallHealthy ? "HEALTHY" : "UNHEALTHY"}`);
 
     // Send email with results
@@ -468,11 +449,11 @@ const handler = async (req: Request): Promise<Response> => {
       await client.send({
         from: SMTP_FROM_EMAIL!,
         to: "robert@top10lists.us",
-        subject: "🚨 Cache Health Check FAILED",
+        subject: "🚨 IMMEDIATE: Cache Health Check FAILED",
         html: `
           <h1>🚨 Cache Health Check Error</h1>
-          <p>The health check function itself encountered an error:</p>
-          <pre style="background: #f5f5f5; padding: 15px; border-radius: 5px;">${error.message}</pre>
+          <p>The health check function encountered an error:</p>
+          <pre style="background: #f5f5f5; padding: 15px;">${error.message}</pre>
           <p><strong>Time:</strong> ${new Date().toISOString()}</p>
         `,
       });
