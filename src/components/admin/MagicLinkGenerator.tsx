@@ -205,7 +205,7 @@ export function MagicLinkGenerator() {
           <div className="font-medium text-foreground">How it works:</div>
           <ul className="list-disc list-inside space-y-1 ml-2">
             <li>Generates permanent tokens (expires 2099) for active professionals without magic links</li>
-            <li>Creates URLs: <code className="text-xs bg-background px-1 py-0.5 rounded">https://top10lists.us/profile/{'{token}'}</code></li>
+            <li>Creates URLs: <code className="text-xs bg-background px-1 py-0.5 rounded">https://top10lists.us/arizona/{'{city}'}/{'{name}'}-{'{phone}'}</code></li>
             <li>Rate limited to 500ms between generations to protect API</li>
             <li>Optionally syncs magic links to Pipedrive custom field</li>
             <li>Tokens are stored in verification_token column</li>
