@@ -34,6 +34,7 @@ import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileR
 import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
 import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
 import { FunnelAnalyticsDashboard } from '@/components/admin/FunnelAnalyticsDashboard';
+import { BulkCityContentGenerator } from '@/components/admin/BulkCityContentGenerator';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -247,6 +248,10 @@ const AdminDashboard = () => {
               <TrendingUp className="mr-2 h-4 w-4" />
               Funnel Analytics
             </TabsTrigger>
+            <TabsTrigger value="city-content">
+              <Globe className="mr-2 h-4 w-4" />
+              City Content
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -320,6 +325,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="funnel-analytics" className="space-y-4">
             <FunnelAnalyticsDashboard />
+          </TabsContent>
+
+          <TabsContent value="city-content" className="space-y-4">
+            <BulkCityContentGenerator />
           </TabsContent>
         </Tabs>
       </div>

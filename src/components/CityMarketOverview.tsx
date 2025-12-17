@@ -2,10 +2,10 @@
 // Displays comprehensive city market information for SEO and LLM optimization
 // This content is designed to be crawled by bots instead of individual agent details
 
-import { getCityMarketData, getDefaultCityMarketData } from '@/data/arizonaCityMarketData';
-import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
+import { formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
-import { Home, TrendingUp, Users, MapPin, Building2, DollarSign, Clock, Sparkles } from 'lucide-react';
+import { useCityMarketContent } from '@/hooks/useCityMarketContent';
+import { Home, TrendingUp, Users, Building2, DollarSign, Clock, Sparkles } from 'lucide-react';
 
 interface CityMarketOverviewProps {
   citySlug: string;
@@ -14,8 +14,7 @@ interface CityMarketOverviewProps {
 }
 
 export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarketOverviewProps) {
-  const cityPricing = getCityBySlug(citySlug);
-  const marketData = getCityMarketData(citySlug) || getDefaultCityMarketData(cityName, citySlug, cityPricing?.medianHomePrice);
+  const { marketData } = useCityMarketContent(citySlug, cityName);
   const { data: cityAgentCount } = useAgentCountForCity(citySlug);
   const { data: totalAgentCount } = useTotalAgentCount();
   
