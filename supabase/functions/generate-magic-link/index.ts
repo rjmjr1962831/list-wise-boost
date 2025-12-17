@@ -14,9 +14,11 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const pipedriveToken = Deno.env.get('PIPEDRIVE_API_TOKEN')!;
-    const pipedriveDomain = Deno.env.get('PIPEDRIVE_DOMAIN')!;
-    const appUrl = Deno.env.get('APP_URL') || 'https://top10lists.us';
+    const pipedriveToken = Deno.env.get('PIPEDRIVE_API_TOKEN');
+    const pipedriveDomain = Deno.env.get('PIPEDRIVE_DOMAIN');
+    
+    // Hardcoded base URL - never use env variable for this
+    const appUrl = 'https://top10lists.us';
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
