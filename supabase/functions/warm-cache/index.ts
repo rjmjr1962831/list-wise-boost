@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@2.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 
 const corsHeaders = {
@@ -7,34 +7,50 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const SMTP_HOST = "mail.privateemail.com";
+const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "465");
+const SMTP_USERNAME = Deno.env.get("SMTP_USERNAME");
+const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD");
+const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
+
 const CLOUDFLARE_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN');
 const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
 const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
 const SEQUENTIAL_DELAY_MS = 3000; // 3 seconds between each URL
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-// Send failure notification email
+// Send failure notification email via SMTP
 async function sendFailureEmail(result: WarmResult, errorMessage?: string): Promise<void> {
-  if (!RESEND_API_KEY) {
-    console.error('RESEND_API_KEY not configured, cannot send failure email');
+  if (!SMTP_USERNAME || !SMTP_PASSWORD || !SMTP_FROM_EMAIL) {
+    console.error('SMTP credentials not configured, cannot send failure email');
     return;
   }
 
   try {
-    const resend = new Resend(RESEND_API_KEY);
+    const client = new SMTPClient({
+      connection: {
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        tls: true,
+        auth: {
+          username: SMTP_USERNAME,
+          password: SMTP_PASSWORD,
+        },
+      },
+    });
+
     const timestamp = new Date().toISOString();
     
-    await resend.emails.send({
-      from: 'Top10Lists Cache Monitor <hello@top10lists.us>',
-      to: [ADMIN_EMAIL],
-      subject: `⚠️ Cache Warming Failed - ${result.failed} URLs failed`,
+    await client.send({
+      from: SMTP_FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: `🚨 IMMEDIATE: Cache Warming Failed - ${result.failed} URLs failed`,
       html: `
-        <h2>Cache Warming Failure Alert</h2>
+        <h1>🚨 Cache Warming Failure Alert</h1>
         <p><strong>Time:</strong> ${timestamp}</p>
         <p><strong>Summary:</strong></p>
         <ul>
@@ -50,10 +66,12 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
             ${result.errors.length > 20 ? `<li>... and ${result.errors.length - 20} more</li>` : ''}
           </ul>
         ` : ''}
+        <hr />
         <p>Please check the edge function logs for more details.</p>
       `,
     });
     
+    await client.close();
     console.log('📧 Failure notification email sent to', ADMIN_EMAIL);
   } catch (emailError) {
     console.error('Failed to send failure notification email:', emailError);
