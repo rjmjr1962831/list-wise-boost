@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,9 +32,7 @@ serve(async (req) => {
           state_slug: city.stateSlug,
           slug: city.slug,
           active: true,
-        }, {
-          onConflict: 'state_slug,slug',
-        })
+        } as any)
         .select()
         .single();
       
@@ -58,9 +56,7 @@ serve(async (req) => {
           icon: category.icon || null,
           plural_name: category.pluralName,
           active: true,
-        }, {
-          onConflict: 'slug',
-        })
+        } as any)
         .select()
         .single();
       
