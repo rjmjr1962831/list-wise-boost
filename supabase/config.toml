@@ -273,3 +273,9 @@ verify_jwt = false
 
 [functions.generate-city-content]
 verify_jwt = false
+
+[functions.generate-all-magic-links]
+verify_jwt = true
+
+[functions.generate-magic-link]
+verify_jwt = true
