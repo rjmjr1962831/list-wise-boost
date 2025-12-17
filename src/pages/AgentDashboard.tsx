@@ -57,6 +57,7 @@ export default function AgentDashboard() {
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
   const [subscriptions, setSubscriptions] = useState<CitySubscription[]>([]);
   const [freeCity, setFreeCity] = useState<string | null>(null);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -219,6 +220,7 @@ export default function AgentDashboard() {
   const loadProfileData = async (data: any) => {
     try {
       setProfessionalId(data.id);
+      setVerificationToken(data.verification_token || data.id);
 
       // Fetch city subscriptions
       const { data: subs } = await supabase
@@ -379,20 +381,20 @@ export default function AgentDashboard() {
   };
 
   const handleEditProfile = () => {
-    if (professionalId) {
-      navigate(`/profile/${professionalId}/fields`);
+    if (verificationToken) {
+      navigate(`/profile/${verificationToken}/fields`);
     }
   };
 
   const handleUpgradePackage = () => {
-    if (professionalId) {
-      navigate(`/profile/${professionalId}/pricing`);
+    if (verificationToken) {
+      navigate(`/profile/${verificationToken}/pricing`);
     }
   };
 
   const handleChangeFreeCity = () => {
-    if (professionalId) {
-      navigate(`/profile/${professionalId}/select-free-city`);
+    if (verificationToken) {
+      navigate(`/profile/${verificationToken}/select-free-city`);
     }
   };
 
