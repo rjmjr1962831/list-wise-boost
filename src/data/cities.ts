@@ -311,7 +311,11 @@ export const cities: City[] = cityData.map(city => ({
 export function getCityBySlug(citySlug: string, stateSlug?: string): City | undefined {
   return cities.find(city => {
     if (stateSlug) {
-      return city.slug === citySlug && city.stateSlug === stateSlug;
+      // Accept both full state name slug (e.g., 'arizona') and abbreviation slug (e.g., 'az')
+      const normalizedStateSlug = stateSlug.toLowerCase();
+      const matchesState = city.stateSlug === normalizedStateSlug || 
+        city.state.toLowerCase().replace(/\s+/g, '-') === normalizedStateSlug;
+      return city.slug === citySlug && matchesState;
     }
     return city.slug === citySlug;
   });
