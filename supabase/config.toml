@@ -285,3 +285,6 @@ verify_jwt = false
 
 [functions.bulk-update-pipedrive-labels]
 verify_jwt = false
+
+[functions.list-pipedrive-labels]
+verify_jwt = false
