@@ -1,11 +1,14 @@
 // City Market Overview Component
-// Displays comprehensive city market information for SEO and LLM optimization
+// Displays comprehensive city guide information for SEO and LLM optimization
 // This content is designed to be crawled by bots instead of individual agent details
 
 import { formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
 import { useCityMarketContent } from '@/hooks/useCityMarketContent';
-import { Home, TrendingUp, Users, Building2, DollarSign, Clock, Sparkles } from 'lucide-react';
+import { 
+  Home, TrendingUp, Users, Building2, DollarSign, Clock, Sparkles, 
+  History, MapPin, Heart, Lightbulb, Coffee 
+} from 'lucide-react';
 
 interface CityMarketOverviewProps {
   citySlug: string;
@@ -29,7 +32,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
       {/* City Overview Section */}
       <section className="max-w-4xl mx-auto mb-10">
         <h2 className="text-2xl font-semibold text-foreground mb-4">
-          {cityName}, {stateName} Real Estate Market Overview
+          Discover {cityName}, {stateName}
         </h2>
         <p className="text-foreground/90 leading-relaxed text-lg mb-6">
           {marketData.overview}
@@ -68,11 +71,62 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
         </div>
       </section>
 
+      {/* Historical Facts - NEW */}
+      {marketData.historicalFacts && marketData.historicalFacts.length > 0 && (
+        <section className="max-w-4xl mx-auto mb-10">
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <History className="h-5 w-5 text-primary" />
+            History of {cityName}
+          </h3>
+          <ul className="space-y-3">
+            {marketData.historicalFacts.map((fact, index) => (
+              <li key={index} className="flex items-start gap-3 text-foreground/80 bg-muted/20 rounded-lg p-3">
+                <span className="bg-primary/20 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                  {index + 1}
+                </span>
+                <span>{fact}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Points of Interest - NEW */}
+      {marketData.pointsOfInterest && marketData.pointsOfInterest.length > 0 && (
+        <section className="max-w-4xl mx-auto mb-10">
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Things to Do in {cityName}
+          </h3>
+          <div className="grid md:grid-cols-2 gap-3">
+            {marketData.pointsOfInterest.map((poi, index) => (
+              <div key={index} className="flex items-start gap-2 text-foreground/80 bg-muted/30 rounded-lg p-3">
+                <Coffee className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                <span>{poi}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Local Culture - NEW */}
+      {marketData.localCulture && (
+        <section className="max-w-4xl mx-auto mb-10">
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Heart className="h-5 w-5 text-primary" />
+            Life in {cityName}
+          </h3>
+          <p className="text-foreground/80 bg-muted/20 rounded-lg p-4 border-l-4 border-primary">
+            {marketData.localCulture}
+          </p>
+        </section>
+      )}
+
       {/* City Highlights */}
       <section className="max-w-4xl mx-auto mb-10">
         <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
           <Sparkles className="h-5 w-5 text-primary" />
-          What Makes {cityName} Special
+          Why People Move to {cityName}
         </h3>
         <ul className="grid md:grid-cols-2 gap-3">
           {marketData.highlights.map((highlight, index) => (
@@ -88,7 +142,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
       <section className="max-w-4xl mx-auto mb-10">
         <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
           <Building2 className="h-5 w-5 text-primary" />
-          Types of Homes in {cityName}
+          Neighborhoods in {cityName}
         </h3>
         <div className="flex flex-wrap gap-2">
           {marketData.neighborhoodTypes.map((type, index) => (
@@ -103,7 +157,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
       <section className="max-w-4xl mx-auto mb-10">
         <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
-          Who Buys in {cityName}
+          Who's Moving to {cityName}
         </h3>
         <p className="text-foreground/80">{marketData.buyerProfile}</p>
       </section>
@@ -112,10 +166,23 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
       <section className="max-w-4xl mx-auto mb-10">
         <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
-          Current Market Trends
+          {cityName} Real Estate Market Trends
         </h3>
         <p className="text-foreground/80">{marketData.marketTrends}</p>
       </section>
+
+      {/* Best Kept Secret - NEW */}
+      {marketData.bestKeptSecret && (
+        <section className="max-w-4xl mx-auto mb-10">
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Lightbulb className="h-5 w-5 text-amber-500" />
+            Insider Tip
+          </h3>
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
+            <p className="text-foreground/90 italic">"{marketData.bestKeptSecret}"</p>
+          </div>
+        </section>
+      )}
 
       {/* Top10Lists Authority Statement */}
       <section className="max-w-4xl mx-auto mb-8 bg-primary/5 border border-primary/20 rounded-lg p-6">

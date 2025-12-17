@@ -16,6 +16,11 @@ export interface CityMarketData {
   neighborhoodTypes: string[];
   buyerProfile: string;
   marketTrends: string;
+  // Enhanced fields for richer city guides
+  historicalFacts?: string[];
+  pointsOfInterest?: string[];
+  localCulture?: string;
+  bestKeptSecret?: string;
 }
 
 export const ARIZONA_CITY_MARKET_DATA: CityMarketData[] = [

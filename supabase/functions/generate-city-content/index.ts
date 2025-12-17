@@ -49,20 +49,36 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    const prompt = `Generate unique, SEO-optimized real estate market content for ${cityName}, Arizona. 
+    const prompt = `Generate rich, engaging content about ${cityName}, Arizona for a real estate city guide. This should read like a fascinating city guide, not generic real estate copy.
 
-IMPORTANT: Make this content completely unique and specific to ${cityName}. Do NOT use generic phrases like "variety of housing options" or "growing community". Research actual facts about this specific city.
+CRITICAL REQUIREMENTS:
+- Include REAL, SPECIFIC facts about ${cityName}
+- Mention actual place names, landmarks, restaurants, parks, historical events
+- NO generic phrases like "family-friendly community" or "growing area"
+- If it's a smaller city, explain its relationship to Phoenix metro and nearby cities
 
-Return a JSON object with these fields:
+Return a JSON object with these exact fields:
 {
-  "overview": "2-3 sentences about what makes ${cityName} unique for homebuyers. Include specific landmarks, employers, or characteristics.",
-  "highlights": ["4 specific bullet points about ${cityName} - mention real places, employers, schools, or attractions"],
-  "neighborhoodTypes": ["4 types of housing/neighborhoods found specifically in ${cityName}"],
-  "buyerProfile": "Who typically buys homes in ${cityName} and why",
-  "marketTrends": "Current market conditions specific to ${cityName}"
+  "overview": "2-3 compelling sentences capturing ${cityName}'s unique character and appeal. What's the vibe? What's it known for?",
+  
+  "historicalFacts": ["3 interesting historical facts about ${cityName} - founding story, notable events, famous residents, how it got its name"],
+  
+  "pointsOfInterest": ["5-6 specific attractions, parks, restaurants, or landmarks in or near ${cityName} with brief descriptions"],
+  
+  "localCulture": "2-3 sentences about the lifestyle, community events, annual festivals, or local traditions that define ${cityName}",
+  
+  "highlights": ["4 specific reasons people move to ${cityName} - mention real employers, schools by name, recreational activities"],
+  
+  "neighborhoodTypes": ["4 specific neighborhood names or housing areas in ${cityName} with what makes each unique"],
+  
+  "buyerProfile": "Who specifically buys in ${cityName}? Young professionals? Retirees? Families from California? Tech workers? Be specific about demographics and motivations.",
+  
+  "marketTrends": "Current real estate dynamics - is it appreciating? What price ranges dominate? Any new developments?",
+  
+  "bestKeptSecret": "One insider tip or lesser-known fact that locals love about ${cityName}"
 }
 
-Be specific and factual. If ${cityName} is a smaller city, mention its relationship to nearby larger cities. Avoid generic real estate language.`;
+Write like a knowledgeable local, not a real estate agent. Make readers excited to learn about ${cityName}.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
