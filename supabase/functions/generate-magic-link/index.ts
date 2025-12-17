@@ -28,10 +28,25 @@ serve(async (req) => {
 
     console.log('🔗 Generating magic link for professional:', professional_id);
 
-    // Check if professional already has a valid token
+    // Helper function to extract last 4 digits from phone
+    const getLastFourDigits = (phone: string | null): string | null => {
+      if (!phone) return null;
+      const digits = phone.replace(/\D/g, '');
+      return digits.length >= 4 ? digits.slice(-4) : null;
+    };
+
+    // Fetch professional with city info
     const { data: existing, error: fetchError } = await supabase
       .from('professionals')
-      .select('verification_token, verification_token_expires_at, profile_link, name, email')
+      .select(`
+        verification_token, 
+        verification_token_expires_at, 
+        profile_link, 
+        name, 
+        email, 
+        phone,
+        cities:city_id (slug)
+      `)
       .eq('id', professional_id)
       .single();
 
@@ -39,18 +54,32 @@ serve(async (req) => {
 
     let token = existing.verification_token;
     let profileLink = existing.profile_link;
+    
+    // Get city slug and phone digits for new format
+    const cityData = existing.cities as any;
+    const citySlug = cityData?.slug;
+    const phoneDigits = getLastFourDigits(existing.phone);
 
     // Check if token exists and is valid (not expired or will expire before 2050)
     const hasValidToken = token && existing.verification_token_expires_at && 
       new Date(existing.verification_token_expires_at) > new Date('2050-01-01');
 
+    // Generate the new format profile link if we have all required data
+    const generateNewFormatLink = () => {
+      if (citySlug && phoneDigits) {
+        return `${appUrl}/real-estate-agent-/${citySlug}/agentcard-${phoneDigits}`;
+      }
+      // Fallback to old format if missing city or phone
+      return `${appUrl}/profile/${token}`;
+    };
+
     if (!hasValidToken) {
       // Generate new permanent token (expires in 2099)
       token = crypto.randomUUID();
       const permanentExpiry = new Date('2099-12-31T23:59:59Z');
-      profileLink = `${appUrl}/profile/${token}`;
+      profileLink = generateNewFormatLink();
 
-      console.log('🆕 Creating new permanent token');
+      console.log('🆕 Creating new permanent token with link:', profileLink);
 
       const { error: updateError } = await supabase
         .from('professionals')
@@ -66,13 +95,15 @@ serve(async (req) => {
     } else {
       console.log('♻️ Reusing existing permanent token');
       
-      // Ensure profile_link is set even if token exists
-      if (!profileLink) {
-        profileLink = `${appUrl}/profile/${token}`;
+      // Always update profile_link to new format if we have city and phone
+      const newFormatLink = generateNewFormatLink();
+      if (profileLink !== newFormatLink) {
+        profileLink = newFormatLink;
         await supabase
           .from('professionals')
           .update({ profile_link: profileLink })
           .eq('id', professional_id);
+        console.log('📝 Updated profile_link to new format:', profileLink);
       }
     }
 
