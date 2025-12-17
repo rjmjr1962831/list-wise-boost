@@ -8,6 +8,11 @@ const corsHeaders = {
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Declare EdgeRuntime for background tasks
+declare const EdgeRuntime: {
+  waitUntil: (promise: Promise<void>) => void;
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,7 +37,6 @@ serve(async (req) => {
     if (!regenerate_all) {
       query = query.is('profile_link', null);
     }
-    // When regenerate_all is true, process ALL active professionals (no additional filters)
 
     if (limit) {
       query = query.limit(limit);
@@ -42,85 +46,97 @@ serve(async (req) => {
 
     if (fetchError) throw fetchError;
 
-    console.log(`📊 Found ${professionals?.length || 0} professionals without profile links`);
-
-    const results = {
-      total: professionals?.length || 0,
-      successful: 0,
-      failed: 0,
-      errors: [] as any[]
-    };
+    console.log(`📊 Found ${professionals?.length || 0} professionals to process`);
 
     if (!professionals || professionals.length === 0) {
       return new Response(
         JSON.stringify({
           success: true,
           message: 'No professionals need magic links',
-          results
+          results: { total: 0, successful: 0, failed: 0, errors: [] }
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Generate magic links with rate limiting (500ms between calls)
-    for (const professional of professionals) {
-      try {
-        console.log(`🔗 [${results.successful + results.failed + 1}/${results.total}] Generating link for ${professional.name}`);
+    // Background task to process all professionals
+    const processInBackground = async () => {
+      const results = {
+        total: professionals.length,
+        successful: 0,
+        failed: 0,
+        errors: [] as any[]
+      };
 
-        const response = await fetch(`${supabaseUrl}/functions/v1/generate-magic-link`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            professional_id: professional.id,
-            pipedrive_person_id: null // Professionals table doesn't store Pipedrive IDs
-          })
-        });
+      for (const professional of professionals) {
+        try {
+          console.log(`🔗 [${results.successful + results.failed + 1}/${results.total}] Generating link for ${professional.name}`);
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to generate link: ${errorText}`);
-        }
+          const response = await fetch(`${supabaseUrl}/functions/v1/generate-magic-link`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${supabaseKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              professional_id: professional.id,
+              pipedrive_person_id: null
+            })
+          });
 
-        const result = await response.json();
-        
-        if (result.success) {
-          results.successful++;
-          console.log(`✅ Generated for ${professional.name}`);
-        } else {
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Failed to generate link: ${errorText}`);
+          }
+
+          const result = await response.json();
+          
+          if (result.success) {
+            results.successful++;
+            console.log(`✅ Generated for ${professional.name}`);
+          } else {
+            results.failed++;
+            results.errors.push({
+              professional_id: professional.id,
+              name: professional.name,
+              error: result.error
+            });
+          }
+
+          // Rate limit: 500ms between calls
+          if (results.successful + results.failed < results.total) {
+            await delay(500);
+          }
+
+        } catch (error: any) {
           results.failed++;
           results.errors.push({
             professional_id: professional.id,
             name: professional.name,
-            error: result.error
+            error: error.message
           });
+          console.error(`❌ Failed for ${professional.name}:`, error.message);
         }
-
-        // Rate limit: 500ms between calls
-        if (results.successful + results.failed < results.total) {
-          await delay(500);
-        }
-
-      } catch (error: any) {
-        results.failed++;
-        results.errors.push({
-          professional_id: professional.id,
-          name: professional.name,
-          error: error.message
-        });
-        console.error(`❌ Failed for ${professional.name}:`, error.message);
       }
-    }
 
-    console.log(`✅ Batch complete: ${results.successful} successful, ${results.failed} failed`);
+      console.log(`✅ Background batch complete: ${results.successful} successful, ${results.failed} failed`);
+    };
 
+    // Start background processing
+    EdgeRuntime.waitUntil(processInBackground());
+
+    // Return immediate response
     return new Response(
       JSON.stringify({
         success: true,
-        message: `Generated ${results.successful} magic links`,
-        results
+        message: `Started processing ${professionals.length} professionals in background`,
+        results: {
+          total: professionals.length,
+          successful: 0,
+          failed: 0,
+          errors: [],
+          status: 'processing_in_background'
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -138,4 +154,9 @@ serve(async (req) => {
       }
     );
   }
+});
+
+// Handle shutdown
+addEventListener('beforeunload', (ev: any) => {
+  console.log('🛑 Function shutdown due to:', ev.detail?.reason);
 });
