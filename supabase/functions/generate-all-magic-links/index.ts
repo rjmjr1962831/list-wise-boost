@@ -18,7 +18,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { limit = null, sync_to_pipedrive = false, regenerate_all = false, offset = 0 } = await req.json();
+    const { limit = null, sync_to_pipedrive = false, regenerate_all = false, offset = 0, auto_continue = true } = await req.json();
 
     console.log(`🚀 Processing batch starting at offset ${offset}...`, { regenerate_all });
 
@@ -80,26 +80,21 @@ serve(async (req) => {
       try {
         console.log(`🔗 [${offset + results.successful + results.failed + 1}/${totalCount}] Generating link for ${professional.name}`);
 
-        const response = await fetch(`${supabaseUrl}/functions/v1/generate-magic-link`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${supabaseKey}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            professional_id: professional.id,
-            pipedrive_person_id: null
-          })
-        });
+        const { data: result, error: invokeError } = await supabase.functions.invoke(
+          'generate-magic-link',
+          {
+            body: {
+              professional_id: professional.id,
+              pipedrive_person_id: null,
+            },
+          }
+        );
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Failed to generate link: ${errorText}`);
+        if (invokeError) {
+          throw new Error(`Failed to generate link: ${invokeError.message}`);
         }
-
-        const result = await response.json();
         
-        if (result.success) {
+        if (result?.success) {
           results.successful++;
           console.log(`✅ Generated for ${professional.name}`);
         } else {
@@ -107,7 +102,7 @@ serve(async (req) => {
           results.errors.push({
             professional_id: professional.id,
             name: professional.name,
-            error: result.error
+            error: result?.error || 'Unknown error'
           });
         }
 
@@ -127,23 +122,27 @@ serve(async (req) => {
 
     console.log(`✅ Batch complete: ${results.successful} successful, ${results.failed} failed. Has more: ${hasMore}`);
 
-    // Auto-continue to next batch if there are more
-    if (hasMore) {
+    // Auto-continue to next batch if there are more (server-managed mode)
+    if (hasMore && auto_continue) {
       console.log(`🔄 Auto-continuing to next batch at offset ${nextOffset}...`);
-      
-      // Fire off next batch without waiting
-      fetch(`${supabaseUrl}/functions/v1/generate-all-magic-links`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          regenerate_all,
-          sync_to_pipedrive,
-          offset: nextOffset
-        })
-      }).catch(err => console.error('Failed to trigger next batch:', err));
+
+      // Fire off next batch without waiting (avoid timeouts)
+      // @ts-ignore - EdgeRuntime is available in the function runtime
+      EdgeRuntime.waitUntil(
+        supabase.functions
+          .invoke('generate-all-magic-links', {
+            body: {
+              regenerate_all,
+              sync_to_pipedrive,
+              offset: nextOffset,
+              auto_continue: true,
+            },
+          })
+          .then(({ error }) => {
+            if (error) console.error('Failed to trigger next batch:', error);
+          })
+          .catch((err) => console.error('Failed to trigger next batch:', err))
+      );
     }
 
     return new Response(

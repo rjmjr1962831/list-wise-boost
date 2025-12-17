@@ -24,52 +24,61 @@ export function MagicLinkGenerator() {
   const generateAllLinks = async () => {
     try {
       setIsGenerating(true);
-      setProgress(null);
+      setProgress({ total: 0, processed: 0, successful: 0, failed: 0, errors: [] });
 
-      console.log('🚀 Starting bulk magic link generation...');
-      
-      const { data, error } = await supabase.functions.invoke('generate-all-magic-links', {
-        body: { 
-          sync_to_pipedrive: syncToPipedrive,
-          regenerate_all: regenerateAll,
-          offset: 0
-        }
-      });
+      console.log("🚀 Starting bulk magic link generation...");
 
-      if (error) throw error;
+      let offset = 0;
+      let total = 0;
+      let successful = 0;
+      let failed = 0;
+      let errors: any[] = [];
 
-      if (data.success) {
-        const results = data.results || {};
-        const processed = results.processed || 0;
-        const total = results.total || 0;
-        const batchSuccessful = results.batch_successful || 0;
-        const batchFailed = results.batch_failed || 0;
-        
-        setProgress({
-          total,
-          processed,
-          successful: batchSuccessful,
-          failed: batchFailed,
-          errors: results.errors || []
+      // Client-managed batching so the UI can show real progress reliably.
+      // This disables the edge function's fire-and-forget self-invocation.
+      while (true) {
+        const { data, error } = await supabase.functions.invoke("generate-all-magic-links", {
+          body: {
+            sync_to_pipedrive: syncToPipedrive,
+            regenerate_all: regenerateAll,
+            offset,
+            auto_continue: false,
+          },
         });
 
-        if (results.has_more) {
-          toast({
-            title: "Processing...",
-            description: `Batch 1 complete (${processed}/${total}). Continuing in background...`,
-          });
-        } else {
-          toast({
-            title: "Magic Links Generated!",
-            description: `Successfully processed ${processed} links${syncToPipedrive ? ' and synced to Pipedrive' : ''}`,
-          });
-        }
-      } else {
-        throw new Error(data.error || 'Failed to generate links');
+        if (error) throw error;
+        if (!data?.success) throw new Error(data?.error || "Failed to generate links");
+
+        const results = data.results || {};
+        const processed = Number(results.processed || 0);
+        const nextTotal = Number(results.total || 0);
+        const batchSuccessful = Number(results.batch_successful || 0);
+        const batchFailed = Number(results.batch_failed || 0);
+        const batchErrors = Array.isArray(results.errors) ? results.errors : [];
+
+        total = nextTotal || total;
+        offset = processed;
+        successful += batchSuccessful;
+        failed += batchFailed;
+        errors = errors.concat(batchErrors);
+
+        setProgress({
+          total,
+          processed: offset,
+          successful,
+          failed,
+          errors,
+        });
+
+        if (!results.has_more) break;
       }
 
+      toast({
+        title: "Magic Links Generated!",
+        description: `Successfully processed ${successful + failed} links${syncToPipedrive ? " and synced to Pipedrive" : ""}`,
+      });
     } catch (error: any) {
-      console.error('Error generating magic links:', error);
+      console.error("Error generating magic links:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to generate magic links",
