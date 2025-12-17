@@ -15,6 +15,7 @@ export function MagicLinkGenerator() {
   const [regenerateAll, setRegenerateAll] = useState(false);
   const [progress, setProgress] = useState<{
     total: number;
+    processed: number;
     successful: number;
     failed: number;
     errors: any[];
@@ -30,18 +31,39 @@ export function MagicLinkGenerator() {
       const { data, error } = await supabase.functions.invoke('generate-all-magic-links', {
         body: { 
           sync_to_pipedrive: syncToPipedrive,
-          regenerate_all: regenerateAll
+          regenerate_all: regenerateAll,
+          offset: 0
         }
       });
 
       if (error) throw error;
 
       if (data.success) {
-        setProgress(data.results);
-        toast({
-          title: "Magic Links Generated!",
-          description: `Successfully created ${data.results.successful} links${syncToPipedrive ? ' and synced to Pipedrive' : ''}`,
+        const results = data.results || {};
+        const processed = results.processed || 0;
+        const total = results.total || 0;
+        const batchSuccessful = results.batch_successful || 0;
+        const batchFailed = results.batch_failed || 0;
+        
+        setProgress({
+          total,
+          processed,
+          successful: batchSuccessful,
+          failed: batchFailed,
+          errors: results.errors || []
         });
+
+        if (results.has_more) {
+          toast({
+            title: "Processing...",
+            description: `Batch 1 complete (${processed}/${total}). Continuing in background...`,
+          });
+        } else {
+          toast({
+            title: "Magic Links Generated!",
+            description: `Successfully processed ${processed} links${syncToPipedrive ? ' and synced to Pipedrive' : ''}`,
+          });
+        }
       } else {
         throw new Error(data.error || 'Failed to generate links');
       }
@@ -141,14 +163,16 @@ export function MagicLinkGenerator() {
         {progress && (
           <div className="space-y-4 pt-4 border-t">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-medium">Generation Complete</span>
+              <span className="font-medium">
+                {progress.processed < progress.total ? 'Processing...' : 'Generation Complete'}
+              </span>
               <span className="text-muted-foreground">
-                {progress.successful + progress.failed} / {progress.total}
+                {progress.processed} / {progress.total}
               </span>
             </div>
 
             <Progress 
-              value={((progress.successful + progress.failed) / progress.total) * 100} 
+              value={progress.total > 0 ? (progress.processed / progress.total) * 100 : 0} 
               className="h-2"
             />
 
@@ -179,7 +203,7 @@ export function MagicLinkGenerator() {
             {/* Success Rate Badge */}
             <div className="flex items-center justify-center gap-2">
               <Badge variant={progress.failed === 0 ? "default" : "secondary"}>
-                {((progress.successful / progress.total) * 100).toFixed(1)}% Success Rate
+                {progress.total > 0 ? ((progress.processed / progress.total) * 100).toFixed(1) : 0}% Complete
               </Badge>
               {syncToPipedrive && (
                 <Badge variant="outline" className="gap-1">
