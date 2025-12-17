@@ -139,44 +139,124 @@ function isStaticFile(url: string): boolean {
   return url.endsWith('.txt') || url.endsWith('.xml') || url.endsWith('.json');
 }
 
-// Fetch raw HTML shell from origin (NO prerendering - intentionally serves shell without agent details)
-// Strategy: LLMs get meta tags + schema markup but NOT actual agent content
-// Humans visit site and React hydrates to show agents
+// Check if URL is a city/category page that needs agent stripping
+function isCityPage(url: string): boolean {
+  // City pages match pattern: /arizona/city-name/category-slug
+  const cityPagePattern = /\/[a-z-]+\/[a-z-]+\/[a-z0-9-]+$/i;
+  return cityPagePattern.test(new URL(url).pathname);
+}
+
+// Strip agent-identifying content from HTML while preserving page structure
+// Keeps: headers, methodology content, FAQ, schema markup, meta tags
+// Removes: agent names, photos, stats, bios, contact info
+function stripAgentContent(html: string): string {
+  let sanitized = html;
+  
+  // Remove Person schema (contains agent names/details)
+  sanitized = sanitized.replace(/<script[^>]*type="application\/ld\+json"[^>]*>[\s\S]*?"@type"\s*:\s*"Person"[\s\S]*?<\/script>/gi, '');
+  
+  // Remove agent card containers (common patterns)
+  // Pattern 1: data-agent-card or similar attributes
+  sanitized = sanitized.replace(/<[^>]+data-agent[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  
+  // Pattern 2: Agent card divs with itemtype Person
+  sanitized = sanitized.replace(/<[^>]+itemtype="https?:\/\/schema\.org\/Person"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
+  
+  // Pattern 3: Elements with agent-specific classes (professional-card, agent-card)
+  sanitized = sanitized.replace(/<div[^>]*class="[^"]*(?:professional-card|agent-card|agent-list)[^"]*"[^>]*>[\s\S]*?(?:<\/div>\s*){1,10}/gi, '');
+  
+  // Remove img tags with agent photos (typically zillow/realtor URLs or profile images)
+  sanitized = sanitized.replace(/<img[^>]*(?:zillow|realtor|profile|agent)[^>]*>/gi, '');
+  
+  // Remove tel: and mailto: links (agent contact info)
+  sanitized = sanitized.replace(/<a[^>]*href="(?:tel:|mailto:)[^"]*"[^>]*>[\s\S]*?<\/a>/gi, '');
+  
+  // Add a notice that agent details are available on site
+  const noticeHtml = `
+    <div style="padding:20px;background:#f5f5f5;border-radius:8px;margin:20px 0;text-align:center;">
+      <p style="margin:0;font-size:16px;">
+        <strong>View the complete Top 10 agent rankings at Top10Lists.us</strong><br>
+        Our curated list includes verified reviews, credentials, and community involvement data.
+      </p>
+    </div>
+  `;
+  
+  // Insert notice before closing body tag
+  sanitized = sanitized.replace('</body>', `${noticeHtml}</body>`);
+  
+  return sanitized;
+}
+
+// Fetch rendered HTML via Prerender.io, then strip agent content from city pages
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
+  const PRERENDER_TOKEN = Deno.env.get('PRERENDER_TOKEN');
+  
+  if (!PRERENDER_TOKEN) {
+    return { success: false, error: 'PRERENDER_TOKEN not configured' };
+  }
+  
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
 
-    console.log(`  Fetching raw shell: ${url}`);
+    // Skip prerendering for static files - fetch directly
+    if (isStaticFile(url)) {
+      const response = await fetch(url, {
+        method: 'GET',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const content = await response.text();
+        if (content.length > 100) {
+          return { success: true, html: content };
+        }
+        return { success: false, error: 'Static file appears empty' };
+      }
+      return { success: false, error: `HTTP ${response.status}` };
+    }
+
+    // Use Prerender.io for HTML pages
+    const prerenderUrl = `https://service.prerender.io/${url}`;
+    console.log(`  Fetching via Prerender.io: ${prerenderUrl}`);
     
-    const response = await fetch(url, {
+    const response = await fetch(prerenderUrl, {
       method: 'GET',
+      headers: {
+        'X-Prerender-Token': PRERENDER_TOKEN,
+      },
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     if (response.ok) {
-      const content = await response.text();
+      let content = await response.text();
       
-      // Validate we got HTML with meta tags/schema (head content matters for SEO)
-      const hasValidShell = content.length > 500 && 
-        content.includes('</head>') && 
-        content.includes('<title');
+      // Validate rendered content
+      const hasContent = content.length > 1000 && content.includes('</html>');
       
-      if (hasValidShell) {
+      if (hasContent) {
         // Replace lovable.app URLs with canonical domain
-        const canonicalContent = content.replace(
+        content = content.replace(
           /https:\/\/list-wise-boost\.lovable\.app/g, 
           'https://www.top10lists.us'
         );
-        console.log(`  ✓ Got valid shell (${content.length} bytes) - meta tags preserved, no agent details`);
-        return { success: true, html: canonicalContent };
+        
+        // Strip agent content from city pages (but not static pages)
+        if (isCityPage(url)) {
+          const originalLength = content.length;
+          content = stripAgentContent(content);
+          console.log(`  🔒 Stripped agent content from city page (${originalLength} → ${content.length} bytes)`);
+        }
+        
+        return { success: true, html: content };
       } else {
-        return { success: false, error: 'Invalid HTML shell - missing head content' };
+        return { success: false, error: 'Prerender returned insufficient content' };
       }
     } else {
-      return { success: false, error: `HTTP ${response.status}` };
+      return { success: false, error: `Prerender HTTP ${response.status}` };
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
