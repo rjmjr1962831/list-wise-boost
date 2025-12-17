@@ -12,6 +12,7 @@ import { Loader2, Link2, CheckCircle, XCircle, ExternalLink } from "lucide-react
 export function MagicLinkGenerator() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [syncToPipedrive, setSyncToPipedrive] = useState(true);
+  const [regenerateAll, setRegenerateAll] = useState(false);
   const [progress, setProgress] = useState<{
     total: number;
     successful: number;
@@ -28,7 +29,8 @@ export function MagicLinkGenerator() {
       
       const { data, error } = await supabase.functions.invoke('generate-all-magic-links', {
         body: { 
-          sync_to_pipedrive: syncToPipedrive 
+          sync_to_pipedrive: syncToPipedrive,
+          regenerate_all: regenerateAll
         }
       });
 
@@ -83,6 +85,22 @@ export function MagicLinkGenerator() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Regenerate All Toggle */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <Label htmlFor="regenerate-all">Regenerate All Links</Label>
+            <p className="text-sm text-muted-foreground">
+              Update ALL existing links to new format (arizona/city/name-phone)
+            </p>
+          </div>
+          <Switch
+            id="regenerate-all"
+            checked={regenerateAll}
+            onCheckedChange={setRegenerateAll}
+            disabled={isGenerating}
+          />
+        </div>
+
         {/* Sync to Pipedrive Toggle */}
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
