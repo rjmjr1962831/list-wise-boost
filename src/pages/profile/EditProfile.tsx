@@ -692,8 +692,10 @@ export default function EditProfile() {
           fieldName={selectedField.label}
           profileLink={getProfileLink()}
           professionalName={professional?.name || ''}
+          professionalId={professional?.id || ''}
           professionalEmail={professional?.email}
           pipedrivePersonId={professional?.pipedrive_person_id}
+          currentValue={(professional as any)?.[selectedField.key] || ''}
         />
       )}
       </div>

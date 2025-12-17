@@ -35,6 +35,8 @@ import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
 import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
 import { FunnelAnalyticsDashboard } from '@/components/admin/FunnelAnalyticsDashboard';
 import { BulkCityContentGenerator } from '@/components/admin/BulkCityContentGenerator';
+import { FieldChangeRequestsManager } from '@/components/admin/FieldChangeRequestsManager';
+import { FileEdit } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -252,6 +254,10 @@ const AdminDashboard = () => {
               <Globe className="mr-2 h-4 w-4" />
               City Content
             </TabsTrigger>
+            <TabsTrigger value="change-requests">
+              <FileEdit className="mr-2 h-4 w-4" />
+              Change Requests
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -329,6 +335,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="city-content" className="space-y-4">
             <BulkCityContentGenerator />
+          </TabsContent>
+
+          <TabsContent value="change-requests" className="space-y-4">
+            <FieldChangeRequestsManager />
           </TabsContent>
         </Tabs>
       </div>

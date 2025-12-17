@@ -14,8 +14,11 @@ interface FieldReviewRequestModalProps {
   fieldName: string;
   profileLink: string;
   professionalName: string;
+  professionalId: string;
   professionalEmail?: string;
   pipedrivePersonId?: number;
+  currentValue?: string;
+  proposedValue?: string;
 }
 
 export default function FieldReviewRequestModal({
@@ -24,20 +27,24 @@ export default function FieldReviewRequestModal({
   fieldName,
   profileLink,
   professionalName,
+  professionalId,
   professionalEmail,
-  pipedrivePersonId
+  pipedrivePersonId,
+  currentValue,
+  proposedValue
 }: FieldReviewRequestModalProps) {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [changeRequest, setChangeRequest] = useState('');
+  const [newProposedValue, setNewProposedValue] = useState(proposedValue || '');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!changeRequest.trim()) {
+    if (!newProposedValue.trim()) {
       toast({
         title: 'Missing Information',
-        description: 'Please describe what you want to change and why.',
+        description: 'Please enter what you want this field to say.',
         variant: 'destructive'
       });
       return;
@@ -51,9 +58,12 @@ export default function FieldReviewRequestModal({
           fieldName,
           profileLink,
           professionalName,
+          professionalId,
           professionalEmail,
           pipedrivePersonId,
-          changeRequest: changeRequest.trim()
+          changeRequest: changeRequest.trim(),
+          currentValue: currentValue || null,
+          proposedValue: newProposedValue.trim() || null
         }
       });
 
@@ -67,6 +77,7 @@ export default function FieldReviewRequestModal({
       });
 
       setChangeRequest('');
+      setNewProposedValue('');
       onOpenChange(false);
     } catch (err: any) {
       console.error('Error submitting review request:', err);
@@ -82,7 +93,7 @@ export default function FieldReviewRequestModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Request Field Change</DialogTitle>
           <DialogDescription>
@@ -96,25 +107,47 @@ export default function FieldReviewRequestModal({
             <Input value={fieldName} disabled className="bg-muted" />
           </div>
 
+          {/* Current Value */}
+          {currentValue && (
+            <div>
+              <Label className="text-muted-foreground">Current Value</Label>
+              <div className="mt-1 p-3 bg-muted rounded-md text-sm max-h-32 overflow-y-auto whitespace-pre-wrap">
+                <div dangerouslySetInnerHTML={{ __html: currentValue }} />
+              </div>
+            </div>
+          )}
+
+          {/* Proposed New Value */}
           <div>
-            <Label>Magic Link</Label>
-            <Input value={profileLink} disabled className="bg-muted text-xs" />
+            <Label htmlFor="proposedValue">
+              What should this field say instead? *
+            </Label>
+            <Textarea
+              id="proposedValue"
+              value={newProposedValue}
+              onChange={(e) => setNewProposedValue(e.target.value)}
+              placeholder="Enter the exact text you want this field to display..."
+              rows={4}
+              className="mt-1"
+              required
+            />
           </div>
 
+          {/* Reason for Change */}
           <div>
             <Label htmlFor="changeRequest">
-              What do you want to change and why? *
+              Why should we make this change?
             </Label>
             <Textarea
               id="changeRequest"
               value={changeRequest}
               onChange={(e) => setChangeRequest(e.target.value)}
-              placeholder="Please describe the change you'd like to make. Include details and links to supporting documentation if possible (e.g., updated license records, official certificates, etc.)"
-              rows={5}
-              required
+              placeholder="Please explain why this change is needed. Include links to supporting documentation if possible (e.g., updated license records, official certificates, etc.)"
+              rows={3}
+              className="mt-1"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Please add as much detail as possible, including links to supporting documentation.
+              Optional: Add supporting documentation or links to verify the change.
             </p>
           </div>
 

@@ -918,6 +918,66 @@ export type Database = {
           },
         ]
       }
+      field_change_requests: {
+        Row: {
+          change_request: string
+          created_at: string
+          current_value: string | null
+          field_name: string
+          id: string
+          pipedrive_activity_id: number | null
+          professional_id: string
+          proposed_value: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          change_request: string
+          created_at?: string
+          current_value?: string | null
+          field_name: string
+          id?: string
+          pipedrive_activity_id?: number | null
+          professional_id: string
+          proposed_value?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          change_request?: string
+          created_at?: string
+          current_value?: string | null
+          field_name?: string
+          id?: string
+          pipedrive_activity_id?: number | null
+          professional_id?: string
+          proposed_value?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_change_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_change_requests_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       funnel_events: {
         Row: {
           created_at: string | null
