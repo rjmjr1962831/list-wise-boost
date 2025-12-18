@@ -45,6 +45,8 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
 
     const timestamp = new Date().toISOString();
     
+    const baseUrl = SUPABASE_URL;
+    
     await client.send({
       from: SMTP_FROM_EMAIL,
       to: ADMIN_EMAIL,
@@ -67,7 +69,33 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
           </ul>
         ` : ''}
         <hr />
-        <p>Please check the edge function logs for more details.</p>
+        <h2>🔧 Quick Actions</h2>
+        <p>Click a button to trigger the action directly:</p>
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="padding: 8px;">
+              <a href="${baseUrl}/functions/v1/warm-cache" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🔄 Re-run Warm Cache</a>
+            </td>
+            <td style="padding: 8px;">
+              <a href="${baseUrl}/functions/v1/check-cache-health" style="display: inline-block; padding: 12px 24px; background: #6b7280; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🏥 Run Health Check</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px;">
+              <a href="${baseUrl}/functions/v1/cache-admin-action?action=start-cron" style="display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">▶️ Start Cron</a>
+            </td>
+            <td style="padding: 8px;">
+              <a href="${baseUrl}/functions/v1/cache-admin-action?action=stop-cron" style="display: inline-block; padding: 12px 24px; background: #ef4444; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">⏹️ Stop Cron</a>
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2" style="padding: 8px;">
+              <a href="${baseUrl}/functions/v1/cache-admin-action?action=check-cron" style="display: inline-block; padding: 12px 24px; background: #8b5cf6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">📊 Check Cron Status</a>
+            </td>
+          </tr>
+        </table>
+        <hr />
+        <p style="color: #666; font-size: 12px;">Check edge function logs for more details.</p>
       `,
     });
     
