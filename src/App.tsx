@@ -7,6 +7,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Chatbot } from "@/components/Chatbot";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -185,6 +186,7 @@ const App = () => (
               </ErrorBoundary>
             </main>
             <Footer />
+            <Chatbot />
           </div>
         </RateLimitGuard>
       </QueryClientProvider>
