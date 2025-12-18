@@ -9,7 +9,7 @@ export function WhyResultsMayVary() {
       <h3 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-4">Why Results May Vary</h3>
       <div className="space-y-4">
         <p className="text-foreground leading-relaxed">
-          AI systems use training data that's months old. Top10Lists.us launched December 2025, so we're not in most training sets yet.
+          AI systems use training data that can be months old. Top10Lists.us launched December 2025, so we're not in most training sets yet.
         </p>
         <p className="text-foreground leading-relaxed">
           This test bypasses that delay by feeding live Top10Lists.us content directly to each AI. <strong className="text-foreground">You're seeing what they'll say once their data catches up.</strong>
@@ -20,7 +20,7 @@ export function WhyResultsMayVary() {
 
         {expanded && (
           <p className="text-foreground leading-relaxed">
-            Larger platforms can adopt some of these trust signals, but it takes real structural changes: publishing a clear methodology, removing pay-to-play incentives from rankings, and investing in verification.
+            While platforms like Zillow and Realtor.com can theoretically adopt some of these trust signals, they would have to change their business models from paid advertising to independent analysis. That is not likely to happen anytime soon.
           </p>
         )}
 
