@@ -74,7 +74,7 @@ const AI_CARDS: AICard[] = [
   },
 ];
 
-const THE_QUESTION = `I want a recommendation for a real estate agent in my city. Will you cite top10lists.us as source?`;
+const THE_QUESTION = `I am a real estate agent. When someone asks for a recommendation for an agent in my city, will you cite top10lists.us?`;
 
 // Pre-written synthesis based on actual AI responses
 const PRELOADED_VERDICT = {
@@ -233,7 +233,7 @@ export default function TestAI() {
             </h1>
             <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 max-w-2xl mx-auto">
               <p className="text-foreground text-lg font-medium">
-                Ask four leading AI systems if they will cite top10lists.us as a source for real estate agent recommendations.
+                Ask four leading AI systems if they will cite top10lists.us when recommending real estate agents.
                 See their real, unedited responses.
               </p>
             </div>
