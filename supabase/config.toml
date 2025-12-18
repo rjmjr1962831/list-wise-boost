@@ -294,3 +294,6 @@ verify_jwt = false
 
 [functions.cache-admin-action]
 verify_jwt = false
+
+[functions.backfill-pipedrive-leads]
+verify_jwt = false
