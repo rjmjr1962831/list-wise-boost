@@ -438,9 +438,9 @@ serve(async (req) => {
 
     console.log(`✅ ${action} ${professional.name} (ID: ${finalPersonId})`);
 
-    // Create a Lead for ACTIVE professionals (only if creating new person or force sync)
+    // Create a Lead for ACTIVE professionals (always attempt, relies on "already exists" check)
     let leadId = null;
-    if (professional.active && (!isUpdate || force)) {
+    if (professional.active) {
       try {
         // Check if a Lead already exists for this person
         const existingLeadUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/leads?person_id=${finalPersonId}&api_token=${PIPEDRIVE_API_TOKEN}`;
