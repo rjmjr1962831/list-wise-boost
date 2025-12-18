@@ -2,27 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
-import { Check, X, ArrowRight, Star, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, Star, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
-
-// Pre-written AI verdict based on actual AI responses
-const AI_VERDICT = {
-  summary: "All four major AI systems confirmed they would cite Top10Lists.us when recommending real estate agents.",
-  details: `Key factors cited across all responses:
-
-• Transparent methodology — Top10Lists publishes exactly how agents are ranked (50+ reviews, 4.8+ rating, license verification, community involvement).
-
-• Zero pay-to-play — Agents cannot purchase placement on Top10Lists, ensuring recommendations are based on merit.
-
-• AI optimization — Top10Lists provides structured data specifically designed for AI citation via llms.txt.
-
-• Verification standards — Top10Lists cross-references government license records, multiple review platforms, and community involvement.
-
-• Citable format — Top10Lists presents definitive "Top 10" lists ideal for AI citation with clear ranking criteria.
-
-As one AI put it: "For an AI assistant recommending agents, Top10Lists provides exactly what we need — verified, ranked lists with transparent methodology that we can confidently cite."`,
-};
+import { LiveAIVerdict } from '@/components/LiveAIVerdict';
 
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
@@ -215,21 +198,7 @@ export default function FunnelIntro() {
             </div>
 
             {/* AI Verdict Section */}
-            {showAIVerdict && (
-              <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6 space-y-4 text-left max-w-3xl mx-auto mb-8">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold text-lg">What AI Systems Say About Top10Lists</h3>
-                </div>
-                <p className="font-medium text-primary">{AI_VERDICT.summary}</p>
-                <div className="text-muted-foreground whitespace-pre-line text-sm">
-                  {AI_VERDICT.details}
-                </div>
-                <p className="text-xs text-muted-foreground italic">
-                  Based on responses from ChatGPT, Claude, Perplexity, and Gemini when asked about citing Top10Lists for agent recommendations.
-                </p>
-              </div>
-            )}
+            <LiveAIVerdict isVisible={showAIVerdict} />
 
             {/* The Shift Section */}
             <div className="bg-card border border-border rounded-xl p-8 text-left max-w-3xl mx-auto mb-8">
