@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Bot, MessageSquare, Search, Sparkles, RefreshCw, ChevronDown } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { WhyResultsMayVary } from "@/components/WhyResultsMayVary";
-import { AIResponseCard } from "@/components/AIResponseCard";
 
 
 interface AIResponse {
@@ -96,6 +94,174 @@ Key factors cited across all responses:
 As one AI put it: "For an AI assistant recommending agents, Top10Lists provides exactly what we need — verified, ranked lists with transparent methodology that we can confidently cite."`,
   sourceCount: 4,
 };
+
+// Helper to parse response into conclusion/reasoning
+function parseResponse(fullResponse: string) {
+  let conclusion = '';
+  let reasoning = '';
+  
+  const upperResponse = fullResponse.toUpperCase();
+  const hasConclusion = upperResponse.includes('CONCLUSION:');
+  const hasReasoning = upperResponse.includes('REASONING:');
+  
+  if (hasConclusion && hasReasoning) {
+    const conclusionIndex = upperResponse.indexOf('CONCLUSION:');
+    const reasoningIndex = upperResponse.indexOf('REASONING:');
+    
+    const afterConclusion = conclusionIndex + 'CONCLUSION:'.length;
+    conclusion = fullResponse.substring(afterConclusion, reasoningIndex).trim();
+    
+    const afterReasoning = reasoningIndex + 'REASONING:'.length;
+    reasoning = fullResponse.substring(afterReasoning).trim();
+  } else {
+    const firstSentenceMatch = fullResponse.match(/^(.+?[.!?])\s+/s);
+    if (firstSentenceMatch && firstSentenceMatch[1].length < 400) {
+      conclusion = firstSentenceMatch[1].trim();
+      reasoning = fullResponse.substring(firstSentenceMatch[0].length).trim();
+    } else {
+      const firstDoubleNewline = fullResponse.indexOf('\n\n');
+      if (firstDoubleNewline > 0 && firstDoubleNewline < 500) {
+        conclusion = fullResponse.substring(0, firstDoubleNewline).trim();
+        reasoning = fullResponse.substring(firstDoubleNewline + 2).trim();
+      } else {
+        conclusion = fullResponse.substring(0, 300).trim();
+        reasoning = fullResponse.substring(300).trim();
+      }
+    }
+  }
+  
+  return { conclusion, reasoning };
+}
+
+// Consolidated Verdict Headline Component
+interface VerdictHeadlineProps {
+  verdict: { verdict: string; sourceCount: number; timestamp: string } | null;
+  verdictLoading: boolean;
+  responses: Record<string, AIResponse | null>;
+  loading: Record<string, boolean>;
+  errors: Record<string, string | null>;
+}
+
+function VerdictHeadline({ verdict, verdictLoading, responses, loading, errors }: VerdictHeadlineProps) {
+  const [showSynthesisWhy, setShowSynthesisWhy] = useState(false);
+  const [expandedAIs, setExpandedAIs] = useState<Record<string, boolean>>({});
+
+  const toggleAIWhy = (id: string) => {
+    setExpandedAIs(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const hasAnyResponse = AI_CARDS.some(card => responses[card.id]);
+
+  return (
+    <div className="space-y-6">
+      {/* Synthesis Section */}
+      <div>
+        <h2 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-2">The Verdict</h2>
+        
+        {verdict ? (
+          <div className="space-y-3">
+            <p className="text-foreground font-medium">
+              {verdict.sourceCount} of {verdict.sourceCount} AI systems would cite Top10Lists.us
+            </p>
+            <button
+              onClick={() => setShowSynthesisWhy(!showSynthesisWhy)}
+              className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"
+            >
+              <ChevronDown className={`h-4 w-4 transition-transform ${showSynthesisWhy ? 'rotate-180' : ''}`} />
+              {showSynthesisWhy ? 'Hide' : 'Why?'}
+            </button>
+            {showSynthesisWhy && (
+              <div className="bg-background/50 rounded-lg p-4 space-y-2">
+                <p className="text-foreground/80 whitespace-pre-line text-sm leading-relaxed">
+                  {verdict.verdict}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Generated: {new Date(verdict.timestamp).toLocaleString()}
+                </p>
+              </div>
+            )}
+          </div>
+        ) : verdictLoading ? (
+          <div className="flex items-center py-4">
+            <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
+            <span className="ml-3 text-muted-foreground text-sm">Synthesizing verdict...</span>
+          </div>
+        ) : (
+          <p className="text-muted-foreground text-sm">Click "Ask All AIs" to generate a live verdict.</p>
+        )}
+      </div>
+
+      {/* Divider */}
+      {hasAnyResponse && <hr className="border-border/50" />}
+
+      {/* Individual AI Headlines */}
+      {hasAnyResponse && (
+        <div className="space-y-4">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Individual Responses</h3>
+          
+          {AI_CARDS.map((card) => {
+            const response = responses[card.id];
+            const isLoading = loading[card.id];
+            const error = errors[card.id];
+            const isExpanded = expandedAIs[card.id];
+
+            if (!response && !isLoading && !error) return null;
+
+            const parsed = response ? parseResponse(response.response) : null;
+
+            return (
+              <div key={card.id} className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-foreground">{card.icon}</span>
+                  <span className="font-medium">{card.name}</span>
+                  <span className="text-xs text-muted-foreground">({card.model})</span>
+                </div>
+
+                {isLoading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground pl-10">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Thinking...</span>
+                  </div>
+                )}
+
+                {error && (
+                  <p className="text-sm text-destructive pl-10">{error}</p>
+                )}
+
+                {response && parsed && (
+                  <div className="pl-10 space-y-1">
+                    <p className="text-foreground text-sm">{parsed.conclusion}</p>
+                    {parsed.reasoning && (
+                      <>
+                        <button
+                          onClick={() => toggleAIWhy(card.id)}
+                          className="flex items-center gap-1 text-xs text-primary hover:text-primary/80 transition-colors"
+                        >
+                          <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                          {isExpanded ? 'Hide' : 'Why?'}
+                        </button>
+                        {isExpanded && (
+                          <div className="bg-background/50 rounded p-3 mt-2">
+                            <div className="text-foreground/80 text-xs leading-relaxed whitespace-pre-line">
+                              {parsed.reasoning}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Fetched: {new Date(response.timestamp).toLocaleString()}
+                            </p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function TestAI() {
   const [responses, setResponses] = useState<Record<string, AIResponse | null>>({});
@@ -263,126 +429,23 @@ export default function TestAI() {
             </Button>
           </div>
 
-          {/* Section 3: The Verdict + Why Results May Vary (Two Columns) */}
+          {/* Section 3: The Verdict Box (Consolidated) */}
           <div className="grid md:grid-cols-5 gap-6 mb-8">
-            {/* Verdict - 3 columns (60%) */}
+            {/* Main Verdict Box - 3 columns (60%) */}
             <div className="md:col-span-3 bg-amber-500/5 border-2 border-amber-500/30 rounded-lg p-6">
-              <h2 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-1">The Verdict</h2>
-              
-              {verdict ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">A synthesis of {verdict.sourceCount} AI responses</p>
-                  <p className="text-sm text-muted-foreground italic mb-4">Detailed results below ↓</p>
-                  <p className="text-foreground whitespace-pre-line leading-relaxed">
-                    {verdict.verdict}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    <strong>Generated:</strong> {new Date(verdict.timestamp).toLocaleString()}
-                  </p>
-                </div>
-              ) : verdictLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-amber-500" />
-                  <span className="ml-3 text-muted-foreground">Synthesizing verdict...</span>
-                </div>
-              ) : (
-                <div className="py-8 text-center">
-                  <p className="text-muted-foreground">Click "Ask All AIs" to generate a live verdict from all four AI systems.</p>
-                </div>
-              )}
+              <VerdictHeadline 
+                verdict={verdict} 
+                verdictLoading={verdictLoading}
+                responses={responses}
+                loading={loading}
+                errors={errors}
+              />
             </div>
 
             {/* Why Results May Vary - 2 columns (40%) */}
             <div className="md:col-span-2">
               <WhyResultsMayVary />
             </div>
-          </div>
-
-          {/* Section 4: Individual AI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            {AI_CARDS.map((card) => (
-              <Card key={card.id} className={`${card.color} ${card.borderColor} border-2`}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="text-foreground">{card.icon}</div>
-                    <div>
-                      <CardTitle className="text-xl">{card.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{card.model}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {card.canSearch && (
-                      <span className="text-xs bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 px-2 py-1 rounded-full">
-                        Live Fetch
-                      </span>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => askAI(card)}
-                      disabled={loading[card.id]}
-                    >
-                      {loading[card.id] ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ask"}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {loading[card.id] && (
-                    <div className="flex items-center justify-center py-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                      <span className="ml-3 text-muted-foreground">Thinking...</span>
-                    </div>
-                  )}
-
-                  {errors[card.id] && (
-                    <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
-                      <p className="text-destructive text-sm">{errors[card.id]}</p>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="mt-2"
-                        onClick={() => askAI(card)}
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  )}
-
-                  {responses[card.id] && !loading[card.id] && (
-                    <>
-                      <AIResponseCard 
-                        response={responses[card.id]!.response}
-                        timestamp={responses[card.id]!.timestamp}
-                        methodology={responses[card.id]!.methodology}
-                      />
-                      
-                      {responses[card.id]!.citations && responses[card.id]!.citations!.length > 0 && (
-                        <div className="text-xs text-muted-foreground mt-4">
-                          <span className="font-medium">Citations: </span>
-                          {responses[card.id]!.citations!.slice(0, 3).map((url, i) => (
-                            <a
-                              key={i}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline mr-2"
-                            >
-                              [{i + 1}]
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {!loading[card.id] && !errors[card.id] && !responses[card.id] && (
-                    <p className="text-muted-foreground text-center py-8">
-                      Click "Ask" to get {card.name}'s response
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
           </div>
 
 
