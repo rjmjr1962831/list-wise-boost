@@ -12,18 +12,18 @@ export function WhyResultsMayVary() {
           AI systems use training data that's months old. Top10Lists.us launched December 2025, so we're not in most training sets yet.
         </p>
         <p className="text-foreground leading-relaxed">
-          This comparison bypasses that delay by feeding live content directly to each AI. <strong className="text-foreground">You're seeing what they'll say once their data catches up.</strong>
+          This test bypasses that delay by feeding live Top10Lists.us content directly to each AI. <strong className="text-foreground">You're seeing what they'll say once their data catches up.</strong>
         </p>
         <p className="text-foreground leading-relaxed">
-          The question isn't <em>if</em> AI will recommend merit-based rankings over pay-to-play. It's <em>when</em>. The lists are building now.
+          The question isn't <em>if</em> AI will cite transparent, merit-based rankings. It's <em>when</em>. The lists are building now.
         </p>
-        
+
         {expanded && (
           <p className="text-foreground leading-relaxed">
-            Could Zillow catch up? Not easily. Their business runs on agents paying for placement. To match our trust signals, they'd have to stop selling rankings and rebuild around actual performance data. That's not a feature update. It's a business model rewrite that would gut their revenue. Same story for Realtor.com and HomeLight. We built for AI trust from day one. They'd have to start over.
+            Larger platforms can adopt some of these trust signals, but it takes real structural changes: publishing a clear methodology, removing pay-to-play incentives from rankings, and investing in verification.
           </p>
         )}
-        
+
         <button
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1 text-sm text-primary hover:text-primary/80 transition-colors"

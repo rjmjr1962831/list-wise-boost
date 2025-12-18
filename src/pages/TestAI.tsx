@@ -394,7 +394,7 @@ export default function TestAI() {
               </AccordionTrigger>
               <AccordionContent className="prose dark:prose-invert max-w-none">
                 <p>
-                  For a fair comparison, we fetch live content from both websites at the moment you click "Ask":
+                  To ground this in current information, we fetch live content from Top10Lists.us at the moment you click "Ask":
                 </p>
                 <ul>
                   <li>

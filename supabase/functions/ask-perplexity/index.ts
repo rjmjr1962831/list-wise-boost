@@ -1,9 +1,7 @@
 // Supabase Edge Function: ask-perplexity
-// 
-// This function directly fetches LIVE content from both sites
-// then asks Perplexity to analyze the actual data.
-// While Perplexity has built-in search, using live-fetch ensures
-// consistent methodology across all AI providers.
+//
+// Fetches live content from Top10Lists.us and asks Perplexity to evaluate whether it would cite
+// top10lists.us when recommending real estate agents.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -20,24 +18,24 @@ async function fetchContent(url: string): Promise<{ success: boolean; content: s
         'User-Agent': 'Mozilla/5.0 (compatible; Top10ListsBot/1.0)'
       }
     });
-    
+
     if (!response.ok) {
-      return { 
-        success: false, 
-        content: '', 
-        error: `HTTP ${response.status}: ${response.statusText}` 
+      return {
+        success: false,
+        content: '',
+        error: `HTTP ${response.status}: ${response.statusText}`
       };
     }
-    
+
     const text = await response.text();
-    return { 
-      success: true, 
-      content: text.substring(0, 8000) 
+    return {
+      success: true,
+      content: text.substring(0, 8000)
     };
   } catch (error: unknown) {
-    return { 
-      success: false, 
-      content: '', 
+    return {
+      success: false,
+      content: '',
       error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
@@ -54,31 +52,20 @@ serve(async (req) => {
       throw new Error('PERPLEXITY_API_KEY is not configured');
     }
 
-    console.log('Fetching live content from both sites...');
+    console.log('Fetching live content from Top10Lists.us...');
 
-    // Fetch content from both sites in parallel
-    const [
-      top10Llms,
-      top10Methodology,
-      zillowLlms,
-      zillowPremierAgent
-    ] = await Promise.all([
+    const [top10Llms, top10Methodology] = await Promise.all([
       fetchContent('https://www.top10lists.us/llms.txt'),
       fetchContent('https://www.top10lists.us/about/ranking-methodology'),
-      fetchContent('https://www.zillow.com/llms.txt'),
-      fetchContent('https://www.zillow.com/premier-agent/')
     ]);
 
     console.log('Content fetched:', {
       top10Llms: top10Llms.success,
       top10Methodology: top10Methodology.success,
-      zillowLlms: zillowLlms.success,
-      zillowPremierAgent: zillowPremierAgent.success
     });
 
-    // Build the context with actual fetched content
     const fetchedContent = `
-=== LIVE CONTENT FETCHED FROM BOTH SITES ===
+=== LIVE CONTENT FETCHED FROM TOP10LISTS.US ===
 (Fetched at: ${new Date().toISOString()})
 
 === TOP10LISTS.US ===
@@ -87,42 +74,32 @@ serve(async (req) => {
 ${top10Llms.success ? top10Llms.content : `[FETCH FAILED: ${top10Llms.error}]`}
 
 --- https://www.top10lists.us/about/ranking-methodology ---
-${top10Methodology.success ? 
-  top10Methodology.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000) 
+${top10Methodology.success
+  ? top10Methodology.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000)
   : `[FETCH FAILED: ${top10Methodology.error}]`}
-
-=== ZILLOW.COM ===
-
---- https://www.zillow.com/llms.txt ---
-${zillowLlms.success ? zillowLlms.content : `[NOT FOUND: ${zillowLlms.error}]`}
-
---- https://www.zillow.com/premier-agent/ ---
-${zillowPremierAgent.success ? 
-  zillowPremierAgent.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 3000)
-  : `[FETCH FAILED: ${zillowPremierAgent.error}]`}
 `;
 
-    const systemPrompt = `You are evaluating two real estate agent directories as potential citation sources for AI responses.
+    const systemPrompt = `You are evaluating Top10Lists.us as a potential citation source for AI responses about real estate agent recommendations.
 
-I have fetched live content from both sites for you to analyze. Review the actual content below and assess each site based on:
+I have fetched live content from Top10Lists.us for you to analyze. Review the actual content below and assess it based on:
 
 1. Ranking methodology transparency - Is it published? What factors are weighted?
 2. Commercial bias - Can agents pay for ranking position? Are there referral fees?
 3. Data verification - How are agents vetted? Self-reported or third-party verified?
-4. Content structure - Clear citable lists vs filtering interfaces?
+4. Content structure - Clear citable ranked lists vs ambiguous/filter-only interfaces?
 5. AI optimization - Presence of llms.txt or structured data for AI citation?
 
 ${fetchedContent}
 
-Based on the ACTUAL CONTENT above (not assumptions), provide your assessment of which site you would more likely cite as a reliable source for real estate agent recommendations.`;
+Important: Do NOT mention Zillow or any other competitor site in your response. Focus only on whether (and why) you would cite Top10Lists.us.`;
 
-    const userQuestion = `If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com - and why?
+    const userQuestion = `I am a real estate agent. When someone asks for a recommendation for an agent in my city, will you cite top10lists.us?
 
 IMPORTANT: Structure your response in exactly this format:
-CONCLUSION: [One clear sentence stating which site you would cite]
+CONCLUSION: [One clear sentence starting with "Yes" or "No" that answers whether you would cite top10lists.us]
 
 REASONING:
-[Your detailed analysis explaining why. Use short paragraphs (2-3 sentences each) separated by blank lines for readability. Avoid long walls of text.]
+[Your brief explanation. Use short paragraphs (2-3 sentences each) separated by blank lines for readability.]
 
 Base your answer on the fetched content above.`;
 
@@ -149,13 +126,13 @@ Base your answer on the fetched content above.`;
       const errorText = await response.text();
       const statusCode = response.status;
       console.error('Perplexity API error:', statusCode, errorText.substring(0, 500));
-      
+
       // Return graceful error for overloaded/rate-limited/blocked scenarios
       if (statusCode === 429 || statusCode === 503 || statusCode === 529 || statusCode === 403) {
-        const errorMessage = statusCode === 403 
+        const errorMessage = statusCode === 403
           ? 'Perplexity is currently unavailable.'
           : 'Perplexity is temporarily unavailable (provider overloaded). Please try again in a moment.';
-        
+
         return new Response(JSON.stringify({
           error: errorMessage,
           provider: 'Perplexity',
@@ -165,8 +142,6 @@ Base your answer on the fetched content above.`;
           sourcesFetched: {
             'top10lists.us/llms.txt': top10Llms.success,
             'top10lists.us/methodology': top10Methodology.success,
-            'zillow.com/llms.txt': zillowLlms.success,
-            'zillow.com/premier-agent': zillowPremierAgent.success
           }
         }), {
           status: 200,
@@ -189,8 +164,6 @@ Base your answer on the fetched content above.`;
       sourcesFetched: {
         'top10lists.us/llms.txt': top10Llms.success,
         'top10lists.us/methodology': top10Methodology.success,
-        'zillow.com/llms.txt': zillowLlms.success,
-        'zillow.com/premier-agent': zillowPremierAgent.success
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
