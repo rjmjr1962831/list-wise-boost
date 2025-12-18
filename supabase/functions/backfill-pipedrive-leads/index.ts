@@ -27,11 +27,12 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Fetch all sync state records with valid pipedrive_person_id
+    // Fetch sync state records for ACTIVE professionals only
     const { data: syncRecords, error: fetchError } = await supabase
       .from('pipedrive_sync_state')
-      .select('professional_id, pipedrive_person_id')
-      .not('pipedrive_person_id', 'is', null);
+      .select('professional_id, pipedrive_person_id, professionals!inner(active)')
+      .not('pipedrive_person_id', 'is', null)
+      .eq('professionals.active', true);
 
     if (fetchError) {
       throw new Error(`Failed to fetch sync records: ${fetchError.message}`);
