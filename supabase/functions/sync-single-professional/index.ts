@@ -438,8 +438,54 @@ serve(async (req) => {
 
     console.log(`✅ ${action} ${professional.name} (ID: ${finalPersonId})`);
 
+    // Create a Lead for ACTIVE professionals (only if creating new person or force sync)
+    let leadId = null;
+    if (professional.active && (!isUpdate || force)) {
+      try {
+        // Check if a Lead already exists for this person
+        const existingLeadUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/leads?person_id=${finalPersonId}&api_token=${PIPEDRIVE_API_TOKEN}`;
+        const existingLeadResp = await fetch(existingLeadUrl);
+        const existingLeadData = await existingLeadResp.json();
+        
+        const hasExistingLead = existingLeadData.success && 
+          Array.isArray(existingLeadData.data) && 
+          existingLeadData.data.length > 0;
+
+        if (!hasExistingLead) {
+          // Create a new Lead linked to this Person
+          const leadUrl = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v1/leads?api_token=${PIPEDRIVE_API_TOKEN}`;
+          const leadPayload = {
+            title: `${professional.name} lead`,
+            person_id: finalPersonId,
+            organization_id: orgId || undefined,
+          };
+
+          const leadResponse = await fetch(leadUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(leadPayload),
+          });
+
+          const leadResult = await leadResponse.json();
+          
+          if (leadResult.success) {
+            leadId = leadResult.data.id;
+            console.log(`📋 Created Lead for ${professional.name} (Lead ID: ${leadId})`);
+          } else {
+            console.warn(`⚠️ Failed to create Lead for ${professional.name}:`, leadResult.error);
+          }
+        } else {
+          leadId = existingLeadData.data[0].id;
+          console.log(`📋 Lead already exists for ${professional.name} (Lead ID: ${leadId})`);
+        }
+      } catch (leadErr) {
+        console.warn(`⚠️ Lead creation error for ${professional.name}:`, getErrorMessage(leadErr));
+        // Don't fail the whole sync if Lead creation fails
+      }
+    }
+
     return new Response(
-      JSON.stringify({ success: true, action, personId: finalPersonId, hash: currentHash }),
+      JSON.stringify({ success: true, action, personId: finalPersonId, leadId, hash: currentHash }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
