@@ -268,6 +268,8 @@ serve(async (req) => {
       website: professional.website || '',
       synthesized_bio: professional.synthesized_bio || professional.description || '',
       state: city.state || '',
+      // Include active status in hash so label changes trigger resync
+      active: professional.active,
       // Funnel & subscription tracking fields
       funnel_status: professional.funnel_status || '',
       funnel_started_at: professional.funnel_started_at || null,
