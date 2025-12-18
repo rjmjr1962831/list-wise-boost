@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
+import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -55,6 +56,22 @@ export function Chatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { trackEvent } = useGA4Tracking();
+
+  const handleOpen = () => {
+    setIsOpen(true);
+    trackEvent('chatbot_opened', {
+      page_path: window.location.pathname
+    });
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    trackEvent('chatbot_closed', {
+      page_path: window.location.pathname,
+      question_count: messages.filter(m => m.role === 'user').length
+    });
+  };
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -75,6 +92,12 @@ export function Chatbot() {
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
     setIsLoading(true);
+
+    // Track the question asked
+    trackEvent('chatbot_question', {
+      page_path: window.location.pathname,
+      question: userMessage.substring(0, 100) // Truncate for GA4 limits
+    });
 
     try {
       // Build conversation history for context
@@ -119,7 +142,7 @@ export function Chatbot() {
     <>
       {/* Floating button */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={handleOpen}
         className={`fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all flex items-center justify-center ${isOpen ? 'hidden' : ''}`}
         aria-label="Open chat"
       >
@@ -136,7 +159,7 @@ export function Chatbot() {
               <p className="text-xs opacity-80">Ask me anything about finding agents</p>
             </div>
             <button
-              onClick={() => setIsOpen(false)}
+              onClick={handleClose}
               className="p-1 hover:bg-primary-foreground/10 rounded"
               aria-label="Close chat"
             >
