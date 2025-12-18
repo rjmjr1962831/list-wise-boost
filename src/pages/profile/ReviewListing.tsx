@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Check, Pencil, Clock } from 'lucide-react';
+import { Loader2, Check, Pencil, Clock, Sparkles } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { Helmet } from 'react-helmet-async';
 import { Badge } from '@/components/ui/badge';
@@ -177,6 +177,15 @@ export default function ReviewListing() {
               >
                 <Check className="mr-2 h-4 w-4" />
                 Accept
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-background shadow-lg font-semibold px-6 py-3"
+                onClick={() => window.open('/test', '_blank')}
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                See what AI says
               </Button>
             </div>
           </div>
