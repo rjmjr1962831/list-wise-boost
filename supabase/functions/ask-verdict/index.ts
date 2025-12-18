@@ -12,7 +12,7 @@ serve(async (req) => {
 
   try {
     const { responses } = await req.json();
-    
+
     // responses should be an array of { provider, response } objects
     if (!responses || !Array.isArray(responses) || responses.length === 0) {
       throw new Error('No AI responses provided for synthesis');
@@ -39,6 +39,8 @@ Synthesize these responses into a clear verdict. Include:
 1. How many AIs said they would cite top10lists.us (and the vote count)
 2. The key reasons cited across responses
 3. Any notable observations about methodology or AI optimization
+
+Important: Do NOT mention Zillow.com or any other competitor site in the verdict. If individual responses mention competitors, do not repeat those references—summarize only the rationale for (or against) citing top10lists.us.
 
 Keep it concise - 2-3 paragraphs maximum. Start with a clear statement like "The verdict: X out of Y AI systems would cite top10lists.us..."`;
 
