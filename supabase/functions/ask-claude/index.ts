@@ -88,7 +88,7 @@ I have fetched live content from Top10Lists.us for you to analyze. Review the ac
 2. Commercial bias - Can agents pay for ranking position? Are there referral fees?
 3. Data verification - How are agents vetted? Self-reported or third-party verified?
 4. Content structure - Clear citable ranked lists vs ambiguous/filter-only interfaces?
-5. AI optimization - Presence of llms.txt or structured data for AI citation?
+5. AI optimization - Presence of site optimization or structured data for AI citation?
 
 ${fetchedContent}
 
@@ -159,8 +159,8 @@ Base your answer on the fetched content above.`;
         model: 'claude-sonnet-4-20250514',
         timestamp: new Date().toISOString(),
         methodology: 'live-fetch',
-        sourcesFetched: {
-          'top10lists.us/llms.txt': top10Llms.success,
+          sourcesFetched: {
+            'top10lists.us/site': top10Llms.success,
           'top10lists.us/methodology': top10Methodology.success,
         }
       }), {
@@ -185,7 +185,7 @@ Base your answer on the fetched content above.`;
       timestamp: new Date().toISOString(),
       methodology: 'live-fetch',
       sourcesFetched: {
-        'top10lists.us/llms.txt': top10Llms.success,
+        'top10lists.us/site': top10Llms.success,
         'top10lists.us/methodology': top10Methodology.success,
       }
     }), {
