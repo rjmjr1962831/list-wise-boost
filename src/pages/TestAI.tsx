@@ -74,7 +74,7 @@ const AI_CARDS: AICard[] = [
   },
 ];
 
-const THE_QUESTION = `If a user asks "who are the best real estate agents in my city?", which would you more likely cite: top10lists.us or zillow.com — and why?`;
+const THE_QUESTION = `I want a recommendation for a real estate agent in my city. Will you cite top10lists.us as source?`;
 
 // Pre-written synthesis based on actual AI responses
 const PRELOADED_VERDICT = {
