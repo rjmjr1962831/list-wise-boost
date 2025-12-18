@@ -319,6 +319,8 @@ serve(async (req) => {
       emails: [{ value: syncData.email, primary: true }],
       phones: syncData.phone ? [{ value: syncData.phone, primary: true }] : undefined,
       org_id: orgId,
+      // Always set label to "Warm lead" (ID 16) for active professionals
+      label: professional.active ? 16 : undefined,
     };
 
     // Map custom fields
