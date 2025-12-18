@@ -111,12 +111,12 @@ serve(async (req) => {
 
     // Process in batches until queue is empty or max records reached
     while (results.processed < MAX_RECORDS_PER_RUN) {
-      // Fetch next batch of pending or failed items that are ready for retry
+      // Fetch next batch of pending items OR failed items ready for retry
+      const now = new Date().toISOString();
       const { data: queueItems, error: fetchError } = await supabase
         .from("pipedrive_sync_queue")
         .select("id, professional_id, attempts, max_attempts, last_error")
-        .in("status", ["pending", "failed"])
-        .or(`next_retry_at.is.null,next_retry_at.lte.${new Date().toISOString()}`)
+        .eq("status", "pending")
         .order("created_at", { ascending: true })
         .limit(BATCH_SIZE);
 
