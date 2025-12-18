@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, CheckCircle2, AlertCircle, Clock, XCircle } from "lucide-react";
+import { Loader2, RefreshCw, CheckCircle2, AlertCircle, Clock, XCircle, RotateCcw } from "lucide-react";
 
 interface QueueStats {
   pending: number;
@@ -16,6 +16,7 @@ interface QueueStats {
 export function AdminPipedriveAutoSync() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
   const [queueStats, setQueueStats] = useState<QueueStats>({ pending: 0, processing: 0, completed: 0, failed: 0 });
   const [lastProcessed, setLastProcessed] = useState<Date | null>(null);
 
@@ -50,6 +51,60 @@ export function AdminPipedriveAutoSync() {
       setQueueStats(stats);
     } catch (error) {
       console.error('Error fetching queue stats:', error);
+    }
+  };
+
+  const handleResetAndRequeue = async () => {
+    if (!confirm('This will clear the entire queue and re-add all active professionals. Continue?')) {
+      return;
+    }
+    
+    setIsResetting(true);
+    try {
+      // Step 1: Clear the entire sync queue
+      const { error: deleteError } = await supabase
+        .from('pipedrive_sync_queue')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+      
+      if (deleteError) throw deleteError;
+      
+      // Step 2: Get all active professionals with emails
+      const { data: professionals, error: fetchError } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('active', true)
+        .not('email', 'is', null);
+      
+      if (fetchError) throw fetchError;
+      
+      if (!professionals || professionals.length === 0) {
+        toast.info('No active professionals with emails found');
+        await fetchQueueStats();
+        return;
+      }
+      
+      // Step 3: Insert all professionals into the queue
+      const queueItems = professionals.map(p => ({
+        professional_id: p.id,
+        status: 'pending',
+        attempts: 0,
+        next_retry_at: new Date().toISOString()
+      }));
+      
+      const { error: insertError } = await supabase
+        .from('pipedrive_sync_queue')
+        .insert(queueItems);
+      
+      if (insertError) throw insertError;
+      
+      await fetchQueueStats();
+      toast.success(`Reset complete! Queued ${professionals.length} professionals for sync`);
+    } catch (error) {
+      console.error('Reset error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to reset queue');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -160,7 +215,7 @@ export function AdminPipedriveAutoSync() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Process Queue Now</h4>
             <p className="text-sm text-muted-foreground">
@@ -205,6 +260,31 @@ export function AdminPipedriveAutoSync() {
                 <>
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Queue Sync
+                </>
+              )}
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Reset & Re-Queue All</h4>
+            <p className="text-sm text-muted-foreground">
+              Clear queue & re-add all active
+            </p>
+            <Button 
+              onClick={handleResetAndRequeue} 
+              disabled={isResetting}
+              variant="destructive"
+              className="w-full"
+            >
+              {isResetting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Resetting...
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="mr-2 h-4 w-4" />
+                  Reset & Re-Queue
                 </>
               )}
             </Button>
