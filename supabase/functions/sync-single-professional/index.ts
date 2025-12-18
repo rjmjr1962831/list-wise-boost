@@ -320,7 +320,7 @@ serve(async (req) => {
       phones: syncData.phone ? [{ value: syncData.phone, primary: true }] : undefined,
       org_id: orgId,
       // Always set label to "Warm lead" (ID 16) for active professionals
-      label: professional.active ? 16 : undefined,
+      label_ids: professional.active ? [16] : undefined,
     };
 
     // Map custom fields
