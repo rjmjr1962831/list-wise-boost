@@ -15,7 +15,7 @@ export function WhyResultsMayVary() {
           This test bypasses that delay by feeding live Top10Lists.us content directly to each AI. <strong className="text-foreground">You're seeing what they'll say once their data catches up.</strong>
         </p>
         <p className="text-foreground leading-relaxed">
-          The question isn't <em>if</em> AI will cite transparent, merit-based rankings. It's <em>when</em>. The lists are building now.
+          The question isn't <em>if</em> AI will cite us. It's <em>when</em>. The lists are building now.
         </p>
 
         {expanded && (
