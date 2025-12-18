@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { OnboardingData } from '@/pages/AgentOnboarding';
 import { supabase } from '@/integrations/supabase/client';
+import { ContactSupportBanner } from './ContactSupportBanner';
 
 interface BasicInfoStepProps {
   data: OnboardingData;
@@ -158,6 +159,7 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+      <ContactSupportBanner />
       {/* Validation Error Summary */}
       {Object.keys(errors).length > 0 && (
         <Card className="border-destructive/50 bg-destructive/5">

@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
-
+import { ContactSupportBanner } from "./ContactSupportBanner";
 interface AuthStepProps {
   onComplete: (userId: string, email: string) => void;
 }
@@ -77,13 +77,15 @@ const AuthStep = ({ onComplete }: AuthStepProps) => {
   };
 
   return (
-    <Card className="p-8">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>
-        <p className="text-muted-foreground">
-          Let's get started by creating your account. This will allow you to save your progress and come back anytime.
-        </p>
-      </div>
+    <div className="space-y-4">
+      <ContactSupportBanner />
+      <Card className="p-8">
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold mb-2">Create Your Account</h2>
+          <p className="text-muted-foreground">
+            Let's get started by creating your account. This will allow you to save your progress and come back anytime.
+          </p>
+        </div>
 
       <form onSubmit={handleSignUp} className="space-y-4">
         <div>
@@ -146,9 +148,10 @@ const AuthStep = ({ onComplete }: AuthStepProps) => {
           ) : (
             "Create Account & Continue"
           )}
-        </Button>
-      </form>
-    </Card>
+          </Button>
+        </form>
+      </Card>
+    </div>
   );
 };
 

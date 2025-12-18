@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Mail, CheckCircle } from "lucide-react";
+import { ContactSupportBanner } from "./ContactSupportBanner";
 import { OnboardingData } from "@/pages/AgentOnboarding";
 
 interface EmailVerificationStepProps {
@@ -65,7 +66,9 @@ const EmailVerificationStep = ({ data, updateData, onNext, onBack }: EmailVerifi
   };
 
   return (
-    <Card className="p-8">
+    <div className="space-y-4">
+      <ContactSupportBanner />
+      <Card className="p-8">
       <div className="text-center mb-6">
         {verified ? (
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
@@ -134,7 +137,8 @@ const EmailVerificationStep = ({ data, updateData, onNext, onBack }: EmailVerifi
           </Button>
         </div>
       )}
-    </Card>
+      </Card>
+    </div>
   );
 };
 

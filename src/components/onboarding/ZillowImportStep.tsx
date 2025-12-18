@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Download, AlertCircle } from "lucide-react";
+import { ContactSupportBanner } from "./ContactSupportBanner";
 
 interface ZillowImportStepProps {
   data: any;
@@ -109,7 +110,9 @@ const ZillowImportStep = ({ data, updateData, onNext, onBack }: ZillowImportStep
   };
 
   return (
-    <Card className="p-8">
+    <div className="space-y-4">
+      <ContactSupportBanner />
+      <Card className="p-8">
       <div className="mb-6">
         <h2 className="text-2xl font-bold mb-2">Import from Zillow</h2>
         <p className="text-muted-foreground">
@@ -197,7 +200,8 @@ const ZillowImportStep = ({ data, updateData, onNext, onBack }: ZillowImportStep
           </div>
         )}
       </div>
-    </Card>
+      </Card>
+    </div>
   );
 };
 
