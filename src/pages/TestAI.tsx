@@ -233,7 +233,7 @@ export default function TestAI() {
             </h1>
             <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 max-w-2xl mx-auto">
               <p className="text-foreground text-lg font-medium">
-                Ask four leading AI systems to evaluate top10lists.us vs zillow.com as a citation source.
+                Ask four leading AI systems if they will cite top10lists.us as a source for real estate agent recommendations.
                 See their real, unedited responses.
               </p>
             </div>
