@@ -16,6 +16,7 @@ interface QueueStats {
 export function AdminPipedriveAutoSync() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessingAll, setIsProcessingAll] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
   const [queueStats, setQueueStats] = useState<QueueStats>({ pending: 0, processing: 0, completed: 0, failed: 0 });
   const [lastProcessed, setLastProcessed] = useState<Date | null>(null);
@@ -128,11 +129,68 @@ export function AdminPipedriveAutoSync() {
       } else {
         toast.success(`Successfully processed ${data.succeeded} items from queue`);
       }
+
+      // The backend intentionally caps each run at 50.
+      if (data.processed === 50) {
+        toast.info('Batch limit reached (50). Click again or use “Process All Pending”.');
+      }
     } catch (error) {
       console.error('Queue processing error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to process queue');
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleProcessAllPending = async () => {
+    if (!confirm('This will keep processing batches until the queue is empty (or safety limit is reached). Continue?')) {
+      return;
+    }
+
+    setIsProcessingAll(true);
+    try {
+      const SAFETY_MAX_BATCHES = 30; // 30 * 50 = 1500
+      let totalProcessed = 0;
+      let totalSucceeded = 0;
+      let totalFailed = 0;
+
+      for (let batch = 0; batch < SAFETY_MAX_BATCHES; batch++) {
+        const { data, error } = await supabase.functions.invoke(
+          'process-pipedrive-sync-queue',
+          { body: {} }
+        );
+
+        if (error) throw error;
+
+        const processed = Number(data?.processed ?? 0);
+        const succeeded = Number(data?.succeeded ?? 0);
+        const failed = Number(data?.failed ?? 0);
+
+        totalProcessed += processed;
+        totalSucceeded += succeeded;
+        totalFailed += failed;
+
+        setLastProcessed(new Date());
+        await fetchQueueStats();
+
+        // If backend processed < 50, queue is likely empty (or blocked by retries)
+        if (processed < 50 || queueStats.pending === 0) {
+          break;
+        }
+      }
+
+      if (totalProcessed === 0) {
+        toast.info('No items in queue to process');
+      } else if (totalFailed > 0) {
+        toast.warning(`Processed ${totalProcessed} items: ${totalSucceeded} succeeded, ${totalFailed} failed`);
+      } else {
+        toast.success(`Successfully processed ${totalSucceeded} items from queue`);
+      }
+    } catch (error) {
+      console.error('Process all error:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to process all pending');
+    } finally {
+      setIsProcessingAll(false);
     }
   };
 
