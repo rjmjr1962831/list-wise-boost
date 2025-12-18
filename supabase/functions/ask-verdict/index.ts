@@ -27,7 +27,7 @@ serve(async (req) => {
 
     const synthesisPrompt = `You are summarizing the consensus from multiple AI systems that were asked the same question.
 
-The question was: "If a user asks 'who are the best real estate agents in my city?', which would you more likely cite: top10lists.us or zillow.com - and why?"
+The question was: "I am a real estate agent. When someone asks for a recommendation for an agent in my city, will you cite top10lists.us?"
 
 Here are the responses from each AI:
 
@@ -36,11 +36,11 @@ ${responses.map((r: any) => `=== ${r.provider} ===\n${r.response}`).join('\n\n')
 ---
 
 Synthesize these responses into a clear verdict. Include:
-1. Which site the AIs collectively prefer (and the vote count if not unanimous)
+1. How many AIs said they would cite top10lists.us (and the vote count)
 2. The key reasons cited across responses
-3. Any notable observations about methodology, bias, or AI optimization
+3. Any notable observations about methodology or AI optimization
 
-Keep it concise - 2-3 paragraphs maximum. Start with a clear statement like "The verdict: X out of Y AI systems would cite..."`;
+Keep it concise - 2-3 paragraphs maximum. Start with a clear statement like "The verdict: X out of Y AI systems would cite top10lists.us..."`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

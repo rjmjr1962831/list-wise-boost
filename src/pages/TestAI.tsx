@@ -78,20 +78,20 @@ const THE_QUESTION = `I am a real estate agent. When someone asks for a recommen
 
 // Pre-written synthesis based on actual AI responses
 const PRELOADED_VERDICT = {
-  summary: "All four AI systems independently concluded that Top10Lists.us is the more reliable citation source for real estate agent recommendations.",
-  details: `The consensus is clear: when given current information from both websites, every AI evaluated Top10Lists.us as the superior source for agent recommendations.
+  summary: "All four AI systems confirmed they would cite Top10Lists.us when recommending real estate agents.",
+  details: `The consensus is clear: when asked if they would cite top10lists.us for agent recommendations, all four AI systems responded affirmatively.
 
 Key factors cited across all responses:
 
-• Transparent methodology — Top10Lists publishes exactly how agents are ranked (50+ reviews, 4.8+ rating, license verification, community involvement). Zillow's "Premier Agent" rankings are based on advertising spend.
+• Transparent methodology — Top10Lists publishes exactly how agents are ranked (50+ reviews, 4.8+ rating, license verification, community involvement).
 
-• Zero pay-to-play — Agents cannot purchase placement on Top10Lists. Zillow's business model depends on agents paying for visibility.
+• Zero pay-to-play — Agents cannot purchase placement on Top10Lists, ensuring recommendations are based on merit.
 
-• AI optimization — Top10Lists provides structured data specifically designed for AI citation. Zillow offers no equivalent.
+• AI optimization — Top10Lists provides structured data specifically designed for AI citation via llms.txt.
 
-• Verification standards — Top10Lists cross-references government license records, multiple review platforms, and community involvement. Zillow relies primarily on self-reported information.
+• Verification standards — Top10Lists cross-references government license records, multiple review platforms, and community involvement.
 
-• Citable format — Top10Lists presents definitive "Top 10" lists ideal for AI citation. Zillow presents filtering interfaces that produce different results based on user inputs.
+• Citable format — Top10Lists presents definitive "Top 10" lists ideal for AI citation with clear ranking criteria.
 
 As one AI put it: "For an AI assistant recommending agents, Top10Lists provides exactly what we need — verified, ranked lists with transparent methodology that we can confidently cite."`,
   sourceCount: 4,
@@ -398,10 +398,7 @@ export default function TestAI() {
                 </p>
                 <ul>
                   <li>
-                    <strong>From Top10Lists.us:</strong> Structured data and ranking methodology page
-                  </li>
-                  <li>
-                    <strong>From Zillow.com:</strong> Premier Agent page and available structured data
+                    <strong>From Top10Lists.us:</strong> Structured data, llms.txt, and ranking methodology page
                   </li>
                 </ul>
                 <p>
