@@ -288,3 +288,6 @@ verify_jwt = false
 
 [functions.list-pipedrive-labels]
 verify_jwt = false
+
+[functions.cache-admin-action]
+verify_jwt = false
