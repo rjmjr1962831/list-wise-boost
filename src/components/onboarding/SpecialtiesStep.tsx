@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Plus, X } from 'lucide-react';
 import { OnboardingData } from '@/pages/AgentOnboarding';
 import { supabase } from '@/integrations/supabase/client';
+import { ContactSupportBanner } from './ContactSupportBanner';
 
 interface SpecialtiesStepProps {
   data: OnboardingData;
@@ -124,6 +125,7 @@ export function SpecialtiesStep({ data, updateData, onNext, onBack }: Specialtie
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+      <ContactSupportBanner />
       <Card>
         <CardHeader>
           <CardTitle>What are your specialties?</CardTitle>

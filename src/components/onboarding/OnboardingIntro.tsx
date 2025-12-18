@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2, Clock, FileCheck, MapPin } from 'lucide-react';
+import { ContactSupportBanner } from './ContactSupportBanner';
 
 interface OnboardingIntroProps {
   onNext: () => void;
@@ -9,6 +10,7 @@ interface OnboardingIntroProps {
 export function OnboardingIntro({ onNext }: OnboardingIntroProps) {
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <ContactSupportBanner />
       <Card className="border-primary/20 shadow-lg">
         <CardHeader className="text-center pb-4">
           <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary via-sunset-orange to-terracotta bg-clip-text text-transparent">

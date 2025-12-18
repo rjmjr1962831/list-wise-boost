@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { OnboardingData } from "@/pages/AgentOnboarding";
+import { ContactSupportBanner } from "./ContactSupportBanner";
 
 interface LicenseVerificationStepProps {
   data: OnboardingData;
@@ -95,95 +96,104 @@ const LicenseVerificationStep = ({ data, updateData, onNext, onBack }: LicenseVe
 
   if (verifying) {
     return (
-      <Card className="p-8">
-        <div className="text-center">
-          <Loader2 className="h-16 w-16 animate-spin text-primary mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Verifying Your License</h2>
-          <p className="text-muted-foreground">
-            Checking the Arizona real estate license database...
-          </p>
-        </div>
-      </Card>
+      <div className="space-y-4">
+        <ContactSupportBanner />
+        <Card className="p-8">
+          <div className="text-center">
+            <Loader2 className="h-16 w-16 animate-spin text-primary mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Verifying Your License</h2>
+            <p className="text-muted-foreground">
+              Checking the Arizona real estate license database...
+            </p>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   if (verified) {
     return (
-      <Card className="p-8">
-        <div className="text-center mb-6">
-          <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">License Verified!</h2>
-          <p className="text-muted-foreground mb-4">
-            Your Arizona real estate license has been successfully verified.
-          </p>
-          <div className="bg-muted p-4 rounded-lg">
-            <p className="text-sm font-medium">License Number:</p>
-            <p className="text-lg font-bold">{licenseNumber}</p>
+      <div className="space-y-4">
+        <ContactSupportBanner />
+        <Card className="p-8">
+          <div className="text-center mb-6">
+            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">License Verified!</h2>
+            <p className="text-muted-foreground mb-4">
+              Your Arizona real estate license has been successfully verified.
+            </p>
+            <div className="bg-muted p-4 rounded-lg">
+              <p className="text-sm font-medium">License Number:</p>
+              <p className="text-lg font-bold">{licenseNumber}</p>
+            </div>
           </div>
-        </div>
 
-        <div className="flex gap-4">
-          <Button onClick={onBack} variant="outline" className="flex-1">
-            Back
-          </Button>
-          <Button onClick={onNext} className="flex-1">
-            Continue
-          </Button>
-        </div>
-      </Card>
+          <div className="flex gap-4">
+            <Button onClick={onBack} variant="outline" className="flex-1">
+              Back
+            </Button>
+            <Button onClick={onNext} className="flex-1">
+              Continue
+            </Button>
+          </div>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <Card className="p-8">
-      <div className="mb-6">
-        <div className="flex items-start gap-3 mb-4">
-          {data.state === "Arizona" ? (
-            <AlertCircle className="h-6 w-6 text-yellow-500 mt-1" />
-          ) : (
-            <AlertCircle className="h-6 w-6 text-blue-500 mt-1" />
-          )}
+    <div className="space-y-4">
+      <ContactSupportBanner />
+      <Card className="p-8">
+        <div className="mb-6">
+          <div className="flex items-start gap-3 mb-4">
+            {data.state === "Arizona" ? (
+              <AlertCircle className="h-6 w-6 text-yellow-500 mt-1" />
+            ) : (
+              <AlertCircle className="h-6 w-6 text-blue-500 mt-1" />
+            )}
+            <div>
+              <h2 className="text-2xl font-bold mb-2">License Verification</h2>
+              <p className="text-muted-foreground">
+                {data.state === "Arizona" 
+                  ? "We couldn't automatically verify your Arizona license. Please enter it manually and we'll verify it with the state database."
+                  : `Please enter your ${data.state} real estate license number. We currently only support automatic verification for Arizona licenses, but we'll verify your license with your state's licensing board during the review process.`
+                }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
           <div>
-            <h2 className="text-2xl font-bold mb-2">License Verification</h2>
-            <p className="text-muted-foreground">
+            <Label htmlFor="license">
+              {data.state} Real Estate License Number
+            </Label>
+            <Input
+              id="license"
+              value={licenseNumber}
+              onChange={(e) => setLicenseNumber(e.target.value)}
+              placeholder="Enter your license number"
+            />
+            <p className="text-xs text-muted-foreground mt-1">
               {data.state === "Arizona" 
-                ? "We couldn't automatically verify your Arizona license. Please enter it manually and we'll verify it with the state database."
-                : `Please enter your ${data.state} real estate license number. We currently only support automatic verification for Arizona licenses, but we'll verify your license with your state's licensing board during the review process.`
+                ? "We'll verify this with the Arizona Department of Real Estate."
+                : "Our team will verify this with your state's licensing board during application review."
               }
             </p>
           </div>
-        </div>
-      </div>
 
-      <div className="space-y-4">
-        <div>
-          <Label htmlFor="license">
-            {data.state} Real Estate License Number
-          </Label>
-          <Input
-            id="license"
-            value={licenseNumber}
-            onChange={(e) => setLicenseNumber(e.target.value)}
-            placeholder="Enter your license number"
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            {data.state === "Arizona" 
-              ? "We'll verify this with the Arizona Department of Real Estate."
-              : "Our team will verify this with your state's licensing board during application review."
-            }
-          </p>
+          <div className="flex gap-4">
+            <Button onClick={onBack} variant="outline" className="flex-1">
+              Back
+            </Button>
+            <Button onClick={handleManualSubmit} className="flex-1">
+              Continue
+            </Button>
+          </div>
         </div>
-
-        <div className="flex gap-4">
-          <Button onClick={onBack} variant="outline" className="flex-1">
-            Back
-          </Button>
-          <Button onClick={handleManualSubmit} className="flex-1">
-            Continue
-          </Button>
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 };
 

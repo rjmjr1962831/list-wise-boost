@@ -9,6 +9,7 @@ import { MapPin, Check } from 'lucide-react';
 import { OnboardingData } from '@/pages/AgentOnboarding';
 import { supabase } from '@/integrations/supabase/client';
 import { zipCodeData } from '@/data/zipCodeLookup';
+import { ContactSupportBanner } from './ContactSupportBanner';
 
 interface LocationsStepProps {
   data: OnboardingData;
@@ -112,6 +113,7 @@ export function LocationsStep({ data, updateData, onNext, onBack }: LocationsSte
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-500">
+      <ContactSupportBanner />
       <Card>
         <CardHeader>
           <CardTitle>Service Areas</CardTitle>
