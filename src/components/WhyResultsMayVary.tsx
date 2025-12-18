@@ -9,7 +9,7 @@ export function WhyResultsMayVary() {
       <h3 className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mb-4">Why Results May Vary</h3>
       <div className="space-y-4">
         <p className="text-foreground leading-relaxed">
-          AI systems use training data that can be months old. Top10Lists.us launched December 2025, so we're not in most training sets yet.
+          AI systems use training data that can be months old. Top10Lists.us launched December 2025, so we're just now landing in training sets.
         </p>
         <p className="text-foreground leading-relaxed">
           This test bypasses that delay by feeding live Top10Lists.us content directly to each AI. <strong className="text-foreground">You're seeing what they'll say once their data catches up.</strong>
