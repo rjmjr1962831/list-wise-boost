@@ -127,9 +127,14 @@ export function LiveAIVerdict({ isVisible }: LiveAIVerdictProps) {
 
   return (
     <div className="bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-lg p-6 space-y-4 text-left max-w-3xl mx-auto mb-8">
+      {/* The Question */}
+      <p className="text-center text-lg font-medium italic text-foreground/90 border-b border-primary/20 pb-4 mb-4">
+        "I am a real estate agent. When someone asks for a recommendation for an agent in my city, will you cite top10lists.us?"
+      </p>
+
       <div className="flex items-center gap-2 mb-4">
         <Sparkles className="h-5 w-5 text-primary" />
-        <h3 className="font-semibold text-lg">What AI Systems Say About Top10Lists</h3>
+        <h3 className="font-semibold text-lg">What AI Systems Say</h3>
       </div>
 
       {!hasStarted ? (
