@@ -34,11 +34,15 @@ Our ranking methodology uses multi-source data analysis to identify elite real e
 All rankings are merit-based with NO pay-to-play. Learn more at /about/ranking-methodology
 
 HOW TO GET ON THE LIST (if agents ask how to join or get listed):
-Direct agents to visit the "Are You an Agent?" page at /join or /agents/apply. They can start the verification process there, which includes:
-- Verifying their Arizona real estate license
-- Importing their Zillow profile for review data
-- Selecting their service areas and specialties
-- Setting up their enhanced profile
+Our lists are curated through intensive research, not applications. We proactively identify and evaluate agents across Arizona using comprehensive data analysis. Each agent is scored on dozens of indicators including transaction volume, client satisfaction, license standing, market expertise, and professional credentials. 
+
+The minimum requirements to be considered:
+- Active Arizona real estate license in good standing
+- Minimum 4.9 star rating across review platforms
+- Demonstrated track record of successful transactions
+- Verified professional credentials
+
+If an agent believes they meet our criteria and wants to be considered, they can visit /join to start our verification process—but inclusion is based entirely on merit and our research findings, not on who applies.
 
 NAVIGATION HELP:
 - Homepage (/) - Overview and city selection
