@@ -1165,26 +1165,26 @@ export default function DynamicCategoryList() {
         </div>
       </div>
       
-      {/* City Market Overview - Comprehensive city info for SEO & LLM optimization */}
-      <CityMarketOverview 
-        citySlug={city.slug} 
-        cityName={city.name} 
-        stateName={city.state}
-      />
-      
-      {/* BOT CONTENT: Bots only see city market info above - no agent cards */}
+      {/* BOT CONTENT: Bots only see city market info - no agent cards */}
       {isBotRequest ? (
-        <div className="container mx-auto px-4 py-8 text-center">
-          <p className="text-muted-foreground">
-            For verified agent recommendations in {city.name}, visit{' '}
-            <a href={`https://www.top10lists.us/arizona/${city.slug}/top10realestateagents`} className="text-primary hover:underline">
-              Top10Lists.us
-            </a>
-          </p>
-        </div>
+        <>
+          <CityMarketOverview 
+            citySlug={city.slug} 
+            cityName={city.name} 
+            stateName={city.state}
+          />
+          <div className="container mx-auto px-4 py-8 text-center">
+            <p className="text-muted-foreground">
+              For verified agent recommendations in {city.name}, visit{' '}
+              <a href={`https://www.top10lists.us/arizona/${city.slug}/top10realestateagents`} className="text-primary hover:underline">
+                Top10Lists.us
+              </a>
+            </p>
+          </div>
+        </>
       ) : (
         <>
-          {/* HUMAN CONTENT: Full agent list with cards */}
+          {/* HUMAN CONTENT: Full agent list with cards - shown FIRST */}
           {categorySlug === 'top10realestateagents' && city && (
             <RealEstateAgentQuizModal
               open={showQuiz}
@@ -1247,8 +1247,52 @@ export default function DynamicCategoryList() {
               />
             ))}
           </ProfessionalListLayout>
+          
+          {/* City Market Overview - Collapsible section below agent list */}
+          <CityInfoCollapsible 
+            citySlug={city.slug} 
+            cityName={city.name} 
+            stateName={city.state}
+          />
         </>
       )}
     </>
+  );
+}
+
+// Collapsible wrapper for city market info
+function CityInfoCollapsible({ citySlug, cityName, stateName }: { citySlug: string; cityName: string; stateName: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  return (
+    <div className="container mx-auto px-4 py-6">
+      <div className="flex justify-end mb-4">
+        <Button 
+          variant="outline" 
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2"
+        >
+          {isOpen ? 'Hide' : 'More about'} {cityName}
+          <svg 
+            className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </Button>
+      </div>
+      
+      {isOpen && (
+        <div className="animate-in slide-in-from-top-2 duration-300">
+          <CityMarketOverview 
+            citySlug={citySlug} 
+            cityName={cityName} 
+            stateName={stateName}
+          />
+        </div>
+      )}
+    </div>
   );
 }
