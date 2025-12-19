@@ -166,6 +166,7 @@ async function createOrUpdatePerson(
   
   let personId = foundPersonId;
   let action = personId ? "updated" : "created";
+  const isUpdate = !!personId;
 
   const cardUrl = generateCardUrl(professional, city, category);
 
@@ -175,8 +176,9 @@ async function createOrUpdatePerson(
     phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
     // Always set label to "Warm lead" (ID 16) for active professionals
     label_ids: professional.active ? [16] : undefined,
-    // Always set marketing status to "subscribed" (consent given)
-    marketing_status: "subscribed",
+    // Only set marketing status on FIRST sync (create), not on updates
+    // After first sync, Pipedrive is the source of truth for marketing status
+    ...(isUpdate ? {} : { marketing_status: "subscribed" }),
   };
 
   // Link to organization if company exists
