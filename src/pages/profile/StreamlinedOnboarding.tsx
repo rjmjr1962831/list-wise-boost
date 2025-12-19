@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -232,6 +233,7 @@ export default function StreamlinedOnboarding() {
   const [cities, setCities] = useState<any[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<string>('');
   const [email, setEmail] = useState('');
+  const [consentChecked, setConsentChecked] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [claimed, setClaimed] = useState(false);
   const [claimedCityName, setClaimedCityName] = useState('');
@@ -780,21 +782,43 @@ export default function StreamlinedOnboarding() {
                         placeholder="your@email.com"
                         className="flex-1"
                       />
-                      <Button 
-                        onClick={handleClaim}
-                        disabled={claiming || !selectedCityId || !email}
-                        className="whitespace-nowrap"
-                      >
-                        {claiming ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Claiming...
-                          </>
-                        ) : (
-                          'Claim My FREE Listing'
-                        )}
-                      </Button>
                     </div>
+
+                    {/* Consent Checkbox */}
+                    <div className="flex items-start gap-3 max-w-lg">
+                      <Checkbox
+                        id="consent"
+                        checked={consentChecked}
+                        onCheckedChange={(checked) => setConsentChecked(checked === true)}
+                        className="mt-1"
+                      />
+                      <label htmlFor="consent" className="text-sm text-muted-foreground cursor-pointer">
+                        I agree to the{' '}
+                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          Terms of Service
+                        </a>{' '}
+                        and{' '}
+                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          Privacy Policy
+                        </a>
+                        , and consent to receive emails and messages from Top10Lists.us about my listing and related services.
+                      </label>
+                    </div>
+
+                    <Button 
+                      onClick={handleClaim}
+                      disabled={claiming || !selectedCityId || !email || !consentChecked}
+                      className="whitespace-nowrap"
+                    >
+                      {claiming ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Claiming...
+                        </>
+                      ) : (
+                        'Claim My FREE Listing'
+                      )}
+                    </Button>
                     
                     <p className="text-sm text-muted-foreground">
                       We'll send a magic link to verify. No password needed.
