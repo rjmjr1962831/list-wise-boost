@@ -7,6 +7,14 @@ const NotFound = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    
+    // Track 404 in GA4
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'page_not_found', {
+        attempted_url: location.pathname,
+        referrer: document.referrer || 'direct'
+      });
+    }
   }, [location.pathname]);
 
   return (
