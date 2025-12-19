@@ -220,6 +220,9 @@ verify_jwt = false
 [functions.fetch-zillow-agent-firecrawl]
 verify_jwt = false
 
+[functions.fetch-zillow-agent-firecrawl-json]
+verify_jwt = false
+
 [functions.scrape-website-firecrawl]
 verify_jwt = false
 
