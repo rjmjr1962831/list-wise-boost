@@ -198,11 +198,15 @@ ${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}
     const shouldSynthesize = professionalId && fullResearchText.trim() && !dryRun;
     const hasContent = pressResults.content.length > 50 || communityResults.content.length > 50;
     
+    let synthesisResult = null;
+    let synthesisError = null;
+    
     if (shouldSynthesize && (!skipIfNoPress || hasContent)) {
       console.log(`🔄 Auto-triggering profile synthesis for ${agentName}...`);
       
       try {
-        supabase.functions.invoke('synthesize-agent-profile', {
+        // AWAIT the synthesis call instead of fire-and-forget
+        const { data: synthData, error: synthErr } = await supabase.functions.invoke('synthesize-agent-profile', {
           body: {
             professionalId,
             skipIfNoPress: false, // Always synthesize since we now have community research
@@ -216,17 +220,18 @@ Location: ${city}, ${state}
 
 ${fullResearchText}`
           }
-        }).then(({ data: synthData, error: synthError }) => {
-          if (synthError) {
-            console.error('❌ Profile synthesis failed:', synthError);
-          } else {
-            console.log('✅ Profile synthesis completed successfully');
-          }
-        }).catch(err => {
-          console.error('❌ Profile synthesis error:', err);
         });
+        
+        if (synthErr) {
+          console.error('❌ Profile synthesis failed:', synthErr);
+          synthesisError = synthErr.message || 'Synthesis failed';
+        } else {
+          console.log('✅ Profile synthesis completed successfully');
+          synthesisResult = synthData;
+        }
       } catch (synthError) {
         console.error('❌ Failed to trigger synthesis:', synthError);
+        synthesisError = synthError instanceof Error ? synthError.message : 'Unknown synthesis error';
       }
     } else if (dryRun) {
       console.log('🔧 DRY RUN: Would trigger synthesis for', agentName);
@@ -247,6 +252,11 @@ ${fullResearchText}`
           communityChars: communityResults.content.length,
           professionalChars: professionalResults.content.length,
           totalCitations: uniqueCitations.length
+        },
+        synthesis: {
+          triggered: shouldSynthesize && (!skipIfNoPress || hasContent),
+          success: !!synthesisResult && !synthesisError,
+          error: synthesisError
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
