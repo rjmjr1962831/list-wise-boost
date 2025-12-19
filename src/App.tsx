@@ -11,10 +11,12 @@ import { Chatbot } from "@/components/Chatbot";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import DynamicCategoryList from "./pages/DynamicCategoryList";
+import AgentProfile from "./pages/AgentProfile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Lazy load all pages except Index and NotFound for better initial load performance
-const DynamicCategoryList = lazy(() => import("./pages/DynamicCategoryList"));
+// NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AICompare = lazy(() => import("./pages/AICompare"));
@@ -49,7 +51,7 @@ const RankingMethodology = lazy(() => import("./pages/RankingMethodology"));
 const RankingMethodologyRedirect = lazy(() => import("./pages/RankingMethodologyRedirect"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
-const AgentProfile = lazy(() => import("./pages/AgentProfile"));
+// NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
 const CheckProfile = lazy(() => import("./pages/CheckProfile"));
 const VerifyListingByToken = lazy(() => import("./pages/VerifyListingByToken"));
 
