@@ -15,6 +15,7 @@ async function processAgent(
     skipRecentlyEnriched: boolean;
     skipGenericBios: boolean;
     skipIfNoPress: boolean;
+    useFirecrawl: boolean; // NEW: Use Firecrawl JSON scraper instead of memo23
   }
 ) {
   try {
@@ -47,23 +48,43 @@ async function processAgent(
       }
     }
 
-    console.log(`🔄 [MEMO23] Processing ${item.professionals?.name}...`);
+    const scraperName = options.useFirecrawl ? 'Firecrawl' : 'memo23';
+    console.log(`🔄 [${scraperName}] Processing ${item.professionals?.name}...`);
 
-    // Step 1: memo23 enrichment (skip if recently enriched)
+    // Step 1: enrichment (skip if recently enriched)
     if (skipMemo23) {
-      console.log(`⏭️ [SKIP MEMO23] Skipping for ${item.professionals?.name}`);
+      console.log(`⏭️ [SKIP ${scraperName}] Skipping for ${item.professionals?.name}`);
     } else if (options.dryRun) {
-      console.log(`[DRY RUN] Would call memo23 for ${item.professional_id}`);
+      console.log(`[DRY RUN] Would call ${scraperName} for ${item.professional_id}`);
     } else {
-      const { error: enrichError } = await supabase.functions.invoke(
-        'fetch-single-memo23-agent',
-        { body: { professionalId: item.professional_id } }
-      );
+      if (options.useFirecrawl) {
+        // NEW: Use Firecrawl JSON scraper
+        const profileUrl = item.professionals?.zillow_profile_url;
+        if (!profileUrl) {
+          console.log(`⚠️ [Firecrawl] No Zillow URL for ${item.professionals?.name}, skipping enrichment`);
+        } else {
+          const { error: enrichError } = await supabase.functions.invoke(
+            'fetch-zillow-agent-firecrawl-json',
+            { body: { profileUrl, agentId: item.professional_id, updateDatabase: true } }
+          );
 
-      if (enrichError) {
-        throw new Error(`memo23 failed: ${enrichError.message}`);
+          if (enrichError) {
+            throw new Error(`Firecrawl failed: ${enrichError.message}`);
+          }
+          console.log(`✅ [Firecrawl] Complete for ${item.professionals?.name}`);
+        }
+      } else {
+        // ORIGINAL: Use memo23 scraper
+        const { error: enrichError } = await supabase.functions.invoke(
+          'fetch-single-memo23-agent',
+          { body: { professionalId: item.professional_id } }
+        );
+
+        if (enrichError) {
+          throw new Error(`memo23 failed: ${enrichError.message}`);
+        }
+        console.log(`✅ [memo23] Complete for ${item.professionals?.name}`);
       }
-      console.log(`✅ [MEMO23] Complete for ${item.professionals?.name}`);
     }
 
     // Step 2: Check review count and experience qualification
@@ -208,22 +229,25 @@ serve(async (req) => {
       dryRun = false,
       skipRecentlyEnriched = true,
       skipGenericBios = true,
-      skipIfNoPress = false  // Changed: Always run synthesis to extract achievements
+      skipIfNoPress = false,  // Changed: Always run synthesis to extract achievements
+      useFirecrawl = false    // NEW: Use Firecrawl JSON scraper instead of memo23
     } = await req.json().catch(() => ({ 
       batchSize: 100, 
       concurrency: 10,
       dryRun: false,
       skipRecentlyEnriched: true,
       skipGenericBios: true,
-      skipIfNoPress: false  // Changed: Always run synthesis
+      skipIfNoPress: false,  // Changed: Always run synthesis
+      useFirecrawl: false
     }));
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress };
+    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress, useFirecrawl };
     console.log(`🔄 Processing up to ${batchSize} agents with ${concurrency} concurrent sessions...`);
+    console.log(`🔧 Scraper: ${useFirecrawl ? 'Firecrawl JSON' : 'memo23'}`);
     if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
     console.log(`💰 Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
 
