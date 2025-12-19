@@ -141,26 +141,27 @@ async function processInBackground(zillowUrl: string, reviewRequestId: string) {
     const taskSubject = `🆕 Agent Review Request: ${agentName}`;
     
     const taskNote = `
-**New Agent Review Request**
+═══════════════════════════════════════
+SOURCE: "Are You an Agent?" Page
+New agent requesting to be listed
+═══════════════════════════════════════
 
-**Agent Name:** ${agentName}
-**Zillow URL:** ${zillowUrl}
+AGENT: ${agentName}
+ZILLOW: ${zillowUrl}
 
-**Scraped Data:**
-- Rating: ${agentRating} ⭐
-- Reviews: ${agentReviews}
-- Company: ${agentCompany}
-- Phone: ${agentPhone}
-- Total Sales: ${agentTotalSales}
-- Years Experience: ${agentYearsExp}
+─── SCRAPED DATA ───
+Rating:      ${agentRating} ⭐
+Reviews:     ${agentReviews}
+Company:     ${agentCompany}
+Phone:       ${agentPhone}
+Total Sales: ${agentTotalSales}
+Experience:  ${agentYearsExp}
 
-**Qualification Check:**
+─── QUALIFICATION CHECK ───
 ${parseFloat(agentRating) >= 4.8 ? '✅' : '❌'} Rating 4.8+ (Current: ${agentRating})
 ${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentReviews})
 
----
-*Submitted via Top10Lists.us - Are You an Agent? page*
-*Review Request ID: ${reviewRequestId}*
+Request ID: ${reviewRequestId}
     `.trim();
 
     const activityData = {
