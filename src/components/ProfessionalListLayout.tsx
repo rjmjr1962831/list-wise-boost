@@ -14,6 +14,7 @@ interface ProfessionalListLayoutProps {
   heroIcons?: Array<{ icon: ReactNode; label: string }>;
   lastUpdated?: string;
   rightAction?: ReactNode;
+  expandedContent?: ReactNode;
 }
 
 export const ProfessionalListLayout = ({
@@ -22,7 +23,8 @@ export const ProfessionalListLayout = ({
   children,
   heroIcons,
   lastUpdated,
-  rightAction
+  rightAction,
+  expandedContent
 }: ProfessionalListLayoutProps) => {
   const { trackEvent } = useGA4Tracking();
   
@@ -201,6 +203,9 @@ export const ProfessionalListLayout = ({
           )}
         </div>
       </section>
+      
+      {/* Expandable content (e.g., city info) - shows above agent list */}
+      {expandedContent}
 
       {/* Main Content */}
       <section className="container mx-auto px-4 pb-20">
