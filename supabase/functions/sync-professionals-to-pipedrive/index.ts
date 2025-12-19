@@ -173,6 +173,10 @@ async function createOrUpdatePerson(
     name: professional.name,
     emails: professional.email ? [{ value: professional.email, primary: true }] : undefined,
     phones: professional.phone ? [{ value: professional.phone, primary: true }] : undefined,
+    // Always set label to "Warm lead" (ID 16) for active professionals
+    label_ids: professional.active ? [16] : undefined,
+    // Always set marketing status to "subscribed" (consent given)
+    marketing_status: "subscribed",
   };
 
   // Link to organization if company exists
@@ -220,10 +224,11 @@ async function createOrUpdatePerson(
     zillow_position: professional.zillow_search_position,
   };
 
-  // Apply all mapped fields dynamically - only sync fields that have a mapping
+  // Apply all mapped fields dynamically - use custom_fields object for API v2
+  personData.custom_fields = {};
   for (const [fieldName, value] of Object.entries(dynamicFields)) {
     if (fieldMapping[fieldName] && value !== null && value !== undefined) {
-      personData[fieldMapping[fieldName]] = value;
+      personData.custom_fields[fieldMapping[fieldName]] = value;
     }
   }
 
