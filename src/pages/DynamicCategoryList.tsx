@@ -201,6 +201,7 @@ export default function DynamicCategoryList() {
   const [showContactModal, setShowContactModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isBotRequest, setIsBotRequest] = useState(false);
+  const [showCityInfo, setShowCityInfo] = useState(false);
 
   // Scroll to top on page load
   useEffect(() => {
@@ -1231,6 +1232,23 @@ export default function DynamicCategoryList() {
             metadata={metadata}
             professionals={filteredProfessionals}
             lastUpdated={lastUpdated}
+            rightAction={
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCityInfo(!showCityInfo)}
+                className="flex items-center gap-2"
+              >
+                {showCityInfo ? 'Hide' : 'More about'} {city.name}
+                <svg 
+                  className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Button>
+            }
           >
             {sections.map((section, index) => (
               <CollapsibleListSection
@@ -1249,50 +1267,17 @@ export default function DynamicCategoryList() {
           </ProfessionalListLayout>
           
           {/* City Market Overview - Collapsible section below agent list */}
-          <CityInfoCollapsible 
-            citySlug={city.slug} 
-            cityName={city.name} 
-            stateName={city.state}
-          />
+          {showCityInfo && (
+            <div className="animate-in slide-in-from-top-2 duration-300">
+              <CityMarketOverview 
+                citySlug={city.slug} 
+                cityName={city.name} 
+                stateName={city.state}
+              />
+            </div>
+          )}
         </>
       )}
     </>
-  );
-}
-
-// Collapsible wrapper for city market info
-function CityInfoCollapsible({ citySlug, cityName, stateName }: { citySlug: string; cityName: string; stateName: string }) {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="flex justify-end mb-4">
-        <Button 
-          variant="outline" 
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2"
-        >
-          {isOpen ? 'Hide' : 'More about'} {cityName}
-          <svg 
-            className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-            fill="none" 
-            stroke="currentColor" 
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </Button>
-      </div>
-      
-      {isOpen && (
-        <div className="animate-in slide-in-from-top-2 duration-300">
-          <CityMarketOverview 
-            citySlug={citySlug} 
-            cityName={cityName} 
-            stateName={stateName}
-          />
-        </div>
-      )}
-    </div>
   );
 }
