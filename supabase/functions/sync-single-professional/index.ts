@@ -374,7 +374,9 @@ serve(async (req) => {
       street_address: truncate(streetAddress),
       street2: truncate(street2),
       // Status flags - convert booleans to strings for Pipedrive text fields
-      email_verified: professional.email_verified_at ? 'true' : 'false',
+      // Always set email_verified and consent_given to 'true' for all leads
+      email_verified: 'true',
+      consent_given: 'true',
       is_brand_builder: professional.is_brand_builder ? 'true' : 'false',
       active_status: professional.active ? 'active' : 'inactive',
       // Funnel & subscription tracking fields
