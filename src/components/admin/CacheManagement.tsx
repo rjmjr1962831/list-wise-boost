@@ -9,6 +9,7 @@ import {
   clearCompletedQueueItems 
 } from '@/services/cacheInvalidationService';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function CacheManagement() {
   const [status, setStatus] = useState({
@@ -20,6 +21,7 @@ export default function CacheManagement() {
   });
   const [loading, setLoading] = useState(false);
   const [processingNow, setProcessingNow] = useState(false);
+  const [cronScheduled, setCronScheduled] = useState<boolean | null>(null);
 
   const loadStatus = async () => {
     setLoading(true);
@@ -34,11 +36,24 @@ export default function CacheManagement() {
     }
   };
 
+  const checkCronStatus = async () => {
+    try {
+      const { data } = await supabase.rpc('check_warm_cache_cron' as any);
+      setCronScheduled(data?.running ?? false);
+    } catch {
+      setCronScheduled(false);
+    }
+  };
+
   useEffect(() => {
     loadStatus();
+    checkCronStatus();
     
     // Auto-refresh every 30 seconds
-    const interval = setInterval(loadStatus, 30000);
+    const interval = setInterval(() => {
+      loadStatus();
+      checkCronStatus();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -213,10 +228,19 @@ export default function CacheManagement() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm">Cron Job Status</span>
-              <Badge variant="default" className="gap-1">
-                <CheckCircle className="h-3 w-3" />
-                Active (Every 10 min)
-              </Badge>
+              {cronScheduled === null ? (
+                <Badge variant="secondary">Checking...</Badge>
+              ) : cronScheduled ? (
+                <Badge className="gap-1 bg-blue-500 hover:bg-blue-600">
+                  <CheckCircle className="h-3 w-3" />
+                  Scheduled (Every 10 min)
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="gap-1 border-yellow-500 text-yellow-600">
+                  <AlertCircle className="h-3 w-3" />
+                  Not Scheduled - Restart Required
+                </Badge>
+              )}
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">Auto-Refresh</span>

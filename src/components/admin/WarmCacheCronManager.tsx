@@ -103,11 +103,11 @@ export function WarmCacheCronManager() {
             </Badge>
           ) : cronStatus?.running ? (
             <Badge className="bg-blue-500 hover:bg-blue-600">
-              Running ({cronStatus.schedule || '*/10 * * * *'})
+              Scheduled ({cronStatus.schedule || '*/10 * * * *'})
             </Badge>
           ) : (
             <Badge variant="outline" className="border-yellow-500 text-yellow-600">
-              Stopped
+              Not Scheduled - Restart Required
             </Badge>
           )}
           <Button
