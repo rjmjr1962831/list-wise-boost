@@ -306,3 +306,6 @@ verify_jwt = false
 
 [functions.send-frontend-error-alert]
 verify_jwt = false
+
+[functions.import-agents-firecrawl]
+verify_jwt = false
