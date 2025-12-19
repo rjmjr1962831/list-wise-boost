@@ -50,25 +50,26 @@ serve(async (req) => {
       const taskSubject = `Profile Change Request: ${fieldName} - ${professionalName}`;
       
       const taskNote = `
-**Field Change Request**
+═══════════════════════════════════════
+SOURCE: Agent Self-Service Portal
+Field change request from existing agent
+═══════════════════════════════════════
 
-**Agent Name:** ${professionalName}
-**Email:** ${professionalEmail || 'Not provided'}
-**Field:** ${fieldName}
-**Profile Link:** ${profileLink}
+AGENT: ${professionalName}
+EMAIL: ${professionalEmail || 'Not provided'}
+FIELD: ${fieldName}
+PROFILE: ${profileLink}
 
-**Change Request:**
+─── CHANGE REQUEST ───
 ${changeRequest}
 
-${currentValue ? `**Current Value:**
+${currentValue ? `─── CURRENT VALUE ───
 ${currentValue.substring(0, 500)}${currentValue.length > 500 ? '...' : ''}` : ''}
 
-${proposedValue ? `**Proposed Value:**
+${proposedValue ? `─── PROPOSED VALUE ───
 ${proposedValue.substring(0, 500)}${proposedValue.length > 500 ? '...' : ''}` : ''}
 
----
-*Submitted via Top10Lists.us self-service portal*
-*Review in Admin Dashboard: Field Change Requests tab*
+Review in Admin: Field Change Requests tab
       `.trim();
 
       // Create activity (task) in Pipedrive using v2 API
