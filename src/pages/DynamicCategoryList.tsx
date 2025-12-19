@@ -1006,14 +1006,14 @@ export default function DynamicCategoryList() {
     );
   }
 
-  // Take first 10 qualifying professionals
-  const topTenProfessionals = filteredProfessionals.slice(0, 10);
+  // Show ALL qualifying professionals (not limited to 10)
+  const displayProfessionals = filteredProfessionals;
 
   const sections: ListSection[] = [
     {
       title: "",
       description: "",
-      items: topTenProfessionals,
+      items: displayProfessionals,
       accentColor: "primary" as const
     }
   ];
@@ -1046,13 +1046,13 @@ export default function DynamicCategoryList() {
   
   // Freshness signals for LLM optimization
   const lastUpdated = getLastUpdatedTimestamp();
-  const topAgentName = topTenProfessionals[0]?.name;
+  const topAgentName = displayProfessionals[0]?.name;
   
   // State abbreviation for schemas
   const stateAbbrev = city.state_slug === 'arizona' ? 'AZ' : city.state_slug.toUpperCase().slice(0, 2);
   
   // Convert professionals to AgentData for enhanced schemas
-  const agentDataArray = topTenProfessionals.map(prof => 
+  const agentDataArray = displayProfessionals.map(prof => 
     professionalToAgentData(prof, city.name, city.state, stateAbbrev, prof.id || '')
   );
   
@@ -1249,6 +1249,15 @@ export default function DynamicCategoryList() {
                 </svg>
               </Button>
             }
+            expandedContent={showCityInfo ? (
+              <div className="animate-in slide-in-from-top-2 duration-300">
+                <CityMarketOverview 
+                  citySlug={city.slug} 
+                  cityName={city.name} 
+                  stateName={city.state}
+                />
+              </div>
+            ) : null}
           >
             {sections.map((section, index) => (
               <CollapsibleListSection
@@ -1265,17 +1274,6 @@ export default function DynamicCategoryList() {
               />
             ))}
           </ProfessionalListLayout>
-          
-          {/* City Market Overview - Collapsible section below agent list */}
-          {showCityInfo && (
-            <div className="animate-in slide-in-from-top-2 duration-300">
-              <CityMarketOverview 
-                citySlug={city.slug} 
-                cityName={city.name} 
-                stateName={city.state}
-              />
-            </div>
-          )}
         </>
       )}
     </>
