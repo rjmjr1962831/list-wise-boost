@@ -1006,14 +1006,14 @@ export default function DynamicCategoryList() {
     );
   }
 
-  // Show ALL qualifying professionals (not limited to 10)
-  const displayProfessionals = filteredProfessionals;
+  // Take first 10 qualifying professionals
+  const topTenProfessionals = filteredProfessionals.slice(0, 10);
 
   const sections: ListSection[] = [
     {
       title: "",
       description: "",
-      items: displayProfessionals,
+      items: topTenProfessionals,
       accentColor: "primary" as const
     }
   ];
@@ -1046,13 +1046,13 @@ export default function DynamicCategoryList() {
   
   // Freshness signals for LLM optimization
   const lastUpdated = getLastUpdatedTimestamp();
-  const topAgentName = displayProfessionals[0]?.name;
+  const topAgentName = topTenProfessionals[0]?.name;
   
   // State abbreviation for schemas
   const stateAbbrev = city.state_slug === 'arizona' ? 'AZ' : city.state_slug.toUpperCase().slice(0, 2);
   
   // Convert professionals to AgentData for enhanced schemas
-  const agentDataArray = displayProfessionals.map(prof => 
+  const agentDataArray = topTenProfessionals.map(prof => 
     professionalToAgentData(prof, city.name, city.state, stateAbbrev, prof.id || '')
   );
   
