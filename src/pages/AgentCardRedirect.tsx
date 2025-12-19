@@ -19,6 +19,15 @@ const AgentCardRedirect = () => {
         return;
       }
 
+      // Check if this looks like a category slug (e.g., "top10realestateagents")
+      // If so, redirect to the proper city list page instead of showing an error
+      const knownCategorySlugs = ['top10realestateagents', 'top10dentists', 'top10doctors'];
+      if (knownCategorySlugs.includes(agentSlug.toLowerCase()) || agentSlug.startsWith('top10')) {
+        console.log("Detected category slug, redirecting to city list:", agentSlug);
+        navigate(`/arizona/${citySlug}/${agentSlug}`, { replace: true });
+        return;
+      }
+
       // Extract last 4 digits from agentSlug (e.g., "john-smith-1234" -> "1234")
       const phoneDigits = agentSlug.slice(-4);
       if (!/^\d{4}$/.test(phoneDigits)) {
