@@ -302,26 +302,49 @@ function slugify(text: string): string {
     .trim();
 }
 
+import { STATE_ABBR_TO_FULL, matchesState as matchStateSlug } from '@/utils/stateSlugMapping';
+
+/**
+ * Convert state name to URL-friendly slug
+ * e.g., "New Mexico" -> "new-mexico"
+ */
+function stateNameToSlug(stateName: string): string {
+  return stateName.toLowerCase().replace(/\s+/g, '-');
+}
+
+/**
+ * Cities array with full state name slugs (e.g., "arizona" not "az")
+ * This matches the database format for consistency
+ */
 export const cities: City[] = cityData.map(city => ({
   name: city.name,
   state: city.state,
   slug: slugify(city.name),
-  stateSlug: city.stateAbbr.toLowerCase()
+  stateSlug: stateNameToSlug(city.state) // Use full state name slug, not abbreviation
 }));
 
+/**
+ * Find a city by its slug, with backward compatibility for state abbreviations
+ * Accepts both "az" and "arizona" for state matching
+ */
 export function getCityBySlug(citySlug: string, stateSlug?: string): City | undefined {
   return cities.find(city => {
     if (stateSlug) {
-      // Accept both full state name slug (e.g., 'arizona') and abbreviation slug (e.g., 'az')
-      const normalizedStateSlug = stateSlug.toLowerCase();
-      const matchesState = city.stateSlug === normalizedStateSlug || 
-        city.state.toLowerCase().replace(/\s+/g, '-') === normalizedStateSlug;
-      return city.slug === citySlug && matchesState;
+      // Use the universal state matching function for backward compatibility
+      // This accepts both abbreviations (az) and full names (arizona)
+      return city.slug === citySlug && matchStateSlug(stateSlug, city.stateSlug);
     }
     return city.slug === citySlug;
   });
 }
 
+/**
+ * Get all cities for a given state
+ * Accepts both abbreviations (az) and full slugs (arizona)
+ */
 export function getCitiesByState(stateSlug: string): City[] {
-  return cities.filter(city => city.stateSlug === stateSlug);
+  const normalizedSlug = stateSlug.toLowerCase();
+  // Convert abbreviation to full name if needed
+  const fullStateSlug = STATE_ABBR_TO_FULL[normalizedSlug] || normalizedSlug;
+  return cities.filter(city => city.stateSlug === fullStateSlug);
 }
