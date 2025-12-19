@@ -17,8 +17,9 @@ export default function CityLanding() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Redirect to coming soon page if not Arizona (accept both 'arizona' and 'az')
-  if (stateSlug && stateSlug !== "arizona" && stateSlug !== "az") {
+  // Redirect to coming soon page if not Arizona or New Mexico (Albuquerque)
+  const allowedStates = ['arizona', 'az', 'new-mexico', 'nm'];
+  if (stateSlug && !allowedStates.includes(stateSlug.toLowerCase())) {
     return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
   }
 
