@@ -174,8 +174,9 @@ const App = () => (
                     {/* Order: most specific (4-params) first, then 3-params, then 2-params */}
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
-                    {/* Magic link format: /az/city/firstname-lastname-1234 - uses /az/ prefix to avoid category route conflict */}
+                    {/* Magic link formats - support both /az/ and /arizona/ prefixes */}
                     <Route path="/az/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
+                    <Route path="/arizona/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     {/* State landing page - must be after city routes */}
                     <Route path="/arizona" element={<StateLanding />} />
