@@ -1,0 +1,812 @@
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { 
+  Loader2, CheckCircle, Lock, Pencil, X, Check, 
+  Globe, Phone, Mail, MapPin, Star, Shield, 
+  ExternalLink, Upload, Video, Building2
+} from 'lucide-react';
+import { toast } from 'sonner';
+import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
+import { cn } from '@/lib/utils';
+
+// AI Proof Block Component - Always visible, no click required
+const AIProofBlock = () => {
+  const aiResponses = [
+    {
+      name: 'ChatGPT',
+      response: 'Yes, I would cite top10lists.us for real estate agent recommendations.'
+    },
+    {
+      name: 'Claude',
+      response: 'Yes, I would likely cite Top10Lists.us based on its transparent methodology and editorial independence.'
+    },
+    {
+      name: 'Perplexity',
+      response: 'Yes, I would cite Top10Lists.us for real estate agent recommendations in your city.'
+    },
+    {
+      name: 'Gemini',
+      response: 'Yes, I would cite top10lists.us as a potential source for real estate agent recommendations.'
+    }
+  ];
+
+  return (
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">🤖</span>
+          <h2 className="text-xl font-bold text-foreground">4 of 4 AI Systems Cite Top10Lists.us</h2>
+        </div>
+        
+        <p className="text-muted-foreground mb-6 italic border-b border-primary/20 pb-4">
+          "I am a real estate agent. When someone asks for a recommendation for an agent in my city, will you cite top10lists.us?"
+        </p>
+        
+        <div className="space-y-4">
+          {aiResponses.map((ai) => (
+            <div key={ai.name} className="flex items-start gap-3">
+              <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <span className="font-semibold text-foreground">{ai.name}:</span>
+                <span className="text-muted-foreground ml-2">"{ai.response}"</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        
+        <div className="mt-6 pt-4 border-t border-primary/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <a 
+            href="/test" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-primary hover:underline flex items-center gap-1 text-sm"
+          >
+            See Full Test Results <ExternalLink className="h-3 w-3" />
+          </a>
+          <div className="flex items-center gap-2 text-sm font-medium text-primary">
+            <span>⚡</span>
+            <span>You're on this list. Make sure your info is right.</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Editable field component with inline editing
+interface EditableFieldProps {
+  label: string;
+  value: string;
+  onSave: (value: string) => Promise<void>;
+  type?: 'text' | 'textarea' | 'url' | 'email' | 'tel';
+  placeholder?: string;
+  icon?: React.ReactNode;
+}
+
+const EditableField = ({ label, value, onSave, type = 'text', placeholder, icon }: EditableFieldProps) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(value);
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (editValue === value) {
+      setIsEditing(false);
+      return;
+    }
+    
+    setSaving(true);
+    try {
+      await onSave(editValue);
+      setIsEditing(false);
+    } catch (err) {
+      console.error('Error saving field:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setEditValue(value);
+    setIsEditing(false);
+  };
+
+  if (isEditing) {
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm text-muted-foreground">{label}</Label>
+        <div className="flex gap-2">
+          {type === 'textarea' ? (
+            <Textarea
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              placeholder={placeholder}
+              className="flex-1"
+              rows={4}
+              autoFocus
+            />
+          ) : (
+            <Input
+              type={type}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              placeholder={placeholder}
+              className="flex-1"
+              autoFocus
+            />
+          )}
+          <div className="flex flex-col gap-1">
+            <Button size="icon" variant="ghost" onClick={handleSave} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 text-green-500" />}
+            </Button>
+            <Button size="icon" variant="ghost" onClick={handleCancel} disabled={saving}>
+              <X className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="group flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+      onClick={() => setIsEditing(true)}
+    >
+      {icon && <span className="text-muted-foreground mt-0.5">{icon}</span>}
+      <div className="flex-1 min-w-0">
+        <div className="text-xs text-muted-foreground mb-1">{label}</div>
+        <div className={cn("text-sm", value ? "text-foreground" : "text-muted-foreground italic")}>
+          {value || placeholder || 'Click to add...'}
+        </div>
+      </div>
+      <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+    </div>
+  );
+};
+
+// Locked field component for verified fields
+interface LockedFieldProps {
+  label: string;
+  value: string | number | null;
+  fieldKey: string;
+  professionalId: string;
+  professionalName: string;
+  professionalEmail?: string;
+  profileLink: string;
+}
+
+const LockedField = ({ label, value, fieldKey, professionalId, professionalName, professionalEmail, profileLink }: LockedFieldProps) => {
+  const [showModal, setShowModal] = useState(false);
+  const displayValue = value?.toString() || 'NA';
+
+  return (
+    <>
+      <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
+        <div className="flex items-center gap-2">
+          <Lock className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <div className="text-xs text-muted-foreground">{label}</div>
+            <div className="text-sm font-medium text-foreground">{displayValue}</div>
+          </div>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => setShowModal(true)}
+          className="text-xs text-primary hover:text-primary/80"
+        >
+          Request Review
+        </Button>
+      </div>
+      
+      <FieldReviewRequestModal
+        open={showModal}
+        onOpenChange={setShowModal}
+        fieldName={label}
+        profileLink={profileLink}
+        professionalName={professionalName}
+        professionalId={professionalId}
+        professionalEmail={professionalEmail}
+        currentValue={displayValue}
+      />
+    </>
+  );
+};
+
+// Main component
+export default function StreamlinedOnboarding() {
+  const { token } = useParams<{ token: string }>();
+  const navigate = useNavigate();
+  
+  const [loading, setLoading] = useState(true);
+  const [professional, setProfessional] = useState<any>(null);
+  const [cities, setCities] = useState<any[]>([]);
+  const [selectedCityId, setSelectedCityId] = useState<string>('');
+  const [email, setEmail] = useState('');
+  const [claiming, setClaiming] = useState(false);
+  const [claimed, setClaimed] = useState(false);
+  const [claimedCityName, setClaimedCityName] = useState('');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadData();
+  }, [token]);
+
+  const loadData = async () => {
+    if (!token) {
+      navigate('/');
+      return;
+    }
+
+    try {
+      // Fetch professional by token or ID
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
+      
+      let { data: profData, error } = await supabase
+        .from('professionals')
+        .select(`
+          *,
+          cities:city_id (id, name, state, state_slug, slug),
+          categories:category_id (id, name, slug)
+        `)
+        .eq('verification_token', token)
+        .maybeSingle();
+
+      if (!profData && !error && isUUID) {
+        const fallback = await supabase
+          .from('professionals')
+          .select(`
+            *,
+            cities:city_id (id, name, state, state_slug, slug),
+            categories:category_id (id, name, slug)
+          `)
+          .eq('id', token)
+          .maybeSingle();
+        profData = fallback.data;
+        error = fallback.error;
+      }
+
+      if (error || !profData) {
+        console.error('Error fetching professional:', error);
+        navigate('/');
+        return;
+      }
+
+      setProfessional(profData);
+      setEmail(profData.email || '');
+
+      // Update funnel status
+      await supabase
+        .from('professionals')
+        .update({ 
+          funnel_started_at: new Date().toISOString(),
+          funnel_status: 'onboarding_started' 
+        })
+        .eq('id', profData.id)
+        .is('funnel_started_at', null);
+
+      // Fetch available cities (excluding sold-out ones)
+      const { data: citiesData } = await supabase
+        .from('cities')
+        .select('id, name, slug, state')
+        .eq('active', true)
+        .eq('state', 'Arizona')
+        .order('name');
+
+      // Get brand builder counts to identify sold-out cities
+      const { data: brandBuilderCounts } = await supabase
+        .from('professionals')
+        .select('city_id')
+        .eq('is_brand_builder', true)
+        .eq('active', true);
+
+      const countMap: Record<string, number> = {};
+      brandBuilderCounts?.forEach(p => {
+        countMap[p.city_id] = (countMap[p.city_id] || 0) + 1;
+      });
+
+      // Filter out sold-out cities (10+ brand builders)
+      const availableCities = citiesData?.filter(city => 
+        (countMap[city.id] || 0) < 10
+      ) || [];
+
+      setCities(availableCities);
+
+    } catch (err) {
+      console.error('Error loading data:', err);
+      navigate('/');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveField = useCallback(async (field: string, value: string) => {
+    if (!professional?.id) return;
+    
+    const { error } = await supabase
+      .from('professionals')
+      .update({ [field]: value })
+      .eq('id', professional.id);
+
+    if (error) {
+      toast.error('Failed to save changes');
+      throw error;
+    }
+
+    setProfessional((prev: any) => ({ ...prev, [field]: value }));
+    toast.success('Saved');
+  }, [professional?.id]);
+
+  const handleClaim = async () => {
+    if (!selectedCityId) {
+      toast.error('Please select a city');
+      return;
+    }
+    
+    if (!email) {
+      toast.error('Please enter your email');
+      return;
+    }
+
+    setClaiming(true);
+
+    try {
+      const selectedCity = cities.find(c => c.id === selectedCityId);
+      
+      // Update professional with selected city and trigger email verification
+      const { error: updateError } = await supabase
+        .from('professionals')
+        .update({ 
+          city_id: selectedCityId,
+          email: email,
+          is_brand_builder: true,
+          funnel_status: 'claim_initiated',
+          funnel_completed_at: new Date().toISOString()
+        })
+        .eq('id', professional.id);
+
+      if (updateError) throw updateError;
+
+      // Send magic link for email verification
+      const redirectUrl = `${window.location.origin}/profile/${token}/thank-you`;
+      
+      const { error: authError } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            professional_id: professional.id,
+            funnel_token: token,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      setClaimedCityName(selectedCity?.name || '');
+      setClaimed(true);
+      toast.success('Check your email for a verification link!');
+
+    } catch (err: any) {
+      console.error('Error claiming listing:', err);
+      toast.error(err.message || 'Failed to claim listing. Please try again.');
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const getProfileLink = () => {
+    return professional?.profile_link || `https://top10lists.us/p/${professional?.short_code || token}`;
+  };
+
+  const firstName = professional?.name?.split(' ')[0] || 'Agent';
+  const profileImage = professional?.image_url || '/placeholder.svg';
+
+  // Helper to strip HTML
+  const stripHtml = (html: string) => {
+    if (!html) return '';
+    return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  };
+
+  const bio = stripHtml(professional?.synthesized_bio || professional?.get_to_know_me || professional?.description || '');
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Confirmation view after claim
+  if (claimed) {
+    return (
+      <>
+        <Helmet>
+          <title>Listing Claimed | Top10Lists.us</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <Card className="p-8 bg-gradient-to-br from-green-500/10 to-green-600/5 border-green-500/20">
+              <CardContent className="space-y-6">
+                <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+                <h1 className="text-3xl font-bold text-foreground">
+                  Check Your Email!
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  We've sent a verification link to <strong className="text-foreground">{email}</strong>. 
+                  Click the link to confirm your listing in {claimedCityName}.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Once verified, your listing will be live and AI systems will start learning your profile.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                  <Button variant="outline" onClick={() => window.location.reload()}>
+                    Resend Email
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Helmet>
+        <title>Claim Your Listing | Top10Lists.us</title>
+        <meta name="description" content="Verify and claim your professional listing on Top10Lists.us" />
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+        <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
+          
+          {/* Section 1: Hero */}
+          <div className="text-center space-y-4">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+              Hello {firstName}. <span className="text-primary">AI has been looking forward to meeting you.</span>
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              You're one of 414 agents selected from 220,000+ analyzed. Here's the proof.
+            </p>
+          </div>
+
+          {/* Section 2: AI Proof Block */}
+          <AIProofBlock />
+
+          {/* Section 3: Profile Card with Inline Editing */}
+          <Card className="overflow-hidden">
+            <CardContent className="p-0">
+              {/* Card Header */}
+              <div className="bg-primary/5 border-b border-border p-6">
+                <h2 className="text-xl font-semibold text-foreground">
+                  Here's your listing. Review it and claim your free spot.
+                </h2>
+              </div>
+
+              {/* City Selector */}
+              <div className="p-6 border-b border-border bg-muted/30">
+                <div className="flex items-start gap-3">
+                  <MapPin className="h-5 w-5 text-primary mt-1" />
+                  <div className="flex-1 space-y-3">
+                    <div className="font-medium text-foreground">Where would you like to be listed?</div>
+                    <Select value={selectedCityId} onValueChange={setSelectedCityId}>
+                      <SelectTrigger className="w-full max-w-md">
+                        <SelectValue placeholder="Select a city..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cities.map((city) => (
+                          <SelectItem key={city.id} value={city.id}>
+                            {city.name}, {city.state}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground">
+                      Your first city is <span className="font-medium text-green-600">FREE</span>. You can add more later.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Profile Photo & Basic Info */}
+              <div className="p-6 border-b border-border">
+                <div className="flex flex-col md:flex-row gap-6">
+                  {/* Photo Upload */}
+                  <div className="flex-shrink-0">
+                    <div className="relative group">
+                      <img 
+                        src={profileImage} 
+                        alt={professional?.name}
+                        className="w-32 h-32 rounded-xl object-cover border-2 border-border"
+                      />
+                      <label className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 rounded-xl cursor-pointer transition-opacity">
+                        <Upload className="h-6 w-6 text-white" />
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            
+                            const fileExt = file.name.split('.').pop();
+                            const fileName = `${professional.id}-${Date.now()}.${fileExt}`;
+                            
+                            const { error: uploadError } = await supabase.storage
+                              .from('professional-photos')
+                              .upload(fileName, file, { upsert: true });
+                            
+                            if (uploadError) {
+                              toast.error('Failed to upload photo');
+                              return;
+                            }
+                            
+                            const { data: { publicUrl } } = supabase.storage
+                              .from('professional-photos')
+                              .getPublicUrl(fileName);
+                            
+                            await saveField('image_url', publicUrl);
+                          }}
+                        />
+                      </label>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2 text-center">Click to upload</p>
+                  </div>
+
+                  {/* Name, Rating, Company */}
+                  <div className="flex-1 space-y-2">
+                    <h3 className="text-2xl font-bold text-foreground">{professional?.name}</h3>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {professional?.review_stars_rating && (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                          <span>{professional.review_stars_rating}</span>
+                          {professional?.num_total_reviews && (
+                            <span>({professional.num_total_reviews} reviews)</span>
+                          )}
+                        </div>
+                      )}
+                      {professional?.company && (
+                        <div className="flex items-center gap-1">
+                          <Building2 className="h-4 w-4" />
+                          <span>{professional.company}</span>
+                        </div>
+                      )}
+                    </div>
+                    {professional?.license_number && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Shield className="h-4 w-4 text-green-500" />
+                        <span className="text-muted-foreground">License #{professional.license_number}</span>
+                        {professional.license_verified_at && (
+                          <Badge variant="secondary" className="text-xs">Verified</Badge>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Editable Fields */}
+              <div className="p-6 space-y-4">
+                <div className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+                  <Pencil className="h-4 w-4" />
+                  Click any field to edit
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-2">
+                  <EditableField
+                    label="Bio"
+                    value={bio}
+                    onSave={(v) => saveField('description', v)}
+                    type="textarea"
+                    placeholder="Tell potential clients about yourself..."
+                  />
+                  
+                  <EditableField
+                    label="Phone Number"
+                    value={professional?.phone || ''}
+                    onSave={(v) => saveField('phone', v)}
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    icon={<Phone className="h-4 w-4" />}
+                  />
+                  
+                  <EditableField
+                    label="Website"
+                    value={professional?.website || ''}
+                    onSave={(v) => saveField('website', v)}
+                    type="url"
+                    placeholder="https://yourwebsite.com"
+                    icon={<Globe className="h-4 w-4" />}
+                  />
+                  
+                  <EditableField
+                    label="Video Introduction URL"
+                    value={professional?.sidebar_video_url || ''}
+                    onSave={(v) => saveField('sidebar_video_url', v)}
+                    type="url"
+                    placeholder="YouTube or Vimeo URL"
+                    icon={<Video className="h-4 w-4" />}
+                  />
+                  
+                  <EditableField
+                    label="Facebook"
+                    value={professional?.social_facebook || ''}
+                    onSave={(v) => saveField('social_facebook', v)}
+                    type="url"
+                    placeholder="https://facebook.com/yourpage"
+                  />
+                  
+                  <EditableField
+                    label="Instagram"
+                    value={professional?.social_instagram || ''}
+                    onSave={(v) => saveField('social_instagram', v)}
+                    type="url"
+                    placeholder="https://instagram.com/yourhandle"
+                  />
+                  
+                  <EditableField
+                    label="LinkedIn"
+                    value={professional?.social_linkedin || ''}
+                    onSave={(v) => saveField('social_linkedin', v)}
+                    type="url"
+                    placeholder="https://linkedin.com/in/yourprofile"
+                  />
+                  
+                  <EditableField
+                    label="X / Twitter"
+                    value={professional?.social_twitter || ''}
+                    onSave={(v) => saveField('social_twitter', v)}
+                    type="url"
+                    placeholder="https://x.com/yourhandle"
+                  />
+                  
+                  <EditableField
+                    label="TikTok"
+                    value={professional?.social_tiktok || ''}
+                    onSave={(v) => saveField('social_tiktok', v)}
+                    type="url"
+                    placeholder="https://tiktok.com/@yourhandle"
+                  />
+                </div>
+              </div>
+
+              {/* Verified/Locked Fields */}
+              <div className="p-6 bg-muted/20 border-t border-border space-y-4">
+                <div className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                  <Lock className="h-4 w-4" />
+                  Verified information (request review to change)
+                </div>
+                
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <LockedField
+                    label="Name"
+                    value={professional?.name}
+                    fieldKey="name"
+                    professionalId={professional?.id}
+                    professionalName={professional?.name}
+                    professionalEmail={professional?.email}
+                    profileLink={getProfileLink()}
+                  />
+                  
+                  <LockedField
+                    label="Brokerage"
+                    value={professional?.company}
+                    fieldKey="company"
+                    professionalId={professional?.id}
+                    professionalName={professional?.name}
+                    professionalEmail={professional?.email}
+                    profileLink={getProfileLink()}
+                  />
+                  
+                  <LockedField
+                    label="Rating"
+                    value={professional?.review_stars_rating ? `${professional.review_stars_rating} stars` : null}
+                    fieldKey="review_stars_rating"
+                    professionalId={professional?.id}
+                    professionalName={professional?.name}
+                    professionalEmail={professional?.email}
+                    profileLink={getProfileLink()}
+                  />
+                  
+                  <LockedField
+                    label="Reviews"
+                    value={professional?.num_total_reviews}
+                    fieldKey="num_total_reviews"
+                    professionalId={professional?.id}
+                    professionalName={professional?.name}
+                    professionalEmail={professional?.email}
+                    profileLink={getProfileLink()}
+                  />
+                  
+                  <LockedField
+                    label="Total Sales"
+                    value={professional?.total_sales || professional?.agent_sales_stats?.countAllTime}
+                    fieldKey="total_sales"
+                    professionalId={professional?.id}
+                    professionalName={professional?.name}
+                    professionalEmail={professional?.email}
+                    profileLink={getProfileLink()}
+                  />
+                  
+                  <LockedField
+                    label="Years Experience"
+                    value={professional?.years_experience ? `${professional.years_experience} years` : null}
+                    fieldKey="years_experience"
+                    professionalId={professional?.id}
+                    professionalName={professional?.name}
+                    professionalEmail={professional?.email}
+                    profileLink={getProfileLink()}
+                  />
+                  
+                  <LockedField
+                    label="License Number"
+                    value={professional?.license_number}
+                    fieldKey="license_number"
+                    professionalId={professional?.id}
+                    professionalName={professional?.name}
+                    professionalEmail={professional?.email}
+                    profileLink={getProfileLink()}
+                  />
+                </div>
+              </div>
+
+              {/* Email Confirmation */}
+              <div className="p-6 bg-primary/5 border-t border-border">
+                <div className="flex items-start gap-3">
+                  <Mail className="h-5 w-5 text-primary mt-1" />
+                  <div className="flex-1 space-y-4">
+                    <div className="font-medium text-foreground">Confirm your email to claim this listing</div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3 max-w-lg">
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="flex-1"
+                      />
+                      <Button 
+                        onClick={handleClaim}
+                        disabled={claiming || !selectedCityId || !email}
+                        className="whitespace-nowrap"
+                      >
+                        {claiming ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Claiming...
+                          </>
+                        ) : (
+                          'Claim My FREE Listing'
+                        )}
+                      </Button>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground">
+                      We'll send a magic link to verify. No password needed.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
+      </div>
+    </>
+  );
+}
