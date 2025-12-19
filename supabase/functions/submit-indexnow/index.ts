@@ -30,18 +30,19 @@ serve(async (req) => {
     let urlList: string[] = [];
 
     if (submitAll) {
-      // Get all active Arizona cities and generate URLs
-      console.log('[IndexNow] Fetching all active Arizona cities...');
+      // Get all active cities from ALL states (not just Arizona)
+      console.log('[IndexNow] Fetching all active cities from all states...');
       
       const { data: cities, error: citiesError } = await supabase
         .from('cities')
         .select('slug, state_slug')
-        .eq('active', true)
-        .eq('state_slug', 'arizona');
+        .eq('active', true);
 
       if (citiesError) {
         throw new Error(`Failed to fetch cities: ${citiesError.message}`);
       }
+      
+      console.log(`[IndexNow] Found ${cities?.length || 0} active cities across all states`);
 
       // Generate city page URLs
       for (const city of cities || []) {
