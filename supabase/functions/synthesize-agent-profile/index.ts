@@ -402,6 +402,9 @@ AGENT DATA:
 - Reviews: ${context.reviewCount || 0} reviews (${context.rating || 0} stars)
 - Total Sales: Check agent_sales_stats if available
 
+=== PERPLEXITY WEB RESEARCH (PRIMARY SOURCE - USE THIS FIRST) ===
+${context.rawResearch || 'No web research available'}
+
 === PRESS MENTIONS FROM WEB SEARCH ===
 ${context.geminiPressMentions?.length > 0 ? JSON.stringify(context.geminiPressMentions, null, 2) : 'No press mentions discovered'}
 
@@ -413,9 +416,6 @@ ${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
 
 === EXISTING BIO (COMPLETELY REPHRASE - copying any phrases verbatim is FORBIDDEN) ===
 ${context.existingBio || 'No bio available'}
-
-=== PRESS MENTIONS ===
-${context.pressMentionsSummary || 'No press mentions found'}
 
 === EXISTING COMMUNITY ROLES (include ALL of these in paragraph 4) ===
 ${context.existingCommunityRoles?.length > 0 ? JSON.stringify(context.existingCommunityRoles, null, 2) : 'No existing community roles - search bio and website for volunteer work, board seats, charity involvement'}

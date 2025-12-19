@@ -6,147 +6,45 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Send failover alert email
-async function sendFailoverAlert(
-  supabase: any,
-  provider: string,
-  error: string,
-  agentName: string
-) {
-  try {
-    const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    if (!resendApiKey) {
-      console.error('RESEND_API_KEY not configured, cannot send failover alert');
-      return;
-    }
-
-    const emailBody = `
-AI Provider Failover Alert
-
-Provider: ${provider}
-Error: ${error}
-Agent Being Processed: ${agentName}
-Time: ${new Date().toISOString()}
-
-Action Required:
-${provider === 'Anthropic/Claude' ? 
-  '1. Check Anthropic credit balance: https://console.anthropic.com/settings/billing\n2. Add credits or update payment method if needed' :
-  '1. Check the provider status and API key configuration\n2. Review error logs for details'}
-
-The system automatically failed over to Lovable AI (Gemini) to complete this request.
-`;
-
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: 'Top10Lists <alerts@top10lists.us>',
-        to: ['robert@top10lists.us'],
-        subject: `⚠️ AI Failover Alert: ${provider} failed - switched to backup`,
-        text: emailBody,
-      }),
-    });
-
-    if (response.ok) {
-      console.log('✅ Failover alert email sent to robert@top10lists.us');
-    } else {
-      const errorText = await response.text();
-      console.error('Failed to send failover alert email:', errorText);
-    }
-  } catch (emailError) {
-    console.error('Error sending failover alert:', emailError);
-  }
-}
-
-// Call Claude API
-async function callClaudeAPI(systemPrompt: string, userQuery: string, anthropicApiKey: string) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+// Search with Perplexity API
+async function searchWithPerplexity(query: string, perplexityApiKey: string): Promise<{ content: string; citations: string[] }> {
+  console.log(`🔍 Perplexity search: ${query.substring(0, 100)}...`);
+  
+  const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
-      'x-api-key': anthropicApiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
-      max_tokens: 5000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userQuery }],
-      tools: [
-        {
-          type: 'web_search_20250305',
-          name: 'web_search',
-          max_uses: 6
-        }
-      ],
-      tool_choice: { type: 'auto' }
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Claude API error ${response.status}: ${errorText}`);
-  }
-
-  return response.json();
-}
-
-// Call Lovable AI (Gemini) as fallback
-async function callLovableAI(systemPrompt: string, userQuery: string) {
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!lovableApiKey) {
-    throw new Error('LOVABLE_API_KEY not configured');
-  }
-
-  // Enhanced prompt for Gemini that simulates research
-  const enhancedPrompt = `${systemPrompt}
-
-IMPORTANT: Since you cannot perform live web searches, use your training knowledge to identify likely press mentions, awards, and recognition for this real estate professional. Focus on:
-- Major industry awards they might have received (WSJ Real Trends, local top agent lists)
-- Types of media coverage common for top agents in their area
-- Industry publications that feature successful agents
-
-If you don't have specific information, provide a structured response indicating no verified press mentions were found.
-
-${userQuery}
-
-Respond with a JSON array of any known mentions. If uncertain, return an empty array [].`;
-
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${lovableApiKey}`,
+      'Authorization': `Bearer ${perplexityApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.5-flash',
+      model: 'sonar-pro',
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: enhancedPrompt }
+        { 
+          role: 'system', 
+          content: `You are a research assistant finding information about real estate professionals. 
+Return factual information with specific details like names, dates, organizations, and achievements.
+Focus on verifiable facts from credible sources.
+If you cannot find specific information, say so clearly.` 
+        },
+        { role: 'user', content: query }
       ],
-      temperature: 0.3,
-      max_tokens: 4096,
+      max_tokens: 2000,
+      temperature: 0.1,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Lovable AI error ${response.status}: ${errorText}`);
+    throw new Error(`Perplexity API error ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
+  const content = data.choices?.[0]?.message?.content || '';
+  const citations = data.citations || [];
   
-  // Convert to Claude-like response format
-  return {
-    content: [{
-      type: 'text',
-      text: data.choices?.[0]?.message?.content || '[]'
-    }],
-    provider: 'lovable-ai-fallback'
-  };
+  console.log(`✅ Perplexity returned ${content.length} chars, ${citations.length} citations`);
+  
+  return { content, citations };
 }
 
 serve(async (req) => {
@@ -173,176 +71,142 @@ serve(async (req) => {
       );
     }
     
-    // Initialize Supabase client for synthesis integration
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    console.log(`Searching press mentions for ${agentName} with AI (Claude primary, Lovable fallback)`);
-
-    // Comprehensive system prompt
-    const systemPrompt = `You are a research assistant finding press mentions and web presence for real estate professionals.
-
-Search multiple angles to build a comprehensive profile:
-- Agent name + company/team name variations
-- Industry awards (Wall Street Journal Real Trends Top 250, America's Best Real Estate Agents, Inc 500, local awards)
-- Local TV news appearances (Fox, ABC, NBC, CBS affiliates)
-- Podcasts (guest appearances, hosted shows)
-- Industry publications (Inman, HousingWire, Real Producer Magazine, Ranking Arizona)
-- Speaking engagements, coaching, conferences
-- Business achievements and recognition
-
-Important: The Wall Street Journal rankings and similar lists are often cited by OTHER sources (like real estate websites, local news, industry blogs), so search for references to these achievements even if the original source is paywalled.
-
-Exclude generic real estate listing sites (Zillow agent profiles, Realtor.com, Redfin profiles) - we want PRESS and RECOGNITION, not just profiles.
-
-Return your findings as a JSON array with: title, source, url, snippet, date (YYYY-MM-DD or 'NA'), type (tv_appearance, award, article, interview, podcast, speaking_engagement, or recognition).`;
-
-    const userQuery = `Find the complete web presence and press mentions for ${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''}, a real estate professional in ${city}, ${state}.
-
-Search for:
-1. Industry awards and rankings (WSJ Real Trends, local "Top Agent" lists, Inc 500)
-2. TV/radio appearances on local news stations
-3. Podcast interviews or hosted shows
-4. Articles in real estate industry publications
-5. Speaking engagements at conferences or events
-6. Any other press coverage or recognition
-
-Look for references to achievements even if cited by secondary sources.`;
-
-    let data: any;
-    let usedFallback = false;
-    let failoverError = '';
-
-    // Try Claude first, fall back to Lovable AI
-    const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
     
-    if (anthropicApiKey) {
-      try {
-        console.log('🔵 Attempting Claude API...');
-        data = await callClaudeAPI(systemPrompt, userQuery, anthropicApiKey);
-        console.log('✅ Claude API succeeded');
-      } catch (claudeError) {
-        const errorMsg = claudeError instanceof Error ? claudeError.message : String(claudeError);
-        console.error('❌ Claude API failed:', errorMsg);
-        failoverError = errorMsg;
-        
-        // Check if it's a credits/billing issue
-        const isCreditsIssue = errorMsg.includes('credit balance') || 
-                               errorMsg.includes('billing') || 
-                               errorMsg.includes('payment') ||
-                               errorMsg.includes('402');
-        
-        console.log(`⚠️ Failing over to Lovable AI (Gemini)... Reason: ${isCreditsIssue ? 'Credits issue' : 'API error'}`);
-        
+    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
+    if (!perplexityApiKey) {
+      throw new Error('PERPLEXITY_API_KEY not configured');
+    }
+
+    console.log(`🔎 Researching ${agentName} using Perplexity...`);
+
+    const agentIdentifier = `${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''}, real estate agent in ${city}, ${state}`;
+
+    // Run multiple Perplexity searches in parallel for comprehensive research
+    const searchQueries = [
+      // Press & Awards search
+      `Find press mentions, news articles, TV appearances, and industry awards for ${agentIdentifier}. 
+Look for: Wall Street Journal Real Trends rankings, America's Best Real Estate Agents, local news features, 
+podcast interviews, real estate industry publication articles (Inman, HousingWire, Real Producer Magazine), 
+speaking engagements, and any public recognition or awards.`,
+
+      // Community & Nonprofit search
+      `Find community involvement, nonprofit work, and volunteer activities for ${agentIdentifier}.
+Look for: charity board memberships, nonprofit organizations they support or lead, 
+church or faith community involvement, youth sports coaching, school board or PTA involvement,
+Habitat for Humanity, food bank volunteering, fundraising events organized or sponsored,
+civic organization memberships (Rotary, Kiwanis, Lions Club), chamber of commerce leadership roles,
+mentoring programs, scholarship foundations, community event sponsorships.`,
+
+      // Professional background search  
+      `Find professional background and credentials for ${agentIdentifier}.
+Look for: education and degrees, professional certifications (CLHMS, CNE, ABR, CRS, GRI),
+designations, coaching or training programs they lead, industry association leadership roles,
+years in business, brokerage history, team leadership.`
+    ];
+
+    // Execute all searches in parallel
+    const searchResults = await Promise.all(
+      searchQueries.map(async (query, index) => {
         try {
-          data = await callLovableAI(systemPrompt, userQuery);
-          usedFallback = true;
-          console.log('✅ Lovable AI fallback succeeded');
-          
-          // Send alert email about the failover
-          await sendFailoverAlert(supabase, 'Anthropic/Claude', errorMsg, agentName);
-        } catch (fallbackError) {
-          console.error('❌ Lovable AI fallback also failed:', fallbackError);
-          throw new Error(`Both Claude and Lovable AI failed. Claude: ${errorMsg}. Fallback: ${fallbackError}`);
+          return await searchWithPerplexity(query, perplexityApiKey);
+        } catch (error) {
+          console.error(`❌ Search ${index + 1} failed:`, error);
+          return { content: '', citations: [] };
         }
-      }
-    } else {
-      // No Anthropic key configured, use Lovable AI directly
-      console.log('⚠️ ANTHROPIC_API_KEY not configured, using Lovable AI directly');
-      data = await callLovableAI(systemPrompt, userQuery);
-      usedFallback = true;
-    }
+      })
+    );
 
-    console.log(`Response received from ${usedFallback ? 'Lovable AI (fallback)' : 'Claude'}`);
+    // Combine all research results
+    const [pressResults, communityResults, professionalResults] = searchResults;
+    
+    const allCitations = [
+      ...pressResults.citations,
+      ...communityResults.citations,
+      ...professionalResults.citations
+    ];
+    
+    const uniqueCitations = [...new Set(allCitations)];
 
-    // Extract press mentions from response
+    const fullResearchText = `
+# PRESS & AWARDS RESEARCH
+${pressResults.content || 'No press mentions found.'}
+
+# COMMUNITY INVOLVEMENT & NONPROFIT WORK
+${communityResults.content || 'No community involvement found.'}
+
+# PROFESSIONAL BACKGROUND & CREDENTIALS
+${professionalResults.content || 'No additional professional background found.'}
+
+# SOURCE CITATIONS
+${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}`).join('\n') : 'No external citations found.'}
+`;
+
+    console.log(`📊 Research complete: ${fullResearchText.length} chars total`);
+    console.log(`   - Press: ${pressResults.content.length} chars`);
+    console.log(`   - Community: ${communityResults.content.length} chars`);
+    console.log(`   - Professional: ${professionalResults.content.length} chars`);
+    console.log(`   - Citations: ${uniqueCitations.length}`);
+
+    // Extract structured mentions from the research
     const mentions: any[] = [];
-    let fullResearchText = '';
     
-    if (data.content) {
-      for (const block of data.content) {
-        if (block.type === 'text' && block.text) {
-          fullResearchText += block.text + '\n\n';
-          
-          try {
-            const jsonMatch = block.text.match(/\[[\s\S]*\]/);
-            if (jsonMatch) {
-              const parsedMentions = JSON.parse(jsonMatch[0]);
-              if (Array.isArray(parsedMentions)) {
-                mentions.push(...parsedMentions);
-              }
-            }
-          } catch (e) {
-            console.error('Failed to parse JSON from response:', e);
-          }
-        }
-      }
-    }
-
-    // Enhanced deduplication
-    const uniqueMentions = new Map();
-    const seenTitles = new Set<string>();
-    
-    mentions.forEach(mention => {
-      if (!mention.url) return;
-      
-      const normalizedTitle = (mention.title || '').toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      let isDuplicate = false;
-      for (const seenTitle of seenTitles) {
-        const titleWords = normalizedTitle.split(' ');
-        const seenWords = seenTitle.split(' ');
-        const commonWords = titleWords.filter((w: string) => seenWords.includes(w));
-        const similarity = commonWords.length / Math.max(titleWords.length, seenWords.length);
-        
-        if (similarity > 0.8) {
-          isDuplicate = true;
-          break;
-        }
-      }
-      
-      if (!isDuplicate && !uniqueMentions.has(mention.url)) {
+    // Parse citations into structured mentions
+    uniqueCitations.forEach((url, index) => {
+      if (url && typeof url === 'string') {
+        const lowerUrl = url.toLowerCase();
+        let type = 'article';
         let credibilityScore = 5;
-        const lowerSource = (mention.source || '').toLowerCase();
-        const type = mention.type || 'article';
         
-        if (type === 'tv_appearance') credibilityScore = 10;
-        else if (type === 'award') credibilityScore = 9;
-        else if (lowerSource.includes('wall street') || lowerSource.includes('forbes')) credibilityScore = 10;
-        else if (lowerSource.includes('ranking arizona') || lowerSource.includes('real producers')) credibilityScore = 9;
-        else if (lowerSource.includes('fox') || lowerSource.includes('nbc') || lowerSource.includes('abc')) credibilityScore = 8;
+        if (lowerUrl.includes('wsj.com') || lowerUrl.includes('wallstreetjournal')) {
+          type = 'award';
+          credibilityScore = 10;
+        } else if (lowerUrl.includes('fox') || lowerUrl.includes('nbc') || lowerUrl.includes('abc') || lowerUrl.includes('cbs')) {
+          type = 'tv_appearance';
+          credibilityScore = 9;
+        } else if (lowerUrl.includes('inman') || lowerUrl.includes('housingwire') || lowerUrl.includes('realproducer')) {
+          type = 'article';
+          credibilityScore = 8;
+        } else if (lowerUrl.includes('habitat') || lowerUrl.includes('rotary') || lowerUrl.includes('kiwanis') || lowerUrl.includes('charity')) {
+          type = 'community';
+          credibilityScore = 7;
+        } else if (lowerUrl.includes('podcast') || lowerUrl.includes('spotify') || lowerUrl.includes('apple.com/podcast')) {
+          type = 'podcast';
+          credibilityScore = 7;
+        }
         
-        uniqueMentions.set(mention.url, {
-          ...mention,
-          credibilityScore
+        mentions.push({
+          url,
+          source: new URL(url).hostname.replace('www.', ''),
+          type,
+          credibilityScore,
+          title: `Source ${index + 1}`
         });
-        seenTitles.add(normalizedTitle);
       }
     });
 
-    const finalMentions = Array.from(uniqueMentions.values())
-      .sort((a, b) => (b.credibilityScore || 0) - (a.credibilityScore || 0))
-      .slice(0, 10);
+    // Sort by credibility
+    const finalMentions = mentions
+      .sort((a, b) => b.credibilityScore - a.credibilityScore)
+      .slice(0, 15);
 
-    console.log(`Found ${finalMentions.length} press mentions for ${agentName}`);
+    console.log(`Found ${finalMentions.length} citations for ${agentName}`);
 
     // Auto-trigger profile synthesis if professionalId provided
     const shouldSynthesize = professionalId && fullResearchText.trim() && !dryRun;
-    const hasPress = finalMentions.length > 0;
+    const hasContent = pressResults.content.length > 50 || communityResults.content.length > 50;
     
-    if (shouldSynthesize && (!skipIfNoPress || hasPress)) {
+    if (shouldSynthesize && (!skipIfNoPress || hasContent)) {
       console.log(`🔄 Auto-triggering profile synthesis for ${agentName}...`);
       
       try {
         supabase.functions.invoke('synthesize-agent-profile', {
           body: {
             professionalId,
-            skipIfNoPress,
-            rawResearch: `# Press Research for ${agentName}
+            skipIfNoPress: false, // Always synthesize since we now have community research
+            rawResearch: `# Perplexity Research for ${agentName}
 
 ## Context
 Agent: ${agentName}
@@ -350,11 +214,7 @@ ${company ? `Company: ${company}` : ''}
 ${businessName ? `Business: ${businessName}` : ''}
 Location: ${city}, ${state}
 
-## Research Results
-${fullResearchText}
-
-## Press Mentions Found
-${JSON.stringify(finalMentions, null, 2)}`
+${fullResearchText}`
           }
         }).then(({ data: synthData, error: synthError }) => {
           if (synthError) {
@@ -370,8 +230,8 @@ ${JSON.stringify(finalMentions, null, 2)}`
       }
     } else if (dryRun) {
       console.log('🔧 DRY RUN: Would trigger synthesis for', agentName);
-    } else if (skipIfNoPress && !hasPress) {
-      console.log('💰 COST SAVE: Skipping synthesis (no press found, skipIfNoPress=true)');
+    } else if (skipIfNoPress && !hasContent) {
+      console.log('💰 COST SAVE: Skipping synthesis (no substantial content found)');
     } else if (professionalId && !fullResearchText.trim()) {
       console.log('⚠️ No research text captured for synthesis');
     } else {
@@ -381,15 +241,19 @@ ${JSON.stringify(finalMentions, null, 2)}`
     return new Response(
       JSON.stringify({ 
         mentions: finalMentions,
-        provider: usedFallback ? 'lovable-ai-fallback' : 'claude',
-        failoverUsed: usedFallback,
-        failoverReason: usedFallback ? failoverError : undefined
+        provider: 'perplexity',
+        researchSummary: {
+          pressChars: pressResults.content.length,
+          communityChars: communityResults.content.length,
+          professionalChars: professionalResults.content.length,
+          totalCitations: uniqueCitations.length
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in search-agent-press-claude:', error);
+    console.error('Error in search-agent-press:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ error: errorMessage }),
