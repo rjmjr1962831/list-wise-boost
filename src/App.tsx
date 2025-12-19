@@ -29,6 +29,7 @@ const VerifyCities = lazy(() => import("./pages/VerifyCities"));
 const CityLanding = lazy(() => import("./pages/CityLanding"));
 const StateLanding = lazy(() => import("./pages/StateLanding"));
 const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
+const AlbuquerqueRedirect = lazy(() => import("./pages/AlbuquerqueRedirect"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const CRM = lazy(() => import("./pages/CRM"));
@@ -167,6 +168,11 @@ const App = () => (
                     <Route path="/profile-view/:token" element={<ProfileView />} />
                     {/* Coming Soon route for non-Arizona cities */}
                     <Route path="/coming-soon/:stateSlug/:citySlug" element={<CityComingSoon />} />
+
+                    {/* Albuquerque-only legacy redirects (URLs missing the state slug) */}
+                    <Route path="/albuquerque/:categorySlug" element={<AlbuquerqueRedirect />} />
+                    <Route path="/albuquerque/:categorySlug/:agentSlug" element={<AlbuquerqueRedirect />} />
+
                     {/* Q&A Landing Pages for LLM optimization */}
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
