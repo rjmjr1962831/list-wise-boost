@@ -323,8 +323,9 @@ serve(async (req) => {
       org_id: orgId,
       // Always set label to "Warm lead" (ID 16) for active professionals
       label_ids: professional.active ? [16] : undefined,
-      // Always set marketing status to "subscribed" (consent given)
-      marketing_status: "subscribed",
+      // Only set marketing status on FIRST sync (create), not on updates
+      // After first sync, Pipedrive is the source of truth for marketing status
+      ...(isUpdate ? {} : { marketing_status: "subscribed" }),
     };
 
     // Map custom fields
