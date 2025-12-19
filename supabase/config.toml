@@ -297,3 +297,9 @@ verify_jwt = false
 
 [functions.backfill-pipedrive-leads]
 verify_jwt = false
+
+[functions.health-check]
+verify_jwt = false
+
+[functions.send-frontend-error-alert]
+verify_jwt = false
