@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,16 @@ const CityComingSoon = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  // Legacy malformed Albuquerque URL fix:
+  // /coming-soon/albuquerque/top10realestateagents -> /new-mexico/albuquerque/top10realestateagents
+  const isLegacyAlbuquerqueCategoryPath =
+    (stateSlug || "").toLowerCase() === "albuquerque" &&
+    (citySlug || "").toLowerCase().startsWith("top10");
+
+  if (isLegacyAlbuquerqueCategoryPath) {
+    return <Navigate to={`/new-mexico/albuquerque/${citySlug}`} replace />;
+  }
 
   // Format city name from slug
   const formatCityName = (slug: string = "") => {

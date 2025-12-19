@@ -18,12 +18,12 @@ export default function CityLanding() {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Redirect to coming soon page unless Arizona, or Albuquerque (New Mexico)
-  const state = (stateSlug || '').toLowerCase();
-  const city = (citySlug || '').toLowerCase();
+  const stateSlugLower = (stateSlug || '').toLowerCase();
+  const citySlugLower = (citySlug || '').toLowerCase();
   const isAllowed =
-    state === 'arizona' ||
-    state === 'az' ||
-    ((state === 'new-mexico' || state === 'nm') && city === 'albuquerque');
+    stateSlugLower === 'arizona' ||
+    stateSlugLower === 'az' ||
+    ((stateSlugLower === 'new-mexico' || stateSlugLower === 'nm') && citySlugLower === 'albuquerque');
 
   if (stateSlug && !isAllowed) {
     return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
