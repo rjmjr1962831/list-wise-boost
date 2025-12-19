@@ -71,6 +71,7 @@ const HowItWorksPage = lazy(() => import("./pages/profile/HowItWorksPage"));
 const FreeListingThankYou = lazy(() => import("./pages/profile/FreeListingThankYou"));
 const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
 const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
+const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AgentCardRedirect = lazy(() => import("./pages/AgentCardRedirect"));
 
@@ -150,8 +151,10 @@ const App = () => (
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
                     {/* Short link redirect for magic links */}
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
-                    {/* Agent funnel routes - Magic link landing page */}
-                    <Route path="/profile/:token" element={<FunnelIntro />} />
+                    {/* Streamlined onboarding - new single-page flow */}
+                    <Route path="/profile/:token" element={<StreamlinedOnboarding />} />
+                    {/* Legacy funnel routes - still accessible but not in main flow */}
+                    <Route path="/profile/:token/intro" element={<FunnelIntro />} />
                     <Route path="/profile/:token/setup" element={<AccountSetup />} />
                     <Route path="/profile/:token/listing" element={<VerifyListingByToken />} />
                     <Route path="/profile/:token/fields" element={<ProfileFieldsGuide />} />
