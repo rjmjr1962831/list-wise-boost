@@ -452,6 +452,29 @@ Deno.serve(async (req) => {
           } else {
             results.imported++;
             results.agents.push({ id: newAgent.id, name: newAgent.name, action: 'created' });
+            
+            // Trigger full enrichment for newly created qualified agents
+            try {
+              console.log(`[Firecrawl Import] Triggering enrichment for ${newAgent.name}...`);
+              
+              // Step 1: Research press and community involvement
+              const { error: pressError } = await supabase.functions.invoke('search-agent-press-claude', {
+                body: {
+                  professionalId: newAgent.id,
+                  skipSynthesis: false, // Let it auto-trigger synthesis
+                  skipIfNoPress: false  // Always proceed to synthesis for community research
+                }
+              });
+              
+              if (pressError) {
+                console.error(`[Firecrawl Import] Enrichment error for ${newAgent.name}:`, pressError);
+              } else {
+                console.log(`[Firecrawl Import] ✅ Enrichment complete for ${newAgent.name}`);
+                results.agents[results.agents.length - 1].enriched = true;
+              }
+            } catch (enrichError) {
+              console.error(`[Firecrawl Import] Enrichment failed for ${newAgent.name}:`, enrichError);
+            }
           }
         }
 
