@@ -13,6 +13,7 @@ interface ProfessionalListLayoutProps {
   children: ReactNode;
   heroIcons?: Array<{ icon: ReactNode; label: string }>;
   lastUpdated?: string;
+  rightAction?: ReactNode;
 }
 
 export const ProfessionalListLayout = ({
@@ -20,7 +21,8 @@ export const ProfessionalListLayout = ({
   professionals,
   children,
   heroIcons,
-  lastUpdated
+  lastUpdated,
+  rightAction
 }: ProfessionalListLayoutProps) => {
   const { trackEvent } = useGA4Tracking();
   
@@ -172,10 +174,13 @@ export const ProfessionalListLayout = ({
             Back to Home
           </Link>
           <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="px-3 py-1">Verified List</Badge>
-              <Badge variant="outline" className="px-3 py-1">Updated Monthly</Badge>
-              <Badge variant="outline" className="px-3 py-1">2025</Badge>
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="px-3 py-1">Verified List</Badge>
+                <Badge variant="outline" className="px-3 py-1">Updated Monthly</Badge>
+                <Badge variant="outline" className="px-3 py-1">2025</Badge>
+              </div>
+              {rightAction}
             </div>
             <p className="text-lg text-muted-foreground">
               {metadata.description}
