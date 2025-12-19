@@ -227,9 +227,12 @@ export function Chatbot() {
                 <Send className="w-4 h-4" />
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-              Or call us: <a href="tel:6027589600" className="text-primary hover:underline">(602) 758-9600</a>
-            </p>
+            <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+              <span>
+                Call us: <a href="tel:6027589600" className="text-primary hover:underline">(602) 758-9600</a>
+              </span>
+              <span className="opacity-70">Powered by Claude</span>
+            </div>
           </div>
         </div>
       )}
