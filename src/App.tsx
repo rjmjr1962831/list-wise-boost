@@ -179,9 +179,9 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
                     {/* Dynamic city and category routes - MUST BE LAST before catch-all */}
-                    {/* Order: most specific (4-params) first, then 3-params, then 2-params */}
-                    <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
+                    {/* Order: 3-params (category list) BEFORE 4-params (agent profile) to prevent category slugs being treated as agent slugs */}
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
+                    <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     {/* Magic link formats - support both /az/ and /arizona/ prefixes */}
                     <Route path="/az/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
                     <Route path="/arizona/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
