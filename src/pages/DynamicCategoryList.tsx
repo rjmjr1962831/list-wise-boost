@@ -179,9 +179,15 @@ export default function DynamicCategoryList() {
     categorySlug: string;
   }>();
   
-  // Redirect to coming soon page if not Arizona or New Mexico (Albuquerque)
-  const allowedStates = ['arizona', 'az', 'new-mexico', 'nm'];
-  if (stateSlug && !allowedStates.includes(stateSlug.toLowerCase())) {
+  // Redirect to coming soon page unless Arizona, or Albuquerque (New Mexico)
+  const state = (stateSlug || '').toLowerCase();
+  const city = (citySlug || '').toLowerCase();
+  const isAllowed =
+    state === 'arizona' ||
+    state === 'az' ||
+    ((state === 'new-mexico' || state === 'nm') && city === 'albuquerque');
+
+  if (stateSlug && !isAllowed) {
     return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
   }
   
