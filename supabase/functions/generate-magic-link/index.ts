@@ -95,10 +95,10 @@ serve(async (req) => {
       console.log('🆕 Generated new short_code for legacy support:', shortCode);
     }
 
-    // Generate the SEO-friendly profile link: /arizona/city/firstname-lastname-1234
+    // Generate the SEO-friendly profile link: /az/city/firstname-lastname-1234
     const generateSEOLink = () => {
       if (citySlug && nameSlug && phoneDigits) {
-        return `${appUrl}/arizona/${citySlug}/${nameSlug}-${phoneDigits}`;
+        return `${appUrl}/az/${citySlug}/${nameSlug}-${phoneDigits}`;
       }
       // Fallback to short code format if missing data
       return `${appUrl}/p/${shortCode}`;

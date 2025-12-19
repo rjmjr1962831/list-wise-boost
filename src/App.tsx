@@ -145,8 +145,6 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
-                    {/* Magic link format: /arizona/city/firstname-lastname-1234 */}
-                    <Route path="/arizona/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
                     {/* Short link redirect for magic links */}
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Agent funnel routes - Magic link landing page */}
@@ -176,6 +174,8 @@ const App = () => (
                     {/* Order: most specific (4-params) first, then 3-params, then 2-params */}
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
+                    {/* Magic link format: /az/city/firstname-lastname-1234 - uses /az/ prefix to avoid category route conflict */}
+                    <Route path="/az/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     {/* State landing page - must be after city routes */}
                     <Route path="/arizona" element={<StateLanding />} />
