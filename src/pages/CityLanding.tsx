@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CityMarketOverview } from "@/components/CityMarketOverview";
 import { getCityBySlug, getCitiesByState } from "@/data/cities";
 import { formatCityName } from "@/utils/routeHelpers";
+import { normalizeStateSlug } from "@/utils/stateSlugMapping";
 
 export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
@@ -17,22 +18,34 @@ export default function CityLanding() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
+  const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
+  
+  // If state slug is an abbreviation, redirect to canonical full name URL
+  if (stateSlug && stateNormalized?.needsRedirect) {
+    const newPath = `/${stateNormalized.normalized}/${citySlug}`;
+    console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
+    return <Navigate to={newPath} replace />;
+  }
+  
+  // Use normalized state slug
+  const normalizedStateSlug = stateNormalized?.normalized || stateSlug || '';
+  
   // Redirect to coming soon page unless Arizona, or Albuquerque (New Mexico)
-  const stateSlugLower = (stateSlug || '').toLowerCase();
+  const stateSlugLower = normalizedStateSlug.toLowerCase();
   const citySlugLower = (citySlug || '').toLowerCase();
   const isAllowed =
     stateSlugLower === 'arizona' ||
-    stateSlugLower === 'az' ||
-    ((stateSlugLower === 'new-mexico' || stateSlugLower === 'nm') && citySlugLower === 'albuquerque');
+    ((stateSlugLower === 'new-mexico') && citySlugLower === 'albuquerque');
 
   if (stateSlug && !isAllowed) {
-    return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
+    return <Navigate to={`/coming-soon/${normalizedStateSlug}/${citySlug}`} replace />;
   }
 
-  const city = getCityBySlug(citySlug || "", stateSlug);
+  const city = getCityBySlug(citySlug || "", normalizedStateSlug);
   
-  // Get Arizona cities for the dialog
-  const arizonaCities = getCitiesByState("az").filter(c => 
+  // Get Arizona cities for the dialog (using full state name)
+  const arizonaCities = getCitiesByState("arizona").filter(c => 
     c.slug !== citySlug && c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

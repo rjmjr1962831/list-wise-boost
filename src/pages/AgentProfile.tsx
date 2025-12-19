@@ -10,6 +10,7 @@ import { generateAgentProfileSchema, professionalToSchemaData } from '@/utils/ag
 import { generateVerifiedAgentSchema, generateCitationText } from '@/utils/verifiedAgentSchema';
 import { professionalToVerifiedAgent } from '@/utils/professionalToVerifiedAgent';
 import { VerifiedAgent } from '@/types/verifiedAgent';
+import { normalizeStateSlug } from '@/utils/stateSlugMapping';
 
 interface DBProfessional {
   id: string;
@@ -163,6 +164,19 @@ export default function AgentProfile() {
     agentSlug: string;
   }>();
   
+  // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
+  const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
+  
+  // If state slug is an abbreviation, redirect to canonical full name URL
+  if (stateSlug && stateNormalized?.needsRedirect) {
+    const newPath = `/${stateNormalized.normalized}/${citySlug}/${categorySlug}/${agentSlug}`;
+    console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
+    return <Navigate to={newPath} replace />;
+  }
+  
+  // Use normalized state slug for all operations
+  const normalizedStateSlug = stateNormalized?.normalized || stateSlug || '';
+  
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [city, setCity] = useState<City | null>(null);
@@ -177,7 +191,7 @@ export default function AgentProfile() {
 
   useEffect(() => {
     const fetchAgent = async () => {
-      if (!stateSlug || !citySlug || !categorySlug || !agentSlug) {
+      if (!normalizedStateSlug || !citySlug || !categorySlug || !agentSlug) {
         setNotFound(true);
         setLoading(false);
         return;
@@ -189,7 +203,7 @@ export default function AgentProfile() {
           .from('cities')
           .select('*')
           .eq('slug', citySlug)
-          .eq('state_slug', stateSlug)
+          .eq('state_slug', normalizedStateSlug)
           .eq('active', true)
           .single();
 

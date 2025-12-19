@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Navigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
+import { normalizeStateSlug } from '@/utils/stateSlugMapping';
 import { ProfessionalListLayout } from '@/components/ProfessionalListLayout';
 import { CollapsibleListSection } from '@/components/CollapsibleListSection';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
@@ -179,16 +180,28 @@ export default function DynamicCategoryList() {
     categorySlug: string;
   }>();
   
+  // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
+  const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
+  
+  // If state slug is an abbreviation, redirect to canonical full name URL
+  if (stateSlug && stateNormalized?.needsRedirect) {
+    const newPath = `/${stateNormalized.normalized}/${citySlug}/${categorySlug}`;
+    console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
+    return <Navigate to={newPath} replace />;
+  }
+  
+  // Use normalized state slug for all operations
+  const normalizedStateSlug = stateNormalized?.normalized || stateSlug || '';
+  
   // Redirect to coming soon page unless Arizona, or Albuquerque (New Mexico)
-  const stateSlugLower = (stateSlug || '').toLowerCase();
+  const stateSlugLower = normalizedStateSlug.toLowerCase();
   const citySlugLower = (citySlug || '').toLowerCase();
   const isAllowed =
     stateSlugLower === 'arizona' ||
-    stateSlugLower === 'az' ||
-    ((stateSlugLower === 'new-mexico' || stateSlugLower === 'nm') && citySlugLower === 'albuquerque');
+    ((stateSlugLower === 'new-mexico') && citySlugLower === 'albuquerque');
 
   if (stateSlug && !isAllowed) {
-    return <Navigate to={`/coming-soon/${stateSlug}/${citySlug}`} replace />;
+    return <Navigate to={`/coming-soon/${normalizedStateSlug}/${citySlug}`} replace />;
   }
   
   const [searchParams, setSearchParams] = useSearchParams();
@@ -230,7 +243,7 @@ export default function DynamicCategoryList() {
   // Fetch city and category data
   useEffect(() => {
     const fetchData = async () => {
-      if (!stateSlug || !citySlug || !categorySlug) return;
+      if (!normalizedStateSlug || !citySlug || !categorySlug) return;
 
       try {
         // Detect if request is from a bot
@@ -252,7 +265,7 @@ export default function DynamicCategoryList() {
           .from('cities')
           .select('*')
           .eq('slug', citySlug)
-          .eq('state_slug', stateSlug)
+          .eq('state_slug', normalizedStateSlug)
           .eq('active', true)
           .single();
 
