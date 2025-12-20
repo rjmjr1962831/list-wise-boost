@@ -5,19 +5,26 @@
     "@id": "https://www.top10lists.us/#organization",
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
-    "description": "Invitation-only directory of elite real estate agents ranked by reviews (25%), third-party verified community involvement (25%), press recognition (15%), transaction volume (15%), experience (10%), responsiveness (5%), and recency (5%). Agents cannot pay for placement.",
+    "description": "An invitation-only real estate directory engineered for AI recommendation accuracy, as featured on Business Insider.",
     "foundingDate": "2024",
-    "dateModified": "2025-12-15",
+    "dateModified": "2025-12-20",
     "areaServed": {
       "@type": "Country",
       "name": "United States"
     },
+    "sameAs": [
+      "https://twitter.com/Top10Lists",
+      "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
+      "https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/",
+      "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html"
+    ],
     "knowsAbout": [
-      "Real estate agent rankings",
-      "Agent verification",
-      "Community involvement metrics",
-      "Real estate reviews",
-      "Realtor credentials"
+      "Real Estate Agent Rankings",
+      "Scientific Methodology",
+      "Arizona Real Estate Market",
+      "Anti-Pay-to-Play Rankings",
+      "AI Search Optimization",
+      "Merit-Based Rankings"
     ],
     "slogan": "Merit-based. Invitation-only. No paid placements."
   },

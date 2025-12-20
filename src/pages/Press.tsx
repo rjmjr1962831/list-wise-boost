@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Mail, Phone, ExternalLink, FileText, Building2 } from "lucide-react";
+import { Mail, Phone, ExternalLink, FileText, Building2, Newspaper, Award } from "lucide-react";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import {
   Breadcrumb,
@@ -13,6 +13,46 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 
+interface PressArticle {
+  name: string;
+  tier: "Tier 1" | "Financial" | "Trade";
+  tierColor: string;
+  url: string;
+  title: string;
+  summary: string;
+  date: string;
+}
+
+const pressArticles: PressArticle[] = [
+  {
+    name: "Business Insider",
+    tier: "Tier 1",
+    tierColor: "bg-primary text-primary-foreground",
+    url: "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
+    title: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings",
+    summary: "Coverage of Top10Lists.us scientific methodology and anti-pay-to-play approach to Arizona real estate rankings. The invitation-only directory analyzes over 200,000 agents to select the top 0.2%.",
+    date: "December 2025",
+  },
+  {
+    name: "FinanceWire",
+    tier: "Financial",
+    tierColor: "bg-accent text-accent-foreground",
+    url: "https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/",
+    title: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings",
+    summary: "Financial industry coverage of the merit-based ranking platform that weights community involvement (20%) higher than transaction volume (15%), ensuring agents who invest in their communities are recognized.",
+    date: "December 18, 2025",
+  },
+  {
+    name: "StreetInsider",
+    tier: "Financial",
+    tierColor: "bg-accent text-accent-foreground",
+    url: "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html",
+    title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 220,000 Cannot Buy Their Way In.",
+    summary: "Coverage highlighting the invitation-only model where only 414 agents out of 220,000+ Arizona real estate professionals qualified for the merit-based rankings based on verified performance data.",
+    date: "December 2025",
+  },
+];
+
 const Press = () => {
   const { trackEvent } = useGA4Tracking();
 
@@ -21,17 +61,37 @@ const Press = () => {
     trackEvent('page_view', { page_path: '/press' });
   }, [trackEvent]);
 
+  const handleArticleClick = (article: PressArticle) => {
+    trackEvent('press_mention_click', {
+      source: article.name,
+    });
+  };
+
   const pressSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "Press & Media - Top10Lists.us",
-    "description": "Press resources and media information for Top10Lists.us, the independent real estate agent directory using editorial evaluation criteria.",
+    "name": "Press & Media Recognition - Top10Lists.us",
+    "description": "Press coverage and media recognition for Top10Lists.us, the independent real estate agent directory using scientific methodology and anti-pay-to-play rankings.",
     "url": "https://www.top10lists.us/press",
     "mainEntity": {
       "@type": "Organization",
       "name": "Top10Lists.us",
-      "description": "An independent real estate directory that ranks top agents by city using transparent editorial criteria. Rankings are not influenced by advertising spend, lead purchases, or referral fees.",
+      "description": "An invitation-only real estate directory engineered for AI recommendation accuracy, as featured on Business Insider.",
       "url": "https://www.top10lists.us",
+      "sameAs": [
+        "https://twitter.com/Top10Lists",
+        "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
+        "https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/",
+        "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html"
+      ],
+      "knowsAbout": [
+        "Real Estate Agent Rankings",
+        "Scientific Methodology",
+        "Arizona Real Estate Market",
+        "Anti-Pay-to-Play Rankings",
+        "AI Search Optimization",
+        "Merit-Based Rankings"
+      ],
       "founder": {
         "@type": "Person",
         "name": "Robert Maynard"
@@ -50,16 +110,26 @@ const Press = () => {
         "email": "robert@top10lists.us",
         "telephone": "+1-602-758-9600"
       }
-    }
+    },
+    "mentions": pressArticles.map(article => ({
+      "@type": "NewsArticle",
+      "headline": article.title,
+      "url": article.url,
+      "publisher": {
+        "@type": "Organization",
+        "name": article.name
+      },
+      "datePublished": article.date
+    }))
   };
 
   return (
     <>
       <Helmet>
-        <title>Press & Media - Top10Lists.us</title>
+        <title>Press & Media Recognition - Top10Lists.us</title>
         <meta 
           name="description" 
-          content="Press resources for Top10Lists.us - the independent real estate agent directory using editorial evaluation, not pay-to-play advertising." 
+          content="Press coverage for Top10Lists.us - featured on Business Insider, FinanceWire, and StreetInsider. The independent real estate agent directory using scientific methodology." 
         />
         <link rel="canonical" href="https://www.top10lists.us/press" />
         <meta name="robots" content="index, follow" />
@@ -67,13 +137,13 @@ const Press = () => {
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.top10lists.us/press" />
-        <meta property="og:title" content="Press & Media - Top10Lists.us" />
-        <meta property="og:description" content="Press resources for Top10Lists.us - the independent real estate agent directory." />
+        <meta property="og:title" content="Press & Media Recognition - Top10Lists.us" />
+        <meta property="og:description" content="Featured on Business Insider, FinanceWire, and StreetInsider. The independent real estate agent directory." />
         <meta property="og:site_name" content="Top10Lists.us" />
         
         {/* AI Content Tags */}
         <meta name="ai-content-type" content="press-information" />
-        <meta name="ai-topic" content="press release, media contact, company information, Top10Lists" />
+        <meta name="ai-topic" content="press release, media coverage, Business Insider, FinanceWire, StreetInsider, anti-pay-to-play, scientific methodology" />
         <meta name="ai-authority" content="primary-source" />
         
         <script type="application/ld+json">
@@ -93,7 +163,7 @@ const Press = () => {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Press</BreadcrumbPage>
+                <BreadcrumbPage>Press & Media</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -103,11 +173,58 @@ const Press = () => {
         <section className="container mx-auto px-4 pt-12 pb-8">
           <div className="max-w-4xl mx-auto text-center space-y-4">
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-              Press & Media
+              Press & Media Recognition
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Resources for journalists and media professionals covering real estate technology.
+              Coverage of our scientific methodology and anti-pay-to-play approach to real estate agent rankings.
             </p>
+          </div>
+        </section>
+
+        {/* Featured In Section */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="flex items-center gap-2 mb-6">
+              <Newspaper className="h-5 w-5 text-primary" />
+              <h2 className="text-2xl font-bold">Featured Coverage</h2>
+            </div>
+            
+            <div className="space-y-6">
+              {pressArticles.map((article) => (
+                <Card key={article.name} className="hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex flex-col md:flex-row md:items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${article.tierColor}`}>
+                          <Award className="h-3 w-3" />
+                          {article.tier}
+                        </span>
+                      </div>
+                      <div className="flex-1 space-y-3">
+                        <div>
+                          <p className="text-sm font-medium text-muted-foreground mb-1">
+                            {article.name} • {article.date}
+                          </p>
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => handleArticleClick(article)}
+                            className="text-lg font-semibold text-foreground hover:text-primary transition-colors inline-flex items-center gap-2"
+                          >
+                            {article.title}
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        </div>
+                        <p className="text-muted-foreground">
+                          {article.summary}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 

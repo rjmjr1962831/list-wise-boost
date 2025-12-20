@@ -10,6 +10,7 @@ import { HomepageFAQSection } from "@/components/HomepageFAQSection";
 import { BrowseCitiesSection } from "@/components/BrowseCitiesSection";
 import { AuthorityLinks } from "@/components/AuthorityLinks";
 import { HomepageUpdates } from "@/components/HomepageUpdates";
+import { FeaturedInBar } from "@/components/FeaturedInBar";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -361,6 +362,9 @@ const Index = () => {
             </p>
           </div>
         </section>
+
+        {/* Featured In Bar */}
+        <FeaturedInBar />
 
         {/* Footer CTA */}
         <section className="container mx-auto px-4 py-16 bg-primary/5">
