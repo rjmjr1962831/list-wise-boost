@@ -57,7 +57,9 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="margin-top: 32px;">
             Best regards,<br><br>
             <strong>Robert Maynard</strong><br>
-            <em>Founder</em>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
           </p>
         </div>
       `
@@ -84,7 +86,9 @@ const handler = async (req: Request): Promise<Response> => {
           <p style="margin-top: 32px;">
             Best regards,<br><br>
             <strong>Robert Maynard</strong><br>
-            <em>Founder</em>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
           </p>
         </div>
       `;
