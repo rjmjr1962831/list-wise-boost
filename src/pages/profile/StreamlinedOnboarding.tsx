@@ -311,11 +311,30 @@ export default function StreamlinedOnboarding() {
   const [claimed, setClaimed] = useState(false);
   const [claimedCityName, setClaimedCityName] = useState('');
   const [showValidationError, setShowValidationError] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [pendingReviewRequests, setPendingReviewRequests] = useState<any[]>([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     loadData();
   }, [token]);
+
+  // Load pending review requests when professional is loaded
+  useEffect(() => {
+    const loadPendingRequests = async () => {
+      if (!professional?.id) return;
+      
+      const { data } = await supabase
+        .from('field_change_requests')
+        .select('*')
+        .eq('professional_id', professional.id)
+        .eq('status', 'pending');
+      
+      setPendingReviewRequests(data || []);
+    };
+    
+    loadPendingRequests();
+  }, [professional?.id]);
 
   const loadData = async () => {
     if (!token) {
@@ -503,12 +522,12 @@ export default function StreamlinedOnboarding() {
     );
   }
 
-  // Confirmation view after claim
+  // Success view after final approval
   if (claimed) {
     return (
       <>
         <Helmet>
-          <title>Listing Claimed | Top10Lists.us</title>
+          <title>You're All Set! | Top10Lists.us</title>
           <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
@@ -517,22 +536,183 @@ export default function StreamlinedOnboarding() {
               <CardContent className="space-y-6">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
                 <h1 className="text-3xl font-bold text-foreground">
-                  Check Your Email!
+                  You're all set.
                 </h1>
+                <p className="text-xl text-muted-foreground">
+                  Welcome to the most exclusive club in real estate.
+                </p>
                 <p className="text-lg text-muted-foreground">
-                  We've sent a verification link to <strong className="text-foreground">{email}</strong>. 
-                  Click the link to confirm your listing in {claimedCityName}.
+                  Watch for important emails from us.
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Once verified, your listing will be live and AI systems will start learning your profile.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                  <Button variant="outline" onClick={() => window.location.reload()}>
-                    Resend Email
-                  </Button>
-                </div>
               </CardContent>
             </Card>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Preview view before final approval
+  if (showPreview) {
+    const selectedCity = cities.find(c => c.id === selectedCityId);
+    
+    return (
+      <>
+        <Helmet>
+          <title>Review Your Profile | Top10Lists.us</title>
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
+          <div className="max-w-3xl mx-auto space-y-6">
+            
+            {/* Header */}
+            <div className="text-center space-y-2">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+                Here's your edited profile
+              </h1>
+              {pendingReviewRequests.length > 0 && (
+                <p className="text-lg text-muted-foreground">
+                  For those fields that need review, we'll get back to you in 24 hours.
+                </p>
+              )}
+            </div>
+
+            {/* Profile Preview Card */}
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                
+                {/* Profile Header */}
+                <div className="p-6 border-b border-border flex flex-col md:flex-row gap-6">
+                  <img 
+                    src={professional?.image_url || '/placeholder.svg'} 
+                    alt={professional?.name}
+                    className="w-32 h-32 rounded-xl object-cover border-2 border-border flex-shrink-0"
+                  />
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-bold text-foreground">{professional?.name}</h2>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      {professional?.review_stars_rating && (
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                          <span>{professional.review_stars_rating}</span>
+                          {professional?.num_total_reviews && (
+                            <span>({professional.num_total_reviews} reviews)</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {professional?.company && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Building2 className="h-4 w-4" />
+                        <span>{professional.company}</span>
+                      </div>
+                    )}
+                    {professional?.license_number && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Shield className="h-4 w-4 text-green-500" />
+                        <span className="text-muted-foreground">License #{professional.license_number}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Selected City */}
+                <div className="p-6 border-b border-border bg-primary/5">
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <div>
+                      <div className="text-sm text-muted-foreground">Listed in</div>
+                      <div className="font-semibold text-foreground">
+                        {selectedCity?.name}, {selectedCity?.state}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bio */}
+                {bio && (
+                  <div className="p-6 border-b border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold text-foreground">About</h4>
+                    </div>
+                    <p className="text-muted-foreground whitespace-pre-line">{bio.slice(0, 400)}{bio.length > 400 ? '...' : ''}</p>
+                  </div>
+                )}
+
+                {/* Contact Info */}
+                <div className="p-6 border-b border-border">
+                  <h4 className="font-semibold text-foreground mb-4">Contact Information</h4>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {email && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground">{email}</span>
+                      </div>
+                    )}
+                    {professional?.phone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground">{professional.phone}</span>
+                      </div>
+                    )}
+                    {professional?.website && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-foreground">{professional.website}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Pending Review Requests */}
+                {pendingReviewRequests.length > 0 && (
+                  <div className="p-6 bg-amber-50 dark:bg-amber-950/30 border-b border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                      <h4 className="font-semibold text-amber-800 dark:text-amber-300">Fields Pending Review</h4>
+                    </div>
+                    <ul className="space-y-2">
+                      {pendingReviewRequests.map((req) => (
+                        <li key={req.id} className="text-sm text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-amber-500" />
+                          {req.field_name}: {req.change_request}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowPreview(false);
+                  window.scrollTo(0, 0);
+                }}
+                className="sm:min-w-[150px]"
+              >
+                Go Back
+              </Button>
+              <Button 
+                onClick={handleClaim}
+                disabled={claiming}
+                className="sm:min-w-[150px]"
+              >
+                {claiming ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Approving...
+                  </>
+                ) : (
+                  'Approve'
+                )}
+              </Button>
+            </div>
+
           </div>
         </div>
       </>
@@ -920,19 +1100,13 @@ export default function StreamlinedOnboarding() {
                           setShowValidationError(true);
                           return;
                         }
-                        handleClaim();
+                        setShowPreview(true);
+                        window.scrollTo(0, 0);
                       }}
                       disabled={claiming}
                       className="whitespace-nowrap"
                     >
-                      {claiming ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Claiming...
-                        </>
-                      ) : (
-                        'Claim My FREE Listing'
-                      )}
+                      Claim My FREE Listing
                     </Button>
                     
                     <p className="text-sm text-muted-foreground">
