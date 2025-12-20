@@ -842,7 +842,7 @@ export default function StreamlinedOnboarding() {
               Hello {firstName}. <span className="text-primary">AI has been looking forward to meeting you.</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              You are one of the nearly 500 agents in Arizona who we have invited to our recommendation engine. You can review and edit the profile we have prepared below.
+              You are one of the nearly 500 agents in Arizona (Out of 220,000+!) who we have invited to our recommendation engine. You can review and edit the profile we have prepared below.
             </p>
             <p className="text-lg md:text-xl text-primary font-semibold max-w-2xl mx-auto">
               There is no cost for your listing in the city of your choice
