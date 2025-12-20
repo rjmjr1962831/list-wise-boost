@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL");
@@ -63,7 +63,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send confirmation email to client
     const { error: clientError } = await resend.emails.send({
-      from: 'Top10Lists <hello@top10lists.us>',
+      from: 'Robert from Top10lists <hello@top10lists.us>',
+      replyTo: 'robert@top10lists.us',
       to: [email],
       subject: "Appointment Confirmation - Top10Lists",
       html: clientHtml,
@@ -78,7 +79,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Send notification email to admin
     if (ADMIN_EMAIL) {
       const { error: adminError } = await resend.emails.send({
-        from: 'Top10Lists <hello@top10lists.us>',
+        from: 'Robert from Top10lists <hello@top10lists.us>',
+        replyTo: 'robert@top10lists.us',
         to: [ADMIN_EMAIL],
         subject: `New Appointment Booked - ${name}`,
         html: adminHtml,

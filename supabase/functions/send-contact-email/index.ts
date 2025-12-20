@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -251,7 +251,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send email to the admin email
     const { error: adminError } = await resend.emails.send({
-      from: 'Top10Lists <hello@top10lists.us>',
+      from: 'Robert from Top10lists <hello@top10lists.us>',
+      replyTo: 'robert@top10lists.us',
       to: ['contactforms@top10lists.us'],
       subject: subject,
       html: emailHtml,
@@ -265,7 +266,8 @@ const handler = async (req: Request): Promise<Response> => {
     // If verification link exists, also send copy to professional
     if (verificationLink && professionalEmail) {
       const { error: profError } = await resend.emails.send({
-        from: 'Top10Lists <hello@top10lists.us>',
+        from: 'Robert from Top10lists <hello@top10lists.us>',
+        replyTo: 'robert@top10lists.us',
         to: [professionalEmail],
         subject: `New Lead from Top10Lists + Verify Your Listing`,
         html: emailHtml,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Navigate, useSearchParams } from 'react-router-dom';
+import { useParams, Navigate, useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { normalizeStateSlug } from '@/utils/stateSlugMapping';
@@ -23,6 +23,7 @@ import { signalPrerenderReady } from '@/hooks/usePrerenderReady';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
 import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { CityMarketOverview } from '@/components/CityMarketOverview';
+import { Info } from 'lucide-react';
 
 interface City {
   id: string;
@@ -1263,21 +1264,33 @@ export default function DynamicCategoryList() {
             professionals={filteredProfessionals}
             lastUpdated={lastUpdated}
             rightAction={
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCityInfo(!showCityInfo)}
-                className="flex items-center gap-2"
-              >
-                {showCityInfo ? 'Hide' : 'More about'} {city.name}
-                <svg 
-                  className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
+              <div className="flex items-center gap-2">
+                <Button 
+                  asChild
+                  variant="outline" 
+                  className="flex items-center gap-2"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </Button>
+                  <Link to={`/${city.state_slug}/${city.slug}`}>
+                    <Info className="h-4 w-4" />
+                    About {city.name}
+                  </Link>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCityInfo(!showCityInfo)}
+                  className="flex items-center gap-2"
+                >
+                  {showCityInfo ? 'Hide' : 'More about'} {city.name}
+                  <svg 
+                    className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </Button>
+              </div>
             }
             expandedContent={showCityInfo ? (
               <div className="animate-in slide-in-from-top-2 duration-300">

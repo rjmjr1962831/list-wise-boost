@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { MapPin, Search } from "lucide-react";
+import { Link, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
+import { MapPin, Search, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -15,6 +15,7 @@ import { normalizeStateSlug } from "@/utils/stateSlugMapping";
 export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -68,6 +69,10 @@ export default function CityLanding() {
     }
   }, []);
 
+  // Determine if user came from the list page
+  const cameFromList = location.state?.fromList || document.referrer.includes(`/${city.slug}/top10realestateagents`);
+  const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
+
   if (!city) {
     return <Navigate to="/404" replace />;
   }
@@ -102,7 +107,19 @@ export default function CityLanding() {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <header className="py-16 md:py-24 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+        {/* Back to List Button - Top Right */}
+        <div className="container mx-auto px-4 pt-4">
+          <div className="flex justify-end">
+            <Button asChild variant="outline" className="flex items-center gap-2">
+              <Link to={listUrl}>
+                <ArrowLeft className="h-4 w-4" />
+                Back to Agent List
+              </Link>
+            </Button>
+          </div>
+        </div>
+        
+        <header className="py-12 md:py-20 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 bg-primary/10 rounded-full">
