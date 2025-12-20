@@ -596,42 +596,51 @@ export default function StreamlinedOnboarding() {
               )}
             </div>
 
-            {/* Profile Preview Card */}
+            {/* Profile Preview Card - Fully Enriched */}
             <Card className="overflow-hidden">
               <CardContent className="p-0">
                 
                 {/* Profile Header */}
-                <div className="p-6 border-b border-border flex flex-col md:flex-row gap-6">
-                  <img 
-                    src={professional?.image_url || '/placeholder.svg'} 
-                    alt={professional?.name}
-                    className="w-32 h-32 rounded-xl object-cover border-2 border-border flex-shrink-0"
-                  />
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-bold text-foreground">{professional?.name}</h2>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="p-6 border-b border-border">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <img 
+                      src={professional?.image_url || '/placeholder.svg'} 
+                      alt={professional?.name}
+                      className="w-36 h-36 rounded-xl object-cover border-2 border-border flex-shrink-0"
+                    />
+                    <div className="space-y-3 flex-1">
+                      <h2 className="text-2xl font-bold text-foreground">{professional?.name}</h2>
+                      
                       {professional?.review_stars_rating && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 text-sm">
                           <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          <span>{professional.review_stars_rating}</span>
+                          <span className="font-medium">{professional.review_stars_rating}</span>
                           {professional?.num_total_reviews && (
-                            <span>({professional.num_total_reviews} reviews)</span>
+                            <span className="text-muted-foreground">({professional.num_total_reviews} reviews)</span>
                           )}
                         </div>
                       )}
+                      
+                      {professional?.company && (
+                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                          <Building2 className="h-4 w-4" />
+                          <span>{professional.company}</span>
+                        </div>
+                      )}
+                      
+                      {professional?.license_number && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <Shield className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">License #{professional.license_number}</span>
+                        </div>
+                      )}
+                      
+                      {professional?.years_experience && (
+                        <div className="text-sm text-muted-foreground">
+                          {professional.years_experience}+ years experience
+                        </div>
+                      )}
                     </div>
-                    {professional?.company && (
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Building2 className="h-4 w-4" />
-                        <span>{professional.company}</span>
-                      </div>
-                    )}
-                    {professional?.license_number && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Shield className="h-4 w-4 text-green-500" />
-                        <span className="text-muted-foreground">License #{professional.license_number}</span>
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -642,20 +651,39 @@ export default function StreamlinedOnboarding() {
                     <div>
                       <div className="text-sm text-muted-foreground">Listed in</div>
                       <div className="font-semibold text-foreground">
-                        {selectedCity?.name}, {selectedCity?.state}
+                        {selectedCity?.name || 'Select a city'}, {selectedCity?.state || 'Arizona'}
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Bio */}
+                {/* About / Bio */}
                 {bio && (
                   <div className="p-6 border-b border-border">
                     <div className="flex items-center gap-2 mb-3">
                       <FileText className="h-5 w-5 text-primary" />
                       <h4 className="font-semibold text-foreground">About</h4>
                     </div>
-                    <p className="text-muted-foreground whitespace-pre-line">{bio.slice(0, 400)}{bio.length > 400 ? '...' : ''}</p>
+                    <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+                      {bio.length > 600 ? `${bio.slice(0, 600)}...` : bio}
+                    </p>
+                  </div>
+                )}
+
+                {/* Specialties */}
+                {professional?.specialty && professional.specialty.length > 0 && (
+                  <div className="p-6 border-b border-border">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Tag className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold text-foreground">Specialties</h4>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {professional.specialty.map((s: string, i: number) => (
+                        <Badge key={i} variant="secondary" className="text-sm">
+                          {s}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -676,13 +704,48 @@ export default function StreamlinedOnboarding() {
                       </div>
                     )}
                     {professional?.website && (
-                      <div className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-sm col-span-full">
                         <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground">{professional.website}</span>
+                        <span className="text-foreground break-all">{professional.website}</span>
                       </div>
                     )}
                   </div>
                 </div>
+
+                {/* Social Links */}
+                {(professional?.social_facebook || professional?.social_instagram || professional?.social_linkedin || professional?.social_twitter || professional?.social_tiktok) && (
+                  <div className="p-6 border-b border-border">
+                    <h4 className="font-semibold text-foreground mb-4">Social Media</h4>
+                    <div className="flex flex-wrap gap-3">
+                      {professional?.social_facebook && (
+                        <Badge variant="outline" className="text-sm">Facebook</Badge>
+                      )}
+                      {professional?.social_instagram && (
+                        <Badge variant="outline" className="text-sm">Instagram</Badge>
+                      )}
+                      {professional?.social_linkedin && (
+                        <Badge variant="outline" className="text-sm">LinkedIn</Badge>
+                      )}
+                      {professional?.social_twitter && (
+                        <Badge variant="outline" className="text-sm">X / Twitter</Badge>
+                      )}
+                      {professional?.social_tiktok && (
+                        <Badge variant="outline" className="text-sm">TikTok</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Video Introduction */}
+                {professional?.sidebar_video_url && (
+                  <div className="p-6 border-b border-border">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Video className="h-5 w-5 text-primary" />
+                      <h4 className="font-semibold text-foreground">Video Introduction</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground break-all">{professional.sidebar_video_url}</p>
+                  </div>
+                )}
 
                 {/* Pending Review Requests */}
                 {pendingReviewRequests.length > 0 && (
