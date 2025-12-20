@@ -497,8 +497,8 @@ export default function StreamlinedOnboarding() {
 
       if (updateError) throw updateError;
 
-      // Send custom magic link email via Resend (not Supabase default)
-      const redirectUrl = `${window.location.origin}/profile/${token}/thank-you`;
+      // Send custom magic link email via Resend - redirect to dashboard
+      const redirectUrl = `https://top10lists.us/dashboard`;
       
       const { error: emailError } = await supabase.functions.invoke('send-funnel-verification', {
         body: {
