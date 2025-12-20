@@ -890,7 +890,7 @@ export default function StreamlinedOnboarding() {
               <div className="p-6 space-y-4">
                 <div className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
                   <Pencil className="h-4 w-4" />
-                  Click any field to edit
+                  Click any field to edit - This is your direct message to the prospect. We recommend that you write it in the first person.
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-2">
