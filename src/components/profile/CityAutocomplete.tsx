@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronsUpDown, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -39,8 +39,25 @@ export default function CityAutocomplete({
   className,
 }: CityAutocompleteProps) {
   const [open, setOpen] = useState(false);
-  
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    if (!open) setSearch('');
+  }, [open]);
+
   const selectedCity = cities.find((city) => city.id === value);
+
+  const filteredCities = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+
+    return cities
+      .filter((city) => {
+        const haystack = `${city.name} ${city.state}`.toLowerCase();
+        return haystack.includes(q);
+      })
+      .slice(0, 50);
+  }, [cities, search]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -64,33 +81,48 @@ export default function CityAutocomplete({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 z-50 bg-popover border border-border shadow-lg" align="start">
-        <Command>
-          <CommandInput placeholder="Search cities..." />
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0 z-50 bg-popover border border-border shadow-lg"
+        align="start"
+      >
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="Search cities..."
+            value={search}
+            onValueChange={setSearch}
+            autoFocus
+          />
           <CommandList>
-            <CommandEmpty>No city found.</CommandEmpty>
-            <CommandGroup>
-              {cities.map((city) => (
-                <CommandItem
-                  key={city.id}
-                  value={`${city.name} ${city.state}`}
-                  onSelect={() => {
-                    onValueChange(city.id);
-                    setOpen(false);
-                  }}
-                  className="cursor-pointer"
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === city.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
-                  {city.name}, {city.state}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {search.trim().length === 0 ? (
+              <div className="py-6 text-center text-sm text-muted-foreground">
+                Start typing to search.
+              </div>
+            ) : filteredCities.length === 0 ? (
+              <CommandEmpty>No city found.</CommandEmpty>
+            ) : (
+              <CommandGroup>
+                {filteredCities.map((city) => (
+                  <CommandItem
+                    key={city.id}
+                    value={`${city.name} ${city.state}`}
+                    onSelect={() => {
+                      onValueChange(city.id);
+                      setOpen(false);
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === city.id ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                    {city.name}, {city.state}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
           </CommandList>
         </Command>
       </PopoverContent>
