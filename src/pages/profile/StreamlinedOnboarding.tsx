@@ -310,6 +310,7 @@ export default function StreamlinedOnboarding() {
   const [claiming, setClaiming] = useState(false);
   const [claimed, setClaimed] = useState(false);
   const [claimedCityName, setClaimedCityName] = useState('');
+  const [showValidationError, setShowValidationError] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -901,8 +902,8 @@ export default function StreamlinedOnboarding() {
                       </label>
                     </div>
 
-                    {/* Show what's missing */}
-                    {(!selectedCityId || !email || !consentChecked) && (
+                    {/* Show what's missing - only after they try to click */}
+                    {showValidationError && (!selectedCityId || !email || !consentChecked) && (
                       <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md">
                         <span className="font-medium">To claim your listing, please:</span>
                         <ul className="list-disc list-inside mt-1 space-y-0.5">
@@ -914,8 +915,14 @@ export default function StreamlinedOnboarding() {
                     )}
 
                     <Button 
-                      onClick={handleClaim}
-                      disabled={claiming || !selectedCityId || !email || !consentChecked}
+                      onClick={() => {
+                        if (!selectedCityId || !email || !consentChecked) {
+                          setShowValidationError(true);
+                          return;
+                        }
+                        handleClaim();
+                      }}
+                      disabled={claiming}
                       className="whitespace-nowrap"
                     >
                       {claiming ? (
