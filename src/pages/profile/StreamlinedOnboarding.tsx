@@ -901,6 +901,18 @@ export default function StreamlinedOnboarding() {
                       </label>
                     </div>
 
+                    {/* Show what's missing */}
+                    {(!selectedCityId || !email || !consentChecked) && (
+                      <div className="text-sm text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md">
+                        <span className="font-medium">To claim your listing, please:</span>
+                        <ul className="list-disc list-inside mt-1 space-y-0.5">
+                          {!selectedCityId && <li>Select a city above</li>}
+                          {!email && <li>Enter your email address</li>}
+                          {!consentChecked && <li>Check the agreement box</li>}
+                        </ul>
+                      </div>
+                    )}
+
                     <Button 
                       onClick={handleClaim}
                       disabled={claiming || !selectedCityId || !email || !consentChecked}
