@@ -1069,6 +1069,8 @@ export default function DynamicCategoryList() {
 
   // Get city coordinates for geo tags
   const cityCoords = getCityCoordinates(city.slug);
+  // Canonical URL points to the city page (without category slug)
+  const canonicalUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}`;
   const pageUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
   const ogImageUrl = `https://www.top10lists.us/og-${city.slug}.png`;
   
@@ -1130,8 +1132,8 @@ export default function DynamicCategoryList() {
         {/* Primary Meta Tags */}
         <title>{`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`}</title>
         <meta name="description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`} />
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={pageUrl} />
+        <meta name="robots" content="noindex, follow" />
+        <link rel="canonical" href={canonicalUrl} />
         
         {/* Topic Hints for LLMs */}
         <meta name="subject" content={`${city.name} ${category.plural_name}`} />

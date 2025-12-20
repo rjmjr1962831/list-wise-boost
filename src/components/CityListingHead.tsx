@@ -13,7 +13,7 @@ export function CityListingHead({ listing }: CityListingHeadProps) {
   const currentYear = new Date().getFullYear();
   
   const topAgent = listing.agents[0];
-  const url = `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`;
+  const url = `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}`;
   
   const title = `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev} (${currentYear}) | Top10Lists.us`;
   const description = topAgent
