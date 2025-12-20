@@ -62,9 +62,9 @@ export default function AgentLogin() {
       const agentFirstName = nameParts[0] || "there";
       setFirstName(agentFirstName);
 
-      // Determine the dashboard link
+      // Determine the dashboard link - use /dashboard with token as query param
       const dashboardToken = professional.verification_token || professional.id;
-      const dashboardUrl = `${window.location.origin}/profile/${dashboardToken}`;
+      const dashboardUrl = `${window.location.origin}/dashboard?token=${dashboardToken}`;
 
       // Send the dashboard link email
       const { error: emailError } = await supabase.functions.invoke("send-dashboard-link", {
