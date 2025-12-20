@@ -50,7 +50,9 @@ serve(async (req) => {
           </p>
           <p style="margin-top: 20px; color: #333;">
             Robert Maynard<br>
-            <em>Founder</em>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
           </p>
         </div>
       `;
@@ -71,7 +73,9 @@ serve(async (req) => {
           </p>
           <p style="margin-top: 20px; color: #333;">
             Robert Maynard<br>
-            <em>Founder</em>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
           </p>
         </div>
       `;

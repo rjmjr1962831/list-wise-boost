@@ -152,7 +152,9 @@ const handler = async (req: Request): Promise<Response> => {
           <div class="footer">
             <p style="margin-bottom: 10px;">
               <strong>Robert Maynard</strong><br>
-              <em>Founder</em>
+              <em>Founder</em><br><br>
+              Give me a call if I can help you:<br>
+              <a href="tel:+16027589600" style="color: #667eea;">(602) 758-9600</a>
             </p>
             <p>This is an automated notification from Top10Lists.us</p>
           </div>
