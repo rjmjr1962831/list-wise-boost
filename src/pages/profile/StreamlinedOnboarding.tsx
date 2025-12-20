@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Loader2, CheckCircle, Lock, Pencil, X, Check, 
   Globe, Phone, Mail, MapPin, Star, Shield, 
-  ExternalLink, Upload, Video, Building2, FileText
+  ExternalLink, Upload, Video, Building2, FileText, Tag
 } from 'lucide-react';
+import SpecialtyEditModal from '@/components/profile/SpecialtyEditModal';
 
 // Bio Preview component with ...more expander
 const BioPreview = ({ text }: { text: string }) => {
@@ -313,6 +314,7 @@ export default function StreamlinedOnboarding() {
   const [showValidationError, setShowValidationError] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [pendingReviewRequests, setPendingReviewRequests] = useState<any[]>([]);
+  const [showSpecialtyModal, setShowSpecialtyModal] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -439,6 +441,23 @@ export default function StreamlinedOnboarding() {
 
     setProfessional((prev: any) => ({ ...prev, [field]: value }));
     toast.success('Saved');
+  }, [professional?.id]);
+
+  const saveSpecialties = useCallback(async (specialties: string[]) => {
+    if (!professional?.id) return;
+    
+    const { error } = await supabase
+      .from('professionals')
+      .update({ specialty: specialties })
+      .eq('id', professional.id);
+
+    if (error) {
+      toast.error('Failed to save specialties');
+      return;
+    }
+
+    setProfessional((prev: any) => ({ ...prev, specialty: specialties }));
+    toast.success('Specialties saved');
   }, [professional?.id]);
 
   const handleClaim = async () => {
@@ -950,6 +969,33 @@ export default function StreamlinedOnboarding() {
                     placeholder="https://tiktok.com/@yourhandle"
                   />
                 </div>
+
+                {/* Specialties Section */}
+                <div className="pt-4 border-t border-border">
+                  <div 
+                    className="group flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                    onClick={() => setShowSpecialtyModal(true)}
+                  >
+                    <Tag className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-muted-foreground mb-1">Specialties</div>
+                      {professional?.specialty && professional.specialty.length > 0 ? (
+                        <div className="flex flex-wrap gap-1.5">
+                          {professional.specialty.map((s: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                              {s}
+                            </Badge>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-muted-foreground italic">
+                          Click to add specialties...
+                        </div>
+                      )}
+                    </div>
+                    <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+                </div>
               </div>
 
               {/* Verified/Locked Fields */}
@@ -1120,6 +1166,14 @@ export default function StreamlinedOnboarding() {
 
         </div>
       </div>
+
+      {/* Specialty Edit Modal */}
+      <SpecialtyEditModal
+        open={showSpecialtyModal}
+        onClose={() => setShowSpecialtyModal(false)}
+        onSave={saveSpecialties}
+        currentSpecialties={professional?.specialty || []}
+      />
     </>
   );
 }
