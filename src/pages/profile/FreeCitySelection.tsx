@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, ChevronDown, MapPin, AlertCircle } from 'lucide-react';
+import { Loader2, ChevronDown, MapPin, AlertCircle, RefreshCw } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import {
   Select,
@@ -21,6 +21,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
+import { ProfessionalCard } from '@/components/ProfessionalCard';
 
 interface City {
   id: string;
@@ -44,6 +45,7 @@ export default function FreeCitySelection() {
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityId, setSelectedCityId] = useState<string>('');
   const [selectedCity, setSelectedCity] = useState<City | null>(null);
@@ -63,19 +65,27 @@ export default function FreeCitySelection() {
       }
 
       try {
-        // Fetch professional
+        // Fetch professional with full data for ProfessionalCard
         const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
         
         let { data: profData } = await supabase
           .from('professionals')
-          .select('id, name, city_id')
+          .select(`
+            *,
+            cities:city_id (id, name, state, state_slug, slug),
+            categories:category_id (id, name, slug)
+          `)
           .eq('verification_token', token)
           .maybeSingle();
 
         if (!profData && isUUID) {
           const fallback = await supabase
             .from('professionals')
-            .select('id, name, city_id')
+            .select(`
+              *,
+              cities:city_id (id, name, state, state_slug, slug),
+              categories:category_id (id, name, slug)
+            `)
             .eq('id', token)
             .maybeSingle();
           profData = fallback.data;
@@ -132,7 +142,7 @@ export default function FreeCitySelection() {
     };
 
     fetchData();
-  }, [token, navigate]);
+  }, [token, navigate, refreshKey]);
 
   const handleCitySelect = (cityId: string) => {
     const city = cities.find(c => c.id === cityId);
@@ -208,7 +218,35 @@ export default function FreeCitySelection() {
       </Helmet>
 
       <div className="min-h-screen bg-background py-12 px-4">
-        <div className="max-w-2xl mx-auto space-y-8">
+        <div className="max-w-4xl mx-auto space-y-8">
+          {/* Header with Refresh */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold">Here's Your Free Listing</h1>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                setLoading(true);
+                setRefreshKey(prev => prev + 1);
+              }}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </Button>
+          </div>
+
+          {/* Professional Card Preview - Full expanded view */}
+          {professional && (
+            <ProfessionalCard 
+              key={`prof-${refreshKey}`}
+              professional={professional} 
+              accentColor="primary" 
+              quizCompleted={true}
+              expandSections={true}
+            />
+          )}
+
           {/* City Selection */}
           <Card>
             <CardContent className="pt-6 space-y-6">
