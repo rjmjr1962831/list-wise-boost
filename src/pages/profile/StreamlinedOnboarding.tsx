@@ -490,21 +490,20 @@ export default function StreamlinedOnboarding() {
 
       if (updateError) throw updateError;
 
-      // Send magic link for email verification
+      // Send custom magic link email via Resend (not Supabase default)
       const redirectUrl = `${window.location.origin}/profile/${token}/thank-you`;
       
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            professional_id: professional.id,
-            funnel_token: token,
-          },
+      const { error: emailError } = await supabase.functions.invoke('send-funnel-verification', {
+        body: {
+          email,
+          name: professional.name,
+          firstName: professional.name?.split(' ')[0] || 'Agent',
+          verificationUrl: redirectUrl,
+          professionalId: professional.id,
         },
       });
 
-      if (authError) throw authError;
+      if (emailError) throw emailError;
 
       setClaimedCityName(selectedCity?.name || '');
       setClaimed(true);
