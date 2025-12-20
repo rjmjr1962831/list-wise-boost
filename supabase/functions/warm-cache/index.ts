@@ -373,33 +373,24 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
   let allUrls = [...staticUrls];
 
   try {
-    // Source of truth for "page has content": canonical rankings exist.
-    // We fetch only rank=1 to get one row per city/category pair.
+    // Fetch active cities to warm city landing pages (not agent list pages)
+    // City landing pages contain the valuable city facts and information
     const { data, error } = await supabaseAdmin
-      .from('canonical_city_rankings')
-      .select('city_id,category_id,rank,cities:city_id(slug,state_slug,active),categories:category_id(slug,active)')
-      .eq('rank', 1);
+      .from('cities')
+      .select('slug, state_slug, active')
+      .eq('active', true);
 
     if (error) throw error;
 
     const dynamicUrls: { fetchUrl: string; canonicalUrl: string }[] = [];
 
-    for (const row of data ?? []) {
-      const cityRel: any = (row as any).cities;
-      const categoryRel: any = (row as any).categories;
-
-      const city = Array.isArray(cityRel) ? cityRel[0] : cityRel;
-      const category = Array.isArray(categoryRel) ? categoryRel[0] : categoryRel;
-
+    for (const city of data ?? []) {
       if (!city?.slug || !city?.state_slug) continue;
-      if (city?.active === false) continue;
-
-      if (!category?.slug) continue;
-      if (category?.active === false) continue;
 
       if (regionNormalized && String(city.state_slug).toLowerCase() !== regionNormalized) continue;
 
-      const path = `/${city.state_slug}/${city.slug}/${category.slug}`;
+      // Point to city landing page (with facts), not agent list page
+      const path = `/${city.state_slug}/${city.slug}`;
       dynamicUrls.push({
         fetchUrl: `${fetchBaseUrl}${path}`,
         canonicalUrl: `${canonicalBaseUrl}${path}`,
@@ -417,7 +408,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     allUrls = [...staticUrls, ...uniqueDynamicUrls];
 
     console.log(
-      `Generated ${allUrls.length} URLs to warm (${staticUrls.length} static + ${uniqueDynamicUrls.length} content city pages${regionNormalized ? ` for region=${regionNormalized}` : ''})`
+      `Generated ${allUrls.length} URLs to warm (${staticUrls.length} static + ${uniqueDynamicUrls.length} city landing pages${regionNormalized ? ` for region=${regionNormalized}` : ''})`
     );
   } catch (error) {
     console.error('Error fetching content city pages, using static pages only:', error);
