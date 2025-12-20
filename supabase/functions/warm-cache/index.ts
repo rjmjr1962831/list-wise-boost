@@ -357,6 +357,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/about',
     '/about/ranking-methodology',
     '/faq',
+    '/transparency', // GEO Schema - methodology and data sources
     '/for-agents',
     '/compare',
     '/press',
