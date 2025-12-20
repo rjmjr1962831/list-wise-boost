@@ -131,11 +131,43 @@ export default function AgentDashboard() {
 
   const checkAuthAndLoadProfile = async () => {
     try {
+      // Check for token-based access first (from magic link emails)
+      const tokenParam = searchParams.get('token');
+      
+      if (tokenParam) {
+        // Token-based access - look up professional by verification_token or id
+        const { data: tokenData, error: tokenError } = await supabase
+          .from('professionals')
+          .select(`
+            *,
+            city_id (
+              id,
+              name,
+              slug,
+              state,
+              state_slug
+            ),
+            category_id (
+              id,
+              name,
+              slug
+            )
+          `)
+          .or(`verification_token.eq.${tokenParam},id.eq.${tokenParam}`)
+          .eq('active', true)
+          .maybeSingle();
+
+        if (tokenData) {
+          return loadProfileData(tokenData);
+        }
+        // If token lookup fails, fall through to auth check
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         toast.error('Please sign in to access your dashboard');
-        navigate('/auth');
+        navigate('/agent-login');
         return;
       }
 
