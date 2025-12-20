@@ -13,7 +13,7 @@ import CityAutocomplete from '@/components/profile/CityAutocomplete';
 import { 
   Loader2, CheckCircle, Lock, Pencil, X, Check, 
   Globe, Phone, Mail, MapPin, Star, Shield, 
-  ExternalLink, Upload, Video, Building2, FileText, Tag, LogOut
+  ExternalLink, Upload, Video, Building2, FileText, Tag, LogOut, Award, MessageSquare
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -1124,6 +1124,64 @@ export default function StreamlinedOnboarding() {
                   </div>
                 </div>
               </div>
+
+              {/* Reviews Summary Section */}
+              {(professional?.review_stars_rating || professional?.num_total_reviews) && (
+                <div className="p-6 border-t border-border">
+                  <div className="flex items-center gap-2 mb-4">
+                    <MessageSquare className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold text-foreground">Reviews</h3>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    {professional?.review_stars_rating && (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={cn(
+                                "h-5 w-5",
+                                i < Math.floor(professional.review_stars_rating) 
+                                  ? "text-yellow-500 fill-yellow-500" 
+                                  : "text-muted-foreground/30"
+                              )}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-lg font-semibold">{professional.review_stars_rating}</span>
+                      </div>
+                    )}
+                    {professional?.num_total_reviews && (
+                      <div className="text-muted-foreground">
+                        <span className="font-medium text-foreground">{professional.num_total_reviews}</span> total reviews
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Notable Achievements / Awards Section */}
+              {professional?.notable_achievements && Array.isArray(professional.notable_achievements) && professional.notable_achievements.length > 0 && (
+                <div className="p-6 border-t border-border">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Award className="h-5 w-5 text-primary" />
+                    <h3 className="text-lg font-semibold text-foreground">Notable Achievements</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {(professional.notable_achievements as Array<{title?: string; description?: string; credibility?: number}>).map((achievement, idx) => (
+                      <div key={idx} className="flex items-start gap-3 p-3 bg-muted/30 rounded-lg">
+                        <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <div className="font-medium text-foreground">{achievement.title}</div>
+                          {achievement.description && (
+                            <div className="text-sm text-muted-foreground">{achievement.description}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Verified/Locked Fields */}
               <div className="p-6 bg-muted/20 border-t border-border space-y-4">
