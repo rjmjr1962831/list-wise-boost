@@ -584,16 +584,24 @@ export default function StreamlinedOnboarding() {
                   Watch for important emails from us.
                 </p>
                 
-                {listUrl && (
+                <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mt-4">
+                  {listUrl && (
+                    <Button
+                      variant="outline"
+                      onClick={() => window.open(listUrl, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      See how you appear in a list
+                    </Button>
+                  )}
                   <Button
-                    variant="outline"
-                    onClick={() => window.open(listUrl, '_blank')}
-                    className="mt-4"
+                    variant="link"
+                    onClick={() => navigate(`/profile/${token}/how-it-works`)}
+                    className="text-primary"
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    See how you appear in a list
+                    How do I get more cities?
                   </Button>
-                )}
+                </div>
               </CardContent>
             </Card>
           </div>
