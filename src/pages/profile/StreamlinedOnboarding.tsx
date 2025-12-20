@@ -878,11 +878,23 @@ export default function StreamlinedOnboarding() {
                       />
                       <label htmlFor="consent" className="text-sm text-muted-foreground cursor-pointer">
                         I agree to the{' '}
-                        <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        <a 
+                          href="/terms" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           Terms of Service
                         </a>{' '}
                         and{' '}
-                        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        <a 
+                          href="/privacy" 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-primary hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           Privacy Policy
                         </a>
                         , and consent to receive emails and messages from Top10Lists.us about my listing and related services.
