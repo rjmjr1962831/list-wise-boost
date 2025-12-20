@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { Resend } from "npm:resend@2.0.0";
 
-const SMTP_HOST = "mail.privateemail.com";
-const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "465");
-const SMTP_USERNAME = Deno.env.get("SMTP_USERNAME");
-const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD");
-const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,7 +25,6 @@ interface ContactEmailRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -58,16 +53,14 @@ const handler = async (req: Request): Promise<Response> => {
     if (isFirstContact && professionalEmail) {
       const token = crypto.randomUUID();
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 30); // Token expires in 30 days
+      expiresAt.setDate(expiresAt.getDate() + 30);
 
-      // Create Supabase client
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
       
       const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
       const supabase = createClient(supabaseUrl, supabaseKey);
 
-      // Update professional with verification token
       const { error: updateError } = await supabase
         .from('professionals')
         .update({
@@ -79,23 +72,10 @@ const handler = async (req: Request): Promise<Response> => {
       if (updateError) {
         console.error('Error updating professional with token:', updateError);
       } else {
-        verificationLink = `${supabaseUrl.replace('bgdtekbhelormzbymkhh.supabase.co', 'top10lists.us')}/verify/${token}`;
+        verificationLink = `https://top10lists.us/verify/${token}`;
         console.log('Generated verification link:', verificationLink);
       }
     }
-
-    // Initialize SMTP client
-    const client = new SMTPClient({
-      connection: {
-        hostname: SMTP_HOST,
-        port: SMTP_PORT,
-        tls: true,
-        auth: {
-          username: SMTP_USERNAME!,
-          password: SMTP_PASSWORD!,
-        },
-      },
-    });
 
     // Build email HTML
     const emailHtml = `
@@ -223,7 +203,6 @@ const handler = async (req: Request): Promise<Response> => {
                 <div class="info-value">
                   ${Object.entries(quizPreferences)
                     .map(([key, value]) => {
-                      // Format the key to be more readable
                       const label = key
                         .replace(/([A-Z])/g, ' $1')
                         .replace(/^./, str => str.toUpperCase())
@@ -268,29 +247,36 @@ const handler = async (req: Request): Promise<Response> => {
       </html>
     `;
 
-    // Build subject line with City, Type, and Agent Name
     const subject = `${cityName}: ${categoryName} - ${professionalName}`;
 
     // Send email to the admin email
-    await client.send({
-      from: SMTP_FROM_EMAIL!,
-      to: 'contactforms@top10lists.us',
+    const { error: adminError } = await resend.emails.send({
+      from: 'Top10Lists <hello@top10lists.us>',
+      to: ['contactforms@top10lists.us'],
       subject: subject,
       html: emailHtml,
     });
 
+    if (adminError) {
+      console.error('Error sending admin email:', adminError);
+      throw new Error(adminError.message);
+    }
+
     // If verification link exists, also send copy to professional
     if (verificationLink && professionalEmail) {
-      await client.send({
-        from: SMTP_FROM_EMAIL!,
-        to: professionalEmail,
+      const { error: profError } = await resend.emails.send({
+        from: 'Top10Lists <hello@top10lists.us>',
+        to: [professionalEmail],
         subject: `New Lead from Top10Lists + Verify Your Listing`,
         html: emailHtml,
       });
-      console.log('Verification email also sent to professional:', professionalEmail);
+      
+      if (profError) {
+        console.error('Error sending professional email:', profError);
+      } else {
+        console.log('Verification email also sent to professional:', professionalEmail);
+      }
     }
-
-    await client.close();
 
     console.log('Contact form email sent successfully');
 
