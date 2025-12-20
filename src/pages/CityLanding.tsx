@@ -133,9 +133,6 @@ export default function CityLanding() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild size="lg">
-                  <Link to={`/arizona/${city.slug}/top10realestateagents`}>See verified recommendations</Link>
-                </Button>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="lg" variant="outline">
