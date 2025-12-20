@@ -48,6 +48,10 @@ serve(async (req) => {
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
             This agent is actively engaged with their profile. They may reach out or proceed to pricing.
           </p>
+          <p style="margin-top: 20px; color: #333;">
+            Robert Maynard<br>
+            <em>Founder</em>
+          </p>
         </div>
       `;
     } else if (event_type === 'pricing_viewed') {
@@ -64,6 +68,10 @@ serve(async (req) => {
           ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
             <strong>Hot lead!</strong> This agent is considering premium placement. Follow up may increase conversion.
+          </p>
+          <p style="margin-top: 20px; color: #333;">
+            Robert Maynard<br>
+            <em>Founder</em>
           </p>
         </div>
       `;
