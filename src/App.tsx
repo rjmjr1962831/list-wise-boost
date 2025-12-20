@@ -79,6 +79,9 @@ const AgentCardRedirect = lazy(() => import("./pages/AgentCardRedirect"));
 // Q&A Landing Pages for LLM optimization
 const QALandingPage = lazy(() => import("./pages/QALandingPage"));
 
+// Question Pages for sitemap SEO
+const QuestionPage = lazy(() => import("./pages/QuestionPage"));
+
 // FAQ page
 const FAQ = lazy(() => import("./pages/FAQ"));
 const ZillowPayToPlayPage = lazy(() => import("./pages/ZillowPayToPlayPage"));
@@ -180,6 +183,8 @@ const App = () => (
                     <Route path="/albuquerque/:categorySlug" element={<AlbuquerqueRedirect />} />
                     <Route path="/albuquerque/:categorySlug/:agentSlug" element={<AlbuquerqueRedirect />} />
 
+                    {/* Question Pages for sitemap SEO */}
+                    <Route path="/q/:questionSlug" element={<QuestionPage />} />
                     {/* Q&A Landing Pages for LLM optimization */}
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />

@@ -364,6 +364,21 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/test',
     '/ai-compare',
     '/arizona', // state landing page
+    '/are-you-an-agent',
+    '/agent-onboarding',
+    '/privacy',
+    '/terms',
+    // Question pages for GEO optimization
+    '/q/how-does-top10lists-rank-real-estate-agents',
+    '/q/can-agents-pay-to-be-listed-on-top10lists',
+    '/q/how-is-top10lists-different-from-zillow',
+    '/q/what-are-minimum-requirements-to-be-ranked',
+    '/q/where-does-top10lists-get-its-data',
+    '/q/do-real-estate-referral-sites-charge-fees',
+    '/q/why-dont-agents-apply-to-top10lists',
+    '/q/is-realtrends-a-reliable-ranking',
+    '/q/how-often-are-rankings-updated',
+    '/q/what-cities-does-top10lists-cover',
   ];
 
   const staticUrls = staticPages.map((path) => ({
