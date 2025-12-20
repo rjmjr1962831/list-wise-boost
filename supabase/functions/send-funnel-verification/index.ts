@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="text-align: center; margin: 30px 0;">
             <a href="${finalVerificationUrl}" 
                style="display: inline-block; background-color: #2563eb; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-              Verify My Email
+              Login
             </a>
           </div>
           
