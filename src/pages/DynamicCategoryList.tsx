@@ -23,6 +23,8 @@ import { signalPrerenderReady } from '@/hooks/usePrerenderReady';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
 import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { CityMarketOverview } from '@/components/CityMarketOverview';
+import { DatasetSchema } from '@/components/seo/DatasetSchema';
+import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchema';
 import { Info } from 'lucide-react';
 
 interface City {
@@ -1217,6 +1219,22 @@ export default function DynamicCategoryList() {
           </script>
         ))}
       </Helmet>
+      
+      {/* GEO Schema Enhancement - Dataset and Source Attribution (no agent names) */}
+      <DatasetSchema
+        cityName={city.name}
+        stateName={city.state}
+        stateAbbrev={stateAbbrev}
+        totalAgentsAnalyzed={ARIZONA_TOTAL_LICENSED_AGENTS}
+        agentsSelected={topTenProfessionals.length}
+        dateModified={lastUpdated}
+      />
+      <SourceAttributionSchema
+        cityName={city.name}
+        stateName={city.state}
+        stateAbbrev={stateAbbrev}
+        dateModified={lastUpdated}
+      />
       
       {/* SEO H1 - Visible heading for search engine compliance */}
       <div className="bg-gradient-to-b from-primary/5 to-background pt-8 pb-4">
