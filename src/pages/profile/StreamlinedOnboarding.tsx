@@ -978,7 +978,7 @@ export default function StreamlinedOnboarding() {
                   >
                     <Tag className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div className="flex-1 min-w-0">
-                      <div className="text-xs text-muted-foreground mb-1">Specialties</div>
+                      <div className="text-xs text-muted-foreground mb-1">Specialties - This is where you can add neighborhoods.</div>
                       {professional?.specialty && professional.specialty.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5">
                           {professional.specialty.map((s: string, i: number) => (
