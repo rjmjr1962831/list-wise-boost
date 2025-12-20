@@ -99,7 +99,7 @@ export default function AgentLogin() {
           <title>Check Your Email | Top10Lists.us</title>
           <meta name="description" content="Check your email for your dashboard link" />
         </Helmet>
-        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-start justify-center pt-16 p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center space-y-4">
               <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -139,7 +139,7 @@ export default function AgentLogin() {
         <title>Agent Login | Top10Lists.us</title>
         <meta name="description" content="Access your Top10Lists.us agent dashboard" />
       </Helmet>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex items-start justify-center pt-16 p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center space-y-2">
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
