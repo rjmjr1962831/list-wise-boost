@@ -342,17 +342,25 @@ export default function DynamicCategoryList() {
         const brandBuilderProfs = allProfs.filter((p: any) => p.is_brand_builder === true);
         const freeProfs = allProfs.filter((p: any) => p.is_brand_builder !== true);
         
-        console.log(`🔍 Single query: ${allProfs.length} total (${brandBuilderProfs.length} Brand Builders + ${freeProfs.length} free)`);
+        console.log(`🔍 Query returned: ${allProfs.length} total (${brandBuilderProfs.length} Brand Builders + ${freeProfs.length} free)`);
+        console.log(`🏆 Brand Builders:`, brandBuilderProfs.map((p: any) => p.name));
 
-        // Random selection: shuffle free agents and pick to fill remaining slots
+        // Random selection: shuffle free agents using Fisher-Yates for true randomness
+        const shuffled = [...freeProfs];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        
+        // Fill remaining slots after brand builders
         const spotsRemaining = Math.max(0, 10 - brandBuilderProfs.length);
-        const shuffled = freeProfs.sort(() => Math.random() - 0.5);
         const randomPicks = shuffled.slice(0, spotsRemaining);
 
         // Combine: Brand Builders first + random free picks
         professionalsData = [...brandBuilderProfs, ...randomPicks];
         
-        console.log(`Final list: ${brandBuilderProfs.length} Brand Builders + ${randomPicks.length} random = ${professionalsData.length} total`);
+        console.log(`✅ Final list: ${brandBuilderProfs.length} Brand Builders + ${randomPicks.length} random = ${professionalsData.length} total`);
+        console.log(`📋 Agents selected:`, professionalsData.map((p: any) => p.name));
 
         if (profsError) {
           console.error('Error fetching professionals:', profsError);
