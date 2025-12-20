@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import CityAutocomplete from '@/components/profile/CityAutocomplete';
 import { 
   Loader2, CheckCircle, Lock, Pencil, X, Check, 
   Globe, Phone, Mail, MapPin, Star, Shield, 
@@ -781,18 +781,12 @@ export default function StreamlinedOnboarding() {
                   <MapPin className="h-5 w-5 text-primary mt-1" />
                   <div className="flex-1 space-y-3">
                     <div className="font-medium text-foreground">Where would you like to be listed?</div>
-                    <Select value={selectedCityId} onValueChange={setSelectedCityId}>
-                      <SelectTrigger className="w-full max-w-md">
-                        <SelectValue placeholder="Select a city..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cities.map((city) => (
-                          <SelectItem key={city.id} value={city.id}>
-                            {city.name}, {city.state}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <CityAutocomplete
+                      cities={cities}
+                      value={selectedCityId}
+                      onValueChange={setSelectedCityId}
+                      placeholder="Start typing a city name..."
+                    />
                     <p className="text-sm text-muted-foreground">
                       Your first city is <span className="font-medium text-green-600">FREE</span>. You can add more later.
                     </p>
