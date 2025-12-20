@@ -51,8 +51,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Failed to store verification token");
     }
 
-    // Build the verification URL with the token
-    const finalVerificationUrl = `${verificationUrl}?verify=${verificationToken}`;
+    // Build the verification URL with the token (dashboard uses ?token= param)
+    const finalVerificationUrl = `${verificationUrl}?token=${verificationToken}`;
 
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
