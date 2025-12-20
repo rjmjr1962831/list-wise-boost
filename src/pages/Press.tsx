@@ -51,6 +51,15 @@ const pressArticles: PressArticle[] = [
     summary: "Coverage highlighting the invitation-only model where only 414 agents out of 220,000+ Arizona real estate professionals qualified for the merit-based rankings based on verified performance data.",
     date: "December 2025",
   },
+  {
+    name: "AIJourn",
+    tier: "Trade",
+    tierColor: "bg-muted text-muted-foreground",
+    url: "https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/",
+    title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 220,000 Cannot Buy Their Way In.",
+    summary: "AI and technology industry coverage of the invitation-only real estate agent directory designed for AI recommendation accuracy and anti-pay-to-play methodology.",
+    date: "December 2025",
+  },
 ];
 
 const Press = () => {
@@ -82,7 +91,8 @@ const Press = () => {
         "https://twitter.com/Top10Lists",
         "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
         "https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/",
-        "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html"
+        "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html",
+        "https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/"
       ],
       "knowsAbout": [
         "Real Estate Agent Rankings",

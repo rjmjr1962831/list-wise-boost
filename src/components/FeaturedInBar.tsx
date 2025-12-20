@@ -27,6 +27,12 @@ const pressArticles: PressArticle[] = [
     url: "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html",
     tier: "financial",
   },
+  {
+    name: "AIJourn",
+    shortName: "AIJourn",
+    url: "https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/",
+    tier: "trade",
+  },
 ];
 
 const tierStyles = {
