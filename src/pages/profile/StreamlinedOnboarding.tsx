@@ -541,7 +541,21 @@ export default function StreamlinedOnboarding() {
   }
 
   // Success view after final approval
+  // Get selected city details for the success page link
+  const getSelectedCityForLink = () => {
+    const selectedCity = cities.find(c => c.id === selectedCityId);
+    if (selectedCity) {
+      return selectedCity;
+    }
+    return null;
+  };
+
   if (claimed) {
+    const selectedCity = getSelectedCityForLink();
+    const listUrl = selectedCity 
+      ? `/arizona/${selectedCity.slug}/best-real-estate-agents?highlight=${professional?.id}`
+      : null;
+
     return (
       <>
         <Helmet>
@@ -562,6 +576,17 @@ export default function StreamlinedOnboarding() {
                 <p className="text-lg text-muted-foreground">
                   Watch for important emails from us.
                 </p>
+                
+                {listUrl && (
+                  <Button
+                    variant="outline"
+                    onClick={() => window.open(listUrl, '_blank')}
+                    className="mt-4"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    See how you appear in a list
+                  </Button>
+                )}
               </CardContent>
             </Card>
           </div>

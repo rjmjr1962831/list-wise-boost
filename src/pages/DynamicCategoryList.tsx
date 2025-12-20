@@ -206,6 +206,7 @@ export default function DynamicCategoryList() {
   }
   
   const [searchParams, setSearchParams] = useSearchParams();
+  const highlightedProfessionalId = searchParams.get('highlight');
   
   const [loading, setLoading] = useState(true);
   const [isGeneratingData, setIsGeneratingData] = useState(false);
@@ -223,6 +224,7 @@ export default function DynamicCategoryList() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [isBotRequest, setIsBotRequest] = useState(false);
   const [showCityInfo, setShowCityInfo] = useState(false);
+  const [highlightedAgent, setHighlightedAgent] = useState<DBProfessional | null>(null);
 
   // Scroll to top on page load
   useEffect(() => {
@@ -471,17 +473,48 @@ export default function DynamicCategoryList() {
             return true;
           });
           
-          // Special sorting for Scottsdale: Beauvais-Real-Estate always first
-          if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && categoryData.slug === 'top10realestateagents') {
-            const beauvaisIndex = displayAgents.findIndex(p => 
-              (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
-              (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
-              (p.name && p.name.toLowerCase().includes('beauvais'))
-            );
-            if (beauvaisIndex > 0) {
-              const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
-              displayAgents.unshift(beauvais);
-              console.log(`✅ Moved Beauvais-Real-Estate to #1 for ${cityData.name} (initial load)`);
+          // If a highlight parameter is present, fetch that agent and put them first
+          if (highlightedProfessionalId) {
+            console.log(`🌟 Highlighting agent: ${highlightedProfessionalId}`);
+            
+            // Check if the highlighted agent is already in the list
+            const existingIndex = displayAgents.findIndex(p => p.id === highlightedProfessionalId);
+            
+            if (existingIndex >= 0) {
+              // Move to front
+              const highlighted = displayAgents.splice(existingIndex, 1)[0];
+              displayAgents.unshift(highlighted);
+              setHighlightedAgent(highlighted);
+              console.log(`✅ Moved ${highlighted.name} to #1 (was at index ${existingIndex})`);
+            } else {
+              // Fetch the highlighted agent from database
+              const { data: highlightedData, error: highlightError } = await supabase
+                .from('professionals')
+                .select('*')
+                .eq('id', highlightedProfessionalId)
+                .single();
+              
+              if (highlightedData && !highlightError) {
+                displayAgents.unshift(highlightedData);
+                setHighlightedAgent(highlightedData);
+                console.log(`✅ Fetched and added ${highlightedData.name} at #1`);
+              } else {
+                console.warn('Could not fetch highlighted agent:', highlightError);
+              }
+            }
+          } else {
+            // Special sorting for Scottsdale: Beauvais-Real-Estate always first
+            if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && categoryData.slug === 'top10realestateagents') {
+              const beauvaisIndex = displayAgents.findIndex(p => 
+                (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
+                (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
+                (p.name && p.name.toLowerCase().includes('beauvais'))
+              );
+              if (beauvaisIndex > 0) {
+                const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
+                displayAgents.unshift(beauvais);
+                console.log(`✅ Moved Beauvais-Real-Estate to #1 for ${cityData.name} (initial load)`);
+              }
             }
           }
           
