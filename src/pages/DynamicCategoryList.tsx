@@ -1264,33 +1264,21 @@ export default function DynamicCategoryList() {
             professionals={filteredProfessionals}
             lastUpdated={lastUpdated}
             rightAction={
-              <div className="flex items-center gap-2">
-                <Button 
-                  asChild
-                  variant="outline" 
-                  className="flex items-center gap-2"
+              <Button 
+                variant="outline" 
+                onClick={() => setShowCityInfo(!showCityInfo)}
+                className="flex items-center gap-2"
+              >
+                {showCityInfo ? 'Hide' : 'More about'} {city.name}
+                <svg 
+                  className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
                 >
-                  <Link to={`/${city.state_slug}/${city.slug}`}>
-                    <Info className="h-4 w-4" />
-                    About {city.name}
-                  </Link>
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowCityInfo(!showCityInfo)}
-                  className="flex items-center gap-2"
-                >
-                  {showCityInfo ? 'Hide' : 'More about'} {city.name}
-                  <svg 
-                    className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </Button>
-              </div>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </Button>
             }
             expandedContent={showCityInfo ? (
               <div className="animate-in slide-in-from-top-2 duration-300">
