@@ -157,7 +157,8 @@ export default function ReviewListing() {
             <ProfessionalCard 
               professional={professional} 
               accentColor="primary" 
-              quizCompleted={true} 
+              quizCompleted={true}
+              expandSections={true}
             />
             
             {/* Action buttons - positioned in the same spot as before */}

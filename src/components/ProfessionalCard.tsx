@@ -31,6 +31,7 @@ interface ProfessionalCardProps {
   onContactClick?: () => void;
   quizCompleted?: boolean;
   showContactModal?: boolean;
+  expandSections?: boolean; // Auto-expand bio, reviews, and news sections
 }
 
 export const ProfessionalCard = ({ 
@@ -44,7 +45,8 @@ export const ProfessionalCard = ({
   categorySlug,
   onContactClick,
   quizCompleted = true,
-  showContactModal: externalShowContactModal
+  showContactModal: externalShowContactModal,
+  expandSections = false
 }: ProfessionalCardProps) => {
   const { trackEvent } = useGA4Tracking();
   const [showAllReviews, setShowAllReviews] = useState(false);
@@ -57,11 +59,11 @@ export const ProfessionalCard = ({
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   
-  // Collapsible bar states
-  const [bioOpen, setBioOpen] = useState(false);
-  const [showFullSynthesizedBio, setShowFullSynthesizedBio] = useState(false);
-  const [reviewsOpen, setReviewsOpen] = useState(false);
-  const [newsOpen, setNewsOpen] = useState(false);
+  // Collapsible bar states - auto-expand if expandSections prop is true
+  const [bioOpen, setBioOpen] = useState(expandSections);
+  const [showFullSynthesizedBio, setShowFullSynthesizedBio] = useState(expandSections);
+  const [reviewsOpen, setReviewsOpen] = useState(expandSections);
+  const [newsOpen, setNewsOpen] = useState(expandSections);
   
   // Press enrichment states
   const [enrichingPress, setEnrichingPress] = useState(false);
