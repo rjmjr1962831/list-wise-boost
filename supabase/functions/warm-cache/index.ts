@@ -129,6 +129,38 @@ function urlToCacheKey(url: string): string {
   return url.replace('https://', '').replace('http://', '').replace(/[^a-zA-Z0-9]/g, '_');
 }
 
+// Delete from Cloudflare KV
+async function deleteFromKV(key: string): Promise<boolean> {
+  if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
+    console.error('Cloudflare KV credentials not configured');
+    return false;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${key}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${CLOUDFLARE_API_TOKEN}`,
+        },
+      }
+    );
+
+    // 404 is okay - key didn't exist
+    if (response.ok || response.status === 404) {
+      return true;
+    }
+
+    const errorText = await response.text();
+    console.error(`KV delete failed for ${key}: ${response.status} - ${errorText}`);
+    return false;
+  } catch (error) {
+    console.error(`KV delete error for ${key}:`, error);
+    return false;
+  }
+}
+
 // Write to Cloudflare KV
 async function writeToKV(key: string, value: string): Promise<boolean> {
   if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
@@ -455,7 +487,19 @@ serve(async (req) => {
       nextOffset,
     };
 
-    // Process URLs sequentially with 3-second intervals
+    // Step 1: Purge all URLs from KV before warming (only on first batch)
+    if (offset === 0) {
+      console.log(`🗑️ Purging ${urls.length} URLs from KV before warming...`);
+      let purged = 0;
+      for (const { canonicalUrl } of urls) {
+        const cacheKey = urlToCacheKey(canonicalUrl);
+        const deleted = await deleteFromKV(cacheKey);
+        if (deleted) purged++;
+      }
+      console.log(`✓ Purged ${purged}/${urls.length} KV entries`);
+    }
+
+    // Step 2: Process URLs sequentially with 3-second intervals
     for (let i = 0; i < urls.length; i++) {
       const { fetchUrl, canonicalUrl } = urls[i];
       console.log(`[${i + 1}/${urls.length}] Warming: ${canonicalUrl} (from ${fetchUrl})`);
