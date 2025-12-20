@@ -2,43 +2,20 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
-import DynamicCategoryList from "@/pages/DynamicCategoryList";
 
 /**
- * AgentCardRedirect handles magic links in format: /arizona/city-slug/firstname-lastname-1234
+ * AgentCardRedirect handles magic links in format: /az/city-slug/firstname-lastname-1234
  * Extracts last 4 digits from the agentSlug and matches by city + phone
  * 
- * IMPORTANT: Due to React Router v6 specificity rules, /arizona/:citySlug/:agentSlug 
- * matches BEFORE /:stateSlug/:citySlug/:categorySlug. So we must detect category slugs
- * here and render the DynamicCategoryList component directly.
+ * NOTE: This only handles /az/:citySlug/:agentSlug routes. The /arizona/ routes are
+ * handled by the more specific /:stateSlug/:citySlug/:categorySlug route which matches first.
  */
 const AgentCardRedirect = () => {
   const { citySlug, agentSlug } = useParams<{ citySlug: string; agentSlug: string }>();
   const navigate = useNavigate();
   const [error, setError] = useState(false);
-  const [isCategorySlug, setIsCategorySlug] = useState<boolean | null>(null);
-
-  // Check if this is a category slug BEFORE doing any async work
-  useEffect(() => {
-    if (!agentSlug) {
-      setIsCategorySlug(false);
-      return;
-    }
-    
-    // Check if this looks like a category slug (e.g., "top10realestateagents")
-    const knownCategorySlugs = ['top10realestateagents', 'top10dentists', 'top10doctors'];
-    if (knownCategorySlugs.includes(agentSlug.toLowerCase()) || agentSlug.startsWith('top10')) {
-      console.log("Detected category slug, rendering DynamicCategoryList:", agentSlug);
-      setIsCategorySlug(true);
-    } else {
-      setIsCategorySlug(false);
-    }
-  }, [agentSlug]);
 
   useEffect(() => {
-    // Don't run agent lookup if this is a category slug
-    if (isCategorySlug === null || isCategorySlug === true) return;
-    
     const lookupAndRedirect = async () => {
       if (!citySlug || !agentSlug) {
         setError(true);
@@ -97,21 +74,7 @@ const AgentCardRedirect = () => {
     };
 
     lookupAndRedirect();
-  }, [citySlug, agentSlug, navigate, isCategorySlug]);
-
-  // If this is a category slug, render DynamicCategoryList directly
-  if (isCategorySlug === true) {
-    return <DynamicCategoryList />;
-  }
-
-  // Still determining if it's a category slug
-  if (isCategorySlug === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  }, [citySlug, agentSlug, navigate]);
 
   if (error) {
     return (
