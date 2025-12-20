@@ -286,6 +286,9 @@ verify_jwt = true
 [functions.send-funnel-notification]
 verify_jwt = false
 
+[functions.send-application-decision]
+verify_jwt = false
+
 [functions.bulk-update-pipedrive-labels]
 verify_jwt = false
 
