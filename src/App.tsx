@@ -186,8 +186,8 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     {/* Magic link formats - support both /az/ and /arizona/ prefixes */}
+                    {/* NOTE: These are LESS specific than /:stateSlug/:citySlug/:categorySlug so they won't interfere */}
                     <Route path="/az/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
-                    <Route path="/arizona/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     {/* State landing page - must be after city routes */}
                     <Route path="/arizona" element={<StateLanding />} />
