@@ -13,8 +13,15 @@ import CityAutocomplete from '@/components/profile/CityAutocomplete';
 import { 
   Loader2, CheckCircle, Lock, Pencil, X, Check, 
   Globe, Phone, Mail, MapPin, Star, Shield, 
-  ExternalLink, Upload, Video, Building2, FileText, Tag
+  ExternalLink, Upload, Video, Building2, FileText, Tag, LogOut
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import SpecialtyEditModal from '@/components/profile/SpecialtyEditModal';
 
 // Bio Preview component with ...more expander
@@ -834,6 +841,42 @@ export default function StreamlinedOnboarding() {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+        {/* Top Bar with Profile Dropdown */}
+        <div className="max-w-4xl mx-auto px-4 pt-4">
+          <div className="flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-muted transition-colors">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage 
+                      src={professional?.image_url} 
+                      alt={professional?.name || 'Profile'} 
+                    />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                      {firstName?.[0]?.toUpperCase() || 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-foreground hidden sm:inline">
+                    {firstName}
+                  </span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem 
+                  onClick={() => {
+                    navigate('/');
+                    toast.success('Signed out successfully');
+                  }}
+                  className="text-destructive cursor-pointer"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
         <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
           
           {/* Section 1: Hero */}
