@@ -249,6 +249,53 @@ const LockedField = ({ label, value, fieldKey, professionalId, professionalName,
   );
 };
 
+// Synthesized Bio Section with its own review modal
+interface SynthesizedBioSectionProps {
+  bio: string;
+  professionalId: string;
+  professionalName: string;
+  professionalEmail: string;
+  profileLink: string;
+}
+
+const SynthesizedBioSection = ({ bio, professionalId, professionalName, professionalEmail, profileLink }: SynthesizedBioSectionProps) => {
+  const [showModal, setShowModal] = useState(false);
+
+  return (
+    <>
+      <div className="p-6 border-b border-border">
+        <div className="flex items-center gap-2 mb-3">
+          <FileText className="h-5 w-5 text-primary" />
+          <h4 className="font-semibold text-foreground">Your AI-Generated Profile</h4>
+          <Badge variant="secondary" className="text-xs">Our Synthesis</Badge>
+        </div>
+        <BioPreview text={bio} />
+        <p className="text-xs text-muted-foreground mt-2">
+          This bio was generated based on our research.{' '}
+          <span
+            onClick={() => setShowModal(true)}
+            className="text-primary cursor-pointer hover:underline font-medium"
+          >
+            Request Review
+          </span>{' '}
+          to suggest changes.
+        </p>
+      </div>
+      
+      <FieldReviewRequestModal
+        open={showModal}
+        onOpenChange={setShowModal}
+        fieldName="AI-Generated Bio"
+        profileLink={profileLink}
+        professionalName={professionalName}
+        professionalId={professionalId}
+        professionalEmail={professionalEmail}
+        currentValue={bio}
+      />
+    </>
+  );
+};
+
 // Main component
 export default function StreamlinedOnboarding() {
   const { token } = useParams<{ token: string }>();
@@ -630,17 +677,13 @@ export default function StreamlinedOnboarding() {
 
               {/* AI Synthesized Bio Section */}
               {professional?.synthesized_bio && (
-                <div className="p-6 border-b border-border">
-                  <div className="flex items-center gap-2 mb-3">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <h4 className="font-semibold text-foreground">Your AI-Generated Profile</h4>
-                    <Badge variant="secondary" className="text-xs">Our Synthesis</Badge>
-                  </div>
-                  <BioPreview text={professional.synthesized_bio} />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    This bio was generated based on our research. To request changes, use the "Request Review" option below.
-                  </p>
-                </div>
+                <SynthesizedBioSection 
+                  bio={professional.synthesized_bio}
+                  professionalId={professional.id}
+                  professionalName={professional.name}
+                  professionalEmail={professional.email || ''}
+                  profileLink={`/arizona/realtors/${professional.id}`}
+                />
               )}
 
               {/* Editable Fields */}
