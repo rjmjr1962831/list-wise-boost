@@ -50,7 +50,7 @@ export default function AgentLogin() {
       if (!professional) {
         toast({
           title: "Email not found",
-          description: "We couldn't find an active listing with this email. Please contact us if you need help.",
+          description: "We do not have this email on record.",
           variant: "destructive",
         });
         setLoading(false);
@@ -179,6 +179,14 @@ export default function AgentLogin() {
             <p className="text-xs text-muted-foreground text-center mt-4">
               We'll send you a secure link to access your profile. No password needed.
             </p>
+            <div className="text-xs text-muted-foreground text-center mt-6 pt-4 border-t space-y-1">
+              <p>Need help? Contact us:</p>
+              <p>
+                <a href="mailto:hello@top10lists.us" className="text-primary hover:underline">hello@top10lists.us</a>
+                {" · "}
+                <a href="tel:+14807909233" className="text-primary hover:underline">(480) 790-9233</a>
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>
