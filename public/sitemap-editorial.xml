@@ -68,12 +68,12 @@
     <priority>0.5</priority>
   </url>
 
-  <!-- Press & News -->
+  <!-- Press & News - Featured on Business Insider, FinanceWire, StreetInsider -->
   <url>
     <loc>https://www.top10lists.us/press</loc>
     <lastmod>2025-12-20</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
 
   <!-- Legal Pages -->
