@@ -52,6 +52,47 @@ const BioPreview = ({ text }: { text: string }) => {
 import { toast } from 'sonner';
 import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
 import { cn } from '@/lib/utils';
+import { ProfessionalCard } from '@/components/ProfessionalCard';
+import type { Professional } from '@/types/professional';
+
+const toNum = (v: any) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+function convertToDisplayProfessional(db: any, rank: number): Professional {
+  const agentStats = (db as any)?.agent_sales_stats;
+  return ({
+    ...(db || {}),
+    id: db.id,
+    name: db.name,
+    title: db.title || 'Real Estate Agent',
+    company: db.company || db.business_name || '',
+    rating: toNum(db.review_stars_rating) || 0,
+    reviews: toNum(db.num_total_reviews) || 0,
+    specialties: db.specialty || [],
+    address: db.address || '',
+    phone: db.phone || '',
+    email: db.email || '',
+    website: db.website || '',
+    description: db.description || '',
+    stats: {
+      yearsExperience: toNum(db.years_experience) || 0,
+      totalSales: toNum(db.total_sales) || toNum(agentStats?.countAllTime) || 0,
+    },
+    verified: true,
+    image: db.image_url || '/placeholder.svg',
+    notable_achievements: db.notable_achievements || [],
+    press_mentions: db.press_mentions || [],
+    publications: db.publications || [],
+    synthesized_bio: db.synthesized_bio || '',
+    get_to_know_me: db.get_to_know_me || '',
+    years_experience: db.years_experience || null,
+    total_sales: db.total_sales || null,
+    current_listings: db.current_listings || null,
+    rank,
+  } as unknown) as Professional;
+}
 
 // AI Proof Block Component - Always visible, no click required
 const AIProofBlock = () => {
@@ -636,175 +677,55 @@ export default function StreamlinedOnboarding() {
             </div>
 
             {/* Profile Preview Card - Fully Enriched */}
-            <Card className="overflow-hidden">
-              <CardContent className="p-0">
-                
-                {/* Profile Header */}
-                <div className="p-6 border-b border-border">
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <img 
-                      src={professional?.image_url || '/placeholder.svg'} 
-                      alt={professional?.name}
-                      className="w-36 h-36 rounded-xl object-cover border-2 border-border flex-shrink-0"
-                    />
-                    <div className="space-y-3 flex-1">
-                      <h2 className="text-2xl font-bold text-foreground">{professional?.name}</h2>
-                      
-                      {professional?.review_stars_rating && (
-                        <div className="flex items-center gap-1 text-sm">
-                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          <span className="font-medium">{professional.review_stars_rating}</span>
-                          {professional?.num_total_reviews && (
-                            <span className="text-muted-foreground">({professional.num_total_reviews} reviews)</span>
-                          )}
-                        </div>
-                      )}
-                      
-                      {professional?.company && (
-                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                          <Building2 className="h-4 w-4" />
-                          <span>{professional.company}</span>
-                        </div>
-                      )}
-                      
-                      {professional?.license_number && (
-                        <div className="flex items-center gap-2 text-sm">
-                          <Shield className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">License #{professional.license_number}</span>
-                        </div>
-                      )}
-                      
-                      {professional?.years_experience && (
-                        <div className="text-sm text-muted-foreground">
-                          {professional.years_experience}+ years experience
-                        </div>
-                      )}
+            <div className="space-y-6">
+              {/* Selected City */}
+              <div className="p-4 rounded-xl border bg-card">
+                <div className="flex items-center gap-3">
+                  <MapPin className="h-5 w-5 text-primary" />
+                  <div>
+                    <div className="text-sm text-muted-foreground">Listed in</div>
+                    <div className="font-semibold text-foreground">
+                      {selectedCity?.name || 'Select a city'}, {selectedCity?.state || 'Arizona'}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Selected City */}
-                <div className="p-6 border-b border-border bg-primary/5">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <div>
-                      <div className="text-sm text-muted-foreground">Listed in</div>
-                      <div className="font-semibold text-foreground">
-                        {selectedCity?.name || 'Select a city'}, {selectedCity?.state || 'Arizona'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              {/* Full Professional Card (expanded) */}
+              {professional && (
+                <ProfessionalCard
+                  professional={convertToDisplayProfessional(professional, 1)}
+                  market={selectedCity ? `${selectedCity.name}, ${selectedCity.state_slug?.toUpperCase() || 'AZ'}` : ''}
+                  stateAbbr={selectedCity?.state_slug?.toUpperCase() || 'AZ'}
+                  citySlug={selectedCity?.slug}
+                  categorySlug={(professional as any)?.categories?.slug || 'top10realestateagents'}
+                  quizCompleted={true}
+                  expandSections={true}
+                />
+              )}
 
-                {/* About / Bio */}
-                {bio && (
-                  <div className="p-6 border-b border-border">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FileText className="h-5 w-5 text-primary" />
-                      <h4 className="font-semibold text-foreground">About</h4>
-                    </div>
-                    <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
-                      {bio.length > 600 ? `${bio.slice(0, 600)}...` : bio}
-                    </p>
-                  </div>
-                )}
-
-                {/* Specialties */}
-                {professional?.specialty && professional.specialty.length > 0 && (
-                  <div className="p-6 border-b border-border">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Tag className="h-5 w-5 text-primary" />
-                      <h4 className="font-semibold text-foreground">Specialties</h4>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {professional.specialty.map((s: string, i: number) => (
-                        <Badge key={i} variant="secondary" className="text-sm">
-                          {s}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Contact Info */}
-                <div className="p-6 border-b border-border">
-                  <h4 className="font-semibold text-foreground mb-4">Contact Information</h4>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {email && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground">{email}</span>
-                      </div>
-                    )}
-                    {professional?.phone && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground">{professional.phone}</span>
-                      </div>
-                    )}
-                    {professional?.website && (
-                      <div className="flex items-center gap-2 text-sm col-span-full">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground break-all">{professional.website}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Social Links */}
-                {(professional?.social_facebook || professional?.social_instagram || professional?.social_linkedin || professional?.social_twitter || professional?.social_tiktok) && (
-                  <div className="p-6 border-b border-border">
-                    <h4 className="font-semibold text-foreground mb-4">Social Media</h4>
-                    <div className="flex flex-wrap gap-3">
-                      {professional?.social_facebook && (
-                        <Badge variant="outline" className="text-sm">Facebook</Badge>
-                      )}
-                      {professional?.social_instagram && (
-                        <Badge variant="outline" className="text-sm">Instagram</Badge>
-                      )}
-                      {professional?.social_linkedin && (
-                        <Badge variant="outline" className="text-sm">LinkedIn</Badge>
-                      )}
-                      {professional?.social_twitter && (
-                        <Badge variant="outline" className="text-sm">X / Twitter</Badge>
-                      )}
-                      {professional?.social_tiktok && (
-                        <Badge variant="outline" className="text-sm">TikTok</Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Video Introduction */}
-                {professional?.sidebar_video_url && (
-                  <div className="p-6 border-b border-border">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Video className="h-5 w-5 text-primary" />
-                      <h4 className="font-semibold text-foreground">Video Introduction</h4>
-                    </div>
-                    <p className="text-sm text-muted-foreground break-all">{professional.sidebar_video_url}</p>
-                  </div>
-                )}
-
-                {/* Pending Review Requests */}
-                {pendingReviewRequests.length > 0 && (
-                  <div className="p-6 bg-amber-50 dark:bg-amber-950/30 border-b border-border">
+              {/* Fields Pending Review */}
+              {pendingReviewRequests.length > 0 && (
+                <Card>
+                  <CardContent className="pt-6">
                     <div className="flex items-center gap-2 mb-3">
                       <Lock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      <h4 className="font-semibold text-amber-800 dark:text-amber-300">Fields Pending Review</h4>
+                      <h2 className="text-lg font-semibold">Fields Pending Review</h2>
                     </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      For those fields that need review, we’ll get back to you in 24 hours.
+                    </p>
                     <ul className="space-y-2">
                       {pendingReviewRequests.map((req) => (
-                        <li key={req.id} className="text-sm text-amber-700 dark:text-amber-400 flex items-center gap-2">
-                          <span className="w-2 h-2 rounded-full bg-amber-500" />
-                          {req.field_name}: {req.change_request}
+                        <li key={req.id} className="text-sm text-muted-foreground">
+                          <span className="font-medium text-foreground">{req.field_name}:</span> {req.change_request}
                         </li>
                       ))}
                     </ul>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
