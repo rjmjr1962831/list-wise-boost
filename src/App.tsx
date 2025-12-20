@@ -137,7 +137,7 @@ const App = () => (
                     <Route path="/agent-setup" element={<AgentSetup />} />
                     <Route path="/agent/dashboard" element={<AgentDashboard />} />
                     <Route path="/dashboard" element={<AgentDashboard />} />
-                    <Route path="/login" element={<AgentLogin />} />
+                    <Route path="/agent-login" element={<AgentLogin />} />
                     <Route path="/agent-onboarding" element={<AgentOnboarding />} />
                     <Route path="/are-you-an-agent" element={<AreYouAnAgent />} />
                     <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
