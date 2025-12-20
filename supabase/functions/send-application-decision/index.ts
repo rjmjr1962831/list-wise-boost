@@ -13,6 +13,7 @@ interface ApplicationDecisionRequest {
   name: string;
   status: "approved" | "rejected";
   notes?: string;
+  profileLink?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,7 +22,9 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, name, status, notes }: ApplicationDecisionRequest = await req.json();
+    const { email, name, status, notes, profileLink }: ApplicationDecisionRequest = await req.json();
+
+    console.log("Sending application decision email:", { email, name, status, profileLink });
 
     console.log("Sending application decision email:", { email, name, status });
 
@@ -36,12 +39,21 @@ const handler = async (req: Request): Promise<Response> => {
           <h1 style="color: #16a34a;">Congratulations, ${name}! 🎉</h1>
           <p>We're excited to inform you that your application to join Top10Lists.us has been <strong>approved</strong>!</p>
           
+          ${profileLink ? `
+            <div style="text-align: center; margin: 24px 0;">
+              <a href="${profileLink}" 
+                 style="display: inline-block; background-color: #2563eb; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                View Your Profile
+              </a>
+            </div>
+          ` : ''}
+
           <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 16px; margin: 24px 0;">
             <h2 style="color: #15803d; margin-top: 0;">What's Next?</h2>
             <ol style="color: #166534; line-height: 1.8;">
-              <li>Your profile is now being set up on our platform</li>
-              <li>You'll receive another email with your profile link within 24 hours</li>
-              <li>We'll guide you through optimizing your listing for maximum visibility</li>
+              <li>Your profile is now live on our platform</li>
+              <li>Review your listing and make sure all information is accurate</li>
+              <li>Optimize your profile for maximum visibility</li>
             </ol>
           </div>
 

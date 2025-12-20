@@ -61,12 +61,29 @@ export function AgentApplicationsManager() {
       // Send email notification
       const application = applications?.find(app => app.id === id);
       if (application) {
+        // Try to find the professional's profile link by email
+        let profileLink: string | undefined;
+        if (status === "approved") {
+          const { data: professional } = await supabase
+            .from("professionals")
+            .select("profile_link, short_code")
+            .eq("email", application.email)
+            .maybeSingle();
+          
+          if (professional?.profile_link) {
+            profileLink = professional.profile_link;
+          } else if (professional?.short_code) {
+            profileLink = `https://top10lists.us/p/${professional.short_code}`;
+          }
+        }
+
         const { error: emailError } = await supabase.functions.invoke("send-application-decision", {
           body: {
             email: application.email,
             name: application.full_name,
             status,
             notes,
+            profileLink,
           },
         });
 
