@@ -13,8 +13,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Loader2, CheckCircle, Lock, Pencil, X, Check, 
   Globe, Phone, Mail, MapPin, Star, Shield, 
-  ExternalLink, Upload, Video, Building2
+  ExternalLink, Upload, Video, Building2, FileText
 } from 'lucide-react';
+
+// Bio Preview component with ...more expander
+const BioPreview = ({ text }: { text: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+  const cleanText = stripHtml(text);
+  const maxLength = 600;
+  const needsTruncation = cleanText.length > maxLength;
+  const displayText = expanded ? cleanText : cleanText.slice(0, maxLength);
+
+  return (
+    <div className="bg-muted/50 rounded-md p-4 text-sm text-foreground">
+      <span className="whitespace-pre-line">
+        {displayText}
+        {needsTruncation && (
+          <span
+            onClick={() => setExpanded(!expanded)}
+            className="text-primary cursor-pointer hover:underline font-medium ml-1"
+          >
+            {expanded ? "less" : "...more"}
+          </span>
+        )}
+      </span>
+    </div>
+  );
+};
 import { toast } from 'sonner';
 import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
 import { cn } from '@/lib/utils';
@@ -602,6 +628,21 @@ export default function StreamlinedOnboarding() {
                 </div>
               </div>
 
+              {/* AI Synthesized Bio Section */}
+              {professional?.synthesized_bio && (
+                <div className="p-6 border-b border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <h4 className="font-semibold text-foreground">Your AI-Generated Profile</h4>
+                    <Badge variant="secondary" className="text-xs">Our Synthesis</Badge>
+                  </div>
+                  <BioPreview text={professional.synthesized_bio} />
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This bio was generated based on our research. To request changes, use the "Request Review" option below.
+                  </p>
+                </div>
+              )}
+
               {/* Editable Fields */}
               <div className="p-6 space-y-4">
                 <div className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
@@ -610,13 +651,6 @@ export default function StreamlinedOnboarding() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-2">
-                  <EditableField
-                    label="Bio"
-                    value={bio}
-                    onSave={(v) => saveField('description', v)}
-                    type="textarea"
-                    placeholder="Tell potential clients about yourself..."
-                  />
                   
                   <EditableField
                     label="Phone Number"
