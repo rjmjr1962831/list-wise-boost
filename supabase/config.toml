@@ -312,3 +312,6 @@ verify_jwt = false
 
 [functions.import-agents-firecrawl]
 verify_jwt = false
+
+[functions.send-dashboard-link]
+verify_jwt = false
