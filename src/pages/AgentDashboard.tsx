@@ -562,18 +562,6 @@ export default function AgentDashboard() {
                         <div className="text-xs text-muted-foreground">Add more cities</div>
                       </div>
                     </Button>
-
-                    <Button 
-                      variant="outline" 
-                      className="h-auto py-4 justify-start gap-3"
-                      onClick={() => setShowPasswordModal(true)}
-                    >
-                      <Lock className="h-5 w-5 text-primary" />
-                      <div className="text-left">
-                        <div className="font-medium">Change Password</div>
-                        <div className="text-xs text-muted-foreground">Update your credentials</div>
-                      </div>
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -654,15 +642,23 @@ export default function AgentDashboard() {
                         </span>
                       </div>
                     ))
-                  ) : (
-                    <div className="text-center py-6 text-muted-foreground">
-                      <p className="mb-3">No premium city placements yet</p>
-                      <Button size="sm" onClick={handleUpgradePackage}>
-                        <ArrowUpCircle className="h-4 w-4 mr-2" />
-                        Get Premium Placement
-                      </Button>
-                    </div>
-                  )}
+                  ) : null}
+
+                  {/* Add More Cities Button */}
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    <Button size="sm" onClick={handleUpgradePackage}>
+                      <ArrowUpCircle className="h-4 w-4 mr-2" />
+                      Get Premium Placement
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => navigate(`/profile/${verificationToken || professionalId}/how-it-works`)}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Add More Cities
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </div>
