@@ -651,6 +651,13 @@ export default function StreamlinedOnboarding() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-2">
+                  <EditableField
+                    label="Bio"
+                    value={bio}
+                    onSave={(v) => saveField('description', v)}
+                    type="textarea"
+                    placeholder="Tell potential clients about yourself..."
+                  />
                   
                   <EditableField
                     label="Phone Number"
