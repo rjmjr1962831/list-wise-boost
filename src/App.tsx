@@ -89,6 +89,7 @@ const Compare = lazy(() => import("./pages/Compare"));
 const Press = lazy(() => import("./pages/Press"));
 const ForAI = lazy(() => import("./pages/ForAI"));
 const TestAI = lazy(() => import("./pages/TestAI"));
+const Transparency = lazy(() => import("./pages/Transparency"));
 
 const queryClient = new QueryClient();
 
@@ -129,6 +130,7 @@ const App = () => (
                     <Route path="/compare" element={<Compare />} />
                     <Route path="/press" element={<Press />} />
                     <Route path="/for-ai" element={<ForAI />} />
+                    <Route path="/transparency" element={<Transparency />} />
                     <Route path="/test" element={<TestAI />} />
                     <Route path="/ai-compare" element={<AICompare />} />
                     <Route path="/check-profile" element={<CheckProfile />} />

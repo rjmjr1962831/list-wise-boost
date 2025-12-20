@@ -85,6 +85,12 @@ export const Footer = () => {
                 FAQ
               </Link>
               <Link 
+                to="/transparency" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Transparency Report
+              </Link>
+              <Link 
                 to="/press" 
                 className="block text-slate-300 hover:text-white transition-colors"
               >
