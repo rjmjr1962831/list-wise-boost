@@ -11,13 +11,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, User as UserIcon, Shield, LayoutDashboard } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Logo } from "@/components/brand/Logo";
 
+interface AgentProfile {
+  id: string;
+  name: string;
+  image_url: string | null;
+}
+
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [agentProfile, setAgentProfile] = useState<AgentProfile | null>(null);
   
   const navigate = useNavigate();
 
@@ -28,6 +36,7 @@ export const Header = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        fetchAgentProfile(session.user.email);
       }
     });
 
@@ -36,8 +45,10 @@ export const Header = () => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        fetchAgentProfile(session.user.email);
       } else {
         setIsAdmin(false);
+        setAgentProfile(null);
       }
     });
 
@@ -55,12 +66,37 @@ export const Header = () => {
     setIsAdmin(!!data);
   };
 
+  const fetchAgentProfile = async (email: string | undefined) => {
+    if (!email) return;
+    
+    const { data } = await supabase
+      .from('professionals')
+      .select('id, name, image_url')
+      .eq('email', email.toLowerCase())
+      .eq('active', true)
+      .maybeSingle();
+    
+    if (data) {
+      setAgentProfile(data);
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setAgentProfile(null);
     toast({
       title: "Logged out successfully",
     });
     navigate("/");
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   return (
@@ -103,18 +139,45 @@ export const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <UserIcon className="h-4 w-4" />
-                    <span className="max-w-[150px] truncate">{user.email}</span>
+                  <Button variant="ghost" size="sm" className="gap-2 px-2">
+                    <Avatar className="h-8 w-8">
+                      {agentProfile?.image_url ? (
+                        <AvatarImage 
+                          src={agentProfile.image_url} 
+                          alt={agentProfile.name || 'Profile'} 
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                        {agentProfile?.name ? getInitials(agentProfile.name) : <UserIcon className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="max-w-[120px] truncate text-sm">
+                      {agentProfile?.name?.split(' ')[0] || user.email?.split('@')[0]}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Account</p>
-                      <p className="text-xs leading-none text-muted-foreground truncate">
-                        {user.email}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-10 w-10">
+                        {agentProfile?.image_url ? (
+                          <AvatarImage 
+                            src={agentProfile.image_url} 
+                            alt={agentProfile.name || 'Profile'} 
+                          />
+                        ) : null}
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {agentProfile?.name ? getInitials(agentProfile.name) : <UserIcon className="h-5 w-5" />}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">
+                          {agentProfile?.name || 'Account'}
+                        </p>
+                        <p className="text-xs leading-none text-muted-foreground truncate">
+                          {user.email}
+                        </p>
+                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
