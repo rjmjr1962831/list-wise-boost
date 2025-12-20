@@ -1,12 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const SMTP_HOST = "mail.privateemail.com";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -14,10 +14,6 @@ serve(async (req) => {
   }
 
   try {
-    const SMTP_PORT = parseInt(Deno.env.get('SMTP_PORT') || '465');
-    const SMTP_USERNAME = Deno.env.get('SMTP_USERNAME');
-    const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD');
-    const SMTP_FROM_EMAIL = Deno.env.get('SMTP_FROM_EMAIL') || 'hello@top10lists.us';
     const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
 
     const { event_type, agent_name, agent_email, agent_id, city_name, profile_link } = await req.json();
@@ -28,7 +24,6 @@ serve(async (req) => {
 
     console.log(`📧 Sending funnel notification: ${event_type} for ${agent_name || 'unknown'}`);
 
-    // Build email content based on event type
     let subject = '';
     let html = '';
 
@@ -85,28 +80,16 @@ serve(async (req) => {
       `;
     }
 
-    // Initialize SMTP client
-    const client = new SMTPClient({
-      connection: {
-        hostname: SMTP_HOST,
-        port: SMTP_PORT,
-        tls: true,
-        auth: {
-          username: SMTP_USERNAME!,
-          password: SMTP_PASSWORD!,
-        },
-      },
-    });
-
-    // Send notification email
-    await client.send({
-      from: SMTP_FROM_EMAIL,
-      to: ADMIN_EMAIL,
+    const { error } = await resend.emails.send({
+      from: 'Top10Lists <hello@top10lists.us>',
+      to: [ADMIN_EMAIL],
       subject,
       html,
     });
 
-    await client.close();
+    if (error) {
+      throw new Error(error.message);
+    }
 
     console.log(`✅ Funnel notification sent: ${event_type}`);
 

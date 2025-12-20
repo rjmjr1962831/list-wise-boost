@@ -1,11 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { Resend } from "npm:resend@2.0.0";
 
-const SMTP_HOST = "mail.privateemail.com";
-const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "465");
-const SMTP_USERNAME = Deno.env.get("SMTP_USERNAME");
-const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD");
-const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -91,36 +87,22 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
 
-    // Initialize SMTP client
-    const client = new SMTPClient({
-      connection: {
-        hostname: SMTP_HOST,
-        port: SMTP_PORT,
-        tls: true,
-        auth: {
-          username: SMTP_USERNAME!,
-          password: SMTP_PASSWORD!,
-        },
-      },
-    });
-
-    await client.send({
-      from: SMTP_FROM_EMAIL!,
-      to: email,
+    const { error } = await resend.emails.send({
+      from: 'Top10Lists <hello@top10lists.us>',
+      to: [email],
       subject: subject,
       html: emailHtml,
     });
 
-    await client.close();
+    if (error) {
+      throw new Error(error.message);
+    }
 
     console.log("Email sent successfully to:", email);
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
+      headers: { "Content-Type": "application/json", ...corsHeaders },
     });
   } catch (error: any) {
     console.error("Error in send-application-decision function:", error);
