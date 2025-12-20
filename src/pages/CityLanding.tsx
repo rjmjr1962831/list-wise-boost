@@ -69,13 +69,14 @@ export default function CityLanding() {
     }
   }, []);
 
-  // Determine if user came from the list page
-  const cameFromList = location.state?.fromList || document.referrer.includes(`/${city.slug}/top10realestateagents`);
-  const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
-
+  // Must check city exists before accessing properties
   if (!city) {
     return <Navigate to="/404" replace />;
   }
+
+  // Determine if user came from the list page
+  const cameFromList = location.state?.fromList || document.referrer.includes(`/${city.slug}/top10realestateagents`);
+  const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
 
   const cityName = formatCityName(city);
   const canonicalUrl = `https://www.top10lists.us/arizona/${city.slug}`;
