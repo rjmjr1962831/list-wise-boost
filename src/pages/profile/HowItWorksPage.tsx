@@ -121,7 +121,6 @@ export default function HowItWorksPage() {
                   <h3 className="font-semibold">Free Listing</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>• Round-robin rotation with other qualified agents</li>
-                    <li>• Available in non-premium cities only</li>
                     <li>• Shared visibility with other agents</li>
                   </ul>
                 </div>
@@ -143,10 +142,6 @@ export default function HowItWorksPage() {
                   We are offering early adopter pricing that is <strong>half price for 2 years</strong>.
                 </p>
               </div>
-
-              <p className="text-sm text-muted-foreground">
-                The premium cities of <strong className="text-foreground">{PREMIUM_CITY_NAMES.join(', ')}</strong> are only available with premium placement.
-              </p>
             </CardContent>
           </Card>
 
