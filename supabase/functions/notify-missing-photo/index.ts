@@ -150,6 +150,10 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
 
           <div class="footer">
+            <p style="margin-bottom: 10px;">
+              <strong>Robert Maynard</strong><br>
+              <em>Founder</em>
+            </p>
             <p>This is an automated notification from Top10Lists.us</p>
           </div>
         </div>
