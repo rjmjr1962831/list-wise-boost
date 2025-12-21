@@ -116,11 +116,11 @@ serve(async (req) => {
       throw new Error('Could not determine city for import');
     }
 
-    // Construct ProxyScrape URL with username:password authentication
-    const proxyUrl = `http://${PROXY_USERNAME}:${PROXY_PASSWORD}@rp.scrapegw.com:6060`;
-    console.log('Using ProxyScrape residential proxies (rp.scrapegw.com:6060)');
+    // Use Apify's built-in residential proxies instead of external proxies
+    // External ProxyScrape proxies were returning empty results
+    console.log('Using Apify built-in residential proxies');
 
-    // Start the Apify actor with proxy configuration
+    // Start the Apify actor with Apify's residential proxy configuration
     const actorInput = {
       search_query: searchLocation,
       category: "real-estate-agents",
@@ -131,8 +131,8 @@ serve(async (req) => {
       maxResults: maxResults,
       startPage: 1,
       proxy: {
-        useApifyProxy: false,
-        proxyUrls: [proxyUrl]
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"]
       }
     };
     
