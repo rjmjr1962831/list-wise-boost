@@ -58,18 +58,25 @@ async function processAgent(
       console.log(`[DRY RUN] Would call ${scraperName} for ${item.professional_id}`);
     } else {
       if (options.useFirecrawl) {
-        // NEW: Use Firecrawl JSON scraper
+        // Use Firecrawl scraper for Zillow enrichment
         const profileUrl = item.professionals?.zillow_profile_url;
         if (!profileUrl) {
           console.log(`⚠️ [Firecrawl] No Zillow URL for ${item.professionals?.name}, skipping enrichment`);
         } else {
-          const { error: enrichError } = await supabase.functions.invoke(
-            'fetch-zillow-agent-firecrawl-json',
-            { body: { profileUrl, agentId: item.professional_id, updateDatabase: true } }
+          const { data: firecrawlData, error: enrichError } = await supabase.functions.invoke(
+            'scrape-zillow-firecrawl',
+            { body: { 
+              zillow_url: profileUrl, 
+              professional_id: item.professional_id, 
+              save_to_db: true 
+            } }
           );
 
           if (enrichError) {
             throw new Error(`Firecrawl failed: ${enrichError.message}`);
+          }
+          if (!firecrawlData?.success) {
+            throw new Error(`Firecrawl failed: ${firecrawlData?.error || 'Unknown error'}`);
           }
           console.log(`✅ [Firecrawl] Complete for ${item.professionals?.name}`);
         }
