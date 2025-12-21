@@ -19,7 +19,7 @@ serve(async (req) => {
     const { 
       cityId, 
       categoryId, 
-      maxResults = 200, 
+      maxResults = 100, 
       forceRefresh = false,
       fullEnrichment = false,
       maxQualifiedAgents = 999,
@@ -57,47 +57,50 @@ serve(async (req) => {
     if (dryRun) {
       console.log('🔍 DRY RUN MODE - Estimating what would happen...');
       
-      // Estimate how many agents would be imported
-      const estimatedImport = Math.min(maxResults, maxQualifiedAgents);
-      
-      // Calculate estimated credits using new formula
-      const baseCreditsPerAgent = 2; // 1 for bio + 1 for synthesis
-      let creditsPerAgent = baseCreditsPerAgent;
-      
-      if (skipGenericBios) creditsPerAgent -= 0.5;
-      if (skipIfNoPress) creditsPerAgent -= 0.5;
-      if (skipRecentlyEnriched) creditsPerAgent *= 0.5;
-      
-      const estimatedCredits = Math.max(0.1, creditsPerAgent);
-      const totalCredits = (estimatedCredits * estimatedImport).toFixed(1);
-      const savingsPercent = ((1 - creditsPerAgent / baseCreditsPerAgent) * 100).toFixed(0);
+      // Call unified scraper in dry run mode to get actual count
+      const { data: dryRunData, error: dryRunError } = await supabase.functions.invoke('import-agents-unified', {
+        body: { 
+          cityId, 
+          categoryId, 
+          maxAgents: maxResults,
+          minRating: MIN_RATING,
+          minReviews: MIN_REVIEWS,
+          dryRun: true
+        }
+      });
+
+      if (dryRunError) {
+        console.error('Dry run error:', dryRunError);
+      }
+
+      const agentUrlsFound = dryRunData?.agentUrlsFound || maxResults;
+      const estimatedImport = Math.min(agentUrlsFound, maxQualifiedAgents);
+      const estimatedCredits = dryRunData?.estimatedFirecrawlCredits || estimatedImport + 1;
       
       console.log(`📊 DRY RUN RESULTS:
+        - Agent URLs found: ${agentUrlsFound}
         - Would import: ~${estimatedImport} agents
-        - Would queue: ~${estimatedImport} for enrichment
-        - Estimated credits: ${estimatedCredits} per agent (${savingsPercent}% savings)
-        - Total credits: ~${totalCredits}
-        - Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
+        - Estimated Firecrawl credits: ${estimatedCredits}
+        - Using unified Firecrawl scraper (no Apify costs)`);
       
       return new Response(
         JSON.stringify({
           success: true,
           dryRun: true,
           cached: false,
+          agentUrlsFound,
           wouldImport: estimatedImport,
-          wouldQueue: estimatedImport,
-          creditsPerAgent: parseFloat(estimatedCredits.toFixed(1)),
-          totalCredits: parseFloat(totalCredits),
-          savingsPercent: parseInt(savingsPercent),
-          message: `DRY RUN: Would import ~${estimatedImport} agents and queue for enrichment. Est. ${totalCredits} credits (${savingsPercent}% savings with cost controls).`
+          firecrawlCredits: estimatedCredits,
+          apifyCosts: 0,
+          message: `DRY RUN: Found ${agentUrlsFound} agent URLs. Would import ~${estimatedImport} agents using ${estimatedCredits} Firecrawl credits.`
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // Determine target based on mode
-    const targetAgents = maxQualifiedAgents; // Always get all agents
-    console.log(`Target: ${targetAgents} qualified agents (fullEnrichment: ${fullEnrichment})`);
+    const targetAgents = maxQualifiedAgents;
+    console.log(`Target: ${targetAgents} qualified agents`);
 
     // Check if we have sufficient cached data (unless force refresh)
     if (!forceRefresh) {
@@ -143,142 +146,72 @@ serve(async (req) => {
       console.log('Force refresh requested, skipping cache check');
     }
 
-    // Loop until we have enough imported agents (enrichment happens during loop)
-    let totalImported = 0;
-    let totalQueued = 0;
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    while (attempts < maxAttempts) {
-      attempts++;
+    // Check how many agents we currently have linked to this city
+    const { count: currentCount } = await supabase
+      .from('professional_cities')
+      .select('*', { count: 'exact', head: true })
+      .eq('city_id', cityId)
+      .eq('active', true);
+
+    console.log(`Currently have ${currentCount || 0}/${targetAgents} agents linked`);
+
+    if (currentCount && currentCount >= targetAgents && !forceRefresh) {
+      console.log(`✅ Target already met! City has ${currentCount} agents linked (target: ${targetAgents})`);
       
-      // Check how many agents we currently have linked to this city
-      const { count: currentCount } = await supabase
-        .from('professional_cities')
-        .select('*', { count: 'exact', head: true })
-        .eq('city_id', cityId)
-        .eq('active', true);
-
-      console.log(`Attempt ${attempts}: Currently have ${currentCount || 0}/${targetAgents} agents imported`);
-
-      if (currentCount && currentCount >= targetAgents) {
-        console.log(`✅ Target already met! City has ${currentCount} agents linked (target: ${targetAgents})`);
-        
-        // Return immediately with "already met" flag
-        return new Response(
-          JSON.stringify({
-            success: true,
-            alreadyMet: true,
-            count: currentCount,
-            message: `${city?.name} already has ${currentCount} qualified agents linked (target: ${targetAgents}). No import needed.`
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Run getdataforme agenscrape to get more agents
-      console.log(`Running agenscrape import (batch ${attempts}, max ${maxResults} agents)...`);
-
-      const agenscrapeResult = await supabase.functions.invoke('fetch-agenscrape-agents', {
-        body: { 
-          cityId, 
-          categoryId, 
-          maxResults: maxResults * attempts // Increase batch size with each attempt
-        }
-      });
-
-      if (agenscrapeResult.error) {
-        console.error('Agenscrape error:', agenscrapeResult.error);
-        if (attempts === 1) {
-          // Only fail on first attempt
-          return new Response(
-            JSON.stringify({
-              success: false,
-              cached: false,
-              imported: 0,
-              error: 'Agenscrape import failed; please try again later.'
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        // On later attempts, just log and continue
-        console.log('Continuing with agents imported so far...');
-        break;
-      }
-
-      const agenscrapeData = agenscrapeResult.data;
-      const batchImported = agenscrapeData?.imported || 0;
-      totalImported += batchImported;
-      console.log(`Batch ${attempts} completed: ${batchImported} agents imported (${totalImported} total)`);
-      
-      // IMMEDIATELY queue newly imported agents for enrichment (via professional_cities junction)
-      console.log('Queuing newly imported agents for enrichment...');
-      
-      const { data: agentsToEnrich } = await supabase
-        .from('professionals')
-        .select('id, name')
-        .in('id', (
-          await supabase
-            .from('professional_cities')
-            .select('professional_id')
-            .eq('city_id', cityId)
-            .eq('active', true)
-        ).data?.map(pc => pc.professional_id) || [])
-        .eq('category_id', categoryId)
-        .eq('active', true)
-        .is('zillow_data_fetched_at', null);
-
-      if (agentsToEnrich && agentsToEnrich.length > 0) {
-        console.log(`Queuing ${agentsToEnrich.length} unenriched agents...`);
-        
-        // Insert into enrichment queue with unique constraint
-        const queueItems = agentsToEnrich.map(agent => ({
-          professional_id: agent.id,
-          status: 'pending',
-          reason: 'auto-import'
-        }));
-        
-        const { error: queueError } = await supabase
-          .from('contact_enrichment_queue')
-          .upsert(queueItems, { onConflict: 'professional_id' });
-
-        if (queueError) {
-          console.error('Error queuing agents:', queueError);
-        } else {
-          totalQueued += agentsToEnrich.length;
-          console.log(`✅ Queued ${agentsToEnrich.length} agents for enrichment (${totalQueued} total queued)`);
-          
-          // Fire-and-forget: trigger queue processor with Firecrawl enrichment
-          supabase.functions.invoke('process-contact-enrichment-queue', {
-            body: { 
-              batchSize: 100, 
-              concurrency: 10,
-              useFirecrawl: true, // Use Firecrawl instead of memo23
-              dryRun,
-              skipRecentlyEnriched,
-              skipGenericBios,
-              skipIfNoPress
-            }
-          }).catch(err => console.log('Queue processor triggered'));
-        }
-      } else {
-        console.log('No new agents need enrichment in this batch');
-      }
-      
-      // Small delay before next batch
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      return new Response(
+        JSON.stringify({
+          success: true,
+          alreadyMet: true,
+          count: currentCount,
+          message: `${city?.name} already has ${currentCount} qualified agents linked (target: ${targetAgents}). No import needed.`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
-    
-    console.log(`Import phase complete: ${totalImported} total agents imported, ${totalQueued} queued for enrichment`);
 
-    // Return immediately with import summary
+    // Run unified Firecrawl import (replaces agenscrape + memo23)
+    console.log(`Running unified Firecrawl import (max ${maxResults} agents)...`);
+
+    const { data: importData, error: importError } = await supabase.functions.invoke('import-agents-unified', {
+      body: { 
+        cityId, 
+        categoryId, 
+        maxAgents: maxResults,
+        minRating: MIN_RATING,
+        minReviews: MIN_REVIEWS,
+        triggerEnrichment: fullEnrichment
+      }
+    });
+
+    if (importError) {
+      console.error('Unified import error:', importError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          cached: false,
+          imported: 0,
+          error: 'Firecrawl import failed; please try again later.'
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const results = importData?.results || { imported: 0, updated: 0, skipped: 0, failed: 0 };
+    const totalImported = results.imported + results.updated;
+    
+    console.log(`Import complete: ${results.imported} new, ${results.updated} updated, ${results.skipped} skipped, ${results.failed} failed`);
+    console.log(`Firecrawl credits used: ${importData?.firecrawlCreditsUsed || 0}`);
+
     return new Response(
       JSON.stringify({
         success: true,
         cached: false,
-        imported: totalImported,
-        queued: totalQueued,
-        message: `Successfully imported ${totalImported} agents. ${totalQueued} agents queued for automatic enrichment with Firecrawl, Perplexity press research, and profile synthesis.`
+        imported: results.imported,
+        updated: results.updated,
+        skipped: results.skipped,
+        failed: results.failed,
+        firecrawlCreditsUsed: importData?.firecrawlCreditsUsed || 0,
+        message: `Successfully imported ${results.imported} new agents and updated ${results.updated} existing agents for ${city?.name}. Used ${importData?.firecrawlCreditsUsed || 0} Firecrawl credits.`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
