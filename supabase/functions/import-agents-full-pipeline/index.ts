@@ -286,6 +286,24 @@ serve(async (req) => {
 
     const proxyUrl = `http://${PROXY_USERNAME}:${PROXY_PASSWORD}@rp.scrapegw.com:6060`;
 
+    // Use the exact same actor input as fetch-agenscrape-agents
+    const actorInput = {
+      search_query: searchLocation,
+      category: "real-estate-agents",
+      locationText: searchLocation,
+      name: "",
+      language: "English",
+      specialty: "",
+      maxResults: maxResults,
+      startPage: 1,
+      proxy: {
+        useApifyProxy: false,
+        proxyUrls: [proxyUrl]
+      }
+    };
+
+    console.log(`   Actor input:`, JSON.stringify(actorInput));
+
     const startResponse = await fetch(
       'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
       {
@@ -294,14 +312,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${APIFY_API_TOKEN}`,
         },
-        body: JSON.stringify({
-          search_query: searchLocation,
-          category: "real-estate-agents",
-          locationText: searchLocation,
-          maxResults: maxResults,
-          startPage: 1,
-          proxy: { useApifyProxy: false, proxyUrls: [proxyUrl] }
-        }),
+        body: JSON.stringify(actorInput),
       }
     );
 
@@ -314,7 +325,7 @@ serve(async (req) => {
     const runId = runData.id;
     console.log(`   Actor started: ${runId}`);
 
-    // Poll for completion
+    // Poll for completion (up to 10 minutes)
     let status = 'RUNNING';
     let attempts = 0;
     while (status === 'RUNNING' && attempts < 120) {
