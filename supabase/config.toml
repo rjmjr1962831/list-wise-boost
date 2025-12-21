@@ -325,5 +325,5 @@ verify_jwt = false
 [functions.scrape-zillow-firecrawl]
 verify_jwt = false
 
-[functions.import-agents-pipeline]
+[functions.import-agents-full-pipeline]
 verify_jwt = false
