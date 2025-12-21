@@ -2088,6 +2088,39 @@ export type Database = {
           },
         ]
       }
+      state_licenses: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          id: string
+          license_number: string
+          license_type: string | null
+          name: string
+          state: string
+          updated_at: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          license_number: string
+          license_type?: string | null
+          name: string
+          state: string
+          updated_at?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          id?: string
+          license_number?: string
+          license_type?: string | null
+          name?: string
+          state?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

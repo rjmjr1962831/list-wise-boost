@@ -318,3 +318,6 @@ verify_jwt = false
 
 [functions.send-funnel-verification]
 verify_jwt = false
+
+[functions.import-state-licenses]
+verify_jwt = false

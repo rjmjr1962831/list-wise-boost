@@ -36,7 +36,8 @@ import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
 import { FunnelAnalyticsDashboard } from '@/components/admin/FunnelAnalyticsDashboard';
 import { BulkCityContentGenerator } from '@/components/admin/BulkCityContentGenerator';
 import { FieldChangeRequestsManager } from '@/components/admin/FieldChangeRequestsManager';
-import { FileEdit } from 'lucide-react';
+import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
+import { FileEdit, Upload } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -258,6 +259,10 @@ const AdminDashboard = () => {
               <FileEdit className="mr-2 h-4 w-4" />
               Change Requests
             </TabsTrigger>
+            <TabsTrigger value="license-import">
+              <Upload className="mr-2 h-4 w-4" />
+              License Import
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prospects" className="space-y-4">
@@ -339,6 +344,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="change-requests" className="space-y-4">
             <FieldChangeRequestsManager />
+          </TabsContent>
+
+          <TabsContent value="license-import" className="space-y-4">
+            <StateLicenseImporter />
           </TabsContent>
         </Tabs>
       </div>
