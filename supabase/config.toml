@@ -321,3 +321,6 @@ verify_jwt = false
 
 [functions.import-state-licenses]
 verify_jwt = false
+
+[functions.scrape-zillow-firecrawl]
+verify_jwt = false
