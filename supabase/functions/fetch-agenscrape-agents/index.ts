@@ -245,18 +245,18 @@ serve(async (req) => {
         continue;
       }
 
-      // Filter for 4.9+ star ratings BEFORE importing
+      // Filter for 4.5+ star ratings BEFORE importing
       // Note: reviews_count is now null in agenscrape API response, so we skip that filter here
-      // and rely on memo23 enrichment to provide accurate review counts for final filtering
+      // and rely on Firecrawl enrichment to provide accurate review counts for final filtering
       const rating = parseFloat(agent.rating) || 0;
       const agentName = agent.name || agent.screenName || 'Unknown';
       
-      if (rating < 4.9) {
-        console.log(`Skipping ${agentName} - rating too low: ${rating} (need 4.9+)`);
+      if (rating < 4.5) {
+        console.log(`Skipping ${agentName} - rating too low: ${rating} (need 4.5+)`);
         continue;
       }
       
-      console.log(`✅ ${agentName} qualifies with ${rating}★ rating (review count will be verified during memo23 enrichment)`);
+      console.log(`✅ ${agentName} qualifies with ${rating}★ rating (review count will be verified during Firecrawl enrichment)`);
 
       // Extract agent info from Apify response
       // Use new field names from agenscrape API (profile_url, image_url, name)

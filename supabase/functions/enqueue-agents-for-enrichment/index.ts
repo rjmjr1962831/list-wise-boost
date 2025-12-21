@@ -24,7 +24,7 @@ serve(async (req) => {
       citySlug, 
       cityId, 
       stateSlug,
-      minRating = 4.9,
+      minRating = 4.5,
       requireMissingData = true,  // Only queue agents missing email/phone
       limit = 500
     } = await req.json().catch(() => ({}));

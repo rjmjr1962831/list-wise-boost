@@ -443,8 +443,8 @@ export const ZillowAgentImporter = () => {
         currentListings = Math.max(1, Math.floor(reviewCount * 0.08));
       }
       
-      // Adjust based on rating quality (5.0 rating = higher sales efficiency)
-      if (rating >= 4.9) {
+      // Adjust based on rating quality (4.8+ rating = higher sales efficiency)
+      if (rating >= 4.8) {
         totalSales = Math.floor(totalSales * 1.2);
       }
       

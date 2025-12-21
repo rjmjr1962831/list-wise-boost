@@ -111,7 +111,7 @@ export function AdminZillowScraper() {
             <div className="space-y-2">
               <h3 className="font-semibold text-lg">Pipedrive Integration Active</h3>
               <p className="text-sm text-muted-foreground">
-                All scraped agents (rating ≥4.9) are automatically added to the <strong>prospects</strong> table for immediate Pipedrive sync. Each prospect includes Zillow position, page, ratings, sales data, and contact info.
+                All scraped agents (rating ≥4.5) are automatically added to the <strong>prospects</strong> table for immediate Pipedrive sync. Each prospect includes Zillow position, page, ratings, sales data, and contact info.
               </p>
               <Button 
                 variant="outline" 

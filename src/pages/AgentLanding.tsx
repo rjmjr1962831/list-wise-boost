@@ -124,7 +124,7 @@ export default function AgentLanding() {
     <>
       <Helmet>
         <title>Be the Answer When AI Recommends | Top10Lists Real Estate Agents</title>
-        <meta name="description" content="Top real estate agents in the United States. When ChatGPT, Gemini, or Claude search for top agents, will they find you? Data-verified directory. 4.9+ rating required." />
+        <meta name="description" content="Top real estate agents in the United States. When ChatGPT, Gemini, or Claude search for top agents, will they find you? Data-verified directory. 4.5+ rating required." />
         <meta name="keywords" content="top real estate agents USA, best realtors, AI search optimization, ChatGPT real estate, verified agents" />
         <link rel="canonical" href="https://www.top10lists.us/join" />
       </Helmet>
@@ -164,7 +164,7 @@ export default function AgentLanding() {
               </div>
               <div className="flex items-center gap-2">
                 <Star className="w-5 h-5 text-primary" />
-                <span>4.9+ Rating Required</span>
+                <span>4.5+ Rating Required</span>
               </div>
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
@@ -248,7 +248,7 @@ export default function AgentLanding() {
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <Star className="w-10 h-10 text-primary mx-auto mb-3" />
-                  <h4 className="font-semibold mb-2">4.9+ Star Rating</h4>
+                  <h4 className="font-semibold mb-2">4.5+ Star Rating</h4>
                   <p className="text-sm text-muted-foreground">Verified client reviews only</p>
                 </div>
                 <div className="text-center">

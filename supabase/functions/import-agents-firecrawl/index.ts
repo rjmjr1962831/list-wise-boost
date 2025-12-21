@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { cityName, stateName, stateAbbr, maxAgents = 20, minRating = 4.9 } = await req.json();
+    const { cityName, stateName, stateAbbr, maxAgents = 20, minRating = 4.5 } = await req.json();
 
     if (!cityName || !stateName) {
       return new Response(

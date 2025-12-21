@@ -142,13 +142,13 @@ serve(async (req) => {
 
     const rawAgents = await resultsResponse.json();
     
-    // Filter for agents with rating 4.9 or above (per custom knowledge rule)
+    // Filter for agents with rating 4.5 or above
     const agents = rawAgents.filter((agent: any) => {
       const rating = agent.rating || agent.reviewStars || 0;
-      return rating >= 4.9;
+      return rating >= 4.5;
     });
     
-    console.log(`✅ Retrieved ${rawAgents.length} agents, ${agents.length} with rating ≥4.9`);
+    console.log(`✅ Retrieved ${rawAgents.length} agents, ${agents.length} with rating ≥4.5`);
 
     // Update scrape job with agents found
     await supabase

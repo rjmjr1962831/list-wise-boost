@@ -183,7 +183,7 @@ serve(async (req) => {
       delayMs = 2000,
       onlyActive = true,
       onlyMissingData = true,
-      minRating = 4.9,
+      minRating = 4.5,
     } = await req.json();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

@@ -40,10 +40,10 @@ export function CRMExportGenerator() {
       }
 
       if (onlyQualified) {
-        console.log('🔍 Filtering for qualified (verified email + 4.9+ rating)');
+        console.log('🔍 Filtering for qualified (verified email + 4.5+ rating)');
         query = query
           .not('email_verified_at', 'is', null)
-          .gte('review_stars_rating', 4.9);
+          .gte('review_stars_rating', 4.5);
       }
       
       const { count, error } = await query;
@@ -386,7 +386,7 @@ export function CRMExportGenerator() {
               className="h-4 w-4"
             />
             <label htmlFor="onlyQualified" className="text-sm font-medium">
-              Only qualified agents (verified email + rating 4.9+)
+              Only qualified agents (verified email + rating 4.5+)
             </label>
           </div>
         </div>

@@ -240,7 +240,7 @@ serve(async (req) => {
       categoryId, 
       locationText,
       maxResults = 200,
-      minRating = 4.9,
+      minRating = 4.5,
       batchSize = 10,
       dryRun = false 
     } = await req.json();

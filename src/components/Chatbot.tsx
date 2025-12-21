@@ -30,7 +30,7 @@ Our ranking methodology uses multi-source data analysis to identify elite real e
 3. License Verification - All agents must have active, verified Arizona real estate licenses
 4. Professional Credentials - Certifications, designations, and years of experience are considered
 5. Market Presence - Local expertise and community involvement are evaluated
-6. Quality Gates - Agents must maintain a 4.9+ rating and demonstrate consistent performance
+6. Quality Gates - Agents must maintain a 4.5+ rating and demonstrate consistent performance
 All rankings are merit-based with NO pay-to-play. Learn more at /about/ranking-methodology
 
 HOW TO GET ON THE LIST (if agents ask how to join or get listed):
@@ -38,7 +38,7 @@ Our lists are curated through intensive research, not applications. We proactive
 
 The minimum requirements to be considered:
 - Active Arizona real estate license in good standing
-- Minimum 4.9 star rating across review platforms
+- Minimum 4.5 star rating across review platforms
 - Demonstrated track record of successful transactions
 - Verified professional credentials
 

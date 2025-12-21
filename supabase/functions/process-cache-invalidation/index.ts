@@ -70,7 +70,7 @@ async function regenerateCanonicalRankings(
       .eq('city_id', cityId)
       .eq('category_id', categoryId)
       .eq('active', true)
-      .gte('review_stars_rating', 4.9);
+      .gte('review_stars_rating', 4.5);
 
     if (fetchError) {
       console.error('Error fetching professionals:', fetchError);
