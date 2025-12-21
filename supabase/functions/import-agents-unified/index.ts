@@ -577,17 +577,116 @@ async function runImportBackground(
   }
 }
 
-// State-wide background import
-async function runStateImportBackground(
+// Process a single city - returns stats
+async function processSingleCity(
   supabase: any,
-  state: string,
+  city: any,
+  stateAbbr: string,
   categoryId: string,
   maxAgentsPerCity: number,
   minRating: number,
   minReviews: number,
   triggerEnrichment: boolean
-) {
-  console.log(`[State Import] Starting state-wide import for ${state}`);
+): Promise<{ imported: number; duplicates: number; skipped: number }> {
+  const stats = { imported: 0, duplicates: 0, skipped: 0 };
+  
+  try {
+    // Step 1: Find agent profile URLs
+    const profileUrls = await scrapeSearchPage(city.name, stateAbbr);
+    
+    if (profileUrls.length === 0) {
+      console.log(`[State Import] No agents found for ${city.name}`);
+      return stats;
+    }
+    
+    // Step 2: Deduplicate
+    const existingUrls = await getExistingAgentUrls(supabase, profileUrls);
+    const existingNames = await getExistingAgentNames(supabase, city.id);
+    const newUrls = profileUrls.filter(url => !existingUrls.has(url));
+    
+    console.log(`[State Import] ${city.name}: ${profileUrls.length} found, ${existingUrls.size} exist, ${newUrls.length} new`);
+    stats.duplicates = existingUrls.size;
+    
+    if (newUrls.length === 0) {
+      return stats;
+    }
+    
+    // Step 3: Get next rank
+    const { data: maxRankData } = await supabase
+      .from('professional_cities')
+      .select('rank')
+      .eq('city_id', city.id)
+      .order('rank', { ascending: false })
+      .limit(1)
+      .single();
+    
+    let nextRank = (maxRankData?.rank || 0) + 1;
+    
+    // Step 4: Scrape profiles in parallel
+    const urlsToProcess = newUrls.slice(0, maxAgentsPerCity);
+    
+    const agentDataResults = await parallelLimit(
+      urlsToProcess,
+      CONCURRENCY_LIMIT,
+      async (url, idx) => {
+        try {
+          const data = await scrapeAgentProfile(url);
+          if ((data.rating || 0) < minRating || (data.reviewCount || 0) < minReviews) {
+            console.log(`[State Import] ⏭️ ${data.name}: ${data.rating}★, ${data.reviewCount} reviews - below threshold`);
+            return null;
+          }
+          return data;
+        } catch (err: any) {
+          console.error(`[State Import] Failed: ${url}`, err.message);
+          return null;
+        }
+      }
+    );
+    
+    const qualifiedAgents = agentDataResults.filter(a => a !== null);
+    stats.skipped = urlsToProcess.length - qualifiedAgents.length;
+    
+    // Step 5: Save to database
+    for (const agentData of qualifiedAgents) {
+      const result = await processAgent(
+        supabase,
+        agentData,
+        city.id,
+        categoryId,
+        city.state,
+        existingNames,
+        nextRank++,
+        triggerEnrichment
+      );
+      
+      if (result.action === 'created') stats.imported++;
+      else if (result.action === 'duplicate') stats.duplicates++;
+    }
+    
+    console.log(`[State Import] ✅ ${city.name}: ${stats.imported} imported, ${stats.skipped} below threshold`);
+    
+  } catch (error: any) {
+    console.error(`[State Import] Error processing ${city.name}:`, error.message);
+  }
+  
+  return stats;
+}
+
+// Queue-based state import - processes CITIES_PER_BATCH cities then chains to next batch
+const CITIES_PER_BATCH = 3;
+
+async function processStateBatch(
+  supabase: any,
+  state: string,
+  categoryId: string,
+  startIndex: number,
+  maxAgentsPerCity: number,
+  minRating: number,
+  minReviews: number,
+  triggerEnrichment: boolean
+): Promise<{ processed: number; imported: number; remaining: number; nextIndex: number }> {
+  
+  console.log(`[State Import] Batch starting at index ${startIndex} for ${state}`);
   
   // Get all active cities in the state
   const { data: cities, error: citiesError } = await supabase
@@ -599,104 +698,103 @@ async function runStateImportBackground(
   
   if (citiesError || !cities || cities.length === 0) {
     console.error(`[State Import] No cities found for state ${state}`);
-    return;
+    return { processed: 0, imported: 0, remaining: 0, nextIndex: -1 };
   }
   
-  console.log(`[State Import] Found ${cities.length} cities to process`);
-  
+  const totalCities = cities.length;
   const stateAbbr = state.length === 2 ? state : stateAbbreviations[state];
-  let totalImported = 0;
-  let totalDuplicates = 0;
-  let citiesProcessed = 0;
   
-  // Process cities sequentially to avoid overwhelming Firecrawl
-  for (const city of cities) {
-    citiesProcessed++;
-    console.log(`[State Import] [${citiesProcessed}/${cities.length}] Processing ${city.name}...`);
+  // Get batch of cities to process
+  const batchCities = cities.slice(startIndex, startIndex + CITIES_PER_BATCH);
+  
+  if (batchCities.length === 0) {
+    console.log(`[State Import] ✅ ALL COMPLETE: No more cities to process`);
+    return { processed: 0, imported: 0, remaining: 0, nextIndex: -1 };
+  }
+  
+  console.log(`[State Import] Processing cities ${startIndex + 1}-${startIndex + batchCities.length} of ${totalCities}`);
+  
+  let totalImported = 0;
+  
+  for (let i = 0; i < batchCities.length; i++) {
+    const city = batchCities[i];
+    const cityIndex = startIndex + i + 1;
+    console.log(`[State Import] [${cityIndex}/${totalCities}] Processing ${city.name}...`);
     
-    try {
-      // Step 1: Find agent profile URLs
-      const profileUrls = await scrapeSearchPage(city.name, stateAbbr);
-      
-      if (profileUrls.length === 0) {
-        console.log(`[State Import] No agents found for ${city.name}`);
-        continue;
-      }
-      
-      // Step 2: Deduplicate
-      const existingUrls = await getExistingAgentUrls(supabase, profileUrls);
-      const existingNames = await getExistingAgentNames(supabase, city.id);
-      const newUrls = profileUrls.filter(url => !existingUrls.has(url));
-      
-      console.log(`[State Import] ${city.name}: ${profileUrls.length} found, ${existingUrls.size} exist, ${newUrls.length} new`);
-      
-      if (newUrls.length === 0) {
-        totalDuplicates += existingUrls.size;
-        continue;
-      }
-      
-      // Step 3: Get next rank
-      const { data: maxRankData } = await supabase
-        .from('professional_cities')
-        .select('rank')
-        .eq('city_id', city.id)
-        .order('rank', { ascending: false })
-        .limit(1)
-        .single();
-      
-      let nextRank = (maxRankData?.rank || 0) + 1;
-      
-      // Step 4: Scrape profiles in parallel
-      const urlsToProcess = newUrls.slice(0, maxAgentsPerCity);
-      
-      const agentDataResults = await parallelLimit(
-        urlsToProcess,
-        CONCURRENCY_LIMIT,
-        async (url, idx) => {
-          try {
-            const data = await scrapeAgentProfile(url);
-            if ((data.rating || 0) < minRating || (data.reviewCount || 0) < minReviews) {
-              return null;
-            }
-            return data;
-          } catch (err: any) {
-            console.error(`[State Import] Failed: ${url}`, err.message);
-            return null;
-          }
-        }
-      );
-      
-      const qualifiedAgents = agentDataResults.filter(a => a !== null);
-      
-      // Step 5: Save to database
-      for (const agentData of qualifiedAgents) {
-        const result = await processAgent(
-          supabase,
-          agentData,
-          city.id,
-          categoryId,
-          city.state,
-          existingNames,
-          nextRank++,
-          triggerEnrichment
-        );
-        
-        if (result.action === 'created') totalImported++;
-        else if (result.action === 'duplicate') totalDuplicates++;
-      }
-      
-      console.log(`[State Import] ${city.name} done: ${qualifiedAgents.length} qualified`);
-      
-      // Small delay between cities to avoid rate limits
+    const stats = await processSingleCity(
+      supabase,
+      city,
+      stateAbbr,
+      categoryId,
+      maxAgentsPerCity,
+      minRating,
+      minReviews,
+      triggerEnrichment
+    );
+    
+    totalImported += stats.imported;
+    
+    // Small delay between cities
+    if (i < batchCities.length - 1) {
       await new Promise(r => setTimeout(r, DELAY_BETWEEN_BATCHES_MS));
-      
-    } catch (error: any) {
-      console.error(`[State Import] Error processing ${city.name}:`, error.message);
-      // Continue with next city
     }
   }
   
-  console.log(`[State Import] ✅ COMPLETE: ${citiesProcessed} cities, ${totalImported} imported, ${totalDuplicates} duplicates`);
+  const nextIndex = startIndex + batchCities.length;
+  const remaining = totalCities - nextIndex;
+  
+  console.log(`[State Import] Batch complete: ${batchCities.length} cities, ${totalImported} imported, ${remaining} remaining`);
+  
+  return { 
+    processed: batchCities.length, 
+    imported: totalImported, 
+    remaining,
+    nextIndex: remaining > 0 ? nextIndex : -1
+  };
+}
+
+// Chain to next batch by invoking self
+async function chainNextBatch(
+  state: string,
+  categoryId: string,
+  nextIndex: number,
+  maxAgents: number,
+  minRating: number,
+  minReviews: number,
+  triggerEnrichment: boolean
+) {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  
+  console.log(`[State Import] 🔗 Chaining to next batch at index ${nextIndex}...`);
+  
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/import-agents-unified`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${serviceKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        state,
+        categoryId,
+        startIndex: nextIndex,
+        maxAgents,
+        minRating,
+        minReviews,
+        triggerEnrichment,
+        async: true
+      })
+    });
+    
+    if (!response.ok) {
+      console.error(`[State Import] Chain failed: ${response.status}`);
+    } else {
+      console.log(`[State Import] ✅ Next batch triggered`);
+    }
+  } catch (err: any) {
+    console.error(`[State Import] Chain error:`, err.message);
+  }
 }
 
 // Main handler
@@ -709,7 +807,8 @@ Deno.serve(async (req) => {
     const { 
       cityId,
       categoryId,
-      state, // NEW: for state-wide import
+      state,
+      startIndex = 0, // For queue-based state import
       maxAgents = 50,
       minRating = 4.5,
       minReviews = 50,
@@ -729,7 +828,7 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // STATE-WIDE IMPORT MODE
+    // STATE-WIDE IMPORT MODE (queue-based)
     if (state) {
       // Get the category ID if not provided
       let finalCategoryId = categoryId;
@@ -761,7 +860,8 @@ Deno.serve(async (req) => {
         .from('cities')
         .select('id, name')
         .eq('state', fullStateName)
-        .eq('active', true);
+        .eq('active', true)
+        .order('name');
       
       if (citiesErr || !cities || cities.length === 0) {
         return new Response(
@@ -786,27 +886,56 @@ Deno.serve(async (req) => {
         );
       }
       
-      // Start background state import
-      const backgroundTask = runStateImportBackground(
+      // Process this batch
+      const batchResult = await processStateBatch(
         supabase,
         fullStateName,
         finalCategoryId,
+        startIndex,
         maxAgents,
         minRating,
         minReviews,
         triggerEnrichment
       );
       
-      backgroundTask.catch(err => console.error('[State Import] Error:', err));
+      // If more cities remain, chain to next batch
+      if (batchResult.nextIndex > 0) {
+        // Use EdgeRuntime.waitUntil if available, otherwise fire-and-forget
+        const chainPromise = chainNextBatch(
+          fullStateName,
+          finalCategoryId,
+          batchResult.nextIndex,
+          maxAgents,
+          minRating,
+          minReviews,
+          triggerEnrichment
+        );
+        
+        // @ts-ignore - EdgeRuntime may not be defined
+        if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+          // @ts-ignore
+          EdgeRuntime.waitUntil(chainPromise);
+        } else {
+          chainPromise.catch((e: Error) => console.error('[Chain] Error:', e.message));
+        }
+      }
       
       return new Response(
         JSON.stringify({
           success: true,
-          message: `State-wide import started for ${fullStateName}`,
+          message: startIndex === 0 
+            ? `State-wide import started for ${fullStateName}`
+            : `Batch ${Math.floor(startIndex / CITIES_PER_BATCH) + 1} complete`,
           state: fullStateName,
-          cityCount: cities.length,
-          mode: 'async',
-          checkLogsFor: 'progress updates'
+          batch: {
+            startIndex,
+            processed: batchResult.processed,
+            imported: batchResult.imported,
+            remaining: batchResult.remaining,
+            nextIndex: batchResult.nextIndex
+          },
+          totalCities: cities.length,
+          mode: 'queue-based'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
