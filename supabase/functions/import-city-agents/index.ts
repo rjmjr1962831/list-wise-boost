@@ -248,11 +248,12 @@ serve(async (req) => {
           totalQueued += agentsToEnrich.length;
           console.log(`✅ Queued ${agentsToEnrich.length} agents for enrichment (${totalQueued} total queued)`);
           
-          // Fire-and-forget: trigger queue processor with cost controls
+          // Fire-and-forget: trigger queue processor with Firecrawl enrichment
           supabase.functions.invoke('process-contact-enrichment-queue', {
             body: { 
               batchSize: 100, 
               concurrency: 10,
+              useFirecrawl: true, // Use Firecrawl instead of memo23
               dryRun,
               skipRecentlyEnriched,
               skipGenericBios,
@@ -277,7 +278,7 @@ serve(async (req) => {
         cached: false,
         imported: totalImported,
         queued: totalQueued,
-        message: `Successfully imported ${totalImported} agents. ${totalQueued} agents queued for automatic enrichment with memo23, Perplexity press research, and profile synthesis.`
+        message: `Successfully imported ${totalImported} agents. ${totalQueued} agents queued for automatic enrichment with Firecrawl, Perplexity press research, and profile synthesis.`
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
