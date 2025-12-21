@@ -327,3 +327,6 @@ verify_jwt = false
 
 [functions.import-agents-full-pipeline]
 verify_jwt = false
+
+[functions.fetch-firecrawl-agents]
+verify_jwt = false
