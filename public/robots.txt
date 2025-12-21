@@ -11,38 +11,82 @@ Disallow: /profile/
 Allow: /arizona/
 Allow: /az/
 
-# AI Crawler Declarations
+# AI Crawler Declarations - Allow public pages, block private routes
 User-agent: GPTBot
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: ChatGPT-User
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: Google-Extended
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: GoogleOther
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: ClaudeBot
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: Claude-Web
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: Anthropic-AI
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: PerplexityBot
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: Applebot-Extended
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: CCBot
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 User-agent: Bytespider
+Disallow: /admin/
+Disallow: /api/
+Disallow: /agent/
+Disallow: /profile/
 Allow: /
 
 # Sitemap
