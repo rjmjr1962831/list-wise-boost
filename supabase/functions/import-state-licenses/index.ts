@@ -94,22 +94,34 @@ Deno.serve(async (req) => {
         batch.push(record);
 
         if (batch.length >= batchSize) {
+          // Dedupe batch by state+license_number to avoid "cannot affect row a second time" error
+          const uniqueMap = new Map<string, any>();
+          for (const record of batch) {
+            const key = `${record.state}|${record.license_number}`;
+            uniqueMap.set(key, record); // Last one wins if duplicates
+          }
+          const dedupedBatch = Array.from(uniqueMap.values());
+          const dupeCount = batch.length - dedupedBatch.length;
+          if (dupeCount > 0) {
+            skipped += dupeCount;
+          }
+
           const { error: upsertError } = await supabase
             .from('state_licenses')
-            .upsert(batch, { 
+            .upsert(dedupedBatch, { 
               onConflict: 'state,license_number',
               ignoreDuplicates: false 
             });
 
           if (upsertError) {
             console.error(`Batch upsert error: ${upsertError.message}`);
-            errors += batch.length;
+            errors += dedupedBatch.length;
           } else {
-            imported += batch.length;
+            imported += dedupedBatch.length;
           }
           batch = [];
           
-          console.log(`Progress: ${imported} imported, ${skipped} skipped, ${errors} errors`);
+          console.log(`Progress: ${imported} imported, ${skipped} skipped (${dupeCount} dupes), ${errors} errors`);
         }
       } catch (lineError) {
         console.error(`Error parsing line ${i}: ${lineError}`);
@@ -117,20 +129,31 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Process remaining batch
+    // Process remaining batch (also dedupe)
     if (batch.length > 0) {
+      const uniqueMap = new Map<string, any>();
+      for (const record of batch) {
+        const key = `${record.state}|${record.license_number}`;
+        uniqueMap.set(key, record);
+      }
+      const dedupedBatch = Array.from(uniqueMap.values());
+      const dupeCount = batch.length - dedupedBatch.length;
+      if (dupeCount > 0) {
+        skipped += dupeCount;
+      }
+
       const { error: upsertError } = await supabase
         .from('state_licenses')
-        .upsert(batch, { 
+        .upsert(dedupedBatch, { 
           onConflict: 'state,license_number',
           ignoreDuplicates: false 
         });
 
       if (upsertError) {
         console.error(`Final batch upsert error: ${upsertError.message}`);
-        errors += batch.length;
+        errors += dedupedBatch.length;
       } else {
-        imported += batch.length;
+        imported += dedupedBatch.length;
       }
     }
 
