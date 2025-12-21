@@ -949,14 +949,16 @@ export default function StreamlinedOnboarding() {
                   Click any field to edit - This is your direct message to the prospect. We recommend that you write it in the first person.
                 </div>
 
+                {/* Bio spans full width */}
+                <EditableField
+                  label="Bio"
+                  value={bio}
+                  onSave={(v) => saveField('description', v)}
+                  type="textarea"
+                  placeholder="Tell potential clients about yourself..."
+                />
+                
                 <div className="grid md:grid-cols-2 gap-2">
-                  <EditableField
-                    label="Bio"
-                    value={bio}
-                    onSave={(v) => saveField('description', v)}
-                    type="textarea"
-                    placeholder="Tell potential clients about yourself..."
-                  />
                   
                   <EditableField
                     label="Phone Number"
