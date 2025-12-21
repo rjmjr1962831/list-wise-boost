@@ -87,13 +87,12 @@ serve(async (req) => {
 
     console.log(`📧 Found ${agentsNeedingEnrichment.length} agents needing enrichment`);
 
-    // Check which agents are already in queue
+    // Check which agents are already in queue (any status - unique constraint)
     const agentIds = agentsNeedingEnrichment.map(a => a.id);
     const { data: existingQueue } = await supabase
       .from('contact_enrichment_queue')
       .select('professional_id')
-      .in('professional_id', agentIds)
-      .in('status', ['pending', 'processing']);
+      .in('professional_id', agentIds);
 
     const existingIds = new Set(existingQueue?.map(q => q.professional_id) || []);
 

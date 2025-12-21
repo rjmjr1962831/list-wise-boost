@@ -94,7 +94,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.enqueue-agents-for-enrichment]
-verify_jwt = true
+verify_jwt = false
 
 [functions.process-contact-enrichment-queue]
 verify_jwt = false
