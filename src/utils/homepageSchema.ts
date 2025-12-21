@@ -132,7 +132,7 @@ export function generateDatasetSchema() {
         "description": "Weighted average rating aggregated from Google (weight 10), Zillow (8), Realtor.com (6), and Redfin (5). Minimum 50 reviews required.",
         "unitText": "percentage",
         "value": "25",
-        "minValue": "4.8",
+        "minValue": "4.5",
         "maxValue": "5.0"
       },
       {

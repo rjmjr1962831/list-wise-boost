@@ -162,7 +162,7 @@ export default function AdminTestProspects() {
               ✅ Automatic Prospect Population Enabled
             </p>
             <p className="text-sm text-green-800">
-              All agents scraped from Zillow (with rating ≥4.9) are automatically added to the prospects table with full ranking data including position, page, agents ahead, ratings, and reviews.
+              All agents scraped from Zillow (with rating ≥4.5) are automatically added to the prospects table with full ranking data including position, page, agents ahead, ratings, and reviews.
             </p>
           </div>
           <div className="space-y-2 text-sm">

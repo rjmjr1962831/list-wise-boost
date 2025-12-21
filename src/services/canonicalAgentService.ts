@@ -128,7 +128,7 @@ async function generateCanonicalRankings(
     .eq('city_id', cityId)
     .eq('category_id', categoryId)
     .eq('active', true)
-    .gte('review_stars_rating', 4.9); // Only high-rated agents
+    .gte('review_stars_rating', 4.5); // Only high-rated agents
 
   if (error || !professionals) {
     console.error('Error fetching professionals:', error);

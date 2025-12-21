@@ -71,14 +71,14 @@ export function ScottsdaleEnricher() {
       <CardHeader>
         <CardTitle>Scottsdale Enrichment</CardTitle>
         <CardDescription>
-          Enrich existing Scottsdale agents with memo23 data (4.9+ rating, 200+ reviews)
+          Enrich existing Scottsdale agents with Firecrawl data (4.5+ rating, 200+ reviews)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="text-sm text-muted-foreground space-y-2">
           <p>This will:</p>
           <ul className="list-disc list-inside ml-2 space-y-1">
-            <li>Process 200 Scottsdale agents (4.9+ rating, 200+ reviews)</li>
+            <li>Process 200 Scottsdale agents (4.5+ rating, 200+ reviews)</li>
             <li>Reuse existing enriched data across cities</li>
             <li>Call memo23 + Claude press research + profile synthesis</li>
             <li>🚨 Auto-stop if Claude or Perplexity APIs fail</li>

@@ -69,7 +69,7 @@ const ApplyListing = () => {
                   SEO, we're engineered from day one to be AI-first.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  We feature only top-rated agents (4.9+ stars) with proven experience and great reviews. Our platform is 
+                  We feature only top-rated agents (4.5+ stars) with proven experience and great reviews. Our platform is 
                   structured, cited by major publications, and optimized for the AI search revolution happening right now.
                 </p>
               </section>
@@ -81,7 +81,7 @@ const ApplyListing = () => {
                 <ul className="space-y-3 text-muted-foreground">
                   <li className="flex items-start">
                     <span className="mr-2">⭐</span>
-                    <span><strong>4.9+ Star Rating Required</strong> - Verified client reviews demonstrating consistent excellence</span>
+                    <span><strong>4.5+ Star Rating Required</strong> - Verified client reviews demonstrating consistent excellence</span>
                   </li>
                   <li className="flex items-start">
                     <span className="mr-2">🏆</span>

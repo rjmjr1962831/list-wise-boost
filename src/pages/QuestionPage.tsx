@@ -21,7 +21,7 @@ Our ranking methodology considers:
 We analyze verified sales data including total transactions closed, sales volume, and average deal size over the past 12-24 months.
 
 **2. Client Reviews & Ratings**
-We aggregate reviews from multiple platforms (Zillow, Realtor.com, Google) to calculate a weighted reputation score. Only agents with 4.9+ star ratings qualify.
+We aggregate reviews from multiple platforms (Zillow, Realtor.com, Google) to calculate a weighted reputation score. Only agents with 4.5+ star ratings qualify.
 
 **3. License Verification**
 Every agent's license is verified against state regulatory databases to ensure they're in good standing.
@@ -122,7 +122,7 @@ When an agent is ranked #1 on Top10Lists, it's because they earned it through pe
    - License verified against Arizona Department of Real Estate records
 
 2. **Minimum Rating Threshold**
-   - 4.9+ star average across review platforms
+   - 4.5+ star average across review platforms
    - Minimum 5 verified client reviews
 
 3. **Recent Transaction Activity**

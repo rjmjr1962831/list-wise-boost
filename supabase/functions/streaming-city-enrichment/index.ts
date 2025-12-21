@@ -405,7 +405,7 @@ serve(async (req) => {
                 if (agent.category && agent.category !== 'real-estate-agents') continue;
                 
                 const rating = parseFloat(agent.rating || '0');
-                if (rating < 4.9) continue;
+                if (rating < 4.5) continue;
                 
                 if (!processedUrls.has(agent.profile_url)) {
                   processedUrls.add(agent.profile_url);

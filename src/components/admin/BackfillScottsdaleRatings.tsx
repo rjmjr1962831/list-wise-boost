@@ -37,7 +37,7 @@ export function BackfillScottsdaleRatings() {
         .not('ratings', 'is', null);
 
       const beforeQualifying = beforeData?.filter(
-        a => a.review_stars_rating && a.review_stars_rating >= 4.9 && 
+        a => a.review_stars_rating && a.review_stars_rating >= 4.5 && 
              a.num_total_reviews && a.num_total_reviews >= 200
       ).length || 0;
 
