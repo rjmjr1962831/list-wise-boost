@@ -711,7 +711,7 @@ Deno.serve(async (req) => {
       categoryId,
       state, // NEW: for state-wide import
       maxAgents = 50,
-      minRating = 4.9,
+      minRating = 4.5,
       minReviews = 50,
       triggerEnrichment = true,
       dryRun = false,
