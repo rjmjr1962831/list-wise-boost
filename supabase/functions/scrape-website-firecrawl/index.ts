@@ -5,6 +5,8 @@
  * Returns clean markdown instead of raw HTML
  * Automatically strips nav, footer, listings, sidebars
  * 
+ * NEW: Supports JSON extraction mode for structured Zillow data
+ * 
  * Token savings: ~60-75% fewer tokens to Claude for synthesis
  */
 
@@ -19,6 +21,91 @@ interface ScrapeResult {
   title?: string;
   description?: string;
   error?: string;
+}
+
+interface JsonScrapeResult {
+  success: boolean;
+  url: string;
+  data: Record<string, unknown>;
+  error?: string;
+}
+
+// JSON extraction with schema
+async function scrapeWithJsonExtraction(url: string, schema: Record<string, unknown>): Promise<JsonScrapeResult> {
+  console.log(`[Firecrawl JSON] Scraping with schema: ${url}`);
+  const startTime = Date.now();
+
+  if (!FIRECRAWL_API_KEY) {
+    return {
+      success: false,
+      url: url,
+      data: {},
+      error: 'FIRECRAWL_API_KEY is not configured'
+    };
+  }
+
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${FIRECRAWL_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: url,
+        formats: ['json'],
+        jsonOptions: {
+          schema: schema
+        },
+        waitFor: 3000,
+        timeout: 60000
+      })
+    });
+
+    const duration = Date.now() - startTime;
+    console.log(`[Firecrawl JSON] Response in ${duration}ms`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[Firecrawl JSON] HTTP error: ${response.status} - ${errorText}`);
+      return {
+        success: false,
+        url: url,
+        data: {},
+        error: `HTTP ${response.status}: ${errorText}`
+      };
+    }
+
+    const result = await response.json();
+    console.log(`[Firecrawl JSON] Result:`, JSON.stringify(result, null, 2));
+
+    if (!result.success) {
+      return {
+        success: false,
+        url: url,
+        data: {},
+        error: result.error || 'Unknown Firecrawl error'
+      };
+    }
+
+    // Extract JSON data from response
+    const jsonData = result.data?.json || result.data?.extract || {};
+
+    return {
+      success: true,
+      url: url,
+      data: jsonData
+    };
+
+  } catch (error) {
+    console.error(`[Firecrawl JSON] Error:`, error);
+    return {
+      success: false,
+      url: url,
+      data: {},
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
 }
 
 async function scrapeWebsite(url: string): Promise<ScrapeResult> {
@@ -188,6 +275,39 @@ async function scrapeAgentWebsiteWithAbout(baseUrl: string): Promise<{
   return { combined, pages: results };
 }
 
+// Zillow Agent Schema for JSON extraction
+const ZILLOW_AGENT_SCHEMA = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    profileUrl: { type: "string" },
+    photoUrl: { type: "string" },
+    zillowRating: { type: "number" },
+    reviewCount: { type: "number" },
+    totalSales: { type: "number" },
+    salesLast12Months: { type: "number" },
+    currentListings: { type: "number" },
+    listingsForSale: { type: "number" },
+    yearsExperience: { type: "number" },
+    licenseNumber: { type: "string" },
+    licenseState: { type: "string" },
+    brokerageName: { type: "string" },
+    brokerageAddress: { type: "string" },
+    brokeragePhone: { type: "string" },
+    phone: { type: "string" },
+    email: { type: "string" },
+    website: { type: "string" },
+    serviceAreas: { type: "array", items: { type: "string" } },
+    primaryCity: { type: "string" },
+    primaryState: { type: "string" },
+    specialties: { type: "array", items: { type: "string" } },
+    avgListPrice: { type: "string" },
+    avgSalePrice: { type: "string" },
+    priceRange: { type: "string" }
+  },
+  required: ["name"]
+};
+
 Deno.serve(async (req) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -202,7 +322,10 @@ Deno.serve(async (req) => {
     const { 
       url, 
       includeAboutPage = true,
-      maxContentLength = 15000 // Limit content to ~3,750 tokens
+      maxContentLength = 15000,
+      useJsonExtraction = false,
+      jsonSchema = null,
+      extractZillowAgent = false
     } = await req.json();
 
     if (!url) {
@@ -212,6 +335,35 @@ Deno.serve(async (req) => {
       );
     }
 
+    // JSON extraction mode for Zillow agents
+    if (useJsonExtraction || extractZillowAgent) {
+      const schemaToUse = extractZillowAgent ? ZILLOW_AGENT_SCHEMA : jsonSchema;
+      
+      if (!schemaToUse) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'jsonSchema required for JSON extraction mode' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const jsonResult = await scrapeWithJsonExtraction(url, schemaToUse);
+
+      return new Response(
+        JSON.stringify({
+          success: jsonResult.success,
+          data: jsonResult.data,
+          url: jsonResult.url,
+          error: jsonResult.error,
+          meta: {
+            scrapeMethod: 'firecrawl-json',
+            creditsUsed: jsonResult.success ? 1 : 0
+          }
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Standard markdown extraction mode
     let result;
 
     if (includeAboutPage) {
