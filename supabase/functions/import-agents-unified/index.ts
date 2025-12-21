@@ -79,6 +79,24 @@ const ZILLOW_AGENT_SCHEMA = {
     isTeam: { type: "boolean", description: "Is this a team vs individual" },
     teamName: { type: "string", description: "Team name if applicable" },
     teamMemberCount: { type: "number", description: "Number of team members" },
+    
+    // Individual reviews
+    reviews: { 
+      type: "array", 
+      items: {
+        type: "object",
+        properties: {
+          reviewerName: { type: "string", description: "Name of the reviewer" },
+          rating: { type: "number", description: "Star rating given (1-5)" },
+          reviewText: { type: "string", description: "Full review text content" },
+          reviewDate: { type: "string", description: "Date of the review" },
+          transactionType: { type: "string", description: "Bought/Sold home type" },
+          transactionDate: { type: "string", description: "When the transaction occurred" },
+          isLocalReview: { type: "boolean", description: "Is a local/Zillow review vs external" }
+        }
+      },
+      description: "Array of individual reviews with full text" 
+    },
   },
   required: ["name"]
 };
@@ -496,6 +514,10 @@ Deno.serve(async (req) => {
           type: agentType,
           zillow_profile_url: profileUrl,
           zillow_data_fetched_at: new Date().toISOString(),
+          reviews_data: agentData.reviews ? { 
+            zillow_reviews: agentData.reviews,
+            fetched_at: new Date().toISOString()
+          } : null,
           raw_scraper_data: agentData,
           updated_at: new Date().toISOString()
         };
