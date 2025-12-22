@@ -132,10 +132,11 @@ async function processAgent(
     
     console.log(`[${name}] Searching Rigelbytes: "${searchQuery}"`);
     
-    // Build ProxyScrape proxy URL
+    // Build ProxyScrape proxy URL in Apify-compatible format
+    // Apify requires: http[s]://[username[:password]]@hostname:port
     const proxyScrapeKey = Deno.env.get('PROXYSCRAPE_API_KEY');
     const proxyUrl = proxyScrapeKey 
-      ? `http://api.proxyscrape.com:8080?auth=${proxyScrapeKey}&country=us`
+      ? `http://${proxyScrapeKey}:@proxy.proxyscrape.com:8080`
       : null;
     
     const actorInput = {
