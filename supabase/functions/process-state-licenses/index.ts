@@ -10,6 +10,43 @@ const corsHeaders = {
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const APP_URL = Deno.env.get("APP_URL") || "https://top10lists.us";
 
+// Zillow Agent Profile Schema for Firecrawl JSON extraction - FULL DATA
+const ZILLOW_AGENT_SCHEMA = {
+  type: "object",
+  properties: {
+    name: { type: "string" },
+    profileUrl: { type: "string" },
+    photoUrl: { type: "string" },
+    videoUrl: { type: "string" },
+    zillowRating: { type: "number" },
+    reviewCount: { type: "number" },
+    totalSales: { type: "number" },
+    salesLast12Months: { type: "number" },
+    currentListings: { type: "number" },
+    listingsForSale: { type: "number" },
+    yearsExperience: { type: "number" },
+    licenseNumber: { type: "string" },
+    licenseState: { type: "string" },
+    brokerageName: { type: "string" },
+    brokerageAddress: { type: "string" },
+    brokeragePhone: { type: "string" },
+    phone: { type: "string" },
+    email: { type: "string" },
+    website: { type: "string" },
+    serviceAreas: { type: "array", items: { type: "string" } },
+    primaryCity: { type: "string" },
+    primaryState: { type: "string" },
+    specialties: { type: "array", items: { type: "string" } },
+    avgListPrice: { type: "string" },
+    avgSalePrice: { type: "string" },
+    priceRange: { type: "string" },
+    bio: { type: "string" },
+    headline: { type: "string" },
+    recentReviews: { type: "array", items: { type: "object", properties: { text: { type: "string" }, rating: { type: "number" }, date: { type: "string" } } } },
+  },
+  required: ["name"]
+};
+
 // Send failure notification email
 async function sendPipelineFailureEmail(
   state: string,
@@ -101,13 +138,13 @@ interface ProcessingStats {
   errors: number;
 }
 
-// Search for Zillow agent using Firecrawl search
-async function searchZillowAgent(
+// Search for Zillow agent using Firecrawl search + extract full profile data
+async function searchAndScrapeZillowAgent(
   name: string,
   city: string,
   stateAbbr: string,
   firecrawlApiKey: string
-): Promise<{ zillowUrl?: string; rating?: number; reviewCount?: number; agentData?: any } | null> {
+): Promise<{ zillowUrl?: string; rating?: number; reviewCount?: number; agentData?: any; fullData?: any } | null> {
   const searchQuery = city 
     ? `${name} Zillow real estate agent ${city} ${stateAbbr}`
     : `${name} Zillow real estate agent ${stateAbbr}`;
@@ -115,7 +152,8 @@ async function searchZillowAgent(
   console.log(`[${name}] Firecrawl search: "${searchQuery}"`);
 
   try {
-    const response = await fetch('https://api.firecrawl.dev/v1/search', {
+    // Step 1: Search for Zillow profile
+    const searchResponse = await fetch('https://api.firecrawl.dev/v1/search', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${firecrawlApiKey}`,
@@ -124,34 +162,28 @@ async function searchZillowAgent(
       body: JSON.stringify({
         query: searchQuery,
         limit: 5,
-        scrapeOptions: {
-          formats: ['markdown'],
-        },
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!searchResponse.ok) {
+      const errorText = await searchResponse.text();
       console.error(`[${name}] Firecrawl search failed:`, errorText);
       return null;
     }
 
-    const data = await response.json();
+    const searchData = await searchResponse.json();
     
-    if (!data.success || !data.data || data.data.length === 0) {
+    if (!searchData.success || !searchData.data || searchData.data.length === 0) {
       console.log(`[${name}] No search results`);
       return null;
     }
 
     // Find Zillow profile URL from search results
     let zillowUrl: string | undefined;
-    let zillowResult: any = null;
-
-    for (const result of data.data) {
+    for (const result of searchData.data) {
       const url = result.url || result.sourceUrl;
       if (url && url.includes('zillow.com/profile/')) {
         zillowUrl = url;
-        zillowResult = result;
         break;
       }
     }
@@ -163,7 +195,7 @@ async function searchZillowAgent(
 
     console.log(`[${name}] Found Zillow URL: ${zillowUrl}`);
 
-    // Now scrape the Zillow profile page to get rating and review count
+    // Step 2: Scrape Zillow profile with full schema extraction
     const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
@@ -172,66 +204,38 @@ async function searchZillowAgent(
       },
       body: JSON.stringify({
         url: zillowUrl,
-        formats: ['markdown'],
+        formats: ['extract', 'markdown'],
+        extract: {
+          schema: ZILLOW_AGENT_SCHEMA
+        },
         onlyMainContent: true,
+        timeout: 30000,
       }),
     });
 
     if (!scrapeResponse.ok) {
-      console.error(`[${name}] Firecrawl scrape failed`);
-      // Return what we have even if scrape fails
+      const errorText = await scrapeResponse.text();
+      console.error(`[${name}] Firecrawl scrape failed:`, errorText);
       return { zillowUrl };
     }
 
     const scrapeData = await scrapeResponse.json();
+    const extractedData = scrapeData.data?.extract || scrapeData.extract || scrapeData.data?.json || scrapeData.json || scrapeData.data || {};
     const markdown = scrapeData.data?.markdown || scrapeData.markdown || '';
 
-    // Extract rating and review count from markdown
-    // Look for patterns like "4.9 (523 reviews)" or "4.9 stars" and "523 reviews"
-    let rating: number | undefined;
-    let reviewCount: number | undefined;
+    const rating = extractedData.zillowRating || 0;
+    const reviewCount = extractedData.reviewCount || 0;
 
-    // Pattern 1: "X.X (NNN reviews)"
-    const ratingReviewMatch = markdown.match(/(\d+\.?\d*)\s*\((\d+)\s*reviews?\)/i);
-    if (ratingReviewMatch) {
-      rating = parseFloat(ratingReviewMatch[1]);
-      reviewCount = parseInt(ratingReviewMatch[2]);
-    }
-
-    // Pattern 2: "X.X stars" or "X.X rating"
-    if (!rating) {
-      const ratingMatch = markdown.match(/(\d+\.?\d*)\s*(?:stars?|rating)/i);
-      if (ratingMatch) {
-        rating = parseFloat(ratingMatch[1]);
-      }
-    }
-
-    // Pattern 3: "NNN reviews" or "NNN total reviews"
-    if (!reviewCount) {
-      const reviewMatch = markdown.match(/(\d+)\s*(?:total\s+)?reviews?/i);
-      if (reviewMatch) {
-        reviewCount = parseInt(reviewMatch[1]);
-      }
-    }
-
-    // Pattern 4: Look for star rating like "★★★★★" or "4.9/5"
-    if (!rating) {
-      const starMatch = markdown.match(/(\d+\.?\d*)\/5/);
-      if (starMatch) {
-        rating = parseFloat(starMatch[1]);
-      }
-    }
-
-    console.log(`[${name}] Scraped: rating=${rating || 'NA'}, reviews=${reviewCount || 'NA'}`);
+    console.log(`[${name}] Scraped: rating=${rating || 'NA'}, reviews=${reviewCount || 'NA'}, email=${extractedData.email || 'NA'}, phone=${extractedData.phone || 'NA'}`);
 
     return {
       zillowUrl,
       rating,
       reviewCount,
       agentData: {
-        markdown: markdown.slice(0, 2000), // Store first 2000 chars for reference
-        scrapeData: scrapeData.data || scrapeData,
+        markdown: markdown.slice(0, 5000),
       },
+      fullData: extractedData, // Contains email, phone, website, video, bio, etc.
     };
   } catch (error) {
     console.error(`[${name}] Firecrawl error:`, error);
@@ -239,7 +243,7 @@ async function searchZillowAgent(
   }
 }
 
-// Process a single agent: search Firecrawl, qualify, insert if good
+// Process a single agent: search Firecrawl, qualify, insert with full data, trigger synthesis
 async function processAgent(
   agent: { name: string; license_number: string; city: string },
   state: string,
@@ -263,15 +267,15 @@ async function processAgent(
       return { name, licenseNumber: license_number, city, status: 'duplicate' };
     }
 
-    // 2. Search for Zillow profile using Firecrawl
-    const searchResult = await searchZillowAgent(name, city, stateAbbr, firecrawlApiKey);
+    // 2. Search and scrape Zillow profile using Firecrawl with full schema
+    const searchResult = await searchAndScrapeZillowAgent(name, city, stateAbbr, firecrawlApiKey);
 
     if (!searchResult || !searchResult.zillowUrl) {
       console.log(`[${name}] No Zillow profile found`);
       return { name, licenseNumber: license_number, city, status: 'no_result' };
     }
 
-    const { zillowUrl, rating = 0, reviewCount = 0, agentData } = searchResult;
+    const { zillowUrl, rating = 0, reviewCount = 0, agentData, fullData = {} } = searchResult;
 
     console.log(`[${name}] Found: rating=${rating}, reviews=${reviewCount}`);
 
@@ -304,7 +308,7 @@ async function processAgent(
     }
 
     // 5. Get or create city record
-    const agentCity = city || null;
+    const agentCity = fullData.primaryCity || city || null;
     
     let cityRecord = null;
     if (agentCity) {
@@ -370,22 +374,70 @@ async function processAgent(
       }
     }
 
-    // 6. Insert professional
+    // 6. Insert professional with ALL extracted data from Firecrawl
+    const insertData: Record<string, any> = {
+      name: name,
+      license_number: license_number,
+      city_id: cityRecord.id,
+      category_id: categoryId,
+      type: 'scraped',
+      rank: 999,
+      active: true,
+      zillow_profile_url: zillowUrl,
+      review_stars_rating: rating,
+      num_total_reviews: reviewCount,
+      zillow_data_fetched_at: new Date().toISOString(),
+    };
+
+    // Map ALL Firecrawl extracted data
+    if (fullData.phone) insertData.phone = fullData.phone;
+    if (fullData.email) insertData.email = fullData.email;
+    if (fullData.website) insertData.website = fullData.website;
+    if (fullData.photoUrl) insertData.image_url = fullData.photoUrl;
+    if (fullData.videoUrl) insertData.sidebar_video_url = fullData.videoUrl;
+    if (fullData.bio) insertData.description = fullData.bio;
+    if (fullData.headline) insertData.headline = fullData.headline;
+    if (fullData.yearsExperience) insertData.years_experience = fullData.yearsExperience;
+    if (fullData.totalSales) insertData.total_sales = fullData.totalSales;
+    if (fullData.currentListings) insertData.current_listings = fullData.currentListings;
+    if (fullData.brokerageName) insertData.company = fullData.brokerageName;
+    if (fullData.specialties) insertData.specialty = fullData.specialties;
+    if (fullData.serviceAreas) insertData.service_areas = fullData.serviceAreas;
+
+    // Store sales stats
+    insertData.agent_sales_stats = {
+      source: 'firecrawl',
+      fetchedAt: new Date().toISOString(),
+      countAllTime: fullData.totalSales,
+      countLast12Months: fullData.salesLast12Months,
+      currentListings: fullData.currentListings,
+      avgListPrice: fullData.avgListPrice,
+      avgSalePrice: fullData.avgSalePrice,
+      priceRange: fullData.priceRange,
+    };
+
+    // Store brokerage info
+    if (fullData.brokerageName || fullData.brokerageAddress) {
+      insertData.business_address = {
+        name: fullData.brokerageName,
+        address: fullData.brokerageAddress,
+        phone: fullData.brokeragePhone,
+      };
+    }
+
+    // Store raw data for reference
+    if (agentData?.markdown) {
+      insertData.professional_information = {
+        source: 'firecrawl',
+        markdown: agentData.markdown,
+        extractedAt: new Date().toISOString(),
+        recentReviews: fullData.recentReviews,
+      };
+    }
+
     const { data: professional, error: insertError } = await supabase
       .from('professionals')
-      .insert({
-        name: name,
-        license_number: license_number,
-        city_id: cityRecord.id,
-        category_id: categoryId,
-        type: 'scraped',
-        rank: 999, // Will be updated later
-        active: true,
-        zillow_profile_url: zillowUrl,
-        review_stars_rating: rating,
-        num_total_reviews: reviewCount,
-        raw_scraper_data: agentData,
-      })
+      .insert(insertData)
       .select('id')
       .single();
 
@@ -394,17 +446,20 @@ async function processAgent(
       return { name, licenseNumber: license_number, city, status: 'error', error: insertError.message };
     }
 
-    // 7. Queue for enrichment
-    await supabase
-      .from('contact_enrichment_queue')
-      .insert({
-        professional_id: professional.id,
-        status: 'pending',
-        reason: 'New qualified agent from state pipeline (Firecrawl)',
-        stage: 'queued'
-      });
+    // 7. Trigger websearch and synthesis directly (skip enrichment queue since we already have data)
+    console.log(`[${name}] Triggering web search and synthesis...`);
+    
+    supabase.functions.invoke('search-agent-press-claude', {
+      body: { 
+        professionalId: professional.id, 
+        skipSynthesis: false, 
+        skipIfNoPress: false 
+      }
+    }).catch((err: any) => {
+      console.error(`[${name}] Synthesis trigger error (non-blocking):`, err);
+    });
 
-    console.log(`[${name}] ✅ Qualified and queued for enrichment`);
+    console.log(`[${name}] ✅ Qualified, inserted, and synthesis triggered`);
     return { 
       name, 
       licenseNumber: license_number, 
