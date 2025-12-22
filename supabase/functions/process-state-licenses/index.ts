@@ -369,12 +369,17 @@ async function processAgent(
 
     // 6. Insert professional with ALL extracted data from Firecrawl
     // Save ALL agents (qualified + unqualified), set active based on qualification
+    // Determine type based on qualification and experience
+    const agentType = isQualified ? 
+      (fullData.yearsExperience && fullData.yearsExperience >= 10 ? 'established' : 'emerging') : 
+      'individual';
+    
     const insertData: Record<string, any> = {
       name: name,
       license_number: license_number,
       city_id: cityRecord.id,
       category_id: categoryId,
-      type: 'scraped',
+      type: agentType, // Must be: established, emerging, individual, or team
       rank: 999,
       active: isQualified, // Only qualified agents are active
       zillow_profile_url: zillowUrl,
