@@ -336,3 +336,6 @@ verify_jwt = false
 
 [functions.run-state-pipeline]
 verify_jwt = false
+
+[functions.poll-apify-runs]
+verify_jwt = false
