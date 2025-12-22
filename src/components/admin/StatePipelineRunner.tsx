@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Loader2, MapPin, Users, Clock, CheckCircle, XCircle, AlertCircle, Search } from "lucide-react";
+import { Play, Loader2, MapPin, Users, Clock, CheckCircle, XCircle, AlertCircle, Search, AlertTriangle } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const STATES = [
@@ -53,6 +54,7 @@ interface PipelineResult {
 }
 
 export function StatePipelineRunner() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedState, setSelectedState] = useState<string>("");
   const [startIndex, setStartIndex] = useState<number>(0);
   const [batchSize, setBatchSize] = useState<number>(50);
@@ -60,6 +62,7 @@ export function StatePipelineRunner() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<PipelineResult | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
+  const [restartFromEmail, setRestartFromEmail] = useState(false);
   const [totalStats, setTotalStats] = useState<ProcessingStats>({
     processed: 0,
     qualified: 0,
@@ -74,6 +77,22 @@ export function StatePipelineRunner() {
     const timestamp = new Date().toLocaleTimeString();
     setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
   };
+
+  // Check for restart params from email link
+  useEffect(() => {
+    const pipelineState = searchParams.get('pipeline_state');
+    const pipelineIndex = searchParams.get('pipeline_index');
+    
+    if (pipelineState && pipelineIndex) {
+      setSelectedState(pipelineState);
+      setStartIndex(parseInt(pipelineIndex) || 0);
+      setRestartFromEmail(true);
+      addLog(`📧 Restart requested from email: ${pipelineState} at index ${pipelineIndex}`);
+      
+      // Clear the URL params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams]);
 
   // Fetch license counts for each state on mount
   useEffect(() => {
@@ -156,12 +175,14 @@ export function StatePipelineRunner() {
         toast.success(`Complete! ${pipelineResult.stats.qualified} agents qualified total.`);
       }
 
-    } catch (err) {
+    } catch (err: any) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       addLog(`❌ Error: ${message}`);
-      toast.error(`Pipeline failed: ${message}`);
+      addLog(`📧 Failure notification email sent. Check your inbox for restart link.`);
+      toast.error(`Pipeline failed: ${message}. Check email for restart link.`);
     } finally {
       setRunning(false);
+      setRestartFromEmail(false);
     }
   };
 
@@ -226,6 +247,25 @@ export function StatePipelineRunner() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Restart from Email Banner */}
+        {restartFromEmail && selectedState && (
+          <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <AlertTriangle className="h-5 w-5 text-amber-600" />
+            <div className="flex-1">
+              <p className="font-medium text-amber-800 dark:text-amber-200">
+                Restart requested from email
+              </p>
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                Ready to resume {STATES.find(s => s.code === selectedState)?.name} at index {startIndex}
+              </p>
+            </div>
+            <Button onClick={runPipeline} disabled={running}>
+              <Play className="h-4 w-4 mr-2" />
+              Resume Now
+            </Button>
+          </div>
+        )}
+
         {/* Controls */}
         <div className="grid gap-4 md:grid-cols-6">
           <div>

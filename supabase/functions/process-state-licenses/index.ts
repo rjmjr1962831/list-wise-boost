@@ -1,10 +1,85 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { Resend } from "https://esm.sh/resend@4.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const APP_URL = Deno.env.get("APP_URL") || "https://top10lists.us";
+
+// Send failure notification email
+async function sendPipelineFailureEmail(
+  state: string,
+  stateAbbr: string,
+  lastIndex: number,
+  errorMessage: string,
+  stats: ProcessingStats
+) {
+  try {
+    const restartUrl = `${APP_URL}/admin?pipeline_state=${stateAbbr}&pipeline_index=${lastIndex}`;
+    
+    const emailHtml = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #dc2626;">🚨 Pipeline Failed: ${state}</h1>
+        
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px; margin: 20px 0;">
+          <p style="margin: 0; color: #991b1b;"><strong>Error:</strong> ${errorMessage}</p>
+        </div>
+        
+        <h2 style="color: #374151; font-size: 16px;">Progress Before Failure:</h2>
+        <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+          <tr style="background: #f9fafb;">
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">Processed</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;"><strong>${stats.processed}</strong></td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">Qualified</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right; color: #16a34a;"><strong>${stats.qualified}</strong></td>
+          </tr>
+          <tr style="background: #f9fafb;">
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">Not Qualified</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;">${stats.notQualified}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">Duplicates</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right;">${stats.duplicates}</td>
+          </tr>
+          <tr style="background: #f9fafb;">
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">Errors</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: right; color: #dc2626;">${stats.errors}</td>
+          </tr>
+        </table>
+        
+        <p style="color: #6b7280;">The pipeline stopped at index <strong>${lastIndex}</strong>.</p>
+        
+        <div style="margin: 24px 0;">
+          <a href="${restartUrl}" style="display: inline-block; background: #2563eb; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">
+            ▶️ Restart Pipeline from Index ${lastIndex}
+          </a>
+        </div>
+        
+        <p style="color: #9ca3af; font-size: 12px; margin-top: 32px;">
+          This alert was sent by the Top10Lists state pipeline system.
+        </p>
+      </div>
+    `;
+
+    await resend.emails.send({
+      from: 'Top10Lists Pipeline <hello@top10lists.us>',
+      replyTo: 'robert@top10lists.us',
+      to: ['robert@top10lists.us'],
+      subject: `🚨 Pipeline Failed: ${state} at index ${lastIndex}`,
+      html: emailHtml,
+    });
+
+    console.log(`✉️ Failure notification email sent for ${state} at index ${lastIndex}`);
+  } catch (emailError) {
+    console.error('Failed to send failure notification email:', emailError);
+  }
+}
 
 interface AgentResult {
   name: string;
@@ -291,40 +366,63 @@ serve(async (req) => {
     };
 
     const results: AgentResult[] = [];
+    let currentIndex = startIndex;
 
     // Process in batches of `concurrency`
-    for (let i = 0; i < licenses.length; i += concurrency) {
-      const batch = licenses.slice(i, i + concurrency);
-      console.log(`\nProcessing batch ${Math.floor(i/concurrency) + 1}: agents ${i+1}-${Math.min(i+concurrency, licenses.length)}`);
+    try {
+      for (let i = 0; i < licenses.length; i += concurrency) {
+        const batch = licenses.slice(i, i + concurrency);
+        currentIndex = startIndex + i;
+        console.log(`\nProcessing batch ${Math.floor(i/concurrency) + 1}: agents ${i+1}-${Math.min(i+concurrency, licenses.length)} (index ${currentIndex})`);
 
-      const batchResults = await Promise.all(
-        batch.map(agent => processAgent(agent, state, stateAbbr, category.id, supabase, apifyToken))
-      );
+        const batchResults = await Promise.all(
+          batch.map(agent => processAgent(agent, state, stateAbbr, category.id, supabase, apifyToken))
+        );
 
-      for (const result of batchResults) {
-        results.push(result);
-        stats.processed++;
-        
-        switch (result.status) {
-          case 'qualified':
-            stats.qualified++;
-            break;
-          case 'not_qualified':
-            stats.notQualified++;
-            break;
-          case 'duplicate':
-            stats.duplicates++;
-            break;
-          case 'no_result':
-            stats.noResults++;
-            break;
-          case 'error':
-            stats.errors++;
-            break;
+        for (const result of batchResults) {
+          results.push(result);
+          stats.processed++;
+          
+          switch (result.status) {
+            case 'qualified':
+              stats.qualified++;
+              break;
+            case 'not_qualified':
+              stats.notQualified++;
+              break;
+            case 'duplicate':
+              stats.duplicates++;
+              break;
+            case 'no_result':
+              stats.noResults++;
+              break;
+            case 'error':
+              stats.errors++;
+              break;
+          }
         }
-      }
 
-      console.log(`Batch complete. Running totals: qualified=${stats.qualified}, not_qualified=${stats.notQualified}, duplicates=${stats.duplicates}`);
+        console.log(`Batch complete. Running totals: qualified=${stats.qualified}, not_qualified=${stats.notQualified}, duplicates=${stats.duplicates}`);
+      }
+    } catch (batchError) {
+      // Send email on batch processing failure
+      const errorMessage = batchError instanceof Error ? batchError.message : String(batchError);
+      console.error(`Batch processing failed at index ${currentIndex}:`, errorMessage);
+      
+      await sendPipelineFailureEmail(state, stateAbbr, currentIndex, errorMessage, stats);
+      
+      return new Response(
+        JSON.stringify({
+          error: errorMessage,
+          state,
+          stateAbbr,
+          failedAtIndex: currentIndex,
+          stats,
+          emailSent: true,
+          message: `Pipeline failed at index ${currentIndex}. Check your email for restart link.`
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const nextIndex = startIndex + licenses.length;
@@ -367,9 +465,41 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in process-state-licenses:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Error in process-state-licenses:', errorMessage);
+    
+    // Try to extract state info from the error context
+    // These might have been set before the error occurred
+    let state = 'Unknown';
+    let stateAbbr = 'XX';
+    let lastIndex = 0;
+    let stats: ProcessingStats = {
+      processed: 0,
+      qualified: 0,
+      notQualified: 0,
+      duplicates: 0,
+      noResults: 0,
+      errors: 1
+    };
+
+    try {
+      const body = await req.clone().json();
+      state = body.state || 'Unknown';
+      stateAbbr = body.stateAbbr || 'XX';
+      lastIndex = body.startIndex || 0;
+    } catch {
+      // Ignore parsing errors
+    }
+
+    // Send failure notification email
+    await sendPipelineFailureEmail(state, stateAbbr, lastIndex, errorMessage, stats);
+    
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      JSON.stringify({ 
+        error: errorMessage,
+        emailSent: true,
+        restartIndex: lastIndex
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
