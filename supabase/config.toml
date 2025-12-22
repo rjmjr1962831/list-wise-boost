@@ -333,3 +333,6 @@ verify_jwt = false
 
 [functions.fetch-firecrawl-agents]
 verify_jwt = false
+
+[functions.run-state-pipeline]
+verify_jwt = false
