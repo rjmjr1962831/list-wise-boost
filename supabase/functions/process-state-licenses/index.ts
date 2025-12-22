@@ -243,7 +243,7 @@ async function searchAndScrapeZillowAgent(
   }
 }
 
-// Process a single agent: search Firecrawl, qualify, insert with full data, trigger synthesis
+// Process a single agent: search Firecrawl, save ALL agents with data, only synthesize qualified
 async function processAgent(
   agent: { name: string; license_number: string; city: string },
   state: string,
@@ -280,20 +280,13 @@ async function processAgent(
     console.log(`[${name}] Found: rating=${rating}, reviews=${reviewCount}`);
 
     // 3. Check qualification: 4.5+ stars and 50+ reviews
-    if (rating < 4.5 || reviewCount < 50) {
-      console.log(`[${name}] Not qualified (${rating} stars, ${reviewCount} reviews)`);
-      return { 
-        name, 
-        licenseNumber: license_number, 
-        city, 
-        status: 'not_qualified',
-        rating,
-        reviewCount,
-        zillowUrl
-      };
+    const isQualified = rating >= 4.5 && reviewCount >= 50;
+    
+    if (!isQualified) {
+      console.log(`[${name}] Not qualified (${rating} stars, ${reviewCount} reviews) - will still save`);
     }
 
-    // 4. Check duplicate by Zillow URL
+    // 4. Check duplicate by Zillow URL (for ALL agents, not just qualified)
     if (zillowUrl) {
       const { data: existingByZillow } = await supabase
         .from('professionals')
@@ -375,6 +368,7 @@ async function processAgent(
     }
 
     // 6. Insert professional with ALL extracted data from Firecrawl
+    // Save ALL agents (qualified + unqualified), set active based on qualification
     const insertData: Record<string, any> = {
       name: name,
       license_number: license_number,
@@ -382,7 +376,7 @@ async function processAgent(
       category_id: categoryId,
       type: 'scraped',
       rank: 999,
-      active: true,
+      active: isQualified, // Only qualified agents are active
       zillow_profile_url: zillowUrl,
       review_stars_rating: rating,
       num_total_reviews: reviewCount,
@@ -446,29 +440,45 @@ async function processAgent(
       return { name, licenseNumber: license_number, city, status: 'error', error: insertError.message };
     }
 
-    // 7. Trigger websearch and synthesis directly (skip enrichment queue since we already have data)
-    console.log(`[${name}] Triggering web search and synthesis...`);
-    
-    supabase.functions.invoke('search-agent-press-claude', {
-      body: { 
-        professionalId: professional.id, 
-        skipSynthesis: false, 
-        skipIfNoPress: false 
-      }
-    }).catch((err: any) => {
-      console.error(`[${name}] Synthesis trigger error (non-blocking):`, err);
-    });
+    // 7. Sync ALL agents to Pipedrive (will happen via DB trigger)
+    // The enqueue_professional_for_pipedrive_sync trigger handles this automatically
 
-    console.log(`[${name}] ✅ Qualified, inserted, and synthesis triggered`);
-    return { 
-      name, 
-      licenseNumber: license_number, 
-      city, 
-      status: 'qualified',
-      zillowUrl,
-      rating,
-      reviewCount
-    };
+    // 8. Only trigger websearch and synthesis for QUALIFIED agents
+    if (isQualified) {
+      console.log(`[${name}] Triggering web search and synthesis for qualified agent...`);
+      
+      supabase.functions.invoke('search-agent-press-claude', {
+        body: { 
+          professionalId: professional.id, 
+          skipSynthesis: false, 
+          skipIfNoPress: false 
+        }
+      }).catch((err: any) => {
+        console.error(`[${name}] Synthesis trigger error (non-blocking):`, err);
+      });
+
+      console.log(`[${name}] ✅ Qualified, inserted, and synthesis triggered`);
+      return { 
+        name, 
+        licenseNumber: license_number, 
+        city, 
+        status: 'qualified',
+        zillowUrl,
+        rating,
+        reviewCount
+      };
+    } else {
+      console.log(`[${name}] ✅ Saved to DB (not qualified, no synthesis)`);
+      return { 
+        name, 
+        licenseNumber: license_number, 
+        city, 
+        status: 'not_qualified',
+        zillowUrl,
+        rating,
+        reviewCount
+      };
+    }
 
   } catch (error) {
     console.error(`[${name}] Error:`, error);
