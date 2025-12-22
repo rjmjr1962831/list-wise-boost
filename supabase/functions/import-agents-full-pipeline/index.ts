@@ -241,6 +241,7 @@ serve(async (req) => {
       locationText,
       maxResults = 200,
       minRating = 4.5,
+      minReviews = 50,
       batchSize = 10,
       dryRun = false 
     } = await req.json();
@@ -251,14 +252,11 @@ serve(async (req) => {
 
     const APIFY_API_TOKEN = Deno.env.get('APIFY_API_TOKEN');
     const FIRECRAWL_API_KEY = Deno.env.get('FIRECRAWL_API_KEY');
-    const PROXY_USERNAME = Deno.env.get('ROTATING_PROXY_USERNAME');
-    const PROXY_PASSWORD = Deno.env.get('ROTATING_PROXY_PASSWORD');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
     if (!APIFY_API_TOKEN) throw new Error('APIFY_API_TOKEN not configured');
     if (!FIRECRAWL_API_KEY) throw new Error('FIRECRAWL_API_KEY not configured');
-    if (!PROXY_USERNAME || !PROXY_PASSWORD) throw new Error('Proxy credentials not configured');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -279,60 +277,49 @@ serve(async (req) => {
     const searchLocation = locationText || `${cityName} ${stateAbbrev}`;
 
     console.log(`🚀 FULL PIPELINE START: ${searchLocation}`);
-    console.log(`   Min rating: ${minRating}, Batch size: ${batchSize}, Max results: ${maxResults}`);
+    console.log(`   Min rating: ${minRating}, Min reviews: ${minReviews}, Batch size: ${batchSize}, Max results: ${maxResults}`);
 
-    // === STEP 2: Run agenscrape ===
-    console.log(`📡 PHASE 1: agenscrape for ${searchLocation}...`);
+    // === STEP 2: Run Rigelbytes for pre-qualification ===
+    console.log(`📡 PHASE 1: Rigelbytes (rigelbytes~zillow-agents) for ${searchLocation}...`);
 
-    const proxyUrl = `http://${PROXY_USERNAME}:${PROXY_PASSWORD}@rp.scrapegw.com:6060`;
-
-    // Use the exact same actor input as fetch-agenscrape-agents
+    const actorId = 'rigelbytes~zillow-agents';
     const actorInput = {
-      search_query: searchLocation,
-      category: "real-estate-agents",
-      locationText: searchLocation,
-      name: "",
-      language: "English",
-      specialty: "",
-      maxResults: maxResults,
-      startPage: 1,
-      proxy: {
-        useApifyProxy: false,
-        proxyUrls: [proxyUrl]
-      }
+      search_keywords: [`${cityName}, ${stateAbbrev}`],
+      max_agents: maxResults,
+      detailed_profiles: true,
+      proxyConfiguration: {
+        useApifyProxy: true,
+        apifyProxyGroups: ['RESIDENTIAL'],
+      },
     };
 
     console.log(`   Actor input:`, JSON.stringify(actorInput));
 
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/getdataforme~zillow-real-state-agents-scraper/runs',
+      `https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_API_TOKEN}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${APIFY_API_TOKEN}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(actorInput),
       }
     );
 
     if (!startResponse.ok) {
       const errorText = await startResponse.text();
-      throw new Error(`agenscrape failed to start: ${errorText}`);
+      throw new Error(`Rigelbytes failed to start: ${errorText}`);
     }
 
     const { data: runData } = await startResponse.json();
     const runId = runData.id;
     console.log(`   Actor started: ${runId}`);
 
-    // Poll for completion (up to 10 minutes)
+    // Poll for completion (up to 25 minutes for Rigelbytes)
     let status = 'RUNNING';
     let attempts = 0;
-    while (status === 'RUNNING' && attempts < 120) {
+    while (status === 'RUNNING' && attempts < 300) {
       await new Promise(r => setTimeout(r, 5000));
       const statusResponse = await fetch(
-        `https://api.apify.com/v2/actor-runs/${runId}`,
-        { headers: { 'Authorization': `Bearer ${APIFY_API_TOKEN}` } }
+        `https://api.apify.com/v2/actor-runs/${runId}?token=${APIFY_API_TOKEN}`
       );
       const { data: statusData } = await statusResponse.json();
       status = statusData.status;
@@ -341,24 +328,27 @@ serve(async (req) => {
     }
 
     if (status !== 'SUCCEEDED') {
-      throw new Error(`agenscrape failed: ${status}`);
+      throw new Error(`Rigelbytes failed: ${status}`);
     }
 
-    // Get results
+    // Get results from dataset
+    const datasetId = runData.defaultDatasetId;
     const resultsResponse = await fetch(
-      `https://api.apify.com/v2/actor-runs/${runId}/dataset/items`,
-      { headers: { 'Authorization': `Bearer ${APIFY_API_TOKEN}` } }
+      `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}`
     );
     const rawAgents = await resultsResponse.json();
-    console.log(`   ✅ agenscrape returned ${rawAgents.length} agents`);
+    console.log(`   ✅ Rigelbytes returned ${rawAgents.length} agents`);
 
-    // === STEP 3: Filter by rating ===
-    console.log(`🔍 PHASE 2: Filtering for ${minRating}+ rating...`);
+    // === STEP 3: Filter by rating AND reviews (Rigelbytes fields) ===
+    console.log(`🔍 PHASE 2: Filtering for ${minRating}+ rating AND ${minReviews}+ reviews...`);
 
     const qualifiedAgents = rawAgents.filter((agent: any) => {
-      if (agent.category && agent.category !== 'real-estate-agents') return false;
-      const rating = parseFloat(agent.rating) || 0;
-      return rating >= minRating;
+      // Rigelbytes uses review_average and review_count
+      const rating = agent.review_average || 0;
+      const reviewCount = typeof agent.review_count === 'string' 
+        ? parseInt(agent.review_count.replace(/[()]/g, ''), 10) || 0
+        : agent.review_count || 0;
+      return rating >= minRating && reviewCount >= minReviews;
     });
 
     console.log(`   ✅ ${qualifiedAgents.length} qualified (${rawAgents.length - qualifiedAgents.length} filtered)`);
@@ -369,16 +359,17 @@ serve(async (req) => {
           success: true,
           dryRun: true,
           location: searchLocation,
-          agenscrapeTotal: rawAgents.length,
+          rigelbytesTotal: rawAgents.length,
           qualifiedCount: qualifiedAgents.length,
           estimatedCredits: {
             firecrawl: qualifiedAgents.length,
             searchQueries: qualifiedAgents.length * 10 // ~10 queries per agent
           },
           qualifiedAgents: qualifiedAgents.slice(0, 20).map((a: any) => ({
-            name: a.name || a.screenName,
-            rating: parseFloat(a.rating) || 0,
-            profileUrl: a.profile_url
+            name: a.title,
+            rating: a.review_average || 0,
+            reviews: typeof a.review_count === 'string' ? parseInt(a.review_count.replace(/[()]/g, ''), 10) : a.review_count,
+            profileUrl: a.link
           }))
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -401,9 +392,13 @@ serve(async (req) => {
     const agentsToProcess: AgentToProcess[] = [];
 
     for (const agent of qualifiedAgents) {
-      const profileUrl = agent.profile_url;
-      const agentName = agent.name || agent.screenName || 'Unknown';
-      const rating = parseFloat(agent.rating) || 0;
+      // Rigelbytes uses 'link' for profile URL and 'title' for name
+      const profileUrl = agent.link;
+      const agentName = agent.title || 'Unknown';
+      const rating = agent.review_average || 0;
+      const reviewCount = typeof agent.review_count === 'string' 
+        ? parseInt(agent.review_count.replace(/[()]/g, ''), 10) || 0
+        : agent.review_count || 0;
 
       if (!profileUrl) continue;
 
@@ -450,7 +445,7 @@ serve(async (req) => {
             zillow_profile_url: profileUrl,
             image_url: agent.image_url || null,
             review_stars_rating: rating,
-            num_total_reviews: agent.reviews_count || 0,
+            num_total_reviews: reviewCount,
             city_id: cityId,
             category_id: categoryId,
             rank: nextRank,
@@ -522,7 +517,7 @@ serve(async (req) => {
 
     // === SUMMARY ===
     const summary = {
-      agenscrapeTotal: rawAgents.length,
+      rigelbytesTotal: rawAgents.length,
       qualifiedCount: qualifiedAgents.length,
       processedCount: allResults.length,
       firecrawlSuccess: allResults.filter(r => r.firecrawl === 'success').length,

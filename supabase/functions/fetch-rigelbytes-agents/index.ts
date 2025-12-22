@@ -127,11 +127,11 @@ serve(async (req) => {
           ? parseInt(agent.review_count.replace(/[()]/g, ''), 10) || 0
           : agent.review_count || 0;
         
-        // Filter by rating (4.5+) and reviews (minimum 10)
-        if (rating < 4.5 || reviewCount < 10) {
+        // Filter by rating (4.5+) and reviews (minimum 50)
+        if (rating < 4.5 || reviewCount < 50) {
           skipped.push({
             name: agent.title,
-            reason: `Rating ${rating} or reviews ${reviewCount} below threshold`,
+            reason: `Rating ${rating} or reviews ${reviewCount} below threshold (need 4.5+ rating, 50+ reviews)`,
           });
           continue;
         }
