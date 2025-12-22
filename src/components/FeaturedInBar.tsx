@@ -16,6 +16,12 @@ const pressArticles: PressArticle[] = [
     tier: "tier1",
   },
   {
+    name: "Arizona Daily Independent",
+    shortName: "AZ Daily Independent",
+    url: "https://arizonadailyindependent.com/2025/12/21/arizona-startup-real-estate-directory-challenges-zillows-pay-to-play-model/",
+    tier: "trade",
+  },
+  {
     name: "FinanceWire",
     shortName: "FinanceWire",
     url: "https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/",

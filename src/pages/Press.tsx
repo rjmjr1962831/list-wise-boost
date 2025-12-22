@@ -34,6 +34,15 @@ const pressArticles: PressArticle[] = [
     date: "December 2025",
   },
   {
+    name: "Arizona Daily Independent",
+    tier: "Trade",
+    tierColor: "bg-muted text-muted-foreground",
+    url: "https://arizonadailyindependent.com/2025/12/21/arizona-startup-real-estate-directory-challenges-zillows-pay-to-play-model/",
+    title: "Arizona Startup Real Estate Directory Challenges Zillow's Pay-To-Play Model",
+    summary: "Local Arizona coverage of the startup challenging Zillow's advertising-driven model with a merit-based directory that ranks agents by verified performance data rather than advertising spend.",
+    date: "December 21, 2025",
+  },
+  {
     name: "FinanceWire",
     tier: "Financial",
     tierColor: "bg-accent text-accent-foreground",
@@ -90,6 +99,7 @@ const Press = () => {
       "sameAs": [
         "https://twitter.com/Top10Lists",
         "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
+        "https://arizonadailyindependent.com/2025/12/21/arizona-startup-real-estate-directory-challenges-zillows-pay-to-play-model/",
         "https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/",
         "https://www.streetinsider.com/Pinion+Newswire/414+Arizona+Agents+Receive+an+Invitation+They+Didn%E2%80%99t+Apply+For.+The+Other+220%2C000+Cannot+Buy+Their+Way+In./25754981.html",
         "https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/"
