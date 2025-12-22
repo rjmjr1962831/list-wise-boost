@@ -101,14 +101,152 @@ interface ProcessingStats {
   errors: number;
 }
 
-// Process a single agent: search Rigelbytes, qualify, insert if good
+// Search for Zillow agent using Firecrawl search
+async function searchZillowAgent(
+  name: string,
+  city: string,
+  stateAbbr: string,
+  firecrawlApiKey: string
+): Promise<{ zillowUrl?: string; rating?: number; reviewCount?: number; agentData?: any } | null> {
+  const searchQuery = city 
+    ? `${name} Zillow real estate agent ${city} ${stateAbbr}`
+    : `${name} Zillow real estate agent ${stateAbbr}`;
+  
+  console.log(`[${name}] Firecrawl search: "${searchQuery}"`);
+
+  try {
+    const response = await fetch('https://api.firecrawl.dev/v1/search', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: searchQuery,
+        limit: 5,
+        scrapeOptions: {
+          formats: ['markdown'],
+        },
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[${name}] Firecrawl search failed:`, errorText);
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (!data.success || !data.data || data.data.length === 0) {
+      console.log(`[${name}] No search results`);
+      return null;
+    }
+
+    // Find Zillow profile URL from search results
+    let zillowUrl: string | undefined;
+    let zillowResult: any = null;
+
+    for (const result of data.data) {
+      const url = result.url || result.sourceUrl;
+      if (url && url.includes('zillow.com/profile/')) {
+        zillowUrl = url;
+        zillowResult = result;
+        break;
+      }
+    }
+
+    if (!zillowUrl) {
+      console.log(`[${name}] No Zillow profile in search results`);
+      return null;
+    }
+
+    console.log(`[${name}] Found Zillow URL: ${zillowUrl}`);
+
+    // Now scrape the Zillow profile page to get rating and review count
+    const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        url: zillowUrl,
+        formats: ['markdown'],
+        onlyMainContent: true,
+      }),
+    });
+
+    if (!scrapeResponse.ok) {
+      console.error(`[${name}] Firecrawl scrape failed`);
+      // Return what we have even if scrape fails
+      return { zillowUrl };
+    }
+
+    const scrapeData = await scrapeResponse.json();
+    const markdown = scrapeData.data?.markdown || scrapeData.markdown || '';
+
+    // Extract rating and review count from markdown
+    // Look for patterns like "4.9 (523 reviews)" or "4.9 stars" and "523 reviews"
+    let rating: number | undefined;
+    let reviewCount: number | undefined;
+
+    // Pattern 1: "X.X (NNN reviews)"
+    const ratingReviewMatch = markdown.match(/(\d+\.?\d*)\s*\((\d+)\s*reviews?\)/i);
+    if (ratingReviewMatch) {
+      rating = parseFloat(ratingReviewMatch[1]);
+      reviewCount = parseInt(ratingReviewMatch[2]);
+    }
+
+    // Pattern 2: "X.X stars" or "X.X rating"
+    if (!rating) {
+      const ratingMatch = markdown.match(/(\d+\.?\d*)\s*(?:stars?|rating)/i);
+      if (ratingMatch) {
+        rating = parseFloat(ratingMatch[1]);
+      }
+    }
+
+    // Pattern 3: "NNN reviews" or "NNN total reviews"
+    if (!reviewCount) {
+      const reviewMatch = markdown.match(/(\d+)\s*(?:total\s+)?reviews?/i);
+      if (reviewMatch) {
+        reviewCount = parseInt(reviewMatch[1]);
+      }
+    }
+
+    // Pattern 4: Look for star rating like "★★★★★" or "4.9/5"
+    if (!rating) {
+      const starMatch = markdown.match(/(\d+\.?\d*)\/5/);
+      if (starMatch) {
+        rating = parseFloat(starMatch[1]);
+      }
+    }
+
+    console.log(`[${name}] Scraped: rating=${rating || 'NA'}, reviews=${reviewCount || 'NA'}`);
+
+    return {
+      zillowUrl,
+      rating,
+      reviewCount,
+      agentData: {
+        markdown: markdown.slice(0, 2000), // Store first 2000 chars for reference
+        scrapeData: scrapeData.data || scrapeData,
+      },
+    };
+  } catch (error) {
+    console.error(`[${name}] Firecrawl error:`, error);
+    return null;
+  }
+}
+
+// Process a single agent: search Firecrawl, qualify, insert if good
 async function processAgent(
   agent: { name: string; license_number: string; city: string },
   state: string,
   stateAbbr: string,
   categoryId: string,
   supabase: any,
-  apifyToken: string
+  firecrawlApiKey: string
 ): Promise<AgentResult> {
   const { name, license_number, city } = agent;
   
@@ -125,60 +263,15 @@ async function processAgent(
       return { name, licenseNumber: license_number, city, status: 'duplicate' };
     }
 
-    // 2. Call Rigelbytes with single agent search
-    const actorId = 'rigelbytes~zillow-agents';
-    // Use city if available, otherwise just use state
-    const searchQuery = city ? `${name}, ${city}, ${stateAbbr}` : `${name}, ${stateAbbr}`;
-    
-    console.log(`[${name}] Searching Rigelbytes: "${searchQuery}"`);
-    
-    // Build ProxyScrape proxy URL in Apify-compatible format
-    // Apify requires: http[s]://[username[:password]]@hostname:port
-    const proxyScrapeKey = Deno.env.get('PROXYSCRAPE_API_KEY');
-    const proxyUrl = proxyScrapeKey 
-      ? `http://${proxyScrapeKey}:@proxy.proxyscrape.com:8080`
-      : null;
-    
-    const actorInput = {
-      search_keywords: [searchQuery],
-      max_agents: 1,
-      detailed_profiles: false, // We just need rating and review count
-      proxyConfiguration: proxyUrl ? {
-        useApifyProxy: false,
-        proxyUrls: [proxyUrl],
-      } : {
-        useApifyProxy: true,
-        apifyProxyGroups: ['RESIDENTIAL'],
-      },
-    };
+    // 2. Search for Zillow profile using Firecrawl
+    const searchResult = await searchZillowAgent(name, city, stateAbbr, firecrawlApiKey);
 
-    // Start the run and wait for it (should be ~30 seconds)
-    const runResponse = await fetch(
-      `https://api.apify.com/v2/acts/${actorId}/run-sync-get-dataset-items?token=${apifyToken}&timeout=60`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(actorInput),
-      }
-    );
-
-    if (!runResponse.ok) {
-      const errorText = await runResponse.text();
-      console.error(`[${name}] Rigelbytes failed:`, errorText);
-      return { name, licenseNumber: license_number, city, status: 'error', error: `API error: ${runResponse.status}` };
-    }
-
-    const agents = await runResponse.json();
-    
-    if (!agents || agents.length === 0) {
+    if (!searchResult || !searchResult.zillowUrl) {
       console.log(`[${name}] No Zillow profile found`);
       return { name, licenseNumber: license_number, city, status: 'no_result' };
     }
 
-    const zillowAgent = agents[0];
-    const rating = zillowAgent.rating || zillowAgent.review_stars_rating || 0;
-    const reviewCount = zillowAgent.num_total_reviews || zillowAgent.reviews_count || 0;
-    const zillowUrl = zillowAgent.profile_url || zillowAgent.zillow_profile_url || zillowAgent.profileLink;
+    const { zillowUrl, rating = 0, reviewCount = 0, agentData } = searchResult;
 
     console.log(`[${name}] Found: rating=${rating}, reviews=${reviewCount}`);
 
@@ -211,8 +304,7 @@ async function processAgent(
     }
 
     // 5. Get or create city record
-    // If no city in license data, try to extract from Zillow data or use a placeholder
-    const agentCity = city || zillowAgent.city || zillowAgent.location?.city || null;
+    const agentCity = city || null;
     
     let cityRecord = null;
     if (agentCity) {
@@ -282,7 +374,7 @@ async function processAgent(
     const { data: professional, error: insertError } = await supabase
       .from('professionals')
       .insert({
-        name: zillowAgent.name || name,
+        name: name,
         license_number: license_number,
         city_id: cityRecord.id,
         category_id: categoryId,
@@ -292,12 +384,7 @@ async function processAgent(
         zillow_profile_url: zillowUrl,
         review_stars_rating: rating,
         num_total_reviews: reviewCount,
-        company: zillowAgent.brokerage_name || zillowAgent.company || null,
-        image_url: zillowAgent.image_url || zillowAgent.photo_url || null,
-        phone: zillowAgent.phone || null,
-        email: zillowAgent.email || null,
-        address: zillowAgent.address || null,
-        raw_scraper_data: zillowAgent,
+        raw_scraper_data: agentData,
       })
       .select('id')
       .single();
@@ -313,7 +400,7 @@ async function processAgent(
       .insert({
         professional_id: professional.id,
         status: 'pending',
-        reason: 'New qualified agent from state pipeline',
+        reason: 'New qualified agent from state pipeline (Firecrawl)',
         stage: 'queued'
       });
 
@@ -351,21 +438,22 @@ serve(async (req) => {
       stateAbbr = 'CA', 
       startIndex = 0, 
       batchSize = 50,
-      concurrency = 5
+      concurrency = 3, // Lower concurrency for Firecrawl rate limits
+      maxAgents = 10000 // Max agents to process
     } = await req.json();
 
     console.log(`\n========================================`);
-    console.log(`Processing ${state} (${stateAbbr}) agents`);
-    console.log(`Start: ${startIndex}, Batch: ${batchSize}, Concurrency: ${concurrency}`);
+    console.log(`Processing ${state} (${stateAbbr}) agents via FIRECRAWL`);
+    console.log(`Start: ${startIndex}, Batch: ${batchSize}, Concurrency: ${concurrency}, Max: ${maxAgents}`);
     console.log(`========================================\n`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const apifyToken = Deno.env.get('APIFY_API_TOKEN');
-    if (!apifyToken) {
-      throw new Error('APIFY_API_TOKEN not configured');
+    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    if (!firecrawlApiKey) {
+      throw new Error('FIRECRAWL_API_KEY not configured');
     }
 
     // Get category ID
@@ -379,13 +467,17 @@ serve(async (req) => {
       throw new Error('Real estate agents category not found');
     }
 
-    // Get agents from state_licenses (include those without city)
+    // Calculate the end index based on maxAgents
+    const endIndex = Math.min(startIndex + batchSize, startIndex + maxAgents);
+    const actualBatchSize = endIndex - startIndex;
+
+    // Get agents from state_licenses
     const { data: licenses, error: licensesError } = await supabase
       .from('state_licenses')
       .select('name, license_number, city')
       .eq('state', stateAbbr)
       .order('name', { ascending: true })
-      .range(startIndex, startIndex + batchSize - 1);
+      .range(startIndex, startIndex + actualBatchSize - 1);
 
     if (licensesError) {
       throw new Error(`Failed to fetch licenses: ${licensesError.message}`);
@@ -425,7 +517,7 @@ serve(async (req) => {
         console.log(`\nProcessing batch ${Math.floor(i/concurrency) + 1}: agents ${i+1}-${Math.min(i+concurrency, licenses.length)} (index ${currentIndex})`);
 
         const batchResults = await Promise.all(
-          batch.map(agent => processAgent(agent, state, stateAbbr, category.id, supabase, apifyToken))
+          batch.map(agent => processAgent(agent, state, stateAbbr, category.id, supabase, firecrawlApiKey))
         );
 
         for (const result of batchResults) {
@@ -451,7 +543,12 @@ serve(async (req) => {
           }
         }
 
-        console.log(`Batch complete. Running totals: qualified=${stats.qualified}, not_qualified=${stats.notQualified}, duplicates=${stats.duplicates}`);
+        console.log(`Batch complete. Running totals: qualified=${stats.qualified}, not_qualified=${stats.notQualified}, duplicates=${stats.duplicates}, no_results=${stats.noResults}`);
+
+        // Add a small delay between batches to avoid rate limits
+        if (i + concurrency < licenses.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
     } catch (batchError) {
       // Send email on batch processing failure
@@ -476,16 +573,17 @@ serve(async (req) => {
 
     const nextIndex = startIndex + licenses.length;
     
-    // Check if there are more licenses
+    // Check if there are more licenses (up to maxAgents limit)
     const { count } = await supabase
       .from('state_licenses')
       .select('*', { count: 'exact', head: true })
       .eq('state', stateAbbr);
 
-    const hasMore = nextIndex < (count || 0);
+    const totalRemaining = (count || 0) - nextIndex;
+    const hasMore = nextIndex < Math.min(count || 0, startIndex + maxAgents);
 
     console.log(`\n========================================`);
-    console.log(`BATCH COMPLETE`);
+    console.log(`BATCH COMPLETE (Firecrawl)`);
     console.log(`Processed: ${stats.processed}`);
     console.log(`Qualified: ${stats.qualified}`);
     console.log(`Not Qualified: ${stats.notQualified}`);
@@ -493,6 +591,7 @@ serve(async (req) => {
     console.log(`No Results: ${stats.noResults}`);
     console.log(`Errors: ${stats.errors}`);
     console.log(`Next Index: ${hasMore ? nextIndex : 'COMPLETE'}`);
+    console.log(`Total Remaining in DB: ${totalRemaining}`);
     console.log(`========================================\n`);
 
     return new Response(
@@ -500,53 +599,21 @@ serve(async (req) => {
         state,
         stateAbbr,
         startIndex,
-        nextIndex: hasMore ? nextIndex : null,
-        totalInState: count,
-        hasMore,
+        processed: stats.processed,
         stats,
-        results: results.slice(0, 20), // Only return first 20 for response size
-        message: hasMore 
-          ? `Processed ${stats.processed}. ${stats.qualified} qualified. Continue at index ${nextIndex}.`
-          : `Batch complete! ${stats.qualified} agents qualified and queued for enrichment.`
+        nextIndex: hasMore ? nextIndex : null,
+        hasMore,
+        totalRemaining,
+        method: 'firecrawl'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('Error in process-state-licenses:', errorMessage);
-    
-    // Try to extract state info from the error context
-    // These might have been set before the error occurred
-    let state = 'Unknown';
-    let stateAbbr = 'XX';
-    let lastIndex = 0;
-    let stats: ProcessingStats = {
-      processed: 0,
-      qualified: 0,
-      notQualified: 0,
-      duplicates: 0,
-      noResults: 0,
-      errors: 1
-    };
-
-    try {
-      const body = await req.clone().json();
-      state = body.state || 'Unknown';
-      stateAbbr = body.stateAbbr || 'XX';
-      lastIndex = body.startIndex || 0;
-    } catch {
-      // Ignore parsing errors
-    }
-
-    // Send failure notification email
-    await sendPipelineFailureEmail(state, stateAbbr, lastIndex, errorMessage, stats);
-    
+    console.error('Pipeline error:', error);
     return new Response(
       JSON.stringify({ 
-        error: errorMessage,
-        emailSent: true,
-        restartIndex: lastIndex
+        error: error instanceof Error ? error.message : String(error) 
       }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
