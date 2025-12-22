@@ -254,11 +254,11 @@ serve(async (req) => {
       throw new Error('APIFY_API_TOKEN not configured');
     }
 
-    // Get category ID for realtors
+    // Get category ID for real estate agents
     const { data: category } = await supabase
       .from('categories')
       .select('id')
-      .eq('slug', 'realtors')
+      .eq('slug', 'top10realestateagents')
       .single();
 
     if (!category) {
