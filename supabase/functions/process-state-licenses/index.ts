@@ -132,11 +132,20 @@ async function processAgent(
     
     console.log(`[${name}] Searching Rigelbytes: "${searchQuery}"`);
     
+    // Build ProxyScrape proxy URL
+    const proxyScrapeKey = Deno.env.get('PROXYSCRAPE_API_KEY');
+    const proxyUrl = proxyScrapeKey 
+      ? `http://api.proxyscrape.com:8080?auth=${proxyScrapeKey}&country=us`
+      : null;
+    
     const actorInput = {
       search_keywords: [searchQuery],
       max_agents: 1,
       detailed_profiles: false, // We just need rating and review count
-      proxyConfiguration: {
+      proxyConfiguration: proxyUrl ? {
+        useApifyProxy: false,
+        proxyUrls: [proxyUrl],
+      } : {
         useApifyProxy: true,
         apifyProxyGroups: ['RESIDENTIAL'],
       },
