@@ -127,7 +127,8 @@ async function processAgent(
 
     // 2. Call Rigelbytes with single agent search
     const actorId = 'rigelbytes~zillow-agents';
-    const searchQuery = `${name}, ${city}, ${stateAbbr}`;
+    // Use city if available, otherwise just use state
+    const searchQuery = city ? `${name}, ${city}, ${stateAbbr}` : `${name}, ${stateAbbr}`;
     
     console.log(`[${name}] Searching Rigelbytes: "${searchQuery}"`);
     
@@ -200,32 +201,71 @@ async function processAgent(
     }
 
     // 5. Get or create city record
-    let { data: cityRecord } = await supabase
-      .from('cities')
-      .select('id')
-      .eq('name', city)
-      .eq('state', state)
-      .maybeSingle();
-
-    if (!cityRecord) {
-      const citySlug = city.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      const { data: newCity, error: cityError } = await supabase
+    // If no city in license data, try to extract from Zillow data or use a placeholder
+    const agentCity = city || zillowAgent.city || zillowAgent.location?.city || null;
+    
+    let cityRecord = null;
+    if (agentCity) {
+      const { data: existingCity } = await supabase
         .from('cities')
-        .insert({
-          name: city,
-          slug: citySlug,
-          state: state,
-          state_slug: state.toLowerCase().replace(/\s+/g, '-'),
-          active: true
-        })
         .select('id')
-        .single();
+        .eq('name', agentCity)
+        .eq('state', state)
+        .maybeSingle();
 
-      if (cityError) {
-        console.error(`[${name}] Failed to create city:`, cityError);
-        return { name, licenseNumber: license_number, city, status: 'error', error: `City creation failed` };
+      if (existingCity) {
+        cityRecord = existingCity;
+      } else {
+        const citySlug = agentCity.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        const { data: newCity, error: cityError } = await supabase
+          .from('cities')
+          .insert({
+            name: agentCity,
+            slug: citySlug,
+            state: state,
+            state_slug: state.toLowerCase().replace(/\s+/g, '-'),
+            active: true
+          })
+          .select('id')
+          .single();
+
+        if (cityError) {
+          console.error(`[${name}] Failed to create city:`, cityError);
+          return { name, licenseNumber: license_number, city: agentCity || 'Unknown', status: 'error', error: `City creation failed` };
+        }
+        cityRecord = newCity;
       }
-      cityRecord = newCity;
+    } else {
+      // No city available - try to get a default city for the state
+      const { data: defaultCity } = await supabase
+        .from('cities')
+        .select('id')
+        .eq('state', state)
+        .limit(1)
+        .maybeSingle();
+      
+      if (defaultCity) {
+        cityRecord = defaultCity;
+      } else {
+        // Create a generic city for the state
+        const { data: newCity, error: cityError } = await supabase
+          .from('cities')
+          .insert({
+            name: state,
+            slug: state.toLowerCase().replace(/\s+/g, '-'),
+            state: state,
+            state_slug: state.toLowerCase().replace(/\s+/g, '-'),
+            active: true
+          })
+          .select('id')
+          .single();
+
+        if (cityError) {
+          console.error(`[${name}] Failed to create default city:`, cityError);
+          return { name, licenseNumber: license_number, city: 'Unknown', status: 'error', error: `City creation failed` };
+        }
+        cityRecord = newCity;
+      }
     }
 
     // 6. Insert professional
@@ -329,13 +369,12 @@ serve(async (req) => {
       throw new Error('Real estate agents category not found');
     }
 
-    // Get agents from state_licenses
+    // Get agents from state_licenses (include those without city)
     const { data: licenses, error: licensesError } = await supabase
       .from('state_licenses')
       .select('name, license_number, city')
       .eq('state', stateAbbr)
-      .not('city', 'is', null)
-      .order('city', { ascending: true })
+      .order('name', { ascending: true })
       .range(startIndex, startIndex + batchSize - 1);
 
     if (licensesError) {
@@ -431,8 +470,7 @@ serve(async (req) => {
     const { count } = await supabase
       .from('state_licenses')
       .select('*', { count: 'exact', head: true })
-      .eq('state', stateAbbr)
-      .not('city', 'is', null);
+      .eq('state', stateAbbr);
 
     const hasMore = nextIndex < (count || 0);
 
