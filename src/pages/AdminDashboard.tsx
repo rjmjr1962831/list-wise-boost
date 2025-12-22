@@ -37,6 +37,7 @@ import { FunnelAnalyticsDashboard } from '@/components/admin/FunnelAnalyticsDash
 import { BulkCityContentGenerator } from '@/components/admin/BulkCityContentGenerator';
 import { FieldChangeRequestsManager } from '@/components/admin/FieldChangeRequestsManager';
 import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
+import { StatePipelineRunner } from '@/components/admin/StatePipelineRunner';
 import { FileEdit, Upload } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -348,6 +349,7 @@ const AdminDashboard = () => {
 
           <TabsContent value="license-import" className="space-y-4">
             <StateLicenseImporter />
+            <StatePipelineRunner />
           </TabsContent>
         </Tabs>
       </div>
