@@ -339,3 +339,6 @@ verify_jwt = false
 
 [functions.poll-apify-runs]
 verify_jwt = false
+
+[functions.process-state-licenses]
+verify_jwt = false

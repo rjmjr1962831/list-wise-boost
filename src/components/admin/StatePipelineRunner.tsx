@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Play, Loader2, MapPin, Users, Clock, RefreshCw, CheckCircle } from "lucide-react";
+import { Play, Loader2, MapPin, Users, Clock, CheckCircle, XCircle, AlertCircle, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const STATES = [
@@ -20,70 +20,77 @@ const STATES = [
   { code: "AZ", name: "Arizona", full: "Arizona" },
 ];
 
-interface RunResult {
+interface AgentResult {
+  name: string;
+  licenseNumber: string;
   city: string;
-  runId?: string;
+  status: 'qualified' | 'not_qualified' | 'duplicate' | 'error' | 'no_result';
+  zillowUrl?: string;
+  rating?: number;
+  reviewCount?: number;
   error?: string;
+}
+
+interface ProcessingStats {
+  processed: number;
+  qualified: number;
+  notQualified: number;
+  duplicates: number;
+  noResults: number;
+  errors: number;
 }
 
 interface PipelineResult {
   state: string;
   stateAbbr: string;
-  citiesProcessed: number;
-  totalCities: number;
   startIndex: number;
   nextIndex: number | null;
-  runsStarted: number;
-  runsFailed: number;
+  totalInState: number;
+  hasMore: boolean;
+  stats: ProcessingStats;
+  results: AgentResult[];
   message: string;
-  runs: RunResult[];
-  errors: RunResult[];
-}
-
-interface PollResult {
-  polled: number;
-  completed: number;
-  stillRunning: number;
-  failed: number;
-  totalImported: number;
-  results: Array<{
-    city: string;
-    status: string;
-    imported?: number;
-    skipped?: number;
-    error?: string;
-  }>;
 }
 
 export function StatePipelineRunner() {
   const [selectedState, setSelectedState] = useState<string>("");
   const [startIndex, setStartIndex] = useState<number>(0);
-  const [maxCities, setMaxCities] = useState<number>(10);
+  const [batchSize, setBatchSize] = useState<number>(50);
+  const [concurrency, setConcurrency] = useState<number>(5);
   const [running, setRunning] = useState(false);
-  const [polling, setPolling] = useState(false);
   const [result, setResult] = useState<PipelineResult | null>(null);
-  const [pollResult, setPollResult] = useState<PollResult | null>(null);
   const [logs, setLogs] = useState<string[]>([]);
-  const [runningJobsCount, setRunningJobsCount] = useState<number>(0);
+  const [totalStats, setTotalStats] = useState<ProcessingStats>({
+    processed: 0,
+    qualified: 0,
+    notQualified: 0,
+    duplicates: 0,
+    noResults: 0,
+    errors: 0
+  });
+  const [licenseCounts, setLicenseCounts] = useState<Record<string, number>>({});
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
     setLogs(prev => [...prev, `[${timestamp}] ${message}`]);
   };
 
-  // Check for running jobs on mount
+  // Fetch license counts for each state on mount
   useEffect(() => {
-    checkRunningJobs();
+    fetchLicenseCounts();
   }, []);
 
-  const checkRunningJobs = async () => {
-    const { data, error } = await supabase
-      .from('scrape_jobs')
-      .select('id')
-      .eq('status', 'running');
-    
-    if (!error && data) {
-      setRunningJobsCount(data.length);
+  const fetchLicenseCounts = async () => {
+    for (const state of STATES) {
+      const { count } = await supabase
+        .from('state_licenses')
+        .select('*', { count: 'exact', head: true })
+        .eq('state', state.code)
+        .not('city', 'is', null);
+      
+      if (count !== null) {
+        setLicenseCounts(prev => ({ ...prev, [state.code]: count }));
+      }
     }
   };
 
@@ -98,19 +105,20 @@ export function StatePipelineRunner() {
 
     setRunning(true);
     setResult(null);
-    setPollResult(null);
-    setLogs([]);
 
-    addLog(`🚀 Starting pipeline for ${state.full}`);
-    addLog(`📍 Kicking off Apify runs for cities ${startIndex + 1} to ${startIndex + maxCities}`);
+    addLog(`🚀 Starting sequential pipeline for ${state.full}`);
+    addLog(`📍 Processing agents ${startIndex + 1} to ${startIndex + batchSize}`);
+    addLog(`⚙️ Concurrency: ${concurrency} agents at a time`);
+    addLog(`⏳ Each agent takes ~30-60 seconds (Rigelbytes search)`);
 
     try {
-      const { data, error } = await supabase.functions.invoke('run-state-pipeline', {
+      const { data, error } = await supabase.functions.invoke('process-state-licenses', {
         body: {
           state: state.full,
           stateAbbr: state.code,
           startIndex,
-          maxCities
+          batchSize,
+          concurrency
         }
       });
 
@@ -120,25 +128,34 @@ export function StatePipelineRunner() {
         return;
       }
 
-      setResult(data as PipelineResult);
-      addLog(`✅ Kicked off ${data.runsStarted} Apify runs`);
+      const pipelineResult = data as PipelineResult;
+      setResult(pipelineResult);
       
-      if (data.runsFailed > 0) {
-        addLog(`⚠️ Failed to start ${data.runsFailed} runs`);
-      }
+      // Update total stats
+      setTotalStats(prev => ({
+        processed: prev.processed + pipelineResult.stats.processed,
+        qualified: prev.qualified + pipelineResult.stats.qualified,
+        notQualified: prev.notQualified + pipelineResult.stats.notQualified,
+        duplicates: prev.duplicates + pipelineResult.stats.duplicates,
+        noResults: prev.noResults + pipelineResult.stats.noResults,
+        errors: prev.errors + pipelineResult.stats.errors
+      }));
+
+      addLog(`✅ Batch complete: ${pipelineResult.stats.processed} processed`);
+      addLog(`   📊 Qualified: ${pipelineResult.stats.qualified}`);
+      addLog(`   ⏭️ Not Qualified: ${pipelineResult.stats.notQualified}`);
+      addLog(`   🔄 Duplicates: ${pipelineResult.stats.duplicates}`);
+      addLog(`   🔍 No Zillow: ${pipelineResult.stats.noResults}`);
       
-      if (data.nextIndex) {
-        addLog(`➡️ Next batch starts at index ${data.nextIndex}`);
-        setStartIndex(data.nextIndex);
+      if (pipelineResult.hasMore && pipelineResult.nextIndex) {
+        addLog(`➡️ Continue at index ${pipelineResult.nextIndex}`);
+        setStartIndex(pipelineResult.nextIndex);
+        toast.success(`${pipelineResult.stats.qualified} qualified! Continue at index ${pipelineResult.nextIndex}`);
       } else {
-        addLog(`🎉 All cities in ${state.full} have been queued!`);
+        addLog(`🎉 All agents in ${state.full} have been processed!`);
+        toast.success(`Complete! ${pipelineResult.stats.qualified} agents qualified total.`);
       }
 
-      addLog(`⏳ Use "Poll Status" to check progress and import results`);
-      toast.success(`Started ${data.runsStarted} Apify runs. Poll to check status.`);
-      
-      // Update running jobs count
-      setRunningJobsCount(prev => prev + data.runsStarted);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       addLog(`❌ Error: ${message}`);
@@ -148,43 +165,51 @@ export function StatePipelineRunner() {
     }
   };
 
-  const pollStatus = async () => {
-    setPolling(true);
-    addLog(`🔄 Polling for completed Apify runs...`);
+  const resetStats = () => {
+    setTotalStats({
+      processed: 0,
+      qualified: 0,
+      notQualified: 0,
+      duplicates: 0,
+      noResults: 0,
+      errors: 0
+    });
+    setLogs([]);
+    setResult(null);
+    setStartIndex(0);
+  };
 
-    try {
-      const { data, error } = await supabase.functions.invoke('poll-apify-runs', {
-        body: {}
-      });
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'qualified':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'not_qualified':
+        return <XCircle className="h-4 w-4 text-orange-500" />;
+      case 'duplicate':
+        return <AlertCircle className="h-4 w-4 text-blue-500" />;
+      case 'no_result':
+        return <Search className="h-4 w-4 text-gray-500" />;
+      case 'error':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return null;
+    }
+  };
 
-      if (error) {
-        addLog(`❌ Poll error: ${error.message}`);
-        toast.error(`Poll failed: ${error.message}`);
-        return;
-      }
-
-      setPollResult(data as PollResult);
-      addLog(`📊 Polled ${data.polled} jobs: ${data.completed} completed, ${data.stillRunning} running`);
-      
-      if (data.totalImported > 0) {
-        addLog(`✅ Imported ${data.totalImported} agents and queued for enrichment`);
-        toast.success(`Imported ${data.totalImported} agents!`);
-      }
-      
-      if (data.stillRunning > 0) {
-        addLog(`⏳ ${data.stillRunning} jobs still running. Poll again in a few minutes.`);
-      } else if (data.polled > 0) {
-        addLog(`🎉 All polled jobs complete!`);
-      }
-
-      // Update running jobs count
-      setRunningJobsCount(data.stillRunning);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      addLog(`❌ Poll error: ${message}`);
-      toast.error(`Poll failed: ${message}`);
-    } finally {
-      setPolling(false);
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'qualified':
+        return <Badge className="bg-green-100 text-green-800">Qualified</Badge>;
+      case 'not_qualified':
+        return <Badge className="bg-orange-100 text-orange-800">Low Rating</Badge>;
+      case 'duplicate':
+        return <Badge className="bg-blue-100 text-blue-800">Duplicate</Badge>;
+      case 'no_result':
+        return <Badge variant="outline">No Zillow</Badge>;
+      case 'error':
+        return <Badge variant="destructive">Error</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -193,24 +218,26 @@ export function StatePipelineRunner() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-5 w-5" />
-          State Pipeline Runner
+          State License Pipeline
         </CardTitle>
         <CardDescription>
-          Kick off Rigelbytes scrapes for cities in a state. Jobs run in background - poll to check status and import results.
+          Process agents one-by-one from state_licenses. Each agent is searched on Zillow via Rigelbytes.
+          Agents with 4.5+ stars and 50+ reviews are qualified and queued for full enrichment.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-5">
+        {/* Controls */}
+        <div className="grid gap-4 md:grid-cols-6">
           <div>
-            <Label className="mb-2 block">Select State</Label>
+            <Label className="mb-2 block">State</Label>
             <Select value={selectedState} onValueChange={setSelectedState}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose state..." />
+                <SelectValue placeholder="Choose..." />
               </SelectTrigger>
               <SelectContent>
                 {STATES.map((state) => (
                   <SelectItem key={state.code} value={state.code}>
-                    {state.name}
+                    {state.name} ({licenseCounts[state.code]?.toLocaleString() || '...'})
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -228,13 +255,24 @@ export function StatePipelineRunner() {
           </div>
 
           <div>
-            <Label className="mb-2 block">Cities per Batch</Label>
+            <Label className="mb-2 block">Batch Size</Label>
             <Input 
               type="number" 
-              value={maxCities} 
-              onChange={(e) => setMaxCities(parseInt(e.target.value) || 10)}
+              value={batchSize} 
+              onChange={(e) => setBatchSize(parseInt(e.target.value) || 50)}
               min={1}
-              max={50}
+              max={100}
+            />
+          </div>
+
+          <div>
+            <Label className="mb-2 block">Concurrency</Label>
+            <Input 
+              type="number" 
+              value={concurrency} 
+              onChange={(e) => setConcurrency(parseInt(e.target.value) || 5)}
+              min={1}
+              max={10}
             />
           </div>
 
@@ -247,12 +285,12 @@ export function StatePipelineRunner() {
               {running ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Starting...
+                  Processing...
                 </>
               ) : (
                 <>
                   <Play className="h-4 w-4 mr-2" />
-                  Start Runs
+                  Run Batch
                 </>
               )}
             </Button>
@@ -260,116 +298,85 @@ export function StatePipelineRunner() {
 
           <div className="flex items-end">
             <Button 
-              onClick={pollStatus} 
-              disabled={polling}
-              variant="secondary"
+              onClick={resetStats} 
+              variant="outline"
               className="w-full"
+              disabled={running}
             >
-              {polling ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Polling...
-                </>
-              ) : (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Poll Status
-                </>
-              )}
+              Reset
             </Button>
           </div>
         </div>
 
-        {/* Status Badges */}
+        {/* Info Badges */}
         <div className="flex gap-2 flex-wrap">
           <Badge variant="outline" className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            Jobs run in background
+            <Clock className="h-3 w-3" />
+            ~30-60s per agent
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            ~5-10 min per city
+            <Users className="h-3 w-3" />
+            {concurrency} concurrent searches
           </Badge>
-          {runningJobsCount > 0 && (
-            <Badge variant="default" className="flex items-center gap-1 bg-blue-600">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              {runningJobsCount} running
-            </Badge>
-          )}
+          <Badge variant="outline">
+            Qualification: 4.5★ + 50 reviews
+          </Badge>
         </div>
 
-        {/* Start Results Summary */}
-        {result && (
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card className="bg-blue-50 dark:bg-blue-950">
+        {/* Running Total Stats */}
+        {totalStats.processed > 0 && (
+          <div className="grid gap-4 md:grid-cols-6">
+            <Card className="bg-muted/50">
               <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-blue-600">{result.citiesProcessed}</div>
-                <div className="text-sm text-muted-foreground">Cities Queued</div>
+                <div className="text-2xl font-bold">{totalStats.processed}</div>
+                <div className="text-sm text-muted-foreground">Processed</div>
               </CardContent>
             </Card>
             <Card className="bg-green-50 dark:bg-green-950">
               <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-green-600">{result.runsStarted}</div>
-                <div className="text-sm text-muted-foreground">Runs Started</div>
+                <div className="text-2xl font-bold text-green-600">{totalStats.qualified}</div>
+                <div className="text-sm text-muted-foreground">Qualified</div>
               </CardContent>
             </Card>
             <Card className="bg-orange-50 dark:bg-orange-950">
               <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-orange-600">{result.runsFailed}</div>
-                <div className="text-sm text-muted-foreground">Failed to Start</div>
-              </CardContent>
-            </Card>
-            <Card className="bg-purple-50 dark:bg-purple-950">
-              <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-purple-600">{result.totalCities}</div>
-                <div className="text-sm text-muted-foreground">Total Cities in State</div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {/* Poll Results Summary */}
-        {pollResult && (
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card className="bg-green-50 dark:bg-green-950">
-              <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-green-600">{pollResult.completed}</div>
-                <div className="text-sm text-muted-foreground">Completed</div>
+                <div className="text-2xl font-bold text-orange-600">{totalStats.notQualified}</div>
+                <div className="text-sm text-muted-foreground">Low Rating</div>
               </CardContent>
             </Card>
             <Card className="bg-blue-50 dark:bg-blue-950">
               <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-blue-600">{pollResult.stillRunning}</div>
-                <div className="text-sm text-muted-foreground">Still Running</div>
+                <div className="text-2xl font-bold text-blue-600">{totalStats.duplicates}</div>
+                <div className="text-sm text-muted-foreground">Duplicates</div>
               </CardContent>
             </Card>
-            <Card className="bg-purple-50 dark:bg-purple-950">
+            <Card className="bg-gray-50 dark:bg-gray-900">
               <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-purple-600">{pollResult.totalImported}</div>
-                <div className="text-sm text-muted-foreground">Agents Imported</div>
+                <div className="text-2xl font-bold text-gray-600">{totalStats.noResults}</div>
+                <div className="text-sm text-muted-foreground">No Zillow</div>
               </CardContent>
             </Card>
             <Card className="bg-red-50 dark:bg-red-950">
               <CardContent className="pt-4">
-                <div className="text-2xl font-bold text-red-600">{pollResult.failed}</div>
-                <div className="text-sm text-muted-foreground">Failed</div>
+                <div className="text-2xl font-bold text-red-600">{totalStats.errors}</div>
+                <div className="text-sm text-muted-foreground">Errors</div>
               </CardContent>
             </Card>
           </div>
         )}
 
         {/* Progress */}
-        {result && result.nextIndex && (
+        {result && selectedState && (
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Overall Progress</span>
-              <span>{result.citiesProcessed + result.startIndex} / {result.totalCities} cities queued</span>
+              <span>Progress in {STATES.find(s => s.code === selectedState)?.name}</span>
+              <span>{result.nextIndex || result.startIndex + result.stats.processed} / {result.totalInState}</span>
             </div>
-            <Progress value={(result.citiesProcessed + result.startIndex) / result.totalCities * 100} />
+            <Progress value={((result.nextIndex || result.startIndex + result.stats.processed) / result.totalInState) * 100} />
           </div>
         )}
 
-        {/* Logs */}
+        {/* Activity Log */}
         {logs.length > 0 && (
           <div>
             <Label className="mb-2 block">Activity Log</Label>
@@ -383,66 +390,42 @@ export function StatePipelineRunner() {
           </div>
         )}
 
-        {/* Poll Results Details */}
-        {pollResult && pollResult.results.length > 0 && (
+        {/* Recent Results */}
+        {result && result.results.length > 0 && (
           <div>
-            <Label className="mb-2 block">Poll Results</Label>
+            <Label className="mb-2 block">Recent Results ({result.results.length} shown)</Label>
             <ScrollArea className="h-64 border rounded-md">
               <table className="w-full text-sm">
                 <thead className="bg-muted sticky top-0">
                   <tr>
+                    <th className="text-left p-2">Agent</th>
                     <th className="text-left p-2">City</th>
                     <th className="text-center p-2">Status</th>
-                    <th className="text-right p-2">Imported</th>
-                    <th className="text-right p-2">Skipped</th>
-                    <th className="text-left p-2">Notes</th>
+                    <th className="text-right p-2">Rating</th>
+                    <th className="text-right p-2">Reviews</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {pollResult.results.map((r, i) => (
+                  {result.results.map((r, i) => (
                     <tr key={i} className="border-t">
-                      <td className="p-2">{r.city}</td>
-                      <td className="text-center p-2">
-                        {r.status === 'completed' ? (
-                          <Badge className="bg-green-100 text-green-800">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Done
-                          </Badge>
-                        ) : r.status === 'running' ? (
-                          <Badge variant="outline" className="text-blue-600">
-                            <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                            Running
-                          </Badge>
-                        ) : (
-                          <Badge variant="destructive">{r.status}</Badge>
-                        )}
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(r.status)}
+                          <span className="truncate max-w-[200px]">{r.name}</span>
+                        </div>
                       </td>
-                      <td className="text-right p-2">{r.imported || '-'}</td>
-                      <td className="text-right p-2">{r.skipped || '-'}</td>
-                      <td className="p-2 text-xs text-muted-foreground">
-                        {r.error?.substring(0, 40)}
+                      <td className="p-2 text-muted-foreground">{r.city}</td>
+                      <td className="text-center p-2">{getStatusBadge(r.status)}</td>
+                      <td className="text-right p-2">
+                        {r.rating ? `${r.rating.toFixed(1)}★` : '-'}
+                      </td>
+                      <td className="text-right p-2">
+                        {r.reviewCount || '-'}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </ScrollArea>
-          </div>
-        )}
-
-        {/* Kicked off runs */}
-        {result && result.runs.length > 0 && (
-          <div>
-            <Label className="mb-2 block">Started Runs ({result.runs.length})</Label>
-            <ScrollArea className="h-40 border rounded-md p-3 bg-muted/50">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
-                {result.runs.map((r, i) => (
-                  <div key={i} className="flex items-center gap-1">
-                    <CheckCircle className="h-3 w-3 text-green-500" />
-                    {r.city}
-                  </div>
-                ))}
-              </div>
             </ScrollArea>
           </div>
         )}
