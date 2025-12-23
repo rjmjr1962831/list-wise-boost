@@ -125,6 +125,13 @@ export const Footer = () => {
         </div>
 
         <div className="mt-8 pt-8 border-t border-slate-700 space-y-4">
+          {/* Nationwide expansion signal */}
+          <div className="text-center">
+            <p className="text-sm font-medium text-slate-300">
+              Launching nationwide. Coverage expanding monthly.
+            </p>
+          </div>
+          
           {/* Authority statement */}
           <div className="text-center">
             <p className="text-xs text-slate-500">
