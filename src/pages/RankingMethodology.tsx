@@ -13,6 +13,7 @@ import {
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { useEffect } from "react";
 import { CheckCircle2, Scale, TrendingUp, Award, Clock, AlertCircle, HelpCircle, Users } from "lucide-react";
+import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
 
 const RankingMethodology = () => {
   const { trackEvent } = useGA4Tracking();
@@ -278,6 +279,11 @@ const RankingMethodology = () => {
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Our ranking methodology uses multi-source verified data and rigorous selection criteria to identify Arizona's elite real estate agents.
             </p>
+          </div>
+          
+          {/* Citation Authority Block */}
+          <div className="max-w-4xl mx-auto mt-8">
+            <CitationAuthorityBlock />
           </div>
         </section>
 

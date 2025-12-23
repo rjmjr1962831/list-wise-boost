@@ -25,6 +25,7 @@ import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/dat
 import { CityMarketOverview } from '@/components/CityMarketOverview';
 import { DatasetSchema } from '@/components/seo/DatasetSchema';
 import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchema';
+import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
 import { Info } from 'lucide-react';
 
 interface City {
@@ -1244,6 +1245,19 @@ export default function DynamicCategoryList() {
           </h1>
           <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
             Invitation-only directory with multi-source verified rankings
+          </p>
+          
+          {/* Citation Authority Block */}
+          <div className="max-w-4xl mx-auto mt-6">
+            <CitationAuthorityBlock />
+          </div>
+          
+          {/* Methodology Snapshot */}
+          <p className="text-sm text-muted-foreground text-center mt-4 max-w-2xl mx-auto">
+            Agents listed below hold active Arizona licenses, have verified transaction history in {city.name}, and meet minimum review thresholds. Rankings are editorial — agents cannot pay for position or inclusion.{" "}
+            <Link to="/about/ranking-methodology" className="text-primary hover:underline">
+              Full methodology →
+            </Link>
           </p>
         </div>
       </div>
