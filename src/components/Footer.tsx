@@ -85,6 +85,12 @@ export const Footer = () => {
                 FAQ
               </Link>
               <Link 
+                to="/editorial-updates" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Updates
+              </Link>
+              <Link 
                 to="/transparency" 
                 className="block text-slate-300 hover:text-white transition-colors"
               >
@@ -119,14 +125,17 @@ export const Footer = () => {
         </div>
 
         <div className="mt-8 pt-8 border-t border-slate-700 space-y-4">
-          {/* Merit-based rankings link */}
+          {/* Authority statement */}
           <div className="text-center">
-            <Link 
-              to="/about/ranking-methodology" 
-              className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
-            >
-              Rankings are merit-based. How we select agents →
-            </Link>
+            <p className="text-xs text-slate-500">
+              Rankings are independently curated and non-pay-to-play.{" "}
+              <Link 
+                to="/about/ranking-methodology" 
+                className="hover:text-slate-300 transition-colors underline"
+              >
+                How we rank agents →
+              </Link>
+            </p>
           </div>
 
           {/* Subtle Agent Note */}

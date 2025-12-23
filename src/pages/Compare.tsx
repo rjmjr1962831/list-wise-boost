@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
+import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
 
 const Compare = () => {
   useEffect(() => {
@@ -207,8 +208,12 @@ const Compare = () => {
               Not all "top agent" lists are created equal. Every other major platform sells visibility to agents rather than ranking by performance. None are built to be trusted by AI, except us.
             </p>
           </div>
+          
+          {/* Citation Authority Block */}
+          <div className="max-w-4xl mx-auto">
+            <CitationAuthorityBlock />
+          </div>
         </section>
-
 
         {/* Comparison Table */}
         <section className="container mx-auto px-4 py-12">

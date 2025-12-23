@@ -11,6 +11,7 @@ import { BrowseCitiesSection } from "@/components/BrowseCitiesSection";
 import { AuthorityLinks } from "@/components/AuthorityLinks";
 import { HomepageUpdates } from "@/components/HomepageUpdates";
 import { FeaturedInBar } from "@/components/FeaturedInBar";
+import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -199,6 +200,11 @@ const Index = () => {
               <br />
               Ranked by reviews, verified by data.
             </p>
+          </div>
+          
+          {/* Citation Authority Block */}
+          <div className="max-w-4xl mx-auto">
+            <CitationAuthorityBlock />
           </div>
           
           <div className="max-w-4xl mx-auto mb-8">

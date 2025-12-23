@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
 import { HelpCircle } from "lucide-react";
 
 const faqItems = [
@@ -104,6 +105,13 @@ const FAQ = () => {
             </p>
           </div>
         </section>
+
+        {/* Citation Authority Block */}
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto">
+            <CitationAuthorityBlock />
+          </div>
+        </div>
 
         {/* FAQ List */}
         <section className="container mx-auto px-4 py-16">
