@@ -79,7 +79,7 @@ const Founder = () => {
           </p>
 
           <p>
-            Over his career, Maynard's companies have returned more than <strong>$7 billion in value to investors</strong>, created over 2,000 jobs, and generated more than $10 billion in goods and services sold to American consumers and businesses.
+            Over his career, Maynard's companies have returned more than <strong>$4 billion in value to investors</strong>, created over 2,000 jobs, and generated more than $10 billion in goods and services sold to American consumers and businesses.
           </p>
 
           <h2 className="mt-8">Military Service</h2>
