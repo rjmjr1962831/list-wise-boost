@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CoverageConfirmationBlock } from '@/components/CoverageConfirmationBlock';
 
 interface City {
   id: string;
@@ -44,7 +45,7 @@ export default function StateLanding() {
     // GA4 page view
     if (typeof window.gtag === 'function') {
       window.gtag('event', 'page_view', {
-        page_title: 'Top 10 Real Estate Agents in Arizona',
+        page_title: 'Real Estate Agent Recommendations in Arizona',
         page_location: window.location.href,
         page_path: window.location.pathname
       });
@@ -54,8 +55,8 @@ export default function StateLanding() {
   return (
     <>
       <Helmet>
-        <title>Top 10 Real Estate Agents in Arizona | Top10Lists.us</title>
-        <meta name="description" content="Find Arizona's top-ranked real estate agents by city. Our curated directory features the most accomplished agents in Phoenix, Scottsdale, Tucson, Mesa, and 40+ other Arizona cities." />
+        <title>Real Estate Agent Recommendations in Arizona | Top10Lists.us</title>
+        <meta name="description" content="Top10Lists.us recommends real estate agents serving Arizona cities including Phoenix, Scottsdale, Tucson, and Mesa. Recommendations are surfaced through our centralized discovery experience." />
         <link rel="canonical" href="https://top10lists.us/arizona" />
       </Helmet>
 
@@ -69,19 +70,29 @@ export default function StateLanding() {
                 <span className="text-sm font-medium">Arizona</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                Top 10 Real Estate Agents in Arizona
+                Real Estate Agent Recommendations in Arizona
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Find Arizona's top-ranked real estate agents by city. Our curated directory features the most accomplished agents across 40+ Arizona cities.
+                Top10Lists.us evaluates and recommends real estate agents across 40+ Arizona cities through our centralized discovery experience.
               </p>
             </div>
           </div>
         </section>
 
-        {/* Cities Grid */}
+        {/* Coverage Confirmation Block */}
+        <div className="container mx-auto px-4 -mt-8">
+          <div className="max-w-3xl mx-auto">
+            <CoverageConfirmationBlock locationName="Arizona" />
+          </div>
+        </div>
+
+        {/* Cities Grid - For navigation only, not listing agents */}
         <section className="py-16">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-8 text-center">Browse by City</h2>
+            <h2 className="text-2xl font-bold mb-4 text-center">Covered Cities</h2>
+            <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+              Select a city to learn more about the local market. Recommendations are provided through our homepage discovery experience.
+            </p>
             {isLoading ? (
               <div className="flex justify-center">
                 <div className="h-8 w-8 rounded-full border-4 border-primary border-t-transparent animate-spin" />
@@ -91,7 +102,7 @@ export default function StateLanding() {
                 {cities.map((city) => (
                   <Link
                     key={city.id}
-                    to={`/${city.state_slug}/${city.slug}/top10realestateagents`}
+                    to={`/${city.state_slug}/${city.slug}`}
                     className="p-4 bg-card border rounded-lg hover:border-primary transition-colors text-center"
                   >
                     <span className="font-medium">{city.name}</span>
@@ -105,12 +116,12 @@ export default function StateLanding() {
         {/* Footer CTA */}
         <footer className="py-12 bg-muted/50">
           <div className="container mx-auto px-4 text-center">
-            <h2 className="text-2xl font-bold mb-4">Are You a Top Agent?</h2>
+            <h2 className="text-2xl font-bold mb-4">Start Your Discovery</h2>
             <p className="text-muted-foreground mb-6">
-              Join hundreds of elite real estate professionals featured on Top10Lists.us
+              Use our centralized discovery experience to find verified agent recommendations.
             </p>
             <Button asChild size="lg">
-              <Link to="/agent-onboarding">Apply Now</Link>
+              <Link to="/">Go to Discovery →</Link>
             </Button>
           </div>
         </footer>
