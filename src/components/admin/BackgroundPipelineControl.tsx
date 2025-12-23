@@ -49,38 +49,51 @@ export function BackgroundPipelineControl() {
   const [batchSize, setBatchSize] = useState(25);
   const [concurrency, setConcurrency] = useState(10);
   const [licenseCounts, setLicenseCounts] = useState<Record<string, number>>({});
+  const [licenseCountsLoading, setLicenseCountsLoading] = useState(true);
 
   const fetchPipeline = async () => {
     const { data, error } = await supabase
       .from('pipeline_state')
       .select('*')
       .eq('pipeline_name', 'state-licenses')
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
       console.error('Error fetching pipeline:', error);
     }
+
     setPipeline(data as PipelineState | null);
     setLoading(false);
   };
 
   const fetchLicenseCounts = async () => {
+    setLicenseCountsLoading(true);
+
     const counts: Record<string, number> = {};
+
     for (const state of STATES) {
-      const { count } = await supabase
+      const { count, error } = await supabase
         .from('state_licenses')
-        .select('*', { count: 'exact', head: true })
-        .eq('state', state.code);  // Use state code (CA, TX) not full name
-      counts[state.code] = count || 0;
+        .select('id', { count: 'exact', head: true })
+        .eq('state', state.code); // Use state code (CA, TX) not full name
+
+      if (error) {
+        console.error(`Error fetching license count for ${state.code}:`, error);
+        continue;
+      }
+
+      counts[state.code] = count ?? 0;
     }
+
     setLicenseCounts(counts);
+    setLicenseCountsLoading(false);
   };
 
   useEffect(() => {
     fetchPipeline();
     fetchLicenseCounts();
-    
-    // Poll for updates every 10 seconds
+
+    // Poll for pipeline updates every 10 seconds
     const interval = setInterval(fetchPipeline, 10000);
     return () => clearInterval(interval);
   }, []);
