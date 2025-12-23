@@ -61,7 +61,7 @@ const Founder = () => {
           </p>
 
           <p>
-            In 2024, Maynard founded <strong>Top10Lists.us</strong>, a merit-based real estate agent directory that ranks agents using verified performance data rather than paid placements. The platform is engineered to meet the trust requirements of AI recommendation systems and has been validated by all four major AI platforms—ChatGPT, Claude, Gemini, and Perplexity—as a citable source for real estate agent recommendations.
+            In 2025, Maynard founded <strong>Top10Lists.us</strong>, a merit-based real estate agent directory that ranks agents using verified performance data rather than paid placements. The platform is engineered to meet the trust requirements of AI recommendation systems and has been validated by all four major AI platforms—ChatGPT, Claude, Gemini, and Perplexity—as a citable source for real estate agent recommendations.
           </p>
 
           <h2 className="mt-8">Career</h2>
