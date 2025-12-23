@@ -348,3 +348,6 @@ verify_jwt = false
 
 [functions.run-state-pipeline-cron]
 verify_jwt = false
+
+[functions.import-ca-licenses]
+verify_jwt = false

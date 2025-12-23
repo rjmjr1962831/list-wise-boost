@@ -39,6 +39,7 @@ import { FieldChangeRequestsManager } from '@/components/admin/FieldChangeReques
 import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
 import { StatePipelineRunner } from '@/components/admin/StatePipelineRunner';
 import { BackgroundPipelineControl } from '@/components/admin/BackgroundPipelineControl';
+import { ImportCALicenses } from '@/components/admin/ImportCALicenses';
 import { FileEdit, Upload } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -350,6 +351,7 @@ const AdminDashboard = () => {
 
           <TabsContent value="license-import" className="space-y-4">
             <BackgroundPipelineControl />
+            <ImportCALicenses />
             <StateLicenseImporter />
             <StatePipelineRunner />
           </TabsContent>
