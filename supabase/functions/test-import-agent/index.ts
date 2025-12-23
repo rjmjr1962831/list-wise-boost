@@ -299,12 +299,17 @@ serve(async (req) => {
 
     // Step 8: Trigger synthesis for qualified agents
     if (isQualified) {
-      console.log(`🧠 Triggering web search and synthesis...`);
+      console.log(`🧠 Triggering web search and synthesis for ${extractedData.name}...`);
       
       const { error: synthesisError } = await supabase.functions.invoke('search-agent-press-claude', {
         body: { 
+          agentName: extractedData.name,
+          company: extractedData.brokerage,
+          businessName: extractedData.businessName,
+          city: agentCity,
+          state: agentState,
           professionalId: professional.id, 
-          skipSynthesis: false, 
+          dryRun: false,
           skipIfNoPress: false 
         }
       });
@@ -312,7 +317,7 @@ serve(async (req) => {
       if (synthesisError) {
         console.error(`⚠️ Synthesis error (non-blocking):`, synthesisError);
       } else {
-        console.log(`✅ Synthesis triggered`);
+        console.log(`✅ Web search triggered - synthesis will follow`);
       }
     }
 
