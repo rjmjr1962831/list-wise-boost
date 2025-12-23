@@ -4,11 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 /**
- * AgentCardRedirect handles magic links in format: /az/city-slug/firstname-lastname-1234
- * Extracts last 4 digits from the agentSlug and matches by city + phone
- * 
- * NOTE: This only handles /az/:citySlug/:agentSlug routes. The /arizona/ routes are
- * handled by the more specific /:stateSlug/:citySlug/:categorySlug route which matches first.
+ * AgentCardRedirect handles magic links in formats:
+ * - /az/:citySlug/:agentSlug
+ * - /arizona/:citySlug/:agentSlug
+ *
+ * Where agentSlug ends with the last 4 digits of the agent’s phone (e.g. "john-smith-1234").
+ * It extracts the digits and matches by city + phone, then redirects into the /profile/:token funnel.
  */
 const AgentCardRedirect = () => {
   const { citySlug, agentSlug } = useParams<{ citySlug: string; agentSlug: string }>();
