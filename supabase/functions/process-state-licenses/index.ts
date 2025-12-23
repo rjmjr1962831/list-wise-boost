@@ -282,11 +282,21 @@ async function processAgent(
     // 3. Check qualification: 4.5+ stars and 50+ reviews
     const isQualified = rating >= 4.5 && reviewCount >= 50;
     
+    // Skip unqualified agents entirely - don't save to DB, don't sync to Pipedrive
     if (!isQualified) {
-      console.log(`[${name}] Not qualified (${rating} stars, ${reviewCount} reviews) - will still save`);
+      console.log(`[${name}] Not qualified (${rating} stars, ${reviewCount} reviews) - SKIPPING (not saving to DB)`);
+      return { 
+        name, 
+        licenseNumber: license_number, 
+        city, 
+        status: 'not_qualified',
+        zillowUrl,
+        rating,
+        reviewCount
+      };
     }
 
-    // 4. Check duplicate by Zillow URL (for ALL agents, not just qualified)
+    // 4. Check duplicate by Zillow URL (only for qualified agents now)
     if (zillowUrl) {
       const { data: existingByZillow } = await supabase
         .from('professionals')
@@ -368,11 +378,9 @@ async function processAgent(
     }
 
     // 6. Insert professional with ALL extracted data from Firecrawl
-    // Save ALL agents (qualified + unqualified), set active based on qualification
-    // Determine type based on qualification and experience
-    const agentType = isQualified ? 
-      (fullData.yearsExperience && fullData.yearsExperience >= 10 ? 'established' : 'emerging') : 
-      'individual';
+    // Only qualified agents reach this point (unqualified are filtered above)
+    // Determine type based on experience
+    const agentType = fullData.yearsExperience && fullData.yearsExperience >= 10 ? 'established' : 'emerging';
     
     const insertData: Record<string, any> = {
       name: name,
@@ -381,7 +389,7 @@ async function processAgent(
       category_id: categoryId,
       type: agentType, // Must be: established, emerging, individual, or team
       rank: 999,
-      active: isQualified, // Only qualified agents are active
+      active: true, // All saved agents are now qualified and active
       zillow_profile_url: zillowUrl,
       review_stars_rating: rating,
       num_total_reviews: reviewCount,
@@ -445,45 +453,32 @@ async function processAgent(
       return { name, licenseNumber: license_number, city, status: 'error', error: insertError.message };
     }
 
-    // 7. Sync ALL agents to Pipedrive (will happen via DB trigger)
+    // 7. Sync to Pipedrive (happens via DB trigger for qualified agents only now)
     // The enqueue_professional_for_pipedrive_sync trigger handles this automatically
 
-    // 8. Only trigger websearch and synthesis for QUALIFIED agents
-    if (isQualified) {
-      console.log(`[${name}] Triggering web search and synthesis for qualified agent...`);
-      
-      supabase.functions.invoke('search-agent-press-claude', {
-        body: { 
-          professionalId: professional.id, 
-          skipSynthesis: false, 
-          skipIfNoPress: false 
-        }
-      }).catch((err: any) => {
-        console.error(`[${name}] Synthesis trigger error (non-blocking):`, err);
-      });
+    // 8. Trigger websearch and synthesis for qualified agent
+    console.log(`[${name}] Triggering web search and synthesis for qualified agent...`);
+    
+    supabase.functions.invoke('search-agent-press-claude', {
+      body: { 
+        professionalId: professional.id, 
+        skipSynthesis: false, 
+        skipIfNoPress: false 
+      }
+    }).catch((err: any) => {
+      console.error(`[${name}] Synthesis trigger error (non-blocking):`, err);
+    });
 
-      console.log(`[${name}] ✅ Qualified, inserted, and synthesis triggered`);
-      return { 
-        name, 
-        licenseNumber: license_number, 
-        city, 
-        status: 'qualified',
-        zillowUrl,
-        rating,
-        reviewCount
-      };
-    } else {
-      console.log(`[${name}] ✅ Saved to DB (not qualified, no synthesis)`);
-      return { 
-        name, 
-        licenseNumber: license_number, 
-        city, 
-        status: 'not_qualified',
-        zillowUrl,
-        rating,
-        reviewCount
-      };
-    }
+    console.log(`[${name}] ✅ Qualified, inserted, and synthesis triggered`);
+    return { 
+      name, 
+      licenseNumber: license_number, 
+      city, 
+      status: 'qualified',
+      zillowUrl,
+      rating,
+      reviewCount
+    };
 
   } catch (error) {
     console.error(`[${name}] Error:`, error);
