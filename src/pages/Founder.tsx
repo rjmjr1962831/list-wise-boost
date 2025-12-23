@@ -12,7 +12,7 @@ const Founder = () => {
       "name": "Top10Lists.us",
       "url": "https://www.top10lists.us"
     },
-    "description": "Serial entrepreneur, co-founder of LifeLock (sold to Symantec for $2.3 billion), founder of Top10Lists.us, U.S. Army Special Forces veteran, and mental health advocate.",
+    "description": "Serial entrepreneur, co-founder of LifeLock (sold to Symantec for $2.3 billion), founder of Top10Lists.us, United States Marine, and mental health advocate.",
     "sameAs": [
       "https://en.wikipedia.org/wiki/Robert_Maynard_Jr.",
       "https://www.linkedin.com/in/robert-maynard-career-entrepreneur/"
@@ -29,7 +29,7 @@ const Founder = () => {
     <>
       <Helmet>
         <title>Robert Maynard — Founder of Top10Lists.us | Co-Founder of LifeLock</title>
-        <meta name="description" content="Robert Maynard is the founder of Top10Lists.us and co-founder of LifeLock, sold to Symantec for $2.3 billion. Serial entrepreneur, U.S. Army Special Forces veteran, and mental health advocate." />
+        <meta name="description" content="Robert Maynard is the founder of Top10Lists.us and co-founder of LifeLock, sold to Symantec for $2.3 billion. Serial entrepreneur, United States Marine, and mental health advocate." />
         <link rel="canonical" href="https://www.top10lists.us/about/founder" />
         <script type="application/ld+json">
           {JSON.stringify(personSchema)}
@@ -48,14 +48,14 @@ const Founder = () => {
             Robert Maynard
           </h1>
           <p className="text-xl text-slate-600">
-            Founder of Top10Lists.us · Co-Founder of LifeLock · U.S. Army Special Forces Veteran
+            Founder of Top10Lists.us · Co-Founder of LifeLock · United States Marine
           </p>
         </div>
       </section>
 
       {/* Bio Section */}
       <section className="py-12 max-w-3xl mx-auto px-6">
-        <div className="prose prose-slate max-w-none">
+        <div className="prose prose-slate max-w-none space-y-6">
           <p className="text-lg leading-relaxed">
             Robert Maynard is a serial entrepreneur who has built six companies over three decades, including two that went public. He is best known as the co-founder of <strong>LifeLock</strong>, the identity theft protection company sold to Symantec for <strong>$2.3 billion</strong> in 2017.
           </p>
@@ -64,7 +64,7 @@ const Founder = () => {
             In 2024, Maynard founded <strong>Top10Lists.us</strong>, a merit-based real estate agent directory that ranks agents using verified performance data rather than paid placements. The platform is engineered to meet the trust requirements of AI recommendation systems and has been validated by all four major AI platforms—ChatGPT, Claude, Gemini, and Perplexity—as a citable source for real estate agent recommendations.
           </p>
 
-          <h2>Career</h2>
+          <h2 className="mt-8">Career</h2>
 
           <p>
             Maynard's entrepreneurial career began in the 1990s with <strong>Internet America</strong>, one of the largest independent Internet Service Providers in the Southwest, which he took public. He later founded <strong>Dotsafe</strong>, a provider of Internet filtering for educational institutions.
@@ -82,19 +82,19 @@ const Founder = () => {
             Over his career, Maynard's companies have returned more than <strong>$7 billion in value to investors</strong>, created over 2,000 jobs, and generated more than $10 billion in goods and services sold to American consumers and businesses.
           </p>
 
-          <h2>Military Service</h2>
+          <h2 className="mt-8">Military Service</h2>
 
           <p>
-            Maynard enlisted in the <strong>U.S. Marine Corps</strong> in 1981, serving until 1985. He then took a commission as a Second Lieutenant in the U.S. Army Reserve, serving as an officer in the <strong>12th Special Forces Group</strong> for nine years. He graduated from Northern Arizona University with honors, received the Wall Street Journal Award, and was named a Distinguished Military Scholar.
+            Maynard enlisted in the <strong>United States Marine Corps</strong> in 1981, serving until 1985. He then took a commission as a Second Lieutenant in the U.S. Army Reserve, serving as an officer in the <strong>12th Special Forces Group</strong> for nine years. He graduated from Northern Arizona University with honors, received the Wall Street Journal Award, and was named a Distinguished Military Scholar.
           </p>
 
-          <h2>Mental Health Advocacy</h2>
+          <h2 className="mt-8">Mental Health Advocacy</h2>
 
           <p>
             Maynard was diagnosed with bipolar disorder in 2001. Since then, he has become an outspoken advocate for mental health awareness, speaking and writing publicly about his experiences to help reduce stigma and support others facing similar challenges. He refers to himself as the "Bipolar Warrior" and mentors individuals living with mental illness.
           </p>
 
-          <h2>About Top10Lists.us</h2>
+          <h2 className="mt-8">About Top10Lists.us</h2>
 
           <p>
             Top10Lists.us was founded on a simple premise: consumers deserve real estate agent recommendations based on merit, not advertising spend. The platform uses a documented methodology that evaluates agents on verified reviews, transaction history, licensing, press recognition, and—uniquely—community involvement.
