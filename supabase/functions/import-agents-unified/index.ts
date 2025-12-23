@@ -363,11 +363,28 @@ async function processAgent(
   const rating = agentData.rating || 0;
   const reviews = agentData.reviewCount || 0;
   
-  // Check if name already exists in city (fuzzy dedup)
-  const normalizedName = agentData.name?.toLowerCase().trim();
-  if (normalizedName && existingNames.has(normalizedName)) {
-    console.log(`[Unified Import] ⏭️ Skipping duplicate: ${agentData.name}`);
-    return { action: 'duplicate', name: agentData.name };
+  // Deduplication: For Texas, use license number; for others, use name
+  if (cityState === 'Texas' || cityState === 'TX') {
+    // Texas: dedupe by license number (handles John Smith problem)
+    if (agentData.licenseNumber) {
+      const { data: existingByLicense } = await supabase
+        .from('professionals')
+        .select('id, name')
+        .eq('license_number', agentData.licenseNumber)
+        .maybeSingle();
+      
+      if (existingByLicense) {
+        console.log(`[Unified Import] ⏭️ Skipping duplicate (license ${agentData.licenseNumber}): ${agentData.name}`);
+        return { action: 'duplicate', name: agentData.name };
+      }
+    }
+  } else {
+    // Other states: use name-based dedup in city
+    const normalizedName = agentData.name?.toLowerCase().trim();
+    if (normalizedName && existingNames.has(normalizedName)) {
+      console.log(`[Unified Import] ⏭️ Skipping duplicate: ${agentData.name}`);
+      return { action: 'duplicate', name: agentData.name };
+    }
   }
 
   // Verify Arizona license if applicable
@@ -458,9 +475,10 @@ async function processAgent(
       active: true
     });
 
-  // Add to existingNames to prevent dups in same batch
-  if (normalizedName) {
-    existingNames.add(normalizedName);
+  // Add to existingNames to prevent dups in same batch (for non-Texas states)
+  const batchNormalizedName = agentData.name?.toLowerCase().trim();
+  if (batchNormalizedName) {
+    existingNames.add(batchNormalizedName);
   }
 
   console.log(`[Unified Import] ✅ Imported: ${newAgent.name} (${rating}★, ${reviews} reviews)`);
