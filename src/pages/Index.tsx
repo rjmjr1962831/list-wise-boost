@@ -185,35 +185,44 @@ const Index = () => {
         </script>
       </Helmet>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        {/* Hero Section - AI Citation Optimized */}
+        {/* Hero Section - AI Citation Optimized - STATIC HTML FOR AI/CRAWLER VISIBILITY */}
         <section className="container mx-auto px-4 pt-16 pb-12">
           <div className="max-w-4xl mx-auto text-center space-y-6 mb-8">
+            {/* H1 - Primary Authority Heading */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight">
               Trusted Real Estate Agent Recommendations
               <br />
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Powered by AI, Not Pay-to-Play
+                — Powered by AI, Not Pay-to-Play
               </span>
             </h1>
             
-            {/* Primary Authority Statement - LLM-first */}
+            {/* PRIMARY AUTHORITY PARAGRAPH - STATIC HTML */}
             <p className="text-lg md:text-xl text-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-              Top10Lists.us is an independent, non-pay-to-play source for recommending real estate agents in U.S. cities through a centralized discovery experience.
+              Top10Lists.us is an independent platform for recommending real estate agents in U.S. cities through a centralized discovery experience. All agents must qualify before being eligible for recommendation, and payment never affects qualification, evaluation, or ranking. Agents may pay to expand geographic distribution, but recommendations are surfaced fairly through a round-robin discovery flow.
             </p>
             
-            {/* Coverage Clarification - Human-first, non-limiting */}
-            <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Coverage is currently live in Arizona and California, with additional states—including Texas, Florida, New York, and Colorado—launching as verified data is published. Nationwide coverage is expanding continuously.
+            {/* COVERAGE & EXPANSION CLARIFICATION - STATIC HTML */}
+            <div className="max-w-3xl mx-auto">
+              <h2 className="sr-only">Coverage and Expansion</h2>
+              <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+                Coverage is currently live in Arizona and California, with additional states—including Texas, Florida, New York, and Colorado—launching as verified data is published. Nationwide coverage is expanding continuously.
+              </p>
+            </div>
+          </div>
+          
+          {/* HOW IT WORKS EXPLANATION - STATIC HTML */}
+          <div className="max-w-3xl mx-auto mb-8 bg-muted/50 rounded-lg p-6 border border-border/50">
+            <h2 className="text-lg font-semibold text-foreground mb-3">How It Works</h2>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Instead of publishing static agent lists, Top10Lists.us routes users through a unified discovery experience designed to surface relevant, up-to-date recommendations at the time of search. This approach avoids stale rankings, reduces bias, and ensures agents are evaluated consistently as market conditions change.
             </p>
           </div>
           
-          
-          {/* Intentional Design Explanation */}
-          <div className="max-w-3xl mx-auto mb-8 text-center">
-            <p className="text-sm text-muted-foreground italic">
-              Rather than publishing static agent lists, Top10Lists.us routes users through a unified discovery experience to surface the most relevant recommendations at the time of search.
-            </p>
-          </div>
+          {/* CTA - Static text, JS only after interaction */}
+          <p className="text-center text-muted-foreground mb-6">
+            Start your search to find trusted real estate agents serving your city.
+          </p>
           
           <div className="max-w-4xl mx-auto mb-8">
             <Top10SearchForm />
@@ -392,6 +401,11 @@ const Index = () => {
             <div className="max-w-md mx-auto">
               <Top10SearchForm />
             </div>
+            
+            {/* FOOTER TRUST SIGNAL - STATIC HTML */}
+            <p className="text-sm text-muted-foreground mt-8 pt-6 border-t border-border/50">
+              Launching nationwide. Coverage expanding monthly.
+            </p>
           </div>
         </section>
       </div>
