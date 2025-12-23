@@ -152,25 +152,35 @@ serve(async (req) => {
     // Step 4: Get or create city
     const agentCity = extractedData.primaryCity || city || 'Unknown';
     const agentState = extractedData.primaryState || state || 'Unknown';
+    const stateSlugNormalized = agentState.toLowerCase().replace(/\s+/g, '-');
 
+    // Try matching by state_slug (handles CA vs California)
     let { data: cityData } = await supabase
       .from('cities')
       .select('id')
       .ilike('name', agentCity)
-      .ilike('state', agentState)
+      .or(`state.ilike.${agentState},state_slug.ilike.${stateSlugNormalized}`)
       .maybeSingle();
 
     let cityId = cityData?.id;
 
     if (!cityId) {
       const citySlug = agentCity.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-      const stateSlug = agentState.toLowerCase().replace(/\s+/g, '-');
       
-      const { data: newCity } = await supabase
+      // Map state abbreviation to full name for consistency
+      const stateMap: Record<string, string> = {
+        'ca': 'California', 'az': 'Arizona', 'tx': 'Texas', 'fl': 'Florida',
+        'ny': 'New York', 'wa': 'Washington', 'co': 'Colorado', 'nv': 'Nevada',
+        'or': 'Oregon', 'ut': 'Utah', 'id': 'Idaho', 'nm': 'New Mexico'
+      };
+      const fullState = stateMap[agentState.toLowerCase()] || agentState;
+      const stateSlug = fullState.toLowerCase().replace(/\s+/g, '-');
+      
+      const { data: newCity, error: cityError } = await supabase
         .from('cities')
         .insert({
           name: agentCity,
-          state: agentState,
+          state: fullState,
           slug: citySlug,
           state_slug: stateSlug,
           active: true
@@ -178,8 +188,14 @@ serve(async (req) => {
         .select('id')
         .single();
 
+      if (cityError) {
+        console.error(`City insert error: ${cityError.message}`);
+        throw new Error(`Failed to create city: ${cityError.message}`);
+      }
       cityId = newCity?.id;
-      console.log(`📍 Created city: ${agentCity}, ${agentState}`);
+      console.log(`📍 Created city: ${agentCity}, ${fullState} (id: ${cityId})`);
+    } else {
+      console.log(`📍 Found existing city: ${agentCity} (id: ${cityId})`);
     }
 
     // Step 5: Get category
