@@ -431,7 +431,7 @@ export function StatePipelineRunner() {
         )}
 
         {/* Recent Results */}
-        {result && result.results.length > 0 && (
+        {result && result.results && result.results.length > 0 && (
           <div>
             <Label className="mb-2 block">Recent Results ({result.results.length} shown)</Label>
             <ScrollArea className="h-64 border rounded-md">
