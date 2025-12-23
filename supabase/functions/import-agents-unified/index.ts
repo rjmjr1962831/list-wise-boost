@@ -24,9 +24,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Concurrency settings
-const CONCURRENCY_LIMIT = 5; // Parallel Firecrawl requests
-const DELAY_BETWEEN_BATCHES_MS = 1000;
+// Concurrency settings - Firecrawl upgraded to 100 concurrent requests
+const CONCURRENCY_LIMIT = 100; // Parallel Firecrawl requests
+const DELAY_BETWEEN_BATCHES_MS = 100;
 
 // Comprehensive schema for Zillow agent profiles
 const ZILLOW_AGENT_SCHEMA = {

@@ -506,7 +506,7 @@ serve(async (req) => {
       stateAbbr = 'CA', 
       startIndex = 0, 
       batchSize = 50,
-      concurrency = 3, // Lower concurrency for Firecrawl rate limits
+      concurrency = 100, // Firecrawl upgraded plan supports 100 concurrent requests
       maxAgents = 10000 // Max agents to process
     } = await req.json();
 
@@ -613,9 +613,9 @@ serve(async (req) => {
 
         console.log(`Batch complete. Running totals: qualified=${stats.qualified}, not_qualified=${stats.notQualified}, duplicates=${stats.duplicates}, no_results=${stats.noResults}`);
 
-        // Add a small delay between batches to avoid rate limits
+        // Minimal delay between batches (Firecrawl upgraded to 100 concurrency)
         if (i + concurrency < licenses.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
     } catch (batchError) {
