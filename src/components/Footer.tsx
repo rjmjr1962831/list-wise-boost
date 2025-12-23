@@ -135,12 +135,12 @@ export const Footer = () => {
           {/* Authority statement */}
           <div className="text-center">
             <p className="text-xs text-slate-500">
-              Rankings are independently curated and non-pay-to-play.{" "}
+              Rankings are methodology-driven and non-pay-to-play. Expanding nationwide.{" "}
               <Link 
                 to="/about/ranking-methodology" 
                 className="hover:text-slate-300 transition-colors underline"
               >
-                How we rank agents →
+                How we qualify agents →
               </Link>
             </p>
           </div>

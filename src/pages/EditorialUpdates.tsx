@@ -1,65 +1,75 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
-import { FileText, Calendar, Database, Scale } from "lucide-react";
+import { FileText, Database, Scale, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 
 interface UpdateEntry {
   date: string;
   title: string;
-  description: string;
+  items: string[];
   type: "data" | "methodology" | "editorial" | "expansion";
 }
 
-const updates: UpdateEntry[] = [
+const decemberUpdates: UpdateEntry[] = [
   {
-    date: "2025-12-23",
-    title: "AI Citation Optimization",
-    description: "Added machine-readable authority blocks across all pages to improve AI system citation accuracy and transparency.",
+    date: "December 24, 2024",
+    title: "Homepage Redesign",
+    items: [
+      "Homepage redesigned for improved clarity and citation accuracy",
+      "Authority block added across all pages"
+    ],
     type: "editorial"
   },
   {
-    date: "2025-12-20",
-    title: "Arizona Agent Data Refresh",
-    description: "Completed quarterly refresh of all Arizona agent data including reviews, transaction history, and license verification for 200,000+ agents.",
-    type: "data"
-  },
-  {
-    date: "2025-12-15",
-    title: "Enhanced Review Aggregation",
-    description: "Updated review aggregation to include additional verified sources: Google Business, Zillow, Realtor.com, and Redfin reviews now cross-referenced.",
-    type: "methodology"
-  },
-  {
-    date: "2025-12-10",
-    title: "Press Coverage Integration",
-    description: "Integrated press mention tracking from 50+ local and national real estate publications into agent scoring algorithm.",
-    type: "methodology"
-  },
-  {
-    date: "2025-12-01",
-    title: "Gilbert and Chandler Expansion",
-    description: "Added comprehensive agent coverage for Gilbert, Chandler, and surrounding East Valley communities.",
+    date: "December 23, 2024",
+    title: "California Integration",
+    items: [
+      "California agent database integrated (299,447 active licenses)",
+      "Six states now covered: Arizona, California, Texas, Florida, New York, Colorado"
+    ],
     type: "expansion"
   },
   {
-    date: "2025-11-25",
-    title: "License Verification Update",
-    description: "Synced with Arizona Department of Real Estate license database to verify all listed agents maintain active, valid licenses.",
+    date: "December 20, 2024",
+    title: "Arizona Refresh",
+    items: [
+      "City page content refreshed for all 48 Arizona markets",
+      "Cache warming completed for bot rendering"
+    ],
     type: "data"
   },
   {
-    date: "2025-11-20",
-    title: "Scoring Algorithm Refinement",
-    description: "Adjusted temporal weighting to prioritize agents with consistent recent performance (last 6 months receive 1.3x multiplier).",
-    type: "methodology"
+    date: "December 18, 2024",
+    title: "AI Citation Testing",
+    items: [
+      "AI citation test page launched (/test)",
+      "All four major AI platforms confirmed citation eligibility"
+    ],
+    type: "editorial"
   },
   {
-    date: "2025-11-15",
-    title: "Community Involvement Tracking",
-    description: "Added nonprofit board service and community leadership positions to agent evaluation criteria.",
+    date: "December 16, 2024",
+    title: "Platform Launch",
+    items: [
+      "Platform launched with 414 Arizona agents (top 0.2%)",
+      "Initial press coverage secured"
+    ],
+    type: "expansion"
+  }
+];
+
+const methodologyUpdates: UpdateEntry[] = [
+  {
+    date: "December 2024",
+    title: "Ranking Weights Documented",
+    items: [
+      "Ranking weights documented: Reviews (25%), Community Involvement (20%), Press (15%), Transactions (15%), Experience (10%), Response (10%), Recency (5%)",
+      "Non-pay-to-play policy formalized"
+    ],
     type: "methodology"
   }
 ];
@@ -108,7 +118,9 @@ const EditorialUpdates = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  const lastUpdate = updates[0]?.date || new Date().toISOString().split('T')[0];
+  usePrerenderReady();
+
+  const lastUpdate = "2024-12-24";
 
   const pageSchema = {
     "@context": "https://schema.org",
@@ -121,17 +133,6 @@ const EditorialUpdates = () => {
       "@type": "WebSite",
       "name": "Top10Lists.us",
       "url": "https://www.top10lists.us"
-    },
-    "mainEntity": {
-      "@type": "ItemList",
-      "name": "Editorial Update Log",
-      "numberOfItems": updates.length,
-      "itemListElement": updates.slice(0, 10).map((update, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "name": update.title,
-        "description": update.description
-      }))
     }
   };
 
@@ -141,7 +142,7 @@ const EditorialUpdates = () => {
         <title>Editorial & Citation Update Log | Top10Lists.us</title>
         <meta 
           name="description" 
-          content="Public record of editorial updates, data refreshes, and methodology changes at Top10Lists.us. Maintained for transparency and citation accuracy." 
+          content="Public record of editorial updates, data refreshes, and methodology changes at Top10Lists.us." 
         />
         <link rel="canonical" href="https://www.top10lists.us/editorial-updates" />
         <meta name="robots" content="index, follow" />
@@ -180,18 +181,76 @@ const EditorialUpdates = () => {
               Editorial & Citation Update Log
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Public record of all updates to our ranking data, methodology, and editorial content. Maintained for transparency and citation accuracy.
-            </p>
-            <p className="text-sm text-muted-foreground mt-4">
-              Last updated: <time dateTime={lastUpdate}>{new Date(lastUpdate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</time>
+              Top10Lists.us maintains a public record of material updates that may affect citations or recommendations.
             </p>
           </div>
         </section>
 
+        {/* December 2024 Updates */}
+        <section className="container mx-auto px-4 py-12">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold mb-8">December 2024</h2>
+            
+            <div className="space-y-6">
+              {decemberUpdates.map((update, index) => (
+                <article 
+                  key={index}
+                  className="border-l-4 border-primary pl-4"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(update.type)}`}>
+                      {getTypeIcon(update.type)}
+                      {getTypeLabel(update.type)}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-foreground">{update.date}</h3>
+                  <ul className="text-muted-foreground mt-2 space-y-1">
+                    {update.items.map((item, itemIndex) => (
+                      <li key={itemIndex}>• {item}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <hr className="max-w-3xl mx-auto border-border" />
+
+        {/* Methodology Updates */}
+        <section className="container mx-auto px-4 py-12">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-2xl font-bold mb-8">Methodology Updates</h2>
+            
+            <div className="space-y-6">
+              {methodologyUpdates.map((update, index) => (
+                <article 
+                  key={index}
+                  className="border-l-4 border-primary pl-4"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(update.type)}`}>
+                      {getTypeIcon(update.type)}
+                      {getTypeLabel(update.type)}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-foreground">{update.date}</h3>
+                  <ul className="text-muted-foreground mt-2 space-y-1">
+                    {update.items.map((item, itemIndex) => (
+                      <li key={itemIndex}>• {item}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <hr className="max-w-3xl mx-auto border-border" />
 
         {/* Data Sources Section */}
-        <section className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
+        <section className="container mx-auto px-4 py-12">
+          <div className="max-w-3xl mx-auto">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -206,27 +265,27 @@ const EditorialUpdates = () => {
                 <ul className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    Google Business Reviews
+                    State licensing boards
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    Zillow Reviews
+                    Google Reviews
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    Realtor.com Reviews
+                    Zillow
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    Redfin Reviews
+                    MLS records
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    Arizona ADRE License Database
+                    Press archives
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    Local Press Archives
+                    Nonprofit records
                   </li>
                 </ul>
               </CardContent>
@@ -234,59 +293,18 @@ const EditorialUpdates = () => {
           </div>
         </section>
 
-        {/* Updates Timeline */}
-        <section className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">Update History</h2>
-            <div className="space-y-4">
-              {updates.map((update, index) => (
-                <article 
-                  key={index}
-                  className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-24 text-sm text-muted-foreground">
-                      <time dateTime={update.date}>
-                        {new Date(update.date).toLocaleDateString('en-US', { 
-                          month: 'short', 
-                          day: 'numeric' 
-                        })}
-                      </time>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${getTypeColor(update.type)}`}>
-                          {getTypeIcon(update.type)}
-                          {getTypeLabel(update.type)}
-                        </span>
-                      </div>
-                      <h3 className="font-semibold text-foreground mb-1">
-                        {update.title}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {update.description}
-                      </p>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Methodology Link */}
-        <section className="bg-muted/30 py-12">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="text-2xl font-bold mb-4">Understanding Our Methodology</h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Learn how we rank agents using our transparent, weighted algorithm with third-party verified data.
+        {/* Last Updated & Back Link */}
+        <section className="container mx-auto px-4 pb-12">
+          <div className="max-w-3xl mx-auto">
+            <p className="text-sm text-muted-foreground italic mb-6">
+              Last updated: December 24, 2024
             </p>
-            <a 
-              href="/about/ranking-methodology" 
-              className="inline-flex items-center justify-center px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+            <Link 
+              to="/about/ranking-methodology" 
+              className="text-primary hover:underline"
             >
-              View Full Methodology
-            </a>
+              ← Back to Methodology
+            </Link>
           </div>
         </section>
       </main>

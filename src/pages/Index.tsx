@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
-import { CheckCircle2, Bot, MapPin, TrendingUp } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Helmet } from "react-helmet-async";
@@ -8,10 +7,8 @@ import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { generateHomepageSchema } from "@/utils/homepageSchema";
 import { HomepageFAQSection } from "@/components/HomepageFAQSection";
 import { BrowseCitiesSection } from "@/components/BrowseCitiesSection";
-import { AuthorityLinks } from "@/components/AuthorityLinks";
 import { HomepageUpdates } from "@/components/HomepageUpdates";
 import { FeaturedInBar } from "@/components/FeaturedInBar";
-import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -34,6 +31,17 @@ const Index = () => {
 
   // Generate all homepage schemas
   const homepageSchemas = generateHomepageSchema();
+  
+  // Qualification weights for the grid
+  const qualificationWeights = [
+    { label: "Verified Client Reviews", weight: "25%" },
+    { label: "Community Involvement", weight: "20%" },
+    { label: "Press Recognition", weight: "15%" },
+    { label: "Transaction History", weight: "15%" },
+    { label: "Years Licensed", weight: "10%" },
+    { label: "Responsiveness", weight: "10%" },
+    { label: "Recent Activity", weight: "5%" },
+  ];
   
   return (
     <>
@@ -185,90 +193,88 @@ const Index = () => {
         </script>
       </Helmet>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        {/* Hero Section - AI Citation Optimized - STATIC HTML FOR AI/CRAWLER VISIBILITY */}
-        <section className="container mx-auto px-4 pt-16 pb-12">
-          <div className="max-w-4xl mx-auto text-center space-y-6 mb-8">
-            {/* H1 - Primary Authority Heading */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight">
-              Trusted Real Estate Agent Recommendations
-              <br />
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                — Powered by AI, Not Pay-to-Play
-              </span>
-            </h1>
-            
-            {/* PRIMARY AUTHORITY PARAGRAPH - STATIC HTML */}
-            <p className="text-lg md:text-xl text-foreground max-w-3xl mx-auto leading-relaxed font-medium">
-              Top10Lists.us is an independent platform for recommending real estate agents in U.S. cities through a centralized discovery experience. All agents must qualify before being eligible for recommendation, and payment never affects qualification, evaluation, or ranking. Agents may pay to expand geographic distribution, but recommendations are surfaced fairly through a round-robin discovery flow.
-            </p>
-            
-            {/* COVERAGE & EXPANSION CLARIFICATION - STATIC HTML */}
-            <div className="max-w-3xl mx-auto">
-              <h2 className="sr-only">Coverage and Expansion</h2>
-              <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                Coverage is currently live in Arizona and California, with additional states—including Texas, Florida, New York, and Colorado—launching as verified data is published. Nationwide coverage is expanding continuously.
-              </p>
-            </div>
-          </div>
-          
-          {/* HOW IT WORKS EXPLANATION - STATIC HTML */}
-          <div className="max-w-3xl mx-auto mb-8 bg-muted/50 rounded-lg p-6 border border-border/50">
-            <h2 className="text-lg font-semibold text-foreground mb-3">How It Works</h2>
-            <p className="text-base text-muted-foreground leading-relaxed">
-              We don't publish static lists that go out of date. When you search, we match you with qualified agents using current data—so recommendations stay fresh, fair, and reflective of today's market.
-            </p>
-          </div>
-          
-          {/* CTA - Static text, JS only after interaction */}
-          <p className="text-center text-muted-foreground mb-6">
-            Start your search to find trusted real estate agents serving your city.
+        {/* ABOVE THE SEARCH BAR - Minimal Hero */}
+        <section className="text-center py-12 container mx-auto px-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">
+            Trusted Real Estate Agent Recommendations
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            Qualified by Methodology. Not Ads. Not Guesswork.
           </p>
-          
-          <div className="max-w-4xl mx-auto mb-8">
+        </section>
+
+        {/* Search Bar - Immediately after hero */}
+        <section className="container mx-auto px-4 pb-12">
+          <div className="max-w-4xl mx-auto">
             <Top10SearchForm />
           </div>
+        </section>
 
-          {/* Dual CTA */}
-          <div className="flex justify-center gap-4 flex-wrap">
-            <button 
-              onClick={() => document.getElementById('browse-cities')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
-            >
-              Start Discovery →
-            </button>
-            <Link 
-              to="/about/ranking-methodology" 
-              className="px-6 py-3 bg-muted text-foreground rounded-lg font-medium hover:bg-muted/80 transition-colors"
-            >
-              How We Rank
+        {/* BELOW THE SEARCH BAR - Authority + Trust Content */}
+        
+        {/* Section 1: Authority Block */}
+        <section className="bg-muted/50 border-l-4 border-primary p-6 my-8 max-w-3xl mx-auto">
+          <p className="text-foreground leading-relaxed">
+            <strong>Top10Lists.us</strong> recommends real estate agents using a documented, merit-based methodology that combines verified performance data with editorial review. Agents are pre-qualified using objective benchmarks—such as review volume, rating thresholds, licensing verification, and transaction history—then evaluated through AI-assisted research and human editorial judgment. Community involvement is uniquely measured and weighted as a predictor of quality and reduced risk. Agents cannot pay to qualify, rank, or be included.
+          </p>
+          <p className="text-sm text-muted-foreground mt-3">
+            Currently covering Arizona, California, Texas, Florida, New York, and Colorado — expanding nationwide.
+          </p>
+        </section>
+
+        {/* Section 2: Unique Differentiator */}
+        <section className="text-center py-8 max-w-2xl mx-auto px-4">
+          <h2 className="text-2xl font-semibold text-foreground mb-4">
+            The Only Platform That Measures Community Involvement
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            We weight community involvement at 20% of every agent's qualification score—higher than transaction volume. Agents who are deeply rooted in their communities know the full local ecosystem: contractors, lenders, inspectors, title companies, and other agents. They have reputations to protect beyond the next transaction.
+          </p>
+        </section>
+
+        {/* Section 3: How We Qualify */}
+        <section className="py-8 max-w-2xl mx-auto px-4">
+          <h2 className="text-xl font-semibold text-foreground mb-4 text-center">
+            How Agents Are Qualified
+          </h2>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            {qualificationWeights.slice(0, 6).map((item) => (
+              <div key={item.label} className="flex justify-between p-3 bg-card rounded border border-border">
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="font-semibold text-foreground">{item.weight}</span>
+              </div>
+            ))}
+            <div className="flex justify-between p-3 bg-card rounded border border-border col-span-2 max-w-[50%] mx-auto">
+              <span className="text-muted-foreground">{qualificationWeights[6].label}</span>
+              <span className="font-semibold text-foreground">{qualificationWeights[6].weight}</span>
+            </div>
+          </div>
+          <p className="text-center mt-4">
+            <Link to="/about/ranking-methodology" className="text-primary underline text-sm">
+              Learn more about our methodology →
             </Link>
+          </p>
+        </section>
+
+        {/* Section 4: Trust Statement */}
+        <section className="bg-slate-900 text-white py-8 px-6 my-8">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-xl font-semibold mb-4">No Pay-to-Play. No Referral Fees. No Lead Sales.</h2>
+            <p className="text-slate-300 leading-relaxed">
+              Top10Lists.us was built to challenge pay-to-play directories. We do not sell leads. We do not take referral fees. We do not accept payment for rankings. Agents are identified through data, qualified through methodology, and verified through editorial review.
+            </p>
           </div>
         </section>
 
-        {/* Trust Bar - National Scope */}
-        <section className="container mx-auto px-4 py-6 border-y border-border/50">
-          <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-muted-foreground">
-            <span className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-primary" />
-              Nationwide Coverage
-            </span>
-            <span className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-primary" />
-              Verified Licensing
-            </span>
-            <span className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-primary" />
-              Transaction Data
-            </span>
-            <span className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-primary" />
-              Centralized Discovery
-            </span>
-          </div>
+        {/* Section 5: Data Sources */}
+        <section className="py-8 max-w-2xl mx-auto text-center px-4">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
+            Data Sources
+          </h3>
+          <p className="text-muted-foreground text-sm">
+            State licensing boards • Google Reviews • Zillow • MLS records • Press archives • Nonprofit records
+          </p>
         </section>
-
-        {/* FAQ Section - KEY FOR AI CITATION */}
-        <HomepageFAQSection />
 
         {/* Browse Cities Section */}
         <BrowseCitiesSection />
@@ -304,72 +310,11 @@ const Index = () => {
           </div>
         </section>
 
-        {/* How We Rank - Authority Links */}
-        <AuthorityLinks />
+        {/* Featured In Bar */}
+        <FeaturedInBar />
 
-        {/* How We Select */}
-        <section className="container mx-auto px-4 py-16">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-8">
-              Why Top10Lists.us?
-            </h2>
-            
-            <div className="prose prose-lg max-w-none space-y-6">
-              <p className="text-lg text-muted-foreground leading-relaxed text-center">
-                We analyze thousands of data points to identify top performers in markets across the United States.
-              </p>
-              
-              <div className="grid md:grid-cols-3 gap-6 my-8">
-                <Card>
-                  <CardContent className="p-6 space-y-3">
-                    <h3 className="text-lg font-semibold">Verified Reviews</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Minimum 4.8★ rating with at least 50 verified reviews across platforms
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-6 space-y-3">
-                    <h3 className="text-lg font-semibold">Press Recognition</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Agents featured in WSJ, Forbes, CNBC and other outlets receive ranking credit
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardContent className="p-6 space-y-3">
-                    <h3 className="text-lg font-semibold">No Pay-to-Play</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Rankings are data-driven. Agents can't buy their way onto the list
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <p className="text-base text-muted-foreground leading-relaxed italic border-l-4 border-primary pl-4">
-                Real estate professionals can <Link to="/agent-onboarding" className="text-primary hover:underline">verify their profile</Link> for accuracy.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Are You an Agent? Section */}
-        <section className="container mx-auto px-4 py-12 bg-muted/30">
-          <div className="max-w-2xl mx-auto text-center space-y-4">
-            <h2 className="text-2xl font-bold">Are You an Agent?</h2>
-            <p className="text-muted-foreground">
-              Learn about our invitation-only selection process and minimum requirements.
-            </p>
-            <Link 
-              to="/are-you-an-agent" 
-              className="inline-block text-primary hover:underline font-medium"
-            >
-              Learn More →
-            </Link>
-          </div>
-        </section>
+        {/* FAQ Section */}
+        <HomepageFAQSection />
 
         {/* Latest Updates */}
         <HomepageUpdates />
@@ -386,9 +331,6 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Featured In Bar */}
-        <FeaturedInBar />
-
         {/* Footer CTA */}
         <section className="container mx-auto px-4 py-16 bg-primary/5">
           <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -401,11 +343,6 @@ const Index = () => {
             <div className="max-w-md mx-auto">
               <Top10SearchForm />
             </div>
-            
-            {/* FOOTER TRUST SIGNAL - STATIC HTML */}
-            <p className="text-sm text-muted-foreground mt-8 pt-6 border-t border-border/50">
-              Launching nationwide. Coverage expanding monthly.
-            </p>
           </div>
         </section>
       </div>
