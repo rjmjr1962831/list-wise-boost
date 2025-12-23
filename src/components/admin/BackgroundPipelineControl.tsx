@@ -46,8 +46,8 @@ export function BackgroundPipelineControl() {
   const [loading, setLoading] = useState(true);
   const [selectedState, setSelectedState] = useState("");
   const [startIndex, setStartIndex] = useState(0);
-  const [batchSize, setBatchSize] = useState(100);
-  const [concurrency, setConcurrency] = useState(50);
+  const [batchSize, setBatchSize] = useState(25);
+  const [concurrency, setConcurrency] = useState(10);
   const [licenseCounts, setLicenseCounts] = useState<Record<string, number>>({});
 
   const fetchPipeline = async () => {
