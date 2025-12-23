@@ -38,6 +38,7 @@ import { BulkCityContentGenerator } from '@/components/admin/BulkCityContentGene
 import { FieldChangeRequestsManager } from '@/components/admin/FieldChangeRequestsManager';
 import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
 import { StatePipelineRunner } from '@/components/admin/StatePipelineRunner';
+import { BackgroundPipelineControl } from '@/components/admin/BackgroundPipelineControl';
 import { FileEdit, Upload } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -348,6 +349,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="license-import" className="space-y-4">
+            <BackgroundPipelineControl />
             <StateLicenseImporter />
             <StatePipelineRunner />
           </TabsContent>
