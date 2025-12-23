@@ -1247,10 +1247,6 @@ export default function DynamicCategoryList() {
             Invitation-only directory with multi-source verified rankings
           </p>
           
-          {/* Citation Authority Block */}
-          <div className="max-w-4xl mx-auto mt-6">
-            <CitationAuthorityBlock />
-          </div>
           
           {/* Methodology Snapshot */}
           <p className="text-sm text-muted-foreground text-center mt-4 max-w-2xl mx-auto">

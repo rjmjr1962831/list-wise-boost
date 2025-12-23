@@ -281,10 +281,6 @@ const RankingMethodology = () => {
             </p>
           </div>
           
-          {/* Citation Authority Block */}
-          <div className="max-w-4xl mx-auto mt-8">
-            <CitationAuthorityBlock />
-          </div>
         </section>
 
         {/* Overview */}
