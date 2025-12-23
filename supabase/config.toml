@@ -345,3 +345,6 @@ verify_jwt = false
 
 [functions.test-import-agent]
 verify_jwt = false
+
+[functions.run-state-pipeline-cron]
+verify_jwt = false

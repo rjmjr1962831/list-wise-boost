@@ -1269,6 +1269,78 @@ export type Database = {
           },
         ]
       }
+      pipeline_state: {
+        Row: {
+          batch_size: number
+          completed_at: string | null
+          concurrency: number
+          created_at: string
+          current_index: number
+          error_message: string | null
+          id: string
+          is_paused: boolean
+          is_running: boolean
+          last_run_at: string | null
+          pipeline_name: string
+          started_at: string | null
+          state: string
+          state_abbr: string
+          total_duplicates: number
+          total_errors: number
+          total_no_results: number
+          total_not_qualified: number
+          total_processed: number
+          total_qualified: number
+          updated_at: string
+        }
+        Insert: {
+          batch_size?: number
+          completed_at?: string | null
+          concurrency?: number
+          created_at?: string
+          current_index?: number
+          error_message?: string | null
+          id?: string
+          is_paused?: boolean
+          is_running?: boolean
+          last_run_at?: string | null
+          pipeline_name: string
+          started_at?: string | null
+          state: string
+          state_abbr: string
+          total_duplicates?: number
+          total_errors?: number
+          total_no_results?: number
+          total_not_qualified?: number
+          total_processed?: number
+          total_qualified?: number
+          updated_at?: string
+        }
+        Update: {
+          batch_size?: number
+          completed_at?: string | null
+          concurrency?: number
+          created_at?: string
+          current_index?: number
+          error_message?: string | null
+          id?: string
+          is_paused?: boolean
+          is_running?: boolean
+          last_run_at?: string | null
+          pipeline_name?: string
+          started_at?: string | null
+          state?: string
+          state_abbr?: string
+          total_duplicates?: number
+          total_errors?: number
+          total_no_results?: number
+          total_not_qualified?: number
+          total_processed?: number
+          total_qualified?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pricing_plans: {
         Row: {
           cities_included: number | null
