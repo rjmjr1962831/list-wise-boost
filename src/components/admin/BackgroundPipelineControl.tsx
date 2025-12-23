@@ -70,7 +70,7 @@ export function BackgroundPipelineControl() {
       const { count } = await supabase
         .from('state_licenses')
         .select('*', { count: 'exact', head: true })
-        .eq('state', state.name);
+        .eq('state', state.code);  // Use state code (CA, TX) not full name
       counts[state.code] = count || 0;
     }
     setLicenseCounts(counts);
