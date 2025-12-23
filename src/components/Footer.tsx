@@ -67,6 +67,12 @@ export const Footer = () => {
                 About Us
               </Link>
               <Link 
+                to="/about/founder" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Founder
+              </Link>
+              <Link 
                 to="/about/ranking-methodology" 
                 className="block text-slate-300 hover:text-white transition-colors"
               >
