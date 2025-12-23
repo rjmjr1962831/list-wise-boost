@@ -342,3 +342,6 @@ verify_jwt = false
 
 [functions.process-state-licenses]
 verify_jwt = false
+
+[functions.test-import-agent]
+verify_jwt = false
