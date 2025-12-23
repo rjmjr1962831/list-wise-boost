@@ -207,10 +207,6 @@ const Index = () => {
             </p>
           </div>
           
-          {/* Citation Authority Block */}
-          <div className="max-w-4xl mx-auto">
-            <CitationAuthorityBlock />
-          </div>
           
           {/* Intentional Design Explanation */}
           <div className="max-w-3xl mx-auto mb-8 text-center">

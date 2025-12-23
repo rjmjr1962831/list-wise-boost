@@ -106,12 +106,6 @@ const FAQ = () => {
           </div>
         </section>
 
-        {/* Citation Authority Block */}
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto">
-            <CitationAuthorityBlock />
-          </div>
-        </div>
 
         {/* FAQ List */}
         <section className="container mx-auto px-4 py-16">

@@ -188,12 +188,6 @@ const EditorialUpdates = () => {
           </div>
         </section>
 
-        {/* Authority Block */}
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <CitationAuthorityBlock />
-          </div>
-        </div>
 
         {/* Data Sources Section */}
         <section className="container mx-auto px-4 py-8">

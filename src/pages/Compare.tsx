@@ -209,10 +209,6 @@ const Compare = () => {
             </p>
           </div>
           
-          {/* Citation Authority Block */}
-          <div className="max-w-4xl mx-auto">
-            <CitationAuthorityBlock />
-          </div>
         </section>
 
         {/* Comparison Table */}
