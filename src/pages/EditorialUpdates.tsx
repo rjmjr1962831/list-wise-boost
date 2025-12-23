@@ -15,49 +15,49 @@ interface UpdateEntry {
 
 const updates: UpdateEntry[] = [
   {
-    date: "2024-12-23",
+    date: "2025-12-23",
     title: "AI Citation Optimization",
     description: "Added machine-readable authority blocks across all pages to improve AI system citation accuracy and transparency.",
     type: "editorial"
   },
   {
-    date: "2024-12-20",
+    date: "2025-12-20",
     title: "Arizona Agent Data Refresh",
     description: "Completed quarterly refresh of all Arizona agent data including reviews, transaction history, and license verification for 200,000+ agents.",
     type: "data"
   },
   {
-    date: "2024-12-15",
+    date: "2025-12-15",
     title: "Enhanced Review Aggregation",
     description: "Updated review aggregation to include additional verified sources: Google Business, Zillow, Realtor.com, and Redfin reviews now cross-referenced.",
     type: "methodology"
   },
   {
-    date: "2024-12-10",
+    date: "2025-12-10",
     title: "Press Coverage Integration",
     description: "Integrated press mention tracking from 50+ local and national real estate publications into agent scoring algorithm.",
     type: "methodology"
   },
   {
-    date: "2024-12-01",
+    date: "2025-12-01",
     title: "Gilbert and Chandler Expansion",
     description: "Added comprehensive agent coverage for Gilbert, Chandler, and surrounding East Valley communities.",
     type: "expansion"
   },
   {
-    date: "2024-11-25",
+    date: "2025-11-25",
     title: "License Verification Update",
     description: "Synced with Arizona Department of Real Estate license database to verify all listed agents maintain active, valid licenses.",
     type: "data"
   },
   {
-    date: "2024-11-20",
+    date: "2025-11-20",
     title: "Scoring Algorithm Refinement",
     description: "Adjusted temporal weighting to prioritize agents with consistent recent performance (last 6 months receive 1.3x multiplier).",
     type: "methodology"
   },
   {
-    date: "2024-11-15",
+    date: "2025-11-15",
     title: "Community Involvement Tracking",
     description: "Added nonprofit board service and community leadership positions to agent evaluation criteria.",
     type: "methodology"
