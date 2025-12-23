@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -89,6 +89,9 @@ export function BackgroundPipelineControl() {
     setLicenseCountsLoading(false);
   };
 
+  // Track processed count to refresh license counts every 100 items
+  const lastRefreshCount = useRef(0);
+
   useEffect(() => {
     fetchPipeline();
     fetchLicenseCounts();
@@ -97,6 +100,14 @@ export function BackgroundPipelineControl() {
     const interval = setInterval(fetchPipeline, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // Refresh license counts every 100 processed items
+  useEffect(() => {
+    if (pipeline && pipeline.total_processed - lastRefreshCount.current >= 100) {
+      lastRefreshCount.current = pipeline.total_processed;
+      fetchLicenseCounts();
+    }
+  }, [pipeline?.total_processed]);
 
   const startPipeline = async () => {
     if (!selectedState) {
