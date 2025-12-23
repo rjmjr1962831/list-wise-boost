@@ -215,7 +215,7 @@ const Index = () => {
           <div className="max-w-3xl mx-auto mb-8 bg-muted/50 rounded-lg p-6 border border-border/50">
             <h2 className="text-lg font-semibold text-foreground mb-3">How It Works</h2>
             <p className="text-base text-muted-foreground leading-relaxed">
-              Instead of publishing static agent lists, Top10Lists.us routes users through a unified discovery experience designed to surface relevant, up-to-date recommendations at the time of search. This approach avoids stale rankings, reduces bias, and ensures agents are evaluated consistently as market conditions change.
+              We don't publish static lists that go out of date. When you search, we match you with qualified agents based on current data — so your recommendations are always fresh, fair, and reflect today's market.
             </p>
           </div>
           
