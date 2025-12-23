@@ -91,6 +91,7 @@ const ForAI = lazy(() => import("./pages/ForAI"));
 const TestAI = lazy(() => import("./pages/TestAI"));
 const Transparency = lazy(() => import("./pages/Transparency"));
 const EditorialUpdates = lazy(() => import("./pages/EditorialUpdates"));
+const Founder = lazy(() => import("./pages/Founder"));
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,7 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/about" element={<About />} />
+                    <Route path="/about/founder" element={<Founder />} />
                     <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
