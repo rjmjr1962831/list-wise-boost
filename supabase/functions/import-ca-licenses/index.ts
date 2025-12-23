@@ -70,7 +70,7 @@ serve(async (req) => {
       const city = parts[cityIdx]?.trim() || '';
       const licenseDate = parts[licenseDateIdx]?.trim() || '';
 
-      if (!licenseNumber || !firstName) {
+      if (!licenseNumber || (!firstName && !lastName)) {
         skippedInvalid++;
         continue;
       }
@@ -81,6 +81,7 @@ serve(async (req) => {
         continue;
       }
 
+      // CSV has first_name (which may include middle name) and last_name separately
       const name = `${firstName} ${lastName}`.trim();
 
       records.push({
