@@ -33,13 +33,6 @@ const recentlyEnrichedAgents: EnrichedAgent[] = [
     state: "AZ"
   },
   {
-    id: "c6942d83-a64b-4d30-8937-3d1f4dbe1b51",
-    name: "Armando Padilla",
-    company: "RE/Max of Santa Clarita",
-    city: "Santa Clarita",
-    state: "CA"
-  },
-  {
     id: "4304b84e-6851-4f08-8ce1-708d62a2f04a",
     name: "Lennie Primrose",
     company: "My Home Group",
