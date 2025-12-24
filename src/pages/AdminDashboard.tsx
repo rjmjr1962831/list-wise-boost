@@ -3,44 +3,24 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Users, Database, Zap, Briefcase, RefreshCw, Search, Globe, Bot, CreditCard, TrendingUp, LayoutDashboard, MailCheck } from "lucide-react";
+import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
-import { RealtimeEnrichmentDashboard } from "@/components/admin/RealtimeEnrichmentDashboard";
-import FullEnrichmentPipeline from "@/components/admin/FullEnrichmentPipeline";
-import { EnrichmentResultsDashboard } from "@/components/admin/EnrichmentResultsDashboard";
-
-import { AdminProspectsManager } from "@/components/admin/AdminProspectsManager";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
-import AdminPipedriveFields from "@/components/admin/AdminPipedriveFields";
 import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
 import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedriveProfileLinkRepair";
 import { AdminPipedriveDuplicateCleanup } from "@/components/admin/AdminPipedriveDuplicateCleanup";
 import { BulkPipedriveSyncAll } from "@/components/admin/BulkPipedriveSyncAll";
 import { BulkPipedriveReQueue } from "@/components/admin/BulkPipedriveReQueue";
-import { PipedriveCleanupDuplicates } from "@/components/admin/PipedriveCleanupDuplicates";
-import { AdminPipedriveFieldInspector } from "@/components/admin/AdminPipedriveFieldInspector";
-import { MagicLinkGenerator } from '@/components/admin/MagicLinkGenerator';
-import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
-import CacheManagement from '@/components/admin/CacheManagement';
-import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManager';
-import { WarmCacheCronManager } from '@/components/admin/WarmCacheCronManager';
-import AIModelTester from '@/components/admin/AIModelTester';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
 import { BatchSynthesisRefresher } from '@/components/admin/BatchSynthesisRefresher';
 import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
-import { BulkPhoenixImporter } from '@/components/admin/BulkPhoenixImporter';
-import { CrossLinkMetroAgents } from '@/components/admin/CrossLinkMetroAgents';
-import { FunnelAnalyticsDashboard } from '@/components/admin/FunnelAnalyticsDashboard';
-import { BulkCityContentGenerator } from '@/components/admin/BulkCityContentGenerator';
-import { FieldChangeRequestsManager } from '@/components/admin/FieldChangeRequestsManager';
 import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
 import { StatePipelineRunner } from '@/components/admin/StatePipelineRunner';
 import { BackgroundPipelineControl } from '@/components/admin/BackgroundPipelineControl';
 import { ImportCALicenses } from '@/components/admin/ImportCALicenses';
-import { FileEdit, Upload } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -192,85 +172,25 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="prospects" className="space-y-6">
+        <Tabs defaultValue="pipedrive-sync" className="space-y-6">
           <TabsList className="inline-flex w-full max-w-7xl h-auto flex-wrap gap-1 p-2">
-            <TabsTrigger value="prospects">
-              <Users className="mr-2 h-4 w-4" />
-              Prospects
-            </TabsTrigger>
             <TabsTrigger value="pipedrive-sync">
               <Database className="mr-2 h-4 w-4" />
               Pipedrive Sync
-            </TabsTrigger>
-            <TabsTrigger value="pipedrive-fields">
-              <Database className="mr-2 h-4 w-4" />
-              Pipedrive Fields
-            </TabsTrigger>
-            <TabsTrigger value="pipedrive-field-inspector">
-              <Search className="mr-2 h-4 w-4" />
-              Field Inspector
-            </TabsTrigger>
-            <TabsTrigger value="pipedrive-cleanup">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Pipedrive Cleanup
             </TabsTrigger>
             <TabsTrigger value="enrichment-queue">
               <Zap className="mr-2 h-4 w-4" />
               Enrichment Queue
             </TabsTrigger>
-            <TabsTrigger value="realtime-enrichment">
-              <Zap className="mr-2 h-4 w-4" />
-              Realtime Pipeline
-            </TabsTrigger>
-            <TabsTrigger value="full-enrichment">
-              <Zap className="mr-2 h-4 w-4" />
-              Full Enrichment
-            </TabsTrigger>
-            <TabsTrigger value="results-dashboard">
-              <Zap className="mr-2 h-4 w-4" />
-              Results Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="magic-links">
-              <Database className="mr-2 h-4 w-4" />
-              Magic Links
-            </TabsTrigger>
             <TabsTrigger value="bulk-synthesis">
               <Zap className="mr-2 h-4 w-4" />
               Profile Synthesis
-            </TabsTrigger>
-            <TabsTrigger value="cache-management">
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Cache Management
-            </TabsTrigger>
-            <TabsTrigger value="cache-warming">
-              <Globe className="mr-2 h-4 w-4" />
-              Cache Warming
-            </TabsTrigger>
-            <TabsTrigger value="ai-router">
-              <Bot className="mr-2 h-4 w-4" />
-              AI Router
-            </TabsTrigger>
-            <TabsTrigger value="funnel-analytics">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Funnel Analytics
-            </TabsTrigger>
-            <TabsTrigger value="city-content">
-              <Globe className="mr-2 h-4 w-4" />
-              City Content
-            </TabsTrigger>
-            <TabsTrigger value="change-requests">
-              <FileEdit className="mr-2 h-4 w-4" />
-              Change Requests
             </TabsTrigger>
             <TabsTrigger value="license-import">
               <Upload className="mr-2 h-4 w-4" />
               License Import
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="prospects" className="space-y-4">
-            <AdminProspectsManager />
-          </TabsContent>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
             <BulkPipedriveReQueue />
@@ -281,39 +201,8 @@ const AdminDashboard = () => {
             <AdminPipedriveDuplicateCleanup />
           </TabsContent>
 
-          <TabsContent value="pipedrive-fields" className="space-y-4">
-            <AdminPipedriveFields />
-          </TabsContent>
-
-          <TabsContent value="pipedrive-field-inspector" className="space-y-4">
-            <AdminPipedriveFieldInspector />
-          </TabsContent>
-
-          <TabsContent value="pipedrive-cleanup" className="space-y-4">
-            <PipedriveCleanupDuplicates />
-          </TabsContent>
-
           <TabsContent value="enrichment-queue" className="space-y-4">
             <ContactEnrichmentQueue />
-          </TabsContent>
-
-          <TabsContent value="realtime-enrichment" className="space-y-4">
-            <RealtimeEnrichmentDashboard />
-          </TabsContent>
-
-          <TabsContent value="full-enrichment" className="space-y-4">
-            <CrossLinkMetroAgents />
-            <BulkPhoenixImporter />
-            <FullEnrichmentPipeline />
-          </TabsContent>
-
-          <TabsContent value="results-dashboard" className="space-y-4">
-            <EnrichmentResultsDashboard />
-          </TabsContent>
-
-          <TabsContent value="magic-links" className="space-y-4">
-            <AgentFunnelTester />
-            <MagicLinkGenerator />
           </TabsContent>
 
           <TabsContent value="bulk-synthesis" className="space-y-4">
@@ -322,31 +211,6 @@ const AdminDashboard = () => {
             <GeminiSearchTester />
             <SynthesisTester />
             <BulkProfileSynthesizer />
-          </TabsContent>
-
-          <TabsContent value="cache-management" className="space-y-4">
-            <CacheManagement />
-          </TabsContent>
-
-          <TabsContent value="cache-warming" className="space-y-4">
-            <WarmCacheCronManager />
-            <CloudflareCacheManager />
-          </TabsContent>
-
-          <TabsContent value="ai-router" className="space-y-4">
-            <AIModelTester />
-          </TabsContent>
-
-          <TabsContent value="funnel-analytics" className="space-y-4">
-            <FunnelAnalyticsDashboard />
-          </TabsContent>
-
-          <TabsContent value="city-content" className="space-y-4">
-            <BulkCityContentGenerator />
-          </TabsContent>
-
-          <TabsContent value="change-requests" className="space-y-4">
-            <FieldChangeRequestsManager />
           </TabsContent>
 
           <TabsContent value="license-import" className="space-y-4">
