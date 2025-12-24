@@ -7,14 +7,14 @@ const AgentCardRedirect = lazy(() => import("./AgentCardRedirect"));
 const DynamicCategoryList = lazy(() => import("./DynamicCategoryList"));
 
 /**
- * Smart router for /arizona/:citySlug/:thirdSegment
+ * Smart router for /:stateSlug/:citySlug/:thirdSegment
  * 
  * Determines if the third segment is:
  * - A magic link (ends with 4 digits) -> routes to AgentCardRedirect
  * - A category slug -> routes to DynamicCategoryList
  */
-const ArizonaAgentOrCategoryRouter = () => {
-  const { citySlug, thirdSegment } = useParams<{ citySlug: string; thirdSegment: string }>();
+const StateAgentOrCategoryRouter = () => {
+  const { stateSlug, citySlug, thirdSegment } = useParams<{ stateSlug: string; citySlug: string; thirdSegment: string }>();
 
   // Check if this looks like a magic link (ends with 4 digits)
   const isMagicLink = thirdSegment && /\d{4}$/.test(thirdSegment);
@@ -42,4 +42,4 @@ const ArizonaAgentOrCategoryRouter = () => {
   );
 };
 
-export default ArizonaAgentOrCategoryRouter;
+export default StateAgentOrCategoryRouter;
