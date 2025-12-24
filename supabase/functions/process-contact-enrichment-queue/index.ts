@@ -15,7 +15,9 @@ async function processAgent(
     skipRecentlyEnriched: boolean;
     skipGenericBios: boolean;
     skipIfNoPress: boolean;
-    useFirecrawl: boolean; // NEW: Use Firecrawl JSON scraper instead of memo23
+    useFirecrawl: boolean;
+    minReviews: number;
+    minExperience: number | null;
   }
 ) {
   try {
@@ -102,13 +104,16 @@ async function processAgent(
       .single();
 
     // Deactivate if agent doesn't meet quality thresholds
-    const hasEnoughReviews = agent?.num_total_reviews && agent.num_total_reviews >= 50;
-    const hasEnoughExperience = agent?.years_experience && agent.years_experience >= 10;
+    const hasEnoughReviews = agent?.num_total_reviews && agent.num_total_reviews >= options.minReviews;
+    const hasEnoughExperience = options.minExperience === null || 
+      (agent?.years_experience && agent.years_experience >= options.minExperience);
     
     if (!hasEnoughReviews || !hasEnoughExperience) {
       const reasons = [];
-      if (!hasEnoughReviews) reasons.push(`${agent?.num_total_reviews || 0} reviews (min: 50)`);
-      if (!hasEnoughExperience) reasons.push(`${agent?.years_experience || 0} years exp (min: 10)`);
+      if (!hasEnoughReviews) reasons.push(`${agent?.num_total_reviews || 0} reviews (min: ${options.minReviews})`);
+      if (!hasEnoughExperience && options.minExperience !== null) {
+        reasons.push(`${agent?.years_experience || 0} years exp (min: ${options.minExperience})`);
+      }
       
       console.log(`⚠️ ${agent?.name} - ${reasons.join(', ')} - deactivating`);
       
@@ -236,25 +241,30 @@ serve(async (req) => {
       dryRun = false,
       skipRecentlyEnriched = true,
       skipGenericBios = true,
-      skipIfNoPress = false,  // Changed: Always run synthesis to extract achievements
-      useFirecrawl = false    // NEW: Use Firecrawl JSON scraper instead of memo23
+      skipIfNoPress = false,
+      useFirecrawl = false,
+      minReviews = 20,           // NEW: Configurable minimum reviews (default 20)
+      minExperience = null       // NEW: null = no experience requirement
     } = await req.json().catch(() => ({ 
       batchSize: 100, 
       concurrency: 10,
       dryRun: false,
       skipRecentlyEnriched: true,
       skipGenericBios: true,
-      skipIfNoPress: false,  // Changed: Always run synthesis
-      useFirecrawl: false
+      skipIfNoPress: false,
+      useFirecrawl: false,
+      minReviews: 20,
+      minExperience: null
     }));
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress, useFirecrawl };
+    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress, useFirecrawl, minReviews, minExperience };
     console.log(`🔄 Processing up to ${batchSize} agents with ${concurrency} concurrent sessions...`);
     console.log(`🔧 Scraper: ${useFirecrawl ? 'Firecrawl JSON' : 'memo23'}`);
+    console.log(`📊 Thresholds: minReviews=${minReviews}, minExperience=${minExperience === null ? 'none' : minExperience}`);
     if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
     console.log(`💰 Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
 
@@ -374,7 +384,9 @@ serve(async (req) => {
           dryRun,
           skipRecentlyEnriched,
           skipGenericBios,
-          skipIfNoPress
+          skipIfNoPress,
+          minReviews,
+          minExperience
         })
       }).catch(err => console.log('Next batch triggered'));
     }
