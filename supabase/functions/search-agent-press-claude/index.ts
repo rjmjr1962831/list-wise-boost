@@ -301,6 +301,20 @@ serve(async (req) => {
 
     console.log(`Found ${finalMentions.length} citations for ${agentName}`);
 
+    // Save press_mentions directly to professionals table if we have a professionalId
+    if (professionalId && finalMentions.length > 0 && !dryRun) {
+      const { error: updateError } = await supabase
+        .from('professionals')
+        .update({ press_mentions: finalMentions })
+        .eq('id', professionalId);
+      
+      if (updateError) {
+        console.error('❌ Failed to save press_mentions:', updateError);
+      } else {
+        console.log(`✅ Saved ${finalMentions.length} press_mentions for ${agentName}`);
+      }
+    }
+
     // Auto-trigger profile synthesis if professionalId provided
     const hasContent = fullResearchText.length > 100;
     const shouldSynthesize = professionalId && fullResearchText.trim() && !dryRun;
