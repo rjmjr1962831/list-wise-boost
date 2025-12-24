@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload } from "lucide-react";
+import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
@@ -21,6 +21,8 @@ import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
 import { StatePipelineRunner } from '@/components/admin/StatePipelineRunner';
 import { BackgroundPipelineControl } from '@/components/admin/BackgroundPipelineControl';
 import { ImportCALicenses } from '@/components/admin/ImportCALicenses';
+import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManager';
+import { WarmCacheCronManager } from '@/components/admin/WarmCacheCronManager';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -190,6 +192,10 @@ const AdminDashboard = () => {
               <Upload className="mr-2 h-4 w-4" />
               License Import
             </TabsTrigger>
+            <TabsTrigger value="cache-warming">
+              <Globe className="mr-2 h-4 w-4" />
+              Cache Warming
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
@@ -218,6 +224,11 @@ const AdminDashboard = () => {
             <ImportCALicenses />
             <StateLicenseImporter />
             <StatePipelineRunner />
+          </TabsContent>
+
+          <TabsContent value="cache-warming" className="space-y-4">
+            <WarmCacheCronManager />
+            <CloudflareCacheManager />
           </TabsContent>
         </Tabs>
       </div>
