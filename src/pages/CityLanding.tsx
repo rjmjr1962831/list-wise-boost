@@ -32,11 +32,12 @@ export default function CityLanding() {
   // Use normalized state slug
   const normalizedStateSlug = stateNormalized?.normalized || stateSlug || '';
   
-  // Redirect to coming soon page unless Arizona, or Albuquerque (New Mexico)
+  // Redirect to coming soon page unless Arizona, California, or Albuquerque (New Mexico)
   const stateSlugLower = normalizedStateSlug.toLowerCase();
   const citySlugLower = (citySlug || '').toLowerCase();
   const isAllowed =
     stateSlugLower === 'arizona' ||
+    stateSlugLower === 'california' ||
     ((stateSlugLower === 'new-mexico') && citySlugLower === 'albuquerque');
 
   if (stateSlug && !isAllowed) {
