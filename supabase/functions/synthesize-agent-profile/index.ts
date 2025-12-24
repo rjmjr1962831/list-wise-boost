@@ -299,10 +299,14 @@ serve(async (req) => {
     const confirmedYearsExperience = professional.years_experience || extractedYears;
     
     // Compile existing press mentions and community roles from DB
+    // CRITICAL: press_mentions use 'source' for outlet name, not 'outlet' or 'title'
     const pressMentionsSummary = geminiSearchResults.pressMentions.length > 0 
-      ? `=== PRESS MENTIONS ===\n${geminiSearchResults.pressMentions.map((pm: any) => 
-          `- ${pm.title} (${pm.outlet || 'Unknown outlet'})`
-        ).join('\n')}`
+      ? `=== PRESS MENTIONS ===\n${geminiSearchResults.pressMentions.map((pm: any) => {
+          // Handle both formats: { source, url } or { outlet, title, url }
+          const outletName = pm.source || pm.outlet || 'Unknown outlet';
+          const url = pm.url || '';
+          return `- ${outletName}${url ? ` (${url})` : ''}`;
+        }).join('\n')}`
       : '';
     
     const communityRolesSummary = geminiSearchResults.communityRoles.length > 0
@@ -414,11 +418,18 @@ AGENT DATA:
 === PERPLEXITY WEB RESEARCH (PRIMARY SOURCE - USE THIS FIRST) ===
 ${context.rawResearch || 'No web research available'}
 
-=== PRESS MENTIONS FROM WEB SEARCH ===
-${context.geminiPressMentions?.length > 0 ? JSON.stringify(context.geminiPressMentions, null, 2) : 'No press mentions discovered'}
-
-=== EXISTING PRESS MENTIONS ===
-${context.existingPressData.length > 0 ? JSON.stringify(context.existingPressData, null, 2) : 'No existing press mentions'}
+=== PRESS MENTIONS (cite these outlet names in paragraph 3) ===
+${(() => {
+  const allMentions = [...(context.geminiPressMentions || []), ...(context.existingPressData || [])];
+  if (allMentions.length === 0) return 'No press mentions available';
+  // Format each mention clearly with source/outlet as the key info
+  return allMentions.map((pm: any) => {
+    const outlet = pm.source || pm.outlet || 'Unknown';
+    const url = pm.url || '';
+    const title = pm.title && !pm.title.startsWith('Source ') ? pm.title : '';
+    return `- OUTLET: ${outlet}${title ? ` | TITLE: ${title}` : ''}${url ? ` | URL: ${url}` : ''}`;
+  }).join('\n');
+})()}
 
 === WEBSITE CONTENT (from ${context.websiteSource || 'their website'}) ===
 ${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
