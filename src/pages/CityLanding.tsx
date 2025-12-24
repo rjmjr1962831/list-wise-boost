@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
-import { MapPin, Search, ArrowLeft } from "lucide-react";
+import { MapPin, Search, ArrowLeft, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -134,6 +134,13 @@ export default function CityLanding() {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button 
+                  size="lg" 
+                  onClick={() => navigate(listUrl)}
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Search for an Agent
+                </Button>
                 <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
                   <DialogTrigger asChild>
                     <Button size="lg" variant="outline">
