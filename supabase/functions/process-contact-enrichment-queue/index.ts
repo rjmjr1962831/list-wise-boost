@@ -214,43 +214,30 @@ async function processAgent(
   }
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+// Main background processing function
+async function processQueue(
+  batchSize: number,
+  concurrency: number,
+  costOptions: {
+    dryRun: boolean;
+    skipRecentlyEnriched: boolean;
+    skipGenericBios: boolean;
+    skipIfNoPress: boolean;
+    minReviews: number;
+    minExperience: number | null;
+  },
+  supabaseUrl: string,
+  supabaseKey: string
+) {
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  console.log(`🔄 [BACKGROUND] Processing up to ${batchSize} agents with ${concurrency} concurrent sessions...`);
+  console.log(`🔧 Scraper: Firecrawl (only)`);
+  console.log(`📊 Thresholds: minReviews=${costOptions.minReviews}, minExperience=${costOptions.minExperience === null ? 'none' : costOptions.minExperience}`);
+  if (costOptions.dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
+  console.log(`💰 Cost controls: skipRecent=${costOptions.skipRecentlyEnriched}, skipGeneric=${costOptions.skipGenericBios}, skipNoPress=${costOptions.skipIfNoPress}`);
 
   try {
-    const { 
-      batchSize = 100, 
-      concurrency = 10,
-      dryRun = false,
-      skipRecentlyEnriched = true,
-      skipGenericBios = true,
-      skipIfNoPress = false,
-      minReviews = 20,
-      minExperience = null
-    } = await req.json().catch(() => ({ 
-      batchSize: 100, 
-      concurrency: 10,
-      dryRun: false,
-      skipRecentlyEnriched: true,
-      skipGenericBios: true,
-      skipIfNoPress: false,
-      minReviews: 20,
-      minExperience: null
-    }));
-    
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress, minReviews, minExperience };
-    console.log(`🔄 Processing up to ${batchSize} agents with ${concurrency} concurrent sessions...`);
-    console.log(`🔧 Scraper: Firecrawl (only)`);
-    console.log(`📊 Thresholds: minReviews=${minReviews}, minExperience=${minExperience === null ? 'none' : minExperience}`);
-    if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
-    console.log(`💰 Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
-
     // Automatic timeout recovery: Reset stuck processing items (>5 minutes old)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
     const { data: stuckItems } = await supabase
@@ -283,10 +270,7 @@ serve(async (req) => {
 
     if (!queueItems || queueItems.length === 0) {
       console.log('✅ Queue is empty');
-      return new Response(
-        JSON.stringify({ message: 'Queue is empty', processed: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return { message: 'Queue is empty', processed: 0 };
     }
 
     console.log(`📦 Processing ${queueItems.length} agents in batches of ${concurrency}`);
@@ -364,20 +348,80 @@ serve(async (req) => {
         body: JSON.stringify({ 
           batchSize, 
           concurrency,
-          dryRun,
-          skipRecentlyEnriched,
-          skipGenericBios,
-          skipIfNoPress,
-          minReviews,
-          minExperience
+          ...costOptions
         })
       }).catch(err => console.log('Next batch triggered'));
     }
 
-    return new Response(
-      JSON.stringify(results),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return results;
+  } catch (error: any) {
+    console.error('❌ Process queue error:', error);
+    return { error: error.message };
+  }
+}
+
+// Handle shutdown gracefully
+addEventListener('beforeunload', (ev: any) => {
+  console.log(`🛑 Function shutdown due to: ${ev.detail?.reason || 'unknown'}`);
+});
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { 
+      batchSize = 100, 
+      concurrency = 10,
+      dryRun = false,
+      skipRecentlyEnriched = true,
+      skipGenericBios = true,
+      skipIfNoPress = false,
+      minReviews = 20,
+      minExperience = null
+    } = await req.json().catch(() => ({ 
+      batchSize: 100, 
+      concurrency: 10,
+      dryRun: false,
+      skipRecentlyEnriched: true,
+      skipGenericBios: true,
+      skipIfNoPress: false,
+      minReviews: 20,
+      minExperience: null
+    }));
+    
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress, minReviews, minExperience };
+    
+    // Use EdgeRuntime.waitUntil for background processing
+    // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
+    if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
+      console.log('🚀 Starting background processing...');
+      // @ts-ignore
+      EdgeRuntime.waitUntil(processQueue(batchSize, concurrency, costOptions, supabaseUrl, supabaseKey));
+      
+      return new Response(
+        JSON.stringify({ 
+          message: 'Enrichment started in background',
+          batchSize,
+          concurrency,
+          thresholds: { minReviews, minExperience }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } else {
+      // Fallback to synchronous processing if EdgeRuntime not available
+      console.log('⚠️ EdgeRuntime not available, running synchronously...');
+      const results = await processQueue(batchSize, concurrency, costOptions, supabaseUrl, supabaseKey);
+      
+      return new Response(
+        JSON.stringify(results),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
   } catch (error: any) {
     console.error('❌ Process queue error:', error);
