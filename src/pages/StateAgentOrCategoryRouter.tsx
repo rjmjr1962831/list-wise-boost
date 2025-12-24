@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -8,13 +8,23 @@ const DynamicCategoryList = lazy(() => import("./DynamicCategoryList"));
 
 /**
  * Smart router for /:stateSlug/:citySlug/:thirdSegment
- * 
+ *
  * Determines if the third segment is:
+ * - A legacy alias -> redirect to canonical slug (no trademarked terms)
  * - A magic link (ends with 4 digits) -> routes to AgentCardRedirect
  * - A category slug -> routes to DynamicCategoryList
  */
 const StateAgentOrCategoryRouter = () => {
   const { stateSlug, citySlug, thirdSegment } = useParams<{ stateSlug: string; citySlug: string; thirdSegment: string }>();
+
+  const aliasMap: Record<string, string> = {
+    "top-realtors": "top10realestateagents",
+    "realtors": "top10realestateagents",
+  };
+
+  if (stateSlug && citySlug && thirdSegment && aliasMap[thirdSegment]) {
+    return <Navigate to={`/${stateSlug}/${citySlug}/${aliasMap[thirdSegment]}`} replace />;
+  }
 
   // Check if this looks like a magic link (ends with 4 digits)
   const isMagicLink = thirdSegment && /\d{4}$/.test(thirdSegment);

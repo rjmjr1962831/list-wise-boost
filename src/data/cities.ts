@@ -33,6 +33,7 @@ const cityData = [
   // California
   { name: "Los Angeles", state: "California", stateAbbr: "CA" },
   { name: "San Diego", state: "California", stateAbbr: "CA" },
+  { name: "Carlsbad", state: "California", stateAbbr: "CA" },
   { name: "San Jose", state: "California", stateAbbr: "CA" },
   { name: "San Francisco", state: "California", stateAbbr: "CA" },
   { name: "Fresno", state: "California", stateAbbr: "CA" },
