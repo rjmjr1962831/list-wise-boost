@@ -360,3 +360,6 @@ verify_jwt = false
 
 [functions.test-exa-search]
 verify_jwt = false
+
+[functions.search-agent-exa]
+verify_jwt = false

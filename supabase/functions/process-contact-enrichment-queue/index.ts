@@ -117,13 +117,13 @@ async function processAgent(
       return { name: agent?.name, status: 'deactivated', reason: reasons.join(', '), success: true };
     }
 
-    // Step 3: Press research with Claude (auto-triggers synthesis)
+    // Step 3: Press research with Exa + DeepSeek (replaces Perplexity for cost savings)
     await supabase
       .from('contact_enrichment_queue')
       .update({ stage: 'press_research' })
       .eq('id', item.id);
 
-    console.log(`📰 [PRESS] Running Claude web search for ${agent.name}...`);
+    console.log(`📰 [PRESS] Running Exa+DeepSeek search for ${agent.name}...`);
     
     const { data: cityData } = await supabase
       .from('cities')
@@ -135,7 +135,7 @@ async function processAgent(
     if (options.dryRun) {
       console.log(`[DRY RUN] Would search press for ${agent.name}`);
     } else {
-      const { data } = await supabase.functions.invoke('search-agent-press-claude', {
+      const { data } = await supabase.functions.invoke('search-agent-exa', {
         body: {
           agentName: agent.name,
           company: agent.company,
