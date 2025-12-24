@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,6 +9,196 @@ const corsHeaders = {
 
 // TOKEN OPTIMIZATION: Maximum characters for website content (reduced from 25K to 8K)
 const MAX_WEBSITE_CONTENT_CHARS = 8000;
+
+const SMTP_HOST = "mail.privateemail.com";
+const SMTP_PORT = 465;
+
+// Send failover alert email via SMTP
+async function sendFailoverAlert(agentName: string, failedService: string, fallbackService: string, errorDetails: string) {
+  const smtpUsername = Deno.env.get('SMTP_USERNAME');
+  const smtpPassword = Deno.env.get('SMTP_PASSWORD');
+  const adminEmail = Deno.env.get('ADMIN_EMAIL');
+  const configuredFrom = Deno.env.get('SMTP_FROM_EMAIL');
+  const fromEmail = (configuredFrom && configuredFrom.includes('@')) ? configuredFrom : (smtpUsername || 'alerts@top10lists.us');
+  
+  if (!smtpUsername || !smtpPassword || !adminEmail) {
+    console.error('❌ Cannot send failover alert: SMTP credentials or ADMIN_EMAIL not configured');
+    return;
+  }
+
+  try {
+    const client = new SMTPClient({
+      connection: {
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        tls: true,
+        auth: {
+          username: smtpUsername,
+          password: smtpPassword,
+        },
+      },
+    });
+
+    await client.send({
+      from: fromEmail,
+      to: adminEmail,
+      subject: `🔄 FAILOVER: ${failedService} → ${fallbackService}`,
+      html: `
+        <h2>AI Service Failover Alert</h2>
+        <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+        <p><strong>Failed Service:</strong> ${failedService}</p>
+        <p><strong>Fallback Service:</strong> ${fallbackService}</p>
+        <p><strong>Agent being processed:</strong> ${agentName}</p>
+        <p><strong>Error:</strong> ${errorDetails}</p>
+        <hr>
+        <p>The enrichment pipeline has automatically switched to the fallback service. Consider:</p>
+        <ul>
+          <li>Checking ${failedService} API status and credits</li>
+          <li>Reviewing error logs for patterns</li>
+          <li>Verifying API key validity</li>
+        </ul>
+      `,
+    });
+
+    await client.close();
+    console.log(`📧 Failover alert email sent: ${failedService} → ${fallbackService}`);
+  } catch (error) {
+    console.error('❌ Error sending failover alert:', error);
+  }
+}
+
+// OpenAI GPT-4o tool calling schema (equivalent to Claude's)
+const OPENAI_SYNTHESIS_TOOL = {
+  type: "function" as const,
+  function: {
+    name: 'synthesize_profile',
+    description: 'Create a 150-200 word professional biography in 4 paragraphs with markdown bold formatting for key categories',
+    parameters: {
+      type: 'object',
+      properties: {
+        synthesized_bio: {
+          type: 'string',
+          description: '150-200 word biography in 4 paragraphs. Bold numbers/stats, certifications, awards, press outlets, community roles, and charities. Do NOT bold names, brokerages, locations. Never include cities/neighborhoods/service areas.'
+        },
+        specialties_extracted: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'List of specialties extracted from website/bio (investors, luxury, first-time buyers, etc.)'
+        },
+        notable_achievements: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              description: { type: 'string' },
+              date: { type: 'string', description: 'Year or date if available (YYYY format)' },
+              credibility: { type: 'number', description: 'Score 1-10' },
+              source: { type: 'string' },
+              source_url: { type: 'string', description: 'URL of the source if available' }
+            },
+            required: ['title', 'description', 'credibility']
+          },
+          description: 'Include PERSONAL achievements (valedictorian, scholarships, degrees) and PROFESSIONAL achievements (awards, rankings)'
+        },
+        publications: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              type: { type: 'string', description: 'book, article, etc.' },
+              publisher: { type: 'string' },
+              date: { type: 'string', description: 'Year or date' },
+              url: { type: 'string' }
+            },
+            required: ['title', 'type']
+          }
+        },
+        community_roles: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              organization: { type: 'string', description: 'Name of charity, nonprofit, or community organization' },
+              role: { type: 'string', description: 'Their role (supporter, board member, volunteer, founder, etc.)' },
+              description: { type: 'string', description: 'What they do for this organization' }
+            },
+            required: ['organization', 'role']
+          },
+          description: 'Charities supported, nonprofits, volunteer work, community involvement'
+        },
+        awards_verified: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              award_name: { type: 'string', description: 'Name of the award' },
+              year: { type: 'string', description: 'Year awarded (YYYY format)' },
+              awarding_organization: { type: 'string', description: 'Organization that gave the award' },
+              source_url: { type: 'string', description: 'URL of third-party source verifying the award' }
+            },
+            required: ['award_name']
+          },
+          description: 'Awards verified by third-party sources'
+        },
+        certifications_verified: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              designation: { type: 'string', description: 'Designation acronym (CRS, GRI, CCIM, etc.)' },
+              full_name: { type: 'string', description: 'Full name of the certification' },
+              verifying_organization: { type: 'string', description: 'Organization that issued/verified it' },
+              source_url: { type: 'string', description: 'URL of verification source' }
+            },
+            required: ['designation', 'full_name']
+          },
+          description: 'Certifications/designations verified by third-party sources'
+        }
+      },
+      required: ['synthesized_bio', 'notable_achievements', 'community_roles']
+    }
+  }
+};
+
+// Call OpenAI GPT-4o as fallback
+async function callOpenAIFallback(systemPrompt: string, userPrompt: string, openaiApiKey: string): Promise<any> {
+  console.log('🔄 [FAILOVER] Calling OpenAI GPT-4o...');
+  
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      max_tokens: 4096,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
+      tools: [OPENAI_SYNTHESIS_TOOL],
+      tool_choice: { type: 'function', function: { name: 'synthesize_profile' } }
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  
+  // Extract tool call from OpenAI response format
+  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+  if (!toolCall) {
+    throw new Error('No tool call in OpenAI response');
+  }
+  
+  return JSON.parse(toolCall.function.arguments);
+}
 
 /**
  * Strip HTML tags and clean content for token optimization
@@ -449,133 +640,167 @@ REMEMBER:
 - For paragraph 4: THOROUGHLY search all sources for community involvement - volunteer work, nonprofit boards, charity donations, church/faith community, youth sports coaching, school involvement, civic organizations, professional association leadership. Include EVERY community activity found with specific organization names.
 - Skip paragraph 4 ONLY if absolutely no community involvement exists anywhere in the data`;
 
-    const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': anthropicApiKey,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
-        system: systemPrompt,
-        messages: [
-          { role: 'user', content: userPrompt }
-        ],
-        tools: [
-          {
-            name: 'synthesize_profile',
-            description: 'Create a 150-200 word professional biography in 4 paragraphs with markdown bold formatting for key categories',
-            input_schema: {
-              type: 'object',
-              properties: {
-                synthesized_bio: {
-                  type: 'string',
-                  description: '150-200 word biography in 4 paragraphs. Bold numbers/stats, certifications, awards, press outlets, community roles, and charities. Do NOT bold names, brokerages, locations. Never include cities/neighborhoods/service areas.'
-                },
-                specialties_extracted: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'List of specialties extracted from website/bio (investors, luxury, first-time buyers, etc.)'
-                },
-                notable_achievements: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      title: { type: 'string' },
-                      description: { type: 'string' },
-                      date: { type: 'string', description: 'Year or date if available (YYYY format)' },
-                      credibility: { type: 'number', description: 'Score 1-10' },
-                      source: { type: 'string' },
-                      source_url: { type: 'string', description: 'URL of the source if available' }
-                    },
-                    required: ['title', 'description', 'credibility']
+    // Try Claude first, fall back to OpenAI GPT-4o on failure
+    let synthesizedData: any;
+    let usedFallback = false;
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    
+    try {
+      const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': anthropicApiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [
+            { role: 'user', content: userPrompt }
+          ],
+          tools: [
+            {
+              name: 'synthesize_profile',
+              description: 'Create a 150-200 word professional biography in 4 paragraphs with markdown bold formatting for key categories',
+              input_schema: {
+                type: 'object',
+                properties: {
+                  synthesized_bio: {
+                    type: 'string',
+                    description: '150-200 word biography in 4 paragraphs. Bold numbers/stats, certifications, awards, press outlets, community roles, and charities. Do NOT bold names, brokerages, locations. Never include cities/neighborhoods/service areas.'
                   },
-                  description: 'Include PERSONAL achievements (valedictorian, scholarships, degrees) and PROFESSIONAL achievements (awards, rankings)'
-                },
-                publications: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      title: { type: 'string' },
-                      type: { type: 'string', description: 'book, article, etc.' },
-                      publisher: { type: 'string' },
-                      date: { type: 'string', description: 'Year or date' },
-                      url: { type: 'string' }
+                  specialties_extracted: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'List of specialties extracted from website/bio (investors, luxury, first-time buyers, etc.)'
+                  },
+                  notable_achievements: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        title: { type: 'string' },
+                        description: { type: 'string' },
+                        date: { type: 'string', description: 'Year or date if available (YYYY format)' },
+                        credibility: { type: 'number', description: 'Score 1-10' },
+                        source: { type: 'string' },
+                        source_url: { type: 'string', description: 'URL of the source if available' }
+                      },
+                      required: ['title', 'description', 'credibility']
                     },
-                    required: ['title', 'type']
+                    description: 'Include PERSONAL achievements (valedictorian, scholarships, degrees) and PROFESSIONAL achievements (awards, rankings)'
+                  },
+                  publications: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        title: { type: 'string' },
+                        type: { type: 'string', description: 'book, article, etc.' },
+                        publisher: { type: 'string' },
+                        date: { type: 'string', description: 'Year or date' },
+                        url: { type: 'string' }
+                      },
+                      required: ['title', 'type']
+                    }
+                  },
+                  community_roles: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        organization: { type: 'string', description: 'Name of charity, nonprofit, or community organization' },
+                        role: { type: 'string', description: 'Their role (supporter, board member, volunteer, founder, etc.)' },
+                        description: { type: 'string', description: 'What they do for this organization' }
+                      },
+                      required: ['organization', 'role']
+                    },
+                    description: 'Charities supported, nonprofits, volunteer work, community involvement - PRIORITIZE extracting this'
+                  },
+                  awards_verified: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        award_name: { type: 'string', description: 'Name of the award' },
+                        year: { type: 'string', description: 'Year awarded (YYYY format)' },
+                        awarding_organization: { type: 'string', description: 'Organization that gave the award' },
+                        source_url: { type: 'string', description: 'URL of third-party source verifying the award' }
+                      },
+                      required: ['award_name']
+                    },
+                    description: 'Awards verified by third-party sources (industry awards, Top Producer, rankings)'
+                  },
+                  certifications_verified: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        designation: { type: 'string', description: 'Designation acronym (CRS, GRI, CCIM, etc.)' },
+                        full_name: { type: 'string', description: 'Full name of the certification' },
+                        verifying_organization: { type: 'string', description: 'Organization that issued/verified it' },
+                        source_url: { type: 'string', description: 'URL of verification source' }
+                      },
+                      required: ['designation', 'full_name']
+                    },
+                    description: 'Certifications/designations verified by third-party sources'
                   }
                 },
-                community_roles: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      organization: { type: 'string', description: 'Name of charity, nonprofit, or community organization' },
-                      role: { type: 'string', description: 'Their role (supporter, board member, volunteer, founder, etc.)' },
-                      description: { type: 'string', description: 'What they do for this organization' }
-                    },
-                    required: ['organization', 'role']
-                  },
-                  description: 'Charities supported, nonprofits, volunteer work, community involvement - PRIORITIZE extracting this'
-                },
-                awards_verified: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      award_name: { type: 'string', description: 'Name of the award' },
-                      year: { type: 'string', description: 'Year awarded (YYYY format)' },
-                      awarding_organization: { type: 'string', description: 'Organization that gave the award' },
-                      source_url: { type: 'string', description: 'URL of third-party source verifying the award' }
-                    },
-                    required: ['award_name']
-                  },
-                  description: 'Awards verified by third-party sources (industry awards, Top Producer, rankings)'
-                },
-                certifications_verified: {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      designation: { type: 'string', description: 'Designation acronym (CRS, GRI, CCIM, etc.)' },
-                      full_name: { type: 'string', description: 'Full name of the certification' },
-                      verifying_organization: { type: 'string', description: 'Organization that issued/verified it' },
-                      source_url: { type: 'string', description: 'URL of verification source' }
-                    },
-                    required: ['designation', 'full_name']
-                  },
-                  description: 'Certifications/designations verified by third-party sources'
-                }
-              },
-              required: ['synthesized_bio', 'notable_achievements', 'community_roles']
+                required: ['synthesized_bio', 'notable_achievements', 'community_roles']
+              }
             }
-          }
-        ],
-        tool_choice: { type: 'tool', name: 'synthesize_profile' }
-      })
-    });
+          ],
+          tool_choice: { type: 'tool', name: 'synthesize_profile' }
+        })
+      });
 
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error('AI API error:', aiResponse.status, errorText);
-      throw new Error(`AI API error: ${aiResponse.status}`);
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error('❌ Claude API error:', aiResponse.status, errorText);
+        throw new Error(`Claude API error: ${aiResponse.status} - ${errorText}`);
+      }
+
+      const aiData = await aiResponse.json();
+      console.log('AI response received (Claude)');
+
+      // Extract tool call result from Claude's response format
+      const toolUseBlock = aiData.content?.find((block: any) => block.type === 'tool_use');
+      const toolCall = toolUseBlock ? { function: { arguments: JSON.stringify(toolUseBlock.input) } } : null;
+      if (!toolCall) {
+        throw new Error('No tool call in Claude response');
+      }
+
+      synthesizedData = JSON.parse(toolCall.function.arguments);
+      
+    } catch (claudeError: any) {
+      // FAILOVER: Claude failed, try OpenAI GPT-4o
+      console.error(`🚨 Claude synthesis failed: ${claudeError.message}`);
+      
+      if (!openaiApiKey) {
+        throw new Error(`Claude failed and no OpenAI fallback available: ${claudeError.message}`);
+      }
+      
+      console.log('🔄 [FAILOVER] Switching to OpenAI GPT-4o for synthesis...');
+      usedFallback = true;
+      
+      // Send failover alert (fire and forget)
+      sendFailoverAlert(
+        professional.name,
+        'Claude Sonnet',
+        'OpenAI GPT-4o',
+        claudeError.message
+      ).catch(console.error);
+      
+      // Call OpenAI fallback
+      synthesizedData = await callOpenAIFallback(systemPrompt, userPrompt, openaiApiKey);
+      console.log('✅ OpenAI GPT-4o synthesis successful (failover)');
     }
-
-    const aiData = await aiResponse.json();
-    console.log('AI response received');
-
-    // Extract tool call result from Claude's response format
-    const toolUseBlock = aiData.content?.find((block: any) => block.type === 'tool_use');
-    const toolCall = toolUseBlock ? { function: { arguments: JSON.stringify(toolUseBlock.input) } } : null;
-    if (!toolCall) {
-      throw new Error('No tool call in AI response');
+    
+    if (usedFallback) {
+      console.log('⚠️ Used OpenAI GPT-4o fallback for this synthesis');
     }
-
-    const synthesizedData = JSON.parse(toolCall.function.arguments);
     
     // Convert markdown bold (**text**) to HTML <strong> tags
     if (synthesizedData.synthesized_bio) {
