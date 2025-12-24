@@ -2038,46 +2038,7 @@ export const ProfessionalCard = ({
                             </div>
                           )}
 
-                           {/* Press Mentions */}
-                           {allPressItems.length > 0 && (
-                             <div>
-                               <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
-                               <div className="space-y-2">
-                                 {allPressItems.map((item: any, idx: number) => {
-                                   // Use source as display title if title is generic (e.g., "Source 1")
-                                   const isGenericTitle = !item.title || item.title.startsWith('Source ');
-                                   const displayTitle = isGenericTitle ? (item.source || 'Press Mention') : item.title;
-                                   
-                                   return (
-                                     <div key={idx} className="flex items-start gap-2 text-sm" itemProp="mentions">
-                                       <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                       <div>
-                                         {item.url ? (
-                                           <a 
-                                             href={item.url} 
-                                             target="_blank" 
-                                             rel="noopener noreferrer"
-                                             className="text-primary hover:underline font-medium press-mention-click"
-                                             data-agent-name={professional.name}
-                                             data-source={item.source}
-                                           >
-                                             {displayTitle}
-                                           </a>
-                                         ) : (
-                                           <span className="font-medium">{displayTitle}</span>
-                                         )}
-                                         {!isGenericTitle && item.source && (
-                                           <cite className="text-xs text-muted-foreground mt-0.5 not-italic block">
-                                             {item.source}{item.date ? ` • ${item.date}` : ''}
-                                           </cite>
-                                         )}
-                                       </div>
-                                     </div>
-                                   );
-                                 })}
-                               </div>
-                             </div>
-                           )}
+                           {/* Press Mentions section removed - was showing profile pages and paid listings rather than actual press */}
 
                            {/* Publications */}
                            {publications.length > 0 && (
