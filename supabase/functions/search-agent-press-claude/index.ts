@@ -131,15 +131,26 @@ function buildEntityQuery(
   <state>${state}</state>
 </person>
 
-TASK: Find third-party verification of this specific person's awards, certifications, and community involvement.
+TASK: Find ALL third-party verification of this specific person's professional achievements. Search COMPREHENSIVELY across many sources.
 
-IMPORTANT: Only include results where you can confirm at least TWO of these attributes match:
+SEARCH EXTENSIVELY FOR:
+- Real estate rankings (RealTrends, WSJ Real Estate, local business journals Top Producers)
+- Awards and recognition (association awards, brokerage awards, community honors)
+- News articles and media coverage (local news, TV appearances, interviews)
+- Industry publications (Inman, HousingWire, RISMedia, Realtor Magazine)
+- Conference speaking and panel participation
+- Professional designations and certifications (ABR, CRS, GRI, SRES, etc.)
+- Community involvement (charity boards, volunteer work, civic organizations)
+- Podcast appearances and expert quotes
+
+IDENTITY MATCHING RULES:
+Only include results where you can confirm at least TWO of these attributes match:
 1. Full name: ${agentName}
 2. Company/Brokerage: ${companyDisplay}
 3. Location: ${city}, ${state}
 
-For each citation, you MUST provide a "match_reason" explaining which attributes confirmed the match.
-If you find mentions that might be a DIFFERENT person with the same name, list them separately under "Rejected Due to Name Collision".`;
+For each citation, provide a "match_reason" explaining which attributes confirmed the match.
+List rejected name collisions separately.`;
 }
 
 // Search with Perplexity API with exponential backoff on 429 and strict entity resolution
@@ -172,13 +183,17 @@ async function searchWithPerplexity(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'sonar-pro',
+        model: 'sonar-pro',  // Multi-step reasoning with 2x more citations
         messages: [
           { role: 'system', content: RESEARCH_SYSTEM_PROMPT },
           { role: 'user', content: entityQuery }
         ],
-        max_tokens: 2500,
-        temperature: 0.1  // Lower temperature for more precise entity matching
+        max_tokens: 4000,
+        temperature: 0.3,
+        return_citations: true,
+        web_search_options: {
+          search_context_size: 'high'  // Request more comprehensive search
+        }
       }),
     });
 
