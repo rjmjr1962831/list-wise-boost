@@ -6,43 +6,46 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Search with Perplexity API
-async function searchWithPerplexity(query: string, perplexityApiKey: string): Promise<{ content: string; citations: string[] }> {
-  console.log(`🔍 Perplexity search: ${query.substring(0, 100)}...`);
+// Search with Lovable AI (Google Gemini Flash) - grounded search
+async function searchWithGemini(query: string, lovableApiKey: string): Promise<{ content: string; citations: string[] }> {
+  console.log(`🔍 Gemini Flash search: ${query.substring(0, 100)}...`);
   
-  const response = await fetch('https://api.perplexity.ai/chat/completions', {
+  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${perplexityApiKey}`,
+      'Authorization': `Bearer ${lovableApiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'sonar-pro',
+      model: 'google/gemini-2.5-flash',
       messages: [
         { 
           role: 'system', 
-          content: `You are a research assistant finding information about real estate professionals. 
+          content: `You are a research assistant finding information about real estate professionals.
 Return factual information with specific details like names, dates, organizations, and achievements.
 Focus on verifiable facts from credible sources.
+When you find information, include the source URL in brackets like [source: https://example.com].
 If you cannot find specific information, say so clearly.` 
         },
         { role: 'user', content: query }
       ],
-      max_tokens: 2000,
-      temperature: 0.1,
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Perplexity API error ${response.status}: ${errorText}`);
+    throw new Error(`Gemini API error ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content || '';
-  const citations = data.citations || [];
   
-  console.log(`✅ Perplexity returned ${content.length} chars, ${citations.length} citations`);
+  // Extract URLs from the content that were cited
+  const urlRegex = /\[source:\s*(https?:\/\/[^\]]+)\]|(?:https?:\/\/[^\s\]\)]+)/gi;
+  const matches = content.match(urlRegex) || [];
+  const citations = matches.map((m: string) => m.replace(/\[source:\s*|\]/g, '').trim());
+  
+  console.log(`✅ Gemini returned ${content.length} chars, ${citations.length} citations`);
   
   return { content, citations };
 }
@@ -75,43 +78,45 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
-    if (!perplexityApiKey) {
-      throw new Error('PERPLEXITY_API_KEY not configured');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+    if (!lovableApiKey) {
+      throw new Error('LOVABLE_API_KEY not configured');
     }
 
-    console.log(`🔎 Researching ${agentName} using Perplexity...`);
+    console.log(`🔎 Researching ${agentName} using Gemini Flash...`);
 
     const agentIdentifier = `${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''}, real estate agent in ${city}, ${state}`;
 
-    // Run multiple Perplexity searches in parallel for comprehensive research
+    // Run multiple searches in parallel for comprehensive research
     const searchQueries = [
       // Press & Awards search
-      `Find press mentions, news articles, TV appearances, and industry awards for ${agentIdentifier}. 
+      `Search the web for press mentions, news articles, TV appearances, and industry awards for ${agentIdentifier}. 
 Look for: Wall Street Journal Real Trends rankings, America's Best Real Estate Agents, local news features, 
 podcast interviews, real estate industry publication articles (Inman, HousingWire, Real Producer Magazine), 
-speaking engagements, and any public recognition or awards.`,
+speaking engagements, and any public recognition or awards. Include source URLs.`,
 
       // Community & Nonprofit search
-      `Find community involvement, nonprofit work, and volunteer activities for ${agentIdentifier}.
+      `Search the web for community involvement, nonprofit work, and volunteer activities for ${agentIdentifier}.
 Look for: charity board memberships, nonprofit organizations they support or lead, 
 church or faith community involvement, youth sports coaching, school board or PTA involvement,
 Habitat for Humanity, food bank volunteering, fundraising events organized or sponsored,
 civic organization memberships (Rotary, Kiwanis, Lions Club), chamber of commerce leadership roles,
-mentoring programs, scholarship foundations, community event sponsorships.`,
+mentoring programs, scholarship foundations, community event sponsorships. Include source URLs.`,
 
       // Professional background search  
-      `Find professional background and credentials for ${agentIdentifier}.
+      `Search the web for professional background and credentials for ${agentIdentifier}.
 Look for: education and degrees, professional certifications (CLHMS, CNE, ABR, CRS, GRI),
 designations, coaching or training programs they lead, industry association leadership roles,
-years in business, brokerage history, team leadership.`
+years in business, brokerage history, team leadership. Include source URLs.`
     ];
 
-    // Execute all searches in parallel
+    // Execute all searches in parallel with delay between to avoid rate limits
     const searchResults = await Promise.all(
       searchQueries.map(async (query, index) => {
         try {
-          return await searchWithPerplexity(query, perplexityApiKey);
+          // Small delay between requests to avoid rate limits
+          await new Promise(resolve => setTimeout(resolve, index * 500));
+          return await searchWithGemini(query, lovableApiKey);
         } catch (error) {
           console.error(`❌ Search ${index + 1} failed:`, error);
           return { content: '', citations: [] };
@@ -156,34 +161,38 @@ ${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}
     // Parse citations into structured mentions
     uniqueCitations.forEach((url, index) => {
       if (url && typeof url === 'string') {
-        const lowerUrl = url.toLowerCase();
-        let type = 'article';
-        let credibilityScore = 5;
-        
-        if (lowerUrl.includes('wsj.com') || lowerUrl.includes('wallstreetjournal')) {
-          type = 'award';
-          credibilityScore = 10;
-        } else if (lowerUrl.includes('fox') || lowerUrl.includes('nbc') || lowerUrl.includes('abc') || lowerUrl.includes('cbs')) {
-          type = 'tv_appearance';
-          credibilityScore = 9;
-        } else if (lowerUrl.includes('inman') || lowerUrl.includes('housingwire') || lowerUrl.includes('realproducer')) {
-          type = 'article';
-          credibilityScore = 8;
-        } else if (lowerUrl.includes('habitat') || lowerUrl.includes('rotary') || lowerUrl.includes('kiwanis') || lowerUrl.includes('charity')) {
-          type = 'community';
-          credibilityScore = 7;
-        } else if (lowerUrl.includes('podcast') || lowerUrl.includes('spotify') || lowerUrl.includes('apple.com/podcast')) {
-          type = 'podcast';
-          credibilityScore = 7;
+        try {
+          const lowerUrl = url.toLowerCase();
+          let type = 'article';
+          let credibilityScore = 5;
+          
+          if (lowerUrl.includes('wsj.com') || lowerUrl.includes('wallstreetjournal')) {
+            type = 'award';
+            credibilityScore = 10;
+          } else if (lowerUrl.includes('fox') || lowerUrl.includes('nbc') || lowerUrl.includes('abc') || lowerUrl.includes('cbs')) {
+            type = 'tv_appearance';
+            credibilityScore = 9;
+          } else if (lowerUrl.includes('inman') || lowerUrl.includes('housingwire') || lowerUrl.includes('realproducer')) {
+            type = 'article';
+            credibilityScore = 8;
+          } else if (lowerUrl.includes('habitat') || lowerUrl.includes('rotary') || lowerUrl.includes('kiwanis') || lowerUrl.includes('charity')) {
+            type = 'community';
+            credibilityScore = 7;
+          } else if (lowerUrl.includes('podcast') || lowerUrl.includes('spotify') || lowerUrl.includes('apple.com/podcast')) {
+            type = 'podcast';
+            credibilityScore = 7;
+          }
+          
+          mentions.push({
+            url,
+            source: new URL(url).hostname.replace('www.', ''),
+            type,
+            credibilityScore,
+            title: `Source ${index + 1}`
+          });
+        } catch (e) {
+          // Invalid URL, skip
         }
-        
-        mentions.push({
-          url,
-          source: new URL(url).hostname.replace('www.', ''),
-          type,
-          credibilityScore,
-          title: `Source ${index + 1}`
-        });
       }
     });
 
@@ -210,7 +219,7 @@ ${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}
           body: {
             professionalId,
             skipIfNoPress: false, // Always synthesize since we now have community research
-            rawResearch: `# Perplexity Research for ${agentName}
+            rawResearch: `# Gemini Flash Research for ${agentName}
 
 ## Context
 Agent: ${agentName}
@@ -246,7 +255,7 @@ ${fullResearchText}`
     return new Response(
       JSON.stringify({ 
         mentions: finalMentions,
-        provider: 'perplexity',
+        provider: 'gemini-flash',
         researchSummary: {
           pressChars: pressResults.content.length,
           communityChars: communityResults.content.length,
