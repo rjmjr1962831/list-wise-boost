@@ -351,3 +351,6 @@ verify_jwt = false
 
 [functions.import-ca-licenses]
 verify_jwt = false
+
+[functions.rerun-press-synthesis]
+verify_jwt = false
