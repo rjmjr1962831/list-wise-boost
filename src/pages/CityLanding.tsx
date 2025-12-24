@@ -46,15 +46,15 @@ export default function CityLanding() {
 
   const city = getCityBySlug(citySlug || "", normalizedStateSlug);
   
-  // Get Arizona cities for the dialog (using full state name)
-  const arizonaCities = getCitiesByState("arizona").filter(c => 
+  // Get cities for the dialog (same state as current page)
+  const stateCities = getCitiesByState(normalizedStateSlug).filter(c =>
     c.slug !== citySlug && c.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCitySelect = (selectedCity: typeof arizonaCities[0]) => {
+  const handleCitySelect = (selectedCity: typeof stateCities[0]) => {
     setDialogOpen(false);
     setSearchQuery("");
-    navigate(`/arizona/${selectedCity.slug}`);
+    navigate(`/${normalizedStateSlug}/${selectedCity.slug}`);
   };
 
   useEffect(() => {
@@ -76,35 +76,35 @@ export default function CityLanding() {
   }
 
   // Determine if user came from the list page
-  const cameFromList = location.state?.fromList || document.referrer.includes(`/${city.slug}/top10realestateagents`);
   const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
+  const cameFromList = location.state?.fromList || document.referrer.includes(listUrl);
 
   const cityName = formatCityName(city);
-  const canonicalUrl = `https://www.top10lists.us/arizona/${city.slug}`;
+  const canonicalUrl = `https://www.top10lists.us/${normalizedStateSlug}/${city.slug}`;
 
   return (
     <>
       <Helmet>
-        <title>{`${cityName} AZ Real Estate Guide | Top10Lists.us`}</title>
+        <title>{`${city.name} ${city.state} Real Estate Guide | Top10Lists.us`}</title>
         <meta
           name="description"
-          content={`Local market guide for ${cityName}, Arizona: neighborhoods, pricing context, and how to find a verified real estate professional.`}
+          content={`Local market guide for ${cityName}: neighborhoods, pricing context, and how to find a verified real estate agent.`}
         />
         <link rel="canonical" href={canonicalUrl} />
 
-        <meta property="og:title" content={`${cityName}, AZ Real Estate Guide | Top10Lists.us`} />
+        <meta property="og:title" content={`${city.name} ${city.state} Real Estate Guide | Top10Lists.us`} />
         <meta
           property="og:description"
-          content={`Market overview for ${cityName}, Arizona with highlights, neighborhoods, and selection criteria.`}
+          content={`Market overview for ${cityName} with highlights, neighborhoods, and selection criteria.`}
         />
         <meta property="og:url" content={canonicalUrl} />
         <meta property="og:type" content="website" />
 
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${cityName}, AZ Real Estate Guide | Top10Lists.us`} />
+        <meta name="twitter:title" content={`${city.name} ${city.state} Real Estate Guide | Top10Lists.us`} />
         <meta
           name="twitter:description"
-          content={`Market overview for ${cityName}, Arizona with highlights, neighborhoods, and selection criteria.`}
+          content={`Market overview for ${cityName} with highlights, neighborhoods, and selection criteria.`}
         />
       </Helmet>
 
@@ -129,7 +129,7 @@ export default function CityLanding() {
                 <span className="text-sm font-medium">{cityName}</span>
               </div>
 
-              <h1 className="text-4xl md:text-6xl font-bold mb-6">{city.name}, Arizona Real Estate Guide</h1>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">{city.name}, {city.state} Real Estate Guide</h1>
               <p className="text-xl text-muted-foreground mb-8">
                 City facts, neighborhoods, and buyer/seller context—built for humans and AI readability.
               </p>
@@ -151,8 +151,7 @@ export default function CityLanding() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                      <DialogTitle>Search Arizona Cities</DialogTitle>
-                    </DialogHeader>
+                      <DialogTitle>Search cities in {city.state}</DialogTitle>
                     <div className="space-y-4">
                       <Input
                         placeholder="Start typing a city name..."
@@ -162,15 +161,15 @@ export default function CityLanding() {
                       />
                       <ScrollArea className="h-64">
                         <div className="space-y-1">
-                          {arizonaCities.length > 0 ? (
-                            arizonaCities.map((c) => (
+                          {stateCities.length > 0 ? (
+                            stateCities.map((c) => (
                               <button
                                 key={c.slug}
                                 onClick={() => handleCitySelect(c)}
                                 className="w-full text-left px-3 py-2 rounded-md hover:bg-primary/10 transition-colors flex items-center gap-2"
                               >
                                 <MapPin className="h-4 w-4 text-muted-foreground" />
-                                {c.name}, AZ
+                                {c.name}
                               </button>
                             ))
                           ) : (
