@@ -431,8 +431,8 @@ Only output valid JSON, no other text.`;
   }
 }
 
-// Synthesize with Gemini (via Lovable AI) for lower confidence cases needing more disambiguation
-async function synthesizeWithGemini(
+// Synthesize with Claude Sonnet (Anthropic) for lower confidence cases needing more disambiguation
+async function synthesizeWithSonnet(
   agentName: string,
   city: string,
   state: string,
@@ -440,11 +440,11 @@ async function synthesizeWithGemini(
   searchResults: ExaResult[],
   confidenceScore: ConfidenceScore
 ): Promise<EnrichmentData> {
-  console.log(`🧠 Gemini synthesis for: ${agentName} (${searchResults.length} results, low confidence: ${confidenceScore.score})`);
+  console.log(`🧠 Sonnet synthesis for: ${agentName} (${searchResults.length} results, confidence: ${confidenceScore.score})`);
 
-  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-  if (!lovableApiKey) {
-    console.error("LOVABLE_API_KEY not configured, falling back to empty result");
+  const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+  if (!anthropicApiKey) {
+    console.error("ANTHROPIC_API_KEY not configured, falling back to empty result");
     return {
       pressRemarks: [],
       awardsRecognition: [],
@@ -472,7 +472,7 @@ async function synthesizeWithGemini(
     };
   }
 
-  // Enhanced prompt for disambiguation
+  // Enhanced prompt for disambiguation with Sonnet's superior reasoning
   const prompt = `You are an expert research analyst tasked with CAREFULLY disambiguating search results about a specific person.
 
 ⚠️ CRITICAL: This search has a MEDIUM/LOW confidence score (${confidenceScore.score}/100). There may be results about DIFFERENT people with similar names. You MUST be very careful to only include information about the TARGET person.
@@ -524,35 +524,35 @@ RESPOND IN THIS JSON FORMAT:
 Only output valid JSON.`;
 
   try {
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${lovableApiKey}`,
+        "x-api-key": anthropicApiKey,
+        "anthropic-version": "2023-06-01",
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 3000,
         messages: [
-          {
-            role: "system",
-            content: "You are an expert research analyst specializing in identity verification and disambiguation. You are extremely careful about not attributing achievements to the wrong person. You only output valid JSON."
-          },
           {
             role: "user",
             content: prompt
           }
-        ]
+        ],
+        system: "You are an expert research analyst specializing in identity verification and disambiguation. You are extremely careful about not attributing achievements to the wrong person. You only output valid JSON."
       })
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Gemini API error: ${response.status} - ${errorText}`);
-      throw new Error(`Gemini API error: ${response.status}`);
+      console.error(`Sonnet API error: ${response.status} - ${errorText}`);
+      throw new Error(`Sonnet API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "{}";
+    // Anthropic uses content[0].text format, not choices[0].message.content
+    const content = data.content?.[0]?.text || "{}";
     
     let jsonStr = content;
     if (content.includes("```json")) {
@@ -562,7 +562,7 @@ Only output valid JSON.`;
     }
 
     const parsed = JSON.parse(jsonStr);
-    console.log(`✅ Gemini synthesis complete: ${parsed.confidence} confidence`);
+    console.log(`✅ Sonnet synthesis complete: ${parsed.confidence} confidence`);
     
     return {
       pressRemarks: parsed.pressRemarks || [],
@@ -577,7 +577,7 @@ Only output valid JSON.`;
     };
 
   } catch (error) {
-    console.error("Gemini synthesis error:", error);
+    console.error("Sonnet synthesis error:", error);
     return {
       pressRemarks: [],
       awardsRecognition: [],
@@ -656,7 +656,7 @@ serve(async (req) => {
       );
       modelUsed = "deepseek";
     } else {
-      enrichmentData = await synthesizeWithGemini(
+      enrichmentData = await synthesizeWithSonnet(
         agentName,
         city,
         state,
@@ -664,7 +664,7 @@ serve(async (req) => {
         searchResults,
         confidenceScore
       );
-      modelUsed = "gemini";
+      modelUsed = "sonnet";
     }
 
     const elapsed = Date.now() - startTime;
