@@ -351,21 +351,23 @@ export default function DynamicCategoryList() {
         console.log(`🔍 Query returned: ${allProfs.length} total (${brandBuilderProfs.length} Brand Builders + ${freeProfs.length} free)`);
         console.log(`🏆 Brand Builders:`, brandBuilderProfs.map((p: any) => p.name));
 
-        // Random selection: shuffle free agents using Fisher-Yates for true randomness
-        const shuffled = [...freeProfs];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
+        // Hourly round-robin: rotate through free agents based on current hour
+        const hourlyOffset = Math.floor(Date.now() / (1000 * 60 * 60)) % (freeProfs.length || 1);
         
         // Fill remaining slots after brand builders
         const spotsRemaining = Math.max(0, 10 - brandBuilderProfs.length);
-        const randomPicks = shuffled.slice(0, spotsRemaining);
-
-        // Combine: Brand Builders first + random free picks
-        professionalsData = [...brandBuilderProfs, ...randomPicks];
         
-        console.log(`✅ Final list: ${brandBuilderProfs.length} Brand Builders + ${randomPicks.length} random = ${professionalsData.length} total`);
+        // Pick agents starting from the hourly offset, wrapping around
+        const rotatedPicks: typeof freeProfs = [];
+        for (let i = 0; i < spotsRemaining && i < freeProfs.length; i++) {
+          const index = (hourlyOffset + i) % freeProfs.length;
+          rotatedPicks.push(freeProfs[index]);
+        }
+
+        // Combine: Brand Builders first + rotated free picks
+        professionalsData = [...brandBuilderProfs, ...rotatedPicks];
+        
+        console.log(`✅ Final list: ${brandBuilderProfs.length} Brand Builders + ${rotatedPicks.length} rotated (offset ${hourlyOffset}) = ${professionalsData.length} total`);
         console.log(`📋 Agents selected:`, professionalsData.map((p: any) => p.name));
 
         if (profsError) {
