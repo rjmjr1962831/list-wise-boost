@@ -20,52 +20,50 @@ async function processAgent(
   }
 ) {
   try {
-    // Mark as processing - starting with Firecrawl
+    // Determine starting stage based on queue item's current stage
+    const startingStage = item.stage || 'exa_search';
+    
+    // Mark as processing
     await supabase
       .from('contact_enrichment_queue')
       .update({ 
         status: 'processing',
-        stage: 'firecrawl',
+        stage: startingStage,
         started_at: new Date().toISOString(),
         attempts: item.attempts + 1
       })
       .eq('id', item.id);
 
-    // Check if agent was recently enriched (within 15 days) - skip Firecrawl but continue to synthesis
+    // Get agent info
+    const { data: agent } = await supabase
+      .from('professionals')
+      .select('num_total_reviews, years_experience, name, company, business_name, city_id, zillow_profile_url, zillow_data_fetched_at')
+      .eq('id', item.professional_id)
+      .single();
+
+    if (!agent) {
+      throw new Error('Professional not found');
+    }
+
+    // Check if agent was recently enriched (within 15 days) - skip Firecrawl
     let skipFirecrawl = false;
-    if (options.skipRecentlyEnriched) {
-      const { data: agent } = await supabase
-        .from('professionals')
-        .select('zillow_data_fetched_at, profile_last_synthesized_at')
-        .eq('id', item.professional_id)
-        .single();
-      
-      if (agent?.zillow_data_fetched_at) {
-        const daysSinceEnrichment = (Date.now() - new Date(agent.zillow_data_fetched_at).getTime()) / (1000 * 60 * 60 * 24);
-        if (daysSinceEnrichment < 15) {
-          console.log(`⏭️ [SKIP FIRECRAWL] ${item.professionals?.name} enriched ${daysSinceEnrichment.toFixed(1)} days ago - will proceed to synthesis`);
-          skipFirecrawl = true;
-        }
+    if (options.skipRecentlyEnriched && agent.zillow_data_fetched_at) {
+      const daysSinceEnrichment = (Date.now() - new Date(agent.zillow_data_fetched_at).getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceEnrichment < 15) {
+        console.log(`⏭️ [SKIP FIRECRAWL] ${agent.name} enriched ${daysSinceEnrichment.toFixed(1)} days ago`);
+        skipFirecrawl = true;
       }
     }
 
-    console.log(`🔄 [Firecrawl] Processing ${item.professionals?.name}...`);
-
-    // Step 1: Firecrawl enrichment (skip if recently enriched)
-    if (skipFirecrawl) {
-      console.log(`⏭️ [SKIP Firecrawl] Skipping for ${item.professionals?.name}`);
-    } else if (options.dryRun) {
-      console.log(`[DRY RUN] Would call Firecrawl for ${item.professional_id}`);
-    } else {
-      // Use Firecrawl scraper for Zillow enrichment
-      const profileUrl = item.professionals?.zillow_profile_url;
-      if (!profileUrl) {
-        console.log(`⚠️ [Firecrawl] No Zillow URL for ${item.professionals?.name}, skipping enrichment`);
-      } else {
+    // Stage 1: Firecrawl (if starting from firecrawl stage or agent needs it)
+    if (startingStage === 'firecrawl' && !skipFirecrawl) {
+      console.log(`🔥 [FIRECRAWL] Processing ${agent.name}...`);
+      
+      if (!options.dryRun && agent.zillow_profile_url) {
         const { data: firecrawlData, error: enrichError } = await supabase.functions.invoke(
           'scrape-zillow-firecrawl',
           { body: { 
-            zillow_url: profileUrl, 
+            zillow_url: agent.zillow_profile_url, 
             professional_id: item.professional_id, 
             save_to_db: true 
           } }
@@ -77,18 +75,16 @@ async function processAgent(
         if (!firecrawlData?.success) {
           throw new Error(`Firecrawl failed: ${firecrawlData?.error || 'Unknown error'}`);
         }
-        console.log(`✅ [Firecrawl] Complete for ${item.professionals?.name}`);
+        console.log(`✅ [FIRECRAWL] Complete for ${agent.name}`);
       }
+      
+      // Move to next stage
+      await supabase.from('contact_enrichment_queue')
+        .update({ stage: 'exa_search' })
+        .eq('id', item.id);
     }
 
-    // Step 2: Check review count and experience qualification
-    const { data: agent } = await supabase
-      .from('professionals')
-      .select('num_total_reviews, years_experience, name, company, business_name, city_id')
-      .eq('id', item.professional_id)
-      .single();
-
-    // Deactivate if agent doesn't meet quality thresholds
+    // Check review count and experience qualification
     const hasEnoughReviews = agent?.num_total_reviews && agent.num_total_reviews >= options.minReviews;
     const hasEnoughExperience = options.minExperience === null || 
       (agent?.years_experience && agent.years_experience >= options.minExperience);
@@ -117,42 +113,79 @@ async function processAgent(
       return { name: agent?.name, status: 'deactivated', reason: reasons.join(', '), success: true };
     }
 
-    // Step 3: Press research with Exa + DeepSeek (replaces Perplexity for cost savings)
-    await supabase
-      .from('contact_enrichment_queue')
-      .update({ stage: 'press_research' })
-      .eq('id', item.id);
-
-    console.log(`📰 [PRESS] Running Exa+DeepSeek search for ${agent.name}...`);
-    
+    // Get city data for press research
     const { data: cityData } = await supabase
       .from('cities')
       .select('name, state')
       .eq('id', agent.city_id)
       .single();
 
-    let pressResult: any = null;
-    if (options.dryRun) {
-      console.log(`[DRY RUN] Would search press for ${agent.name}`);
-    } else {
-      const { data } = await supabase.functions.invoke('search-agent-exa', {
-        body: {
-          agentName: agent.name,
-          company: agent.company,
-          businessName: agent.business_name,
-          city: cityData?.name,
-          state: cityData?.state,
-          professionalId: item.professional_id
+    // Stage 2: Exa Search (web search for press mentions, awards, etc.)
+    const currentStage = item.stage || startingStage;
+    if (currentStage === 'exa_search' || startingStage === 'exa_search') {
+      await supabase.from('contact_enrichment_queue')
+        .update({ stage: 'exa_search' })
+        .eq('id', item.id);
+
+      console.log(`🔍 [EXA] Running web search for ${agent.name}...`);
+      
+      if (!options.dryRun) {
+        const { data: exaResult, error: exaError } = await supabase.functions.invoke('search-agent-exa', {
+          body: {
+            agentName: agent.name,
+            company: agent.company,
+            businessName: agent.business_name,
+            city: cityData?.name,
+            state: cityData?.state,
+            professionalId: item.professional_id,
+            skipAiProcessing: true // Just do the Exa search, skip DeepSeek for now
+          }
+        });
+
+        if (exaError) {
+          console.error(`⚠️ [EXA] Error for ${agent.name}:`, exaError.message);
+        } else {
+          console.log(`✅ [EXA] Complete for ${agent.name} - found ${exaResult?.resultsCount || 0} results`);
         }
-      });
-      pressResult = data;
+      }
+      
+      // Move to DeepSeek analysis stage
+      await supabase.from('contact_enrichment_queue')
+        .update({ stage: 'deepseek_analysis' })
+        .eq('id', item.id);
     }
 
-    console.log(`✅ [PRESS] Complete for ${agent.name}`);
+    // Stage 3: DeepSeek Analysis (process Exa results with DeepSeek for cost efficiency)
+    const updatedStage = (await supabase.from('contact_enrichment_queue').select('stage').eq('id', item.id).single()).data?.stage;
+    if (updatedStage === 'deepseek_analysis') {
+      console.log(`🤖 [DEEPSEEK] Analyzing press mentions for ${agent.name}...`);
+      
+      if (!options.dryRun) {
+        // DeepSeek processes the raw Exa results stored in professionals.raw_scraper_data
+        const { data: deepseekResult, error: deepseekError } = await supabase.functions.invoke('analyze-press-deepseek', {
+          body: {
+            professionalId: item.professional_id,
+            agentName: agent.name,
+            city: cityData?.name,
+            state: cityData?.state
+          }
+        });
 
-    // Check if we should skip synthesis
+        if (deepseekError) {
+          console.error(`⚠️ [DEEPSEEK] Error for ${agent.name}:`, deepseekError.message);
+        } else {
+          console.log(`✅ [DEEPSEEK] Complete for ${agent.name}`);
+        }
+      }
+      
+      // Move to Sonnet synthesis stage
+      await supabase.from('contact_enrichment_queue')
+        .update({ stage: 'sonnet_synthesis' })
+        .eq('id', item.id);
+    }
+
+    // Check if we should skip synthesis based on press mentions
     if (options.skipIfNoPress && !options.dryRun) {
-      // Check if any press mentions were found
       const { data: updatedAgent } = await supabase
         .from('professionals')
         .select('press_mentions')
@@ -161,7 +194,7 @@ async function processAgent(
       
       if (!updatedAgent?.press_mentions || 
           (Array.isArray(updatedAgent.press_mentions) && updatedAgent.press_mentions.length === 0)) {
-        console.log(`⏭️ [SKIP] No press mentions found for ${agent.name}, skipping synthesis`);
+        console.log(`⏭️ [SKIP] No press mentions found for ${agent.name}, skipping Sonnet synthesis`);
         await supabase.from('contact_enrichment_queue')
           .update({ status: 'completed', stage: 'completed', completed_at: new Date().toISOString() })
           .eq('id', item.id);
@@ -169,25 +202,21 @@ async function processAgent(
       }
     }
 
-    // Update to synthesis stage
-    await supabase
-      .from('contact_enrichment_queue')
-      .update({ stage: 'synthesis' })
-      .eq('id', item.id);
-
-    if (options.dryRun) {
-      console.log(`[DRY RUN] Would synthesize profile for ${agent.name}`);
-    } else {
-      console.log(`🤖 [SYNTHESIS] Running for ${agent.name}...`);
+    // Stage 4: Sonnet Synthesis (final bio generation with Claude Sonnet)
+    const finalStage = (await supabase.from('contact_enrichment_queue').select('stage').eq('id', item.id).single()).data?.stage;
+    if (finalStage === 'sonnet_synthesis') {
+      console.log(`✍️ [SONNET] Synthesizing profile for ${agent.name}...`);
       
-      const { error: synthesisError } = await supabase.functions.invoke('synthesize-agent-profile', {
-        body: { professionalId: item.professional_id }
-      });
-      
-      if (synthesisError) {
-        console.error(`⚠️ Synthesis failed for ${agent.name}:`, synthesisError.message);
-      } else {
-        console.log(`✅ [SYNTHESIS] Complete for ${agent.name}`);
+      if (!options.dryRun) {
+        const { error: synthesisError } = await supabase.functions.invoke('synthesize-agent-profile', {
+          body: { professionalId: item.professional_id }
+        });
+        
+        if (synthesisError) {
+          console.error(`⚠️ [SONNET] Synthesis failed for ${agent.name}:`, synthesisError.message);
+        } else {
+          console.log(`✅ [SONNET] Complete for ${agent.name}`);
+        }
       }
     }
 

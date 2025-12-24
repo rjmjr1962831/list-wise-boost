@@ -363,3 +363,6 @@ verify_jwt = false
 
 [functions.search-agent-exa]
 verify_jwt = false
+
+[functions.analyze-press-deepseek]
+verify_jwt = false

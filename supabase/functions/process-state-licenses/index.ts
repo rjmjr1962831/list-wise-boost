@@ -446,19 +446,32 @@ async function processAgent(
       return { name, licenseNumber: license_number, city, status: 'error', error: insertError.message };
     }
 
-    // 7. Only trigger websearch and synthesis for QUALIFIED agents
+    // 7. Queue qualified agents for Exa → DeepSeek → Sonnet enrichment pipeline
     if (isQualified) {
-      console.log(`[${name}] Triggering web search and synthesis for qualified agent...`);
+      console.log(`[${name}] Queueing for Exa/DeepSeek/Sonnet enrichment pipeline...`);
       
-      supabase.functions.invoke('search-agent-press-claude', {
-        body: { 
-          professionalId: professional.id, 
-          skipSynthesis: false, 
-          skipIfNoPress: false 
-        }
-      }).catch((err: any) => {
-        console.error(`[${name}] Synthesis trigger error (non-blocking):`, err);
-      });
+      // Insert into contact_enrichment_queue for staged processing
+      const { error: queueError } = await supabase
+        .from('contact_enrichment_queue')
+        .upsert({
+          professional_id: professional.id,
+          status: 'pending',
+          stage: 'exa_search',
+          reason: 'state_pipeline_qualified',
+          attempts: 0,
+          max_attempts: 3,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }, { 
+          onConflict: 'professional_id',
+          ignoreDuplicates: true 
+        });
+      
+      if (queueError) {
+        console.error(`[${name}] Queue insert error (non-blocking):`, queueError);
+      } else {
+        console.log(`[${name}] ✅ Queued for enrichment pipeline`);
+      }
 
       console.log(`[${name}] ✅ Qualified, inserted, and synthesis triggered`);
       return { 
