@@ -1958,17 +1958,68 @@ export const ProfessionalCard = ({
                       // Combine and dedupe press items
                       const allPressItems = [...pressItems, ...pressFromAchievements];
 
+                      // Deduplicate achievements - remove redundant "X years experience" entries
+                      const deduplicatedAchievements = achievements.reduce((acc: any[], achievement: any) => {
+                        const title = (achievement.title || '').toLowerCase();
+                        const description = (achievement.description || '').toLowerCase();
+                        const combined = `${title} ${description}`;
+                        
+                        // Check if this is a "years experience" type achievement
+                        const yearsMatch = combined.match(/(\d+)\+?\s*years?/i);
+                        const isExperienceAchievement = yearsMatch && (
+                          combined.includes('experience') || 
+                          combined.includes('real estate') || 
+                          combined.includes('market') ||
+                          combined.includes('serving') ||
+                          combined.includes('practice')
+                        );
+                        
+                        if (isExperienceAchievement) {
+                          // Check if we already have an experience achievement
+                          const existingExpIdx = acc.findIndex((a: any) => {
+                            const aTitle = (a.title || '').toLowerCase();
+                            const aDesc = (a.description || '').toLowerCase();
+                            const aCombined = `${aTitle} ${aDesc}`;
+                            const aYearsMatch = aCombined.match(/(\d+)\+?\s*years?/i);
+                            return aYearsMatch && (
+                              aCombined.includes('experience') || 
+                              aCombined.includes('real estate') || 
+                              aCombined.includes('market') ||
+                              aCombined.includes('serving') ||
+                              aCombined.includes('practice')
+                            );
+                          });
+                          
+                          if (existingExpIdx === -1) {
+                            // No existing experience achievement, add this one
+                            acc.push(achievement);
+                          } else {
+                            // Keep the one with higher credibility or more detail
+                            const existing = acc[existingExpIdx];
+                            if ((achievement.credibility || 0) > (existing.credibility || 0) ||
+                                ((achievement.description || '').length > (existing.description || '').length)) {
+                              acc[existingExpIdx] = achievement;
+                            }
+                          }
+                        } else {
+                          // Not an experience achievement, add it
+                          acc.push(achievement);
+                        }
+                        
+                        return acc;
+                      }, []);
+
                       return (
                         <div className="space-y-4">
                           {/* Notable Achievements */}
-                          {achievements.length > 0 && (
+                          {deduplicatedAchievements.length > 0 && (
                             <div>
                               <p className="text-xs font-medium text-muted-foreground mb-3 flex items-center gap-2">
                                 <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
                                 Notable Achievements
                               </p>
                               <div className="space-y-3">
-                                {achievements.map((achievement: any, idx: number) => (
+                                {deduplicatedAchievements.map((achievement: any, idx: number) => (
                                   <div key={idx} className="border-l-2 border-yellow-600 dark:border-yellow-400 pl-3">
                                     <div className="flex items-start justify-between gap-2">
                                        <div className="flex-1">
