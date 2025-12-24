@@ -32,6 +32,7 @@ const CityLanding = lazy(() => import("./pages/CityLanding"));
 const StateLanding = lazy(() => import("./pages/StateLanding"));
 const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
 const AlbuquerqueRedirect = lazy(() => import("./pages/AlbuquerqueRedirect"));
+const ArizonaAgentOrCategoryRouter = lazy(() => import("./pages/ArizonaAgentOrCategoryRouter"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const CRM = lazy(() => import("./pages/CRM"));
@@ -194,14 +195,13 @@ const App = () => (
                     {/* Q&A Landing Pages for LLM optimization */}
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
+                    {/* Magic link formats - /az/ for short prefix, /arizona/ uses smart router to distinguish magic links from categories */}
+                    <Route path="/az/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
+                    <Route path="/arizona/:citySlug/:thirdSegment" element={<ArizonaAgentOrCategoryRouter />} />
                     {/* Dynamic city and category routes - MUST BE LAST before catch-all */}
                     {/* Order: 3-params (category list) BEFORE 4-params (agent profile) to prevent category slugs being treated as agent slugs */}
                     <Route path="/:stateSlug/:citySlug/:categorySlug" element={<DynamicCategoryList />} />
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
-                    {/* Magic link formats - support both /az/ and /arizona/ prefixes */}
-                    {/* NOTE: These are LESS specific than /:stateSlug/:citySlug/:categorySlug so they won't interfere */}
-                    <Route path="/az/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
-                    <Route path="/arizona/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     {/* State landing page - must be after city routes */}
                     <Route path="/arizona" element={<StateLanding />} />
