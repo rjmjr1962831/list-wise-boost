@@ -1921,7 +1921,10 @@ export const ProfessionalCard = ({
                       }
 
                       const awards = pressMentions.filter((m: any) => m.type === 'award');
-                      const pressItems = pressMentions.filter((m: any) => m.type === 'press');
+                      // Include both 'press' and 'article' types, and items without a type (legacy data)
+                      const pressItems = pressMentions.filter((m: any) => 
+                        m.type === 'press' || m.type === 'article' || !m.type
+                      );
 
                       return (
                         <div className="space-y-4">
@@ -2008,26 +2011,38 @@ export const ProfessionalCard = ({
                              <div>
                                <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
                                <div className="space-y-2">
-                                 {pressItems.map((item: any, idx: number) => (
-                                   <div key={idx} className="flex items-start gap-2 text-sm" itemProp="mentions">
-                                     <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
-                                     <div>
-                                       <a 
-                                         href={item.url} 
-                                         target="_blank" 
-                                         rel="noopener noreferrer"
-                                         className="text-primary hover:underline font-medium press-mention-click"
-                                         data-agent-name={professional.name}
-                                         data-source={item.source}
-                                       >
-                                         {item.title}
-                                       </a>
-                                       <cite className="text-xs text-muted-foreground mt-0.5 not-italic block">
-                                         {item.source} • {item.date}
-                                       </cite>
+                                 {pressItems.map((item: any, idx: number) => {
+                                   // Use source as display title if title is generic (e.g., "Source 1")
+                                   const isGenericTitle = !item.title || item.title.startsWith('Source ');
+                                   const displayTitle = isGenericTitle ? (item.source || 'Press Mention') : item.title;
+                                   
+                                   return (
+                                     <div key={idx} className="flex items-start gap-2 text-sm" itemProp="mentions">
+                                       <ExternalLink className="h-4 w-4 text-primary flex-shrink-0 mt-0.5" />
+                                       <div>
+                                         {item.url ? (
+                                           <a 
+                                             href={item.url} 
+                                             target="_blank" 
+                                             rel="noopener noreferrer"
+                                             className="text-primary hover:underline font-medium press-mention-click"
+                                             data-agent-name={professional.name}
+                                             data-source={item.source}
+                                           >
+                                             {displayTitle}
+                                           </a>
+                                         ) : (
+                                           <span className="font-medium">{displayTitle}</span>
+                                         )}
+                                         {!isGenericTitle && item.source && (
+                                           <cite className="text-xs text-muted-foreground mt-0.5 not-italic block">
+                                             {item.source}{item.date ? ` • ${item.date}` : ''}
+                                           </cite>
+                                         )}
+                                       </div>
                                      </div>
-                                   </div>
-                                 ))}
+                                   );
+                                 })}
                                </div>
                              </div>
                            )}
