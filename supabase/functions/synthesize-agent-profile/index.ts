@@ -629,10 +629,43 @@ REMEMBER:
     const extractedSpecialties = synthesizedData.specialties_extracted || [];
     const mergedSpecialties = [...new Set([...existingSpecialties, ...extractedSpecialties])];
 
+    // CRITICAL: Merge achievements instead of replacing - preserve high-credibility items
+    const existingAchievements = professional.notable_achievements || [];
+    const newAchievements = synthesizedData.notable_achievements || [];
+    
+    // Keep existing achievements with credibility >= 8 (like WSJ, Fox Business mentions)
+    const highCredibilityExisting = existingAchievements.filter((a: any) => 
+      (a.credibility || 0) >= 8
+    );
+    
+    // Combine: high-credibility existing + new achievements, then dedupe
+    const combinedAchievements = [...highCredibilityExisting, ...newAchievements];
+    
+    // Deduplicate by normalized title
+    const seenTitles = new Set<string>();
+    const mergedAchievements = [];
+    for (const achievement of combinedAchievements) {
+      const normalizedTitle = (achievement.title || '').toLowerCase()
+        .replace(/[^a-z0-9\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (!seenTitles.has(normalizedTitle) && normalizedTitle.length > 0) {
+        mergedAchievements.push(achievement);
+        seenTitles.add(normalizedTitle);
+      }
+    }
+    
+    // Sort by credibility and keep top 15
+    mergedAchievements.sort((a: any, b: any) => (b.credibility || 0) - (a.credibility || 0));
+    const finalAchievements = mergedAchievements.slice(0, 15);
+    
+    console.log(`   📊 Achievements: ${highCredibilityExisting.length} preserved + ${newAchievements.length} new = ${finalAchievements.length} final`);
+
     // Update professional record
     const updateData: Record<string, any> = {
       synthesized_bio: synthesizedData.synthesized_bio,
-      notable_achievements: synthesizedData.notable_achievements || [],
+      notable_achievements: finalAchievements,
       publications: synthesizedData.publications || [],
       community_roles: synthesizedData.community_roles || [],
       awards_verified: synthesizedData.awards_verified || [],
