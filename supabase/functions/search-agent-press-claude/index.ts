@@ -6,48 +6,108 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Search with Lovable AI (Google Gemini Flash) - grounded search
-async function searchWithGemini(query: string, lovableApiKey: string): Promise<{ content: string; citations: string[] }> {
-  console.log(`🔍 Gemini Flash search: ${query.substring(0, 100)}...`);
+// Send rate limit alert email
+async function sendRateLimitAlert(agentName: string, errorDetails: string) {
+  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  const adminEmail = Deno.env.get('ADMIN_EMAIL');
   
-  const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+  if (!resendApiKey || !adminEmail) {
+    console.error('❌ Cannot send rate limit alert: RESEND_API_KEY or ADMIN_EMAIL not configured');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${resendApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'Top10Lists <alerts@top10lists.us>',
+        to: [adminEmail],
+        subject: '🚨 Perplexity API Rate Limit Hit (429)',
+        html: `
+          <h2>Perplexity API Rate Limit Alert</h2>
+          <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+          <p><strong>Agent being processed:</strong> ${agentName}</p>
+          <p><strong>Error:</strong> ${errorDetails}</p>
+          <hr>
+          <p>The enrichment pipeline has hit Perplexity's rate limit. Consider:</p>
+          <ul>
+            <li>Reducing concurrency (currently set to 5)</li>
+            <li>Adding more delay between requests</li>
+            <li>Checking your Perplexity API credits</li>
+          </ul>
+        `,
+      }),
+    });
+
+    if (response.ok) {
+      console.log('📧 Rate limit alert email sent successfully');
+    } else {
+      const errorText = await response.text();
+      console.error('❌ Failed to send rate limit alert:', errorText);
+    }
+  } catch (error) {
+    console.error('❌ Error sending rate limit alert:', error);
+  }
+}
+
+// Search with Perplexity API
+async function searchWithPerplexity(
+  query: string, 
+  apiKey: string, 
+  agentName: string
+): Promise<{ content: string; citations: string[]; rateLimited: boolean }> {
+  console.log(`🔍 Perplexity search: ${query.substring(0, 80)}...`);
+  
+  const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${lovableApiKey}`,
+      'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.5-flash',
+      model: 'sonar',
       messages: [
         { 
           role: 'system', 
-          content: `You are a research assistant finding information about real estate professionals.
-Return factual information with specific details like names, dates, organizations, and achievements.
-Focus on verifiable facts from credible sources.
-When you find information, include the source URL in brackets like [source: https://example.com].
+          content: `You are a research assistant finding credible press mentions and community involvement for real estate professionals.
+Return factual information with specific details like publication names, dates, organizations, and achievements.
+Focus on verifiable facts from credible sources like news outlets, industry publications, and nonprofit organizations.
 If you cannot find specific information, say so clearly.` 
         },
         { role: 'user', content: query }
       ],
+      max_tokens: 1000,
+      temperature: 0.3
     }),
   });
 
+  // Check for rate limiting
+  if (response.status === 429) {
+    const errorText = await response.text();
+    console.error(`🚨 RATE LIMITED (429) while searching for ${agentName}`);
+    
+    // Send alert email (fire-and-forget)
+    sendRateLimitAlert(agentName, `Status 429: ${errorText}`).catch(console.error);
+    
+    return { content: '', citations: [], rateLimited: true };
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gemini API error ${response.status}: ${errorText}`);
+    throw new Error(`Perplexity API error ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
   const content = data.choices?.[0]?.message?.content || '';
+  const citations = data.citations || [];
   
-  // Extract URLs from the content that were cited
-  const urlRegex = /\[source:\s*(https?:\/\/[^\]]+)\]|(?:https?:\/\/[^\s\]\)]+)/gi;
-  const matches = content.match(urlRegex) || [];
-  const citations = matches.map((m: string) => m.replace(/\[source:\s*|\]/g, '').trim());
+  console.log(`✅ Perplexity returned ${content.length} chars, ${citations.length} citations`);
   
-  console.log(`✅ Gemini returned ${content.length} chars, ${citations.length} citations`);
-  
-  return { content, citations };
+  return { content, citations, rateLimited: false };
 }
 
 serve(async (req) => {
@@ -78,87 +138,84 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
+    if (!perplexityApiKey) {
+      throw new Error('PERPLEXITY_API_KEY not configured');
     }
 
-    console.log(`🔎 Researching ${agentName} using Gemini Flash...`);
+    console.log(`🔎 Researching ${agentName} using Perplexity (5 queries max)...`);
 
     const agentIdentifier = `${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''}, real estate agent in ${city}, ${state}`;
 
-    // Run multiple searches in parallel for comprehensive research
+    // 5 targeted search queries (reduced from original)
     const searchQueries = [
-      // Press & Awards search
-      `Search the web for press mentions, news articles, TV appearances, and industry awards for ${agentIdentifier}. 
-Look for: Wall Street Journal Real Trends rankings, America's Best Real Estate Agents, local news features, 
-podcast interviews, real estate industry publication articles (Inman, HousingWire, Real Producer Magazine), 
-speaking engagements, and any public recognition or awards. Include source URLs.`,
+      // 1. Press & Media
+      `Find news articles, TV appearances, and media coverage for ${agentIdentifier}. 
+Look for: local news features, Wall Street Journal mentions, Fox/NBC/ABC coverage, podcast appearances.`,
 
-      // Community & Nonprofit search
-      `Search the web for community involvement, nonprofit work, and volunteer activities for ${agentIdentifier}.
-Look for: charity board memberships, nonprofit organizations they support or lead, 
-church or faith community involvement, youth sports coaching, school board or PTA involvement,
-Habitat for Humanity, food bank volunteering, fundraising events organized or sponsored,
-civic organization memberships (Rotary, Kiwanis, Lions Club), chamber of commerce leadership roles,
-mentoring programs, scholarship foundations, community event sponsorships. Include source URLs.`,
+      // 2. Industry Awards
+      `Find industry awards and recognitions for ${agentIdentifier}.
+Look for: Real Trends rankings, America's Best Real Estate Agents, Five Star Professional, local realtor association awards.`,
 
-      // Professional background search  
-      `Search the web for professional background and credentials for ${agentIdentifier}.
-Look for: education and degrees, professional certifications (CLHMS, CNE, ABR, CRS, GRI),
-designations, coaching or training programs they lead, industry association leadership roles,
-years in business, brokerage history, team leadership. Include source URLs.`
+      // 3. Community & Nonprofit
+      `Find community involvement and nonprofit work for ${agentIdentifier}.
+Look for: charity work, board memberships, Habitat for Humanity, food banks, youth coaching, scholarship funds.`,
+
+      // 4. Professional Organizations
+      `Find professional memberships and leadership roles for ${agentIdentifier}.
+Look for: Rotary, Kiwanis, chamber of commerce, NAR leadership, state/local realtor association roles.`,
+
+      // 5. Publications & Speaking
+      `Find articles written by, speaking engagements, or educational content from ${agentIdentifier}.
+Look for: authored articles in Inman/HousingWire, conference presentations, webinars, real estate training.`
     ];
 
-    // Execute all searches in parallel with delay between to avoid rate limits
-    const searchResults = await Promise.all(
-      searchQueries.map(async (query, index) => {
-        try {
-          // Small delay between requests to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, index * 500));
-          return await searchWithGemini(query, lovableApiKey);
-        } catch (error) {
-          console.error(`❌ Search ${index + 1} failed:`, error);
-          return { content: '', citations: [] };
+    let rateLimitHit = false;
+    const allResults: { content: string; citations: string[] }[] = [];
+
+    // Execute searches sequentially with delay to avoid rate limits
+    for (let i = 0; i < searchQueries.length; i++) {
+      if (rateLimitHit) {
+        console.log(`⏸️ Stopping further queries due to rate limit`);
+        break;
+      }
+
+      try {
+        // Delay between requests (except first)
+        if (i > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
         }
-      })
-    );
+        
+        const result = await searchWithPerplexity(searchQueries[i], perplexityApiKey, agentName);
+        
+        if (result.rateLimited) {
+          rateLimitHit = true;
+          break;
+        }
+        
+        allResults.push({ content: result.content, citations: result.citations });
+      } catch (error) {
+        console.error(`❌ Search ${i + 1} failed:`, error);
+        allResults.push({ content: '', citations: [] });
+      }
+    }
 
-    // Combine all research results
-    const [pressResults, communityResults, professionalResults] = searchResults;
-    
-    const allCitations = [
-      ...pressResults.citations,
-      ...communityResults.citations,
-      ...professionalResults.citations
-    ];
-    
+    // Combine results
+    const allCitations = allResults.flatMap(r => r.citations);
     const uniqueCitations = [...new Set(allCitations)];
 
-    const fullResearchText = `
-# PRESS & AWARDS RESEARCH
-${pressResults.content || 'No press mentions found.'}
+    const fullResearchText = allResults.map((r, i) => {
+      const labels = ['PRESS & MEDIA', 'INDUSTRY AWARDS', 'COMMUNITY & NONPROFIT', 'PROFESSIONAL ORGS', 'PUBLICATIONS & SPEAKING'];
+      return `# ${labels[i] || `SEARCH ${i + 1}`}\n${r.content || 'No results found.'}`;
+    }).join('\n\n');
 
-# COMMUNITY INVOLVEMENT & NONPROFIT WORK
-${communityResults.content || 'No community involvement found.'}
+    console.log(`📊 Research complete: ${allResults.length} queries executed`);
+    console.log(`   - Total citations: ${uniqueCitations.length}`);
+    console.log(`   - Rate limited: ${rateLimitHit}`);
 
-# PROFESSIONAL BACKGROUND & CREDENTIALS
-${professionalResults.content || 'No additional professional background found.'}
-
-# SOURCE CITATIONS
-${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}`).join('\n') : 'No external citations found.'}
-`;
-
-    console.log(`📊 Research complete: ${fullResearchText.length} chars total`);
-    console.log(`   - Press: ${pressResults.content.length} chars`);
-    console.log(`   - Community: ${communityResults.content.length} chars`);
-    console.log(`   - Professional: ${professionalResults.content.length} chars`);
-    console.log(`   - Citations: ${uniqueCitations.length}`);
-
-    // Extract structured mentions from the research
+    // Extract structured mentions from citations
     const mentions: any[] = [];
     
-    // Parse citations into structured mentions
     uniqueCitations.forEach((url, index) => {
       if (url && typeof url === 'string') {
         try {
@@ -196,7 +253,6 @@ ${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}
       }
     });
 
-    // Sort by credibility
     const finalMentions = mentions
       .sort((a, b) => b.credibilityScore - a.credibilityScore)
       .slice(0, 15);
@@ -204,8 +260,8 @@ ${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}
     console.log(`Found ${finalMentions.length} citations for ${agentName}`);
 
     // Auto-trigger profile synthesis if professionalId provided
+    const hasContent = allResults.some(r => r.content.length > 50);
     const shouldSynthesize = professionalId && fullResearchText.trim() && !dryRun;
-    const hasContent = pressResults.content.length > 50 || communityResults.content.length > 50;
     
     let synthesisResult = null;
     let synthesisError = null;
@@ -214,12 +270,11 @@ ${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}
       console.log(`🔄 Auto-triggering profile synthesis for ${agentName}...`);
       
       try {
-        // AWAIT the synthesis call instead of fire-and-forget
         const { data: synthData, error: synthErr } = await supabase.functions.invoke('synthesize-agent-profile', {
           body: {
             professionalId,
-            skipIfNoPress: false, // Always synthesize since we now have community research
-            rawResearch: `# Gemini Flash Research for ${agentName}
+            skipIfNoPress: false,
+            rawResearch: `# Perplexity Research for ${agentName}
 
 ## Context
 Agent: ${agentName}
@@ -227,7 +282,10 @@ ${company ? `Company: ${company}` : ''}
 ${businessName ? `Business: ${businessName}` : ''}
 Location: ${city}, ${state}
 
-${fullResearchText}`
+${fullResearchText}
+
+# SOURCE CITATIONS
+${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}`).join('\n') : 'No external citations found.'}`
           }
         });
         
@@ -242,24 +300,16 @@ ${fullResearchText}`
         console.error('❌ Failed to trigger synthesis:', synthError);
         synthesisError = synthError instanceof Error ? synthError.message : 'Unknown synthesis error';
       }
-    } else if (dryRun) {
-      console.log('🔧 DRY RUN: Would trigger synthesis for', agentName);
-    } else if (skipIfNoPress && !hasContent) {
-      console.log('💰 COST SAVE: Skipping synthesis (no substantial content found)');
-    } else if (professionalId && !fullResearchText.trim()) {
-      console.log('⚠️ No research text captured for synthesis');
-    } else {
-      console.log('ℹ️ No professionalId provided, skipping auto-synthesis');
     }
 
     return new Response(
       JSON.stringify({ 
         mentions: finalMentions,
-        provider: 'gemini-flash',
+        provider: 'perplexity',
+        queriesExecuted: allResults.length,
+        rateLimited: rateLimitHit,
         researchSummary: {
-          pressChars: pressResults.content.length,
-          communityChars: communityResults.content.length,
-          professionalChars: professionalResults.content.length,
+          totalChars: allResults.reduce((sum, r) => sum + r.content.length, 0),
           totalCitations: uniqueCitations.length
         },
         synthesis: {
