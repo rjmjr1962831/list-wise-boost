@@ -1,54 +1,61 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Send rate limit alert email
+const SMTP_HOST = "mail.privateemail.com";
+const SMTP_PORT = 465;
+
+// Send rate limit alert email via SMTP
 async function sendRateLimitAlert(agentName: string, errorDetails: string) {
-  const resendApiKey = Deno.env.get('RESEND_API_KEY');
+  const smtpUsername = Deno.env.get('SMTP_USERNAME');
+  const smtpPassword = Deno.env.get('SMTP_PASSWORD');
   const adminEmail = Deno.env.get('ADMIN_EMAIL');
+  const fromEmail = Deno.env.get('SMTP_FROM_EMAIL') || 'alerts@top10lists.us';
   
-  if (!resendApiKey || !adminEmail) {
-    console.error('❌ Cannot send rate limit alert: RESEND_API_KEY or ADMIN_EMAIL not configured');
+  if (!smtpUsername || !smtpPassword || !adminEmail) {
+    console.error('❌ Cannot send rate limit alert: SMTP credentials or ADMIN_EMAIL not configured');
     return;
   }
 
   try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
+    const client = new SMTPClient({
+      connection: {
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        tls: true,
+        auth: {
+          username: smtpUsername,
+          password: smtpPassword,
+        },
       },
-      body: JSON.stringify({
-        from: 'Top10Lists <alerts@top10lists.us>',
-        to: [adminEmail],
-        subject: '🚨 Perplexity API Rate Limit Hit (429)',
-        html: `
-          <h2>Perplexity API Rate Limit Alert</h2>
-          <p><strong>Time:</strong> ${new Date().toISOString()}</p>
-          <p><strong>Agent being processed:</strong> ${agentName}</p>
-          <p><strong>Error:</strong> ${errorDetails}</p>
-          <hr>
-          <p>The enrichment pipeline has hit Perplexity's rate limit. Consider:</p>
-          <ul>
-            <li>Reducing concurrency (currently set to 5)</li>
-            <li>Adding more delay between requests</li>
-            <li>Checking your Perplexity API credits</li>
-          </ul>
-        `,
-      }),
     });
 
-    if (response.ok) {
-      console.log('📧 Rate limit alert email sent successfully');
-    } else {
-      const errorText = await response.text();
-      console.error('❌ Failed to send rate limit alert:', errorText);
-    }
+    await client.send({
+      from: fromEmail,
+      to: adminEmail,
+      subject: '🚨 Perplexity API Rate Limit Hit (429)',
+      html: `
+        <h2>Perplexity API Rate Limit Alert</h2>
+        <p><strong>Time:</strong> ${new Date().toISOString()}</p>
+        <p><strong>Agent being processed:</strong> ${agentName}</p>
+        <p><strong>Error:</strong> ${errorDetails}</p>
+        <hr>
+        <p>The enrichment pipeline has hit Perplexity's rate limit. Consider:</p>
+        <ul>
+          <li>Reducing concurrency (currently set to 5)</li>
+          <li>Adding more delay between requests</li>
+          <li>Checking your Perplexity API credits</li>
+        </ul>
+      `,
+    });
+
+    await client.close();
+    console.log('📧 Rate limit alert email sent successfully');
   } catch (error) {
     console.error('❌ Error sending rate limit alert:', error);
   }
