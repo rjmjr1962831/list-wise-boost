@@ -48,7 +48,7 @@ interface EnrichmentData {
   summary: string;
 }
 
-// Search with Exa.ai - runs two targeted queries
+// Search with Exa.ai - runs three targeted queries
 async function searchWithExa(
   agentName: string,
   city: string,
@@ -57,15 +57,18 @@ async function searchWithExa(
 ): Promise<ExaResult[]> {
   console.log(`🔍 Exa search for: ${agentName} in ${city}, ${state}`);
 
-  // Query 1: Professional recognition and press
-  const professionalQuery = `"${agentName}" ${city} ${state} realtor OR "real estate agent" (award OR recognition OR "top agent" OR "best realtor" OR featured OR press OR news OR magazine)`;
+  // Query 1: Professional recognition and press (broader - not just real estate keywords)
+  const professionalQuery = `"${agentName}" ${city} OR ${state} (award OR recognition OR "top agent" OR featured OR press OR news OR magazine OR interview OR profile)`;
   
   // Query 2: Community involvement
-  const communityQuery = `"${agentName}" ${city} ${state} (nonprofit OR charity OR "board member" OR volunteer OR foundation OR "gives back" OR community OR philanthropy)`;
+  const communityQuery = `"${agentName}" ${city} OR ${state} (nonprofit OR charity OR "board member" OR volunteer OR foundation OR "gives back" OR community OR philanthropy)`;
+
+  // Query 3: Media appearances, books, and publications
+  const mediaQuery = `"${agentName}" (author OR book OR television OR TV OR "featured on" OR ABC OR NBC OR CBS OR FOX OR Lifetime OR HGTV OR podcast OR speaker OR keynote)`;
 
   const results: ExaResult[] = [];
 
-  for (const query of [professionalQuery, communityQuery]) {
+  for (const query of [professionalQuery, communityQuery, mediaQuery]) {
     try {
       const response = await fetch("https://api.exa.ai/search", {
         method: "POST",
@@ -148,7 +151,7 @@ TARGET AGENT:
 - Profession: Real Estate Agent/Broker
 
 SEARCH RESULTS:
-${searchResults.slice(0, 15).map((r, i) => `
+${searchResults.slice(0, 25).map((r, i) => `
 [Result ${i + 1}]
 URL: ${r.url}
 Title: ${r.title}
@@ -156,22 +159,27 @@ Content: ${r.text?.substring(0, 1500) || r.highlights?.join(" ") || "No content"
 `).join("\n---\n")}
 
 TASK:
-1. FILTER: Only include information that clearly refers to THIS specific person (must match name + location + real estate context). Discard results about different people with similar names.
+1. FILTER: Only include information that clearly refers to THIS specific person. Match on:
+   - Name match (exact or close variation)
+   - Location match (city, state, or Phoenix metro area for Arizona agents)
+   - ANY of these contexts: real estate, their company name, personal achievements, books authored, TV appearances, speaking engagements
+   
+   NOTE: Include achievements like books, TV appearances, and speaking engagements even if they don't mention real estate directly - these are valuable for the agent's public profile.
 
 2. EXTRACT the following categories:
-   - Press mentions (news articles, magazine features, interviews)
-   - Awards and recognition (industry awards, "top agent" lists, professional honors)
-   - Community involvement (nonprofit board seats, charity work, volunteer roles, foundation involvement)
-   - Publications (books, articles authored by the agent)
+   - Press mentions (news articles, magazine features, interviews, TV appearances)
+   - Awards and recognition (industry awards, "top agent" lists, professional honors, LA Times features, etc.)
+   - Community involvement (nonprofit board seats, charity work, volunteer roles, foundation involvement, church work)
+   - Publications (books authored, articles written, including self-help/motivational content)
 
 3. For each item extracted, note the source URL.
 
 4. Assign a confidence level:
-   - HIGH: Multiple verified sources, clear name/location match
+   - HIGH: Multiple verified sources, clear name match
    - MEDIUM: Some verified sources, reasonable match
    - LOW: Limited sources or potential name confusion
 
-5. Write a 2-3 sentence summary of this agent's public profile beyond basic real estate work.
+5. Write a 2-3 sentence summary of this agent's public profile, including any notable achievements outside of real estate.
 
 RESPOND IN THIS EXACT JSON FORMAT:
 {
