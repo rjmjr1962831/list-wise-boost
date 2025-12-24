@@ -357,3 +357,6 @@ verify_jwt = false
 
 [functions.prerender-recache]
 verify_jwt = false
+
+[functions.test-exa-search]
+verify_jwt = false
