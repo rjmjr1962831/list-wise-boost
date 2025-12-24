@@ -15,7 +15,9 @@ async function sendRateLimitAlert(agentName: string, errorDetails: string) {
   const smtpUsername = Deno.env.get('SMTP_USERNAME');
   const smtpPassword = Deno.env.get('SMTP_PASSWORD');
   const adminEmail = Deno.env.get('ADMIN_EMAIL');
-  const fromEmail = Deno.env.get('SMTP_FROM_EMAIL') || 'alerts@top10lists.us';
+  // Use SMTP_USERNAME as from email if SMTP_FROM_EMAIL is not set or invalid
+  const configuredFrom = Deno.env.get('SMTP_FROM_EMAIL');
+  const fromEmail = (configuredFrom && configuredFrom.includes('@')) ? configuredFrom : (smtpUsername || 'alerts@top10lists.us');
   
   if (!smtpUsername || !smtpPassword || !adminEmail) {
     console.error('❌ Cannot send rate limit alert: SMTP credentials or ADMIN_EMAIL not configured');
