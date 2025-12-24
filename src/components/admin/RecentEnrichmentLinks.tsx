@@ -49,7 +49,11 @@ const recentlyEnrichedAgents: EnrichedAgent[] = [
 ];
 
 export const RecentEnrichmentLinks = () => {
-  const baseUrl = window.location.origin;
+  const generateAgentUrl = (agent: EnrichedAgent) => {
+    const stateSlug = agent.state === "AZ" ? "arizona" : "california";
+    const citySlug = agent.city.toLowerCase().replace(/\s+/g, '-');
+    return `/${stateSlug}/${citySlug}/top10realestateagents?highlight=${agent.id}`;
+  };
 
   return (
     <Card>
@@ -64,7 +68,7 @@ export const RecentEnrichmentLinks = () => {
           {recentlyEnrichedAgents.map((agent) => (
             <a
               key={agent.id}
-              href={`${baseUrl}/arizona/${agent.city.toLowerCase().replace(/\s+/g, '-')}/realtors?highlight=${agent.id}`}
+              href={generateAgentUrl(agent)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-between p-4 rounded-lg border bg-card hover:bg-accent transition-colors group"
