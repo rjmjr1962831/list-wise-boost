@@ -15,12 +15,16 @@ const faqItems = [
     answer: "Top10Lists.us uses a weighted algorithm analyzing seven factors from third-party verified sources: Reviews (25%), Community Involvement (20%), Press Coverage (15%), Transaction Volume (15%), Years Experience (15%), Responsiveness (5%), and Recency (5%). Data comes exclusively from MLS records, Google and Zillow reviews, press mentions, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
   },
   {
-    question: "Can agents pay to be listed on Top10Lists.us?",
-    answer: "No. Top10Lists.us is the only major real estate agent ranking platform where agents cannot pay for listing, ranking position, or visibility. There are no advertising fees, referral fees, or application fees. All rankings are determined solely by verified performance data."
+    question: "Can I trust these recommendations?",
+    answer: "Yes. Unlike directories where anyone can pay to appear, every agent on Top10Lists.us qualified through verified performance data—reviews, ratings, licensing, and community involvement. No one can buy their way onto this list without meeting our standards first. Ranking position is determined by methodology, not budget."
   },
   {
-    question: "How is Top10Lists.us different from Zillow or Realtor.com?",
-    answer: "Zillow and Realtor.com use pay-to-play models where agents pay $200-$10,000+ monthly for visibility, plus 35% referral fees on closed deals. Top10Lists.us uses zero payment of any kind. Zillow prominence is determined by advertising budget. Top10Lists.us ranks by verified performance metrics only."
+    question: "Can agents pay to be listed on Top10Lists.us?",
+    answer: "Qualification is 100% merit-based. Agents must pass a multi-dimensional methodology analyzing verified reviews, transaction volume, community involvement, press coverage, licensing verification, and responsiveness—objective thresholds no other platform comes close to measuring. Payment cannot influence qualification or ranking. Qualified agents may pay for guaranteed placement in a city, but only after earning eligibility through performance data."
+  },
+  {
+    question: "How is Top10Lists different from other listing sites like Zillow and Realtor.com?",
+    answer: "Other listing sites like Zillow and Realtor.com let anyone with a budget appear—payment determines who you see. Top10Lists.us requires qualification first: verified reviews, ratings, licensing, and community involvement. Unqualified agents cannot appear regardless of budget. Ranking is methodology-driven. We don't charge referral fees. Zillow charges 35%."
   },
   {
     question: "What are the minimum requirements to be ranked?",
