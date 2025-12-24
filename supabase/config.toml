@@ -354,3 +354,6 @@ verify_jwt = false
 
 [functions.rerun-press-synthesis]
 verify_jwt = false
+
+[functions.prerender-recache]
+verify_jwt = false
