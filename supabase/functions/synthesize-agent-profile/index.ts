@@ -112,7 +112,57 @@ function extractYearsFromBio(bioText: string | null | undefined): number | null 
 }
 
 /**
- * Fetch website content with graceful failover
+ * Fetch a single URL with timeout
+ */
+async function fetchUrlWithTimeout(
+  url: string,
+  supabaseUrl: string,
+  supabaseKey: string,
+  timeoutMs: number = 8000
+): Promise<string | null> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/scrape-html`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url, extractText: true }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      console.log(`   ❌ HTTP ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    if (data.success && data.parsedData?.bodyText) {
+      const text = stripHtmlAndClean(data.parsedData.bodyText);
+      if (text.length > 200) {
+        console.log(`   ✅ Got ${text.length} chars`);
+        return text;
+      }
+    }
+    return null;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      console.log(`   ⏱️ Timeout after ${timeoutMs}ms`);
+    } else {
+      console.log(`   ❌ Error: ${error instanceof Error ? error.message : 'Unknown'}`);
+    }
+    return null;
+  }
+}
+
+/**
+ * Fetch website content with graceful failover - LIMITED TO 2 URLS MAX for speed
  */
 async function fetchWebsiteContent(
   websiteUrl: string | null | undefined,
@@ -129,62 +179,22 @@ async function fetchWebsiteContent(
   if (!baseUrl.startsWith('http://') && !baseUrl.startsWith('https://')) {
     baseUrl = `https://${baseUrl}`;
   }
-  // Remove trailing slash for consistency
   baseUrl = baseUrl.replace(/\/+$/, '');
 
-  const urlsToTry = [
-    baseUrl,
-    `${baseUrl}/about`,
-    `${baseUrl}/about-us`,
-    `${baseUrl}/bio`,
-    `${baseUrl}/meet-the-team`,
-    `${baseUrl}/team`,
-  ];
+  // Only try base URL and /about - faster synthesis
+  const urlsToTry = [baseUrl, `${baseUrl}/about`];
 
   let combinedContent = '';
   let successfulUrls: string[] = [];
 
   for (const url of urlsToTry) {
-    try {
-      console.log(`🌐 Fetching: ${url}`);
-      
-      const response = await fetch(`${supabaseUrl}/functions/v1/scrape-html`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${supabaseKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          url,
-          extractText: true,
-        }),
-      });
-
-      if (!response.ok) {
-        console.log(`   ❌ HTTP ${response.status}`);
-        continue;
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.parsedData?.bodyText) {
-        // TOKEN OPTIMIZATION: Strip HTML and clean the text
-        let text = stripHtmlAndClean(data.parsedData.bodyText);
-        
-        // Only include if we got substantial content (more than 200 chars)
-        if (text.length > 200) {
-          combinedContent += `\n\n--- Content from ${url} ---\n\n${text}`;
-          successfulUrls.push(url);
-          console.log(`   ✅ Got ${text.length} chars (cleaned)`);
-        } else {
-          console.log(`   ⚠️ Content too short (${text.length} chars)`);
-        }
-      } else {
-        console.log(`   ⚠️ No body text extracted`);
-      }
-    } catch (error) {
-      console.log(`   ❌ Error: ${error instanceof Error ? error.message : 'Unknown'}`);
-      continue;
+    console.log(`🌐 Fetching: ${url}`);
+    const text = await fetchUrlWithTimeout(url, supabaseUrl, supabaseKey, 8000);
+    if (text) {
+      combinedContent += `\n\n--- Content from ${url} ---\n\n${text}`;
+      successfulUrls.push(url);
+      // If we got good content from base URL, skip /about
+      if (text.length > 1000) break;
     }
   }
 
@@ -193,9 +203,8 @@ async function fetchWebsiteContent(
     return null;
   }
 
-  // TOKEN OPTIMIZATION: Truncate to max chars for AI context (reduced from 25K to 8K)
   const truncatedContent = truncateContent(combinedContent, MAX_WEBSITE_CONTENT_CHARS);
-  console.log(`✅ Website content collected from ${successfulUrls.length} page(s), ${truncatedContent.length} chars (capped at ${MAX_WEBSITE_CONTENT_CHARS})`);
+  console.log(`✅ Website content: ${truncatedContent.length} chars from ${successfulUrls.length} page(s)`);
   
   return {
     content: truncatedContent,
