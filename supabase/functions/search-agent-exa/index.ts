@@ -158,10 +158,10 @@ function calculateConfidence(
   let level: "high" | "medium" | "low";
   let recommendedModel: "deepseek" | "gemini";
   
-  if (score >= 60) {
+  if (score >= 75) {
     level = "high";
     recommendedModel = "deepseek";
-  } else if (score >= 35) {
+  } else if (score >= 40) {
     level = "medium";
     recommendedModel = "gemini"; // More disambiguation needed
   } else {
