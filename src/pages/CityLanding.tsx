@@ -152,6 +152,7 @@ export default function CityLanding() {
                   <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                       <DialogTitle>Search cities in {city.state}</DialogTitle>
+                    </DialogHeader>
                     <div className="space-y-4">
                       <Input
                         placeholder="Start typing a city name..."
