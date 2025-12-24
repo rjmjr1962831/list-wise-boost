@@ -279,8 +279,8 @@ async function processAgent(
 
     console.log(`[${name}] Found: rating=${rating}, reviews=${reviewCount}`);
 
-    // 3. Check qualification: 4.5+ stars and 50+ reviews
-    const isQualified = rating >= 4.5 && reviewCount >= 50;
+    // 3. Check qualification: 4.8+ stars and 20+ reviews
+    const isQualified = rating >= 4.8 && reviewCount >= 20;
     
     if (!isQualified) {
       console.log(`[${name}] Not qualified (${rating} stars, ${reviewCount} reviews) - will save to DB but skip Pipedrive sync`);
