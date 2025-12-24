@@ -501,6 +501,34 @@ REMEMBER:
                     required: ['organization', 'role']
                   },
                   description: 'Charities supported, nonprofits, volunteer work, community involvement - PRIORITIZE extracting this'
+                },
+                awards_verified: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      award_name: { type: 'string', description: 'Name of the award' },
+                      year: { type: 'string', description: 'Year awarded (YYYY format)' },
+                      awarding_organization: { type: 'string', description: 'Organization that gave the award' },
+                      source_url: { type: 'string', description: 'URL of third-party source verifying the award' }
+                    },
+                    required: ['award_name']
+                  },
+                  description: 'Awards verified by third-party sources (industry awards, Top Producer, rankings)'
+                },
+                certifications_verified: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      designation: { type: 'string', description: 'Designation acronym (CRS, GRI, CCIM, etc.)' },
+                      full_name: { type: 'string', description: 'Full name of the certification' },
+                      verifying_organization: { type: 'string', description: 'Organization that issued/verified it' },
+                      source_url: { type: 'string', description: 'URL of verification source' }
+                    },
+                    required: ['designation', 'full_name']
+                  },
+                  description: 'Certifications/designations verified by third-party sources'
                 }
               },
               required: ['synthesized_bio', 'notable_achievements', 'community_roles']
@@ -587,6 +615,8 @@ REMEMBER:
       notable_achievements: synthesizedData.notable_achievements || [],
       publications: synthesizedData.publications || [],
       community_roles: synthesizedData.community_roles || [],
+      awards_verified: synthesizedData.awards_verified || [],
+      certifications_verified: synthesizedData.certifications_verified || [],
       profile_last_synthesized_at: new Date().toISOString()
     };
 
