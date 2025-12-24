@@ -115,16 +115,17 @@ A final bullet list of all distinct sources used (publication or site name only)
 
 Use clear, professional language and keep the structure consistent.`;
 
-// Search with Perplexity API - single comprehensive query using sonar-pro
+// Search with Perplexity API with exponential backoff on 429
 async function searchWithPerplexity(
   agentName: string,
   company: string | null,
   businessName: string | null,
   city: string,
   state: string,
-  apiKey: string
+  apiKey: string,
+  maxRetries: number = 4
 ): Promise<{ content: string; citations: string[]; rateLimited: boolean }> {
-  console.log(`🔍 Perplexity sonar-pro comprehensive search for: ${agentName}`);
+  console.log(`🔍 Perplexity sonar-pro search for: ${agentName}`);
   
   // Build the user query with agent details
   const userQuery = `Research the following real estate professional:
@@ -136,46 +137,61 @@ ${businessName && company ? `**Business Name:** ${businessName}` : ''}
 
 Find all third-party verification of their awards, certifications, community involvement, and press mentions.`;
 
-  const response = await fetch('https://api.perplexity.ai/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'sonar-pro',
-      messages: [
-        { role: 'system', content: RESEARCH_SYSTEM_PROMPT },
-        { role: 'user', content: userQuery }
-      ],
-      max_tokens: 2000,
-      temperature: 0.2
-    }),
-  });
+  // Exponential backoff: 1s, 2s, 4s, 8s
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (attempt > 0) {
+      const backoffMs = Math.pow(2, attempt - 1) * 1000;
+      console.log(`⏳ Retry ${attempt}/${maxRetries} after ${backoffMs}ms backoff...`);
+      await new Promise(resolve => setTimeout(resolve, backoffMs));
+    }
 
-  // Check for rate limiting
-  if (response.status === 429) {
-    const errorText = await response.text();
-    console.error(`🚨 RATE LIMITED (429) while searching for ${agentName}`);
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'sonar-pro',
+        messages: [
+          { role: 'system', content: RESEARCH_SYSTEM_PROMPT },
+          { role: 'user', content: userQuery }
+        ],
+        max_tokens: 2000,
+        temperature: 0.2
+      }),
+    });
+
+    // Check for rate limiting - retry with backoff
+    if (response.status === 429) {
+      console.warn(`⚠️ Rate limited (429) on attempt ${attempt + 1} for ${agentName}`);
+      
+      if (attempt === maxRetries) {
+        console.error(`🚨 RATE LIMITED after ${maxRetries} retries for ${agentName}`);
+        // Only send alert on final failure
+        sendRateLimitAlert(agentName, `Failed after ${maxRetries} retries`).catch(console.error);
+        return { content: '', citations: [], rateLimited: true };
+      }
+      // Continue to next retry iteration
+      continue;
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Perplexity API error ${response.status}: ${errorText}`);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    const citations = data.citations || [];
     
-    // Send alert email (fire-and-forget)
-    sendRateLimitAlert(agentName, `Status 429: ${errorText}`).catch(console.error);
+    console.log(`✅ Perplexity returned ${content.length} chars, ${citations.length} citations`);
     
-    return { content: '', citations: [], rateLimited: true };
+    return { content, citations, rateLimited: false };
   }
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Perplexity API error ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  const content = data.choices?.[0]?.message?.content || '';
-  const citations = data.citations || [];
-  
-  console.log(`✅ Perplexity sonar-pro returned ${content.length} chars, ${citations.length} citations`);
-  
-  return { content, citations, rateLimited: false };
+  // Should not reach here, but safety fallback
+  return { content: '', citations: [], rateLimited: true };
 }
 
 serve(async (req) => {
