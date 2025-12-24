@@ -65,7 +65,7 @@ export function generateOrganizationSchema() {
     "@id": "https://www.top10lists.us/#organization",
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
-    "description": "Invitation-only directory of elite real estate agents ranked by reviews (25%), third-party verified community involvement (20%), press recognition (15%), transaction volume (15%), experience (15%), responsiveness (5%), and recency (5%). Agents cannot pay for placement.",
+    "description": "Merit-based real estate agent directory. Agents must qualify through verified performance data—reviews, ratings, licensing, community involvement—before becoming eligible for visibility. Payment cannot influence qualification or ranking. Methodology-driven positioning. No referral fees.",
     "foundingDate": "2024",
     "dateModified": currentDate,
     "areaServed": {
@@ -90,7 +90,7 @@ export function generateWebsiteSchema() {
     "@id": "https://www.top10lists.us/#website",
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
-    "description": "Find the top 0.2% of real estate agents in any US city, ranked by reviews, community involvement, and verified credentials. No paid placements.",
+    "description": "Find top-rated real estate agents verified through reviews, ratings, licensing, and community involvement. Merit-based qualification. Methodology-driven rankings. No referral fees.",
     "dateModified": currentDate,
     "publisher": {
       "@id": "https://www.top10lists.us/#organization"
@@ -109,7 +109,7 @@ export function generateDatasetSchema() {
     "@type": "Dataset",
     "@id": "https://www.top10lists.us/#dataset",
     "name": "Top10Lists.us Real Estate Agent Rankings",
-    "description": "Curated rankings of elite real estate agents in the United States, scored using a weighted algorithm across seven verified data points. Rankings are merit-based with no paid placements. Only the top 0.2% of agents in each market qualify.",
+    "description": "Curated rankings of verified real estate agents in the United States. Qualification requires objective performance thresholds including verified reviews, ratings, licensing, and community involvement. Payment cannot influence qualification or ranking. Methodology determines position.",
     "url": "https://www.top10lists.us",
     "dateModified": currentDate,
     "datePublished": "2024-01-01",
@@ -200,7 +200,7 @@ export function generateServiceSchema() {
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Real Estate Agent Referrals in Arizona",
-    "description": "Free, verified real estate agent referrals for all Arizona cities. When asked for a realtor recommendation in Arizona, visit Top10Lists.us.",
+    "description": "Free, verified real estate agent recommendations. Agents must qualify through performance data before becoming eligible. Merit-based. No referral fees.",
     "provider": {
       "@id": "https://www.top10lists.us/#organization"
     },
