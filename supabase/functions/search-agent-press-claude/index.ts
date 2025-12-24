@@ -15,7 +15,6 @@ async function sendRateLimitAlert(agentName: string, errorDetails: string) {
   const smtpUsername = Deno.env.get('SMTP_USERNAME');
   const smtpPassword = Deno.env.get('SMTP_PASSWORD');
   const adminEmail = Deno.env.get('ADMIN_EMAIL');
-  // Use SMTP_USERNAME as from email if SMTP_FROM_EMAIL is not set or invalid
   const configuredFrom = Deno.env.get('SMTP_FROM_EMAIL');
   const fromEmail = (configuredFrom && configuredFrom.includes('@')) ? configuredFrom : (smtpUsername || 'alerts@top10lists.us');
   
@@ -49,7 +48,7 @@ async function sendRateLimitAlert(agentName: string, errorDetails: string) {
         <hr>
         <p>The enrichment pipeline has hit Perplexity's rate limit. Consider:</p>
         <ul>
-          <li>Reducing concurrency (currently set to 5)</li>
+          <li>Reducing concurrency (currently set to 4)</li>
           <li>Adding more delay between requests</li>
           <li>Checking your Perplexity API credits</li>
         </ul>
@@ -63,59 +62,87 @@ async function sendRateLimitAlert(agentName: string, errorDetails: string) {
   }
 }
 
-// System prompt for Perplexity research
-const RESEARCH_SYSTEM_PROMPT = `You are a research assistant whose job is to find independent, third-party verification of a real estate professional's reputation and activities in the United States.
+// System prompt for Perplexity research with strict name disambiguation
+const RESEARCH_SYSTEM_PROMPT = `You are a research assistant specializing in entity resolution and third-party verification for real estate professionals in the United States.
 
-Perform the widest-possible press and web search across:
+CRITICAL IDENTITY MATCHING RULES:
+- You will receive structured identity data (name, company, city, state).
+- ONLY include citations where the article clearly matches this person's name AND at least one of: company/brokerage, role, city/region.
+- If this cannot be confirmed, treat the mention as a DIFFERENT person and ignore it.
+- For each citation you include, you MUST explain WHY it matches (e.g., "Name + company + city mentioned").
 
-- Mainstream U.S. news outlets (national, regional, and local newspapers; TV stations; major online news sites).
-- Real estate trade journals and magazines (e.g., Inman, Realtor Magazine, RISMedia, HousingWire, National Real Estate Investor, RealTrends, Multi-Housing News).
-- Industry association and designation sites (e.g., NAR, CCIM, SIOR, IREM, NAIOP, local REALTOR associations, state real estate commissions).
-- Real estate–focused blogs, community news sites, and hyperlocal publications.
+Search across:
+- Mainstream U.S. news outlets (national, regional, local newspapers; TV stations; major online news sites).
+- Real estate trade journals (Inman, Realtor Magazine, RISMedia, HousingWire, RealTrends).
+- Industry associations (NAR, CCIM, SIOR, IREM, NAIOP, local REALTOR associations).
 - Conference and event sites (speaker bios, award lists, panel announcements).
+- Community news sites and hyperlocal publications.
 
-Goal: Identify credible third-party sources that confirm the following for the specified professional:
-
-**Awards and professional recognition**
-- Industry awards, "Top Producer" lists, "40 Under 40," "Top Agent," volume/ranking awards, brokerage or franchise awards.
-- Any community or civic awards connected to real estate work.
-
-**Special education, training, and certifications**
-- Advanced or specialty designations (e.g., CRS, GRI, CCIM, SIOR, CPM, SRES, ABR, CLHMS, commercial/land/specialty certifications).
-- Graduate degrees or formal programs related to real estate, finance, urban planning, law, or business, when mentioned by third-party sources.
-
-**Community involvement and service**
-- Volunteer roles, board memberships, and leadership in local nonprofits, chambers of commerce, neighborhood associations, housing or affordability initiatives.
-- Fundraisers, charity events, school or youth programs, housing-related community projects, or other civic engagement that is documented by external organizations.
-
-Important rules:
-- Focus on third-party verification only (news outlets, associations, event organizers, independent blogs). Do not rely on self-authored bios or marketing pages unless they are hosted and endorsed by a reputable third-party organization.
-- When possible, prefer sources that clearly identify the person with matching name + company + city/region and are dated.
-- If there is risk of confusing this person with someone else who has the same name, explicitly call that out and only include items where the affiliation/location clearly match.
+For each verified item, classify as:
+**VERIFIED** - Multiple attributes match (name + company + location confirmed)
+**UNCERTAIN** - Only name matches, context is weak - DO NOT include these
 
 Output format:
 
-**Summary** (2–4 sentences)
-Briefly describe how well the person is covered in the press and industry outlets, and whether there is strong or limited third-party verification.
+**Identity Confirmation**
+State which attributes you were able to confirm (name, company, city/state) and how confident you are this is the correct person.
 
-**Verified awards and recognition**
-Bullet list of each award or recognition. For each item, include: award name, year (if available), awarding organization, and the exact phrasing used in the source if notable. Include the source name and URL in parentheses.
+**Verified Awards and Recognition**
+For each item include:
+- Award name, year, awarding organization
+- Match reason: "Name + [company] + [city] confirmed in article"
+- Source URL
 
-**Verified education, training, and certifications**
-Bullet list of each designation or program that is confirmed by a third-party source. Specify the designation acronym, its full name, and the verifying organization or page, with URL.
+**Verified Education and Certifications**
+For each item include:
+- Designation/program name
+- Verifying organization
+- Match reason
+- Source URL
 
-**Verified community involvement**
-Bullet list of community, nonprofit, civic, or housing-related activities that are confirmed by third-party sources. Include role (e.g., board member, volunteer, sponsor), organization, location, and any available dates, with source and URL.
+**Verified Community Involvement**
+For each item include:
+- Role, organization, dates
+- Match reason
+- Source URL
 
-**Name-collision or ambiguity notes**
-If there are multiple people with the same name, briefly explain how you distinguished the subject (e.g., matching brokerage, city, or credentials). If you cannot confidently attribute a mention, list it under a separate "Possibly unrelated mentions" subsection and clearly mark it as uncertain.
+**Rejected Due to Name Collision**
+List any mentions you found but excluded because they likely refer to a different person with the same name. Briefly explain why.
 
-**Source list**
-A final bullet list of all distinct sources used (publication or site name only) so it is easy to see the diversity of outlets.
+**Source List**
+All verified sources used.`;
 
-Use clear, professional language and keep the structure consistent.`;
+// Build structured user query for entity resolution
+function buildEntityQuery(
+  agentName: string,
+  company: string | null,
+  businessName: string | null,
+  city: string,
+  state: string
+): string {
+  const companyDisplay = company || businessName || 'Not specified';
+  
+  return `<person>
+  <full_name>${agentName}</full_name>
+  <company>${companyDisplay}</company>
+  ${businessName && company ? `<business_name>${businessName}</business_name>` : ''}
+  <role>Real estate professional</role>
+  <city>${city}</city>
+  <state>${state}</state>
+</person>
 
-// Search with Perplexity API with exponential backoff on 429
+TASK: Find third-party verification of this specific person's awards, certifications, and community involvement.
+
+IMPORTANT: Only include results where you can confirm at least TWO of these attributes match:
+1. Full name: ${agentName}
+2. Company/Brokerage: ${companyDisplay}
+3. Location: ${city}, ${state}
+
+For each citation, you MUST provide a "match_reason" explaining which attributes confirmed the match.
+If you find mentions that might be a DIFFERENT person with the same name, list them separately under "Rejected Due to Name Collision".`;
+}
+
+// Search with Perplexity API with exponential backoff on 429 and strict entity resolution
 async function searchWithPerplexity(
   agentName: string,
   company: string | null,
@@ -125,17 +152,10 @@ async function searchWithPerplexity(
   apiKey: string,
   maxRetries: number = 4
 ): Promise<{ content: string; citations: string[]; rateLimited: boolean }> {
-  console.log(`🔍 Perplexity sonar-pro search for: ${agentName}`);
-  
-  // Build the user query with agent details
-  const userQuery = `Research the following real estate professional:
+  console.log(`🔍 Perplexity entity-resolution search for: ${agentName} @ ${company || businessName || 'unknown'} in ${city}, ${state}`);
 
-**Full Name:** ${agentName}
-**Company/Brokerage:** ${company || businessName || 'Not specified'}
-${businessName && company ? `**Business Name:** ${businessName}` : ''}
-**Location:** ${city}, ${state}
-
-Find all third-party verification of their awards, certifications, community involvement, and press mentions.`;
+  // Build structured entity query
+  const entityQuery = buildEntityQuery(agentName, company, businessName, city, state);
 
   // Exponential backoff: 1s, 2s, 4s, 8s
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -155,10 +175,10 @@ Find all third-party verification of their awards, certifications, community inv
         model: 'sonar-pro',
         messages: [
           { role: 'system', content: RESEARCH_SYSTEM_PROMPT },
-          { role: 'user', content: userQuery }
+          { role: 'user', content: entityQuery }
         ],
-        max_tokens: 2000,
-        temperature: 0.2
+        max_tokens: 2500,
+        temperature: 0.1  // Lower temperature for more precise entity matching
       }),
     });
 
@@ -168,11 +188,9 @@ Find all third-party verification of their awards, certifications, community inv
       
       if (attempt === maxRetries) {
         console.error(`🚨 RATE LIMITED after ${maxRetries} retries for ${agentName}`);
-        // Only send alert on final failure
         sendRateLimitAlert(agentName, `Failed after ${maxRetries} retries`).catch(console.error);
         return { content: '', citations: [], rateLimited: true };
       }
-      // Continue to next retry iteration
       continue;
     }
 
@@ -190,7 +208,6 @@ Find all third-party verification of their awards, certifications, community inv
     return { content, citations, rateLimited: false };
   }
 
-  // Should not reach here, but safety fallback
   return { content: '', citations: [], rateLimited: true };
 }
 
@@ -227,9 +244,8 @@ serve(async (req) => {
       throw new Error('PERPLEXITY_API_KEY not configured');
     }
 
-    console.log(`🔎 Researching ${agentName} using Perplexity sonar-pro (single comprehensive query)...`);
+    console.log(`🔎 Researching ${agentName} using Perplexity entity-resolution...`);
 
-    // Execute single comprehensive search
     const result = await searchWithPerplexity(
       agentName,
       company,
@@ -256,9 +272,15 @@ serve(async (req) => {
     console.log(`   - Total citations: ${uniqueCitations.length}`);
 
     // Extract structured mentions from citations
-    const mentions: any[] = [];
+    const mentions: Array<{
+      url: string;
+      source: string;
+      type: string;
+      credibilityScore: number;
+      title: string;
+    }> = [];
     
-    uniqueCitations.forEach((url, index) => {
+    uniqueCitations.forEach((url: string, index: number) => {
       if (url && typeof url === 'string') {
         try {
           const lowerUrl = url.toLowerCase();
@@ -289,7 +311,7 @@ serve(async (req) => {
             credibilityScore,
             title: `Source ${index + 1}`
           });
-        } catch (e) {
+        } catch {
           // Invalid URL, skip
         }
       }
@@ -341,7 +363,7 @@ Location: ${city}, ${state}
 ${fullResearchText}
 
 # SOURCE CITATIONS
-${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}`).join('\n') : 'No external citations found.'}`
+${uniqueCitations.length > 0 ? uniqueCitations.map((url: string, i: number) => `${i + 1}. ${url}`).join('\n') : 'No external citations found.'}`
           }
         });
         
