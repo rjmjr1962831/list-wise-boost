@@ -61,14 +61,79 @@ async function sendRateLimitAlert(agentName: string, errorDetails: string) {
   }
 }
 
-// Search with Perplexity API
+// System prompt for Perplexity research
+const RESEARCH_SYSTEM_PROMPT = `You are a research assistant whose job is to find independent, third-party verification of a real estate professional's reputation and activities in the United States.
+
+Perform the widest-possible press and web search across:
+
+- Mainstream U.S. news outlets (national, regional, and local newspapers; TV stations; major online news sites).
+- Real estate trade journals and magazines (e.g., Inman, Realtor Magazine, RISMedia, HousingWire, National Real Estate Investor, RealTrends, Multi-Housing News).
+- Industry association and designation sites (e.g., NAR, CCIM, SIOR, IREM, NAIOP, local REALTOR associations, state real estate commissions).
+- Real estate–focused blogs, community news sites, and hyperlocal publications.
+- Conference and event sites (speaker bios, award lists, panel announcements).
+
+Goal: Identify credible third-party sources that confirm the following for the specified professional:
+
+**Awards and professional recognition**
+- Industry awards, "Top Producer" lists, "40 Under 40," "Top Agent," volume/ranking awards, brokerage or franchise awards.
+- Any community or civic awards connected to real estate work.
+
+**Special education, training, and certifications**
+- Advanced or specialty designations (e.g., CRS, GRI, CCIM, SIOR, CPM, SRES, ABR, CLHMS, commercial/land/specialty certifications).
+- Graduate degrees or formal programs related to real estate, finance, urban planning, law, or business, when mentioned by third-party sources.
+
+**Community involvement and service**
+- Volunteer roles, board memberships, and leadership in local nonprofits, chambers of commerce, neighborhood associations, housing or affordability initiatives.
+- Fundraisers, charity events, school or youth programs, housing-related community projects, or other civic engagement that is documented by external organizations.
+
+Important rules:
+- Focus on third-party verification only (news outlets, associations, event organizers, independent blogs). Do not rely on self-authored bios or marketing pages unless they are hosted and endorsed by a reputable third-party organization.
+- When possible, prefer sources that clearly identify the person with matching name + company + city/region and are dated.
+- If there is risk of confusing this person with someone else who has the same name, explicitly call that out and only include items where the affiliation/location clearly match.
+
+Output format:
+
+**Summary** (2–4 sentences)
+Briefly describe how well the person is covered in the press and industry outlets, and whether there is strong or limited third-party verification.
+
+**Verified awards and recognition**
+Bullet list of each award or recognition. For each item, include: award name, year (if available), awarding organization, and the exact phrasing used in the source if notable. Include the source name and URL in parentheses.
+
+**Verified education, training, and certifications**
+Bullet list of each designation or program that is confirmed by a third-party source. Specify the designation acronym, its full name, and the verifying organization or page, with URL.
+
+**Verified community involvement**
+Bullet list of community, nonprofit, civic, or housing-related activities that are confirmed by third-party sources. Include role (e.g., board member, volunteer, sponsor), organization, location, and any available dates, with source and URL.
+
+**Name-collision or ambiguity notes**
+If there are multiple people with the same name, briefly explain how you distinguished the subject (e.g., matching brokerage, city, or credentials). If you cannot confidently attribute a mention, list it under a separate "Possibly unrelated mentions" subsection and clearly mark it as uncertain.
+
+**Source list**
+A final bullet list of all distinct sources used (publication or site name only) so it is easy to see the diversity of outlets.
+
+Use clear, professional language and keep the structure consistent.`;
+
+// Search with Perplexity API - single comprehensive query using sonar-pro
 async function searchWithPerplexity(
-  query: string, 
-  apiKey: string, 
-  agentName: string
+  agentName: string,
+  company: string | null,
+  businessName: string | null,
+  city: string,
+  state: string,
+  apiKey: string
 ): Promise<{ content: string; citations: string[]; rateLimited: boolean }> {
-  console.log(`🔍 Perplexity search: ${query.substring(0, 80)}...`);
+  console.log(`🔍 Perplexity sonar-pro comprehensive search for: ${agentName}`);
   
+  // Build the user query with agent details
+  const userQuery = `Research the following real estate professional:
+
+**Full Name:** ${agentName}
+**Company/Brokerage:** ${company || businessName || 'Not specified'}
+${businessName && company ? `**Business Name:** ${businessName}` : ''}
+**Location:** ${city}, ${state}
+
+Find all third-party verification of their awards, certifications, community involvement, and press mentions.`;
+
   const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
@@ -76,19 +141,13 @@ async function searchWithPerplexity(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'sonar',
+      model: 'sonar-pro',
       messages: [
-        { 
-          role: 'system', 
-          content: `You are a research assistant finding credible press mentions and community involvement for real estate professionals.
-Return factual information with specific details like publication names, dates, organizations, and achievements.
-Focus on verifiable facts from credible sources like news outlets, industry publications, and nonprofit organizations.
-If you cannot find specific information, say so clearly.` 
-        },
-        { role: 'user', content: query }
+        { role: 'system', content: RESEARCH_SYSTEM_PROMPT },
+        { role: 'user', content: userQuery }
       ],
-      max_tokens: 1000,
-      temperature: 0.3
+      max_tokens: 2000,
+      temperature: 0.2
     }),
   });
 
@@ -112,7 +171,7 @@ If you cannot find specific information, say so clearly.`
   const content = data.choices?.[0]?.message?.content || '';
   const citations = data.citations || [];
   
-  console.log(`✅ Perplexity returned ${content.length} chars, ${citations.length} citations`);
+  console.log(`✅ Perplexity sonar-pro returned ${content.length} chars, ${citations.length} citations`);
   
   return { content, citations, rateLimited: false };
 }
@@ -150,75 +209,33 @@ serve(async (req) => {
       throw new Error('PERPLEXITY_API_KEY not configured');
     }
 
-    console.log(`🔎 Researching ${agentName} using Perplexity (5 queries max)...`);
+    console.log(`🔎 Researching ${agentName} using Perplexity sonar-pro (single comprehensive query)...`);
 
-    const agentIdentifier = `${agentName}${businessName ? ` (${businessName})` : ''}${company ? ` at ${company}` : ''}, real estate agent in ${city}, ${state}`;
+    // Execute single comprehensive search
+    const result = await searchWithPerplexity(
+      agentName,
+      company,
+      businessName,
+      city,
+      state,
+      perplexityApiKey
+    );
 
-    // 5 targeted search queries (reduced from original)
-    const searchQueries = [
-      // 1. Press & Media
-      `Find news articles, TV appearances, and media coverage for ${agentIdentifier}. 
-Look for: local news features, Wall Street Journal mentions, Fox/NBC/ABC coverage, podcast appearances.`,
-
-      // 2. Industry Awards
-      `Find industry awards and recognitions for ${agentIdentifier}.
-Look for: Real Trends rankings, America's Best Real Estate Agents, Five Star Professional, local realtor association awards.`,
-
-      // 3. Community & Nonprofit
-      `Find community involvement and nonprofit work for ${agentIdentifier}.
-Look for: charity work, board memberships, Habitat for Humanity, food banks, youth coaching, scholarship funds.`,
-
-      // 4. Professional Organizations
-      `Find professional memberships and leadership roles for ${agentIdentifier}.
-Look for: Rotary, Kiwanis, chamber of commerce, NAR leadership, state/local realtor association roles.`,
-
-      // 5. Publications & Speaking
-      `Find articles written by, speaking engagements, or educational content from ${agentIdentifier}.
-Look for: authored articles in Inman/HousingWire, conference presentations, webinars, real estate training.`
-    ];
-
-    let rateLimitHit = false;
-    const allResults: { content: string; citations: string[] }[] = [];
-
-    // Execute searches sequentially with delay to avoid rate limits
-    for (let i = 0; i < searchQueries.length; i++) {
-      if (rateLimitHit) {
-        console.log(`⏸️ Stopping further queries due to rate limit`);
-        break;
-      }
-
-      try {
-        // Delay between requests (except first)
-        if (i > 0) {
-          await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
-        }
-        
-        const result = await searchWithPerplexity(searchQueries[i], perplexityApiKey, agentName);
-        
-        if (result.rateLimited) {
-          rateLimitHit = true;
-          break;
-        }
-        
-        allResults.push({ content: result.content, citations: result.citations });
-      } catch (error) {
-        console.error(`❌ Search ${i + 1} failed:`, error);
-        allResults.push({ content: '', citations: [] });
-      }
+    if (result.rateLimited) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limited by Perplexity API',
+          rateLimited: true,
+          mentions: []
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
-    // Combine results
-    const allCitations = allResults.flatMap(r => r.citations);
-    const uniqueCitations = [...new Set(allCitations)];
+    const { content: fullResearchText, citations: uniqueCitations } = result;
 
-    const fullResearchText = allResults.map((r, i) => {
-      const labels = ['PRESS & MEDIA', 'INDUSTRY AWARDS', 'COMMUNITY & NONPROFIT', 'PROFESSIONAL ORGS', 'PUBLICATIONS & SPEAKING'];
-      return `# ${labels[i] || `SEARCH ${i + 1}`}\n${r.content || 'No results found.'}`;
-    }).join('\n\n');
-
-    console.log(`📊 Research complete: ${allResults.length} queries executed`);
+    console.log(`📊 Research complete: 1 query executed`);
     console.log(`   - Total citations: ${uniqueCitations.length}`);
-    console.log(`   - Rate limited: ${rateLimitHit}`);
 
     // Extract structured mentions from citations
     const mentions: any[] = [];
@@ -267,7 +284,7 @@ Look for: authored articles in Inman/HousingWire, conference presentations, webi
     console.log(`Found ${finalMentions.length} citations for ${agentName}`);
 
     // Auto-trigger profile synthesis if professionalId provided
-    const hasContent = allResults.some(r => r.content.length > 50);
+    const hasContent = fullResearchText.length > 100;
     const shouldSynthesize = professionalId && fullResearchText.trim() && !dryRun;
     
     let synthesisResult = null;
@@ -312,11 +329,11 @@ ${uniqueCitations.length > 0 ? uniqueCitations.map((url, i) => `${i + 1}. ${url}
     return new Response(
       JSON.stringify({ 
         mentions: finalMentions,
-        provider: 'perplexity',
-        queriesExecuted: allResults.length,
-        rateLimited: rateLimitHit,
+        provider: 'perplexity-sonar-pro',
+        queriesExecuted: 1,
+        rateLimited: false,
         researchSummary: {
-          totalChars: allResults.reduce((sum, r) => sum + r.content.length, 0),
+          totalChars: fullResearchText.length,
           totalCitations: uniqueCitations.length
         },
         synthesis: {
