@@ -178,18 +178,22 @@ const getCityCoordinates = (citySlug: string): { position: string; icbm: string 
 };
 
 export default function DynamicCategoryList() {
-  const { stateSlug, citySlug, categorySlug } = useParams<{ 
+  const { stateSlug, citySlug, categorySlug, thirdSegment } = useParams<{ 
     stateSlug: string; 
     citySlug: string; 
-    categorySlug: string;
+    categorySlug?: string;
+    thirdSegment?: string;
   }>();
+  
+  // Support both direct categorySlug param and thirdSegment from StateAgentOrCategoryRouter
+  const resolvedCategorySlug = categorySlug || thirdSegment;
   
   // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
   const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
   
   // If state slug is an abbreviation, redirect to canonical full name URL
   if (stateSlug && stateNormalized?.needsRedirect) {
-    const newPath = `/${stateNormalized.normalized}/${citySlug}/${categorySlug}`;
+    const newPath = `/${stateNormalized.normalized}/${citySlug}/${resolvedCategorySlug}`;
     console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
     return <Navigate to={newPath} replace />;
   }
@@ -249,7 +253,7 @@ export default function DynamicCategoryList() {
   // Fetch city and category data
   useEffect(() => {
     const fetchData = async () => {
-      if (!normalizedStateSlug || !citySlug || !categorySlug) return;
+      if (!normalizedStateSlug || !citySlug || !resolvedCategorySlug) return;
 
       try {
         // Detect if request is from a bot
@@ -294,7 +298,7 @@ export default function DynamicCategoryList() {
         const { data: categoryData, error: categoryError } = await supabase
           .from('categories')
           .select('*')
-          .eq('slug', categorySlug)
+          .eq('slug', resolvedCategorySlug)
           .eq('active', true)
           .single();
 
@@ -596,7 +600,7 @@ export default function DynamicCategoryList() {
     };
 
     fetchData();
-  }, [stateSlug, citySlug, categorySlug]);
+  }, [stateSlug, citySlug, resolvedCategorySlug]);
 
   // Real-time subscription to update cards as agents get enriched by memo23
   useEffect(() => {
@@ -784,7 +788,7 @@ export default function DynamicCategoryList() {
 
   // Check if quiz has been completed for real estate agents category
   useEffect(() => {
-    if (categorySlug === 'top10realestateagents' && city && allProfessionals.length > 0) {
+    if (resolvedCategorySlug === 'top10realestateagents' && city && allProfessionals.length > 0) {
       const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
       const completed = localStorage.getItem(storageKey);
       
@@ -810,7 +814,7 @@ export default function DynamicCategoryList() {
     } else {
       setFilteredProfessionals(allProfessionals);
     }
-  }, [categorySlug, city, allProfessionals]);
+  }, [resolvedCategorySlug, city, allProfessionals]);
 
   const handleQuizComplete = (preferences: { propertyType: string; priceRange: string; timeline: string }) => {
     if (!city) return;
@@ -868,7 +872,7 @@ export default function DynamicCategoryList() {
   const handleContactClick = (professional: Professional) => {
     setSelectedProfessional(professional);
     
-    if (categorySlug === 'top10realestateagents' && !quizCompleted) {
+    if (resolvedCategorySlug === 'top10realestateagents' && !quizCompleted) {
       setShowQuiz(true);
     } else {
       setShowContactModal(true);
