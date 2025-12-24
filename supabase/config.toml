@@ -366,3 +366,12 @@ verify_jwt = false
 
 [functions.analyze-press-deepseek]
 verify_jwt = false
+
+[functions.generate-ca-city-content]
+verify_jwt = false
+
+[functions.bulk-generate-ca-city-content]
+verify_jwt = false
+
+[functions.ca-city-content-cron]
+verify_jwt = false
