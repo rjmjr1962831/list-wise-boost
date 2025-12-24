@@ -101,6 +101,7 @@ serve(async (req) => {
     const MAX_RECORDS_PER_RUN = 50;
     const BATCH_SIZE = 1;
     const DELAY_AFTER_CREATE_MS = 3000; // Wait 3s after creates for Pipedrive search index
+    const STALE_PROCESSING_MINUTES = 10; // Reset items stuck in "processing" for more than 10 minutes
     
     const results = {
       processed: 0,
@@ -109,10 +110,24 @@ serve(async (req) => {
       errors: [] as Array<{ professional_id: string; error: string }>,
     };
 
+    // First: Reset any stale "processing" items back to "pending"
+    const staleThreshold = new Date();
+    staleThreshold.setMinutes(staleThreshold.getMinutes() - STALE_PROCESSING_MINUTES);
+    
+    const { data: staleItems, error: staleError } = await supabase
+      .from("pipedrive_sync_queue")
+      .update({ status: "pending" })
+      .eq("status", "processing")
+      .lt("updated_at", staleThreshold.toISOString())
+      .select("id");
+    
+    if (!staleError && staleItems && staleItems.length > 0) {
+      console.log(`♻️ Reset ${staleItems.length} stale "processing" items back to "pending"`);
+    }
+
     // Process in batches until queue is empty or max records reached
     while (results.processed < MAX_RECORDS_PER_RUN) {
-      // Fetch next batch of pending items OR failed items ready for retry
-      const now = new Date().toISOString();
+      // Fetch next batch of pending items
       const { data: queueItems, error: fetchError } = await supabase
         .from("pipedrive_sync_queue")
         .select("id, professional_id, attempts, max_attempts, last_error")
