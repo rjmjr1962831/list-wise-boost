@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const CONCURRENCY = 3; // Reduced from 10 to avoid rate limits
-const MIN_REVIEWS = 50;
+const MIN_REVIEWS = 20;
 const MIN_RATING = 4.8;
 const DEFAULT_DELAY_MS = 2000; // 2 second delay between agents
 const MAX_RETRIES = 3; // Max retry attempts for 429 errors

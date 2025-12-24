@@ -84,7 +84,7 @@ const DISQUALIFICATION_CRITERIA = [
   'Suspended or revoked real estate license',
   'Disciplinary actions from state licensing board',
   'Rating below 4.8 stars across review platforms',
-  'Fewer than 50 verified client reviews',
+  'Fewer than 20 verified client reviews',
   'No transaction activity in past 24 months',
   'Fraudulent or misleading marketing practices',
   'Unresolved consumer complaints',
