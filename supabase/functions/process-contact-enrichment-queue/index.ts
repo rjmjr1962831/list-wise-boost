@@ -15,25 +15,24 @@ async function processAgent(
     skipRecentlyEnriched: boolean;
     skipGenericBios: boolean;
     skipIfNoPress: boolean;
-    useFirecrawl: boolean;
     minReviews: number;
     minExperience: number | null;
   }
 ) {
   try {
-    // Mark as processing - starting with memo23
+    // Mark as processing - starting with Firecrawl
     await supabase
       .from('contact_enrichment_queue')
       .update({ 
         status: 'processing',
-        stage: 'memo23',
+        stage: 'firecrawl',
         started_at: new Date().toISOString(),
         attempts: item.attempts + 1
       })
       .eq('id', item.id);
 
-    // Check if agent was recently enriched (within 15 days) - skip memo23 but continue to synthesis
-    let skipMemo23 = false;
+    // Check if agent was recently enriched (within 15 days) - skip Firecrawl but continue to synthesis
+    let skipFirecrawl = false;
     if (options.skipRecentlyEnriched) {
       const { data: agent } = await supabase
         .from('professionals')
@@ -44,55 +43,41 @@ async function processAgent(
       if (agent?.zillow_data_fetched_at) {
         const daysSinceEnrichment = (Date.now() - new Date(agent.zillow_data_fetched_at).getTime()) / (1000 * 60 * 60 * 24);
         if (daysSinceEnrichment < 15) {
-          console.log(`⏭️ [SKIP MEMO23] ${item.professionals?.name} enriched ${daysSinceEnrichment.toFixed(1)} days ago - will proceed to synthesis`);
-          skipMemo23 = true;
+          console.log(`⏭️ [SKIP FIRECRAWL] ${item.professionals?.name} enriched ${daysSinceEnrichment.toFixed(1)} days ago - will proceed to synthesis`);
+          skipFirecrawl = true;
         }
       }
     }
 
-    const scraperName = options.useFirecrawl ? 'Firecrawl' : 'memo23';
-    console.log(`🔄 [${scraperName}] Processing ${item.professionals?.name}...`);
+    console.log(`🔄 [Firecrawl] Processing ${item.professionals?.name}...`);
 
-    // Step 1: enrichment (skip if recently enriched)
-    if (skipMemo23) {
-      console.log(`⏭️ [SKIP ${scraperName}] Skipping for ${item.professionals?.name}`);
+    // Step 1: Firecrawl enrichment (skip if recently enriched)
+    if (skipFirecrawl) {
+      console.log(`⏭️ [SKIP Firecrawl] Skipping for ${item.professionals?.name}`);
     } else if (options.dryRun) {
-      console.log(`[DRY RUN] Would call ${scraperName} for ${item.professional_id}`);
+      console.log(`[DRY RUN] Would call Firecrawl for ${item.professional_id}`);
     } else {
-      if (options.useFirecrawl) {
-        // Use Firecrawl scraper for Zillow enrichment
-        const profileUrl = item.professionals?.zillow_profile_url;
-        if (!profileUrl) {
-          console.log(`⚠️ [Firecrawl] No Zillow URL for ${item.professionals?.name}, skipping enrichment`);
-        } else {
-          const { data: firecrawlData, error: enrichError } = await supabase.functions.invoke(
-            'scrape-zillow-firecrawl',
-            { body: { 
-              zillow_url: profileUrl, 
-              professional_id: item.professional_id, 
-              save_to_db: true 
-            } }
-          );
-
-          if (enrichError) {
-            throw new Error(`Firecrawl failed: ${enrichError.message}`);
-          }
-          if (!firecrawlData?.success) {
-            throw new Error(`Firecrawl failed: ${firecrawlData?.error || 'Unknown error'}`);
-          }
-          console.log(`✅ [Firecrawl] Complete for ${item.professionals?.name}`);
-        }
+      // Use Firecrawl scraper for Zillow enrichment
+      const profileUrl = item.professionals?.zillow_profile_url;
+      if (!profileUrl) {
+        console.log(`⚠️ [Firecrawl] No Zillow URL for ${item.professionals?.name}, skipping enrichment`);
       } else {
-        // ORIGINAL: Use memo23 scraper
-        const { error: enrichError } = await supabase.functions.invoke(
-          'fetch-single-memo23-agent',
-          { body: { professionalId: item.professional_id } }
+        const { data: firecrawlData, error: enrichError } = await supabase.functions.invoke(
+          'scrape-zillow-firecrawl',
+          { body: { 
+            zillow_url: profileUrl, 
+            professional_id: item.professional_id, 
+            save_to_db: true 
+          } }
         );
 
         if (enrichError) {
-          throw new Error(`memo23 failed: ${enrichError.message}`);
+          throw new Error(`Firecrawl failed: ${enrichError.message}`);
         }
-        console.log(`✅ [memo23] Complete for ${item.professionals?.name}`);
+        if (!firecrawlData?.success) {
+          throw new Error(`Firecrawl failed: ${firecrawlData?.error || 'Unknown error'}`);
+        }
+        console.log(`✅ [Firecrawl] Complete for ${item.professionals?.name}`);
       }
     }
 
@@ -242,9 +227,8 @@ serve(async (req) => {
       skipRecentlyEnriched = true,
       skipGenericBios = true,
       skipIfNoPress = false,
-      useFirecrawl = false,
-      minReviews = 20,           // NEW: Configurable minimum reviews (default 20)
-      minExperience = null       // NEW: null = no experience requirement
+      minReviews = 20,
+      minExperience = null
     } = await req.json().catch(() => ({ 
       batchSize: 100, 
       concurrency: 10,
@@ -252,7 +236,6 @@ serve(async (req) => {
       skipRecentlyEnriched: true,
       skipGenericBios: true,
       skipIfNoPress: false,
-      useFirecrawl: false,
       minReviews: 20,
       minExperience: null
     }));
@@ -261,9 +244,9 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress, useFirecrawl, minReviews, minExperience };
+    const costOptions = { dryRun, skipRecentlyEnriched, skipGenericBios, skipIfNoPress, minReviews, minExperience };
     console.log(`🔄 Processing up to ${batchSize} agents with ${concurrency} concurrent sessions...`);
-    console.log(`🔧 Scraper: ${useFirecrawl ? 'Firecrawl JSON' : 'memo23'}`);
+    console.log(`🔧 Scraper: Firecrawl (only)`);
     console.log(`📊 Thresholds: minReviews=${minReviews}, minExperience=${minExperience === null ? 'none' : minExperience}`);
     if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
     console.log(`💰 Cost controls: skipRecent=${skipRecentlyEnriched}, skipGeneric=${skipGenericBios}, skipNoPress=${skipIfNoPress}`);
