@@ -319,10 +319,11 @@ async function processQueue(
 
       console.log(`✅ Batch ${i + 1}/${totalBatches} complete: ${batch.length} agents processed`);
 
-      // Wait between batches (but not after the last one)
+      // Rate limit: ~2-3 RPS means wait ~1.5s per concurrent request processed
+      // With concurrency=4, wait 1.5s between batches to average ~2.5 RPS
       if (i < totalBatches - 1) {
-        console.log('⏸️ Waiting 3s before next batch...');
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        console.log('⏸️ Waiting 1.5s before next batch...');
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
     }
 
@@ -372,8 +373,8 @@ serve(async (req) => {
 
   try {
     const { 
-      batchSize = 20, 
-      concurrency = 2,
+      batchSize = 30, 
+      concurrency = 4,
       dryRun = false,
       skipRecentlyEnriched = true,
       skipGenericBios = true,
@@ -381,8 +382,8 @@ serve(async (req) => {
       minReviews = 20,
       minExperience = null
     } = await req.json().catch(() => ({
-      batchSize: 20, 
-      concurrency: 2,
+      batchSize: 30, 
+      concurrency: 4,
       dryRun: false,
       skipRecentlyEnriched: true,
       skipGenericBios: true,
