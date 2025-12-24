@@ -1921,10 +1921,42 @@ export const ProfessionalCard = ({
                       }
 
                       const awards = pressMentions.filter((m: any) => m.type === 'award');
-                      // Include both 'press' and 'article' types, and items without a type (legacy data)
-                      const pressItems = pressMentions.filter((m: any) => 
-                        m.type === 'press' || m.type === 'article' || !m.type
-                      );
+                      
+                      // Domains to exclude (profile aggregator sites, not actual press)
+                      const excludedDomains = ['zillow.com', 'homes.com', 'realtor.com', 'effectiveagents.com', 'redfin.com'];
+                      
+                      // Filter press mentions to exclude profile sites
+                      const pressItems = pressMentions.filter((m: any) => {
+                        const type = m.type;
+                        const isValidType = type === 'press' || type === 'article' || !type;
+                        if (!isValidType) return false;
+                        
+                        // Check if source is an excluded domain
+                        const source = (m.source || '').toLowerCase();
+                        const url = (m.url || '').toLowerCase();
+                        const isExcluded = excludedDomains.some(domain => 
+                          source.includes(domain) || url.includes(domain)
+                        );
+                        return !isExcluded;
+                      });
+                      
+                      // Also extract press-type achievements (WSJ, Fox Business, etc.) to show in Featured In
+                      const pressFromAchievements = achievements.filter((a: any) => {
+                        const title = (a.title || '').toLowerCase();
+                        const source = (a.source || '').toLowerCase();
+                        return title.includes('featured in') || title.includes('featured on') ||
+                               source.includes('journal') || source.includes('business') ||
+                               source.includes('news') || source.includes('magazine') ||
+                               source.includes('times') || source.includes('post');
+                      }).map((a: any) => ({
+                        title: a.title,
+                        source: a.source,
+                        url: a.source_url,
+                        date: a.date || a.year
+                      }));
+                      
+                      // Combine and dedupe press items
+                      const allPressItems = [...pressItems, ...pressFromAchievements];
 
                       return (
                         <div className="space-y-4">
@@ -2007,11 +2039,11 @@ export const ProfessionalCard = ({
                           )}
 
                            {/* Press Mentions */}
-                           {pressItems.length > 0 && (
+                           {allPressItems.length > 0 && (
                              <div>
                                <p className="text-xs font-medium text-muted-foreground mb-2">Featured In</p>
                                <div className="space-y-2">
-                                 {pressItems.map((item: any, idx: number) => {
+                                 {allPressItems.map((item: any, idx: number) => {
                                    // Use source as display title if title is generic (e.g., "Source 1")
                                    const isGenericTitle = !item.title || item.title.startsWith('Source ');
                                    const displayTitle = isGenericTitle ? (item.source || 'Press Mention') : item.title;
