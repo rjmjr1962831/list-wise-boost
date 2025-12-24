@@ -177,7 +177,11 @@ const getCityCoordinates = (citySlug: string): { position: string; icbm: string 
   return coordinates[citySlug] || { position: '34.0489;-111.0937', icbm: '34.0489, -111.0937' }; // Default to Arizona center
 };
 
-export default function DynamicCategoryList() {
+interface DynamicCategoryListProps {
+  categorySlugOverride?: string;
+}
+
+export default function DynamicCategoryList({ categorySlugOverride }: DynamicCategoryListProps = {}) {
   const { stateSlug, citySlug, categorySlug, thirdSegment } = useParams<{ 
     stateSlug: string; 
     citySlug: string; 
@@ -185,8 +189,8 @@ export default function DynamicCategoryList() {
     thirdSegment?: string;
   }>();
   
-  // Support both direct categorySlug param and thirdSegment from StateAgentOrCategoryRouter
-  const resolvedCategorySlug = categorySlug || thirdSegment;
+  // Priority: prop override > route categorySlug > route thirdSegment
+  const resolvedCategorySlug = categorySlugOverride || categorySlug || thirdSegment;
   
   // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
   const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;

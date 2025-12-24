@@ -35,9 +35,10 @@ const StateAgentOrCategoryRouter = () => {
   }
 
   // This is a category slug - delegate to DynamicCategoryList
+  // Pass thirdSegment explicitly as categorySlug prop for reliability
   return (
     <Suspense fallback={loader}>
-      <DynamicCategoryList />
+      <DynamicCategoryList categorySlugOverride={thirdSegment} />
     </Suspense>
   );
 };
