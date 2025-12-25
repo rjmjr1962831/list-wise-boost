@@ -2214,6 +2214,45 @@ export type Database = {
         }
         Relationships: []
       }
+      zillow_search_results: {
+        Row: {
+          agent_name: string
+          city: string
+          created_at: string
+          id: string
+          state: string
+          status: string
+          updated_at: string
+          zillow_rating: number | null
+          zillow_reviews: number | null
+          zillow_url: string | null
+        }
+        Insert: {
+          agent_name: string
+          city: string
+          created_at?: string
+          id?: string
+          state: string
+          status?: string
+          updated_at?: string
+          zillow_rating?: number | null
+          zillow_reviews?: number | null
+          zillow_url?: string | null
+        }
+        Update: {
+          agent_name?: string
+          city?: string
+          created_at?: string
+          id?: string
+          state?: string
+          status?: string
+          updated_at?: string
+          zillow_rating?: number | null
+          zillow_reviews?: number | null
+          zillow_url?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       professionals_public: {
