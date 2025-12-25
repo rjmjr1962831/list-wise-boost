@@ -24,14 +24,11 @@ const TX_CITIES = [
 ];
 
 function extractCity(results: any[]): string | null {
-  // Combine all text from results
   const allText = results.map(r => 
     `${r.title || ''} ${r.text || ''} ${(r.highlights || []).join(' ')}`
   ).join(' ');
   
-  // First: Check if any known TX city appears in the text
   for (const city of TX_CITIES) {
-    // Look for city name followed by TX or Texas
     const patterns = [
       new RegExp(`\\b${city},?\\s*TX\\b`, 'i'),
       new RegExp(`\\b${city},?\\s*Texas\\b`, 'i'),
@@ -42,25 +39,20 @@ function extractCity(results: any[]): string | null {
     
     for (const pattern of patterns) {
       if (pattern.test(allText)) {
-        console.log(`Matched pattern for ${city}`);
         return city;
       }
     }
   }
   
-  // Fallback: Look for "City, TX" pattern but ONLY return if it's a known city
   const pattern = /\b([A-Z][a-zA-Z\s]+),?\s*(?:TX|Texas)\b/gi;
   const matches = allText.match(pattern);
   
   if (matches && matches.length > 0) {
     for (const match of matches) {
       const cityName = match.replace(/,?\s*(?:TX|Texas)$/i, '').trim();
-      
-      // ONLY return if it's in our known cities list
       const foundCity = TX_CITIES.find(c => 
         c.toLowerCase() === cityName.toLowerCase()
       );
-      
       if (foundCity) {
         return foundCity;
       }
@@ -70,23 +62,59 @@ function extractCity(results: any[]): string | null {
   return null;
 }
 
-// Track which API key to use (alternates between calls)
+// API key management with round-robin
 let apiKeyIndex = 0;
+let apiKeys: string[] = [];
 
-function getNextApiKey(): string {
-  const keys = [
+function initApiKeys() {
+  apiKeys = [
     Deno.env.get('EXA_API_KEY'),
     Deno.env.get('EXA_API_KEY_2')
   ].filter(Boolean) as string[];
   
-  if (keys.length === 0) {
+  if (apiKeys.length === 0) {
     throw new Error('No EXA API keys configured');
   }
-  
-  const key = keys[apiKeyIndex % keys.length];
+  console.log(`Initialized ${apiKeys.length} Exa API key(s)`);
+}
+
+function getNextApiKey(): string {
+  const key = apiKeys[apiKeyIndex % apiKeys.length];
   apiKeyIndex++;
-  console.log(`Using API key ${(apiKeyIndex - 1) % keys.length + 1} of ${keys.length}`);
   return key;
+}
+
+// Exponential backoff retry
+async function fetchWithRetry(
+  url: string, 
+  options: RequestInit, 
+  maxRetries = 3,
+  baseDelay = 1000
+): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      
+      // If rate limited (429), wait and retry
+      if (response.status === 429) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.log(`Rate limited, backing off ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      const delay = baseDelay * Math.pow(2, attempt);
+      console.log(`Request failed, backing off ${delay}ms (attempt ${attempt + 1}/${maxRetries}): ${lastError.message}`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError || new Error('Max retries exceeded');
 }
 
 async function findAgentCity(
@@ -94,13 +122,9 @@ async function findAgentCity(
   licenseNumber: string
 ): Promise<string | null> {
   const exaApiKey = getNextApiKey();
-  
-  // Query format that works: "[license]" Texas real estate [name]
   const query = `"${licenseNumber}" Texas real estate ${agentName}`;
   
-  console.log(`Exa query: ${query}`);
-  
-  const response = await fetch('https://api.exa.ai/search', {
+  const response = await fetchWithRetry('https://api.exa.ai/search', {
     method: 'POST',
     headers: {
       'x-api-key': exaApiKey,
@@ -119,23 +143,118 @@ async function findAgentCity(
   
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`Exa API error: ${response.status}`, errorText);
     throw new Error(`Exa API error: ${response.status} - ${errorText}`);
   }
   
   const data = await response.json();
   
   if (!data.results || data.results.length === 0) {
-    console.log(`No results for ${agentName}`);
     return null;
   }
   
-  console.log(`Got ${data.results.length} results`);
+  return extractCity(data.results);
+}
+
+interface License {
+  id: string;
+  name: string;
+  license_number: string;
+}
+
+interface Result {
+  name: string;
+  license: string;
+  city: string | null;
+  saved: boolean;
+  error?: string;
+  marked?: boolean;
+}
+
+// Process a single license
+async function processLicense(
+  lic: License,
+  supabase: any
+): Promise<Result> {
+  try {
+    const city = await findAgentCity(lic.name, lic.license_number);
+    
+    if (city) {
+      const { error: updateError } = await supabase
+        .from('state_licenses')
+        .update({ city: city })
+        .eq('id', lic.id);
+
+      if (updateError) {
+        console.log(`✗ ${lic.name}: found ${city} but save failed`);
+        return {
+          name: lic.name,
+          license: lic.license_number,
+          city: city,
+          saved: false,
+          error: updateError.message
+        };
+      } else {
+        console.log(`✓ ${lic.name}: ${city}`);
+        return {
+          name: lic.name,
+          license: lic.license_number,
+          city: city,
+          saved: true
+        };
+      }
+    } else {
+      // Mark as NOT_FOUND so we don't retry this agent
+      const { error: updateError } = await supabase
+        .from('state_licenses')
+        .update({ city: 'NOT_FOUND' })
+        .eq('id', lic.id);
+      
+      console.log(`- ${lic.name}: no city found (marked)`);
+      return {
+        name: lic.name,
+        license: lic.license_number,
+        city: null,
+        saved: false,
+        marked: true
+      };
+    }
+  } catch (error) {
+    console.log(`✗ ${lic.name}: error - ${error instanceof Error ? error.message : String(error)}`);
+    return {
+      name: lic.name,
+      license: lic.license_number,
+      city: null,
+      saved: false,
+      error: error instanceof Error ? error.message : String(error)
+    };
+  }
+}
+
+// Process licenses in batches with concurrency
+async function processWithConcurrency(
+  licenses: License[],
+  supabase: any,
+  concurrency: number
+): Promise<Result[]> {
+  const results: Result[] = [];
   
-  // Extract city from results
-  const city = extractCity(data.results);
-  console.log(`Extracted city: ${city}`);
-  return city;
+  for (let i = 0; i < licenses.length; i += concurrency) {
+    const batch = licenses.slice(i, i + concurrency);
+    console.log(`\nProcessing batch ${Math.floor(i / concurrency) + 1} (${batch.length} agents)...`);
+    
+    const batchResults = await Promise.all(
+      batch.map(lic => processLicense(lic, supabase))
+    );
+    
+    results.push(...batchResults);
+    
+    // Small delay between batches to be nice to the API
+    if (i + concurrency < licenses.length) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  }
+  
+  return results;
 }
 
 serve(async (req) => {
@@ -144,22 +263,15 @@ serve(async (req) => {
   }
 
   try {
-    const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
-    const EXA_API_KEY_2 = Deno.env.get('EXA_API_KEY_2');
-    
-    if (!EXA_API_KEY && !EXA_API_KEY_2) {
-      throw new Error('No EXA API keys configured');
-    }
-    
-    const keyCount = [EXA_API_KEY, EXA_API_KEY_2].filter(Boolean).length;
-    console.log(`Using ${keyCount} Exa API key(s) for load balancing`);
+    initApiKeys();
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const body = await req.json().catch(() => ({}));
-    const limit = body.limit || 3;
+    const limit = body.limit || 50;
+    const concurrency = body.concurrency || 10;
 
     // Get Texas licenses without city info
     const { data: licenses, error: dbError } = await supabase
@@ -173,71 +285,21 @@ serve(async (req) => {
 
     console.log(`\n${'='.repeat(50)}`);
     console.log(`FINDING CITIES FOR ${licenses?.length || 0} TX AGENTS`);
+    console.log(`Concurrency: ${concurrency}, API Keys: ${apiKeys.length}`);
     console.log(`${'='.repeat(50)}`);
 
-    const results = [];
-
-    for (const lic of licenses || []) {
-      console.log(`\n--- ${lic.name} (${lic.license_number}) ---`);
-      
-      try {
-        const city = await findAgentCity(lic.name, lic.license_number);
-        
-        if (city) {
-          // Update the database
-          const { error: updateError } = await supabase
-            .from('state_licenses')
-            .update({ city: city })
-            .eq('id', lic.id);
-
-          if (updateError) {
-            console.error(`Failed to update ${lic.name}:`, updateError);
-            results.push({
-              name: lic.name,
-              license: lic.license_number,
-              city: city,
-              saved: false,
-              error: updateError.message
-            });
-          } else {
-            console.log(`✓ Saved city: ${city}`);
-            results.push({
-              name: lic.name,
-              license: lic.license_number,
-              city: city,
-              saved: true
-            });
-          }
-        } else {
-          console.log(`✗ No city found`);
-          results.push({
-            name: lic.name,
-            license: lic.license_number,
-            city: null,
-            saved: false
-          });
-        }
-        
-      } catch (error) {
-        console.error(`Error for ${lic.name}:`, error);
-        results.push({
-          name: lic.name,
-          license: lic.license_number,
-          city: null,
-          saved: false,
-          error: error instanceof Error ? error.message : String(error)
-        });
-      }
-      
-      // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 300));
-    }
+    const results = await processWithConcurrency(
+      licenses || [],
+      supabase,
+      concurrency
+    );
 
     const found = results.filter(r => r.city).length;
     const saved = results.filter(r => r.saved).length;
+    const errors = results.filter(r => r.error).length;
 
     console.log(`\n${'='.repeat(50)}`);
-    console.log(`COMPLETE: Found ${found}/${results.length} cities, saved ${saved}`);
+    console.log(`COMPLETE: Found ${found}/${results.length} cities, saved ${saved}, errors ${errors}`);
     console.log(`${'='.repeat(50)}`);
 
     return new Response(JSON.stringify({
@@ -245,7 +307,8 @@ serve(async (req) => {
       summary: {
         processed: results.length,
         citiesFound: found,
-        saved: saved
+        saved: saved,
+        errors: errors
       },
       results
     }, null, 2), {
