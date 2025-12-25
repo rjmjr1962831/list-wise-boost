@@ -378,3 +378,6 @@ verify_jwt = false
 
 [functions.test-tx-license-exa]
 verify_jwt = false
+
+[functions.test-exa-deepseek-enrichment]
+verify_jwt = false
