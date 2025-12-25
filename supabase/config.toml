@@ -375,3 +375,6 @@ verify_jwt = false
 
 [functions.ca-city-content-cron]
 verify_jwt = false
+
+[functions.test-tx-license-exa]
+verify_jwt = false
