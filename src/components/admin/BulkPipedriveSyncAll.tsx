@@ -87,15 +87,15 @@ export function BulkPipedriveSyncAll() {
       <Card>
         <CardHeader>
           <CardTitle>Bulk Sync All Professionals to Pipedrive</CardTitle>
-          <CardDescription>
-            Syncs all active professionals with email addresses to Pipedrive. This will:
+        <div className="text-sm text-muted-foreground">
+            <p>Syncs all active professionals with email addresses to Pipedrive. This will:</p>
             <ul className="list-disc list-inside mt-2 space-y-1">
               <li>Create new contacts for agents not in Pipedrive</li>
               <li>Update existing contacts with latest data</li>
               <li>Merge duplicate contacts automatically</li>
               <li>Populate all 20+ custom fields including Card URL and Magic Link</li>
             </ul>
-          </CardDescription>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
