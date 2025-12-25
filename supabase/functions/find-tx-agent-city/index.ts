@@ -70,11 +70,31 @@ function extractCity(results: any[]): string | null {
   return null;
 }
 
+// Track which API key to use (alternates between calls)
+let apiKeyIndex = 0;
+
+function getNextApiKey(): string {
+  const keys = [
+    Deno.env.get('EXA_API_KEY'),
+    Deno.env.get('EXA_API_KEY_2')
+  ].filter(Boolean) as string[];
+  
+  if (keys.length === 0) {
+    throw new Error('No EXA API keys configured');
+  }
+  
+  const key = keys[apiKeyIndex % keys.length];
+  apiKeyIndex++;
+  console.log(`Using API key ${(apiKeyIndex - 1) % keys.length + 1} of ${keys.length}`);
+  return key;
+}
+
 async function findAgentCity(
   agentName: string, 
-  licenseNumber: string, 
-  exaApiKey: string
+  licenseNumber: string
 ): Promise<string | null> {
+  const exaApiKey = getNextApiKey();
+  
   // Query format that works: "[license]" Texas real estate [name]
   const query = `"${licenseNumber}" Texas real estate ${agentName}`;
   
@@ -125,9 +145,14 @@ serve(async (req) => {
 
   try {
     const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
-    if (!EXA_API_KEY) {
-      throw new Error('EXA_API_KEY is not configured');
+    const EXA_API_KEY_2 = Deno.env.get('EXA_API_KEY_2');
+    
+    if (!EXA_API_KEY && !EXA_API_KEY_2) {
+      throw new Error('No EXA API keys configured');
     }
+    
+    const keyCount = [EXA_API_KEY, EXA_API_KEY_2].filter(Boolean).length;
+    console.log(`Using ${keyCount} Exa API key(s) for load balancing`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -156,7 +181,7 @@ serve(async (req) => {
       console.log(`\n--- ${lic.name} (${lic.license_number}) ---`);
       
       try {
-        const city = await findAgentCity(lic.name, lic.license_number, EXA_API_KEY);
+        const city = await findAgentCity(lic.name, lic.license_number);
         
         if (city) {
           // Update the database
