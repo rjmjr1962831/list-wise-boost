@@ -34,9 +34,10 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
         <h2 className="text-2xl font-semibold text-foreground mb-4">
           Discover {cityName}, {stateName}
         </h2>
-        <p className="text-foreground/90 leading-relaxed text-lg mb-6">
-          {marketData.overview}
-        </p>
+        <p 
+          className="text-foreground/90 leading-relaxed text-lg mb-6"
+          dangerouslySetInnerHTML={{ __html: marketData.overview }}
+        />
         
         {/* Key Market Statistics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -84,7 +85,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
                 <span className="bg-primary/20 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold flex-shrink-0">
                   {index + 1}
                 </span>
-                <span>{fact}</span>
+                <span dangerouslySetInnerHTML={{ __html: fact }} />
               </li>
             ))}
           </ul>
@@ -102,7 +103,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
             {marketData.pointsOfInterest.map((poi, index) => (
               <div key={index} className="flex items-start gap-2 text-foreground/80 bg-muted/30 rounded-lg p-3">
                 <Coffee className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <span>{poi}</span>
+                <span dangerouslySetInnerHTML={{ __html: poi }} />
               </div>
             ))}
           </div>
@@ -116,9 +117,10 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
             <Heart className="h-5 w-5 text-primary" />
             Life in {cityName}
           </h3>
-          <p className="text-foreground/80 bg-muted/20 rounded-lg p-4 border-l-4 border-primary">
-            {marketData.localCulture}
-          </p>
+          <p 
+            className="text-foreground/80 bg-muted/20 rounded-lg p-4 border-l-4 border-primary"
+            dangerouslySetInnerHTML={{ __html: marketData.localCulture }}
+          />
         </section>
       )}
 
@@ -132,7 +134,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
           {marketData.highlights.map((highlight, index) => (
             <li key={index} className="flex items-start gap-2 text-foreground/80">
               <span className="text-primary mt-1">•</span>
-              <span>{highlight}</span>
+              <span dangerouslySetInnerHTML={{ __html: highlight }} />
             </li>
           ))}
         </ul>
@@ -159,7 +161,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
           <Users className="h-5 w-5 text-primary" />
           Who's Moving to {cityName}
         </h3>
-        <p className="text-foreground/80">{marketData.buyerProfile}</p>
+        <p className="text-foreground/80" dangerouslySetInnerHTML={{ __html: marketData.buyerProfile }} />
       </section>
 
       {/* Market Trends */}
@@ -168,7 +170,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
           <TrendingUp className="h-5 w-5 text-primary" />
           {cityName} Real Estate Market Trends
         </h3>
-        <p className="text-foreground/80">{marketData.marketTrends}</p>
+        <p className="text-foreground/80" dangerouslySetInnerHTML={{ __html: marketData.marketTrends }} />
       </section>
 
       {/* Best Kept Secret - NEW */}
@@ -179,7 +181,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
             Insider Tip
           </h3>
           <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-            <p className="text-foreground/90 italic">"{marketData.bestKeptSecret}"</p>
+            <p className="text-foreground/90 italic" dangerouslySetInnerHTML={{ __html: `"${marketData.bestKeptSecret}"` }} />
           </div>
         </section>
       )}
