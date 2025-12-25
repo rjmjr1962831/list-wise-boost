@@ -24,8 +24,9 @@ const TX_CITIES = [
 ];
 
 function extractCity(results: any[]): string | null {
+  // Only use title and url - no contents/highlights needed
   const allText = results.map(r => 
-    `${r.title || ''} ${r.text || ''} ${(r.highlights || []).join(' ')}`
+    `${r.title || ''} ${r.url || ''}`
   ).join(' ');
   
   for (const city of TX_CITIES) {
@@ -133,11 +134,9 @@ async function findAgentCity(
     body: JSON.stringify({
       query: query,
       type: 'auto',
-      numResults: 5,
-      contents: {
-        text: { maxCharacters: 500 },
-        highlights: true
-      }
+      numResults: 5
+      // NO contents/highlights - just basic search results (titles, URLs)
+      // This reduces Exa cost by ~66%
     })
   });
   
