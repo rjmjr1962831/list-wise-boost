@@ -381,3 +381,6 @@ verify_jwt = false
 
 [functions.test-exa-deepseek-enrichment]
 verify_jwt = false
+
+[functions.find-tx-agent-city]
+verify_jwt = false
