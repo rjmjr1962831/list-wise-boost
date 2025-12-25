@@ -402,8 +402,8 @@ serve(async (req) => {
 
   try {
     const { 
-      batchSize = 30, 
-      concurrency = 4,
+      batchSize = 100, 
+      concurrency = 100,
       dryRun = false,
       skipRecentlyEnriched = true,
       skipGenericBios = true,
@@ -411,8 +411,8 @@ serve(async (req) => {
       minReviews = 20,
       minExperience = null
     } = await req.json().catch(() => ({
-      batchSize: 30, 
-      concurrency: 4,
+      batchSize: 100, 
+      concurrency: 100,
       dryRun: false,
       skipRecentlyEnriched: true,
       skipGenericBios: true,
