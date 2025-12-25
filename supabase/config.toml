@@ -1,5 +1,8 @@
 project_id = "bgdtekbhelormzbymkhh"
 
+[functions.import-zillow-data]
+verify_jwt = false
+
 [functions.push-indexnow]
 verify_jwt = false
 
