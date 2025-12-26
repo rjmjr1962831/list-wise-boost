@@ -39,7 +39,7 @@ const StateAgentOrCategoryRouter = () => {
     // This is a magic link - delegate to AgentCardRedirect
     return (
       <Suspense fallback={loader}>
-        <AgentCardRedirect />
+        <AgentCardRedirect citySlugOverride={citySlug} agentSlugOverride={thirdSegment} />
       </Suspense>
     );
   }
