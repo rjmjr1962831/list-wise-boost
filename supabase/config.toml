@@ -387,3 +387,9 @@ verify_jwt = false
 
 [functions.find-tx-agent-city]
 verify_jwt = false
+
+[functions.scrape-zillow-agent]
+verify_jwt = false
+
+[functions.batch-scrape-zillow]
+verify_jwt = false
