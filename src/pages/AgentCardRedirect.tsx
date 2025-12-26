@@ -12,9 +12,15 @@ import { Loader2 } from "lucide-react";
  * It extracts the digits and matches by city + phone, then redirects into the /profile/:token funnel.
  */
 const AgentCardRedirect = () => {
-  const { citySlug, agentSlug } = useParams<{ citySlug: string; agentSlug: string }>();
+  // Support both direct route (/az/:citySlug/:agentSlug) and 
+  // StateAgentOrCategoryRouter (/:stateSlug/:citySlug/:thirdSegment)
+  const params = useParams<{ citySlug: string; agentSlug?: string; thirdSegment?: string }>();
   const navigate = useNavigate();
   const [error, setError] = useState(false);
+
+  // Use agentSlug if available, otherwise fall back to thirdSegment
+  const citySlug = params.citySlug;
+  const agentSlug = params.agentSlug || params.thirdSegment;
 
   useEffect(() => {
     const lookupAndRedirect = async () => {
