@@ -75,7 +75,7 @@ const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
 const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
 const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
-const AgentCardRedirect = lazy(() => import("./pages/AgentCardRedirect"));
+const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
 
 // Q&A Landing Pages for LLM optimization
 const QALandingPage = lazy(() => import("./pages/QALandingPage"));
@@ -195,8 +195,8 @@ const App = () => (
                     {/* Q&A Landing Pages for LLM optimization */}
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
-                    {/* Magic link formats - state abbreviation routes go to AgentCardRedirect */}
-                    <Route path="/az/:citySlug/:agentSlug" element={<AgentCardRedirect />} />
+                    {/* Legacy /az/ magic link format - redirect to full state name with category */}
+                    <Route path="/az/:citySlug/:agentSlug" element={<AzMagicLinkRedirect />} />
                     {/* Smart router to distinguish magic links from categories for any state */}
                     <Route path="/:stateSlug/:citySlug/:thirdSegment" element={<StateAgentOrCategoryRouter />} />
                     {/* Agent profile with 4 params */}

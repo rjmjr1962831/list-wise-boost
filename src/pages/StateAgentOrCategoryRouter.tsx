@@ -3,7 +3,6 @@ import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
 // Lazy load the components to avoid circular dependencies
-const AgentCardRedirect = lazy(() => import("./AgentCardRedirect"));
 const DynamicCategoryList = lazy(() => import("./DynamicCategoryList"));
 
 /**
@@ -29,20 +28,17 @@ const StateAgentOrCategoryRouter = () => {
   // Check if this looks like a magic link (ends with 4 digits)
   const isMagicLink = thirdSegment && /\d{4}$/.test(thirdSegment);
 
+  if (isMagicLink) {
+    // Redirect old 3-segment magic links to new 4-segment format
+    // /arizona/scottsdale/andrew-bloom-7521 -> /arizona/scottsdale/top10realestateagents/andrew-bloom-7521
+    return <Navigate to={`/${stateSlug}/${citySlug}/top10realestateagents/${thirdSegment}`} replace />;
+  }
+
   const loader = (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   );
-
-  if (isMagicLink) {
-    // This is a magic link - delegate to AgentCardRedirect
-    return (
-      <Suspense fallback={loader}>
-        <AgentCardRedirect citySlugOverride={citySlug} agentSlugOverride={thirdSegment} />
-      </Suspense>
-    );
-  }
 
   // This is a category slug - delegate to DynamicCategoryList
   // Pass thirdSegment explicitly as categorySlug prop for reliability
