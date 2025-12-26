@@ -399,3 +399,6 @@ verify_jwt = false
 
 [functions.promote-to-professionals]
 verify_jwt = false
+
+[functions.reprocess-not-found]
+verify_jwt = false
