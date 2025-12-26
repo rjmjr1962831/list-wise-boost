@@ -43,13 +43,21 @@ serve(async (req) => {
     );
 
     // Get agents needing scraping (never scraped)
-    const { data: agents, error } = await supabase
+    const { data: rawAgents, error } = await supabase
       .from("state_licenses")
       .select("license_number, state, name, city")
       .eq("state", state)
       .is("zillow_scraped_at", null)
       .order("created_at", { ascending: true })
       .limit(limit);
+
+    // Map name to full_name for compatibility with scraper script
+    const agents = rawAgents?.map(a => ({
+      license_number: a.license_number,
+      state: a.state,
+      full_name: a.name,
+      city: a.city
+    })) || [];
 
     if (error) {
       console.error("Error fetching queue:", error);
