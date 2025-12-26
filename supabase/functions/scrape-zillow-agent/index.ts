@@ -26,8 +26,8 @@ function parsePrice(priceStr: string): number {
   return num;
 }
 
-// Extract rating and reviews from Exa text content for prequalification
-function extractPrequalData(text: string): { rating: number | null; reviews: number | null } {
+// Extract rating, reviews, and address from Exa text content for prequalification
+function extractPrequalData(text: string): { rating: number | null; reviews: number | null; address: string | null } {
   // Rating patterns - look for "5.0" or "4.9" near reviews
   const ratingMatch = text.match(/(\d\.\d)\s*(?:\(|\[)?\s*\d+\s*(?:team\s*)?reviews?/i)
     || text.match(/rating[:\s]+(\d\.\d)/i)
@@ -39,9 +39,14 @@ function extractPrequalData(text: string): { rating: number | null; reviews: num
     || text.match(/\((\d+)\s*reviews?\)/i)
     || text.match(/reviews?[:\s]+(\d+)/i);
 
+  // Address patterns - look for typical address formats
+  const addressMatch = text.match(/(\d+\s+[A-Za-z0-9\s]+(?:St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Dr|Drive|Ln|Lane|Way|Ct|Court|Pl|Place|Pkwy|Parkway)[.,]?\s*(?:Suite|Ste|#)?\s*\d*[,.\s]+[A-Za-z\s]+,?\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/i)
+    || text.match(/(\d+\s+\w+[^,]+,\s*[A-Za-z\s]+,\s*[A-Z]{2}\s*\d{5})/i);
+
   return {
     rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
-    reviews: reviewsMatch ? parseInt(reviewsMatch[1]) : null
+    reviews: reviewsMatch ? parseInt(reviewsMatch[1]) : null,
+    address: addressMatch ? addressMatch[1].trim() : null
   };
 }
 
@@ -93,6 +98,10 @@ function parseZillowProfile(html: string) {
   // For rent count  
   const forRentMatch = html.match(/For\s*Rent\s*\((\d+)\)/i);
 
+  // Address - look for office/business address patterns
+  const addressMatch = html.match(/(?:Office|Located at|Address)[:\s]*(\d+\s+[A-Za-z0-9\s]+(?:St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Dr|Drive|Ln|Lane|Way|Ct|Court|Pl|Place|Pkwy|Parkway)[.,]?\s*(?:Suite|Ste|#)?\s*\d*[,.\s]+[A-Za-z\s]+,?\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/i)
+    || html.match(/(\d+\s+[A-Za-z0-9\s]+(?:St|Street|Ave|Avenue|Blvd|Boulevard|Rd|Road|Dr|Drive|Ln|Lane|Way|Ct|Court|Pl|Place|Pkwy|Parkway)[.,]?\s*(?:Suite|Ste|#)?\s*\d*[,.\s]+[A-Za-z\s]+,?\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/i);
+
   return {
     rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
     reviews: reviewsMatch ? parseInt(reviewsMatch[1]) : null,
@@ -107,7 +116,8 @@ function parseZillowProfile(html: string) {
     photo_url: photoMatch ? photoMatch[0] : null,
     brokerage_name: brokerageMatch ? brokerageMatch[1].trim() : null,
     listings_for_sale: forSaleMatch ? parseInt(forSaleMatch[1]) : null,
-    listings_for_rent: forRentMatch ? parseInt(forRentMatch[1]) : null
+    listings_for_rent: forRentMatch ? parseInt(forRentMatch[1]) : null,
+    address: addressMatch ? addressMatch[1].trim() : null
   };
 }
 
@@ -256,6 +266,7 @@ serve(async (req) => {
 
       if (prequalData.rating !== null) updateData.review_stars_rating = prequalData.rating;
       if (prequalData.reviews !== null) updateData.num_total_reviews = prequalData.reviews;
+      if (prequalData.address !== null) updateData.address = prequalData.address;
 
       await supabase
         .from('professionals')
@@ -362,6 +373,10 @@ serve(async (req) => {
     if (parsedData.photo_url !== null) updateData.image_url = parsedData.photo_url;
     if (parsedData.brokerage_name !== null) updateData.company = parsedData.brokerage_name;
     if (parsedData.listings_for_sale !== null) updateData.current_listings = parsedData.listings_for_sale;
+
+    // Save address - prefer Firecrawl data, fall back to Exa
+    const finalAddress = parsedData.address ?? prequalData.address;
+    if (finalAddress !== null) updateData.address = finalAddress;
 
     // Store additional stats in agent_sales_stats JSON
     if (parsedData.sales_last_12_months !== null || parsedData.price_range_min !== null) {
