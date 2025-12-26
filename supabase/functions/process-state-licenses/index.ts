@@ -138,64 +138,127 @@ interface ProcessingStats {
   errors: number;
 }
 
-// Search for Zillow agent using Firecrawl search + extract full profile data
-async function searchAndScrapeZillowAgent(
+// Step 1: Use EXA to find Zillow URL and get prequalification data (rating/reviews)
+async function searchZillowWithExa(
   name: string,
   city: string,
   stateAbbr: string,
-  firecrawlApiKey: string
-): Promise<{ zillowUrl?: string; rating?: number; reviewCount?: number; agentData?: any; fullData?: any } | null> {
+  exaApiKey: string
+): Promise<{ zillowUrl?: string; rating?: number; reviewCount?: number } | null> {
   const searchQuery = city 
     ? `${name} Zillow real estate agent ${city} ${stateAbbr}`
     : `${name} Zillow real estate agent ${stateAbbr}`;
   
-  console.log(`[${name}] Firecrawl search: "${searchQuery}"`);
+  console.log(`[${name}] Exa search: "${searchQuery}"`);
 
   try {
-    // Step 1: Search for Zillow profile
-    const searchResponse = await fetch('https://api.firecrawl.dev/v1/search', {
+    const exaResponse = await fetch('https://api.exa.ai/search', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Authorization': `Bearer ${exaApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         query: searchQuery,
-        limit: 5,
+        numResults: 5,
+        includeDomains: ['zillow.com'],
+        text: true, // Get text content for prequal extraction
       }),
     });
 
-    if (!searchResponse.ok) {
-      const errorText = await searchResponse.text();
-      console.error(`[${name}] Firecrawl search failed:`, errorText);
+    if (!exaResponse.ok) {
+      const errorText = await exaResponse.text();
+      console.error(`[${name}] Exa search failed:`, errorText);
       return null;
     }
 
-    const searchData = await searchResponse.json();
+    const exaData = await exaResponse.json();
     
-    if (!searchData.success || !searchData.data || searchData.data.length === 0) {
-      console.log(`[${name}] No search results`);
+    if (!exaData.results || exaData.results.length === 0) {
+      console.log(`[${name}] No Exa results`);
       return null;
     }
 
     // Find Zillow profile URL from search results
     let zillowUrl: string | undefined;
-    for (const result of searchData.data) {
-      const url = result.url || result.sourceUrl;
+    let resultText: string = '';
+    
+    for (const result of exaData.results) {
+      const url = result.url;
       if (url && url.includes('zillow.com/profile/')) {
         zillowUrl = url;
+        resultText = result.text || '';
         break;
       }
     }
 
     if (!zillowUrl) {
-      console.log(`[${name}] No Zillow profile in search results`);
+      console.log(`[${name}] No Zillow profile in Exa results`);
       return null;
     }
 
-    console.log(`[${name}] Found Zillow URL: ${zillowUrl}`);
+    console.log(`[${name}] Found Zillow URL via Exa: ${zillowUrl}`);
 
-    // Step 2: Scrape Zillow profile with full schema extraction
+    // Extract rating and reviews from Exa text for prequalification
+    let rating: number | null = null;
+    let reviewCount: number | null = null;
+
+    // Extract rating (e.g., "5.0", "4.9 out of 5", "Rating: 4.8")
+    const ratingPatterns = [
+      /(\d+\.?\d*)\s*(?:out of 5|\/5|stars?)/i,
+      /rating[:\s]+(\d+\.?\d*)/i,
+      /(\d+\.?\d*)\s*\(\d+\s*reviews?\)/i,
+      /^\s*(\d+\.?\d*)\s*$/m,
+    ];
+    
+    for (const pattern of ratingPatterns) {
+      const match = resultText.match(pattern);
+      if (match) {
+        const parsedRating = parseFloat(match[1]);
+        if (parsedRating >= 1 && parsedRating <= 5) {
+          rating = parsedRating;
+          break;
+        }
+      }
+    }
+
+    // Extract review count (e.g., "123 reviews", "(45 reviews)", "Reviews: 67")
+    const reviewPatterns = [
+      /(\d+)\s*reviews?/i,
+      /reviews?[:\s]+(\d+)/i,
+      /\((\d+)\s*reviews?\)/i,
+    ];
+    
+    for (const pattern of reviewPatterns) {
+      const match = resultText.match(pattern);
+      if (match) {
+        reviewCount = parseInt(match[1], 10);
+        break;
+      }
+    }
+
+    console.log(`[${name}] Exa prequal data: rating=${rating ?? 'NA'}, reviews=${reviewCount ?? 'NA'}`);
+
+    return {
+      zillowUrl,
+      rating: rating ?? undefined,
+      reviewCount: reviewCount ?? undefined,
+    };
+  } catch (error) {
+    console.error(`[${name}] Exa error:`, error);
+    return null;
+  }
+}
+
+// Step 2: Use FIRECRAWL to enrich qualified agents with full profile data
+async function enrichWithFirecrawl(
+  name: string,
+  zillowUrl: string,
+  firecrawlApiKey: string
+): Promise<{ rating?: number; reviewCount?: number; agentData?: any; fullData?: any } | null> {
+  console.log(`[${name}] Firecrawl enrichment: ${zillowUrl}`);
+
+  try {
     const scrapeResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
       headers: {
@@ -216,7 +279,7 @@ async function searchAndScrapeZillowAgent(
     if (!scrapeResponse.ok) {
       const errorText = await scrapeResponse.text();
       console.error(`[${name}] Firecrawl scrape failed:`, errorText);
-      return { zillowUrl };
+      return null;
     }
 
     const scrapeData = await scrapeResponse.json();
@@ -226,10 +289,9 @@ async function searchAndScrapeZillowAgent(
     const rating = extractedData.zillowRating || 0;
     const reviewCount = extractedData.reviewCount || 0;
 
-    console.log(`[${name}] Scraped: rating=${rating || 'NA'}, reviews=${reviewCount || 'NA'}, email=${extractedData.email || 'NA'}, phone=${extractedData.phone || 'NA'}`);
+    console.log(`[${name}] Firecrawl enriched: rating=${rating || 'NA'}, reviews=${reviewCount || 'NA'}, email=${extractedData.email || 'NA'}, phone=${extractedData.phone || 'NA'}`);
 
     return {
-      zillowUrl,
       rating,
       reviewCount,
       agentData: {
@@ -243,13 +305,14 @@ async function searchAndScrapeZillowAgent(
   }
 }
 
-// Process a single agent: search Firecrawl, save ALL agents with data, only synthesize qualified
+// Process a single agent: Exa for prequal, Firecrawl for enrichment of qualified agents
 async function processAgent(
   agent: { name: string; license_number: string; city: string },
   state: string,
   stateAbbr: string,
   categoryId: string,
   supabase: any,
+  exaApiKey: string,
   firecrawlApiKey: string
 ): Promise<AgentResult> {
   const { name, license_number, city } = agent;
@@ -267,40 +330,55 @@ async function processAgent(
       return { name, licenseNumber: license_number, city, status: 'duplicate' };
     }
 
-    // 2. Search and scrape Zillow profile using Firecrawl with full schema
-    const searchResult = await searchAndScrapeZillowAgent(name, city, stateAbbr, firecrawlApiKey);
+    // 2. STEP 1: Use EXA to find Zillow URL and get prequalification data
+    const exaResult = await searchZillowWithExa(name, city, stateAbbr, exaApiKey);
 
-    if (!searchResult || !searchResult.zillowUrl) {
-      console.log(`[${name}] No Zillow profile found`);
+    if (!exaResult || !exaResult.zillowUrl) {
+      console.log(`[${name}] No Zillow profile found via Exa`);
       return { name, licenseNumber: license_number, city, status: 'no_result' };
     }
 
-    const { zillowUrl, rating = 0, reviewCount = 0, agentData, fullData = {} } = searchResult;
+    const { zillowUrl, rating: exaRating, reviewCount: exaReviewCount } = exaResult;
 
-    console.log(`[${name}] Found: rating=${rating}, reviews=${reviewCount}`);
+    console.log(`[${name}] Found: rating=${exaRating ?? 'NA'}, reviews=${exaReviewCount ?? 'NA'}`);
 
-    // 3. Check qualification: 4.8+ stars and 20+ reviews
-    const isQualified = rating >= 4.8 && reviewCount >= 20;
+    // 3. Check qualification from Exa data: 4.8+ stars and 20+ reviews
+    const isQualified = (exaRating ?? 0) >= 4.8 && (exaReviewCount ?? 0) >= 20;
     
-    if (!isQualified) {
-      console.log(`[${name}] Not qualified (${rating} stars, ${reviewCount} reviews) - will save to DB but skip Pipedrive sync`);
-    }
-
     // 4. Check duplicate by Zillow URL
-    if (zillowUrl) {
-      const { data: existingByZillow } = await supabase
-        .from('professionals')
-        .select('id')
-        .eq('zillow_profile_url', zillowUrl)
-        .maybeSingle();
+    const { data: existingByZillow } = await supabase
+      .from('professionals')
+      .select('id')
+      .eq('zillow_profile_url', zillowUrl)
+      .maybeSingle();
 
-      if (existingByZillow) {
-        console.log(`[${name}] Duplicate by Zillow URL`);
-        return { name, licenseNumber: license_number, city, status: 'duplicate', zillowUrl, rating, reviewCount };
-      }
+    if (existingByZillow) {
+      console.log(`[${name}] Duplicate by Zillow URL`);
+      return { name, licenseNumber: license_number, city, status: 'duplicate', zillowUrl, rating: exaRating, reviewCount: exaReviewCount };
     }
 
-    // 5. Get or create city record
+    // 5. STEP 2: If qualified, use FIRECRAWL to enrich with full profile data
+    let fullData: any = {};
+    let agentData: any = {};
+    let rating = exaRating ?? 0;
+    let reviewCount = exaReviewCount ?? 0;
+
+    if (isQualified) {
+      console.log(`[${name}] QUALIFIED - running Firecrawl enrichment...`);
+      const firecrawlResult = await enrichWithFirecrawl(name, zillowUrl, firecrawlApiKey);
+      
+      if (firecrawlResult) {
+        // Use Firecrawl data if available (more accurate)
+        rating = firecrawlResult.rating || rating;
+        reviewCount = firecrawlResult.reviewCount || reviewCount;
+        fullData = firecrawlResult.fullData || {};
+        agentData = firecrawlResult.agentData || {};
+      }
+    } else {
+      console.log(`[${name}] Not qualified (${exaRating ?? 'NA'} stars, ${exaReviewCount ?? 'NA'} reviews) - saving to DB but skipping Firecrawl enrichment`);
+    }
+
+    // 6. Get or create city record
     const agentCity = fullData.primaryCity || city || null;
     
     let cityRecord = null;
@@ -524,13 +602,18 @@ serve(async (req) => {
     } = await req.json();
 
     console.log(`\n========================================`);
-    console.log(`Processing ${state} (${stateAbbr}) agents via FIRECRAWL`);
+    console.log(`Processing ${state} (${stateAbbr}) agents via EXA→PREQUAL→FIRECRAWL`);
     console.log(`Start: ${startIndex}, Batch: ${batchSize}, Concurrency: ${concurrency}, Max: ${maxAgents}`);
     console.log(`========================================\n`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const exaApiKey = Deno.env.get('EXA_API_KEY');
+    if (!exaApiKey) {
+      throw new Error('EXA_API_KEY not configured');
+    }
 
     const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
     if (!firecrawlApiKey) {
@@ -598,7 +681,7 @@ serve(async (req) => {
         console.log(`\nProcessing batch ${Math.floor(i/concurrency) + 1}: agents ${i+1}-${Math.min(i+concurrency, licenses.length)} (index ${currentIndex})`);
 
         const batchResults = await Promise.all(
-          batch.map(agent => processAgent(agent, state, stateAbbr, category.id, supabase, firecrawlApiKey))
+          batch.map(agent => processAgent(agent, state, stateAbbr, category.id, supabase, exaApiKey, firecrawlApiKey))
         );
 
         for (const result of batchResults) {
@@ -664,7 +747,7 @@ serve(async (req) => {
     const hasMore = nextIndex < Math.min(count || 0, startIndex + maxAgents);
 
     console.log(`\n========================================`);
-    console.log(`BATCH COMPLETE (Firecrawl)`);
+    console.log(`BATCH COMPLETE (Exa→Prequal→Firecrawl)`);
     console.log(`Processed: ${stats.processed}`);
     console.log(`Qualified: ${stats.qualified}`);
     console.log(`Not Qualified: ${stats.notQualified}`);
