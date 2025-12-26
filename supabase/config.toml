@@ -396,3 +396,6 @@ verify_jwt = false
 
 [functions.get-zillow-queue]
 verify_jwt = false
+
+[functions.promote-to-professionals]
+verify_jwt = false
