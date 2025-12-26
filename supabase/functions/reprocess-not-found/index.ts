@@ -472,23 +472,59 @@ serve(async (req) => {
 
     console.log(`Finding agents without professionals records...`);
     
-    // Get agents that don't have a professional record yet
-    const { data: licenses, error: licensesError } = await supabase
+    // Step 1: Get all license numbers that already exist in professionals table
+    const { data: existingProfessionals } = await supabase
+      .from('professionals')
+      .select('license_number')
+      .not('license_number', 'is', null);
+    
+    const existingLicenseNumbers = new Set(
+      (existingProfessionals || [])
+        .map(p => p.license_number)
+        .filter(Boolean)
+    );
+    
+    console.log(`Found ${existingLicenseNumbers.size} existing license numbers in professionals table`);
+    
+    // Step 2: Get unprocessed licenses, then filter out duplicates in memory
+    // Fetch more than needed since we'll filter some out
+    const fetchLimit = Math.min(limit * 3, 3000);
+    
+    const { data: allLicenses, error: licensesError } = await supabase
       .from('state_licenses')
       .select('id, name, license_number, city')
       .eq('state', stateAbbr)
       .is('zillow_scraped_at', null)
-      .limit(limit);
+      .limit(fetchLimit);
 
     if (licensesError) {
       throw new Error(`Failed to fetch licenses: ${licensesError.message}`);
     }
 
-    if (!licenses || licenses.length === 0) {
+    if (!allLicenses || allLicenses.length === 0) {
       return new Response(
         JSON.stringify({ 
           message: 'No unprocessed licenses found',
           processed: 0,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Filter out licenses that already exist in professionals
+    const licenses = allLicenses
+      .filter(l => !existingLicenseNumbers.has(l.license_number))
+      .slice(0, limit);
+    
+    const duplicatesSkipped = allLicenses.length - licenses.length - (allLicenses.length > limit ? allLicenses.length - limit : 0);
+    console.log(`Fetched ${allLicenses.length} unprocessed licenses, skipped ${existingLicenseNumbers.size > 0 ? allLicenses.filter(l => existingLicenseNumbers.has(l.license_number)).length : 0} duplicates, processing ${licenses.length}`);
+    
+    if (licenses.length === 0) {
+      return new Response(
+        JSON.stringify({ 
+          message: 'All unprocessed licenses are duplicates',
+          processed: 0,
+          duplicatesSkipped: allLicenses.length,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
