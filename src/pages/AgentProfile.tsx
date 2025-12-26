@@ -246,9 +246,29 @@ export default function AgentProfile() {
         }
 
         // Find the agent by matching slug
-        const agent = professionals.find((p: any) => 
-          generateAgentSlug(p.name) === agentSlug
-        );
+        // New format: slug ends with 4 digits of phone (e.g., "andrew-bloom-7521")
+        // Match by name slug prefix + phone suffix for disambiguation
+        const phoneSuffixMatch = agentSlug?.match(/-(\d{4})$/);
+        let agent: any = null;
+        
+        if (phoneSuffixMatch) {
+          // New format with phone suffix - match by name AND phone
+          const phoneSuffix = phoneSuffixMatch[1];
+          const nameSlug = agentSlug!.replace(/-\d{4}$/, '');
+          
+          agent = professionals.find((p: any) => {
+            const pNameSlug = generateAgentSlug(p.name);
+            if (pNameSlug !== nameSlug) return false;
+            if (!p.phone) return false;
+            const digits = String(p.phone).replace(/\D/g, '');
+            return digits.slice(-4) === phoneSuffix;
+          });
+        } else {
+          // Legacy format - just match by name slug
+          agent = professionals.find((p: any) => 
+            generateAgentSlug(p.name) === agentSlug
+          );
+        }
 
         if (!agent) {
           setNotFound(true);
