@@ -13,6 +13,10 @@ interface ScrapeRequest {
   state: string;
 }
 
+// Prequalification minimums per custom knowledge
+const MIN_RATING = 4.8;
+const MIN_REVIEWS = 20;
+
 // Helper to parse "$207K" or "$2M" or "$200,000" to integer
 function parsePrice(priceStr: string): number {
   const num = parseFloat(priceStr.replace(/[$,]/g, ''));
@@ -20,6 +24,25 @@ function parsePrice(priceStr: string): number {
   if (priceStr.toUpperCase().includes('M')) return num * 1000000;
   if (priceStr.toUpperCase().includes('B')) return num * 1000000000;
   return num;
+}
+
+// Extract rating and reviews from Exa text content for prequalification
+function extractPrequalData(text: string): { rating: number | null; reviews: number | null } {
+  // Rating patterns - look for "5.0" or "4.9" near reviews
+  const ratingMatch = text.match(/(\d\.\d)\s*(?:\(|\[)?\s*\d+\s*(?:team\s*)?reviews?/i)
+    || text.match(/rating[:\s]+(\d\.\d)/i)
+    || text.match(/(\d\.\d)\s*stars?/i)
+    || text.match(/(\d\.\d)\s*out\s*of\s*5/i);
+
+  // Review count patterns
+  const reviewsMatch = text.match(/(\d+)\s*(?:team\s*)?reviews?/i)
+    || text.match(/\((\d+)\s*reviews?\)/i)
+    || text.match(/reviews?[:\s]+(\d+)/i);
+
+  return {
+    rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
+    reviews: reviewsMatch ? parseInt(reviewsMatch[1]) : null
+  };
 }
 
 function parseZillowProfile(html: string) {
@@ -145,8 +168,11 @@ serve(async (req) => {
       }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Step 1: Search Exa for Zillow profile URL ONLY
-    console.log(`[Exa] Searching for: "${input.agent_name}" ${input.city} ${input.state}`);
+    // =========================================================================
+    // STEP 1: Exa search WITH text content for PREQUALIFICATION
+    // Only get minimum data needed: URL + rating/reviews from text snippets
+    // =========================================================================
+    console.log(`[Exa] Prequalification search for: "${input.agent_name}" ${input.city} ${input.state}`);
     
     const exaResponse = await fetch('https://api.exa.ai/search', {
       method: 'POST',
@@ -158,7 +184,8 @@ serve(async (req) => {
         query: `"${input.agent_name}" ${input.city} ${input.state} real estate agent site:zillow.com/profile`,
         num_results: 5,
         type: 'keyword',
-        include_domains: ['zillow.com']
+        include_domains: ['zillow.com'],
+        text: true  // Include text content for prequalification extraction
       })
     });
 
@@ -191,10 +218,67 @@ serve(async (req) => {
     }
 
     const zillowUrl = zillowResult.url;
+    const exaText = zillowResult.text || '';
     console.log('[Exa] Found Zillow URL:', zillowUrl);
+    console.log('[Exa] Text snippet length:', exaText.length);
 
-    // Step 2: Use Firecrawl to scrape the Zillow profile
-    console.log('[Firecrawl] Scraping:', zillowUrl);
+    // =========================================================================
+    // STEP 2: Extract prequalification data from Exa text
+    // =========================================================================
+    const prequalData = extractPrequalData(exaText);
+    console.log('[Prequal] Extracted from Exa:', prequalData);
+
+    // Check if agent meets minimum qualifications
+    const meetsRating = prequalData.rating !== null && prequalData.rating >= MIN_RATING;
+    const meetsReviews = prequalData.reviews !== null && prequalData.reviews >= MIN_REVIEWS;
+    const isPrequalified = meetsRating && meetsReviews;
+
+    console.log(`[Prequal] Rating: ${prequalData.rating} (min ${MIN_RATING}): ${meetsRating ? 'PASS' : 'FAIL'}`);
+    console.log(`[Prequal] Reviews: ${prequalData.reviews} (min ${MIN_REVIEWS}): ${meetsReviews ? 'PASS' : 'FAIL'}`);
+    console.log(`[Prequal] Result: ${isPrequalified ? 'QUALIFIED - proceeding to Firecrawl' : 'NOT QUALIFIED - skipping Firecrawl'}`);
+
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // =========================================================================
+    // STEP 3: If NOT qualified, save basic info and skip Firecrawl
+    // =========================================================================
+    if (!isPrequalified) {
+      // Save what we know from Exa but mark as not qualified
+      const updateData: any = {
+        zillow_profile_url: zillowUrl,
+        zillow_data_fetched_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      if (prequalData.rating !== null) updateData.review_stars_rating = prequalData.rating;
+      if (prequalData.reviews !== null) updateData.num_total_reviews = prequalData.reviews;
+
+      await supabase
+        .from('professionals')
+        .update(updateData)
+        .eq('id', input.professional_id);
+
+      return new Response(JSON.stringify({
+        success: true,
+        status: 'not_qualified',
+        zillow_url: zillowUrl,
+        rating: prequalData.rating,
+        reviews: prequalData.reviews,
+        min_rating: MIN_RATING,
+        min_reviews: MIN_REVIEWS,
+        message: `Agent does not meet prequalification minimums (${MIN_RATING}+ rating, ${MIN_REVIEWS}+ reviews)`,
+        professional_id: input.professional_id
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // =========================================================================
+    // STEP 4: Agent is QUALIFIED - use Firecrawl for full data scrape
+    // =========================================================================
+    console.log('[Firecrawl] Agent qualified! Scraping full profile:', zillowUrl);
     
     const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
       method: 'POST',
@@ -214,24 +298,26 @@ serve(async (req) => {
       const errorText = await firecrawlResponse.text();
       console.error('[Firecrawl] Error:', firecrawlResponse.status, errorText);
       
-      // Save URL even if scrape fails
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-      );
-      
+      // Save URL and prequal data even if Firecrawl fails
+      const updateData: any = {
+        zillow_profile_url: zillowUrl,
+        zillow_data_fetched_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+      if (prequalData.rating !== null) updateData.review_stars_rating = prequalData.rating;
+      if (prequalData.reviews !== null) updateData.num_total_reviews = prequalData.reviews;
+
       await supabase
         .from('professionals')
-        .update({ 
-          zillow_profile_url: zillowUrl,
-          zillow_data_fetched_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', input.professional_id);
 
       return new Response(JSON.stringify({ 
         success: true, 
         status: 'url_saved_scrape_failed',
         zillow_url: zillowUrl,
+        rating: prequalData.rating,
+        reviews: prequalData.reviews,
         error: `Firecrawl error: ${firecrawlResponse.status}`,
         professional_id: input.professional_id
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -243,7 +329,9 @@ serve(async (req) => {
     
     console.log('[Firecrawl] Got markdown length:', markdown.length, 'html length:', html.length);
 
-    // Step 3: Parse the content (try markdown first, then html)
+    // =========================================================================
+    // STEP 5: Parse full content from Firecrawl
+    // =========================================================================
     const content = markdown || html;
     const parsedData = parseZillowProfile(content);
     const reviews = extractReviews(content);
@@ -251,16 +339,13 @@ serve(async (req) => {
     console.log('[Parse] Data:', parsedData);
     console.log('[Parse] Reviews found:', reviews.length);
 
-    // Determine if qualified (4.8+ rating AND 20+ reviews - prequalification minimums)
-    const qualified = (parsedData.rating && parsedData.rating >= 4.8) && 
-                      (parsedData.reviews && parsedData.reviews >= 20);
+    // Use Firecrawl data if available, fall back to Exa prequal data
+    const finalRating = parsedData.rating ?? prequalData.rating;
+    const finalReviews = parsedData.reviews ?? prequalData.reviews;
 
-    // Step 4: Save to database
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
+    // =========================================================================
+    // STEP 6: Save full data to database
+    // =========================================================================
     const updateData: any = {
       zillow_profile_url: zillowUrl,
       zillow_data_fetched_at: new Date().toISOString(),
@@ -268,8 +353,8 @@ serve(async (req) => {
     };
 
     // Only update fields that we actually found
-    if (parsedData.rating !== null) updateData.review_stars_rating = parsedData.rating;
-    if (parsedData.reviews !== null) updateData.num_total_reviews = parsedData.reviews;
+    if (finalRating !== null) updateData.review_stars_rating = finalRating;
+    if (finalReviews !== null) updateData.num_total_reviews = finalReviews;
     if (parsedData.total_sales !== null) updateData.total_sales = parsedData.total_sales;
     if (parsedData.years_experience !== null) updateData.years_experience = parsedData.years_experience;
     if (parsedData.phone !== null) updateData.phone = parsedData.phone;
@@ -313,13 +398,13 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      status: 'found',
+      status: 'qualified',
       zillow_url: zillowUrl,
-      rating: parsedData.rating,
-      reviews: parsedData.reviews,
+      rating: finalRating,
+      reviews: finalReviews,
       total_sales: parsedData.total_sales,
       years_experience: parsedData.years_experience,
-      qualified,
+      qualified: true,
       professional_id: input.professional_id
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
