@@ -2162,34 +2162,94 @@ export type Database = {
       }
       state_licenses: {
         Row: {
+          avg_price: number | null
+          bio: string | null
+          brokerage_name: string | null
           city: string | null
           created_at: string | null
+          email: string | null
           id: string
           license_number: string
           license_type: string | null
           name: string
+          phone: string | null
+          price_range_max: number | null
+          price_range_min: number | null
+          sales_last_12_months: number | null
+          service_areas: string | null
+          specialties: string | null
           state: string
+          total_sales: number | null
           updated_at: string | null
+          website: string | null
+          years_experience: number | null
+          zillow_error: string | null
+          zillow_rating: number | null
+          zillow_reviews: number | null
+          zillow_reviews_json: Json | null
+          zillow_scraped_at: string | null
+          zillow_status: string | null
+          zillow_url: string | null
         }
         Insert: {
+          avg_price?: number | null
+          bio?: string | null
+          brokerage_name?: string | null
           city?: string | null
           created_at?: string | null
+          email?: string | null
           id?: string
           license_number: string
           license_type?: string | null
           name: string
+          phone?: string | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          sales_last_12_months?: number | null
+          service_areas?: string | null
+          specialties?: string | null
           state: string
+          total_sales?: number | null
           updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zillow_error?: string | null
+          zillow_rating?: number | null
+          zillow_reviews?: number | null
+          zillow_reviews_json?: Json | null
+          zillow_scraped_at?: string | null
+          zillow_status?: string | null
+          zillow_url?: string | null
         }
         Update: {
+          avg_price?: number | null
+          bio?: string | null
+          brokerage_name?: string | null
           city?: string | null
           created_at?: string | null
+          email?: string | null
           id?: string
           license_number?: string
           license_type?: string | null
           name?: string
+          phone?: string | null
+          price_range_max?: number | null
+          price_range_min?: number | null
+          sales_last_12_months?: number | null
+          service_areas?: string | null
+          specialties?: string | null
           state?: string
+          total_sales?: number | null
           updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zillow_error?: string | null
+          zillow_rating?: number | null
+          zillow_reviews?: number | null
+          zillow_reviews_json?: Json | null
+          zillow_scraped_at?: string | null
+          zillow_status?: string | null
+          zillow_url?: string | null
         }
         Relationships: []
       }
