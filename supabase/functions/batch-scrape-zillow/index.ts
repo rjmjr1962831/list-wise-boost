@@ -13,6 +13,10 @@ interface BatchRequest {
   city_slug?: string;
 }
 
+// Prequalification minimums per custom knowledge
+const MIN_RATING = 4.8;
+const MIN_REVIEWS = 20;
+
 // Helper to parse "$207K" or "$2M" or "$200,000" to integer
 function parsePrice(priceStr: string): number {
   const num = parseFloat(priceStr.replace(/[$,]/g, ''));
@@ -20,6 +24,23 @@ function parsePrice(priceStr: string): number {
   if (priceStr.toUpperCase().includes('M')) return num * 1000000;
   if (priceStr.toUpperCase().includes('B')) return num * 1000000000;
   return num;
+}
+
+// Extract rating and reviews from Exa text for prequalification
+function extractPrequalData(text: string): { rating: number | null; reviews: number | null } {
+  const ratingMatch = text.match(/(\d\.\d)\s*(?:\(|\[)?\s*\d+\s*(?:team\s*)?reviews?/i)
+    || text.match(/rating[:\s]+(\d\.\d)/i)
+    || text.match(/(\d\.\d)\s*stars?/i)
+    || text.match(/(\d\.\d)\s*out\s*of\s*5/i);
+
+  const reviewsMatch = text.match(/(\d+)\s*(?:team\s*)?reviews?/i)
+    || text.match(/\((\d+)\s*reviews?\)/i)
+    || text.match(/reviews?[:\s]+(\d+)/i);
+
+  return {
+    rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
+    reviews: reviewsMatch ? parseInt(reviewsMatch[1]) : null
+  };
 }
 
 function parseZillowProfile(content: string) {
@@ -163,9 +184,9 @@ serve(async (req) => {
         professionals_in_batch: filteredProfessionals.length,
         total_needing_zillow_data: count,
         estimated_exa_cost: `$${((count || 0) * 0.001).toFixed(2)}`,
-        estimated_firecrawl_cost: `$${((count || 0) * 0.001).toFixed(2)}`,
+        estimated_firecrawl_cost: `$${((filteredProfessionals.length * 0.5) * 0.001).toFixed(2)} (only qualified agents)`,
         preview,
-        message: 'Set dry_run: false to process. Stage 1: Exa finds URL, Stage 2: Firecrawl scrapes content'
+        message: `Set dry_run: false to process. Flow: Exa prequal (${MIN_RATING}+ rating, ${MIN_REVIEWS}+ reviews) → Firecrawl only for qualified agents`
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -191,9 +212,11 @@ serve(async (req) => {
       processed: 0,
       exa_found: 0,
       exa_not_found: 0,
+      prequalified: 0,
+      not_prequalified: 0,
       firecrawl_success: 0,
       firecrawl_failed: 0,
-      qualified: 0,
+      firecrawl_skipped: 0,
       errors: 0,
       details: [] as any[]
     };
@@ -205,8 +228,10 @@ serve(async (req) => {
         
         console.log(`\n[${results.processed}/${filteredProfessionals.length}] ${prof.name} in ${cityName}`);
 
-        // STAGE 1: Exa search for URL only
-        console.log('[Exa] Searching...');
+        // =========================================================================
+        // STEP 1: Exa search WITH text for PREQUALIFICATION
+        // =========================================================================
+        console.log('[Exa] Prequalification search...');
         const exaResponse = await fetch('https://api.exa.ai/search', {
           method: 'POST',
           headers: {
@@ -217,7 +242,8 @@ serve(async (req) => {
             query: `"${prof.name}" ${cityName} ${stateAbbr} real estate agent site:zillow.com/profile`,
             num_results: 5,
             type: 'keyword',
-            include_domains: ['zillow.com']
+            include_domains: ['zillow.com'],
+            text: true  // Include text for prequal data
           })
         });
 
@@ -243,11 +269,62 @@ serve(async (req) => {
         }
 
         const zillowUrl = zillowResult.url;
+        const exaText = zillowResult.text || '';
         console.log('[Exa] Found URL:', zillowUrl);
         results.exa_found++;
 
-        // STAGE 2: Firecrawl scrape
-        console.log('[Firecrawl] Scraping...');
+        // =========================================================================
+        // STEP 2: Extract prequalification data from Exa text
+        // =========================================================================
+        const prequalData = extractPrequalData(exaText);
+        console.log('[Prequal] Rating:', prequalData.rating, 'Reviews:', prequalData.reviews);
+
+        const meetsRating = prequalData.rating !== null && prequalData.rating >= MIN_RATING;
+        const meetsReviews = prequalData.reviews !== null && prequalData.reviews >= MIN_REVIEWS;
+        const isPrequalified = meetsRating && meetsReviews;
+
+        console.log(`[Prequal] ${isPrequalified ? 'QUALIFIED' : 'NOT QUALIFIED'} (need ${MIN_RATING}+ rating, ${MIN_REVIEWS}+ reviews)`);
+
+        // =========================================================================
+        // STEP 3: If NOT qualified, save basic info and skip Firecrawl
+        // =========================================================================
+        if (!isPrequalified) {
+          results.not_prequalified++;
+          results.firecrawl_skipped++;
+
+          // Save URL and prequal data
+          const updateData: any = {
+            zillow_profile_url: zillowUrl,
+            zillow_data_fetched_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          if (prequalData.rating !== null) updateData.review_stars_rating = prequalData.rating;
+          if (prequalData.reviews !== null) updateData.num_total_reviews = prequalData.reviews;
+
+          await supabase
+            .from('professionals')
+            .update(updateData)
+            .eq('id', prof.id);
+
+          results.details.push({
+            id: prof.id,
+            name: prof.name,
+            status: 'not_prequalified',
+            url: zillowUrl,
+            rating: prequalData.rating,
+            reviews: prequalData.reviews
+          });
+
+          await delay(500);
+          continue;
+        }
+
+        results.prequalified++;
+
+        // =========================================================================
+        // STEP 4: Agent is QUALIFIED - use Firecrawl for full enrichment
+        // =========================================================================
+        console.log('[Firecrawl] Agent qualified! Scraping full profile...');
         const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
           method: 'POST',
           headers: {
@@ -266,20 +343,27 @@ serve(async (req) => {
           console.error('[Firecrawl] Failed:', firecrawlResponse.status);
           results.firecrawl_failed++;
           
-          // Save URL even if scrape fails
+          // Save URL and prequal data even if scrape fails
+          const updateData: any = {
+            zillow_profile_url: zillowUrl,
+            zillow_data_fetched_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+          if (prequalData.rating !== null) updateData.review_stars_rating = prequalData.rating;
+          if (prequalData.reviews !== null) updateData.num_total_reviews = prequalData.reviews;
+
           await supabase
             .from('professionals')
-            .update({ 
-              zillow_profile_url: zillowUrl,
-              zillow_data_fetched_at: new Date().toISOString()
-            })
+            .update(updateData)
             .eq('id', prof.id);
           
           results.details.push({ 
             id: prof.id, 
             name: prof.name, 
             status: 'firecrawl_failed', 
-            url: zillowUrl 
+            url: zillowUrl,
+            rating: prequalData.rating,
+            reviews: prequalData.reviews
           });
           await delay(1000);
           continue;
@@ -294,19 +378,19 @@ serve(async (req) => {
         const parsedData = parseZillowProfile(markdown);
         console.log('[Parse] Rating:', parsedData.rating, 'Reviews:', parsedData.reviews);
 
-        const qualified = (parsedData.rating && parsedData.rating >= 4.8) && 
-                          (parsedData.reviews && parsedData.reviews >= 20);
-        if (qualified) results.qualified++;
+        // Use Firecrawl data if available, fall back to prequal data
+        const finalRating = parsedData.rating ?? prequalData.rating;
+        const finalReviews = parsedData.reviews ?? prequalData.reviews;
 
-        // Update database
+        // Update database with full enrichment data
         const updateData: any = {
           zillow_profile_url: zillowUrl,
           zillow_data_fetched_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
 
-        if (parsedData.rating !== null) updateData.review_stars_rating = parsedData.rating;
-        if (parsedData.reviews !== null) updateData.num_total_reviews = parsedData.reviews;
+        if (finalRating !== null) updateData.review_stars_rating = finalRating;
+        if (finalReviews !== null) updateData.num_total_reviews = finalReviews;
         if (parsedData.total_sales !== null) updateData.total_sales = parsedData.total_sales;
         if (parsedData.years_experience !== null) updateData.years_experience = parsedData.years_experience;
         if (parsedData.phone !== null) updateData.phone = parsedData.phone;
@@ -333,11 +417,12 @@ serve(async (req) => {
         results.details.push({ 
           id: prof.id, 
           name: prof.name, 
-          status: 'success', 
+          status: 'qualified_enriched', 
           url: zillowUrl,
-          rating: parsedData.rating,
-          reviews: parsedData.reviews,
-          qualified
+          rating: finalRating,
+          reviews: finalReviews,
+          total_sales: parsedData.total_sales,
+          years_experience: parsedData.years_experience
         });
 
         // Rate limit
@@ -359,6 +444,7 @@ serve(async (req) => {
       success: true,
       dry_run: false,
       state,
+      flow: `Exa prequal (${MIN_RATING}+ rating, ${MIN_REVIEWS}+ reviews) → Firecrawl only for qualified`,
       ...results
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
