@@ -25,15 +25,18 @@ function parsePrice(priceStr: string): number {
 function parseZillowProfile(html: string) {
   // Rating - look for pattern like "5.0" near reviews
   const ratingMatch = html.match(/(\d\.\d)\s*\[?\d+\s*(?:team\s*)?reviews?\]?/i) 
-    || html.match(/<[^>]*>(\d\.\d)<\/[^>]*>\s*\[?\d+/);
+    || html.match(/<[^>]*>(\d\.\d)<\/[^>]*>\s*\[?\d+/)
+    || html.match(/rating["\s:]+(\d\.\d)/i);
   
   // Review count - look for "80 team reviews" or "80 reviews"
   const reviewsMatch = html.match(/\[(\d+)\s*(?:team\s*)?reviews?\]/i)
-    || html.match(/(\d+)\s*(?:team\s*)?reviews?/i);
+    || html.match(/(\d+)\s*(?:team\s*)?reviews?/i)
+    || html.match(/reviews?["\s:]+(\d+)/i);
   
   // Total sales
   const totalSalesMatch = html.match(/\*\*(\d+)\*\*\s*total\s*sales/i)
-    || html.match(/(\d{1,4})\s*total\s*sales/i);
+    || html.match(/(\d{1,4})\s*total\s*sales/i)
+    || html.match(/total\s*sales["\s:]+(\d+)/i);
   
   // Sales last 12 months
   const sales12Match = html.match(/\*\*(\d+)\*\*\s*sales?\s*last\s*12/i)
@@ -58,7 +61,7 @@ function parseZillowProfile(html: string) {
   // Photo URL
   const photoMatch = html.match(/https:\/\/photos\.zillowstatic\.com\/fp\/[a-f0-9]+-[a-z_]+\.jpg/i);
   
-  // Brokerage name - usually after agent name
+  // Brokerage name
   const brokerageMatch = html.match(/(?:Lead\s*of|Broker\s*at|Agent\s*at)\s*([^<\n]+?)(?:\s*Brokerage)?(?:<|$)/i);
   
   // For sale count
@@ -89,7 +92,7 @@ function extractReviews(html: string): Array<{date: string, rating: number, text
   const reviews: any[] = [];
   
   // Look for review blocks
-  const reviewBlocks = html.split(/5\.0\s*Report a problem/i).slice(1, 11); // First 10 reviews
+  const reviewBlocks = html.split(/5\.0\s*Report a problem/i).slice(1, 11);
   
   for (const block of reviewBlocks) {
     const dateMatch = block.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
@@ -126,6 +129,8 @@ serve(async (req) => {
     }
 
     const exaApiKey = Deno.env.get('EXA_API_KEY');
+    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    
     if (!exaApiKey) {
       return new Response(JSON.stringify({ 
         success: false, 
@@ -133,8 +138,15 @@ serve(async (req) => {
       }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Step 1: Search Exa for Zillow profile URL
-    console.log(`Searching Exa for: "${input.agent_name}" ${input.city} ${input.state}`);
+    if (!firecrawlApiKey) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'FIRECRAWL_API_KEY not configured' 
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Step 1: Search Exa for Zillow profile URL ONLY
+    console.log(`[Exa] Searching for: "${input.agent_name}" ${input.city} ${input.state}`);
     
     const exaResponse = await fetch('https://api.exa.ai/search', {
       method: 'POST',
@@ -161,7 +173,7 @@ serve(async (req) => {
     }
 
     const exaData = await exaResponse.json();
-    console.log('Exa results:', exaData.results?.length || 0);
+    console.log('[Exa] Results:', exaData.results?.length || 0);
 
     // Find first URL matching zillow.com/profile/
     const zillowResult = exaData.results?.find((r: any) => 
@@ -169,7 +181,7 @@ serve(async (req) => {
     );
 
     if (!zillowResult) {
-      console.log('No Zillow profile found for:', input.agent_name);
+      console.log('[Exa] No Zillow profile found for:', input.agent_name);
       return new Response(JSON.stringify({ 
         success: true, 
         status: 'not_found',
@@ -179,35 +191,65 @@ serve(async (req) => {
     }
 
     const zillowUrl = zillowResult.url;
-    console.log('Found Zillow URL:', zillowUrl);
+    console.log('[Exa] Found Zillow URL:', zillowUrl);
 
-    // Step 2: Fetch Zillow profile page
-    const zillowResponse = await fetch(zillowUrl, {
+    // Step 2: Use Firecrawl to scrape the Zillow profile
+    console.log('[Firecrawl] Scraping:', zillowUrl);
+    
+    const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+      method: 'POST',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5'
-      }
+        'Authorization': `Bearer ${firecrawlApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        url: zillowUrl,
+        formats: ['markdown', 'html'],
+        onlyMainContent: false,
+        waitFor: 2000
+      })
     });
 
-    if (!zillowResponse.ok) {
-      console.error('Zillow fetch failed:', zillowResponse.status);
+    if (!firecrawlResponse.ok) {
+      const errorText = await firecrawlResponse.text();
+      console.error('[Firecrawl] Error:', firecrawlResponse.status, errorText);
+      
+      // Save URL even if scrape fails
+      const supabase = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      );
+      
+      await supabase
+        .from('professionals')
+        .update({ 
+          zillow_profile_url: zillowUrl,
+          zillow_data_fetched_at: new Date().toISOString()
+        })
+        .eq('id', input.professional_id);
+
       return new Response(JSON.stringify({ 
-        success: false, 
-        status: 'error',
-        error: `Zillow fetch failed: ${zillowResponse.status}`,
-        zillow_url: zillowUrl
-      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        success: true, 
+        status: 'url_saved_scrape_failed',
+        zillow_url: zillowUrl,
+        error: `Firecrawl error: ${firecrawlResponse.status}`,
+        professional_id: input.professional_id
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const html = await zillowResponse.text();
-    console.log('Fetched HTML length:', html.length);
+    const firecrawlData = await firecrawlResponse.json();
+    const markdown = firecrawlData.data?.markdown || firecrawlData.markdown || '';
+    const html = firecrawlData.data?.html || firecrawlData.html || '';
+    
+    console.log('[Firecrawl] Got markdown length:', markdown.length, 'html length:', html.length);
 
-    // Step 3: Parse the HTML
-    const parsedData = parseZillowProfile(html);
-    const reviews = extractReviews(html);
-    console.log('Parsed data:', parsedData);
-    console.log('Reviews found:', reviews.length);
+    // Step 3: Parse the content (try markdown first, then html)
+    const content = markdown || html;
+    const parsedData = parseZillowProfile(content);
+    const reviews = extractReviews(content);
+    
+    console.log('[Parse] Data:', parsedData);
+    console.log('[Parse] Reviews found:', reviews.length);
 
     // Determine if qualified (4.8+ rating AND 20+ reviews - prequalification minimums)
     const qualified = (parsedData.rating && parsedData.rating >= 4.8) && 
@@ -267,7 +309,7 @@ serve(async (req) => {
       }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    console.log('Successfully updated professional:', input.professional_id);
+    console.log('[DB] Updated professional:', input.professional_id);
 
     return new Response(JSON.stringify({
       success: true,

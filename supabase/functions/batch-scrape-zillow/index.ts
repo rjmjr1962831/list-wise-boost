@@ -10,7 +10,7 @@ interface BatchRequest {
   state: string;
   batch_size?: number;
   dry_run?: boolean;
-  city_slug?: string; // Optional: filter by specific city
+  city_slug?: string;
 }
 
 // Helper to parse "$207K" or "$2M" or "$200,000" to integer
@@ -22,30 +22,33 @@ function parsePrice(priceStr: string): number {
   return num;
 }
 
-function parseZillowProfile(html: string) {
-  const ratingMatch = html.match(/(\d\.\d)\s*\[?\d+\s*(?:team\s*)?reviews?\]?/i) 
-    || html.match(/<[^>]*>(\d\.\d)<\/[^>]*>\s*\[?\d+/);
+function parseZillowProfile(content: string) {
+  const ratingMatch = content.match(/(\d\.\d)\s*\[?\d+\s*(?:team\s*)?reviews?\]?/i) 
+    || content.match(/<[^>]*>(\d\.\d)<\/[^>]*>\s*\[?\d+/)
+    || content.match(/rating["\s:]+(\d\.\d)/i);
   
-  const reviewsMatch = html.match(/\[(\d+)\s*(?:team\s*)?reviews?\]/i)
-    || html.match(/(\d+)\s*(?:team\s*)?reviews?/i);
+  const reviewsMatch = content.match(/\[(\d+)\s*(?:team\s*)?reviews?\]/i)
+    || content.match(/(\d+)\s*(?:team\s*)?reviews?/i)
+    || content.match(/reviews?["\s:]+(\d+)/i);
   
-  const totalSalesMatch = html.match(/\*\*(\d+)\*\*\s*total\s*sales/i)
-    || html.match(/(\d{1,4})\s*total\s*sales/i);
+  const totalSalesMatch = content.match(/\*\*(\d+)\*\*\s*total\s*sales/i)
+    || content.match(/(\d{1,4})\s*total\s*sales/i)
+    || content.match(/total\s*sales["\s:]+(\d+)/i);
   
-  const sales12Match = html.match(/\*\*(\d+)\*\*\s*sales?\s*last\s*12/i)
-    || html.match(/(\d{1,3})\s*sales?\s*last\s*12/i);
+  const sales12Match = content.match(/\*\*(\d+)\*\*\s*sales?\s*last\s*12/i)
+    || content.match(/(\d{1,3})\s*sales?\s*last\s*12/i);
   
-  const yearsMatch = html.match(/\*\*(\d+)\*\*\s*years?\s*(?:of\s*)?experience/i)
-    || html.match(/(\d+)\s*[Yy]ears?\s*(?:of\s*)?experience/i);
+  const yearsMatch = content.match(/\*\*(\d+)\*\*\s*years?\s*(?:of\s*)?experience/i)
+    || content.match(/(\d+)\s*[Yy]ears?\s*(?:of\s*)?experience/i);
   
-  const priceRangeMatch = html.match(/\$(\d+(?:,\d+)?[KMB]?)\s*-\s*\$(\d+(?:,\d+)?[KMB]?)\s*price\s*range/i);
-  const avgPriceMatch = html.match(/\$(\d+(?:,\d+)?[KMB]?)\s*average\s*price/i);
-  const phoneMatch = html.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
-  const emailMatch = html.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
-  const photoMatch = html.match(/https:\/\/photos\.zillowstatic\.com\/fp\/[a-f0-9]+-[a-z_]+\.jpg/i);
-  const brokerageMatch = html.match(/(?:Lead\s*of|Broker\s*at|Agent\s*at)\s*([^<\n]+?)(?:\s*Brokerage)?(?:<|$)/i);
-  const forSaleMatch = html.match(/For\s*Sale\s*\((\d+)\)/i);
-  const forRentMatch = html.match(/For\s*Rent\s*\((\d+)\)/i);
+  const priceRangeMatch = content.match(/\$(\d+(?:,\d+)?[KMB]?)\s*-\s*\$(\d+(?:,\d+)?[KMB]?)\s*price\s*range/i);
+  const avgPriceMatch = content.match(/\$(\d+(?:,\d+)?[KMB]?)\s*average\s*price/i);
+  const phoneMatch = content.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/);
+  const emailMatch = content.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+  const photoMatch = content.match(/https:\/\/photos\.zillowstatic\.com\/fp\/[a-f0-9]+-[a-z_]+\.jpg/i);
+  const brokerageMatch = content.match(/(?:Lead\s*of|Broker\s*at|Agent\s*at)\s*([^<\n]+?)(?:\s*Brokerage)?(?:<|$)/i);
+  const forSaleMatch = content.match(/For\s*Sale\s*\((\d+)\)/i);
+  const forRentMatch = content.match(/For\s*Rent\s*\((\d+)\)/i);
 
   return {
     rating: ratingMatch ? parseFloat(ratingMatch[1]) : null,
@@ -78,8 +81,8 @@ serve(async (req) => {
     const input: BatchRequest = await req.json();
     console.log('Batch scrape request:', input);
 
-    const batchSize = Math.min(input.batch_size || 10, 50); // Max 50 per call
-    const dryRun = input.dry_run !== false; // Default to true for safety
+    const batchSize = Math.min(input.batch_size || 10, 50);
+    const dryRun = input.dry_run !== false;
     const state = input.state?.toUpperCase();
 
     if (!state) {
@@ -94,7 +97,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Get the city_id for the state (need to join with cities table)
     // Query professionals that don't have Zillow data yet
     let query = supabase
       .from('professionals')
@@ -108,7 +110,6 @@ serve(async (req) => {
       .eq('active', true)
       .limit(batchSize);
 
-    // Filter by city_slug if provided
     if (input.city_slug) {
       query = query.eq('cities.slug', input.city_slug);
     }
@@ -123,7 +124,7 @@ serve(async (req) => {
       }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Filter by state (since we can't easily filter nested in Supabase)
+    // Filter by state
     const stateAbbrevMap: Record<string, string> = {
       'ARIZONA': 'AZ', 'AZ': 'AZ',
       'CALIFORNIA': 'CA', 'CA': 'CA',
@@ -142,14 +143,12 @@ serve(async (req) => {
     console.log(`Found ${filteredProfessionals.length} professionals needing Zillow data in ${state}`);
 
     if (dryRun) {
-      // Dry run - just return what would be processed
       const preview = filteredProfessionals.slice(0, 10).map((p: any) => ({
         id: p.id,
         name: p.name,
         city: p.cities?.name
       }));
 
-      // Count total needing processing
       const { count } = await supabase
         .from('professionals')
         .select('id', { count: 'exact', head: true })
@@ -163,14 +162,17 @@ serve(async (req) => {
         batch_size: batchSize,
         professionals_in_batch: filteredProfessionals.length,
         total_needing_zillow_data: count,
-        estimated_cost: `$${((count || 0) * 0.005).toFixed(2)}`,
+        estimated_exa_cost: `$${((count || 0) * 0.001).toFixed(2)}`,
+        estimated_firecrawl_cost: `$${((count || 0) * 0.001).toFixed(2)}`,
         preview,
-        message: 'Set dry_run: false to actually process'
+        message: 'Set dry_run: false to process. Stage 1: Exa finds URL, Stage 2: Firecrawl scrapes content'
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     // Actual processing
     const exaApiKey = Deno.env.get('EXA_API_KEY');
+    const firecrawlApiKey = Deno.env.get('FIRECRAWL_API_KEY');
+    
     if (!exaApiKey) {
       return new Response(JSON.stringify({ 
         success: false, 
@@ -178,12 +180,21 @@ serve(async (req) => {
       }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    if (!firecrawlApiKey) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'FIRECRAWL_API_KEY not configured' 
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     const results = {
       processed: 0,
-      found: 0,
-      not_found: 0,
-      errors: 0,
+      exa_found: 0,
+      exa_not_found: 0,
+      firecrawl_success: 0,
+      firecrawl_failed: 0,
       qualified: 0,
+      errors: 0,
       details: [] as any[]
     };
 
@@ -192,9 +203,10 @@ serve(async (req) => {
         results.processed++;
         const cityName = (prof as any).cities?.name || '';
         
-        console.log(`Processing ${results.processed}/${filteredProfessionals.length}: ${prof.name} in ${cityName}`);
+        console.log(`\n[${results.processed}/${filteredProfessionals.length}] ${prof.name} in ${cityName}`);
 
-        // Search Exa
+        // STAGE 1: Exa search for URL only
+        console.log('[Exa] Searching...');
         const exaResponse = await fetch('https://api.exa.ai/search', {
           method: 'POST',
           headers: {
@@ -210,7 +222,7 @@ serve(async (req) => {
         });
 
         if (!exaResponse.ok) {
-          console.error('Exa error for', prof.name);
+          console.error('[Exa] API error');
           results.errors++;
           results.details.push({ id: prof.id, name: prof.name, status: 'exa_error' });
           await delay(1000);
@@ -223,27 +235,38 @@ serve(async (req) => {
         );
 
         if (!zillowResult) {
-          results.not_found++;
-          results.details.push({ id: prof.id, name: prof.name, status: 'not_found' });
-          await delay(1000);
+          console.log('[Exa] No profile found');
+          results.exa_not_found++;
+          results.details.push({ id: prof.id, name: prof.name, status: 'exa_not_found' });
+          await delay(500);
           continue;
         }
 
         const zillowUrl = zillowResult.url;
-        console.log('Found:', zillowUrl);
+        console.log('[Exa] Found URL:', zillowUrl);
+        results.exa_found++;
 
-        // Fetch Zillow page
-        const zillowResponse = await fetch(zillowUrl, {
+        // STAGE 2: Firecrawl scrape
+        console.log('[Firecrawl] Scraping...');
+        const firecrawlResponse = await fetch('https://api.firecrawl.dev/v1/scrape', {
+          method: 'POST',
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.5'
-          }
+            'Authorization': `Bearer ${firecrawlApiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            url: zillowUrl,
+            formats: ['markdown'],
+            onlyMainContent: false,
+            waitFor: 2000
+          })
         });
 
-        if (!zillowResponse.ok) {
-          console.error('Zillow fetch failed for', prof.name);
-          // Still save the URL even if we can't parse it
+        if (!firecrawlResponse.ok) {
+          console.error('[Firecrawl] Failed:', firecrawlResponse.status);
+          results.firecrawl_failed++;
+          
+          // Save URL even if scrape fails
           await supabase
             .from('professionals')
             .update({ 
@@ -252,14 +275,24 @@ serve(async (req) => {
             })
             .eq('id', prof.id);
           
-          results.found++;
-          results.details.push({ id: prof.id, name: prof.name, status: 'url_saved_parse_failed', url: zillowUrl });
+          results.details.push({ 
+            id: prof.id, 
+            name: prof.name, 
+            status: 'firecrawl_failed', 
+            url: zillowUrl 
+          });
           await delay(1000);
           continue;
         }
 
-        const html = await zillowResponse.text();
-        const parsedData = parseZillowProfile(html);
+        const firecrawlData = await firecrawlResponse.json();
+        const markdown = firecrawlData.data?.markdown || firecrawlData.markdown || '';
+        console.log('[Firecrawl] Got markdown:', markdown.length, 'chars');
+        results.firecrawl_success++;
+
+        // Parse content
+        const parsedData = parseZillowProfile(markdown);
+        console.log('[Parse] Rating:', parsedData.rating, 'Reviews:', parsedData.reviews);
 
         const qualified = (parsedData.rating && parsedData.rating >= 4.8) && 
                           (parsedData.reviews && parsedData.reviews >= 20);
@@ -297,30 +330,30 @@ serve(async (req) => {
           .update(updateData)
           .eq('id', prof.id);
 
-        results.found++;
         results.details.push({ 
           id: prof.id, 
           name: prof.name, 
-          status: 'found', 
+          status: 'success', 
           url: zillowUrl,
           rating: parsedData.rating,
           reviews: parsedData.reviews,
           qualified
         });
 
-        // Rate limit: 1 second between Exa calls
+        // Rate limit
         await delay(1000);
 
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        console.error('Error processing', prof.name, err);
+        console.error('[Error]', prof.name, err);
         results.errors++;
         results.details.push({ id: prof.id, name: prof.name, status: 'error', error: errorMessage });
         await delay(1000);
       }
     }
 
-    console.log('Batch complete:', results);
+    console.log('\n=== Batch complete ===');
+    console.log(results);
 
     return new Response(JSON.stringify({
       success: true,
