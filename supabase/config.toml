@@ -393,3 +393,6 @@ verify_jwt = false
 
 [functions.batch-scrape-zillow]
 verify_jwt = false
+
+[functions.get-zillow-queue]
+verify_jwt = false
