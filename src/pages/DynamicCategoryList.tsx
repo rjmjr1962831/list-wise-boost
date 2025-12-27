@@ -333,27 +333,46 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
         let professionalsData: any[] = [];
         let profsError = null;
         
-        // Single query: Get ALL qualified agents (brand builders + free) in one call
-        const { data: allQualified, error: queryError } = await supabase
+        // STEP 1: Get all professional_cities entries for this city
+        const { data: cityLinks, error: linksError } = await supabase
           .from('professional_cities')
-          .select(`
-            rank,
-            professionals!inner(*)
-          `)
+          .select('professional_id, rank')
           .eq('city_id', cityData.id)
-          .eq('active', true)
-          .eq('professionals.category_id', categoryData.id)
-          .eq('professionals.active', true)
-          .gte('professionals.review_stars_rating', 4.8)
-          .gte('professionals.num_total_reviews', 50);
+          .eq('active', true);
 
-        if (queryError) {
-          console.error('Error fetching qualified agents:', queryError);
-          profsError = queryError;
+        if (linksError) {
+          console.error('Error fetching professional_cities:', linksError);
+          profsError = linksError;
         }
 
-        // Client-side split: Brand Builders (always shown) vs Free (round-robin)
-        const allProfs = (allQualified || []).map((pc: any) => pc.professionals);
+        const professionalIds = (cityLinks || []).map(link => link.professional_id);
+        const rankMap = new Map((cityLinks || []).map(link => [link.professional_id, link.rank]));
+
+        // STEP 2: Get all qualified professionals matching those IDs
+        let allProfs: any[] = [];
+        if (professionalIds.length > 0) {
+          const { data: qualifiedProfs, error: profsQueryError } = await supabase
+            .from('professionals')
+            .select('*')
+            .in('id', professionalIds)
+            .eq('category_id', categoryData.id)
+            .eq('active', true)
+            .gte('review_stars_rating', 4.8)
+            .gte('num_total_reviews', 50);
+
+          if (profsQueryError) {
+            console.error('Error fetching qualified professionals:', profsQueryError);
+            profsError = profsQueryError;
+          }
+
+          // Add rank from professional_cities and sort
+          allProfs = (qualifiedProfs || []).map(p => ({
+            ...p,
+            pc_rank: rankMap.get(p.id) || 999
+          })).sort((a, b) => a.pc_rank - b.pc_rank);
+          
+          console.log(`📊 Found ${professionalIds.length} city links, ${allProfs.length} qualified after filtering`);
+        }
         const brandBuilderProfs = allProfs.filter((p: any) => p.is_brand_builder === true);
         const freeProfs = allProfs.filter((p: any) => p.is_brand_builder !== true);
         
