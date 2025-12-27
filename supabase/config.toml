@@ -405,3 +405,12 @@ verify_jwt = false
 
 [functions.bulk-sync-pipedrive-state]
 verify_jwt = false
+
+[functions.pipedrive-cleanup-duplicates]
+verify_jwt = false
+
+[functions.pipedrive-find-duplicates]
+verify_jwt = false
+
+[functions.pipedrive-full-duplicate-scan]
+verify_jwt = false
