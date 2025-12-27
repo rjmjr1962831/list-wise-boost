@@ -854,43 +854,94 @@ REMEMBER:
     const extractedSpecialties = synthesizedData.specialties_extracted || [];
     const mergedSpecialties = [...new Set([...existingSpecialties, ...extractedSpecialties])];
 
-    // CRITICAL: Merge achievements instead of replacing - preserve high-credibility items
+    // SEMANTIC DEDUPLICATION: Group achievements by category and keep best from each
     const existingAchievements = professional.notable_achievements || [];
     const newAchievements = synthesizedData.notable_achievements || [];
     
-    // Keep existing achievements with credibility >= 8 (like WSJ, Fox Business mentions)
-    const highCredibilityExisting = existingAchievements.filter((a: any) => 
-      (a.credibility || 0) >= 8
-    );
+    // Combine all achievements
+    const combinedAchievements = [...existingAchievements, ...newAchievements];
     
-    // Combine: high-credibility existing + new achievements, then dedupe
-    const combinedAchievements = [...highCredibilityExisting, ...newAchievements];
+    // Define semantic categories with keyword patterns
+    const semanticCategories: Record<string, RegExp> = {
+      'years_experience': /\b(years?|decades?|experience|since \d{4}|career|tenure|practice|long[\s-]term|market presence)\b/i,
+      'client_reviews': /\b(reviews?|rating|stars?|satisfaction|client feedback|testimonials?)\b/i,
+      'broker_designation': /\b(broker|designated broker|managing broker|principal broker|license|licensing)\b/i,
+      'sales_volume': /\b(sales|transactions?|volume|deals?|closed|listings?|sold)\b/i,
+      'top_agent_ranking': /\b(top agent|ranked|ranking|#\d|number \d|best agent|premier agent)\b/i,
+      'awards': /\b(award|winner|honored|recognition|achievement|excellence)\b/i,
+      'certifications': /\b(certified|certification|designation|accreditation|credential|ABR|CRS|GRI|SRES)\b/i,
+      'education': /\b(degree|university|college|graduate|valedictorian|scholarship|MBA|bachelor|master)\b/i,
+      'community': /\b(community|volunteer|charity|non[\s-]?profit|board member|philanthropic)\b/i,
+      'press_media': /\b(featured|press|media|interviewed|quoted|appeared|published|WSJ|Fox|NBC|ABC|CBS)\b/i,
+    };
     
-    // Deduplicate by normalized title
-    const seenTitles = new Set<string>();
-    const mergedAchievements = [];
+    // Group achievements by category
+    const categoryBest: Record<string, any> = {};
+    const uncategorized: any[] = [];
+    
     for (const achievement of combinedAchievements) {
-      const normalizedTitle = (achievement.title || '').toLowerCase()
-        .replace(/[^a-z0-9\s]/g, '')
-        .replace(/\s+/g, ' ')
-        .trim();
+      const title = (achievement.title || '').toLowerCase();
+      const description = (achievement.description || '').toLowerCase();
+      const combined = `${title} ${description}`;
       
-      if (!seenTitles.has(normalizedTitle) && normalizedTitle.length > 0) {
-        mergedAchievements.push(achievement);
-        seenTitles.add(normalizedTitle);
+      let matchedCategory: string | null = null;
+      for (const [category, pattern] of Object.entries(semanticCategories)) {
+        if (pattern.test(combined)) {
+          matchedCategory = category;
+          break;
+        }
+      }
+      
+      if (matchedCategory) {
+        const existing = categoryBest[matchedCategory];
+        const newCredibility = achievement.credibility || 0;
+        if (!existing || newCredibility > (existing.credibility || 0)) {
+          categoryBest[matchedCategory] = achievement;
+        }
+      } else {
+        // For uncategorized, still dedupe by normalized title
+        const normalizedTitle = title.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+        const isDupe = uncategorized.some(a => {
+          const existingNorm = (a.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+          return existingNorm === normalizedTitle;
+        });
+        if (!isDupe && normalizedTitle.length > 0) {
+          uncategorized.push(achievement);
+        }
       }
     }
     
-    // Sort by credibility and keep top 15
-    mergedAchievements.sort((a: any, b: any) => (b.credibility || 0) - (a.credibility || 0));
-    const finalAchievements = mergedAchievements.slice(0, 15);
+    // Combine best from each category + uncategorized
+    const mergedAchievements = [...Object.values(categoryBest), ...uncategorized];
     
-    console.log(`   📊 Achievements: ${highCredibilityExisting.length} preserved + ${newAchievements.length} new = ${finalAchievements.length} final`);
+    // Sort by credibility and keep top 8 (reduced from 15 to prevent clutter)
+    mergedAchievements.sort((a: any, b: any) => (b.credibility || 0) - (a.credibility || 0));
+    const finalAchievements = mergedAchievements.slice(0, 8);
+    
+    console.log(`   📊 Achievements: ${combinedAchievements.length} combined → ${Object.keys(categoryBest).length} categorized + ${uncategorized.length} uncategorized = ${finalAchievements.length} final`);
+
+    // Filter press_mentions to remove generic profile links (not real press)
+    const genericProfileDomains = [
+      'zillow.com', 'realtor.com', 'homes.com', 'redfin.com', 'trulia.com',
+      'agentpronto.com', 'homelight.com', 'fastexpert.com', 'ushja.org',
+      'archive.sdgcounties.ca', 'data.ushja.org'
+    ];
+    
+    const existingPressMentions = professional.press_mentions || [];
+    const filteredPressMentions = existingPressMentions.filter((pm: any) => {
+      const url = (pm.url || '').toLowerCase();
+      const source = (pm.source || '').toLowerCase();
+      // Keep if it's NOT a generic profile domain
+      return !genericProfileDomains.some(domain => url.includes(domain) || source.includes(domain));
+    });
+    
+    console.log(`   📰 Press mentions: ${existingPressMentions.length} → ${filteredPressMentions.length} after filtering generic profiles`);
 
     // Update professional record
     const updateData: Record<string, any> = {
       synthesized_bio: synthesizedData.synthesized_bio,
       notable_achievements: finalAchievements,
+      press_mentions: filteredPressMentions,
       publications: synthesizedData.publications || [],
       community_roles: synthesizedData.community_roles || [],
       awards_verified: synthesizedData.awards_verified || [],
