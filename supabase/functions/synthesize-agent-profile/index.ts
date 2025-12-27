@@ -13,6 +13,162 @@ const MAX_WEBSITE_CONTENT_CHARS = 8000;
 const SMTP_HOST = "mail.privateemail.com";
 const SMTP_PORT = 465;
 
+// Lovable AI Gateway for Gemini Flash (deduplication)
+const LOVABLE_AI_GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+// Gemini Flash tool schema for semantic deduplication
+const GEMINI_DEDUP_TOOL = {
+  type: "function" as const,
+  function: {
+    name: 'deduplicate_data',
+    description: 'Semantically deduplicate achievements and press mentions, keeping the highest quality unique items',
+    parameters: {
+      type: 'object',
+      properties: {
+        deduplicated_achievements: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              title: { type: 'string' },
+              description: { type: 'string' },
+              date: { type: 'string' },
+              credibility: { type: 'number' },
+              source: { type: 'string' },
+              source_url: { type: 'string' }
+            },
+            required: ['title', 'description', 'credibility']
+          },
+          description: 'Unique achievements after merging duplicates. Keep max 8 highest credibility items.'
+        },
+        deduplicated_press_mentions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              source: { type: 'string', description: 'Publication/outlet name' },
+              url: { type: 'string' },
+              title: { type: 'string' }
+            },
+            required: ['source']
+          },
+          description: 'Unique press mentions from reputable sources only. Remove profile sites (Zillow, Realtor.com, etc).'
+        },
+        merge_log: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Brief log of what was merged/removed and why'
+        }
+      },
+      required: ['deduplicated_achievements', 'deduplicated_press_mentions', 'merge_log']
+    }
+  }
+};
+
+// Call Gemini Flash via Lovable AI for semantic deduplication
+async function callGeminiForDeduplication(achievements: any[], pressMentions: any[], agentName: string): Promise<{
+  achievements: any[];
+  pressMentions: any[];
+  mergeLog: string[];
+}> {
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
+  
+  if (!lovableApiKey) {
+    console.log('⚠️ LOVABLE_API_KEY not set, skipping Gemini deduplication');
+    return { achievements, pressMentions, mergeLog: ['Skipped: No API key'] };
+  }
+  
+  if (achievements.length === 0 && pressMentions.length === 0) {
+    return { achievements: [], pressMentions: [], mergeLog: ['No data to deduplicate'] };
+  }
+  
+  console.log(`🔄 Calling Gemini Flash for semantic deduplication...`);
+  console.log(`   Input: ${achievements.length} achievements, ${pressMentions.length} press mentions`);
+  
+  const systemPrompt = `You are a data deduplication expert. Your job is to:
+1. MERGE semantically similar achievements (e.g., "20 years experience" and "Licensed since 2003" are the SAME concept - keep the more specific one)
+2. REMOVE generic profile listings from press (Zillow, Realtor.com, Redfin, Homes.com, Trulia, FastExpert, HomeLight, AgentPronto are NOT press)
+3. KEEP only genuinely unique, high-credibility achievements
+4. PREFER achievements with source URLs over those without
+
+Semantic categories to merge (keep ONE best from each):
+- Years of experience/career tenure
+- Review counts/ratings
+- Sales volume/transactions
+- Broker designations
+- Top agent rankings
+- Industry awards
+- Certifications/designations
+- Education/degrees
+- Community involvement
+
+For press mentions:
+- ONLY keep real news outlets, magazines, TV stations, newspapers
+- REMOVE: Profile sites, directories, data aggregators, generic listings`;
+
+  const userPrompt = `Deduplicate this data for agent: ${agentName}
+
+ACHIEVEMENTS (merge semantically similar, keep max 8):
+${JSON.stringify(achievements, null, 2)}
+
+PRESS MENTIONS (remove profile sites, keep only real press):
+${JSON.stringify(pressMentions, null, 2)}
+
+Return the deduplicated results using the tool.`;
+
+  try {
+    const response = await fetch(LOVABLE_AI_GATEWAY, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        tools: [GEMINI_DEDUP_TOOL],
+        tool_choice: { type: 'function', function: { name: 'deduplicate_data' } }
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Gemini deduplication error:', response.status, errorText);
+      // Return original data on failure
+      return { achievements, pressMentions, mergeLog: [`Gemini error: ${response.status}`] };
+    }
+
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    
+    if (!toolCall) {
+      console.error('❌ No tool call in Gemini response');
+      return { achievements, pressMentions, mergeLog: ['No tool call in response'] };
+    }
+    
+    const result = JSON.parse(toolCall.function.arguments);
+    
+    console.log(`✅ Gemini deduplication complete:`);
+    console.log(`   Achievements: ${achievements.length} → ${result.deduplicated_achievements?.length || 0}`);
+    console.log(`   Press: ${pressMentions.length} → ${result.deduplicated_press_mentions?.length || 0}`);
+    if (result.merge_log?.length > 0) {
+      console.log(`   Merge log: ${result.merge_log.slice(0, 3).join('; ')}...`);
+    }
+    
+    return {
+      achievements: result.deduplicated_achievements || [],
+      pressMentions: result.deduplicated_press_mentions || [],
+      mergeLog: result.merge_log || []
+    };
+  } catch (error) {
+    console.error('❌ Gemini deduplication failed:', error);
+    return { achievements, pressMentions, mergeLog: [`Error: ${error instanceof Error ? error.message : 'Unknown'}`] };
+  }
+}
+
 // Send failover alert email via SMTP
 async function sendFailoverAlert(agentName: string, failedService: string, fallbackService: string, errorDetails: string) {
   const smtpUsername = Deno.env.get('SMTP_USERNAME');
@@ -810,132 +966,31 @@ REMEMBER:
     
     console.log('Synthesized data:', JSON.stringify(synthesizedData, null, 2));
 
-    // Sort achievements by credibility and deduplicate similar titles
-    if (synthesizedData.notable_achievements) {
-      synthesizedData.notable_achievements.sort((a: any, b: any) => 
-        (b.credibility || 0) - (a.credibility || 0)
-      );
-      
-      // Deduplicate similar achievement titles
-      const seenTitles = new Set<string>();
-      const uniqueAchievements = [];
-      
-      for (const achievement of synthesizedData.notable_achievements) {
-        const normalizedTitle = (achievement.title || '').toLowerCase()
-          .replace(/[^a-z0-9\s]/g, '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        
-        let isDuplicate = false;
-        for (const seenTitle of seenTitles) {
-          const titleWords = normalizedTitle.split(' ');
-          const seenWords = seenTitle.split(' ');
-          const commonWords = titleWords.filter((w: string) => seenWords.includes(w));
-          const similarity = commonWords.length / Math.max(titleWords.length, seenWords.length);
-          
-          if (similarity > 0.8) {
-            isDuplicate = true;
-            break;
-          }
-        }
-        
-        if (!isDuplicate) {
-          uniqueAchievements.push(achievement);
-          seenTitles.add(normalizedTitle);
-        }
-      }
-      
-      // Keep top 10 unique achievements
-      synthesizedData.notable_achievements = uniqueAchievements.slice(0, 10);
-    }
-
     // Merge extracted specialties with existing ones
     const existingSpecialties = professional.specialty || [];
     const extractedSpecialties = synthesizedData.specialties_extracted || [];
     const mergedSpecialties = [...new Set([...existingSpecialties, ...extractedSpecialties])];
 
-    // SEMANTIC DEDUPLICATION: Group achievements by category and keep best from each
+    // STEP 3: Use Gemini Flash for semantic deduplication of achievements and press
     const existingAchievements = professional.notable_achievements || [];
     const newAchievements = synthesizedData.notable_achievements || [];
-    
-    // Combine all achievements
     const combinedAchievements = [...existingAchievements, ...newAchievements];
     
-    // Define semantic categories with keyword patterns
-    const semanticCategories: Record<string, RegExp> = {
-      'years_experience': /\b(years?|decades?|experience|since \d{4}|career|tenure|practice|long[\s-]term|market presence)\b/i,
-      'client_reviews': /\b(reviews?|rating|stars?|satisfaction|client feedback|testimonials?)\b/i,
-      'broker_designation': /\b(broker|designated broker|managing broker|principal broker|license|licensing)\b/i,
-      'sales_volume': /\b(sales|transactions?|volume|deals?|closed|listings?|sold)\b/i,
-      'top_agent_ranking': /\b(top agent|ranked|ranking|#\d|number \d|best agent|premier agent)\b/i,
-      'awards': /\b(award|winner|honored|recognition|achievement|excellence)\b/i,
-      'certifications': /\b(certified|certification|designation|accreditation|credential|ABR|CRS|GRI|SRES)\b/i,
-      'education': /\b(degree|university|college|graduate|valedictorian|scholarship|MBA|bachelor|master)\b/i,
-      'community': /\b(community|volunteer|charity|non[\s-]?profit|board member|philanthropic)\b/i,
-      'press_media': /\b(featured|press|media|interviewed|quoted|appeared|published|WSJ|Fox|NBC|ABC|CBS)\b/i,
-    };
-    
-    // Group achievements by category
-    const categoryBest: Record<string, any> = {};
-    const uncategorized: any[] = [];
-    
-    for (const achievement of combinedAchievements) {
-      const title = (achievement.title || '').toLowerCase();
-      const description = (achievement.description || '').toLowerCase();
-      const combined = `${title} ${description}`;
-      
-      let matchedCategory: string | null = null;
-      for (const [category, pattern] of Object.entries(semanticCategories)) {
-        if (pattern.test(combined)) {
-          matchedCategory = category;
-          break;
-        }
-      }
-      
-      if (matchedCategory) {
-        const existing = categoryBest[matchedCategory];
-        const newCredibility = achievement.credibility || 0;
-        if (!existing || newCredibility > (existing.credibility || 0)) {
-          categoryBest[matchedCategory] = achievement;
-        }
-      } else {
-        // For uncategorized, still dedupe by normalized title
-        const normalizedTitle = title.replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
-        const isDupe = uncategorized.some(a => {
-          const existingNorm = (a.title || '').toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
-          return existingNorm === normalizedTitle;
-        });
-        if (!isDupe && normalizedTitle.length > 0) {
-          uncategorized.push(achievement);
-        }
-      }
-    }
-    
-    // Combine best from each category + uncategorized
-    const mergedAchievements = [...Object.values(categoryBest), ...uncategorized];
-    
-    // Sort by credibility and keep top 8 (reduced from 15 to prevent clutter)
-    mergedAchievements.sort((a: any, b: any) => (b.credibility || 0) - (a.credibility || 0));
-    const finalAchievements = mergedAchievements.slice(0, 8);
-    
-    console.log(`   📊 Achievements: ${combinedAchievements.length} combined → ${Object.keys(categoryBest).length} categorized + ${uncategorized.length} uncategorized = ${finalAchievements.length} final`);
-
-    // Filter press_mentions to remove generic profile links (not real press)
-    const genericProfileDomains = [
-      'zillow.com', 'realtor.com', 'homes.com', 'redfin.com', 'trulia.com',
-      'agentpronto.com', 'homelight.com', 'fastexpert.com', 'ushja.org',
-      'archive.sdgcounties.ca', 'data.ushja.org'
-    ];
-    
     const existingPressMentions = professional.press_mentions || [];
-    const filteredPressMentions = existingPressMentions.filter((pm: any) => {
-      const url = (pm.url || '').toLowerCase();
-      const source = (pm.source || '').toLowerCase();
-      // Keep if it's NOT a generic profile domain
-      return !genericProfileDomains.some(domain => url.includes(domain) || source.includes(domain));
-    });
     
-    console.log(`   📰 Press mentions: ${existingPressMentions.length} → ${filteredPressMentions.length} after filtering generic profiles`);
+    console.log(`\n🧹 Starting Gemini semantic deduplication...`);
+    console.log(`   Input: ${combinedAchievements.length} achievements, ${existingPressMentions.length} press mentions`);
+    
+    const dedupResult = await callGeminiForDeduplication(
+      combinedAchievements,
+      existingPressMentions,
+      professional.name
+    );
+    
+    const finalAchievements = dedupResult.achievements;
+    const filteredPressMentions = dedupResult.pressMentions;
+    
+    console.log(`   📊 Deduplication complete: ${finalAchievements.length} achievements, ${filteredPressMentions.length} press mentions`);
 
     // Update professional record
     const updateData: Record<string, any> = {
