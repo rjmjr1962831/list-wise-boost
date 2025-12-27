@@ -62,6 +62,24 @@ async function processAgent(
       }
     }
 
+    // Step 3: Sync to Pipedrive
+    if (dryRun) {
+      console.log(`[DRY RUN] Would sync to Pipedrive for ${professional.name}`);
+    } else {
+      console.log(`📤 [PIPEDRIVE] Syncing ${professional.name}...`);
+      
+      const { error: syncError } = await supabase.functions.invoke('sync-single-professional', {
+        body: { professional_id: professional.id }
+      });
+      
+      if (syncError) {
+        console.error(`⚠️ Pipedrive sync failed for ${professional.name}:`, syncError.message);
+        // Don't fail the whole process for sync errors
+      } else {
+        console.log(`✅ [PIPEDRIVE] Synced ${professional.name}`);
+      }
+    }
+
     return { name: professional.name, status: 'completed', success: true };
 
   } catch (error: any) {
