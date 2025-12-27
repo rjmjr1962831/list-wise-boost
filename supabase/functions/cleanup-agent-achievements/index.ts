@@ -217,7 +217,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get all synthesized agents with achievements or press mentions
+    // Get synthesized agents with EXCESS achievements (>8) or press (>10)
     const { data: agents, error: fetchError } = await supabase
       .from('professionals')
       .select('id, name, notable_achievements, press_mentions')
@@ -226,6 +226,15 @@ serve(async (req) => {
       .limit(limit);
 
     if (fetchError) throw fetchError;
+    
+    // Filter to only agents that actually need cleaning
+    const agentsNeedingCleanup = (agents || []).filter(a => {
+      const achCount = Array.isArray(a.notable_achievements) ? a.notable_achievements.length : 0;
+      const pressCount = Array.isArray(a.press_mentions) ? a.press_mentions.length : 0;
+      return achCount > 8 || pressCount > 10;
+    });
+    
+    console.log(`Found ${agents?.length || 0} agents, ${agentsNeedingCleanup.length} need cleanup`);
 
     console.log(`Found ${agents?.length || 0} synthesized agents to process (useGemini: ${useGemini})`);
 
