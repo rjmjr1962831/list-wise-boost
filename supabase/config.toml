@@ -417,3 +417,6 @@ verify_jwt = false
 
 [functions.enrich-unenriched-agents]
 verify_jwt = false
+
+[functions.cleanup-agent-achievements]
+verify_jwt = false
