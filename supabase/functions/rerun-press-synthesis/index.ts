@@ -85,12 +85,13 @@ async function processAllAgents(
   if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
 
   try {
-    // Get active professionals (skip already processed if offset provided)
+    // Get active professionals with old synthesis dates (before 12/21/2025)
     const { data: professionals, error: fetchError } = await supabase
       .from('professionals')
       .select('id, name, company, business_name, city_id')
       .eq('active', true)
-      .order('created_at', { ascending: true })
+      .lt('profile_last_synthesized_at', '2025-12-21')
+      .order('profile_last_synthesized_at', { ascending: true })
       .range(offset, offset + batchSize - 1);
 
     if (fetchError) {
@@ -160,11 +161,12 @@ async function processAllAgents(
     // Calculate next offset
     const nextOffset = offset + professionals.length;
 
-    // Check if there are more professionals to process
+    // Check if there are more professionals to process (with old synthesis)
     const { count: totalCount } = await supabase
       .from('professionals')
       .select('*', { count: 'exact', head: true })
-      .eq('active', true);
+      .eq('active', true)
+      .lt('profile_last_synthesized_at', '2025-12-21');
 
     if (nextOffset < (totalCount || 0)) {
       console.log(`🔄 ${(totalCount || 0) - nextOffset} agents remaining, triggering next batch...`);
