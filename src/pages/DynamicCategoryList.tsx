@@ -358,7 +358,7 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
             .eq('category_id', categoryData.id)
             .eq('active', true)
             .gte('review_stars_rating', 4.8)
-            .gte('num_total_reviews', 50);
+            .gte('num_total_reviews', 20);
 
           if (profsQueryError) {
             console.error('Error fetching qualified professionals:', profsQueryError);
@@ -414,7 +414,7 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
             .eq('category_id', categoryData.id)
             .eq('active', true)
             .gte('review_stars_rating', 4.8)
-            .gte('num_total_reviews', 50)
+            .gte('num_total_reviews', 20)
             .order('num_total_reviews', { ascending: false })
             .limit(10);
           
