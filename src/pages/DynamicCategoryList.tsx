@@ -757,7 +757,7 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
         .eq('category_id', categoryId)
         .eq('active', true)
         .gte('review_stars_rating', 4.8)
-        .gte('num_total_reviews', 50)
+        .gte('num_total_reviews', 20)
         .limit(1);
       
       if (error) {
@@ -806,7 +806,8 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
               prof.specialties?.some(s => s.toLowerCase().includes(preferences.priceRange.toLowerCase()));
             return matchesPropertyType || matchesPriceRange;
           });
-          setFilteredProfessionals(filtered.length > 0 ? filtered : allProfessionals);
+          // Never reduce a Top 10 list to a tiny subset on load
+          setFilteredProfessionals(filtered.length >= Math.min(10, allProfessionals.length) ? filtered : allProfessionals);
         } catch {
           setFilteredProfessionals(allProfessionals);
         }
@@ -839,8 +840,8 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
       return matchesPropertyType || matchesPriceRange;
     });
 
-    // If no exact matches, show all
-    setFilteredProfessionals(filtered.length > 0 ? filtered : allProfessionals);
+    // If too few matches, keep the full Top 10 list
+    setFilteredProfessionals(filtered.length >= Math.min(10, allProfessionals.length) ? filtered : allProfessionals);
     setQuizCompleted(true);
     setShowQuiz(false);
     
