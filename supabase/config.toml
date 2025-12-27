@@ -402,3 +402,6 @@ verify_jwt = false
 
 [functions.reprocess-not-found]
 verify_jwt = false
+
+[functions.bulk-sync-pipedrive-state]
+verify_jwt = false
