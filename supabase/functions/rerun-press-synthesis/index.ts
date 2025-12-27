@@ -77,20 +77,48 @@ async function processAllAgents(
   dryRun: boolean,
   offset: number,
   supabaseUrl: string,
-  supabaseKey: string
+  supabaseKey: string,
+  stateFilter?: string
 ) {
   const supabase = createClient(supabaseUrl, supabaseKey);
   
-  console.log(`🔄 [PRESS-ONLY RE-ENRICHMENT] Starting from offset ${offset}, batch ${batchSize}, concurrency ${concurrency}`);
+  const stateLabel = stateFilter ? ` for ${stateFilter}` : '';
+  console.log(`🔄 [PRESS-ONLY RE-ENRICHMENT${stateLabel}] Starting from offset ${offset}, batch ${batchSize}, concurrency ${concurrency}`);
   if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
 
   try {
-    // Get active professionals with old synthesis dates (before 12/21/2025) OR never synthesized (NULL)
-    const { data: professionals, error: fetchError } = await supabase
+    // If state filter provided, get city IDs for that state first
+    let cityIds: string[] = [];
+    if (stateFilter) {
+      const { data: cities, error: cityError } = await supabase
+        .from('cities')
+        .select('id')
+        .eq('state', stateFilter);
+      
+      if (cityError) {
+        throw new Error(`Failed to fetch cities for ${stateFilter}: ${cityError.message}`);
+      }
+      cityIds = cities?.map(c => c.id) || [];
+      console.log(`📍 Found ${cityIds.length} cities in ${stateFilter}`);
+      
+      if (cityIds.length === 0) {
+        return { message: `No cities found for state: ${stateFilter}`, processed: 0 };
+      }
+    }
+
+    // Build query for professionals
+    let query = supabase
       .from('professionals')
       .select('id, name, company, business_name, city_id')
       .eq('active', true)
-      .or('profile_last_synthesized_at.lt.2025-12-21,profile_last_synthesized_at.is.null')
+      .or('profile_last_synthesized_at.lt.2025-12-21,profile_last_synthesized_at.is.null');
+    
+    // Apply state filter if provided
+    if (stateFilter && cityIds.length > 0) {
+      query = query.in('city_id', cityIds);
+    }
+    
+    const { data: professionals, error: fetchError } = await query
       .order('profile_last_synthesized_at', { ascending: true, nullsFirst: true })
       .range(offset, offset + batchSize - 1);
 
@@ -99,8 +127,8 @@ async function processAllAgents(
     }
 
     if (!professionals || professionals.length === 0) {
-      console.log('✅ All agents processed');
-      return { message: 'All agents processed', processed: 0, total_offset: offset };
+      console.log(`✅ All agents processed${stateLabel}`);
+      return { message: `All agents processed${stateLabel}`, processed: 0, total_offset: offset };
     }
 
     console.log(`📦 Processing ${professionals.length} agents (offset ${offset})`);
@@ -162,14 +190,20 @@ async function processAllAgents(
     const nextOffset = offset + professionals.length;
 
     // Check if there are more professionals to process (with old synthesis or NULL)
-    const { count: totalCount } = await supabase
+    let countQuery = supabase
       .from('professionals')
       .select('*', { count: 'exact', head: true })
       .eq('active', true)
       .or('profile_last_synthesized_at.lt.2025-12-21,profile_last_synthesized_at.is.null');
+    
+    if (stateFilter && cityIds.length > 0) {
+      countQuery = countQuery.in('city_id', cityIds);
+    }
+    
+    const { count: totalCount } = await countQuery;
 
     if (nextOffset < (totalCount || 0)) {
-      console.log(`🔄 ${(totalCount || 0) - nextOffset} agents remaining, triggering next batch...`);
+      console.log(`🔄 ${(totalCount || 0) - nextOffset} agents remaining${stateLabel}, triggering next batch...`);
       
       // Fire-and-forget: trigger next batch
       fetch(`${supabaseUrl}/functions/v1/rerun-press-synthesis`, {
@@ -182,11 +216,12 @@ async function processAllAgents(
           batchSize, 
           concurrency,
           dryRun,
-          offset: nextOffset
+          offset: nextOffset,
+          state: stateFilter
         })
       }).catch(err => console.log('Next batch triggered'));
     } else {
-      console.log('🎉 All agents processed!');
+      console.log(`🎉 All agents processed${stateLabel}!`);
     }
 
     return {
@@ -217,12 +252,14 @@ serve(async (req) => {
       batchSize = 20, 
       concurrency = 3,
       dryRun = false,
-      offset = 0
+      offset = 0,
+      state = undefined
     } = await req.json().catch(() => ({
       batchSize: 20, 
       concurrency: 3,
       dryRun: false,
-      offset: 0
+      offset: 0,
+      state: undefined
     }));
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -231,24 +268,27 @@ serve(async (req) => {
     // Use EdgeRuntime.waitUntil for background processing
     // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
     if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
-      console.log('🚀 Starting press-only re-enrichment in background...');
+      const stateLabel = state ? ` for ${state}` : '';
+      console.log(`🚀 Starting press-only re-enrichment${stateLabel} in background...`);
       // @ts-ignore
-      EdgeRuntime.waitUntil(processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey));
+      EdgeRuntime.waitUntil(processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey, state));
       
       return new Response(
         JSON.stringify({ 
-          message: 'Press-only re-enrichment started in background',
+          message: `Press-only re-enrichment${stateLabel} started in background`,
           batchSize,
           concurrency,
           dryRun,
-          offset
+          offset,
+          state
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
       // Fallback to synchronous processing
-      console.log('⚠️ EdgeRuntime not available, running synchronously...');
-      const results = await processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey);
+      const stateLabel = state ? ` for ${state}` : '';
+      console.log(`⚠️ EdgeRuntime not available, running synchronously${stateLabel}...`);
+      const results = await processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey, state);
       
       return new Response(
         JSON.stringify(results),
