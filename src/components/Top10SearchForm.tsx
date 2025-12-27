@@ -91,17 +91,23 @@ export const Top10SearchForm = () => {
   }, [stateInput]);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (stateDropdownRef.current && !stateDropdownRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (stateDropdownRef.current && !stateDropdownRef.current.contains(target)) {
         setStateOpen(false);
       }
-      if (cityDropdownRef.current && !cityDropdownRef.current.contains(event.target as Node)) {
+      if (cityDropdownRef.current && !cityDropdownRef.current.contains(target)) {
         setCityOpen(false);
       }
     };
 
+    // Use both mousedown and touchstart for cross-platform compatibility
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   const handleSearch = async () => {
@@ -343,7 +349,12 @@ export const Top10SearchForm = () => {
 
         {/* Search Button */}
         <Button 
+          type="button"
           onClick={handleSearch} 
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            handleSearch();
+          }}
           className="w-full"
           disabled={!selectedState || !selectedCity}
         >
