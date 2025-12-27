@@ -414,3 +414,6 @@ verify_jwt = false
 
 [functions.pipedrive-full-duplicate-scan]
 verify_jwt = false
+
+[functions.enrich-unenriched-agents]
+verify_jwt = false
