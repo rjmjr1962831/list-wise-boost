@@ -19,10 +19,25 @@ export default function CityLanding() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
 
+  // ALL HOOKS MUST BE ABOVE ANY CONDITIONAL RETURNS
+  useEffect(() => {
+    window.scrollTo(0, 0);
+
+    // GA4 page view
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "page_view", {
+        page_title: document.title,
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+      });
+    }
+  }, []);
+
   // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
   const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
   
   // If state slug is an abbreviation, redirect to canonical full name URL
+  // This must be AFTER all hooks
   if (stateSlug && stateNormalized?.needsRedirect) {
     const newPath = `/${stateNormalized.normalized}/${citySlug}`;
     console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
@@ -46,6 +61,11 @@ export default function CityLanding() {
 
   const city = getCityBySlug(citySlug || "", normalizedStateSlug);
   
+  // Must check city exists before accessing properties
+  if (!city) {
+    return <Navigate to="/404" replace />;
+  }
+
   // Get cities for the dialog (same state as current page)
   const stateCities = getCitiesByState(normalizedStateSlug).filter(c =>
     c.slug !== citySlug && c.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -56,24 +76,6 @@ export default function CityLanding() {
     setSearchQuery("");
     navigate(`/${normalizedStateSlug}/${selectedCity.slug}`);
   };
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-
-    // GA4 page view
-    if (typeof window.gtag === "function") {
-      window.gtag("event", "page_view", {
-        page_title: document.title,
-        page_location: window.location.href,
-        page_path: window.location.pathname,
-      });
-    }
-  }, []);
-
-  // Must check city exists before accessing properties
-  if (!city) {
-    return <Navigate to="/404" replace />;
-  }
 
   // Determine if user came from the list page
   const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
@@ -211,4 +213,3 @@ export default function CityLanding() {
     </>
   );
 }
-

@@ -195,17 +195,10 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
   // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
   const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
   
-  // If state slug is an abbreviation, redirect to canonical full name URL
-  if (stateSlug && stateNormalized?.needsRedirect) {
-    const newPath = `/${stateNormalized.normalized}/${citySlug}/${resolvedCategorySlug}`;
-    console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
-    return <Navigate to={newPath} replace />;
-  }
-  
   // Use normalized state slug for all operations
   const normalizedStateSlug = stateNormalized?.normalized || stateSlug || '';
   
-  // Redirect to coming soon page unless Arizona, California, or Albuquerque (New Mexico)
+  // Redirect logic computed here, but Navigate returned AFTER all hooks
   const stateSlugLower = normalizedStateSlug.toLowerCase();
   const citySlugLower = (citySlug || '').toLowerCase();
   const isAllowed =
@@ -213,10 +206,7 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
     stateSlugLower === 'california' ||
     ((stateSlugLower === 'new-mexico') && citySlugLower === 'albuquerque');
 
-  if (stateSlug && !isAllowed) {
-    return <Navigate to={`/coming-soon/${normalizedStateSlug}/${citySlug}`} replace />;
-  }
-  
+  // ALL HOOKS MUST BE DECLARED BEFORE ANY CONDITIONAL RETURNS
   const [searchParams, setSearchParams] = useSearchParams();
   const highlightedProfessionalId = searchParams.get('highlight');
   
@@ -704,6 +694,19 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
       supabase.removeChannel(channel);
     };
   }, [city?.id, category?.id]);
+
+  // REDIRECT LOGIC - MUST BE AFTER ALL HOOKS
+  // If state slug is an abbreviation, redirect to canonical full name URL
+  if (stateSlug && stateNormalized?.needsRedirect) {
+    const newPath = `/${stateNormalized.normalized}/${citySlug}/${resolvedCategorySlug}`;
+    console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
+    return <Navigate to={newPath} replace />;
+  }
+
+  // Redirect to coming soon page unless Arizona, California, or Albuquerque (New Mexico)
+  if (stateSlug && !isAllowed) {
+    return <Navigate to={`/coming-soon/${normalizedStateSlug}/${citySlug}`} replace />;
+  }
 
   const generateAndInsertProfessionals = async (cityData: City, categoryData: Category) => {
     if (categoryData.slug !== 'top10realestateagents') {

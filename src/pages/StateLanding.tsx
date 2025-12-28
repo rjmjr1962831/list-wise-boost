@@ -18,11 +18,7 @@ export default function StateLanding() {
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Only Arizona is supported currently
-  if (stateSlug && stateSlug !== 'arizona' && stateSlug !== 'az') {
-    return <Navigate to="/" replace />;
-  }
-
+  // ALL HOOKS MUST BE ABOVE ANY CONDITIONAL RETURNS
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -51,6 +47,11 @@ export default function StateLanding() {
       });
     }
   }, []);
+
+  // Only Arizona is supported currently - redirect AFTER all hooks
+  if (stateSlug && stateSlug !== 'arizona' && stateSlug !== 'az') {
+    return <Navigate to="/" replace />;
+  }
 
   return (
     <>
