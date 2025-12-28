@@ -96,12 +96,14 @@ async function processAllAgents(
   offset: number,
   supabaseUrl: string,
   supabaseKey: string,
-  stateFilter?: string
+  stateFilter?: string,
+  targetShortBios: boolean = false
 ) {
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   const stateLabel = stateFilter ? ` for ${stateFilter}` : '';
-  console.log(`🔄 [PRESS-ONLY RE-ENRICHMENT${stateLabel}] Starting from offset ${offset}, batch ${batchSize}, concurrency ${concurrency}`);
+  const modeLabel = targetShortBios ? ' [SHORT/MISSING BIOS]' : '';
+  console.log(`🔄 [PRESS-ONLY RE-ENRICHMENT${stateLabel}${modeLabel}] Starting from offset ${offset}, batch ${batchSize}, concurrency ${concurrency}`);
   if (dryRun) console.log(`⚠️ DRY RUN MODE - No AI calls will be made`);
 
   try {
@@ -125,24 +127,49 @@ async function processAllAgents(
     }
 
     // Build query for professionals
+    // If targetShortBios is true, only get agents with short bios (≤600 chars) or no bios
+    // Otherwise, use the old date-based filter
     let query = supabase
       .from('professionals')
-      .select('id, name, company, business_name, city_id')
+      .select('id, name, company, business_name, city_id, synthesized_bio, profile_last_synthesized_at')
       .eq('active', true)
-      .or('profile_last_synthesized_at.lt.2025-12-21,profile_last_synthesized_at.is.null');
+      .gte('review_stars_rating', 4.8)
+      .gte('num_total_reviews', 20);
     
     // Apply state filter if provided
     if (stateFilter && cityIds.length > 0) {
       query = query.in('city_id', cityIds);
     }
     
-    const { data: professionals, error: fetchError } = await query
+    // Fetch all candidates first, then filter in memory for short bios
+    const { data: allProfessionals, error: fetchError } = await query
       .order('profile_last_synthesized_at', { ascending: true, nullsFirst: true })
-      .range(offset, offset + batchSize - 1);
+      .limit(1000);
 
     if (fetchError) {
       throw new Error(`Failed to fetch professionals: ${fetchError.message}`);
     }
+
+    // Filter based on mode
+    let filteredProfessionals = allProfessionals || [];
+    
+    if (targetShortBios) {
+      // Filter to only agents with short bios (≤600 chars) or no bios
+      filteredProfessionals = filteredProfessionals.filter(p => {
+        const bioLength = p.synthesized_bio?.length || 0;
+        return bioLength === 0 || bioLength <= 600;
+      });
+      console.log(`📊 Found ${filteredProfessionals.length} agents with short/missing bios`);
+    } else {
+      // Original date-based filter (for backwards compatibility)
+      filteredProfessionals = filteredProfessionals.filter(p => {
+        const lastSynthesized = p.profile_last_synthesized_at;
+        return !lastSynthesized || new Date(lastSynthesized as string) < new Date('2025-12-21');
+      });
+    }
+
+    // Apply pagination
+    const professionals = filteredProfessionals.slice(offset, offset + batchSize);
 
     if (!professionals || professionals.length === 0) {
       console.log(`✅ All agents processed${stateLabel}`);
@@ -271,13 +298,15 @@ serve(async (req) => {
       concurrency = 3,
       dryRun = false,
       offset = 0,
-      state = undefined
+      state = undefined,
+      targetShortBios = false
     } = await req.json().catch(() => ({
       batchSize: 20, 
       concurrency: 3,
       dryRun: false,
       offset: 0,
-      state: undefined
+      state: undefined,
+      targetShortBios: false
     }));
     
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -287,26 +316,29 @@ serve(async (req) => {
     // @ts-ignore - EdgeRuntime is available in Supabase Edge Functions
     if (typeof EdgeRuntime !== 'undefined' && EdgeRuntime.waitUntil) {
       const stateLabel = state ? ` for ${state}` : '';
-      console.log(`🚀 Starting press-only re-enrichment${stateLabel} in background...`);
+      const modeLabel = targetShortBios ? ' [SHORT/MISSING BIOS]' : '';
+      console.log(`🚀 Starting press-only re-enrichment${stateLabel}${modeLabel} in background...`);
       // @ts-ignore
-      EdgeRuntime.waitUntil(processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey, state));
+      EdgeRuntime.waitUntil(processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey, state, targetShortBios));
       
       return new Response(
         JSON.stringify({ 
-          message: `Press-only re-enrichment${stateLabel} started in background`,
+          message: `Press-only re-enrichment${stateLabel}${modeLabel} started in background`,
           batchSize,
           concurrency,
           dryRun,
           offset,
-          state
+          state,
+          targetShortBios
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else {
       // Fallback to synchronous processing
       const stateLabel = state ? ` for ${state}` : '';
-      console.log(`⚠️ EdgeRuntime not available, running synchronously${stateLabel}...`);
-      const results = await processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey, state);
+      const modeLabel = targetShortBios ? ' [SHORT/MISSING BIOS]' : '';
+      console.log(`⚠️ EdgeRuntime not available, running synchronously${stateLabel}${modeLabel}...`);
+      const results = await processAllAgents(batchSize, concurrency, dryRun, offset, supabaseUrl, supabaseKey, state, targetShortBios);
       
       return new Response(
         JSON.stringify(results),
