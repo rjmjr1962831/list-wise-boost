@@ -230,6 +230,7 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
 
   // Scroll to top on page load
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     window.scrollTo(0, 0);
   }, []);
 
@@ -793,6 +794,7 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
 
   // Check if quiz has been completed for real estate agents category
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     if (resolvedCategorySlug === 'top10realestateagents' && city && allProfessionals.length > 0) {
       const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
       const completed = localStorage.getItem(storageKey);
@@ -825,9 +827,11 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
   const handleQuizComplete = (preferences: { propertyType: string; priceRange: string; timeline: string }) => {
     if (!city) return;
 
-    // Store completion in localStorage
-    const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
-    localStorage.setItem(storageKey, JSON.stringify(preferences));
+    // Store completion in localStorage (with SSR guard)
+    if (typeof window !== 'undefined') {
+      const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
+      localStorage.setItem(storageKey, JSON.stringify(preferences));
+    }
     
     // Filter professionals based on preferences
     const filtered = allProfessionals.filter(prof => {
