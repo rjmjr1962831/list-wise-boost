@@ -17,7 +17,7 @@ import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
 import { BatchSynthesisRefresher } from '@/components/admin/BatchSynthesisRefresher';
 import { IncompleteSynthesisRunner } from '@/components/admin/IncompleteSynthesisRunner';
-import UnsynthesizedProfileRunner from '@/components/admin/UnsynthesizedProfileRunner';
+
 import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
 import { StatePipelineRunner } from '@/components/admin/StatePipelineRunner';
 import { BackgroundPipelineControl } from '@/components/admin/BackgroundPipelineControl';
@@ -220,7 +220,6 @@ const AdminDashboard = () => {
           <TabsContent value="bulk-synthesis" className="space-y-4">
             <IncompleteSynthesisRunner />
             <BatchSynthesisRefresher />
-            <UnsynthesizedProfileRunner />
             <GeminiSearchTester />
             <SynthesisTester />
             <BulkProfileSynthesizer />
