@@ -41,6 +41,11 @@ export interface GA4EventParams {
 
 export const useGA4Tracking = () => {
   const trackEvent = useCallback((eventName: string, params: GA4EventParams) => {
+    // SSR guard - window and navigator are not available during server-side rendering
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+      return;
+    }
+    
     // Respect Do Not Track browser setting
     const dnt = navigator.doNotTrack === '1' || (window as any).doNotTrack === '1';
     if (dnt) {
