@@ -10,7 +10,13 @@ const getUpdates = () => {
   const twoDaysAgo = new Date(today);
   twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
 
-  const formatDate = (date: Date) => date.toISOString().split('T')[0];
+  // Format with time and Arizona timezone (MST = -07:00)
+  const formatDateISO = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}T00:00:00-07:00`;
+  };
   const formatDisplay = (date: Date) => date.toLocaleDateString('en-US', { 
     month: 'short', 
     day: 'numeric' 
@@ -20,19 +26,19 @@ const getUpdates = () => {
     {
       title: "December 2025 Arizona Rankings Released",
       description: "Updated rankings for all 48 Arizona cities based on latest review data.",
-      date: formatDate(today),
+      date: formatDateISO(today),
       displayDate: formatDisplay(today)
     },
     {
       title: "New Phoenix Metro Neighborhoods Added",
       description: "Expanded coverage to include Arcadia, Biltmore, and Desert Ridge areas.",
-      date: formatDate(yesterday),
+      date: formatDateISO(yesterday),
       displayDate: formatDisplay(yesterday)
     },
     {
       title: "Press Coverage Integration Complete",
       description: "Agents featured in WSJ, Forbes, CNBC now receive ranking credit.",
-      date: formatDate(twoDaysAgo),
+      date: formatDateISO(twoDaysAgo),
       displayDate: formatDisplay(twoDaysAgo)
     }
   ];
@@ -108,8 +114,15 @@ export const HomepageUpdates = () => {
                     >
                       {update.description}
                     </p>
-                    <meta itemProp="author" content="Top10Lists.us" />
-                    <meta itemProp="publisher" content="Top10Lists.us" />
+                    <meta itemProp="image" content="https://www.top10lists.us/og-image.png" />
+                    <span itemProp="author" itemScope itemType="https://schema.org/Organization">
+                      <meta itemProp="name" content="Top10Lists.us" />
+                      <meta itemProp="url" content="https://www.top10lists.us" />
+                    </span>
+                    <span itemProp="publisher" itemScope itemType="https://schema.org/Organization">
+                      <meta itemProp="name" content="Top10Lists.us" />
+                      <meta itemProp="url" content="https://www.top10lists.us" />
+                    </span>
                   </div>
                 </div>
               </CardContent>
