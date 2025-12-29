@@ -231,7 +231,7 @@ const Index = () => {
             The Only Platform That Measures Community Involvement
           </h2>
           <p className="text-muted-foreground leading-relaxed">
-            We weight community involvement at 20% of every agent's qualification score—higher than transaction volume. Agents who are deeply rooted in their communities know the full local ecosystem: contractors, lenders, inspectors, title companies, and other agents. They have reputations to protect beyond the next transaction.
+            We weight community involvement at 25% of every agent's qualification score—higher than transaction volume. Agents who are deeply rooted in their communities know the full local ecosystem: contractors, lenders, inspectors, title companies, and other agents. They have reputations to protect beyond the next transaction.
           </p>
         </section>
 
