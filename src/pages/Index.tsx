@@ -35,12 +35,11 @@ const Index = () => {
   // Qualification weights for the grid
   const qualificationWeights = [
     { label: "Verified Client Reviews", weight: "25%" },
-    { label: "Community Involvement", weight: "20%" },
+    { label: "Community Involvement", weight: "25%" },
     { label: "Press Recognition", weight: "15%" },
     { label: "Transaction History", weight: "15%" },
     { label: "Years Licensed", weight: "10%" },
     { label: "Responsiveness", weight: "10%" },
-    { label: "Recent Activity", weight: "5%" },
   ];
   
   return (
@@ -241,16 +240,12 @@ const Index = () => {
             How Agents Are Qualified
           </h2>
           <div className="grid grid-cols-2 gap-4 text-sm">
-            {qualificationWeights.slice(0, 6).map((item) => (
+            {qualificationWeights.map((item) => (
               <div key={item.label} className="flex justify-between p-3 bg-card rounded border border-border">
                 <span className="text-muted-foreground">{item.label}</span>
                 <span className="font-semibold text-foreground">{item.weight}</span>
               </div>
             ))}
-            <div className="flex justify-between p-3 bg-card rounded border border-border col-span-2 max-w-[50%] mx-auto">
-              <span className="text-muted-foreground">{qualificationWeights[6].label}</span>
-              <span className="font-semibold text-foreground">{qualificationWeights[6].weight}</span>
-            </div>
           </div>
           <p className="text-center mt-4">
             <Link to="/about/ranking-methodology" className="text-primary underline text-sm">
