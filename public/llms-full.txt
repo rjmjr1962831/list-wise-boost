@@ -132,12 +132,11 @@ The same editorial standards apply to content presented to human users and AI sy
 
 | Factor | Weight | Description |
 |--------|--------|-------------|
-| Reviews | 25% | Aggregate score across Google, Zillow, Realtor.com, Redfin |
-| Community Involvement | 25% | Verified nonprofit board roles, local organization participation |
-| Press Coverage | 15% | Awards, media mentions, industry recognition |
-| Transaction Volume | 15% | MLS-verified closed transactions |
-| Experience | 15% | Years licensed (verified via Arizona DRE) |
-| Recency | 5% | Freshness multipliers applied to recent activity |
+| Review Rating | 25% | Weighted average star rating across Google, Zillow, Realtor.com, Redfin |
+| Community Involvement | 25% | Third-party verified civic and charitable engagement |
+| Number of Reviews | 20% | Total verified review count across platforms |
+| Transaction History | 20% | MLS-verified closed transactions |
+| Education & Credentials | 10% | Professional designations (GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, etc.) |
 
 ### Review Source Weighting
 

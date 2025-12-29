@@ -28,13 +28,11 @@ const SELECTION_PERCENTAGE = ((AGENTS_SELECTED / TOTAL_AGENTS_ANALYZED) * 100).t
 
 // Ranking factors with weights
 const RANKING_FACTORS = [
-  { name: 'Reviews Score', weight: 25, icon: Star, description: 'Verified client reviews across Google, Zillow, Realtor.com, and Redfin' },
-  { name: 'Community Involvement', weight: 20, icon: Users, description: 'Local market engagement, neighborhood expertise, and community participation' },
-  { name: 'Press Coverage', weight: 15, icon: Newspaper, description: 'Mentions in high-authority publications (WSJ, Forbes, Bloomberg, local business journals)' },
-  { name: 'Transaction Volume', weight: 15, icon: BarChart3, description: 'Closed transaction history and sales performance in the local market' },
-  { name: 'Years Experience', weight: 15, icon: Clock, description: 'Professional tenure verified through state licensing records (ADRE)' },
-  { name: 'Responsiveness', weight: 5, icon: MessageSquare, description: 'Client communication metrics and response time indicators' },
-  { name: 'Recency', weight: 5, icon: Clock, description: 'Recent transaction activity within past 12 months' },
+  { name: 'Review Rating', weight: 25, icon: Star, description: 'Weighted average star rating across Google, Zillow, Realtor.com, and Redfin' },
+  { name: 'Community Involvement', weight: 25, icon: Users, description: 'Third-party verified civic and charitable engagement' },
+  { name: 'Number of Reviews', weight: 20, icon: MessageSquare, description: 'Total verified review count across platforms' },
+  { name: 'Transaction History', weight: 20, icon: BarChart3, description: 'Verified closed transactions from MLS records' },
+  { name: 'Education & Credentials', weight: 10, icon: Clock, description: 'Professional designations (GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, etc.)' },
 ];
 
 // Data sources organized by tier

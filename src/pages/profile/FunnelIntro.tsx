@@ -81,13 +81,11 @@ export default function FunnelIntro() {
   ];
 
   const rankingWeights = [
-    { label: 'Reviews', weight: 25, color: 'bg-primary' },
-    { label: 'Community', weight: 20, color: 'bg-primary/90' },
-    { label: 'Press', weight: 15, color: 'bg-primary/80' },
-    { label: 'Volume', weight: 15, color: 'bg-primary/70' },
-    { label: 'Experience', weight: 15, color: 'bg-primary/60' },
-    { label: 'Response', weight: 5, color: 'bg-primary/50' },
-    { label: 'Recency', weight: 5, color: 'bg-primary/40' },
+    { label: 'Review Rating', weight: 25, color: 'bg-primary' },
+    { label: 'Community', weight: 25, color: 'bg-primary/90' },
+    { label: '# of Reviews', weight: 20, color: 'bg-primary/80' },
+    { label: 'Transactions', weight: 20, color: 'bg-primary/70' },
+    { label: 'Credentials', weight: 10, color: 'bg-primary/60' },
   ];
 
   const renderStars = (count: number, isPrimary: boolean = false) => {

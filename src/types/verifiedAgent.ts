@@ -138,25 +138,21 @@ export interface CommunityInvolvement {
 
 /**
  * Ranking score breakdown
- * Weights (v3 - Dec 2024):
- * - Review Score: 25%
- * - Community Involvement: 20%
- * - Press & Awards: 15%
- * - Transaction Volume: 15%
- * - Years Experience: 15%
- * - Response Rate: 5%
- * - Recency Bonus: 5%
+ * Weights (v4 - Dec 2024):
+ * - Review Rating: 25%
+ * - Community Involvement: 25%
+ * - Number of Reviews: 20%
+ * - Transaction History: 20%
+ * - Education & Credentials: 10%
  */
 export interface RankingScore {
   composite: number;               // Final weighted score
   components: {
-    reviews: number;               // 25%
-    community: number;             // 20%
-    press: number;                 // 15%
-    transactions: number;          // 15%
-    experience: number;            // 10%
-    response: number;              // 10%
-    recency: number;               // 5%
+    reviewRating: number;          // 25%
+    community: number;             // 25%
+    reviewCount: number;           // 20%
+    transactions: number;          // 20%
+    credentials: number;           // 10%
   };
   calculatedAt: string;            // ISO date
 }

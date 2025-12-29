@@ -822,41 +822,36 @@ const RankingMethodology = () => {
                 <div className="bg-muted/50 rounded-lg p-6 mb-6 font-mono text-sm">
                   <div className="space-y-1">
                     <div>Final Score = (</div>
-                    <div className="pl-4">Review Score × 0.35 +</div>
-                    <div className="pl-4">Transaction Volume × 0.25 +</div>
-                    <div className="pl-4">Press Credibility × 0.15 +</div>
-                    <div className="pl-4">Years Experience × 0.10 +</div>
-                    <div className="pl-4">Response Rate × 0.10 +</div>
-                    <div className="pl-4">Recency Bonus × 0.05</div>
-                    <div>) × Freshness Multiplier</div>
+                    <div className="pl-4">Review Rating × 0.25 +</div>
+                    <div className="pl-4">Community Involvement × 0.25 +</div>
+                    <div className="pl-4">Number of Reviews × 0.20 +</div>
+                    <div className="pl-4">Transaction History × 0.20 +</div>
+                    <div className="pl-4">Education & Credentials × 0.10</div>
+                    <div>)</div>
                   </div>
                 </div>
 
                 <h4 className="font-semibold mb-3">Component Weights</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                    <span>Review Score</span>
-                    <span className="font-semibold text-primary">35%</span>
+                    <span>Review Rating</span>
+                    <span className="font-semibold text-primary">25%</span>
                   </div>
                   <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                    <span>Transaction Volume</span>
-                    <span className="font-semibold">25%</span>
+                    <span>Community Involvement</span>
+                    <span className="font-semibold text-primary">25%</span>
                   </div>
                   <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                    <span>Press Credibility</span>
-                    <span className="font-semibold">15%</span>
+                    <span>Number of Reviews</span>
+                    <span className="font-semibold">20%</span>
                   </div>
                   <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                    <span>Years Experience</span>
-                    <span className="font-semibold">10%</span>
-                  </div>
-                  <div className="flex justify-between items-center pb-2 border-b border-border/50">
-                    <span>Response Rate</span>
-                    <span className="font-semibold">10%</span>
+                    <span>Transaction History</span>
+                    <span className="font-semibold">20%</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span>Recency Bonus</span>
-                    <span className="font-semibold">5%</span>
+                    <span>Education & Credentials</span>
+                    <span className="font-semibold">10%</span>
                   </div>
                 </div>
               </CardContent>

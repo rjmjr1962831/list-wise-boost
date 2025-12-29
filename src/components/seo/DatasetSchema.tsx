@@ -63,55 +63,41 @@ export function DatasetSchema({
     },
     "license": "https://www.top10lists.us/terms",
     "isAccessibleForFree": true,
-    "measurementTechnique": "Multi-factor weighted scoring algorithm combining Reviews (25%), Community Involvement (20%), Press Coverage (15%), Transaction Volume (15%), Years Experience (15%), Responsiveness (5%), and Recency (5%)",
+    "measurementTechnique": "Multi-factor weighted scoring algorithm combining Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%)",
     "variableMeasured": [
       {
         "@type": "PropertyValue",
-        "name": "Reviews Score",
-        "description": "Verified client reviews across multiple platforms including Google, Zillow, Realtor.com, and Redfin",
+        "name": "Review Rating",
+        "description": "Weighted average star rating across Google, Zillow, Realtor.com, and Redfin",
         "value": "25%",
         "unitText": "weight"
       },
       {
         "@type": "PropertyValue",
         "name": "Community Involvement",
-        "description": "Local market engagement, neighborhood expertise, and community participation",
+        "description": "Third-party verified civic and charitable engagement",
+        "value": "25%",
+        "unitText": "weight"
+      },
+      {
+        "@type": "PropertyValue",
+        "name": "Number of Reviews",
+        "description": "Total verified review count across platforms",
         "value": "20%",
         "unitText": "weight"
       },
       {
         "@type": "PropertyValue",
-        "name": "Press Coverage",
-        "description": "Mentions in high-authority publications including Wall Street Journal, Forbes, Bloomberg, and local business journals",
-        "value": "15%",
+        "name": "Transaction History",
+        "description": "Verified closed transactions from MLS records",
+        "value": "20%",
         "unitText": "weight"
       },
       {
         "@type": "PropertyValue",
-        "name": "Transaction Volume",
-        "description": "Closed transaction history and sales performance in the local market",
-        "value": "15%",
-        "unitText": "weight"
-      },
-      {
-        "@type": "PropertyValue",
-        "name": "Years Experience",
-        "description": "Professional tenure verified through state licensing records (Arizona Department of Real Estate)",
-        "value": "15%",
-        "unitText": "weight"
-      },
-      {
-        "@type": "PropertyValue",
-        "name": "Responsiveness",
-        "description": "Client communication metrics and response time indicators",
-        "value": "5%",
-        "unitText": "weight"
-      },
-      {
-        "@type": "PropertyValue",
-        "name": "Recency",
-        "description": "Recent transaction activity and market engagement within past 12 months",
-        "value": "5%",
+        "name": "Education & Credentials",
+        "description": "Professional designations (GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, etc.)",
+        "value": "10%",
         "unitText": "weight"
       }
     ],

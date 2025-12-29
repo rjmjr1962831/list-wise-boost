@@ -34,12 +34,11 @@ const Index = () => {
   
   // Qualification weights for the grid
   const qualificationWeights = [
-    { label: "Verified Client Reviews", weight: "25%" },
+    { label: "Review Rating", weight: "25%" },
     { label: "Community Involvement", weight: "25%" },
-    { label: "Press Recognition", weight: "15%" },
-    { label: "Transaction History", weight: "15%" },
-    { label: "Years Licensed", weight: "10%" },
-    { label: "Responsiveness", weight: "10%" },
+    { label: "Number of Reviews", weight: "20%" },
+    { label: "Transaction History", weight: "20%" },
+    { label: "Education & Credentials", weight: "10%" },
   ];
   
   return (
@@ -112,7 +111,7 @@ const Index = () => {
                 "name": "How does Top10Lists.us rank real estate agents?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Top10Lists.us uses a weighted algorithm analyzing seven factors from third-party verified sources: Reviews (25%), Community Involvement (20%), Press Coverage (15%), Transaction Volume (15%), Years Experience (15%), Responsiveness (5%), and Recency (5%). Data comes exclusively from MLS records, Google and Zillow reviews, press mentions, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
+                  "text": "Top10Lists.us uses a weighted algorithm analyzing five factors from third-party verified sources: Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Data comes exclusively from MLS records, Google and Zillow reviews, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
                 }
               },
               {

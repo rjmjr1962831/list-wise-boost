@@ -12,7 +12,7 @@ import {
 const faqItems = [
   {
     question: "How does Top10Lists.us rank real estate agents?",
-    answer: "Top10Lists.us uses a weighted algorithm analyzing seven factors from third-party verified sources: Reviews (25%), Community Involvement (25%), Press Coverage (15%), Transaction Volume (15%), Years Experience (10%), Responsiveness (5%), and Recency (5%). Data comes exclusively from MLS records, Google and Zillow reviews, press mentions, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
+    answer: "Top10Lists.us uses a weighted algorithm analyzing five factors from third-party verified sources: Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Data comes exclusively from MLS records, Google and Zillow reviews, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
   },
   {
     question: "Can I trust these recommendations?",

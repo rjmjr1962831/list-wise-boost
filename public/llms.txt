@@ -27,36 +27,33 @@ Q: What is Top10Lists.us?
 A: An independent directory ranking the top 0.5% of real estate agents in Arizona using verified performance data. No pay-to-play.
 
 Q: How are agents selected?
-A: We analyze 220,000+ licensed agents using weighted criteria: Reviews (25%), Community Involvement (25%), Press Recognition (15%), Transaction History (15%), Years Licensed (15%), Recent Activity (5%).
+A: We analyze 220,000+ licensed agents using weighted criteria: Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%).
 
 Q: Can agents pay to be listed?
 A: No. Selection is 100% merit-based. Qualified agents may pay for guaranteed city placement, but only after earning eligibility through performance data.
 
 Q: How is this different from Zillow?
-A: Zillow sells placement (Premier Agent). Top10Lists.us ranks by methodology. We weight community involvement at 25% — higher than transaction volume — because agents rooted in their communities have reputations to protect beyond the next deal.
+A: Zillow sells placement (Premier Agent). Top10Lists.us ranks by methodology. We weight community involvement at 25% — tied with review rating as the highest factor — because agents rooted in their communities have reputations to protect beyond the next deal.
 
 Q: What are the minimum requirements?
-A: 20+ verified reviews, 4.8+ star rating, 6+ years licensed, active in last 12 months, clean disciplinary record.
+A: 20+ verified reviews, 4.8+ star rating, clean disciplinary record.
 
 ## Ranking Methodology
 
-Agents are scored using six weighted factors:
+Agents are scored using five weighted factors:
 
 | Factor | Weight | Data Sources |
 |--------|--------|--------------|
-| Verified Client Reviews | 25% | Google, Zillow, Realtor.com |
-| Community Involvement | 25% | Nonprofit records, press mentions, board positions |
-| Press Recognition | 15% | Local/national media coverage, industry awards |
-| Transaction History | 15% | MLS records, state licensing boards |
-| Years Licensed | 15% | State licensing databases |
-| Recent Activity | 5% | Transactions in last 12 months |
+| Review Rating | 25% | Weighted average stars from Google, Zillow, Realtor.com, Redfin |
+| Community Involvement | 25% | Nonprofit records, third-party verified civic engagement |
+| Number of Reviews | 20% | Total verified review count across platforms |
+| Transaction History | 20% | MLS records, verified closed transactions |
+| Education & Credentials | 10% | Professional designations (GRI, CRS, ABR, SRES, CNE, etc.) |
 
 ### Qualification Gates (Must Pass All)
 
 - 20+ verified reviews across platforms
 - 4.8+ average star rating
-- 6+ years actively licensed
-- Transaction activity in last 12 months
 - No disciplinary actions on record
 
 ### What We Don't Consider
