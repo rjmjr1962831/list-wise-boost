@@ -1050,6 +1050,54 @@ export type Database = {
         }
         Relationships: []
       }
+      parking_reservations: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          professional_id: string | null
+          reservation_date: string
+          space_number: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          professional_id?: string | null
+          reservation_date: string
+          space_number: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          professional_id?: string | null
+          reservation_date?: string
+          space_number?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parking_reservations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parking_reservations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_transactions: {
         Row: {
           amount_cents: number
