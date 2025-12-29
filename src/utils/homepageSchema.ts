@@ -128,11 +128,11 @@ export function generateDatasetSchema() {
     "variableMeasured": [
       {
         "@type": "PropertyValue",
-        "name": "Review Score",
-        "description": "Weighted average rating aggregated from Google (weight 10), Zillow (8), Realtor.com (6), and Redfin (5). Minimum 50 reviews required.",
+        "name": "Review Rating",
+        "description": "Weighted average star rating aggregated from Google (weight 10), Zillow (8), Realtor.com (6), and Redfin (5). Minimum 20 reviews required.",
         "unitText": "percentage",
         "value": "25",
-        "minValue": "4.5",
+        "minValue": "4.8",
         "maxValue": "5.0"
       },
       {
@@ -140,47 +140,29 @@ export function generateDatasetSchema() {
         "name": "Community Involvement",
         "description": "Third-party verified civic and charitable engagement including nonprofit board positions, charitable giving covered in local news, volunteer recognition, and documented sponsorships. Self-reported activities do not count.",
         "unitText": "percentage",
-        "value": "25",
-        "minValue": "0",
-        "maxValue": "10"
+        "value": "25"
       },
       {
         "@type": "PropertyValue",
-        "name": "Press & Awards",
-        "description": "Media mentions and industry recognition scored by publication tier. Tier 1 (major publications, national TV) scores 10, Tier 2 (industry awards, trade magazines) scores 9, Tier 3 (local news affiliates) scores 8, Tier 4 (other validated sources) scores 5.",
+        "name": "Number of Reviews",
+        "description": "Total verified review count across Google, Zillow, Realtor.com, and Redfin platforms.",
         "unitText": "percentage",
-        "value": "15",
-        "minValue": "0",
-        "maxValue": "10"
+        "value": "20",
+        "minValue": "20"
       },
       {
         "@type": "PropertyValue",
-        "name": "Transaction Volume",
-        "description": "Historical transaction count from MLS-connected sources including Redfin (weight 9), Zillow (8), Realtor.com (7), and Home.com (5).",
+        "name": "Transaction History",
+        "description": "Verified closed transactions from MLS records including Redfin (weight 9), Zillow (8), Realtor.com (7), and Home.com (5).",
         "unitText": "percentage",
-        "value": "15"
+        "value": "20"
       },
       {
         "@type": "PropertyValue",
-        "name": "Years Experience",
-        "description": "Verified market tenure from state license records or first transaction date. Minimum 6 years required.",
+        "name": "Education & Credentials",
+        "description": "Professional designations like GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, and other industry certifications.",
         "unitText": "percentage",
-        "value": "10",
-        "minValue": "6"
-      },
-      {
-        "@type": "PropertyValue",
-        "name": "Response Rate",
-        "description": "Platform-reported responsiveness metrics indicating how quickly and consistently agents respond to inquiries. Less verifiable than other metrics.",
-        "unitText": "percentage",
-        "value": "5"
-      },
-      {
-        "@type": "PropertyValue",
-        "name": "Recency Bonus",
-        "description": "Recent activity indicator with temporal decay multipliers: 0-6 months (1.3x), 6-12 months (1.1x), 12-24 months (1.0x), 24-36 months (0.7x), 36+ months (0.5x).",
-        "unitText": "percentage",
-        "value": "5"
+        "value": "10"
       }
     ],
     "keywords": [
