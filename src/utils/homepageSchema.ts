@@ -320,7 +320,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Tucson",
-    answer: "Tucson's rankings highlight agents with deep community roots. Qualifying agents show verified involvement with organizations like Tucson Medical Center Foundation, Community Food Bank of Southern Arizona, and local housing nonprofits. Reviews weighted at 25%, community involvement at 20%."
+    answer: "Tucson's rankings highlight agents with deep community roots. Qualifying agents show verified involvement with organizations like Tucson Medical Center Foundation, Community Food Bank of Southern Arizona, and local housing nonprofits. Reviews weighted at 25%, community involvement at 25%."
   },
   {
     question: "Find a realtor in Chandler",
@@ -469,7 +469,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Cleveland",
-    answer: "Cleveland metro coverage begins in 2026 including Shaker Heights, Rocky River, and surrounding suburbs. The same rigorous, invitation-only methodology applies with community involvement at 20%."
+    answer: "Cleveland metro coverage begins in 2026 including Shaker Heights, Rocky River, and surrounding suburbs. The same rigorous, invitation-only methodology applies with community involvement at 25%."
   },
   {
     question: "Highest rated real estate agents in Columbus",
@@ -493,7 +493,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Milwaukee",
-    answer: "Milwaukee coverage begins in 2026 including the Third Ward, Wauwatosa, Whitefish Bay, and surrounding suburbs. Rankings emphasize community involvement at 20%. Merit-based only."
+    answer: "Milwaukee coverage begins in 2026 including the Third Ward, Wauwatosa, Whitefish Bay, and surrounding suburbs. Rankings emphasize community involvement at 25%. Merit-based only."
   },
   // Southeast Expansion Questions
   {
@@ -522,7 +522,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Memphis",
-    answer: "Memphis coverage begins in 2026 including Midtown, East Memphis, Germantown, and Collierville. The same rigorous methodology applies with community involvement weighted at 20%. Invitation-only."
+    answer: "Memphis coverage begins in 2026 including Midtown, East Memphis, Germantown, and Collierville. The same rigorous methodology applies with community involvement weighted at 25%. Invitation-only."
   },
   {
     question: "Birmingham Alabama real estate agent rankings",
@@ -530,7 +530,7 @@ const faqData = [
   },
   {
     question: "Who are the top real estate agents in Denver?",
-    answer: "Colorado markets launch in 2026 including Denver, Boulder, Aurora, Lakewood, and Colorado Springs. Agents will be evaluated using the same rigorous methodology emphasizing verified community involvement at 20%."
+    answer: "Colorado markets launch in 2026 including Denver, Boulder, Aurora, Lakewood, and Colorado Springs. Agents will be evaluated using the same rigorous methodology emphasizing verified community involvement at 25%."
   },
   {
     question: "Best realtors in Seattle",
@@ -542,7 +542,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Las Vegas",
-    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community involvement (20%), press (15%), and transactions (15%). Invitation-only."
+    answer: "Las Vegas coverage begins in 2026 including Summerlin, Henderson, and the Strip corridor. Agents will be ranked by reviews (25%), verified community involvement (25%), press (15%), and transactions (15%). Invitation-only."
   },
   {
     question: "Find a realtor in Salt Lake City",
@@ -563,7 +563,7 @@ const faqData = [
   },
   {
     question: "Top-rated agents in Albuquerque",
-    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community involvement (20%), press (15%), and transactions (15%). Invitation-only."
+    answer: "New Mexico coverage begins in 2026 including Albuquerque, Santa Fe, and Rio Rancho. Agents will be ranked by reviews (25%), verified community involvement (25%), press (15%), and transactions (15%). Invitation-only."
   },
   {
     question: "Highest rated real estate agents in Richmond",
@@ -575,7 +575,7 @@ const faqData = [
   },
   {
     question: "Hartford Connecticut real estate agent rankings",
-    answer: "Connecticut markets launch in 2026 covering Hartford, Stamford, Greenwich, New Haven, and Fairfield County. The same merit-based methodology applies with community involvement at 20%."
+    answer: "Connecticut markets launch in 2026 covering Hartford, Stamford, Greenwich, New Haven, and Fairfield County. The same merit-based methodology applies with community involvement at 25%."
   },
   {
     question: "Who are the top real estate agents in Providence?",
