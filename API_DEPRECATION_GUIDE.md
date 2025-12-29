@@ -1,93 +1,102 @@
 # API Deprecation Guide
 
-## Active APIs (As of 2025-11-17)
+## Active Pipeline (As of 2025-12-29)
 
-This project now uses **ONLY** two Apify actors for all real estate agent data:
+This project uses a **TWO-STEP** pipeline for all real estate agent data:
 
-### 1. **agenscrape~zillow-agents-finder**
-- **Used by:** `fetch-getdataforme-agent-stats` edge function
-- **Purpose:** Fetches detailed agent statistics from Zillow
-- **Returns:** Agent stats including current listings, total sales, years of experience
+### Step 1: Exa → Prequalification
+- **Purpose:** Find Zillow URL, extract rating/reviews
+- **Qualification criteria:** 4.8+ rating AND 20+ reviews
+- **Edge function:** `search-agent-exa`, `test-exa-search`
 
-### 2. **getdataforme~zillow-real-state-agents-scraper**
-- **Used by:** 
-  - `fetch-zillow-agents` edge function
-  - `fetch-apify-zillow-reviews` edge function
-  - `update-agent-zillow-stats` edge function (via fetch-zillow-agents)
-- **Purpose:** Discovers agents in a market and fetches their reviews
-- **Returns:** List of agents with profile URLs, stats, and reviews
+### Step 2: Firecrawl → Full Enrichment  
+- **Purpose:** Scrape full agent profile data from Zillow
+- **Only runs on:** Agents that PASS prequalification
+- **Edge functions:** `fetch-zillow-agent-firecrawl`, `scrape-zillow-firecrawl`, `import-agents-firecrawl`
 
-## Deprecated APIs
+## DEPRECATED - DO NOT USE
 
-The following APIs and edge functions have been **DEPRECATED** and should no longer be used:
-
-### Deprecated Edge Functions
-1. **fetch-zillow-profile-stats** - Replaced by `fetch-getdataforme-agent-stats`
-2. **fetch-apify-agent-stats** - Replaced by `fetch-getdataforme-agent-stats`
-3. **fetch-external-reviews** - External reviews (Outscraper) no longer supported
-4. **fetch-zillow-agents-bulk** - Replaced by `fetch-zillow-agents`
+### Deprecated Apify Actors (ALL)
+- ❌ `memo23~apify-zillow-agents-cheerio` 
+- ❌ `getdataforme~zillow-real-state-agents-scraper`
+- ❌ `agenscrape~zillow-agents-finder`
+- ❌ `getdataforme~agenscrape`
+- ❌ `rigelbytes~zillow-agents`
+- ❌ ANY other Apify actors
 
 ### Deprecated Third-Party Services
-- **Outscraper API** - Google Business reviews no longer fetched
-- **Other Apify Actors** - All actors except the two listed above
+- ❌ **Apify** - All actors deprecated
+- ❌ **Perplexity API** - Removed entirely  
+- ❌ **Outscraper API** - Google Business reviews no longer fetched
 
-## Migration Guide
+### Deprecated Edge Functions (Apify-based)
+1. `fetch-agenscrape-agents` - Uses getdataforme actor
+2. `fetch-apify-zillow-cheerio` - Uses memo23 actor
+3. `fetch-memo23-agents` - Uses memo23 actor
+4. `fetch-single-memo23-agent` - Uses memo23 actor
+5. `bulk-fetch-zillow-reviews` - Uses memo23 actor
+6. `capture-zillow-rankings` - Uses getdataforme actor
+7. `search-and-import-agent` - Uses agenscrape actor
+8. `fetch-rigelbytes-agents` - Uses rigelbytes actor
+9. `run-state-pipeline` - Uses Apify actors dynamically
+10. `poll-apify-runs` - Polls Apify actor runs
+11. `process-state-licenses` - Uses rigelbytes actor
+12. `fetch-zillow-agents-twostep` - Uses getdataforme + memo23
+13. `fetch-zillow-profile-stats` - Replaced by Firecrawl
+14. `fetch-apify-agent-stats` - Replaced by Firecrawl
+15. `fetch-external-reviews` - External reviews deprecated
+16. `fetch-zillow-agents-bulk` - Replaced by Firecrawl
+17. `scrape-zillow-agents` - Uses Apify
 
-### Code Changes Made
-
-1. **src/hooks/useZillowStats.ts**
-   - Removed `fetch-zillow-profile-stats` calls
-   - Now uses `fetch-getdataforme-agent-stats` directly
-
-2. **src/hooks/useExternalReviews.ts**
-   - Disabled external reviews fetching
-   - Returns empty array (function kept for backward compatibility)
-
-3. **src/components/ProfessionalCard.tsx**
-   - Removed direct `fetch-zillow-profile-stats` calls
-   - Uses `update-agent-zillow-stats` which internally uses getdataforme
-
-4. **Edge Functions**
-   - `fetch-apify-zillow-reviews` - Updated to use only getdataforme actor
-   - `fetch-getdataforme-agent-stats` - Now hardcoded to use agenscrape actor only
-
-### Environment Variables Still Required
-- `APIFY_API_TOKEN` or `APIFY_API_KEY` - For accessing Apify platform
-- All other API keys (Outscraper, etc.) are no longer needed
-
-## Benefits of This Change
-
-1. **Simplified Architecture** - Two actors instead of 5+
-2. **Reduced API Costs** - Single source for Zillow data
-3. **Better Reliability** - Focused on proven actors
-4. **Easier Maintenance** - Fewer integrations to manage
+### Deprecated Admin Components
+These components have been disabled as they call deprecated Apify functions:
+- `AgenScrapeImporter` - calls fetch-agenscrape-agents, fetch-apify-zillow-cheerio
+- `ZillowAgentImporter` - calls fetch-agenscrape-agents
+- `BulkMemo23Enricher` - calls fetch-memo23-agents
+- `SingleAgentMemo23` - calls fetch-single-memo23-agent
+- `AdminRankingCapture` - calls capture-zillow-rankings
+- `BulkZillowReviewsFetcher` - calls bulk-fetch-zillow-reviews
+- `AdminZillowScraper` - calls scrape-zillow-agents
+- `StatePipelineRunner` - calls process-state-licenses (rigelbytes)
 
 ## Active Edge Functions
 
-These functions are still active and maintained:
+These functions are actively maintained and use the correct Exa→Firecrawl pipeline:
 
-- ✅ `fetch-getdataforme-agent-stats` - Fetch agent statistics
-- ✅ `fetch-zillow-agents` - Discover agents in a market
-- ✅ `fetch-apify-zillow-reviews` - Fetch Zillow reviews
-- ✅ `update-agent-zillow-stats` - Update agent stats in database
+### Data Import (Firecrawl-based)
+- ✅ `fetch-zillow-agent-firecrawl` - Scrape single agent via Firecrawl
+- ✅ `fetch-zillow-agent-firecrawl-json` - JSON extraction via Firecrawl
+- ✅ `scrape-zillow-firecrawl` - Zillow scraping via Firecrawl
+- ✅ `import-agents-firecrawl` - Bulk import via Firecrawl
+- ✅ `import-agents-unified` - Unified Firecrawl-based import
+- ✅ `import-agents-full-pipeline` - Full Exa→Firecrawl pipeline
+
+### Exa Search
+- ✅ `search-agent-exa` - Exa API agent search
+- ✅ `test-exa-search` - Exa search testing
+
+### Profile Synthesis
+- ✅ `synthesize-agent-profile` - AI bio generation
+- ✅ `rerun-press-synthesis` - Bulk re-synthesis
+- ✅ `generate-agent-bios` - Bio generation
+
+### Other Active Functions
 - ✅ `create-agent-checkout` - Stripe payment processing
-- ✅ `generate-agent-bios` - AI bio generation
 - ✅ `lookup-agent-license` - License verification
 - ✅ `send-*` - Email/SMS functions
-- ✅ `generate-zoom-meeting` - Zoom integration
+- ✅ `sync-*` - Pipedrive sync functions
+- ✅ `warm-cache` - Cache warming
+- ✅ `health-check` - Health monitoring
 
-## Rollback Instructions
+## Environment Variables Required
+- `FIRECRAWL_API_KEY` - For Firecrawl scraping
+- `EXA_API_KEY` - For Exa search/prequalification
+- `APIFY_API_TOKEN` - **NO LONGER NEEDED** (can be removed)
 
-If you need to rollback these changes:
+## Benefits of Exa→Firecrawl Pipeline
 
-1. Restore the edge functions from the previous version
-2. Revert the hook changes in `src/hooks/useZillowStats.ts` and `src/hooks/useExternalReviews.ts`
-3. Restore ProfessionalCard.tsx to use `fetch-zillow-profile-stats`
-4. Re-enable the deprecated API secrets if needed
-
-## Support
-
-For questions about this migration, refer to:
-- DEPRECATED.md files in deprecated edge function directories
-- This guide
-- Project documentation
+1. **No Apify dependency** - Removes unreliable/deprecated actors
+2. **Cost efficiency** - Firecrawl only runs on qualified agents
+3. **Better reliability** - Exa prequalification filters bad leads early
+4. **Simpler architecture** - Two clear steps instead of 5+ actors
+5. **Easier maintenance** - Fewer integrations to manage

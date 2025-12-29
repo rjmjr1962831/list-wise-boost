@@ -52,10 +52,10 @@ const ZillowImportStep = ({ data, updateData, onNext, onBack }: ZillowImportStep
     setImporting(true);
 
     try {
-      const { data: functionData, error } = await supabase.functions.invoke('fetch-apify-zillow-cheerio', {
+      // Use Firecrawl-based edge function instead of deprecated memo23/Apify
+      const { data: functionData, error } = await supabase.functions.invoke('fetch-zillow-agent-firecrawl', {
         body: { 
-          profileUrls: [zillowUrl],
-          professionalIds: ['temp-id']
+          url: zillowUrl
         }
       });
 
@@ -68,19 +68,17 @@ const ZillowImportStep = ({ data, updateData, onNext, onBack }: ZillowImportStep
         throw new Error(functionData?.error || 'No data returned from Zillow');
       }
 
-      // Pre-fill data from Zillow
-      const zillowData = functionData.results && functionData.results.length > 0 
-        ? functionData.results[0] 
-        : functionData;
+      // Extract data from Firecrawl response
+      const zillowData = functionData.data || functionData;
       
       updateData({
         zillowUrl: zillowUrl,
         fullName: zillowData.name || data.fullName,
-        brokerageName: zillowData.brokerage || data.brokerageName,
+        brokerageName: zillowData.brokerage || zillowData.company || data.brokerageName,
         phone: zillowData.phone || data.phone,
         website: zillowData.website || data.website,
-        yearsExperience: zillowData.yearsExperience || data.yearsExperience,
-        bio: zillowData.description || data.bio,
+        yearsExperience: zillowData.yearsExperience || zillowData.years_experience || data.yearsExperience,
+        bio: zillowData.description || zillowData.bio || data.bio,
       });
 
       toast({

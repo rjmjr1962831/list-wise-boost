@@ -1,281 +1,39 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { Loader2, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ProfessionalCard } from '@/components/ProfessionalCard';
+import { Card } from '@/components/ui/card';
+import { AlertTriangle } from 'lucide-react';
 
+/**
+ * @deprecated This component uses Apify actors (fetch-single-memo23-agent)
+ * which have been deprecated in favor of the Exa→Firecrawl pipeline.
+ * 
+ * Use the Firecrawl-based import tools instead.
+ */
 export const SingleAgentMemo23 = () => {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
-  const [agenscrapeResponse, setAgenscrapeResponse] = useState<any>(null);
-  const [memo23Response, setMemo23Response] = useState<any>(null);
-  const [statusHistory, setStatusHistory] = useState<
-    { step: string; detail?: string; level?: 'info' | 'success' | 'error'; timestamp: string }[]
-  >([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Load Adam's profile; scraping only runs when you click the debug button
-    fetchProfile();
-  }, []);
-
-  const fetchProfile = async () => {
-    setProfileLoading(true);
-    setProfile(null); // Clear existing card
-    try {
-      console.log('Fetching Adam Hamblen profile...');
-      const { data, error } = await supabase
-        .from('professionals')
-        .select(`
-          *,
-          city:cities(name, slug, state),
-          category:categories(name, slug)
-        `)
-        .eq('id', '30b82793-ccc3-4cc1-a745-5553be4376da')
-        .single();
-
-      if (error) {
-        console.error('Supabase error fetching profile:', error);
-        throw error;
-      }
-      
-      console.log('Profile data received:', data);
-      
-      if (!data) {
-        console.error('No profile data returned');
-        toast.error('No profile found for Adam Hamblen');
-        return;
-      }
-      
-      setProfile(data);
-      toast.success('Profile loaded successfully');
-    } catch (error: any) {
-      console.error('Error fetching profile:', error);
-      toast.error(`Failed to load profile: ${error.message}`);
-    } finally {
-      setProfileLoading(false);
-    }
-  };
-
-  const fetchAdamData = async () => {
-    // Require a fully loaded profile before attempting any scraping
-    if (!profile?.id) {
-      toast.error('Profile not loaded yet; please wait and try again.');
-      return;
-    }
-
-    setLoading(true);
-    setResult(null);
-    setAgenscrapeResponse(null);
-    setMemo23Response(null);
-    setErrorMessage(null);
-    setStatusHistory([]);
-    
-    try {
-      const timestamp = new Date().toLocaleTimeString();
-      setStatusHistory([
-        {
-          step: 'Memo23',
-          detail: 'Starting memo23 single-agent run (Adam already has Zillow URL)...',
-          level: 'info',
-          timestamp,
-        },
-      ]);
-
-      toast.info('Fetching memo23 data for Adam Hamblen...');
-      
-      const { data, error } = await supabase.functions.invoke('fetch-single-memo23-agent', {
-        body: { professionalId: profile.id }
-      });
-
-      setMemo23Response({ data, error });
-
-      if (error) throw error;
-
-      setResult(data);
-      toast.success('Successfully fetched all data for Adam Hamblen');
-      setStatusHistory(prev => [
-        ...prev,
-        {
-          step: 'Memo23',
-          detail: 'Memo23 completed successfully',
-          level: 'success',
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ]);
-      
-      // Auto-refresh the profile to show updated data
-      toast.info('Rebuilding profile card...');
-      await fetchProfile();
-      toast.success('Profile card rebuilt with fresh data');
-    } catch (error: any) {
-      console.error('Error:', error);
-      const message = error.message || 'Failed to fetch data';
-      setErrorMessage(message);
-      setStatusHistory(prev => [
-        ...prev,
-        {
-          step: 'Run failed',
-          detail: message,
-          level: 'error',
-          timestamp: new Date().toLocaleTimeString(),
-        },
-      ]);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      {profile && !profileLoading && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Adam Hamblen - Rendered Profile</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ProfessionalCard
-              professional={{
-                ...profile,
-                image: profile.image_url || '/placeholder.svg',
-                rating: profile.ratings?.average || profile.review_stars_rating || 0,
-                reviews: profile.num_total_reviews || 0,
-                specialties: profile.specialty || [],
-                verified: profile.claim_status === 'approved',
-                company: profile.company || profile.business_name || '',
-                stats: {
-                  totalSales: profile.total_sales || 0,
-                  currentListings: profile.current_listings || 0,
-                  yearsExperience: profile.years_experience || 0
-                }
-              }}
-              categorySlug={profile.category?.slug || ''}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Fetch Fresh Memo23 Data</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button 
-            onClick={fetchAdamData} 
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Fetching data from all sources...
-              </>
-            ) : (
-              'Run Memo23 Only (Adam has URL already)'
-            )}
-          </Button>
-
-          {errorMessage && (
-            <Alert variant="destructive">
-              <AlertTitle>Run error</AlertTitle>
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
-
-          {statusHistory.length > 0 && (
-            <div className="space-y-1 text-sm text-muted-foreground">
-              <h4 className="font-semibold text-foreground">Run timeline</h4>
-              <ul className="list-disc pl-5 space-y-0.5">
-                {statusHistory.map((item, idx) => (
-                  <li key={idx}>
-                    <span className="font-medium">{item.timestamp}</span> — {item.step}
-                    {item.detail ? `: ${item.detail}` : ''}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {(agenscrapeResponse || memo23Response) && (
-            <div className="grid gap-4 md:grid-cols-2">
-              {agenscrapeResponse && (
-                <div className="space-y-1">
-                  <h4 className="font-semibold text-foreground">Agenscrape response</h4>
-                  <div className="bg-muted p-3 rounded-md text-xs max-h-64 overflow-auto">
-                    <pre className="whitespace-pre-wrap break-words">
-                      {JSON.stringify(agenscrapeResponse, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              )}
-
-              {memo23Response && (
-                <div className="space-y-1">
-                  <h4 className="font-semibold text-foreground">Memo23 response</h4>
-                  <div className="bg-muted p-3 rounded-md text-xs max-h-64 overflow-auto">
-                    <pre className="whitespace-pre-wrap break-words">
-                      {JSON.stringify(memo23Response, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {result && (
-            <div className="space-y-4">
-              <div className="flex flex-col md:flex-row gap-6 items-start">
-                {result.sidebarVideoUrl && (
-                  <div className="w-full md:w-1/2 max-w-xl">
-                    <h4 className="font-semibold mb-3">Video Preview:</h4>
-                    <div className="w-full aspect-video">
-                      <iframe
-                        width="100%"
-                        height="100%"
-                        src={`https://www.youtube.com/embed/${result.sidebarVideoUrl.split('v=')[1]?.split('&')[0] || result.sidebarVideoUrl.split('/').pop()?.split('?')[0]}`}
-                        title="Agent video"
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        className="rounded-lg border-2 w-full h-full"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex-1 space-y-3 w-full">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-semibold">Result summary</h4>
-                    <Button 
-                      onClick={fetchProfile} 
-                      size="sm" 
-                      variant="outline"
-                      className="gap-2"
-                    >
-                      <RefreshCw className="h-4 w-4" />
-                      Refresh Profile
-                    </Button>
-                  </div>
-                  <div className="bg-muted p-4 rounded-lg space-y-2">
-                    <p><strong>Professional:</strong> {result.professional}</p>
-                    <p><strong>Sidebar Video URL:</strong> {result.sidebarVideoUrl || 'Not found'}</p>
-                    <p><strong>Phone Numbers:</strong> {result.phoneNumbers?.length > 0 ? result.phoneNumbers.join(', ') : 'None found'}</p>
-                    <p><strong>Email:</strong> {result.email || 'None found'}</p>
-                    <p><strong>Reviews Count:</strong> {result.reviewsCount || 0}</p>
-                    <p><strong>Updated Fields:</strong> {result.updatedFields?.join(', ')}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="p-6 border-destructive/50 bg-destructive/5">
+      <div className="flex items-start gap-4">
+        <AlertTriangle className="h-8 w-8 text-destructive flex-shrink-0" />
+        <div>
+          <h2 className="text-xl font-bold text-destructive mb-2">
+            ⚠️ DEPRECATED - Single Agent Memo23
+          </h2>
+          <p className="text-muted-foreground mb-4">
+            This component has been disabled because it uses deprecated Apify actors:
+          </p>
+          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 mb-4">
+            <li><code>fetch-single-memo23-agent</code> → uses memo23 Apify actor</li>
+          </ul>
+          <div className="bg-primary/10 border border-primary/30 rounded-lg p-4">
+            <h3 className="font-semibold text-primary mb-2">✅ Use Instead:</h3>
+            <p className="text-sm">
+              The current pipeline uses <strong>Exa → Firecrawl</strong>:
+            </p>
+            <ol className="list-decimal list-inside text-sm mt-2 space-y-1">
+              <li>Exa for prequalification (find Zillow URL, check rating/reviews)</li>
+              <li>Firecrawl for full enrichment (only on qualified agents)</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 };
