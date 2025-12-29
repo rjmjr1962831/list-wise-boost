@@ -12,8 +12,9 @@ verify_jwt = false
 [functions.create-pipedrive-fields]
 verify_jwt = true
 
-[functions.scrape-zillow-agents]
-verify_jwt = false
+# DEPRECATED: Uses Apify actors - replaced by Firecrawl pipeline
+# [functions.scrape-zillow-agents]
+# verify_jwt = false
 
 [functions.queue-city-for-enrichment]
 verify_jwt = false
@@ -27,17 +28,20 @@ verify_jwt = false
 [functions.replicate-agent-phoenix]
 verify_jwt = false
 
-[functions.fetch-rigelbytes-agents]
-verify_jwt = false
+# DEPRECATED: Uses rigelbytes Apify actor - replaced by Firecrawl pipeline
+# [functions.fetch-rigelbytes-agents]
+# verify_jwt = false
 
-[functions.fetch-agenscrape-agents]
-verify_jwt = false
+# DEPRECATED: Uses getdataforme Apify actor - replaced by Firecrawl pipeline
+# [functions.fetch-agenscrape-agents]
+# verify_jwt = false
 
 [functions.import-agents-unified]
 verify_jwt = false
 
-[functions.fetch-zillow-agents-twostep]
-verify_jwt = false
+# DEPRECATED: Uses getdataforme + memo23 Apify actors - replaced by Firecrawl pipeline
+# [functions.fetch-zillow-agents-twostep]
+# verify_jwt = false
 
 [functions.bulk-generate-photos]
 verify_jwt = false
@@ -72,11 +76,13 @@ verify_jwt = false
 [functions.parse-zillow-agent]
 verify_jwt = false
 
-[functions.fetch-memo23-agents]
-verify_jwt = false
+# DEPRECATED: Uses memo23 Apify actor - replaced by Firecrawl pipeline
+# [functions.fetch-memo23-agents]
+# verify_jwt = false
 
-[functions.fetch-single-memo23-agent]
-verify_jwt = false
+# DEPRECATED: Uses memo23 Apify actor - replaced by Firecrawl pipeline
+# [functions.fetch-single-memo23-agent]
+# verify_jwt = false
 
 [functions.rewrite-bio]
 verify_jwt = false
@@ -112,8 +118,9 @@ verify_jwt = true
 [functions.generate-og-image]
 verify_jwt = false
 
-[functions.bulk-fetch-zillow-reviews]
-verify_jwt = false
+# DEPRECATED: Uses memo23 Apify actor - replaced by Firecrawl pipeline
+# [functions.bulk-fetch-zillow-reviews]
+# verify_jwt = false
 
 [functions.search-agent-press]
 verify_jwt = false
@@ -148,8 +155,9 @@ verify_jwt = false
 [functions.bulk-sync-hubspot]
 verify_jwt = false
 
-[functions.capture-zillow-rankings]
-verify_jwt = false
+# DEPRECATED: Uses getdataforme Apify actor - replaced by Firecrawl pipeline
+# [functions.capture-zillow-rankings]
+# verify_jwt = false
 
 [functions.pipedrive-webhook]
 verify_jwt = false
@@ -337,14 +345,17 @@ verify_jwt = false
 [functions.fetch-firecrawl-agents]
 verify_jwt = false
 
-[functions.run-state-pipeline]
-verify_jwt = false
+# DEPRECATED: Uses Apify actors dynamically - replaced by Firecrawl pipeline
+# [functions.run-state-pipeline]
+# verify_jwt = false
 
-[functions.poll-apify-runs]
-verify_jwt = false
+# DEPRECATED: Polls Apify actor runs - replaced by Firecrawl pipeline
+# [functions.poll-apify-runs]
+# verify_jwt = false
 
-[functions.process-state-licenses]
-verify_jwt = false
+# DEPRECATED: Uses rigelbytes Apify actor - replaced by Firecrawl pipeline
+# [functions.process-state-licenses]
+# verify_jwt = false
 
 [functions.test-import-agent]
 verify_jwt = false
@@ -419,4 +430,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.cleanup-agent-achievements]
+verify_jwt = false
+
+[functions.monitor-queues]
 verify_jwt = false
