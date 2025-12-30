@@ -131,7 +131,7 @@ export const Header = () => {
             {!user && (
               <Link 
                 to="/are-you-an-agent" 
-                className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Are you an agent?
               </Link>
