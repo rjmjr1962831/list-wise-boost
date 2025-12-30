@@ -10,6 +10,12 @@ interface PressArticle {
 
 const pressArticles: PressArticle[] = [
   {
+    name: "Markets Insider",
+    shortName: "Markets Insider",
+    url: "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035679095",
+    tier: "financial",
+  },
+  {
     name: "Business Insider",
     shortName: "Business Insider",
     url: "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
