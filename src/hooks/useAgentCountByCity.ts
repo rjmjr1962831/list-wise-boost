@@ -74,7 +74,7 @@ export function useTotalAgentCount() {
         .select('*', { count: 'exact', head: true })
         .eq('active', true)
         .gte('review_stars_rating', 4.8)
-        .gte('num_total_reviews', 50);
+        .gte('num_total_reviews', 20);
 
       if (error || count === null) {
         return 460; // Fallback to known total
