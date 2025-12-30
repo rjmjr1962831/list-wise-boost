@@ -22,6 +22,7 @@ interface FirecrawlResponse {
   success: boolean;
   data?: {
     markdown: string;
+    html?: string;
     metadata?: {
       ogImage?: string;
       title?: string;
@@ -99,6 +100,7 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
   }
 
   // Scrape with waitFor to allow JS to expand content
+  // Request both markdown and HTML - HTML needed to extract profile photo
   const response = await fetch(FIRECRAWL_API_URL, {
     method: 'POST',
     headers: {
@@ -107,8 +109,8 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
     },
     body: JSON.stringify({
       url: profileUrl,
-      formats: ['markdown'],
-      onlyMainContent: true,
+      formats: ['markdown', 'html'],
+      onlyMainContent: false, // Need full page to get profile photo
       waitFor: 3000 // Wait 3s for JS to expand "Show more" content
     })
   });
@@ -129,9 +131,14 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
 
   const metadata = result.data?.metadata || {};
   const markdown = result.data?.markdown || '';
+  const html = result.data?.html || '';
 
   // Parse all data from markdown (fast, no LLM needed)
   const parsedData = parseMarkdownFallback(markdown);
+
+  // Extract profile photo from HTML - this is the most reliable source
+  const profilePhotoUrl = extractProfilePhotoFromHtml(html, metadata.ogImage as string | undefined);
+  console.log(`[Firecrawl] Extracted profile photo: ${profilePhotoUrl || 'none'}`);
 
   // Build the agent data object from parsed markdown
   const agentData: AgentData = {
@@ -145,7 +152,7 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
     phone: parsedData.phone || null,
     email: parsedData.email || null,
     website: parsedData.website || null,
-    profilePhotoUrl: (metadata.ogImage as string) || null,
+    profilePhotoUrl: profilePhotoUrl,
     
     // Stats
     ratingsAverage: parsedData.ratingsAverage || null,
@@ -194,6 +201,66 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
 function extractScreenName(url: string): string | null {
   const match = url.match(/zillow\.com\/profile\/([^/?#]+)/i);
   return match ? match[1] : null;
+}
+
+/**
+ * Extract profile photo URL from HTML
+ * Zillow profile photos are hosted on photos.zillowstatic.com or streeteasy CDN
+ * We look for img tags with these domains that are likely profile photos
+ */
+function extractProfilePhotoFromHtml(html: string, ogImageFallback: string | undefined): string | null {
+  if (!html) {
+    return ogImageFallback || null;
+  }
+  
+  // Pattern 1: Look for Zillow CDN profile photos (most reliable)
+  // These are high-res photos: photos.zillowstatic.com/fp/...
+  const zillowCdnMatch = html.match(/src=["'](https:\/\/photos\.zillowstatic\.com\/fp\/[^"']+)["']/i);
+  if (zillowCdnMatch) {
+    console.log('[Firecrawl] Found zillowstatic.com profile photo');
+    return zillowCdnMatch[1];
+  }
+  
+  // Pattern 2: StreetEasy CDN photos (for NY agents)
+  const streetEasyMatch = html.match(/src=["'](https:\/\/[^"']*streeteasy[^"']+\.(?:jpg|jpeg|png|webp)[^"']*)["']/i);
+  if (streetEasyMatch) {
+    console.log('[Firecrawl] Found StreetEasy profile photo');
+    return streetEasyMatch[1];
+  }
+  
+  // Pattern 3: Zillow delivery CDN
+  const deliveryCdnMatch = html.match(/src=["'](https:\/\/delivery\.digitalassets\.zillowgroup\.com\/[^"']+)["']/i);
+  if (deliveryCdnMatch) {
+    const url = deliveryCdnMatch[1];
+    // Skip generic SVG placeholder
+    if (!url.includes('PremierAgent_downloadOriginal.svg')) {
+      console.log('[Firecrawl] Found Zillow delivery CDN photo');
+      return url;
+    }
+  }
+  
+  // Pattern 4: Any image with profile-related class/attribute
+  const profileImgMatch = html.match(/class=["'][^"']*(?:profile|agent|avatar)[^"']*["'][^>]*src=["']([^"']+)["']/i) ||
+                           html.match(/src=["']([^"']+)["'][^>]*class=["'][^"']*(?:profile|agent|avatar)[^"']*["']/i);
+  if (profileImgMatch) {
+    const url = profileImgMatch[1];
+    // Validate it's a real photo URL
+    if (url.startsWith('https://') && !url.includes('example.com') && !url.includes('placeholder')) {
+      console.log('[Firecrawl] Found profile-class image');
+      return url;
+    }
+  }
+  
+  // Fallback to ogImage only if it's a real Zillow photo (not generic)
+  if (ogImageFallback && 
+      ogImageFallback.includes('zillowstatic.com') && 
+      !ogImageFallback.includes('PremierAgent_downloadOriginal.svg')) {
+    console.log('[Firecrawl] Using ogImage fallback');
+    return ogImageFallback;
+  }
+  
+  console.log('[Firecrawl] No valid profile photo found');
+  return null;
 }
 
 // Robust markdown parser for Zillow agent profiles
