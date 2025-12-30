@@ -95,7 +95,7 @@ export default function AreYouAnAgent() {
     "20+ verified reviews (Google and/or Zillow)",
     "4.8+ average rating",
     "Active Arizona real estate license",
-    "Verified transaction history via MLS records",
+    "Verified transaction history via public records",
     "Verified community involvement (nonprofit boards, local organizations, volunteer work)",
     "No disciplinary actions on file with ADRE"
   ];

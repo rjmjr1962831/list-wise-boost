@@ -181,7 +181,7 @@ const About = () => {
                     <div>
                       <h3 className="font-semibold mb-2">Verified Data</h3>
                       <p className="text-sm text-muted-foreground">
-                        All agent information is verified through third-party sources: license boards, review platforms, MLS records, and press coverage.
+                        All agent information is verified through third-party sources: license boards, review platforms, public records, and press coverage.
                       </p>
                     </div>
                   </div>

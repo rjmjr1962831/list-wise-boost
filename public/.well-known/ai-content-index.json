@@ -98,7 +98,7 @@
       {
         "@type": "PropertyValue",
         "name": "Transaction Volume",
-        "description": "Historical transaction count from MLS-connected sources including Redfin (weight 9), Zillow (8), Realtor.com (7), and Home.com (5).",
+        "description": "Historical transaction count from publicly available sources including Redfin (weight 9), Zillow (8), Realtor.com (7), and Home.com (5).",
         "unitText": "percentage",
         "value": "15"
       },

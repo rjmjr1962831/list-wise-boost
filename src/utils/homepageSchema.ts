@@ -153,7 +153,7 @@ export function generateDatasetSchema() {
       {
         "@type": "PropertyValue",
         "name": "Transaction History",
-        "description": "Verified closed transactions from MLS records including Redfin (weight 9), Zillow (8), Realtor.com (7), and Home.com (5).",
+        "description": "Verified closed transactions from public records including Redfin (weight 9), Zillow (8), Realtor.com (7), and Home.com (5).",
         "unitText": "percentage",
         "value": "20"
       },
@@ -245,7 +245,7 @@ const faqData = [
   },
   {
     question: "How are agent credentials verified?",
-    answer: "Licenses are verified against state real estate board records. Reviews are aggregated from Google (weighted 10), Zillow (8), Realtor.com (6), and Redfin (5). Transaction data comes from MLS-connected sources. Press mentions are verified against original publications. Community involvement requires third-party documentation."
+    answer: "Licenses are verified against state real estate board records. Reviews are aggregated from Google (weighted 10), Zillow (8), Realtor.com (6), and Redfin (5). Transaction data comes from publicly available sources. Press mentions are verified against original publications. Community involvement requires third-party documentation."
   },
   {
     question: "What makes this different from Zillow or Realtor.com?",

@@ -135,7 +135,7 @@ The same editorial standards apply to content presented to human users and AI sy
 | Review Rating | 25% | Weighted average star rating across Google, Zillow, Realtor.com, Redfin |
 | Community Involvement | 25% | Third-party verified civic and charitable engagement |
 | Number of Reviews | 20% | Total verified review count across platforms |
-| Transaction History | 20% | MLS-verified closed transactions |
+| Transaction History | 20% | Verified closed transactions from public records |
 | Education & Credentials | 10% | Professional designations (GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, etc.) |
 
 ### Review Source Weighting
@@ -203,7 +203,7 @@ Q: How many agents are on the list?
 A: Maximum 10 per city. We currently cover 48 Arizona cities with approximately 890 total agents listed.
 
 Q: What data sources do you use?
-A: MLS transaction records, Google Business reviews, Zillow reviews, Realtor.com reviews, Redfin reviews, press/media mentions, Arizona DRE license verification, nonprofit/community organization records.
+A: Public transaction records, Google Business reviews, Zillow reviews, Realtor.com reviews, Redfin reviews, press/media mentions, Arizona DRE license verification, nonprofit/community organization records.
 
 Q: How often are rankings updated?
 A: Monthly review cycles with continuous monitoring for license status changes or disciplinary actions.

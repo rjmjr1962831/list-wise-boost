@@ -31,7 +31,7 @@ const RANKING_FACTORS = [
   { name: 'Review Rating', weight: 25, icon: Star, description: 'Weighted average star rating across Google, Zillow, Realtor.com, and Redfin' },
   { name: 'Community Involvement', weight: 25, icon: Users, description: 'Third-party verified civic and charitable engagement' },
   { name: 'Number of Reviews', weight: 20, icon: MessageSquare, description: 'Total verified review count across platforms' },
-  { name: 'Transaction History', weight: 20, icon: BarChart3, description: 'Verified closed transactions from MLS records' },
+  { name: 'Transaction History', weight: 20, icon: BarChart3, description: 'Verified closed transactions from public records' },
   { name: 'Education & Credentials', weight: 10, icon: Clock, description: 'Professional designations (GRI, CRS, ABR, SRES, CNE, Luxury Home Certified, etc.)' },
 ];
 
@@ -45,7 +45,7 @@ const DATA_SOURCES = {
     { name: 'Zillow', url: 'https://www.zillow.com', description: 'Agent reviews and transaction data' },
     { name: 'Realtor.com', url: 'https://www.realtor.com', description: 'Agent profiles and reviews' },
     { name: 'Redfin', url: 'https://www.redfin.com', description: 'Performance metrics and reviews' },
-    { name: 'ARMLS', url: 'https://www.armls.com', description: 'Transaction verification' },
+    { name: 'Public Records', url: 'https://www.maricopa.gov/571/Recorded-Documents', description: 'Transaction verification' },
   ],
   tier1National: [
     { name: 'Wall Street Journal', url: 'https://www.wsj.com' },
