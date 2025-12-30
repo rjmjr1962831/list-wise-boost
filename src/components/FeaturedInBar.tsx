@@ -3,6 +3,7 @@ import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 
 // Import logos
 import businessInsiderLogo from "@/assets/logos/business-insider.svg";
+import financeInsiderLogo from "@/assets/logos/finance-insider.svg";
 import streetInsiderLogo from "@/assets/logos/streetinsider.png";
 import aiJournLogo from "@/assets/logos/aijourn.png";
 import arizonaDailyIndependentLogo from "@/assets/logos/arizona-daily-independent.png";
@@ -18,11 +19,11 @@ interface PressArticle {
 
 const pressArticles: PressArticle[] = [
   {
-    name: "Markets Insider",
-    shortName: "Markets Insider",
+    name: "Finance Insider",
+    shortName: "Finance Insider",
     url: "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163",
     tier: "financial",
-    logo: businessInsiderLogo, // Uses BI logo as Markets Insider is part of Business Insider
+    logo: financeInsiderLogo,
   },
   {
     name: "Business Insider",
