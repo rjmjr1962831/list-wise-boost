@@ -13,6 +13,13 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 
+// Import logos
+import businessInsiderLogo from "@/assets/logos/business-insider.svg";
+import streetInsiderLogo from "@/assets/logos/streetinsider.png";
+import aiJournLogo from "@/assets/logos/aijourn.png";
+import arizonaDailyIndependentLogo from "@/assets/logos/arizona-daily-independent.png";
+import financeWireLogo from "@/assets/logos/financewire.png";
+
 interface PressArticle {
   name: string;
   tier: "Tier 1" | "Financial" | "Trade";
@@ -21,6 +28,7 @@ interface PressArticle {
   title: string;
   summary: string;
   date: string;
+  logo?: string;
 }
 
 const pressArticles: PressArticle[] = [
@@ -32,6 +40,7 @@ const pressArticles: PressArticle[] = [
     title: "Robert Maynard, co-founder of LifeLock, Announces Top10lists.us, an AI Optimized Platform Designed for the Next Era of Consumer Search",
     summary: "Coverage of Top10Lists.us founder Robert Maynard, co-founder of LifeLock, launching an AI-optimized platform designed for the next era of consumer search with merit-based real estate agent rankings.",
     date: "December 30, 2025",
+    logo: businessInsiderLogo,
   },
   {
     name: "Business Insider",
@@ -41,6 +50,7 @@ const pressArticles: PressArticle[] = [
     title: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings",
     summary: "Coverage of Top10Lists.us scientific methodology and anti-pay-to-play approach to Arizona real estate rankings. The invitation-only directory analyzes over 200,000 agents to select the top 0.2%.",
     date: "December 2025",
+    logo: businessInsiderLogo,
   },
   {
     name: "Arizona Daily Independent",
@@ -50,6 +60,7 @@ const pressArticles: PressArticle[] = [
     title: "Arizona Startup Real Estate Directory Challenges Zillow's Pay-To-Play Model",
     summary: "Local Arizona coverage of the startup challenging Zillow's advertising-driven model with a merit-based directory that ranks agents by verified performance data rather than advertising spend.",
     date: "December 21, 2025",
+    logo: arizonaDailyIndependentLogo,
   },
   {
     name: "FinanceWire",
@@ -59,6 +70,7 @@ const pressArticles: PressArticle[] = [
     title: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings",
     summary: "Financial industry coverage of the merit-based ranking platform that weights community involvement (20%) higher than transaction volume (15%), ensuring agents who invest in their communities are recognized.",
     date: "December 18, 2025",
+    logo: financeWireLogo,
   },
   {
     name: "StreetInsider",
@@ -68,6 +80,7 @@ const pressArticles: PressArticle[] = [
     title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 220,000 Cannot Buy Their Way In.",
     summary: "Coverage highlighting the invitation-only model where only 414 agents out of 220,000+ Arizona real estate professionals qualified for the merit-based rankings based on verified performance data.",
     date: "December 2025",
+    logo: streetInsiderLogo,
   },
   {
     name: "AIJourn",
@@ -77,6 +90,7 @@ const pressArticles: PressArticle[] = [
     title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 220,000 Cannot Buy Their Way In.",
     summary: "AI and technology industry coverage of the invitation-only real estate agent directory designed for AI recommendation accuracy and anti-pay-to-play methodology.",
     date: "December 2025",
+    logo: aiJournLogo,
   },
 ];
 
@@ -220,10 +234,17 @@ const Press = () => {
             
             <div className="space-y-6">
               {pressArticles.map((article) => (
-                <Card key={article.name} className="hover:shadow-lg transition-shadow">
+                <Card key={article.url} className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
                     <div className="flex flex-col md:flex-row md:items-start gap-4">
-                      <div className="flex-shrink-0">
+                      <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                        {article.logo && (
+                          <img 
+                            src={article.logo} 
+                            alt={article.name} 
+                            className="h-8 w-auto max-w-[120px] object-contain"
+                          />
+                        )}
                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${article.tierColor}`}>
                           <Award className="h-3 w-3" />
                           {article.tier}
