@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle2, Phone, Mail, Globe, Award, Copy, ExternalLink } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { toast as sonnerToast } from "sonner";
+import { isValidImageUrl, getValidImageUrl } from "@/utils/imageUrlValidator";
 
 interface Professional {
   id: string;
@@ -205,11 +206,12 @@ export default function VerifyAgentListing() {
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6 mb-6">
-              {professional.image_url && (
+              {isValidImageUrl(professional.image_url) && (
                 <img
-                  src={professional.image_url}
+                  src={getValidImageUrl(professional.image_url)}
                   alt={professional.name}
                   className="w-32 h-32 object-cover rounded-lg"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                 />
               )}
               <div className="flex-1">

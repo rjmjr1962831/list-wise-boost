@@ -27,6 +27,7 @@ import { DatasetSchema } from '@/components/seo/DatasetSchema';
 import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchema';
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
 import { Info } from 'lucide-react';
+import { getValidImageUrl } from '@/utils/imageUrlValidator';
 
 interface City {
   id: string;
@@ -131,7 +132,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     description: (dbProf as any).get_to_know_me || dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
-    image: dbProf.image_url || '/placeholder.svg',
+    image: getValidImageUrl(dbProf.image_url),
     testimonials: [], // No fake testimonials - only real reviews from external sources
     zuid: dbProf.zuid || null,
     license_number: dbProf.license_number || undefined,
