@@ -125,7 +125,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     description: (dbProf as any).get_to_know_me || dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
-    image: dbProf.image_url || '/api/placeholder/400/400',
+    image: dbProf.image_url || '/placeholder.svg',
     testimonials: [],
     zuid: dbProf.zuid || null,
     license_number: dbProf.license_number || undefined,

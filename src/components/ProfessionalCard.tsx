@@ -791,13 +791,13 @@ export const ProfessionalCard = ({
           <div className="flex-shrink-0">
             <div className="relative">
               <img 
-                src={photoPreview || professional.image || (professional as any).image_url || '/api/placeholder/400/400'} 
+                src={photoPreview || professional.image || (professional as any).image_url || '/placeholder.svg'} 
                 alt={`${professional.name} - Top professional${(professional.specialties || (professional as any).specialty)?.length ? ` specializing in ${(professional.specialties || (professional as any).specialty).slice(0, 3).join(', ')}` : ''}`}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-lg object-cover border-2 border-border"
                 itemProp="image"
                 onError={(e) => {
                   // Fallback to placeholder if image fails to load
-                  (e.target as HTMLImageElement).src = '/api/placeholder/400/400';
+                  (e.target as HTMLImageElement).src = '/placeholder.svg';
                 }}
               />
               {isOwnProfile && isEditing && (
