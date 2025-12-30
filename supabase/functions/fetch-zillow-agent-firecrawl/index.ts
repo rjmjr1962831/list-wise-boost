@@ -84,6 +84,9 @@ interface AgentData {
   activeListingsCount: number | null;
   rentalListingsCount: number | null;
   
+  // License
+  licenseNumber: string | null;
+  
   // Meta
   zillowProfileUrl: string;
   scrapedAt: string;
@@ -185,6 +188,9 @@ async function scrapeZillowAgent(profileUrl: string): Promise<AgentData> {
     // Listings
     activeListingsCount: parsedData.activeListingsCount || null,
     rentalListingsCount: parsedData.rentalListingsCount || null,
+    
+    // License
+    licenseNumber: parsedData.licenseNumber || null,
     
     // Meta
     zillowProfileUrl: profileUrl,
@@ -436,6 +442,14 @@ function parseMarkdownFallback(markdown: string): Partial<AgentData> {
       .replace(/\n{3,}/g, '\n\n')
       .trim()
       .substring(0, 3000);
+  }
+
+  // Extract license number from Zillow profile
+  // Patterns: "License #: SA123456789", "License #:SA123456789", "License #\n\nSA123456789"
+  // Also handles "DRE #", "BRE #", "License Number:"
+  const licenseMatch = markdown.match(/(?:License|DRE|BRE)\s*(?:#|Number)\s*:?\s*\n*\s*([A-Z]{0,3}[\d-]+)/i);
+  if (licenseMatch) {
+    data.licenseNumber = licenseMatch[1].trim();
   }
 
   // Check for Premier Agent
