@@ -4,7 +4,7 @@
  */
 
 /**
- * Known fake/placeholder URL patterns that should be rejected
+ * Known fake/placeholder URL patterns that should be rejected as profile photos
  */
 const INVALID_URL_PATTERNS = [
   'example.com',
@@ -14,6 +14,12 @@ const INVALID_URL_PATTERNS = [
   'placeholder',
   'youtube.com/channel',
   'youtube.com/watch',
+  'youtube.com/',
+  '/images/default-profile',
+  'nophoto_p_b.png',
+  '/profile/photo/imageURL',
+  'agent-finder-showcase-banner',
+  'digitallibrary.zillowgroup.com',  // Generic Zillow banners, not profile photos
 ];
 
 /**
