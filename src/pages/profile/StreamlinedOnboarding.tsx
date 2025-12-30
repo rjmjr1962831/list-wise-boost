@@ -360,9 +360,11 @@ export default function StreamlinedOnboarding() {
   const [claimed, setClaimed] = useState(false);
   const [claimedCityName, setClaimedCityName] = useState('');
   const [showValidationError, setShowValidationError] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
   const [pendingReviewRequests, setPendingReviewRequests] = useState<any[]>([]);
   const [showSpecialtyModal, setShowSpecialtyModal] = useState(false);
+  
+  // 3-step flow: 'card' (view card) -> 'edit' (edit fields) -> 'review' (review & approve)
+  const [funnelStep, setFunnelStep] = useState<'card' | 'edit' | 'review'>('card');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -651,8 +653,8 @@ export default function StreamlinedOnboarding() {
     );
   }
 
-  // Preview view before final approval
-  if (showPreview) {
+  // Preview view before final approval (Step 3: Review)
+  if (funnelStep === 'review') {
     const selectedCity = cities.find(c => c.id === selectedCityId);
     
     return (
@@ -664,14 +666,22 @@ export default function StreamlinedOnboarding() {
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
           <div className="max-w-3xl mx-auto space-y-6">
             
+            {/* Step indicator */}
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <span className="text-foreground font-medium">Step 3 of 3:</span> Review & Approve
+            </div>
+            
             {/* Header */}
             <div className="text-center space-y-2">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-                Here's your edited profile
+                Review Your Profile
               </h1>
+              <p className="text-lg text-muted-foreground">
+                This is how you'll appear in our recommendation engine
+              </p>
               {pendingReviewRequests.length > 0 && (
-                <p className="text-lg text-muted-foreground">
-                  For those fields that need review, we'll get back to you in 24 hours.
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  Some fields are pending review. We'll get back to you in 24 hours.
                 </p>
               )}
             </div>
@@ -732,12 +742,12 @@ export default function StreamlinedOnboarding() {
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  setShowPreview(false);
+                  setFunnelStep('edit');
                   window.scrollTo(0, 0);
                 }}
                 className="sm:min-w-[150px]"
               >
-                Go Back
+                Go Back to Edit
               </Button>
               <Button 
                 onClick={handleClaim}
@@ -761,11 +771,136 @@ export default function StreamlinedOnboarding() {
     );
   }
 
+  // Step 1: Card View - Show the profile card first
+  if (funnelStep === 'card') {
+    const selectedCity = cities.find(c => c.id === selectedCityId) || professional?.cities;
+    
+    return (
+      <>
+        <Helmet>
+          <title>Welcome {firstName} | Top10Lists.us</title>
+          <meta name="description" content="Review your professional listing on Top10Lists.us" />
+          <meta name="robots" content="noindex, nofollow" />
+        </Helmet>
+
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted">
+          {/* Top Bar with Profile Dropdown */}
+          <div className="max-w-4xl mx-auto px-4 pt-4">
+            <div className="flex justify-end">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-muted transition-colors">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage 
+                        src={professional?.image_url} 
+                        alt={professional?.name || 'Profile'} 
+                      />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                        {firstName?.[0]?.toUpperCase() || 'A'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium text-foreground hidden sm:inline">
+                      {firstName}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      navigate('/');
+                      toast.success('Signed out successfully');
+                    }}
+                    className="text-destructive cursor-pointer"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
+            
+            {/* Step indicator */}
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <span className="text-foreground font-medium">Step 1 of 3:</span> Review your card
+            </div>
+            
+            {/* Hero */}
+            <div className="text-center space-y-4">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
+                Hello {firstName}. <span className="text-primary">AI has been looking forward to meeting you.</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+                You are one of the nearly 900 agents in Arizona (Out of 220,000+!) who we have invited to our recommendation engine.
+              </p>
+              <p className="text-lg md:text-xl text-primary font-semibold max-w-2xl mx-auto">
+                There is no cost for your listing in the city of your choice
+              </p>
+            </div>
+
+            {/* AI Proof Block */}
+            <AIProofBlock />
+
+            {/* The Card Preview */}
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="bg-primary/5 border-b border-border p-6">
+                  <h2 className="text-xl font-semibold text-foreground">
+                    Here's the profile we've prepared for you
+                  </h2>
+                  <p className="text-muted-foreground mt-1">
+                    Review how you'll appear in our recommendation engine
+                  </p>
+                </div>
+                
+                <div className="p-6">
+                  {professional && (
+                    <ProfessionalCard
+                      professional={convertToDisplayProfessional(professional, 1)}
+                      market={selectedCity ? `${selectedCity.name}, ${selectedCity.state_slug?.toUpperCase() || 'AZ'}` : 'Arizona'}
+                      stateAbbr={selectedCity?.state_slug?.toUpperCase() || 'AZ'}
+                      citySlug={selectedCity?.slug}
+                      categorySlug={(professional as any)?.categories?.slug || 'top10realestateagents'}
+                      quizCompleted={true}
+                      expandSections={true}
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* CTA to Edit */}
+            <div className="text-center space-y-4">
+              <Button 
+                size="lg"
+                onClick={() => {
+                  setFunnelStep('edit');
+                  window.scrollTo(0, 0);
+                }}
+                className="px-8"
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Edit & Claim My Listing
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                You can update your contact info, bio, and more
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Step 2: Edit View
   return (
     <>
       <Helmet>
-        <title>Claim Your Listing | Top10Lists.us</title>
-        <meta name="description" content="Verify and claim your professional listing on Top10Lists.us" />
+        <title>Edit Your Listing | Top10Lists.us</title>
+        <meta name="description" content="Edit and claim your professional listing on Top10Lists.us" />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
@@ -793,6 +928,15 @@ export default function StreamlinedOnboarding() {
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem 
                   onClick={() => {
+                    setFunnelStep('card');
+                    window.scrollTo(0, 0);
+                  }}
+                  className="cursor-pointer"
+                >
+                  View Card
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => {
                     navigate('/');
                     toast.success('Signed out successfully');
                   }}
@@ -808,23 +952,22 @@ export default function StreamlinedOnboarding() {
 
         <div className="max-w-4xl mx-auto px-4 py-8 md:py-12 space-y-8">
           
-          {/* Section 1: Hero */}
-          <div className="text-center space-y-4">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
-              Hello {firstName}. <span className="text-primary">AI has been looking forward to meeting you.</span>
+          {/* Step indicator */}
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <span className="text-foreground font-medium">Step 2 of 3:</span> Edit your profile
+          </div>
+          
+          {/* Header */}
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+              Edit Your Profile
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              You are one of the nearly 900 agents in Arizona (Out of 220,000+!) who we have invited to our recommendation engine. You can review and edit the profile we have prepared below.
-            </p>
-            <p className="text-lg md:text-xl text-primary font-semibold max-w-2xl mx-auto">
-              There is no cost for your listing in the city of your choice
+            <p className="text-muted-foreground">
+              Update your information below. Click any field to edit.
             </p>
           </div>
 
-          {/* Section 2: AI Proof Block */}
-          <AIProofBlock />
-
-          {/* Section 3: Profile Card with Inline Editing */}
+          {/* Profile Card with Inline Editing */}
           <Card className="overflow-hidden">
             <CardContent className="p-0">
               {/* Card Header */}
@@ -1262,13 +1405,13 @@ export default function StreamlinedOnboarding() {
                           setShowValidationError(true);
                           return;
                         }
-                        setShowPreview(true);
+                        setFunnelStep('review');
                         window.scrollTo(0, 0);
                       }}
                       disabled={claiming}
                       className="whitespace-nowrap"
                     >
-                      Claim My FREE Listing
+                      Review & Approve My Listing
                     </Button>
                     
                     <p className="text-sm text-muted-foreground">
