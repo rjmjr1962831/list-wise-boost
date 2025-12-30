@@ -434,3 +434,6 @@ verify_jwt = false
 
 [functions.monitor-queues]
 verify_jwt = false
+
+[functions.rescrape-missing-photos]
+verify_jwt = false
