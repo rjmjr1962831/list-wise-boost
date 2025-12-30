@@ -21,6 +21,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { Professional } from '@/types/professional';
+import { getValidImageUrl } from '@/utils/imageUrlValidator';
 import {
   Dialog,
   DialogContent,
@@ -313,7 +314,7 @@ export default function AgentDashboard() {
           yearsExperience: data.years_experience || 0,
         },
         verified: !!data.license_verified_at,
-        image: data.image_url || '',
+        image: getValidImageUrl(data.image_url),
         license_number: data.license_number || '',
         license_verified_at: data.license_verified_at || '',
         zuid: data.zuid,

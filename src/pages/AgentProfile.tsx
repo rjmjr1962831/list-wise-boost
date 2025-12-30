@@ -11,6 +11,7 @@ import { generateVerifiedAgentSchema, generateCitationText } from '@/utils/verif
 import { professionalToVerifiedAgent } from '@/utils/professionalToVerifiedAgent';
 import { VerifiedAgent } from '@/types/verifiedAgent';
 import { normalizeStateSlug } from '@/utils/stateSlugMapping';
+import { getValidImageUrl } from '@/utils/imageUrlValidator';
 
 interface DBProfessional {
   id: string;
@@ -125,7 +126,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     description: (dbProf as any).get_to_know_me || dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
-    image: dbProf.image_url || '/placeholder.svg',
+    image: getValidImageUrl(dbProf.image_url),
     testimonials: [],
     zuid: dbProf.zuid || null,
     license_number: dbProf.license_number || undefined,

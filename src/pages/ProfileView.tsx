@@ -6,6 +6,7 @@ import { Loader2, MapPin, Briefcase, Star, Award, Mail, Phone, Globe } from "luc
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+import { isValidImageUrl, getValidImageUrl } from "@/utils/imageUrlValidator";
 
 interface Professional {
   id: string;
@@ -131,11 +132,12 @@ export default function ProfileView() {
           <Card>
             <CardContent className="pt-6">
               <div className="flex flex-col md:flex-row gap-6 items-start">
-                {professional.image_url && (
+                {isValidImageUrl(professional.image_url) && (
                   <img
-                    src={professional.image_url}
+                    src={getValidImageUrl(professional.image_url)}
                     alt={professional.name}
                     className="w-32 h-32 rounded-full object-cover ring-4 ring-primary/10"
+                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                   />
                 )}
                 <div className="flex-1 space-y-4">

@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { CheckCircle2, Edit, Loader2 } from 'lucide-react';
 import { Professional } from '@/types/professional';
+import { getValidImageUrl } from '@/utils/imageUrlValidator';
 
 export default function ClaimListingPreview() {
   const { token } = useParams<{ token: string }>();
@@ -52,7 +53,7 @@ export default function ClaimListingPreview() {
           name: data.name,
           title: data.title || '',
           company: data.company || '',
-          image: data.image_url || '',
+          image: getValidImageUrl(data.image_url),
           rating: data.review_stars_rating || 0,
           reviews: data.num_total_reviews || 0,
           specialties: data.specialty || [],

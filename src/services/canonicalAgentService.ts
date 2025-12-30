@@ -5,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Professional } from '@/types/professional';
+import { getValidImageUrl } from '@/utils/imageUrlValidator';
 
 interface CanonicalRanking {
   id: string;
@@ -217,6 +218,34 @@ async function fetchFallbackRankings(
  * Converts database professional to Professional type
  */
 function convertToProfessional(dbProf: any, rank: number): Professional {
+  // Validate image URL - reject placeholder/fake URLs
+  const getValidImageUrl = (url: string | null): string => {
+    if (!url) return '/placeholder.svg';
+    
+    // Reject known fake/placeholder patterns
+    const invalidPatterns = [
+      'example.com',
+      '/path/to/',
+      'johndoe',
+      'john-doe',
+      'placeholder',
+      'youtube.com/channel',
+      'youtube.com/watch',
+    ];
+    
+    const lowerUrl = url.toLowerCase();
+    if (invalidPatterns.some(pattern => lowerUrl.includes(pattern))) {
+      return '/placeholder.svg';
+    }
+    
+    // Must be a valid absolute URL (http/https) or start with /
+    if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('/')) {
+      return '/placeholder.svg';
+    }
+    
+    return url;
+  };
+
   return {
     id: dbProf.id,
     rank,
@@ -237,7 +266,7 @@ function convertToProfessional(dbProf: any, rank: number): Professional {
       currentListings: dbProf.current_listings || 0
     },
     verified: !!dbProf.license_verified_at,
-    image: dbProf.image_url || '/placeholder.svg',
+    image: getValidImageUrl(dbProf.image_url),
     license_number: dbProf.license_number,
     license_verified_at: dbProf.license_verified_at,
     zuid: dbProf.zuid,
