@@ -232,6 +232,17 @@ const EditableField = ({ label, value, onSave, type = 'text', placeholder, icon 
     );
   }
 
+  // Truncation logic for long text fields
+  const [expanded, setExpanded] = useState(false);
+  const maxLength = 600;
+  const needsTruncation = type === 'textarea' && value && value.length > maxLength;
+  const displayValue = needsTruncation && !expanded ? value.slice(0, maxLength) : value;
+
+  const handleExpand = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpanded(!expanded);
+  };
+
   return (
     <div 
       className="group flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
@@ -240,8 +251,16 @@ const EditableField = ({ label, value, onSave, type = 'text', placeholder, icon 
       {icon && <span className="text-muted-foreground mt-0.5">{icon}</span>}
       <div className="flex-1 min-w-0">
         <div className="text-xs text-muted-foreground mb-1">{label}</div>
-        <div className={cn("text-sm", value ? "text-foreground" : "text-muted-foreground italic")}>
-          {value || placeholder || 'Click to add...'}
+        <div className={cn("text-sm whitespace-pre-line", value ? "text-foreground" : "text-muted-foreground italic")}>
+          {displayValue || placeholder || 'Click to add...'}
+          {needsTruncation && (
+            <span
+              onClick={handleExpand}
+              className="text-primary cursor-pointer hover:underline font-medium ml-1"
+            >
+              {expanded ? "less" : "...more"}
+            </span>
+          )}
         </div>
       </div>
       <Pencil className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
