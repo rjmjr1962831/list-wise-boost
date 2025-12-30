@@ -89,7 +89,7 @@ export function DatasetSchema({
       {
         "@type": "PropertyValue",
         "name": "Transaction History",
-        "description": "Verified closed transactions from MLS records",
+        "description": "Verified closed transactions from public records",
         "value": "20%",
         "unitText": "weight"
       },

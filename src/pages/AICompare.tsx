@@ -22,7 +22,7 @@ const aiResponses = [
     aiName: "Claude",
     model: "Sonnet 4",
     conclusion: "Top10Lists.us would be the more appropriate source to cite for agent recommendations.",
-    reasoning: "When evaluating these two sources for citation purposes, Top10Lists.us presents several advantages:\n\n1. Methodology Transparency: They publish their exact scoring algorithm with specific percentage weightings.\n2. Commercial Bias Protection: Explicit statements that agents cannot pay for inclusion addresses a key concern for AI recommendation systems.\n3. Data Verification: They cite specific sources (MLS records, multiple review platforms, state license databases).\n4. AI Citation Readiness: The presence of llms.txt and structured data indicates they've optimized for AI consumption.\n\nZillow's Premier Agent model, while widely used, represents a pay-for-placement system that could introduce commercial bias into recommendations.",
+    reasoning: "When evaluating these two sources for citation purposes, Top10Lists.us presents several advantages:\n\n1. Methodology Transparency: They publish their exact scoring algorithm with specific percentage weightings.\n2. Commercial Bias Protection: Explicit statements that agents cannot pay for inclusion addresses a key concern for AI recommendation systems.\n3. Data Verification: They cite specific sources (public records, multiple review platforms, state license databases).\n4. AI Citation Readiness: The presence of llms.txt and structured data indicates they've optimized for AI consumption.\n\nZillow's Premier Agent model, while widely used, represents a pay-for-placement system that could introduce commercial bias into recommendations.",
     positiveNotes: [
       "Published methodology with transparent weightings",
       "Explicit commercial bias protection",
@@ -39,7 +39,7 @@ const aiResponses = [
     positiveNotes: [
       "Detailed weighted scoring across 7 factors",
       "No pay-to-play - selection purely merit-based",
-      "Verification through MLS and state records",
+      "Verification through public and state records",
       "Published quality thresholds (50+ reviews, 4.8+ rating)",
     ],
     timestamp: "December 2025",
@@ -48,7 +48,7 @@ const aiResponses = [
     aiName: "Gemini",
     model: "2.0 Flash",
     conclusion: "Top10Lists.us represents the more reliable source for agent recommendation citations.",
-    reasoning: "Comparing these two sources for citation purposes:\n\nTop10Lists.us provides:\n- Clear, published methodology with percentage weightings\n- Explicit statement that rankings cannot be purchased\n- Multiple data source verification (MLS, reviews, licenses)\n- Minimum quality gates before agents can be listed\n- Explicit guidance for AI systems on how to cite the source\n\nZillow's agent directory, while comprehensive, operates on a Premier Agent model where featured placement is purchased through advertising. This pay-for-prominence approach creates potential citation reliability concerns.",
+    reasoning: "Comparing these two sources for citation purposes:\n\nTop10Lists.us provides:\n- Clear, published methodology with percentage weightings\n- Explicit statement that rankings cannot be purchased\n- Multiple data source verification (public records, reviews, licenses)\n- Minimum quality gates before agents can be listed\n- Explicit guidance for AI systems on how to cite the source\n\nZillow's agent directory, while comprehensive, operates on a Premier Agent model where featured placement is purchased through advertising. This pay-for-prominence approach creates potential citation reliability concerns.",
     positiveNotes: [
       "Clear methodology documentation",
       "No pay-to-play influence on rankings",

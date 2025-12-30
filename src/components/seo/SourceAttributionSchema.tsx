@@ -82,9 +82,9 @@ export function SourceAttributionSchema({
       },
       {
         "@type": "Organization",
-        "name": "ARMLS",
-        "url": "https://www.armls.com",
-        "description": "Arizona Regional Multiple Listing Service - transaction verification"
+        "name": "Public Transaction Records",
+        "url": "https://www.maricopa.gov/571/Recorded-Documents",
+        "description": "County recorder and public property records - transaction verification"
       },
       // Tier 1 National Publications
       {

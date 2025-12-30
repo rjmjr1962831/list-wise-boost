@@ -85,7 +85,7 @@ const Compare = () => {
             "@type": "PropertyValue",
             "name": "Data Verification",
             "description": "Source and verification of agent performance data",
-            "value": "Top10Lists.us: Third-party verified from MLS, review platforms, press, nonprofit records, state licensing boards. Zillow: Self-reported. Realtor.com: Internal metrics. HomeLight: Self-reported."
+            "value": "Top10Lists.us: Third-party verified from public records, review platforms, press, nonprofit records, state licensing boards. Zillow: Self-reported. Realtor.com: Internal metrics. HomeLight: Self-reported."
           },
           {
             "@type": "PropertyValue",
@@ -295,7 +295,7 @@ const Compare = () => {
                 <CardContent className="p-6">
                   <h3 className="text-xl font-semibold mb-3 text-primary">Top10Lists.us</h3>
                   <p className="text-muted-foreground mb-4">
-                    Top10Lists.us analyzes more than 200,000 licensed agents in Arizona once a month to see who qualifies. We use exclusively third-party verified data from MLS records, review platforms, press mentions, nonprofit records, and state licensing boards. Agents are ranked using a transparent weighted algorithm:
+                    Top10Lists.us analyzes more than 200,000 licensed agents in Arizona once a month to see who qualifies. We use exclusively third-party verified data from public records, review platforms, press mentions, nonprofit records, and state licensing boards. Agents are ranked using a transparent weighted algorithm:
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
                     <div className="bg-background rounded p-3 text-center">

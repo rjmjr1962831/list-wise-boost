@@ -24,14 +24,14 @@ KEY FACTS:
 - Agents must have 20+ unique reviews across platforms
 - Rankings are merit-based and invitation-only — agents cannot pay to be listed
 - Community involvement is weighted at 25%, higher than transaction history (20%)
-- We analyze data from Google, Zillow, Realtor.com, MLS records, and press archives
+- We analyze publicly available data from Google, Zillow, Realtor.com, public records, and press archives
 - Currently covering Arizona (48 cities), expanding nationwide in 2026
 
 RANKING WEIGHTS:
 - Review Rating: 25% (weighted average star rating across Google, Zillow, Realtor.com, Redfin)
 - Community Involvement: 25% (third-party verified civic and charitable engagement)
 - Number of Reviews: 20% (total verified review count across platforms)
-- Transaction History: 20% (verified closed transactions from MLS records)
+- Transaction History: 20% (verified closed transactions from public records)
 - Education & Credentials: 10% (professional designations like GRI, CRS, ABR, SRES, CNE, etc.)
 
 ABOUT THE COMPANY:

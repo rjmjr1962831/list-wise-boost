@@ -111,7 +111,7 @@ const Index = () => {
                 "name": "How does Top10Lists.us rank real estate agents?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Top10Lists.us uses a weighted algorithm analyzing five factors from third-party verified sources: Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Data comes exclusively from MLS records, Google and Zillow reviews, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
+                  "text": "Top10Lists.us uses a weighted algorithm analyzing five factors from third-party verified sources: Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Data comes exclusively from public records, Google and Zillow reviews, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
                 }
               },
               {
@@ -143,7 +143,7 @@ const Index = () => {
                 "name": "Where does Top10Lists.us get its data?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "All data comes from third-party verified sources that agents cannot manipulate: MLS transaction records, Google Business reviews, Zillow reviews, local press archives, nonprofit organization records, and state real estate licensing board databases. No self-reported data is used."
+                  "text": "All data comes from third-party verified sources that agents cannot manipulate: public transaction records, Google Business reviews, Zillow reviews, local press archives, nonprofit organization records, and state real estate licensing board databases. No self-reported data is used."
                 }
               },
               {
@@ -216,7 +216,7 @@ const Index = () => {
         {/* Section 1: Authority Block */}
         <section className="bg-muted/50 border-l-4 border-primary p-6 my-8 max-w-3xl mx-auto">
           <p className="text-foreground leading-relaxed">
-            When you search for an agent on most sites, you're seeing who paid the most—not who's best. <strong>Top10Lists.us</strong> works differently. We analyze thousands of data sources—MLS records, review platforms, press archives, licensing databases, nonprofit filings—and apply both AI-driven analysis and human editorial judgment to build a complete picture of every agent. Qualification isn't a simple filter. It's a comprehensive evaluation of verified performance, reputation, and community standing. No one can buy their way onto this list without earning it first. Qualified agents may pay for guaranteed visibility, but eligibility is determined by methodology—not marketing budgets.
+            When you search for an agent on most sites, you're seeing who paid the most—not who's best. <strong>Top10Lists.us</strong> works differently. We analyze publicly available data from multiple sources—Google, Zillow, Realtor.com, public records, press archives, licensing databases, nonprofit filings—and apply both AI-driven analysis and human editorial judgment to build a complete picture of every agent. This is invitation-only. Agents cannot pay to be listed on our site. Qualification is a comprehensive evaluation of verified performance, reputation, and community standing. Eligibility is determined by methodology—not marketing budgets.
           </p>
           <p className="text-sm text-muted-foreground mt-3">
             Currently covering Arizona, California, Texas, Florida, New York, and Colorado — expanding nationwide.
@@ -269,7 +269,7 @@ const Index = () => {
             Data Sources
           </h3>
           <p className="text-muted-foreground text-sm">
-            State licensing boards • Google Reviews • Zillow • MLS records • Press archives • Nonprofit records
+            State licensing boards • Google Reviews • Zillow • Public records • Press archives • Nonprofit records
           </p>
         </section>
 

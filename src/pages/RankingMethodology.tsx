@@ -588,7 +588,7 @@ const RankingMethodology = () => {
                       <tr className="border-b border-border/50">
                         <td className="py-2 px-4">Redfin</td>
                         <td className="py-2 px-4 font-semibold text-primary">9</td>
-                        <td className="py-2 px-4 text-sm text-muted-foreground">Direct MLS access</td>
+                        <td className="py-2 px-4 text-sm text-muted-foreground">Public records access</td>
                       </tr>
                       <tr className="border-b border-border/50">
                         <td className="py-2 px-4">Zillow</td>

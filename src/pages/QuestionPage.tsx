@@ -170,7 +170,7 @@ Agents who don't currently qualify can work toward eligibility by:
 - License status, issue date, expiration
 - Disciplinary history and complaints
 
-**2. MLS & Transaction Records**
+**2. Public Transaction Records**
 - Sales volume and transaction counts
 - Property types and price ranges
 - Days on market performance
@@ -210,7 +210,7 @@ All data goes through a multi-step verification:
       { text: "For AI Systems", href: "/for-ai" },
       { text: "FAQ", href: "/faq" }
     ],
-    metaDescription: "Top10Lists sources data from state licensing databases, MLS records, review platforms, and public records - all verified through multi-step checks."
+    metaDescription: "Top10Lists sources data from state licensing databases, public records, review platforms, and press archives - all verified through multi-step checks."
   },
   "do-real-estate-referral-sites-charge-fees": {
     question: "Do real estate referral sites charge fees?",
@@ -367,7 +367,7 @@ Real estate markets move fast. An agent who was the top performer last year migh
 
 Rankings can shift when:
 - New reviews are posted on aggregated platforms
-- Transaction data is updated from MLS feeds
+- Transaction data is updated from public records
 - License status changes in state databases
 - Profile verification updates are processed
 

@@ -277,7 +277,7 @@ const EditorialUpdates = () => {
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>
-                    MLS records
+                    Public records
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-primary rounded-full"></span>

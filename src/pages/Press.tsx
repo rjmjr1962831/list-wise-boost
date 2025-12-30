@@ -307,7 +307,7 @@ const Press = () => {
                   <h3 className="font-semibold mb-3">Evaluation Criteria</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>• Professional experience (years licensed)</li>
-                    <li>• Transaction history (MLS verified)</li>
+                    <li>• Transaction history (publicly verified)</li>
                     <li>• Client reputation (multi-platform reviews)</li>
                     <li>• Local market expertise</li>
                     <li>• Professional standing (no disciplinary actions)</li>
