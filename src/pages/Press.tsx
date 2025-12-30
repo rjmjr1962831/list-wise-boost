@@ -28,7 +28,7 @@ const pressArticles: PressArticle[] = [
     name: "Markets Insider",
     tier: "Financial",
     tierColor: "bg-accent text-accent-foreground",
-    url: "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035679095",
+    url: "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163",
     title: "Robert Maynard, co-founder of LifeLock, Announces Top10lists.us, an AI Optimized Platform Designed for the Next Era of Consumer Search",
     summary: "Coverage of Top10Lists.us founder Robert Maynard, co-founder of LifeLock, launching an AI-optimized platform designed for the next era of consumer search with merit-based real estate agent rankings.",
     date: "December 30, 2025",

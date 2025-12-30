@@ -12,7 +12,7 @@ const pressArticles: PressArticle[] = [
   {
     name: "Markets Insider",
     shortName: "Markets Insider",
-    url: "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035679095",
+    url: "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163",
     tier: "financial",
   },
   {

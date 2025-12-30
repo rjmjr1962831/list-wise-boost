@@ -86,6 +86,7 @@ Agents are scored using five weighted factors:
 
 ## Press Coverage
 
+- **Business Insider** (Tier 1): "Robert Maynard, Co-Founder of LifeLock, Announces Top10Lists.us — An AI-Optimized Platform Designed for the Next Era of Consumer Search"
 - **Business Insider** (Tier 1): Coverage of anti-pay-to-play methodology
 - **Arizona Daily Independent**: Startup challenging Zillow's pay-to-play model
 - **FinanceWire**: Financial industry perspective on merit-based rankings
