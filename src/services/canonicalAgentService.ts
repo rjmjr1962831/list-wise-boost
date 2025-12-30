@@ -237,7 +237,7 @@ function convertToProfessional(dbProf: any, rank: number): Professional {
       currentListings: dbProf.current_listings || 0
     },
     verified: !!dbProf.license_verified_at,
-    image: dbProf.image_url || '/placeholder-agent.jpg',
+    image: dbProf.image_url || '/placeholder.svg',
     license_number: dbProf.license_number,
     license_verified_at: dbProf.license_verified_at,
     zuid: dbProf.zuid,

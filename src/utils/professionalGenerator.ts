@@ -112,7 +112,7 @@ export function generateRealEstateAgents(
       phone: generatePhoneNumber(areaCode),
       website: generateWebsite(firstName, lastName),
       description: `Experienced real estate professional serving ${cityName} with ${yearsExp} years of expertise. Specializing in ${realEstateSpecialties[i].slice(0, 2).join(' and ')}.`,
-      image_url: '/api/placeholder/400/400',
+      image_url: '/placeholder.svg',
       active: true
     });
   }

@@ -16,7 +16,7 @@ export const phoenixDentists: Professional[] = [
     website: "https://phoenixpremierdental.com",
     description: "Award-winning cosmetic and restorative dentistry with state-of-the-art technology.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { patientsServed: 5000, yearsExperience: 15 }
   },
   {
@@ -32,7 +32,7 @@ export const phoenixDentists: Professional[] = [
     website: "https://desertdentalcare.com",
     description: "Comprehensive family dental care serving Phoenix for over 20 years.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { patientsServed: 8000, yearsExperience: 20 }
   }
 ];
@@ -51,7 +51,7 @@ export const phoenixRealEstateAgents: Professional[] = [
     website: "https://sonoranrealty.com",
     description: "$50M+ in sales. Expert in Phoenix luxury market and investment properties.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 52000000, yearsExperience: 12 },
     testimonials: [
       {
@@ -87,7 +87,7 @@ export const phoenixRealEstateAgents: Professional[] = [
     website: "https://valleyhomeexperts.com",
     description: "Relocation specialist helping families transition to the Phoenix area.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 38000000, yearsExperience: 9 },
     testimonials: [
       {
@@ -123,7 +123,7 @@ export const phoenixRealEstateAgents: Professional[] = [
     website: "https://downtownphxliving.com",
     description: "Condo specialist helping first-time buyers find their perfect downtown home.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 18000000, yearsExperience: 7 },
     testimonials: [
       {
@@ -159,7 +159,7 @@ export const phoenixRealEstateAgents: Professional[] = [
     website: "https://desertlandestates.com",
     description: "Specializing in luxury land parcels and custom estate home sites.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 42000000, yearsExperience: 15 }
   },
   {
@@ -175,7 +175,7 @@ export const phoenixRealEstateAgents: Professional[] = [
     website: "https://valleyfamilyhomes.com",
     description: "Dedicated to helping families find affordable homes in great neighborhoods.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 22000000, yearsExperience: 11 }
   }
 ];
@@ -194,7 +194,7 @@ export const phoenixLawyers: Professional[] = [
     website: "https://andersonlawaz.com",
     description: "Board-certified attorney with 25 years experience in complex litigation.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 25 }
   }
 ];
@@ -213,7 +213,7 @@ export const phoenixPersonalInjuryLawyers: Professional[] = [
     website: "https://sanchezinjurylaw.com",
     description: "$100M+ recovered for clients. No fees unless we win your case.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 18, successRate: "95%" }
   }
 ];
@@ -232,7 +232,7 @@ export const phoenixBusinessLawyers: Professional[] = [
     website: "https://wilsoncorporatelaw.com",
     description: "Helping startups and established businesses navigate complex corporate matters.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 16 }
   }
 ];
@@ -251,7 +251,7 @@ export const phoenixRealEstateLawyers: Professional[] = [
     website: "https://leerealestatelaw.com",
     description: "Protecting your interests in residential and commercial real estate transactions.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 22 }
   }
 ];
@@ -270,7 +270,7 @@ export const phoenixRestaurants: Professional[] = [
     website: "https://coppercactus.com",
     description: "Award-winning Southwestern cuisine with panoramic mountain views.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 12 }
   }
 ];
@@ -289,7 +289,7 @@ export const phoenixChineseRestaurants: Professional[] = [
     website: "https://goldendragonphx.com",
     description: "Family-owned restaurant serving authentic Chinese cuisine for 30 years.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 30 }
   }
 ];
@@ -308,7 +308,7 @@ export const phoenixPizzaRestaurants: Professional[] = [
     website: "https://valleypizzaco.com",
     description: "Artisan pizzas made with locally-sourced ingredients and wood-fired ovens.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 8 }
   }
 ];
@@ -327,7 +327,7 @@ export const phoenixItalianRestaurants: Professional[] = [
     website: "https://bellanapoli.com",
     description: "Northern Italian cuisine with homemade pasta and extensive wine list.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 15 }
   }
 ];
@@ -346,7 +346,7 @@ export const phoenixSportsBars: Professional[] = [
     website: "https://championssportsgrill.com",
     description: "50+ HD TVs, outstanding wings, and the best game day atmosphere in Phoenix.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 10 }
   }
 ];
@@ -365,7 +365,7 @@ export const phoenixFancyRestaurants: Professional[] = [
     website: "https://elementsphx.com",
     description: "Michelin-recommended restaurant featuring seasonal tasting menus and curated wine pairings.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 7 }
   }
 ];
@@ -384,7 +384,7 @@ export const phoenixCheapButGood: Professional[] = [
     website: "https://losfavoritostaco.com",
     description: "Award-winning street tacos and authentic Mexican food at unbeatable prices.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 25 }
   }
 ];
@@ -409,7 +409,7 @@ export const phoenixNeurologists: Professional[] = [
       successRate: "95%"
     },
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     testimonials: [
       {
         author: "Patient Family Member",
@@ -442,7 +442,7 @@ export const phoenixNeurologists: Professional[] = [
       successRate: "93%"
     },
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     testimonials: []
   },
   {
@@ -464,7 +464,7 @@ export const phoenixNeurologists: Professional[] = [
       successRate: "91%"
     },
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     testimonials: []
   },
   {
@@ -486,7 +486,7 @@ export const phoenixNeurologists: Professional[] = [
       successRate: "89%"
     },
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     testimonials: []
   },
   {
@@ -508,7 +508,7 @@ export const phoenixNeurologists: Professional[] = [
       successRate: "92%"
     },
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     testimonials: []
   }
 ];

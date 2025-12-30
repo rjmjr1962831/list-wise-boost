@@ -16,7 +16,7 @@ export const losAngelesDentists: Professional[] = [
     website: "https://beverlyhillsdentalexcellence.com",
     description: "Celebrity dentist specializing in Hollywood smiles and advanced cosmetic procedures.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { patientsServed: 8000, yearsExperience: 20 }
   },
   {
@@ -32,7 +32,7 @@ export const losAngelesDentists: Professional[] = [
     website: "https://santamonicadentalgroup.com",
     description: "Award-winning practice offering pain-free dentistry with ocean views.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { patientsServed: 6500, yearsExperience: 18 }
   }
 ];
@@ -51,7 +51,7 @@ export const losAngelesRealEstateAgents: Professional[] = [
     website: "https://elitelaproperties.com",
     description: "$200M+ in luxury sales. Exclusive access to off-market Beverly Hills estates.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 215000000, yearsExperience: 15 }
   },
   {
@@ -67,7 +67,7 @@ export const losAngelesRealEstateAgents: Professional[] = [
     website: "https://westsiderealtypartners.com",
     description: "Beach community expert helping buyers find their perfect coastal property.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 95000000, yearsExperience: 11 }
   },
   {
@@ -83,7 +83,7 @@ export const losAngelesRealEstateAgents: Professional[] = [
     website: "https://downtownlaliving.com",
     description: "Downtown specialist helping young professionals find modern condos.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 28000000, yearsExperience: 8 }
   },
   {
@@ -99,7 +99,7 @@ export const losAngelesRealEstateAgents: Professional[] = [
     website: "https://lalanddevelopment.com",
     description: "Expert in high-value land parcels and development opportunities in LA.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 125000000, yearsExperience: 19 }
   },
   {
@@ -115,7 +115,7 @@ export const losAngelesRealEstateAgents: Professional[] = [
     website: "https://familyfirstrealty.com",
     description: "Helping families find affordable homes in neighborhoods with great schools.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { salesLast12Mo: 35000000, yearsExperience: 12 }
   }
 ];
@@ -134,7 +134,7 @@ export const losAngelesLawyers: Professional[] = [
     website: "https://silverlawgroup.com",
     description: "Premier entertainment and IP law firm representing A-list clients.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 28 }
   }
 ];
@@ -153,7 +153,7 @@ export const losAngelesPersonalInjuryLawyers: Professional[] = [
     website: "https://torresinjurylaw.com",
     description: "$250M+ recovered. Aggressive representation for serious injury victims.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 22, successRate: "98%" }
   }
 ];
@@ -172,7 +172,7 @@ export const losAngelesBusinessLawyers: Professional[] = [
     website: "https://parkbusinesslaw.com",
     description: "Silicon Beach's go-to attorney for tech startups and VC funding.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 14 }
   }
 ];
@@ -191,7 +191,7 @@ export const losAngelesRealEstateLawyers: Professional[] = [
     website: "https://washingtonpropertylaw.com",
     description: "Expert in high-value real estate transactions and complex property law.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 19 }
   }
 ];
@@ -210,7 +210,7 @@ export const losAngelesRestaurants: Professional[] = [
     website: "https://mareala.com",
     description: "Michelin-starred coastal Italian with ocean views and award-winning wine program.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 11 }
   }
 ];
@@ -229,7 +229,7 @@ export const losAngelesChineseRestaurants: Professional[] = [
     website: "https://imperialdynastyla.com",
     description: "Authentic Hong Kong-style cuisine in the heart of LA's San Gabriel Valley.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 35 }
   }
 ];
@@ -248,7 +248,7 @@ export const losAngelesPizzaRestaurants: Professional[] = [
     website: "https://pizzana.com",
     description: "Slow-fermented sourdough pizzas with premium ingredients and creative toppings.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 6 }
   }
 ];
@@ -267,7 +267,7 @@ export const losAngelesItalianRestaurants: Professional[] = [
     website: "https://osteriamozza.com",
     description: "Nancy Silverton's iconic LA Italian restaurant with world-famous mozzarella bar.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 16 }
   }
 ];
@@ -286,7 +286,7 @@ export const losAngelesSportsBars: Professional[] = [
     website: "https://arenasportslounge.com",
     description: "Upscale sports bar near Crypto.com Arena with 100+ TVs and VIP sections.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 8 }
   }
 ];
@@ -305,7 +305,7 @@ export const losAngelesFancyRestaurants: Professional[] = [
     website: "https://providencela.com",
     description: "Two Michelin-starred seafood restaurant featuring sustainable catches and elegant presentations.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 18 }
   }
 ];
@@ -324,7 +324,7 @@ export const losAngelesCheapButGood: Professional[] = [
     website: "https://leostacostruck.com",
     description: "Legendary taco truck serving the best al pastor in LA since 2009.",
     verified: true,
-    image: "/api/placeholder/400/400",
+    image: "/placeholder.svg",
     stats: { yearsExperience: 16 }
   }
 ];
