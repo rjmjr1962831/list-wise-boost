@@ -866,12 +866,43 @@ export default function StreamlinedOnboarding() {
             <Card className="overflow-hidden">
               <CardContent className="p-0">
                 <div className="bg-primary/5 border-b border-border p-6">
-                  <h2 className="text-xl font-semibold text-foreground">
-                    Here's the profile we've prepared for you
-                  </h2>
-                  <p className="text-muted-foreground mt-1">
-                    Review how you'll appear in our recommendation engine
-                  </p>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-semibold text-foreground">
+                        Here's the profile we've prepared for you
+                      </h2>
+                      <p className="text-muted-foreground mt-1">
+                        Review how you'll appear in our recommendation engine
+                      </p>
+                    </div>
+                    
+                    {/* Edit & Accept Buttons */}
+                    <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFunnelStep('edit');
+                          window.scrollTo(0, 0);
+                        }}
+                        className="whitespace-nowrap"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setFunnelStep('review');
+                          window.scrollTo(0, 0);
+                        }}
+                        className="whitespace-nowrap"
+                      >
+                        <Check className="h-4 w-4 mr-1" />
+                        Accept
+                      </Button>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="p-6">
