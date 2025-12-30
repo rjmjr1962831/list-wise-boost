@@ -92,7 +92,7 @@ export default function AreYouAnAgent() {
   };
 
   const requirements = [
-    "50+ verified reviews (Google and/or Zillow)",
+    "20+ verified reviews (Google and/or Zillow)",
     "4.8+ average rating",
     "Active Arizona real estate license",
     "Verified transaction history via MLS records",
