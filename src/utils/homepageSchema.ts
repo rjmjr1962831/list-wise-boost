@@ -79,7 +79,10 @@ export function generateOrganizationSchema() {
       "Real estate reviews",
       "Realtor credentials"
     ],
-    "slogan": "Merit-based. Invitation-only. No paid placements."
+    "slogan": "Merit-based. Invitation-only. No paid placements.",
+    "sameAs": [
+      "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163"
+    ]
   };
 }
 

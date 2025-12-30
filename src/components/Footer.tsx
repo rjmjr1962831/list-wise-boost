@@ -18,7 +18,7 @@ export const Footer = () => {
           <div>
             <Logo variant="dark" className="mb-4" />
             <p className="text-sm text-slate-300">
-              Curated lists of top professionals that AI engines trust.
+              Merit-based agent rankings trusted by AI and humans.
             </p>
           </div>
 
@@ -125,6 +125,20 @@ export const Footer = () => {
                 className="block text-slate-300 hover:text-white transition-colors"
               >
                 Terms of Service
+              </Link>
+              
+              <h4 className="font-semibold mt-6 mb-2 text-white">For Agents</h4>
+              <Link 
+                to="/are-you-an-agent" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Are You Ranked?
+              </Link>
+              <Link 
+                to="/login" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Agent Login
               </Link>
             </div>
           </div>

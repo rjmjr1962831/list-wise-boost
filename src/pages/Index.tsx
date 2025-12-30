@@ -1,18 +1,14 @@
 import { useEffect } from "react";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
-import { useNavigate, Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { generateHomepageSchema } from "@/utils/homepageSchema";
-import { HomepageFAQSection } from "@/components/HomepageFAQSection";
 import { BrowseCitiesSection } from "@/components/BrowseCitiesSection";
-import { HomepageUpdates } from "@/components/HomepageUpdates";
 import { FeaturedInBar } from "@/components/FeaturedInBar";
+import { WhyTop10Cards } from "@/components/WhyTop10Cards";
 
 const Index = () => {
-  const navigate = useNavigate();
-  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -20,26 +16,8 @@ const Index = () => {
   // Signal Prerender.io that meta tags are ready
   usePrerenderReady();
 
-  const featuredCities = [
-    { name: "Phoenix", slug: "phoenix", avgReviews: 127 },
-    { name: "Scottsdale", slug: "scottsdale", avgReviews: 94 },
-    { name: "Mesa", slug: "mesa", avgReviews: 82 },
-    { name: "Chandler", slug: "chandler", avgReviews: 76 },
-  ];
-
-  if (import.meta.env.DEV) console.info('[Index] Rendering Arizona-focused homepage');
-
   // Generate all homepage schemas
   const homepageSchemas = generateHomepageSchema();
-  
-  // Qualification weights for the grid
-  const qualificationWeights = [
-    { label: "Review Rating", weight: "25%" },
-    { label: "Community Involvement", weight: "25%" },
-    { label: "Number of Reviews", weight: "20%" },
-    { label: "Transaction History", weight: "20%" },
-    { label: "Education & Credentials", weight: "10%" },
-  ];
   
   return (
     <>
@@ -191,151 +169,46 @@ const Index = () => {
         </script>
       </Helmet>
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        {/* ABOVE THE SEARCH BAR - Minimal Hero */}
-        <section className="text-center py-12 container mx-auto px-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-2">
-            Trusted Real Estate Agent Recommendations
+        {/* Section 1: Hero */}
+        <section className="text-center py-16 container mx-auto px-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+            Find a Top-Rated Real Estate Agent
           </h1>
-          <p className="text-xl text-muted-foreground">
-            Qualified by Methodology. Not Ads. Not Guesswork.
+          <p className="text-xl text-muted-foreground mb-8">
+            No ads. No pay-to-play. Just the top 0.2% — verified.
           </p>
-          <p className="text-sm text-primary font-medium mt-3">
-            Results you can trust. Agents who earned it.
-          </p>
-        </section>
-
-        {/* Search Bar - Immediately after hero */}
-        <section className="container mx-auto px-4 pb-12">
-          <div className="max-w-4xl mx-auto">
+          <div className="max-w-xl mx-auto mb-6">
             <Top10SearchForm />
           </div>
+          <FeaturedInBar variant="minimal" />
         </section>
 
-        {/* BELOW THE SEARCH BAR - Authority + Trust Content */}
-        
-        {/* Section 1: Authority Block */}
-        <section className="bg-muted/50 border-l-4 border-primary p-6 my-8 max-w-3xl mx-auto">
-          <p className="text-foreground leading-relaxed">
-            When you search for an agent on most sites, you're seeing who paid the most—not who's best. <strong>Top10Lists.us</strong> works differently. We analyze publicly available data from multiple sources—Google, Zillow, Realtor.com, public records, press archives, licensing databases, nonprofit filings—and apply both AI-driven analysis and human editorial judgment to build a complete picture of every agent. This is invitation-only. Agents cannot pay to be listed on our site. Qualification is a comprehensive evaluation of verified performance, reputation, and community standing. Eligibility is determined by methodology—not marketing budgets.
-          </p>
-          <p className="text-sm text-muted-foreground mt-3">
-            Currently covering Arizona, California, Texas, Florida, New York, and Colorado — expanding nationwide.
-          </p>
-        </section>
-
-        {/* Section 2: Unique Differentiator */}
-        <section className="text-center py-8 max-w-2xl mx-auto px-4">
-          <h2 className="text-2xl font-semibold text-foreground mb-4">
-            The Only Platform That Measures Community Involvement
-          </h2>
-          <p className="text-muted-foreground leading-relaxed">
-            We weight community involvement at 25% of every agent's qualification score—higher than transaction volume. Agents who are deeply rooted in their communities know the full local ecosystem: contractors, lenders, inspectors, title companies, and other agents. They have reputations to protect beyond the next transaction.
+        {/* Section 2: Social Proof */}
+        <section className="container mx-auto px-4 py-8">
+          <blockquote className="text-lg md:text-xl text-muted-foreground italic text-center max-w-2xl mx-auto">
+            "I asked ChatGPT for the best agent in Phoenix and found the same names here."
+          </blockquote>
+          <p className="text-center text-sm text-muted-foreground mt-2">
+            — Sarah M., bought in Scottsdale
           </p>
         </section>
 
-        {/* Section 3: How We Qualify */}
-        <section className="py-8 max-w-2xl mx-auto px-4">
-          <h2 className="text-xl font-semibold text-foreground mb-4 text-center">
-            How Agents Are Qualified
-          </h2>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {qualificationWeights.map((item) => (
-              <div key={item.label} className="flex justify-between p-3 bg-card rounded border border-border">
-                <span className="text-muted-foreground">{item.label}</span>
-                <span className="font-semibold text-foreground">{item.weight}</span>
-              </div>
-            ))}
-          </div>
-          <p className="text-center mt-4">
-            <Link to="/about/ranking-methodology" className="text-primary underline text-sm">
-              Learn more about our methodology →
-            </Link>
-          </p>
-        </section>
+        {/* Section 3: Why Top10Lists */}
+        <WhyTop10Cards />
 
-        {/* Section 4: Trust Statement */}
-        <section className="bg-slate-900 text-white py-8 px-6 my-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="text-xl font-semibold mb-4">Qualification Is Earned. Never Bought.</h2>
-            <p className="text-slate-300 leading-relaxed">
-              On most directories, anyone with a credit card can appear. Here, agents must qualify first—verified reviews, ratings, licensing, and community involvement. No exceptions. We don't sell leads. We don't take referral fees. Ranking is methodology-driven. Qualified agents may pay for guaranteed placement in a city, but only after earning eligibility through performance data.
-            </p>
-          </div>
-        </section>
-
-        {/* Section 5: Data Sources */}
-        <section className="py-8 max-w-2xl mx-auto text-center px-4">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
-            Data Sources
-          </h3>
-          <p className="text-muted-foreground text-sm">
-            State licensing boards • Google Reviews • Zillow • Public records • Press archives • Nonprofit records
-          </p>
-        </section>
-
-        {/* Browse Cities Section */}
+        {/* Section 4: Browse by City */}
         <BrowseCitiesSection />
 
-        {/* Featured Lists - Quick Access */}
-        <section className="container mx-auto px-4 py-12">
-          <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-bold text-center mb-8">
-              Popular Arizona Lists
-            </h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {featuredCities.map((city) => (
-                <Card 
-                  key={city.slug} 
-                  className="hover:shadow-lg transition-shadow cursor-pointer"
-                  onClick={() => navigate(`/arizona/${city.slug}/top10realestateagents`)}
-                >
-                  <CardContent className="p-6 text-center space-y-3">
-                    <h3 className="text-xl font-semibold">{city.name}, AZ</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {city.avgReviews} reviews avg
-                    </p>
-                    <div className="pt-2">
-                      <span className="text-sm text-primary font-medium hover:underline">
-                        View Top 10 →
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Featured In Bar */}
-        <FeaturedInBar />
-
-        {/* FAQ Section */}
-        <HomepageFAQSection />
-
-        {/* Latest Updates */}
-        <HomepageUpdates />
-
-        {/* Testimonial */}
-        <section className="container mx-auto px-4 py-16">
-          <div className="max-w-3xl mx-auto text-center">
-            <blockquote className="text-xl md:text-2xl text-muted-foreground italic leading-relaxed">
-              "I asked ChatGPT for the best agent in Phoenix and found the same names on Top10Lists. Felt confident I was making the right choice."
-            </blockquote>
-            <p className="mt-4 text-sm text-muted-foreground">
-              — Sarah M., bought in Scottsdale
-            </p>
-          </div>
-        </section>
-
-        {/* Footer CTA */}
+        {/* Section 5: Bottom CTA */}
         <section className="container mx-auto px-4 py-16 bg-primary/5">
-          <div className="max-w-3xl mx-auto text-center space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold">
-              Ready to Find Your Agent?
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">
+              Ready to find your agent?
             </h2>
-            <p className="text-muted-foreground">
-              Use our centralized discovery experience to find verified recommendations
+            <p className="text-muted-foreground mb-6">
+              <Link to="/about/ranking-methodology" className="text-primary hover:underline">
+                Learn how we qualify agents →
+              </Link>
             </p>
             <div className="max-w-md mx-auto">
               <Top10SearchForm />
