@@ -437,3 +437,6 @@ verify_jwt = false
 
 [functions.rescrape-missing-photos]
 verify_jwt = false
+
+[functions.backfill-license-numbers]
+verify_jwt = false
