@@ -1062,33 +1062,58 @@ export default function StreamlinedOnboarding() {
 
                   {/* Name, Rating, Company */}
                   <div className="flex-1 space-y-2">
-                    <h3 className="text-2xl font-bold text-foreground">{professional?.name}</h3>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      {professional?.review_stars_rating && (
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                          <span>{professional.review_stars_rating}</span>
-                          {professional?.num_total_reviews && (
-                            <span>({professional.num_total_reviews} reviews)</span>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <h3 className="text-2xl font-bold text-foreground">{professional?.name}</h3>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          {professional?.review_stars_rating && (
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                              <span>{professional.review_stars_rating}</span>
+                              {professional?.num_total_reviews && (
+                                <span>({professional.num_total_reviews} reviews)</span>
+                              )}
+                            </div>
+                          )}
+                          {professional?.company && (
+                            <div className="flex items-center gap-1">
+                              <Building2 className="h-4 w-4" />
+                              <span>{professional.company}</span>
+                            </div>
                           )}
                         </div>
-                      )}
-                      {professional?.company && (
-                        <div className="flex items-center gap-1">
-                          <Building2 className="h-4 w-4" />
-                          <span>{professional.company}</span>
-                        </div>
-                      )}
-                    </div>
-                    {professional?.license_number && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <Shield className="h-4 w-4 text-green-500" />
-                        <span className="text-muted-foreground">License #{professional.license_number}</span>
-                        {professional.license_verified_at && (
-                          <Badge variant="secondary" className="text-xs">Verified</Badge>
+                        {professional?.license_number && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <Shield className="h-4 w-4 text-green-500" />
+                            <span className="text-muted-foreground">License #{professional.license_number}</span>
+                            {professional.license_verified_at && (
+                              <Badge variant="secondary" className="text-xs">Verified</Badge>
+                            )}
+                          </div>
                         )}
                       </div>
-                    )}
+                      
+                      {/* Edit & Accept Buttons */}
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setFunnelStep('card')}
+                          className="whitespace-nowrap"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-1" />
+                          View Card
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => setFunnelStep('review')}
+                          className="whitespace-nowrap"
+                        >
+                          <Check className="h-4 w-4 mr-1" />
+                          Accept
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
