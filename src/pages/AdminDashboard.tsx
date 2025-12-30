@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star } from "lucide-react";
+import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
@@ -25,7 +25,7 @@ import { ImportCALicenses } from '@/components/admin/ImportCALicenses';
 import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManager';
 import { WarmCacheCronManager } from '@/components/admin/WarmCacheCronManager';
 import { RecentEnrichmentLinks } from '@/components/admin/RecentEnrichmentLinks';
-
+import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -203,6 +203,10 @@ const AdminDashboard = () => {
               <Star className="mr-2 h-4 w-4" />
               Recent Enrichment
             </TabsTrigger>
+            <TabsTrigger value="funnel-test">
+              <TestTube className="mr-2 h-4 w-4" />
+              Funnel Test
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
@@ -240,6 +244,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="recent-enrichment" className="space-y-4">
             <RecentEnrichmentLinks />
+          </TabsContent>
+
+          <TabsContent value="funnel-test" className="space-y-4">
+            <AgentFunnelTester />
           </TabsContent>
         </Tabs>
       </div>
