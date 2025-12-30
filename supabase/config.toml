@@ -443,3 +443,6 @@ verify_jwt = false
 
 [functions.bulk-update-pipedrive-active-status]
 verify_jwt = false
+
+[functions.bulk-fix-pipedrive-fields]
+verify_jwt = false

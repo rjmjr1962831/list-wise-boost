@@ -18,6 +18,25 @@ function getErrorMessage(err: unknown): string {
   return String(err);
 }
 
+// Normalize state abbreviations to full names for consistent Pipedrive filtering
+function normalizeState(state: string | null | undefined): string {
+  if (!state) return '';
+  const stateMap: Record<string, string> = {
+    'AZ': 'Arizona',
+    'CA': 'California',
+    'CO': 'Colorado',
+    'FL': 'Florida',
+    'NJ': 'New Jersey',
+    'NM': 'New Mexico',
+    'NV': 'Nevada',
+    'NY': 'New York',
+    'OH': 'Ohio',
+    'TX': 'Texas',
+  };
+  const upperState = state.trim().toUpperCase();
+  return stateMap[upperState] || state;
+}
+
 // Generate hash of syncable data for change detection
 function generateSyncHash(data: Record<string, any>): string {
   const sortedJson = JSON.stringify(data, Object.keys(data).sort());
@@ -337,7 +356,7 @@ serve(async (req) => {
     const streetAddress = businessAddress.address1 || professional.address || '';
     const street2 = businessAddress.address2 || '';
     const addressCity = businessAddress.city || city.name || '';
-    const addressState = businessAddress.state || city.state || '';
+    const addressState = normalizeState(businessAddress.state) || city.state || '';
     const zipCode = businessAddress.postalCode || professional.zip_code || '';
 
     // Helper to ensure numbers are numbers (not strings), null if invalid
@@ -381,7 +400,7 @@ serve(async (req) => {
       email_verified: 'true',
       consent_given: 'true',
       is_brand_builder: professional.is_brand_builder ? 'true' : 'false',
-      active_status: professional.active ? 'active' : 'inactive',
+      active_status: professional.active ? 'Active' : 'Inactive',
       // Funnel & subscription tracking fields
       funnel_status: truncate(syncData.funnel_status),
       funnel_started_at: syncData.funnel_started_at,
