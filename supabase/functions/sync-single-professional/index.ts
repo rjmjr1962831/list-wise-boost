@@ -366,12 +366,18 @@ serve(async (req) => {
       return isNaN(num) ? null : num;
     };
 
+    // Generate magic_link (funnel entry URL) using verification_token or professional ID
+    const funnelToken = professional.verification_token || professional.id;
+    const magicLink = `https://www.top10lists.us/profile/${funnelToken}`;
+
     const dynamicFields: Record<string, any> = {
       supabase_id: professional.id,
       card_url: truncate(syncData.card_url),
       profile_link: syncData.profile_link 
         ? truncate(syncData.profile_link.startsWith('http') ? syncData.profile_link : `https://top10lists.us${syncData.profile_link}`)
         : null,
+      // Magic link = funnel entry point (top of funnel)
+      magic_link: truncate(magicLink),
       // Numerical fields - ensure proper number type
       years_experience: toNumber(syncData.years_experience),
       current_listings: toNumber(syncData.current_listings),
