@@ -695,61 +695,61 @@ export default function StreamlinedOnboarding() {
               </div>
 
               <div className="bg-muted/50 rounded-2xl p-6 md:p-8">
-                <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-stretch">
+                <div className="flex flex-col lg:flex-row gap-4 items-stretch justify-center">
                   {/* Step 1 */}
-                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-primary/20 shadow-sm flex flex-col">
+                  <div className="flex-1 min-w-[180px] max-w-[220px] bg-card rounded-xl p-5 border border-primary/20 shadow-sm flex flex-col">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
                       <MessageCircle className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-1">Buyer Asks AI</h3>
+                    <h3 className="font-semibold text-foreground mb-2">Buyer Asks AI</h3>
                     <p className="text-sm text-primary italic">
                       "Who are the best real estate agents in Scottsdale?"
                     </p>
                   </div>
 
                   {/* Arrow 1 */}
-                  <div className="hidden md:flex items-center justify-center">
+                  <div className="hidden lg:flex items-center justify-center px-2">
                     <ArrowRight className="h-6 w-6 text-muted-foreground" />
                   </div>
 
                   {/* Step 2 */}
-                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-border shadow-sm flex flex-col">
+                  <div className="flex-1 min-w-[180px] max-w-[220px] bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
                       <Search className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-1">AI Searches</h3>
+                    <h3 className="font-semibold text-foreground mb-2">AI Searches</h3>
                     <p className="text-sm text-muted-foreground">
                       ChatGPT, Claude, Perplexity, and other AI models scan authoritative sources. Trusts Top10Lists.
                     </p>
                   </div>
 
                   {/* Arrow 2 */}
-                  <div className="hidden md:flex items-center justify-center">
+                  <div className="hidden lg:flex items-center justify-center px-2">
                     <ArrowRight className="h-6 w-6 text-muted-foreground" />
                   </div>
 
                   {/* Step 3 */}
-                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-border shadow-sm flex flex-col">
+                  <div className="flex-1 min-w-[180px] max-w-[220px] bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
                       <ListOrdered className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-1">Top 10 Cited</h3>
+                    <h3 className="font-semibold text-foreground mb-2">Top 10 Cited</h3>
                     <p className="text-sm text-muted-foreground">
                       Your verified profile is recommended with your credentials
                     </p>
                   </div>
 
                   {/* Arrow 3 */}
-                  <div className="hidden md:flex items-center justify-center">
+                  <div className="hidden lg:flex items-center justify-center px-2">
                     <ArrowRight className="h-6 w-6 text-muted-foreground" />
                   </div>
 
                   {/* Step 4 */}
-                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-border shadow-sm flex flex-col">
+                  <div className="flex-1 min-w-[180px] max-w-[220px] bg-card rounded-xl p-5 border border-border shadow-sm flex flex-col">
                     <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
                       <Eye className="h-6 w-6 text-primary" />
                     </div>
-                    <h3 className="font-semibold text-foreground mb-1">Your Listing Appears</h3>
+                    <h3 className="font-semibold text-foreground mb-2">Your Listing Appears</h3>
                     <p className="text-sm text-muted-foreground">
                       Buyers see your profile with reviews, credentials, and contact info
                     </p>
