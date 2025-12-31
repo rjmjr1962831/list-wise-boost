@@ -720,6 +720,9 @@ export default function StreamlinedOnboarding() {
               <p className="text-lg text-muted-foreground">
                 This is how you'll appear in our recommendation engine
               </p>
+              <p className="text-sm text-muted-foreground">
+                Scroll to the bottom to edit or approve it.
+              </p>
               {pendingReviewRequests.length > 0 && (
                 <p className="text-sm text-amber-600 dark:text-amber-400">
                   Some fields are pending review. We'll get back to you in 24 hours.
