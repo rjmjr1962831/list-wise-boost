@@ -17,7 +17,7 @@ const ShortLinkRedirect = () => {
 
       const { data, error: queryError } = await supabase
         .from("professionals")
-        .select("id")
+        .select("id, verification_token")
         .eq("short_code", shortCode)
         .maybeSingle();
 
@@ -26,8 +26,9 @@ const ShortLinkRedirect = () => {
         return;
       }
 
-      // Redirect to the full profile URL
-      navigate(`/profile/${data.id}`, { replace: true });
+      // Redirect to the funnel/edit page using verification_token (preferred) or id as fallback
+      const token = data.verification_token || data.id;
+      navigate(`/profile/${token}`, { replace: true });
     };
 
     lookupAndRedirect();
