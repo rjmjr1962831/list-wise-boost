@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
         company,
         specialty,
         years_experience,
-        description,
+        synthesized_bio,
         cities (name, state),
         categories (plural_name)
       `)
@@ -68,8 +68,8 @@ Deno.serve(async (req) => {
       
       const batchPromises = batch.map(async (prof: any) => {
         try {
-          // Skip if already has a description
-          if (prof.description && prof.description.trim().length > 50) {
+          // Skip if already has a synthesized bio
+          if (prof.synthesized_bio && prof.synthesized_bio.trim().length > 50) {
             console.log(`Skipping ${prof.name} - already has bio`);
             return {
               id: prof.id,
@@ -139,10 +139,10 @@ Write only the bio, no preamble.`;
             throw new Error('No bio generated');
           }
 
-          // Update professional with generated bio
+          // Update professional with generated bio (synthesized_bio is the primary field)
           const { error: updateError } = await supabase
             .from('professionals')
-            .update({ description: generatedBio })
+            .update({ synthesized_bio: generatedBio })
             .eq('id', prof.id);
 
           if (updateError) throw updateError;
