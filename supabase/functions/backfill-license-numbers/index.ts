@@ -167,7 +167,7 @@ Deno.serve(async (req) => {
       .select('id, name, license_number, zillow_profile_url')
       .eq('active', true)
       .not('zillow_profile_url', 'is', null)
-      .or('license_number.is.null,license_number.eq.')
+      .or('license_number.is.null,license_number.eq.,license_number.eq.N/A')
       .limit(limit);
 
     if (fetchError) {
