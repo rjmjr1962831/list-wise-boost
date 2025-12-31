@@ -645,9 +645,23 @@ serve(async (req) => {
     // Prepare context for AI - gather all available data sources
     const confirmedYearsExperience = professional.years_experience || extractedYears;
     
+    // DEDUPLICATION FIX: If description and get_to_know_me are identical, only use one
+    // This prevents the AI from seeing duplicate content which causes cookie-cutter bios
+    const hasDuplicateSourceContent = professional.description && professional.get_to_know_me && 
+      professional.description === professional.get_to_know_me;
+    
+    if (hasDuplicateSourceContent) {
+      console.log(`⚠️ Detected duplicate description/get_to_know_me for ${professional.name} - using only description`);
+    }
+    
+    // Use description as primary, only include get_to_know_me if it's DIFFERENT content
+    const existingBioContent = hasDuplicateSourceContent 
+      ? professional.description  // Only use one copy when they're identical
+      : (professional.get_to_know_me || professional.description);  // Use get_to_know_me if available and different
+    
     // Compile existing press mentions and community roles from DB
     // CRITICAL: press_mentions use 'source' for outlet name, not 'outlet' or 'title'
-    const pressMentionsSummary = geminiSearchResults.pressMentions.length > 0 
+    const pressMentionsSummary = geminiSearchResults.pressMentions.length > 0
       ? `=== PRESS MENTIONS ===\n${geminiSearchResults.pressMentions.map((pm: any) => {
           // Handle both formats: { source, url } or { outlet, title, url }
           const outletName = pm.source || pm.outlet || 'Unknown outlet';
@@ -664,7 +678,8 @@ serve(async (req) => {
     
     const context = {
       name: professional.name,
-      existingBio: professional.get_to_know_me || professional.description,
+      existingBio: existingBioContent,
+      hasDuplicateSource: hasDuplicateSourceContent,
       existingPressData: professional.press_mentions || [],
       existingCommunityRoles: professional.community_roles || [],
       rawResearch: rawResearch || '',
@@ -674,7 +689,7 @@ serve(async (req) => {
       professionalInformation: professional.professional_information || {},
       websiteContent: websiteData?.content || '',
       websiteSource: websiteData?.source || '',
-      // Additional data that might contain achievements
+      // Additional data that might contain achievements - CRUCIAL for unique bios
       yearsExperience: confirmedYearsExperience,
       badges: professional.badges || [],
       specialty: professional.specialty || [],
@@ -682,10 +697,16 @@ serve(async (req) => {
       rating: professional.review_stars_rating,
       company: professional.company || professional.business_name,
       city: professional.zillow_search_city,
+      // Additional unique identifiers for differentiation
+      totalSales: professional.total_sales,
+      currentListings: professional.current_listings,
+      salesStats: professional.agent_sales_stats,
+      certifications: professional.certifications || professional.certifications_verified,
     };
 
     console.log('\n📝 Synthesizing profile for:', professional.name);
     console.log(`   Bio length: ${(context.existingBio || '').length} chars`);
+    console.log(`   Duplicate source detected: ${context.hasDuplicateSource}`);
     console.log(`   Press mentions: ${context.existingPressData.length}`);
     console.log(`   Community roles: ${context.existingCommunityRoles.length}`);
     console.log(`   Website content: ${context.websiteContent.length} chars`);
@@ -753,14 +774,35 @@ His market insights have been featured in **Phoenix Business Journal**, **AZCent
 
 Beyond real estate, Hamblen serves as a **board member** for **Habitat for Humanity** and has volunteered as a **youth pastor** for **29 years** at his local church. He sponsors the annual **Hamblen Team Little League Tournament**, has raised over **$150,000** for the **Make-A-Wish Foundation**, and mentors emerging agents through Realty One Group's **Regional Mentor Program**.`;
 
+    // Build agent-specific data section to maximize uniqueness
+    const salesStatsSection = context.salesStats ? `
+=== SALES STATISTICS (USE THESE SPECIFIC NUMBERS) ===
+${JSON.stringify(context.salesStats, null, 2)}` : '';
+    
+    const certificationsSection = context.certifications ? `
+=== CERTIFICATIONS (INCLUDE THESE) ===
+${JSON.stringify(context.certifications, null, 2)}` : '';
+
     const userPrompt = `Create a 150-200 word professional biography for this agent following the exact 4-paragraph structure.
 
-AGENT DATA:
+⚠️ CRITICAL UNIQUENESS REQUIREMENT: This biography MUST be completely unique. Do not use generic phrases like:
+- "dedicated to client satisfaction" 
+- "passionate about real estate"
+- "committed to excellence"
+- "unwavering integrity"
+- "personalized approach"
+Instead, use SPECIFIC facts, numbers, and achievements unique to THIS agent.
+
+AGENT DATA (USE THESE SPECIFIC DETAILS):
 - Name: ${context.name}
 - Brokerage: ${context.company || 'Unknown'}
-- Years Active: ${context.yearsExperience ? `since ${new Date().getFullYear() - context.yearsExperience}` : 'Unknown'}
+- Years Active: ${context.yearsExperience ? `${context.yearsExperience} years (since ${new Date().getFullYear() - context.yearsExperience})` : 'Unknown'}
 - Reviews: ${context.reviewCount || 0} reviews (${context.rating || 0} stars)
-- Total Sales: Check agent_sales_stats if available
+- Total Sales: ${context.totalSales || 'Check sales stats below'}
+- Current Listings: ${context.currentListings || 'N/A'}
+- Specialties: ${context.specialty?.join(', ') || 'General real estate'}
+${salesStatsSection}
+${certificationsSection}
 
 === PERPLEXITY WEB RESEARCH (PRIMARY SOURCE - USE THIS FIRST) ===
 ${context.rawResearch || 'No web research available'}
@@ -769,7 +811,6 @@ ${context.rawResearch || 'No web research available'}
 ${(() => {
   const allMentions = [...(context.geminiPressMentions || []), ...(context.existingPressData || [])];
   if (allMentions.length === 0) return 'No press mentions available';
-  // Format each mention clearly with source/outlet as the key info
   return allMentions.map((pm: any) => {
     const outlet = pm.source || pm.outlet || 'Unknown';
     const url = pm.url || '';
@@ -783,6 +824,7 @@ ${context.websiteContent || 'NO WEBSITE CONTENT AVAILABLE'}
 
 === EXISTING BIO (COMPLETELY REPHRASE - copying any phrases verbatim is FORBIDDEN) ===
 ${context.existingBio || 'No bio available'}
+${context.hasDuplicateSource ? '\n⚠️ NOTE: This bio data was duplicated in the source system. Focus on extracting UNIQUE facts rather than rephrasing generic language.' : ''}
 
 === EXISTING COMMUNITY ROLES (include ALL of these in paragraph 4) ===
 ${context.existingCommunityRoles?.length > 0 ? JSON.stringify(context.existingCommunityRoles, null, 2) : 'No existing community roles - search bio and website for volunteer work, board seats, charity involvement'}
@@ -793,8 +835,9 @@ REMEMBER:
 - Do NOT bold names, brokerages, locations, or generic words
 - NEVER include cities, neighborhoods, or service areas
 - Skip paragraph 3 if no press/awards exist
-- For paragraph 4: THOROUGHLY search all sources for community involvement - volunteer work, nonprofit boards, charity donations, church/faith community, youth sports coaching, school involvement, civic organizations, professional association leadership. Include EVERY community activity found with specific organization names.
-- Skip paragraph 4 ONLY if absolutely no community involvement exists anywhere in the data`;
+- For paragraph 4: THOROUGHLY search all sources for community involvement
+- Skip paragraph 4 ONLY if absolutely no community involvement exists
+- EVERY BIO MUST BE UNIQUE - use the specific stats and facts for THIS agent`;
 
     // Try Claude first, fall back to OpenAI GPT-4o on failure
     let synthesizedData: any;
