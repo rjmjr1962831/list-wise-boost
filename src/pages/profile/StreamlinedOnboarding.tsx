@@ -735,7 +735,7 @@ export default function StreamlinedOnboarding() {
                     </div>
                     <h3 className="font-semibold text-foreground mb-2">Top 10 Cited</h3>
                     <p className="text-sm text-muted-foreground">
-                      Prospect asks AI to recommend an agent in your city
+                      Prospect asks us to recommend an agent in your city
                     </p>
                   </div>
 
