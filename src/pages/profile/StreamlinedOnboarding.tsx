@@ -1019,10 +1019,12 @@ export default function StreamlinedOnboarding() {
 
               {/* City Selector */}
               <div className="p-6 border-b border-border bg-muted/30">
-                <div className="flex items-start gap-3">
-                  <MapPin className="h-5 w-5 text-primary mt-1" />
-                  <div className="flex-1 space-y-3">
-                    <div className="font-medium text-foreground">Where would you like to be listed?</div>
+                <div className="flex flex-col items-center gap-3 text-center">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-6 w-6 text-primary" />
+                    <h2 className="text-2xl md:text-3xl font-bold text-foreground">Where would you like to be listed?</h2>
+                  </div>
+                  <div className="w-full max-w-md space-y-3">
                     <CityAutocomplete
                       cities={cities}
                       value={selectedCityId}
