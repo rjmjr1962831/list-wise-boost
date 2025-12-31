@@ -22,6 +22,7 @@ interface FieldDefinition {
 
 const FIELDS_TO_CREATE: FieldDefinition[] = [
   { field_name: "profile_link", pipedrive_name: "Profile Link", field_type: "varchar" },
+  { field_name: "magic_link", pipedrive_name: "Magic Link", field_type: "varchar" },
   { field_name: "current_listings", pipedrive_name: "Current Listings", field_type: "double" },
   { field_name: "total_sales", pipedrive_name: "Total Sales", field_type: "double" },
   { field_name: "license_number", pipedrive_name: "License Number", field_type: "varchar" },
