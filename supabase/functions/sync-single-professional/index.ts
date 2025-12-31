@@ -269,12 +269,17 @@ serve(async (req) => {
       .replace(/^-+|-+$/g, "");
     const cardUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}/${agentSlug}`;
     
+    // Generate funnel entry URL (magic link) using verification_token or professional ID
+    const funnelToken = professional.verification_token || professional.id;
+    const magicLink = `https://www.top10lists.us/profile/${funnelToken}`;
+    
     const syncData: Record<string, any> = {
       name: professional.name,
       email: professional.email,
       phone: professional.phone || '',
       company: professional.business_name || professional.company || '',
-      profile_link: professional.profile_link || '',
+      // Use the dynamically computed magic link for hashing
+      profile_link: magicLink,
       card_url: cardUrl,
       years_experience: professional.years_experience ?? null,
       current_listings: professional.current_listings ?? null,
@@ -365,10 +370,6 @@ serve(async (req) => {
       const num = Number(val);
       return isNaN(num) ? null : num;
     };
-
-    // Generate funnel entry URL (magic link) using verification_token or professional ID
-    const funnelToken = professional.verification_token || professional.id;
-    const magicLink = `https://www.top10lists.us/profile/${funnelToken}`;
 
     const dynamicFields: Record<string, any> = {
       supabase_id: professional.id,
