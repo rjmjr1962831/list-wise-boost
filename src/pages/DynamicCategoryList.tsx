@@ -129,7 +129,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     phone: dbProf.phone || undefined, // Don't show fake phone numbers
     email: dbProf.email || undefined, // Don't show fake emails
     website: dbProf.website || undefined, // Only show real personal websites
-    description: (dbProf as any).get_to_know_me || dbProf.description || '',
+    description: (dbProf as any).synthesized_bio || (dbProf as any).get_to_know_me || dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
     image: getValidImageUrl(dbProf.image_url),
