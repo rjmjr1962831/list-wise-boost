@@ -533,6 +533,8 @@ export default function StreamlinedOnboarding() {
   }, [professional?.id]);
 
   const handleClaim = async () => {
+    console.log('handleClaim called', { selectedCityId, email, professionalId: professional?.id });
+    
     if (!selectedCityId) {
       toast.error('Please select a city');
       return;
@@ -543,10 +545,17 @@ export default function StreamlinedOnboarding() {
       return;
     }
 
+    if (!professional?.id) {
+      toast.error('Professional data not loaded. Please refresh and try again.');
+      console.error('handleClaim: professional.id is missing', professional);
+      return;
+    }
+
     setClaiming(true);
 
     try {
       const selectedCity = cities.find(c => c.id === selectedCityId);
+      console.log('Updating professional with city:', selectedCity?.name);
       
       // Update professional with selected city and trigger email verification
       const { error: updateError } = await supabase
@@ -560,12 +569,17 @@ export default function StreamlinedOnboarding() {
         })
         .eq('id', professional.id);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Database update error:', updateError);
+        throw updateError;
+      }
+
+      console.log('Database updated, sending verification email...');
 
       // Send custom magic link email via Resend - redirect to dashboard
       const redirectUrl = `https://top10lists.us/dashboard`;
       
-      const { error: emailError } = await supabase.functions.invoke('send-funnel-verification', {
+      const { data: emailData, error: emailError } = await supabase.functions.invoke('send-funnel-verification', {
         body: {
           email,
           name: professional.name,
@@ -575,7 +589,12 @@ export default function StreamlinedOnboarding() {
         },
       });
 
-      if (emailError) throw emailError;
+      if (emailError) {
+        console.error('Email sending error:', emailError);
+        throw emailError;
+      }
+
+      console.log('Email sent successfully', emailData);
 
       setClaimedCityName(selectedCity?.name || '');
       setClaimed(true);
