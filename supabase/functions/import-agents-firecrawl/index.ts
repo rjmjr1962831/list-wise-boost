@@ -382,12 +382,16 @@ Deno.serve(async (req) => {
           .eq('zillow_profile_url', agentLink.profileUrl)
           .single();
 
+        // Deduplicate last name if it appears twice at end (e.g., "John Smith Smith" -> "John Smith")
+        const deduplicateName = (n: string) => (n || '').replace(/(\S+)\s+\1$/i, '$1');
+        const cleanName = deduplicateName(agentData.name || agentLink.name);
+
         if (existing) {
           // Update existing
           const { error: updateError } = await supabase
             .from('professionals')
             .update({
-              name: agentData.name || agentLink.name,
+              name: cleanName,
               phone: agentData.phone,
               email: agentData.email,
               website: agentData.website,
@@ -420,7 +424,7 @@ Deno.serve(async (req) => {
           const { data: newAgent, error: insertError } = await supabase
             .from('professionals')
             .insert({
-              name: agentData.name || agentLink.name,
+              name: cleanName,
               screen_name: agentData.screenName,
               city_id: city.id,
               category_id: category.id,

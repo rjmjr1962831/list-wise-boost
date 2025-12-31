@@ -407,8 +407,11 @@ async function processAgent(
     agentType = 'established';
   }
 
+  // Deduplicate last name if it appears twice at end (e.g., "John Smith Smith" -> "John Smith")
+  const deduplicatedName = (agentData.name || '').replace(/(\S+)\s+\1$/i, '$1');
+
   const insertData: any = {
-    name: agentData.name,
+    name: deduplicatedName,
     screen_name: agentData.screenName,
     image_url: agentData.profilePhotoUrl,
     review_stars_rating: rating,

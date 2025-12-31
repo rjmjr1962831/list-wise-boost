@@ -297,9 +297,13 @@ function mapToDatabase(data: FirecrawlAgentData, profileUrl: string) {
     }
   }
 
+  // Deduplicate last name if it appears twice at end (e.g., "John Smith Smith" -> "John Smith")
+  const rawName = data.fullName || data.name || '';
+  const deduplicatedName = rawName.replace(/(\S+)\s+\1$/i, '$1');
+
   return {
     // Core identity
-    name: data.fullName || data.name,
+    name: deduplicatedName,
     screen_name: data.screenName,
     encoded_zuid: data.encodedZuid,
     business_name: data.businessName || data.brokerageName,
