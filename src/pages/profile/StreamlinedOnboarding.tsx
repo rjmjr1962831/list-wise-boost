@@ -454,15 +454,17 @@ export default function StreamlinedOnboarding() {
       setProfessional(profData);
       setEmail(profData.email || '');
 
-      // Update funnel status
-      await supabase
-        .from('professionals')
-        .update({ 
-          funnel_started_at: new Date().toISOString(),
-          funnel_status: 'onboarding_started' 
-        })
-        .eq('id', profData.id)
-        .is('funnel_started_at', null);
+      // Update funnel status (server-side; RLS-safe)
+      const { error: startError } = await supabase.functions.invoke('claim-profile', {
+        body: {
+          token,
+          action: 'start',
+        },
+      });
+
+      if (startError) {
+        console.error('Error updating funnel start:', startError);
+      }
 
       // Fetch available cities (excluding sold-out ones)
       const { data: citiesData } = await supabase
@@ -558,17 +560,20 @@ export default function StreamlinedOnboarding() {
       const selectedCity = cities.find(c => c.id === selectedCityId);
       console.log('Updating professional with city:', selectedCity?.name);
       
-      // Update professional with selected city and trigger email verification
-      const { error: updateError } = await supabase
-        .from('professionals')
-        .update({ 
+      // Update professional with selected city and trigger email verification (server-side; RLS-safe)
+      const { error: claimError } = await supabase.functions.invoke('claim-profile', {
+        body: {
+          token,
+          action: 'claim',
           city_id: selectedCityId,
-          email: email,
-          is_brand_builder: true,
-          funnel_status: 'claim_initiated',
-          funnel_completed_at: new Date().toISOString()
-        })
-        .eq('id', professional.id);
+          email,
+        },
+      });
+
+      if (claimError) {
+        console.error('Claim-profile function error:', claimError);
+        throw claimError;
+      }
 
       if (updateError) {
         console.error('Database update error:', updateError);
