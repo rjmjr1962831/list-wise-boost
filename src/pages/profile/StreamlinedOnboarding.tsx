@@ -1118,27 +1118,6 @@ export default function StreamlinedOnboarding() {
                           </div>
                         )}
                       </div>
-                      
-                      {/* Edit & Accept Buttons */}
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setFunnelStep('card')}
-                          className="whitespace-nowrap"
-                        >
-                          <ExternalLink className="h-4 w-4 mr-1" />
-                          View Card
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => setFunnelStep('review')}
-                          className="whitespace-nowrap"
-                        >
-                          <Check className="h-4 w-4 mr-1" />
-                          Accept
-                        </Button>
-                      </div>
                     </div>
                   </div>
                 </div>
