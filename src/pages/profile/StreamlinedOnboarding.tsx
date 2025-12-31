@@ -1013,7 +1013,7 @@ export default function StreamlinedOnboarding() {
               {/* Card Header */}
               <div className="bg-primary/5 border-b border-border p-6">
                 <h2 className="text-xl font-semibold text-foreground">
-                  Here's your listing. Review it and claim your free spot.
+                  Here's your listing. Scroll down to review and edit it and claim your free spot.
                 </h2>
               </div>
 
