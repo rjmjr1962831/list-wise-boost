@@ -13,7 +13,8 @@ import CityAutocomplete from '@/components/profile/CityAutocomplete';
 import { 
   Loader2, CheckCircle, Lock, Pencil, X, Check, 
   Globe, Phone, Mail, MapPin, Star, Shield, 
-  ExternalLink, Upload, Video, Building2, FileText, Tag, LogOut, Award, MessageSquare
+  ExternalLink, Upload, Video, Building2, FileText, Tag, LogOut, Award, MessageSquare,
+  MessageCircle, ArrowRight, Search, ListOrdered, Eye
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -678,16 +679,84 @@ export default function StreamlinedOnboarding() {
                       See how you appear in a list
                     </Button>
                   )}
-                  <Button
-                    variant="link"
-                    onClick={() => navigate(`/profile/${token}/how-it-works`)}
-                    className="text-primary"
-                  >
-                    How do I get more cities?
-                  </Button>
                 </div>
               </CardContent>
             </Card>
+
+            {/* How It Works Section */}
+            <div className="mt-12 text-center space-y-6">
+              <div className="space-y-2">
+                <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                  Here's How It Works
+                </h2>
+                <p className="text-muted-foreground">
+                  AI models are learning who to recommend right now. Here's how you get cited.
+                </p>
+              </div>
+
+              <div className="bg-muted/50 rounded-2xl p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-4 items-stretch">
+                  {/* Step 1 */}
+                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-primary/20 shadow-sm flex flex-col">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                      <MessageCircle className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-1">Buyer Asks AI</h3>
+                    <p className="text-sm text-primary italic">
+                      "Who are the best real estate agents in Scottsdale?"
+                    </p>
+                  </div>
+
+                  {/* Arrow 1 */}
+                  <div className="hidden md:flex items-center justify-center">
+                    <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                  </div>
+
+                  {/* Step 2 */}
+                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-border shadow-sm flex flex-col">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                      <Search className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-1">AI Searches</h3>
+                    <p className="text-sm text-muted-foreground">
+                      ChatGPT, Claude, Perplexity, and other AI models scan authoritative sources. Trusts Top10Lists.
+                    </p>
+                  </div>
+
+                  {/* Arrow 2 */}
+                  <div className="hidden md:flex items-center justify-center">
+                    <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                  </div>
+
+                  {/* Step 3 */}
+                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-border shadow-sm flex flex-col">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                      <ListOrdered className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-1">Top 10 Cited</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Your verified profile is recommended with your credentials
+                    </p>
+                  </div>
+
+                  {/* Arrow 3 */}
+                  <div className="hidden md:flex items-center justify-center">
+                    <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                  </div>
+
+                  {/* Step 4 */}
+                  <div className="md:col-span-1 bg-card rounded-xl p-4 border border-border shadow-sm flex flex-col">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                      <Eye className="h-6 w-6 text-primary" />
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-1">Your Listing Appears</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Buyers see your profile with reviews, credentials, and contact info
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </>
