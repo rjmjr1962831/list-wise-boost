@@ -6,29 +6,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type ClaimProfileRequest = {
+interface ClaimProfileRequest {
   token: string;
   action: "start" | "claim";
   city_id?: string;
   email?: string;
-};
-
-async function resolveProfessionalId(supabase: ReturnType<typeof createClient>, token: string) {
-  const { data: byToken } = await supabase
-    .from("professionals")
-    .select("id")
-    .eq("verification_token", token)
-    .maybeSingle();
-
-  if (byToken?.id) return byToken.id as string;
-
-  const { data: byId } = await supabase
-    .from("professionals")
-    .select("id")
-    .eq("id", token)
-    .maybeSingle();
-
-  return (byId?.id as string | undefined) ?? null;
 }
 
 serve(async (req) => {
@@ -57,19 +39,45 @@ serve(async (req) => {
       });
     }
 
-    const professionalId = await resolveProfessionalId(supabase, body.token);
+    console.log(`📋 claim-profile called: action=${body.action}, token=${body.token.substring(0, 8)}...`);
+
+    // Resolve professional ID from token (try verification_token first, then id)
+    let professionalId: string | null = null;
+
+    const { data: byToken } = await supabase
+      .from("professionals")
+      .select("id")
+      .eq("verification_token", body.token)
+      .maybeSingle();
+
+    if (byToken && byToken.id) {
+      professionalId = byToken.id;
+    } else {
+      const { data: byId } = await supabase
+        .from("professionals")
+        .select("id")
+        .eq("id", body.token)
+        .maybeSingle();
+
+      if (byId && byId.id) {
+        professionalId = byId.id;
+      }
+    }
 
     if (!professionalId) {
+      console.error("❌ Invalid token - professional not found");
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    console.log(`✅ Resolved professional ID: ${professionalId}`);
+
     const nowIso = new Date().toISOString();
 
     if (body.action === "start") {
-      // Only set started timestamp once.
+      // Only set started timestamp once
       const { error: startError } = await supabase
         .from("professionals")
         .update({
@@ -79,7 +87,10 @@ serve(async (req) => {
         .eq("id", professionalId)
         .is("funnel_started_at", null);
 
-      if (startError) throw startError;
+      if (startError) {
+        console.error("❌ Error updating funnel start:", startError);
+        throw startError;
+      }
 
       // Best-effort analytics event
       await supabase.from("funnel_events").insert({
@@ -87,6 +98,8 @@ serve(async (req) => {
         event_name: "funnel_started",
         event_data: { source: "streamlined_onboarding" },
       });
+
+      console.log("✅ Funnel started for:", professionalId);
 
       return new Response(JSON.stringify({ success: true, professional_id: professionalId }), {
         status: 200,
@@ -130,7 +143,10 @@ serve(async (req) => {
         })
         .eq("id", professionalId);
 
-      if (claimError) throw claimError;
+      if (claimError) {
+        console.error("❌ Error updating claim:", claimError);
+        throw claimError;
+      }
 
       // Record approval event for analytics/dashboard
       await supabase.from("funnel_events").insert({
@@ -138,6 +154,8 @@ serve(async (req) => {
         event_name: "profile_approved",
         event_data: { city_id: body.city_id },
       });
+
+      console.log("✅ Profile claimed/approved for:", professionalId);
 
       return new Response(JSON.stringify({ success: true, professional_id: professionalId }), {
         status: 200,
@@ -149,9 +167,10 @@ serve(async (req) => {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (error: any) {
-    console.error("claim-profile - Error:", error);
-    return new Response(JSON.stringify({ error: error?.message ?? "Unknown error" }), {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("❌ claim-profile - Error:", message);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
