@@ -123,7 +123,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     phone: dbProf.phone || undefined,
     email: dbProf.email || undefined,
     website: dbProf.website || undefined,
-    description: (dbProf as any).get_to_know_me || dbProf.description || '',
+    description: (dbProf as any).synthesized_bio || (dbProf as any).get_to_know_me || dbProf.description || '',
     stats,
     verified: !!(dbProf.license_number || dbProf.license_verified_at),
     image: getValidImageUrl(dbProf.image_url),
