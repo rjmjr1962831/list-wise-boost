@@ -751,7 +751,7 @@ export default function StreamlinedOnboarding() {
                     </div>
                     <h3 className="font-semibold text-foreground mb-2">Your Listing Appears</h3>
                     <p className="text-sm text-muted-foreground">
-                      Buyers see your profile with reviews, credentials, and contact info
+                      Buyers see your profile with reviews, credentials, and contact info in rotation with other qualified agents.
                     </p>
                   </div>
                 </div>
