@@ -32,11 +32,13 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { professional_ids } = await req.json();
+    const { professional_ids, force = false } = await req.json();
 
     if (!professional_ids || !Array.isArray(professional_ids) || professional_ids.length === 0) {
       throw new Error('professional_ids array is required');
     }
+    
+    console.log(`Force regeneration: ${force}`);
 
     console.log(`Generating bios for ${professional_ids.length} professionals`);
 
@@ -68,8 +70,8 @@ Deno.serve(async (req) => {
       
       const batchPromises = batch.map(async (prof: any) => {
         try {
-          // Skip if already has a synthesized bio
-          if (prof.synthesized_bio && prof.synthesized_bio.trim().length > 50) {
+          // Skip if already has a synthesized bio (unless force is true)
+          if (!force && prof.synthesized_bio && prof.synthesized_bio.trim().length > 50) {
             console.log(`Skipping ${prof.name} - already has bio`);
             return {
               id: prof.id,
