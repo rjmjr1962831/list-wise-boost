@@ -575,11 +575,6 @@ export default function StreamlinedOnboarding() {
         throw claimError;
       }
 
-      if (updateError) {
-        console.error('Database update error:', updateError);
-        throw updateError;
-      }
-
       console.log('Database updated, sending verification email...');
 
       // Send custom magic link email via Resend - redirect to dashboard
