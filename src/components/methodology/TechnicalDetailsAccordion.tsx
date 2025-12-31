@@ -29,7 +29,7 @@ export const TechnicalDetailsAccordion = () => {
                     <li>• Free directory listing</li>
                     <li>• Included in Top 10 rotation</li>
                     <li>• Same scoring methodology</li>
-                    <li>• Daily monitoring</li>
+                    <li>• One city</li>
                   </ul>
                 </div>
                 <div className="border-2 border-accent rounded-lg p-4">
@@ -39,7 +39,7 @@ export const TechnicalDetailsAccordion = () => {
                     <li>• Guaranteed Top 10 visibility</li>
                     <li>• Clearly labeled as "Featured"</li>
                     <li>• Same scoring methodology</li>
-                    <li>• Daily monitoring</li>
+                    <li>• Multiple cities</li>
                   </ul>
                 </div>
               </div>
