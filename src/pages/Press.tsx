@@ -68,7 +68,7 @@ const pressArticles: PressArticle[] = [
     tierColor: "bg-accent text-accent-foreground",
     url: "https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/",
     title: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings",
-    summary: "Financial industry coverage of the merit-based ranking platform that weights community involvement (20%) higher than transaction volume (15%), ensuring agents who invest in their communities are recognized.",
+    summary: "Financial industry coverage of the merit-based ranking platform that weights community involvement at 25% — tied with review rating as the highest factors — ensuring agents who invest in their communities are recognized.",
     date: "December 18, 2025",
     logo: financeWireLogo,
   },

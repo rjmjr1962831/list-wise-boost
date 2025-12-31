@@ -67,7 +67,7 @@ const methodologyUpdates: UpdateEntry[] = [
     date: "December 2024",
     title: "Ranking Weights Documented",
     items: [
-      "Ranking weights documented: Reviews (25%), Community Involvement (20%), Press (15%), Transactions (15%), Experience (10%), Response (10%), Recency (5%)",
+      "Ranking weights documented: Reviews (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), Education & Credentials (10%)",
       "Non-pay-to-play policy formalized"
     ],
     type: "methodology"
