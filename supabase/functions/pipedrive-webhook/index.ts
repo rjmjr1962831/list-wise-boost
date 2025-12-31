@@ -289,9 +289,17 @@ serve(async (req) => {
               fieldsUpdated.push(fieldName);
             }
           } else if (['is_top_agent', 'is_premier_agent', 'is_brand_builder'].includes(fieldName)) {
-            // Boolean fields - Pipedrive stores these as option IDs or strings
-            // Skip these as they're complex to parse from Pipedrive
-            continue;
+            // Boolean fields - Pipedrive stores these as option IDs or strings like "YES"/"NO"
+            // Parse various truthy values from Pipedrive
+            const strValue = String(value).toLowerCase().trim();
+            const isTruthy = strValue === 'yes' || strValue === 'true' || strValue === '1' || strValue === 'on';
+            const isFalsy = strValue === 'no' || strValue === 'false' || strValue === '0' || strValue === 'off' || strValue === '';
+            
+            if (isTruthy || isFalsy) {
+              updates[fieldName] = isTruthy;
+              fieldsUpdated.push(fieldName);
+              console.log(`🔘 Boolean field ${fieldName}: "${value}" → ${isTruthy}`);
+            }
           } else if (typeof value === 'string' && value.trim()) {
             // String fields (including synthesized_bio, website, etc.)
             updates[fieldName] = value.trim();
