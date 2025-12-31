@@ -1652,8 +1652,9 @@ export const ProfessionalCard = ({
                 {/* From [firstname] Button */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
-                  const description = (professional as any).description;
-                  const fallbackText = description;
+                  // Use original_description (Zillow bio) as fallback, NOT description (which may be synthesized_bio)
+                  const originalDescription = (professional as any).original_description;
+                  const fallbackText = originalDescription;
                   
                   if (!bioHtml && !fallbackText && !isEditing) return null;
                   
@@ -1714,8 +1715,9 @@ export const ProfessionalCard = ({
                 {/* Bar 1: From [firstname] - Bio */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
-                  const description = (professional as any).description;
-                  const fallbackText = description;
+                  // Use original_description (Zillow bio) as fallback, NOT description (which may be synthesized_bio)
+                  const originalDescription = (professional as any).original_description;
+                  const fallbackText = originalDescription;
                   
                   if (!bioHtml && !fallbackText && !isEditing) return null;
                   

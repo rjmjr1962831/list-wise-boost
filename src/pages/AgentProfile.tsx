@@ -144,6 +144,7 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
     professional_information: (dbProf as any).professional_information || undefined,
     ratings: dbProf.ratings || undefined,
     get_to_know_me: (dbProf as any).get_to_know_me || undefined,
+    original_description: dbProf.description || undefined,
     agent_sales_stats: (dbProf as any).agent_sales_stats || undefined,
     notable_achievements: (dbProf as any).notable_achievements || undefined,
     press_mentions: (dbProf as any).press_mentions || undefined,
