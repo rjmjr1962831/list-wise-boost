@@ -20,7 +20,7 @@ import { toast } from 'sonner';
 import { isBot, getBotType } from '@/utils/botDetection';
 import { getCanonicalRankings } from '@/services/canonicalAgentService';
 import { signalPrerenderReady } from '@/hooks/usePrerenderReady';
-import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
+// Removed unused hooks: useAgentCountForCity, useTotalAgentCount
 import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { CityMarketOverview } from '@/components/CityMarketOverview';
 import { DatasetSchema } from '@/components/seo/DatasetSchema';
@@ -697,6 +697,151 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
     };
   }, [city?.id, category?.id]);
 
+  // Check if quiz has been completed for real estate agents category
+  // NOTE: This hook MUST be before any conditional returns
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (resolvedCategorySlug === 'top10realestateagents' && city && allProfessionals.length > 0) {
+      const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
+      const completed = localStorage.getItem(storageKey);
+      
+      if (completed) {
+        setQuizCompleted(true);
+        // Apply saved preferences filter if available
+        try {
+          const preferences = JSON.parse(completed);
+          const filtered = allProfessionals.filter(prof => {
+            const matchesPropertyType = !preferences.propertyType || 
+              prof.specialties?.some(s => s.toLowerCase().includes(preferences.propertyType.toLowerCase()));
+            const matchesPriceRange = !preferences.priceRange || 
+              prof.specialties?.some(s => s.toLowerCase().includes(preferences.priceRange.toLowerCase()));
+            return matchesPropertyType || matchesPriceRange;
+          });
+          // Never reduce a Top 10 list to a tiny subset on load
+          setFilteredProfessionals(filtered.length >= Math.min(10, allProfessionals.length) ? filtered : allProfessionals);
+        } catch {
+          setFilteredProfessionals(allProfessionals);
+        }
+      } else {
+        setFilteredProfessionals(allProfessionals);
+      }
+    } else {
+      setFilteredProfessionals(allProfessionals);
+    }
+  }, [resolvedCategorySlug, city, allProfessionals]);
+
+  // Handle query parameter for direct agent links
+  // NOTE: This hook MUST be before any conditional returns
+  useEffect(() => {
+    const agentId = searchParams.get('agent');
+    if (agentId && allProfessionals.length > 0) {
+      const agent = allProfessionals.find(p => p.id === agentId);
+      if (agent) {
+        // Scroll to agent card
+        setTimeout(() => {
+          const element = document.getElementById(`agent-${agentId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 100);
+        
+        // Open detail modal
+        setSelectedProfessional(agent);
+        setShowDetailModal(true);
+      }
+    }
+  }, [searchParams, allProfessionals]);
+
+  // GA4 page view tracking
+  // NOTE: This hook MUST be before any conditional returns
+  useEffect(() => {
+    if (!city || !category) return;
+
+    // GA4 page view
+    if (typeof window.gtag === 'function') {
+      window.gtag('event', 'page_view', {
+        page_title: document.title,
+        page_location: window.location.href,
+        page_path: window.location.pathname,
+        market: formatCityName(city),
+        category: category.plural_name
+      });
+    }
+  }, [city, category]);
+
+  // Background polling to auto-populate when import finishes
+  // NOTE: This hook MUST be before any conditional returns
+  useEffect(() => {
+    if (!city || !category) return;
+    if (category.slug !== 'top10realestateagents') return;
+    if (allProfessionals.length > 0) return;
+
+    let attempts = 0;
+    const maxAttempts = 60; // ~5 minutes at 5s interval
+
+    const interval = setInterval(async () => {
+      attempts++;
+      try {
+        const { data } = await supabase
+          .from('professionals')
+          .select('*')
+          .eq('city_id', city.id)
+          .eq('category_id', category.id)
+          .eq('active', true)
+          .order('rank');
+
+        if (data && data.length > 0) {
+          // Show all agents - they'll upgrade via realtime as enrichment completes
+          let displayAgents = data;
+          
+          // Deduplicate by zillow_profile_url (keep first occurrence)
+          const seenUrls = new Set<string>();
+          displayAgents = displayAgents.filter((p: any) => {
+            const url = p.zillow_profile_url?.toLowerCase() || p.id;
+            if (seenUrls.has(url)) {
+              console.log(`🗑️ Removing duplicate in polling: ${p.name} (${url})`);
+              return false;
+            }
+            seenUrls.add(url);
+            return true;
+          });
+          
+          // Special sorting for Scottsdale & Phoenix: Beauvais-Real-Estate always first
+          if ((city.slug === 'scottsdale' || city.slug === 'phoenix') && category.slug === 'top10realestateagents') {
+            const beauvaisIndex = displayAgents.findIndex((p: any) => 
+              p.zillow_profile_url?.includes('Beauvais-Real-Estate')
+            );
+            if (beauvaisIndex > 0) {
+              const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
+              displayAgents.unshift(beauvais);
+              console.log(`✅ Moved Beauvais-Real-Estate to #1 for ${city.name} (polling)`);
+            }
+          }
+          
+          const converted = displayAgents.map(convertToProfessional);
+          setAllProfessionals(converted);
+          setFilteredProfessionals(converted);
+          setLoading(false);
+          setIsGeneratingData(false);
+          setReviewsReady(true);
+          clearInterval(interval);
+        }
+      } catch (e) {
+        console.warn('Polling professionals failed:', e);
+      } finally {
+        if (attempts >= maxAttempts) {
+          clearInterval(interval);
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [city, category, allProfessionals.length]);
+
+  // ============================================
+  // ALL HOOKS DECLARED ABOVE - CONDITIONAL RETURNS BELOW
+  // ============================================
+
   // REDIRECT LOGIC - MUST BE AFTER ALL HOOKS
   // If state slug is an abbreviation, redirect to canonical full name URL
   if (stateSlug && stateNormalized?.needsRedirect) {
@@ -793,38 +938,6 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
     }, 120000);
   };
 
-  // Check if quiz has been completed for real estate agents category
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (resolvedCategorySlug === 'top10realestateagents' && city && allProfessionals.length > 0) {
-      const storageKey = `quiz_completed_${city.slug}_top10realestateagents`;
-      const completed = localStorage.getItem(storageKey);
-      
-      if (completed) {
-        setQuizCompleted(true);
-        // Apply saved preferences filter if available
-        try {
-          const preferences = JSON.parse(completed);
-          const filtered = allProfessionals.filter(prof => {
-            const matchesPropertyType = !preferences.propertyType || 
-              prof.specialties?.some(s => s.toLowerCase().includes(preferences.propertyType.toLowerCase()));
-            const matchesPriceRange = !preferences.priceRange || 
-              prof.specialties?.some(s => s.toLowerCase().includes(preferences.priceRange.toLowerCase()));
-            return matchesPropertyType || matchesPriceRange;
-          });
-          // Never reduce a Top 10 list to a tiny subset on load
-          setFilteredProfessionals(filtered.length >= Math.min(10, allProfessionals.length) ? filtered : allProfessionals);
-        } catch {
-          setFilteredProfessionals(allProfessionals);
-        }
-      } else {
-        setFilteredProfessionals(allProfessionals);
-      }
-    } else {
-      setFilteredProfessionals(allProfessionals);
-    }
-  }, [resolvedCategorySlug, city, allProfessionals]);
-
   const handleQuizComplete = (preferences: { propertyType: string; priceRange: string; timeline: string }) => {
     if (!city) return;
 
@@ -859,27 +972,6 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
     }
   };
 
-  // Handle query parameter for direct agent links
-  useEffect(() => {
-    const agentId = searchParams.get('agent');
-    if (agentId && allProfessionals.length > 0) {
-      const agent = allProfessionals.find(p => p.id === agentId);
-      if (agent) {
-        // Scroll to agent card
-        setTimeout(() => {
-          const element = document.getElementById(`agent-${agentId}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          }
-        }, 100);
-        
-        // Open detail modal
-        setSelectedProfessional(agent);
-        setShowDetailModal(true);
-      }
-    }
-  }, [searchParams, allProfessionals]);
-
   const handleContactClick = (professional: Professional) => {
     setSelectedProfessional(professional);
     
@@ -889,89 +981,6 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
       setShowContactModal(true);
     }
   };
-
-  useEffect(() => {
-    if (!city || !category) return;
-
-    // GA4 page view
-    if (typeof window.gtag === 'function') {
-      window.gtag('event', 'page_view', {
-        page_title: document.title,
-        page_location: window.location.href,
-        page_path: window.location.pathname,
-        market: formatCityName(city),
-        category: category.plural_name
-      });
-    }
-  }, [city, category]);
-
-  // Background polling to auto-populate when import finishes
-  useEffect(() => {
-    if (!city || !category) return;
-    if (category.slug !== 'top10realestateagents') return;
-    if (allProfessionals.length > 0) return;
-
-    let attempts = 0;
-    const maxAttempts = 60; // ~5 minutes at 5s interval
-
-    const interval = setInterval(async () => {
-      attempts++;
-      try {
-        const { data } = await supabase
-          .from('professionals')
-          .select('*')
-          .eq('city_id', city.id)
-          .eq('category_id', category.id)
-          .eq('active', true)
-          .order('rank');
-
-        if (data && data.length > 0) {
-          // Show all agents - they'll upgrade via realtime as enrichment completes
-          let displayAgents = data;
-          
-          // Deduplicate by zillow_profile_url (keep first occurrence)
-          const seenUrls = new Set<string>();
-          displayAgents = displayAgents.filter((p: any) => {
-            const url = p.zillow_profile_url?.toLowerCase() || p.id;
-            if (seenUrls.has(url)) {
-              console.log(`🗑️ Removing duplicate in polling: ${p.name} (${url})`);
-              return false;
-            }
-            seenUrls.add(url);
-            return true;
-          });
-          
-          // Special sorting for Scottsdale & Phoenix: Beauvais-Real-Estate always first
-          if ((city.slug === 'scottsdale' || city.slug === 'phoenix') && category.slug === 'top10realestateagents') {
-            const beauvaisIndex = displayAgents.findIndex((p: any) => 
-              p.zillow_profile_url?.includes('Beauvais-Real-Estate')
-            );
-            if (beauvaisIndex > 0) {
-              const beauvais = displayAgents.splice(beauvaisIndex, 1)[0];
-              displayAgents.unshift(beauvais);
-              console.log(`✅ Moved Beauvais-Real-Estate to #1 for ${city.name} (polling)`);
-            }
-          }
-          
-          const converted = displayAgents.map(convertToProfessional);
-          setAllProfessionals(converted);
-          setFilteredProfessionals(converted);
-          setLoading(false);
-          setIsGeneratingData(false);
-          setReviewsReady(true);
-          clearInterval(interval);
-        }
-      } catch (e) {
-        console.warn('Polling professionals failed:', e);
-      } finally {
-        if (attempts >= maxAttempts) {
-          clearInterval(interval);
-        }
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [city, category, allProfessionals.length]);
 
   // Note: Structured data and canonical URLs are now handled by Helmet above
   // Old manual DOM injection removed to prevent duplicates
