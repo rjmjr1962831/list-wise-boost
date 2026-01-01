@@ -227,7 +227,7 @@ export function ZillowPayToPlay() {
             </div>
             <div className="space-y-2">
               {[
-                'Invitation-only (top 0.2% qualify)',
+                'Invitation-only (top 0.5% qualify)',
                 'Multi-source verified data',
                 'Transparent methodology',
                 'Independent rankings',

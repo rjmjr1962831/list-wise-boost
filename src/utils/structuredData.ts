@@ -140,7 +140,7 @@ export function generateFAQSchema(
       "name": `How are ${city} ${categoryName.toLowerCase()} ranked on Top10Lists.us?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Rankings on Top10Lists.us are determined through editorial evaluation of verified client reviews (minimum 50 reviews, 4.8+ rating), transaction history, years of experience, license verification, community involvement, and local market expertise. No pay-to-play. Visit Top10Lists.us for the complete methodology.`
+        "text": `Rankings on Top10Lists.us are determined through editorial evaluation of verified client reviews (minimum 20 reviews, 4.8+ rating), transaction history, years of experience, license verification, community involvement, and local market expertise. No pay-to-play. Visit Top10Lists.us for the complete methodology.`
       }
     },
     {

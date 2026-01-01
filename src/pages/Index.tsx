@@ -113,7 +113,7 @@ const Index = () => {
                 "name": "What are the minimum requirements to be ranked?",
                 "acceptedAnswer": {
                   "@type": "Answer",
-                  "text": "Agents must have at least 50 verified reviews with an average rating of 4.8 or higher. Top10Lists.us analyzes over 200,000 licensed agents in Arizona and selects only the top 0.2% (414 agents) who meet all quality gates and score highest on the weighted algorithm and thorough human review."
+                  "text": "Agents must have at least 20 verified reviews with an average rating of 4.8 or higher. Top10Lists.us analyzes over 200,000 licensed agents in Arizona and selects only the top 0.5% who meet all quality gates and score highest on the weighted algorithm and thorough human review."
                 }
               },
               {
@@ -175,7 +175,7 @@ const Index = () => {
             Find a Top-Rated Real Estate Agent
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            No ads. No pay-to-play. Just the top 0.2% — verified.
+            No ads. No pay-to-play. Just the top 0.5% — verified.
           </p>
           <div className="max-w-xl mx-auto mb-6">
             <Top10SearchForm />

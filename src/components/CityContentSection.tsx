@@ -27,7 +27,7 @@ export function CityContentSection({ citySlug, cityName, categoryName }: CityCon
           Arizona has over <strong>{ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()}</strong> licensed 
           real estate agents. We analyzed transaction records, verified client reviews, 
           and evaluated community involvement to identify <strong>{qualifiedCount}</strong> agents 
-          statewide who earned an invitation — the top <strong>0.2%</strong>.
+          statewide who earned an invitation — the top <strong>0.5%</strong>.
         </p>
         
         {/* City-Specific Stats */}

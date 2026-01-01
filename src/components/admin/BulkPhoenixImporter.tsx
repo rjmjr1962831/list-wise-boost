@@ -109,7 +109,7 @@ export function BulkPhoenixImporter() {
       
       if (error) throw error;
       
-      toast.success(`Import started for ${data.totalCitiesNeedingAgents} cities (4.8★ + 50 reviews)`);
+      toast.success(`Import started for ${data.totalCitiesNeedingAgents} cities (4.8★ + 20 reviews)`);
       
       // Start polling for the new session
       setTimeout(fetchActiveSession, 2000);
@@ -136,7 +136,7 @@ export function BulkPhoenixImporter() {
           </Button>
         </CardTitle>
         <CardDescription>
-          Import agents (4.8★ + 50+ reviews) for Arizona cities with fewer than 10 qualified agents.
+          Import agents (4.8★ + 20+ reviews) for Arizona cities with fewer than 10 qualified agents.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

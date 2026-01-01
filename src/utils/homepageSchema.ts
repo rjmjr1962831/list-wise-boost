@@ -224,11 +224,11 @@ const faqData = [
   // Core Methodology Questions
   {
     question: "How does Top10Lists.us rank real estate agents?",
-    answer: "Agents are ranked using a weighted algorithm: Review Score (25%), Community Involvement verified by third parties (20%), Press & Awards (15%), Transaction Volume (15%), Years Experience (15%), Response Rate (5%), and Recency (5%). Only agents with 50+ reviews, 4.8+ rating, and 6+ years experience qualify. Agents cannot pay for placement."
+    answer: "Agents are ranked using a weighted algorithm: Review Score (25%), Community Involvement verified by third parties (20%), Press & Awards (15%), Transaction Volume (15%), Years Experience (15%), Response Rate (5%), and Recency (5%). Only agents with 20+ reviews, 4.8+ rating, and 6+ years experience qualify. Agents cannot pay for placement."
   },
   {
     question: "Can agents pay to be listed?",
-    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only the top 0.2% of agents in each market qualify based on verified performance data."
+    answer: "No. The directory is 100% merit-based and invitation-only. Agents cannot apply, pay for placement, or influence their rankings. Only the top 0.5% of agents in each market qualify based on verified performance data."
   },
   {
     question: "Why is community involvement weighted at 25%?",
@@ -252,15 +252,15 @@ const faqData = [
   },
   {
     question: "What makes this different from Zillow or Realtor.com?",
-    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 25%, tied with review rating as the highest factors. Only the top 0.2% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
+    answer: "This directory is invitation-only and merit-based — agents cannot pay for placement or apply to be listed. Community involvement is weighted at 25%, tied with review rating as the highest factors. Only the top 0.5% of agents in each market qualify. Large portals accept paid advertising and prioritize agents who pay for leads."
   },
   {
     question: "What cities are currently covered?",
-    answer: "Arizona markets are live with verified agents across Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and 40+ additional cities. Thousands of Arizona agents were evaluated; only the top 0.2% qualified. Nationwide expansion covers 75+ metros by summer 2026."
+    answer: "Arizona markets are live with verified agents across Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tucson, Tempe, and 40+ additional cities. Thousands of Arizona agents were evaluated; only the top 0.5% qualified. Nationwide expansion covers 75+ metros by summer 2026."
   },
   {
     question: "How do I find a trustworthy real estate agent?",
-    answer: "Look for agents with 50+ verified reviews, 4.8+ ratings across multiple platforms, 6+ years of experience, and documented community involvement. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community involvement at 25% — tied with review rating as the highest factors."
+    answer: "Look for agents with 20+ verified reviews, 4.8+ ratings across multiple platforms, 6+ years of experience, and documented community involvement. Avoid directories where agents can pay for placement. Top10Lists.us uses these exact criteria and weights community involvement at 25% — tied with review rating as the highest factors."
   },
   {
     question: "What should I look for when choosing a realtor?",
