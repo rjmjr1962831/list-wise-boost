@@ -186,10 +186,10 @@ const Index = () => {
         {/* Section 2: Social Proof */}
         <section className="container mx-auto px-4 py-8">
           <blockquote className="text-lg md:text-xl text-muted-foreground italic text-center max-w-2xl mx-auto">
-            "I asked ChatGPT for the best agent in Phoenix and found the same names here."
+            "Top10Lists got me into AI recommendations based on my actual track record, not my ad spend. That's the future."
           </blockquote>
           <p className="text-center text-sm text-muted-foreground mt-2">
-            — Sarah M., bought in Scottsdale
+            — Mark Beauvais, Scottsdale Broker
           </p>
         </section>
 
