@@ -339,14 +339,25 @@ serve(async (req) => {
     // Find or create organization (uses cache)
     const orgId = await findOrCreateOrganization(syncData.company);
 
+    // Determine lead label based on funnel status
+    // Warm lead (ID 16) = default for active professionals
+    // Hot lead (ID 17) = agent has approved their profile
+    const getLeadLabelId = () => {
+      if (!professional.active) return undefined;
+      // If funnel_status is 'approved' or 'completed', they're a hot lead
+      if (professional.funnel_status === 'approved' || professional.funnel_status === 'completed') {
+        return [17]; // Hot lead
+      }
+      return [16]; // Warm lead (default)
+    };
+
     // Build person data for Pipedrive
     const personData: Record<string, any> = {
       name: syncData.name,
       emails: [{ value: syncData.email, primary: true }],
       phones: syncData.phone ? [{ value: syncData.phone, primary: true }] : undefined,
       org_id: orgId,
-      // Always set label to "Warm lead" (ID 16) for active professionals
-      label_ids: professional.active ? [16] : undefined,
+      label_ids: getLeadLabelId(),
       // Only set marketing status on FIRST sync (create), not on updates
       // After first sync, Pipedrive is the source of truth for marketing status
       ...(isUpdate ? {} : { marketing_status: "subscribed" }),
