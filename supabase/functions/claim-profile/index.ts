@@ -138,7 +138,7 @@ serve(async (req) => {
           city_id: body.city_id,
           email: body.email,
           is_brand_builder: true,
-          funnel_status: "claim_initiated",
+          funnel_status: "approved", // This triggers Hot lead status in Pipedrive
           funnel_completed_at: nowIso,
         })
         .eq("id", professionalId);
