@@ -33,6 +33,15 @@ interface PressArticle {
 
 const pressArticles: PressArticle[] = [
   {
+    name: "Yahoo Finance",
+    tier: "Tier 1",
+    tierColor: "bg-primary text-primary-foreground",
+    url: "https://finance.yahoo.com/news/top10lists-us-reports-ai-search-162500680.html",
+    title: "Top10Lists.us Reports AI Search Tools Are 7x More Likely to Recommend Its Agents Over Traditional Directories",
+    summary: "Yahoo Finance coverage of how Top10Lists.us agents are recommended by AI search tools at 7x the rate of traditional directories, validating the platform's AI-optimized approach to real estate agent rankings.",
+    date: "January 2026",
+  },
+  {
     name: "Markets Insider",
     tier: "Financial",
     tierColor: "bg-accent text-accent-foreground",
