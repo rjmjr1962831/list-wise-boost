@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { generateHomepageSchema } from "@/utils/homepageSchema";
-import { BrowseCitiesSection } from "@/components/BrowseCitiesSection";
+
 import { FeaturedInBar } from "@/components/FeaturedInBar";
 import { WhyTop10Cards } from "@/components/WhyTop10Cards";
 
@@ -196,8 +196,6 @@ const Index = () => {
         {/* Section 3: Why Top10Lists */}
         <WhyTop10Cards />
 
-        {/* Section 4: Browse by City */}
-        <BrowseCitiesSection />
 
         {/* Section 5: Bottom CTA */}
         <section className="container mx-auto px-4 py-16 bg-primary/5">
