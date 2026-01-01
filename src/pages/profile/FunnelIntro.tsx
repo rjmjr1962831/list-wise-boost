@@ -334,7 +334,7 @@ export default function FunnelIntro() {
                   <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">1</div>
                   <div>
                     <p className="font-medium">Initial Qualification</p>
-                    <p className="text-muted-foreground text-sm">50+ verified reviews and 4.8+ star rating across platforms. This filters out 95% of agents.</p>
+                    <p className="text-muted-foreground text-sm">20+ verified reviews and 4.8+ star rating across platforms. This filters out 95% of agents.</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

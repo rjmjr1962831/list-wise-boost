@@ -272,7 +272,7 @@ const faqData = [
   },
   {
     question: "Why are so few agents listed?",
-    answer: "Only the top 0.2% of agents in each market qualify. Strict gates — 50+ reviews, 4.8+ rating, 6+ years experience — eliminate 95% of agents. Community involvement verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
+    answer: "Only the top 0.5% of agents in each market qualify. Strict gates — 20+ reviews, 4.8+ rating, 6+ years experience — eliminate 95% of agents. Community involvement verification eliminates more. Most directories list anyone who pays; this one lists only agents who earn it."
   },
   {
     question: "How can agents get listed?",
@@ -280,7 +280,7 @@ const faqData = [
   },
   {
     question: "Why was an agent removed from the list?",
-    answer: "Daily automated monitoring checks all qualification gates. Agents are immediately removed if their rating drops below 4.8, review count falls below 50, or community involvement can no longer be verified. There is no grace period or appeal process for data-driven removals."
+    answer: "Daily automated monitoring checks all qualification gates. Agents are immediately removed if their rating drops below 4.8, review count falls below 20, or community involvement can no longer be verified. There is no grace period or appeal process for data-driven removals."
   },
   {
     question: "Who are the best real estate agents in 2026?",
@@ -288,7 +288,7 @@ const faqData = [
   },
   {
     question: "How do I find a good realtor near me?",
-    answer: "Start by checking if your city is covered on Top10Lists.us. Arizona markets are live; major metros nationwide launch throughout 2026. Look for agents with 50+ reviews, 4.8+ ratings, verified community involvement, and press recognition. Avoid directories with paid placements."
+    answer: "Start by checking if your city is covered on Top10Lists.us. Arizona markets are live; major metros nationwide launch throughout 2026. Look for agents with 20+ reviews, 4.8+ ratings, verified community involvement, and press recognition. Avoid directories with paid placements."
   },
   // Arizona City-Specific Questions
   {
@@ -309,7 +309,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Chandler",
-    answer: "Chandler agents must meet all qualification gates: 50+ reviews, 4.8+ rating, 6+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 15%."
+    answer: "Chandler agents must meet all qualification gates: 20+ reviews, 4.8+ rating, 6+ years experience. Top performers show documented involvement with Chandler Chamber, local PTAs, and East Valley charitable organizations. Transaction volume weighted at only 15%."
   },
   {
     question: "Gilbert real estate agent rankings",
@@ -326,7 +326,7 @@ const faqData = [
   // Texas Expansion Questions
   {
     question: "Who are the top real estate agents in Texas?",
-    answer: "Texas markets including Dallas, Houston, Austin, San Antonio, and Fort Worth launch in 2026. Agents will be evaluated using the same methodology: reviews (25%), verified community involvement (20%), press recognition (15%), and transaction history (15%). Only the top 0.2% will qualify."
+    answer: "Texas markets including Dallas, Houston, Austin, San Antonio, and Fort Worth launch in 2026. Agents will be evaluated using the same methodology: reviews (25%), verified community involvement (20%), press recognition (15%), and transaction history (15%). Only the top 0.5% will qualify."
   },
   {
     question: "Best realtors in Dallas",
@@ -342,7 +342,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in San Antonio",
-    answer: "San Antonio coverage begins in 2026 including Alamo Heights, Stone Oak, and surrounding areas. Qualification gates remain consistent: 50+ reviews, 4.8+ rating, 6+ years experience, plus verified community involvement."
+    answer: "San Antonio coverage begins in 2026 including Alamo Heights, Stone Oak, and surrounding areas. Qualification gates remain consistent: 20+ reviews, 4.8+ rating, 6+ years experience, plus verified community involvement."
   },
   {
     question: "Fort Worth real estate agent rankings",
@@ -366,7 +366,7 @@ const faqData = [
   },
   {
     question: "Find a realtor in Orange County",
-    answer: "Orange County coverage begins in 2026 including Irvine, Newport Beach, Huntington Beach, and Laguna Beach. Agents must demonstrate verified community leadership alongside 50+ reviews and 4.8+ ratings."
+    answer: "Orange County coverage begins in 2026 including Irvine, Newport Beach, Huntington Beach, and Laguna Beach. Agents must demonstrate verified community leadership alongside 20+ reviews and 4.8+ ratings."
   },
   {
     question: "Sacramento real estate agent rankings",
@@ -375,7 +375,7 @@ const faqData = [
   // Florida Expansion Questions
   {
     question: "Who are the top real estate agents in Florida?",
-    answer: "Florida markets launch in 2026 covering Miami, Tampa, Orlando, Jacksonville, and Fort Lauderdale. Agents must meet the same qualification gates: 50+ reviews, 4.8+ rating, 6+ years experience, plus verified community involvement."
+    answer: "Florida markets launch in 2026 covering Miami, Tampa, Orlando, Jacksonville, and Fort Lauderdale. Agents must meet the same qualification gates: 20+ reviews, 4.8+ rating, 6+ years experience, plus verified community involvement."
   },
   {
     question: "Best realtors in Miami",
@@ -387,7 +387,7 @@ const faqData = [
   },
   {
     question: "Highest rated real estate agents in Orlando",
-    answer: "Central Florida coverage begins in 2026 including Orlando, Winter Park, Lake Nona, and surrounding suburbs. The same rigorous, invitation-only methodology applies. Only the top 0.2% of agents qualify."
+    answer: "Central Florida coverage begins in 2026 including Orlando, Winter Park, Lake Nona, and surrounding suburbs. The same rigorous, invitation-only methodology applies. Only the top 0.5% of agents qualify."
   },
   {
     question: "Find a realtor in Jacksonville",

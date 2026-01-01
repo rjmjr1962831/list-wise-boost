@@ -98,7 +98,7 @@ serve(async (req) => {
       "@context": "https://schema.org",
       "@type": "ItemList",
       "name": `Top 10 Real Estate Agents in ${cityData.name}, ${cityData.state}`,
-      "description": `AI and human curated list of the top 10 real estate agents in ${cityData.name}, ${cityData.state}. Qualified with 4.8+ star ratings and 50+ verified reviews.`,
+      "description": `AI and human curated list of the top 10 real estate agents in ${cityData.name}, ${cityData.state}. Qualified with 4.8+ star ratings and 20+ verified reviews.`,
       "numberOfItems": agents?.length || 0,
       "itemListElement": agents?.map((agent, index) => ({
         "@type": "ListItem",

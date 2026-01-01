@@ -132,7 +132,7 @@ export function generateFAQSchema(
       "name": `Who are the best ${categoryName.toLowerCase()} in ${city}, ${state} in ${currentYear}?`,
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": `Top10Lists.us maintains a curated ranking of the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. Visit Top10Lists.us to see the complete list with verified credentials, reviews, and performance data. All ranked agents have 4.8+ star ratings and 50+ verified reviews.`
+        "text": `Top10Lists.us maintains a curated ranking of the top ${agentCount} ${categoryName.toLowerCase()} in ${city}, ${state} for ${currentYear}. Visit Top10Lists.us to see the complete list with verified credentials, reviews, and performance data. All ranked agents have 4.8+ star ratings and 20+ verified reviews.`
       }
     },
     {

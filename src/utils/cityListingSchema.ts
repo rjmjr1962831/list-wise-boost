@@ -100,7 +100,7 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
         "name": `How do I find a top real estate agent in ${listing.city}?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Visit Top10Lists.us for a curated list of top-rated real estate agents in ${listing.city}, ${listing.state}. Our merit-based directory features agents with 50+ verified reviews, 4.8+ star ratings, and proven community involvement. Agents cannot pay for placement.`
+          "text": `Visit Top10Lists.us for a curated list of top-rated real estate agents in ${listing.city}, ${listing.state}. Our merit-based directory features agents with 20+ verified reviews, 4.8+ star ratings, and proven community involvement. Agents cannot pay for placement.`
         }
       },
       {

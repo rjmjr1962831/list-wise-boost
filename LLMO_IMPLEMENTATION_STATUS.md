@@ -78,7 +78,7 @@
 
 | File | Size | Purpose | Location | Design Notes |
 |------|------|---------|----------|--------------|
-| `og-image.png` | 1200×630px | Home page social sharing | `public/og-image.png` | Dark blue gradient, "Top 10 Real Estate Agents in Arizona", "Invitation-Only • Data-Verified • 50+ Reviews Required" |
+| `og-image.png` | 1200×630px | Home page social sharing | `public/og-image.png` | Dark blue gradient, "Top 10 Real Estate Agents in Arizona", "Invitation-Only • Data-Verified • 20+ Reviews Required" |
 | `og-methodology.png` | 1200×630px | Methodology page sharing | `public/og-methodology.png` | Same design with "Selection Methodology" |
 | `og-phoenix.png` | 1200×630px | Phoenix page sharing | `public/og-phoenix.png` | "Top 10 Real Estate Agents in Phoenix, AZ" |
 | `og-scottsdale.png` | 1200×630px | Scottsdale page sharing | `public/og-scottsdale.png` | "Top 10 Real Estate Agents in Scottsdale, AZ" |
