@@ -446,3 +446,6 @@ verify_jwt = false
 
 [functions.bulk-fix-pipedrive-fields]
 verify_jwt = false
+
+[functions.backfill-phone-from-licenses]
+verify_jwt = false
