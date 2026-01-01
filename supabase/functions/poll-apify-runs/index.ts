@@ -127,8 +127,8 @@ serve(async (req) => {
             ? parseInt(agent.review_count.replace(/[()]/g, ''), 10) || 0
             : agent.review_count || 0;
 
-          // Filter: 4.5+ rating, 50+ reviews
-          if (rating < 4.5 || reviewCount < 50) {
+          // Filter: 4.5+ rating, 20+ reviews
+          if (rating < 4.5 || reviewCount < 20) {
             skipped++;
             continue;
           }

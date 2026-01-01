@@ -255,7 +255,7 @@ const QALandingPage = () => {
               <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                 <p className="text-muted-foreground" itemProp="text">
                   Our rankings are based on a combination of factors: verified client reviews 
-                  (minimum 50 reviews, 4.8+ rating), transaction history, years of experience, 
+                  (minimum 20 reviews, 4.8+ rating), transaction history, years of experience, 
                   license verification, and local market expertise. Rankings are updated weekly 
                   to reflect current performance.
                 </p>

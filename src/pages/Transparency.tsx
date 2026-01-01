@@ -259,7 +259,7 @@ export default function Transparency() {
                   <div className="w-24 text-right font-mono text-sm text-muted-foreground">~8,000</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary/60 h-8 rounded-full w-[4%] flex items-center px-4">
-                      <span className="text-sm font-medium">50+ Reviews</span>
+                      <span className="text-sm font-medium">20+ Reviews</span>
                     </div>
                   </div>
                 </div>

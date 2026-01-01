@@ -55,7 +55,7 @@ const decemberUpdates: UpdateEntry[] = [
     date: "December 16, 2024",
     title: "Platform Launch",
     items: [
-      "Platform launched with 414 Arizona agents (top 0.2%)",
+      "Platform launched with Arizona agents (top 0.5%)",
       "Initial press coverage secured"
     ],
     type: "expansion"

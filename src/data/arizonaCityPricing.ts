@@ -136,4 +136,4 @@ export function formatPrice(price: number): string {
 
 // Constants for statewide stats
 export const ARIZONA_TOTAL_LICENSED_AGENTS = 220000;
-export const QUALIFICATION_THRESHOLD_PERCENT = 0.2;
+export const QUALIFICATION_THRESHOLD_PERCENT = 0.5;

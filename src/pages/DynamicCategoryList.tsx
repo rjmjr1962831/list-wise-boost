@@ -1169,7 +1169,7 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
-    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 50+ reviews, 4.8+ ratings.`,
+    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`,
     "url": pageUrl,
     "dateModified": lastUpdated,
     "isPartOf": {

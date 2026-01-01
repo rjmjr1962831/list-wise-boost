@@ -57,7 +57,7 @@ const pressArticles: PressArticle[] = [
     tierColor: "bg-primary text-primary-foreground",
     url: "https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072",
     title: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings",
-    summary: "Coverage of Top10Lists.us scientific methodology and anti-pay-to-play approach to Arizona real estate rankings. The invitation-only directory analyzes over 200,000 agents to select the top 0.2%.",
+    summary: "Coverage of Top10Lists.us scientific methodology and anti-pay-to-play approach to Arizona real estate rankings. The invitation-only directory analyzes over 200,000 agents to select the top 0.5%.",
     date: "December 2025",
     logo: businessInsiderLogo,
   },
@@ -323,7 +323,7 @@ const Press = () => {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>• 48 Arizona cities currently covered</li>
                     <li>• 414 agents selected from 200,000+ analyzed</li>
-                    <li>• Top 0.2% qualification rate</li>
+                    <li>• Top 0.5% qualification rate</li>
                     <li>• Nationwide expansion planned for Summer 2026</li>
                   </ul>
                 </CardContent>

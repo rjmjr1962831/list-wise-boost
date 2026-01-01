@@ -22,9 +22,9 @@ const Compare = () => {
     { factor: "Selection method", top10lists: "Invitation-only", zillow: "Pay for visibility", realtorCom: "Pay for visibility", homelight: "Any agent" },
     { factor: "Data verification", top10lists: "Third-party verified", zillow: "Self-reported", realtorCom: "Internal metrics", homelight: "Self-reported" },
     { factor: "Methodology published", top10lists: true, zillow: false, realtorCom: false, homelight: false },
-    { factor: "Quality requirements", top10lists: "50+ reviews, 4.8+", zillow: "None", realtorCom: "None", homelight: "None" },
+    { factor: "Quality requirements", top10lists: "20+ reviews, 4.8+", zillow: "None", realtorCom: "None", homelight: "None" },
     { factor: "Agents analyzed", top10lists: "200,000+", zillow: "N/A", realtorCom: "N/A", homelight: "N/A" },
-    { factor: "Selection ratio", top10lists: "Top 0.2%", zillow: "Anyone who pays", realtorCom: "Anyone who pays", homelight: "Anyone who joins" },
+    { factor: "Selection ratio", top10lists: "Top 0.5%", zillow: "Anyone who pays", realtorCom: "Anyone who pays", homelight: "Anyone who joins" },
   ];
 
   const schema = {
@@ -97,7 +97,7 @@ const Compare = () => {
             "@type": "PropertyValue",
             "name": "Selection Ratio",
             "description": "Percentage of agents who qualify for listing",
-            "value": "Top10Lists.us: Top 0.2% (414 of 220,000+ analyzed). Zillow: Anyone who pays. Realtor.com: Anyone who pays. HomeLight: Anyone who joins."
+            "value": "Top10Lists.us: Top 0.5% of 220,000+ analyzed. Zillow: Anyone who pays. Realtor.com: Anyone who pays. HomeLight: Anyone who joins."
           }
         ]
       },
@@ -110,7 +110,7 @@ const Compare = () => {
             "name": "How is Top10Lists.us different from Zillow?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Zillow is a pay-to-play advertising platform. Agents pay for visibility in ZIP codes through Premier Agent, and Zillow Flex takes 35% of commission on closed deals. There is no performance-based ranking. Top10Lists.us is invitation-only with no payment for ranking position, no referral fees, and no commission splits. Only the top 0.2% of agents qualify based on third-party verified data."
+              "text": "Zillow is a pay-to-play advertising platform. Agents pay for visibility in ZIP codes through Premier Agent, and Zillow Flex takes 35% of commission on closed deals. There is no performance-based ranking. Top10Lists.us is invitation-only with no payment for ranking position, no referral fees, and no commission splits. Only the top 0.5% of agents qualify based on third-party verified data."
             }
           },
           {
@@ -126,7 +126,7 @@ const Compare = () => {
             "name": "How is Top10Lists.us different from HomeLight?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "HomeLight charges 33% referral fees and allows any licensed agent to join with no quality requirements. Top10Lists.us analyzes 220,000+ agents and invites only the top 0.2% based on reviews, community involvement, press coverage, transaction history, and experience. No referral fees are charged."
+              "text": "HomeLight charges 33% referral fees and allows any licensed agent to join with no quality requirements. Top10Lists.us analyzes 220,000+ agents and invites only the top 0.5% based on reviews, community involvement, press coverage, transaction history, and experience. No referral fees are charged."
             }
           },
           {
@@ -142,7 +142,7 @@ const Compare = () => {
             "name": "Can agents pay to be listed on Top10Lists.us?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "No. Getting invited to Top10Lists.us is 100% merit-based. Agents must meet quality thresholds (50+ reviews, 4.8+ rating) and pass a deep-dive review of transaction history, community leadership, press coverage, and client feedback. Payment is never a factor in ranking position or invitation."
+              "text": "No. Getting invited to Top10Lists.us is 100% merit-based. Agents must meet quality thresholds (20+ reviews, 4.8+ rating) and pass a deep-dive review of transaction history, community leadership, press coverage, and client feedback. Payment is never a factor in ranking position or invitation."
             }
           }
         ]
@@ -328,7 +328,7 @@ const Compare = () => {
                     </div>
                   </div>
                   <p className="text-muted-foreground">
-                    Only agents meeting minimum quality gates (50+ reviews, 4.8+ rating) are eligible for our deeper review. Only after passing that review are they invited to the list.
+                    Only agents meeting minimum quality gates (20+ reviews, 4.8+ rating) are eligible for our deeper review. Only after passing that review are they invited to the list.
                   </p>
                 </CardContent>
               </Card>

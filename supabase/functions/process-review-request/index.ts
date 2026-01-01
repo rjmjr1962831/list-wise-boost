@@ -159,7 +159,7 @@ Experience:  ${agentYearsExp}
 
 ─── QUALIFICATION CHECK ───
 ${parseFloat(agentRating) >= 4.8 ? '✅' : '❌'} Rating 4.8+ (Current: ${agentRating})
-${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentReviews})
+${parseInt(agentReviews) >= 20 ? '✅' : '❌'} 20+ Reviews (Current: ${agentReviews})
 
 Request ID: ${reviewRequestId}
     `.trim();
@@ -199,7 +199,7 @@ Request ID: ${reviewRequestId}
   const adminEmail = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
 
   if (smtpUsername && smtpPassword) {
-    const qualificationStatus = parseFloat(agentRating) >= 4.8 && parseInt(agentReviews) >= 50 
+    const qualificationStatus = parseFloat(agentRating) >= 4.8 && parseInt(agentReviews) >= 20 
       ? '✅ LIKELY QUALIFIES' 
       : '⚠️ MAY NOT QUALIFY';
 
@@ -243,7 +243,7 @@ Request ID: ${reviewRequestId}
       <h3>Qualification Check</h3>
       <ul>
         <li>${parseFloat(agentRating) >= 4.8 ? '✅' : '❌'} Rating 4.8+ (Current: ${agentRating})</li>
-        <li>${parseInt(agentReviews) >= 50 ? '✅' : '❌'} 50+ Reviews (Current: ${agentReviews})</li>
+        <li>${parseInt(agentReviews) >= 20 ? '✅' : '❌'} 20+ Reviews (Current: ${agentReviews})</li>
       </ul>
       
       <p><strong>Next Steps:</strong> Review this agent in Pipedrive and respond within 24 hours.</p>

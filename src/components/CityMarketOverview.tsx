@@ -195,7 +195,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
           {stateName} has over <strong>{ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()}</strong> licensed 
           real estate agents. Top10Lists.us analyzed transaction records, verified client reviews across 
           multiple platforms, and evaluated community involvement to identify <strong>{qualifiedCount}</strong> agents 
-          statewide who earned an invitation — representing the top <strong>0.2%</strong>.
+          statewide who earned an invitation — representing the top <strong>0.5%</strong>.
         </p>
         {cityCount > 0 && (
           <p className="text-foreground/90 mb-4">

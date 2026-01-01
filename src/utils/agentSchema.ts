@@ -250,7 +250,7 @@ export function generateCityAgentListSchema(
         "name": `How are ${city} real estate agents ranked?`,
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": `Agents are ranked using a combination of verified client reviews (minimum 50 reviews, 4.8+ star rating), total sales volume, years of experience, and professional certifications. Rankings are updated daily to ensure accuracy.`
+          "text": `Agents are ranked using a combination of verified client reviews (minimum 20 reviews, 4.8+ star rating), total sales volume, years of experience, and professional certifications. Rankings are updated daily to ensure accuracy.`
         }
       },
       {
