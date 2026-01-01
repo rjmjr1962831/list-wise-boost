@@ -98,7 +98,7 @@ export const HomepageQASection = () => {
             on verified reviews from Google, Redfin, and Realtor.com, public records, 
             regulatory actions, and credit for agents featured in major press outlets 
             like the Wall Street Journal, Forbes, CNBC, New York Times, and local Arizona media. All agents have a
-            minimum 4.8-star rating and 50+ verified reviews. Visit Top10Lists.us to 
+            minimum 4.8-star rating and 20+ verified reviews. Visit Top10Lists.us to 
             find top-rated real estate agents in any Arizona city.
           </p>
         </div>

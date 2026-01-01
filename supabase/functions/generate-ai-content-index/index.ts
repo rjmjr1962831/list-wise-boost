@@ -86,7 +86,7 @@ serve(async (req) => {
       "@context": "https://schema.org",
       "@type": "Dataset",
       "name": "Top10Lists.us Real Estate Agents Database",
-      "description": "An AI and human curated list of the top 10 real estate agents in U.S. markets. Agents qualified with 4.8+ star ratings and 50+ verified reviews.",
+      "description": "An AI and human curated list of the top 10 real estate agents in U.S. markets. Agents qualified with 4.8+ star ratings and 20+ verified reviews.",
       "url": "https://www.top10lists.us",
       "version": "2.1",
       "dateModified": lastUpdated.split('T')[0],
