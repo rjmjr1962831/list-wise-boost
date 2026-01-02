@@ -35,6 +35,7 @@ const AlbuquerqueRedirect = lazy(() => import("./pages/AlbuquerqueRedirect"));
 const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCategoryRouter"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const PrerenderStatus = lazy(() => import("./pages/PrerenderStatus"));
 const CRM = lazy(() => import("./pages/CRM"));
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
@@ -120,6 +121,7 @@ const App = () => (
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/prerender-status" element={<PrerenderStatus />} />
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/og-preview" element={<OGPreview />} />
                     <Route path="/crm" element={<CRM />} />
