@@ -17,11 +17,13 @@ async function searchZillowWithExa(
   name: string,
   city: string,
   stateAbbr: string,
+  licenseNumber: string,
   exaApiKey: string
 ): Promise<ExaResult | null> {
+  // Include license number in search query for better matching
   const searchQuery = city 
-    ? `${name} Zillow real estate agent ${city} ${stateAbbr}`
-    : `${name} Zillow real estate agent ${stateAbbr}`;
+    ? `"${name}" "${licenseNumber}" real estate agent site:zillow.com/profile`
+    : `"${name}" "${licenseNumber}" real estate agent site:zillow.com/profile`;
   
   console.log(`[${name}] Exa search: "${searchQuery}"`);
 
@@ -167,6 +169,7 @@ serve(async (req) => {
         license.name,
         license.city || '',
         license.state,
+        license.license_number || '',
         EXA_API_KEY
       );
       const elapsed = Date.now() - startTime;
