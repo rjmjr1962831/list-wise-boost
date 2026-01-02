@@ -238,9 +238,9 @@ serve(async (req) => {
         .select('id, name, city, state, license_number')
         .is('zillow_scraped_at', null);
       
-      // Apply optional state filter
+      // Apply optional state filter (normalize to uppercase)
       if (stateParam) {
-        query = query.eq('state', stateParam);
+        query = query.eq('state', stateParam.toUpperCase());
       }
       
       const { data, error } = await query
