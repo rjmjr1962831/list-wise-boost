@@ -449,3 +449,9 @@ verify_jwt = false
 
 [functions.backfill-phone-from-licenses]
 verify_jwt = false
+
+[functions.geo-monitor-cron]
+verify_jwt = false
+
+[functions.prerender-diagnostics]
+verify_jwt = false
