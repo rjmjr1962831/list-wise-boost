@@ -229,13 +229,21 @@ serve(async (req) => {
     // GET: Fetch licenses needing Zillow scraping
     if (req.method === 'GET' && action === 'fetch_licenses') {
       const limit = parseInt(url.searchParams.get('limit') || '100');
+      const stateParam = url.searchParams.get('state');
       
-      console.log(`enrichment-api - Fetching up to ${limit} licenses needing Zillow scraping`);
+      console.log(`enrichment-api - Fetching up to ${limit} licenses needing Zillow scraping${stateParam ? ` for state: ${stateParam}` : ''}`);
       
-      const { data, error } = await supabase
+      let query = supabase
         .from('state_licenses')
         .select('id, name, city, state, license_number')
-        .is('zillow_scraped_at', null)
+        .is('zillow_scraped_at', null);
+      
+      // Apply optional state filter
+      if (stateParam) {
+        query = query.eq('state', stateParam);
+      }
+      
+      const { data, error } = await query
         .order('created_at', { ascending: true })
         .limit(limit);
 
