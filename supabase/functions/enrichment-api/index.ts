@@ -158,7 +158,7 @@ serve(async (req) => {
         .from('professionals')
         .update(sanitizedUpdate)
         .eq('id', professional_id)
-        .select('id, name')
+        .select('id, name, review_stars_rating, num_total_reviews, synthesized_bio, active')
         .single();
 
       if (error) {
@@ -170,9 +170,58 @@ serve(async (req) => {
       }
 
       console.log(`enrichment-api - Successfully updated professional ${professional_id}`);
+
+      // Check if agent is qualified (4.8+ rating AND 20+ reviews) and needs synthesis
+      const isQualified = data.review_stars_rating >= 4.8 && data.num_total_reviews >= 20;
+      let synthesisTriggerResult = null;
+      
+      if (isQualified && !data.synthesized_bio) {
+        console.log(`enrichment-api - Agent ${professional_id} is QUALIFIED, triggering synthesis...`);
+        
+        // Set active = true for qualified agents
+        await supabase
+          .from('professionals')
+          .update({ active: true })
+          .eq('id', professional_id);
+        
+        // Trigger synthesis in background
+        try {
+          const synthesisResponse = await fetch(`${supabaseUrl}/functions/v1/synthesize-agent-profile`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`
+            },
+            body: JSON.stringify({ professional_id })
+          });
+          
+          if (synthesisResponse.ok) {
+            synthesisTriggerResult = 'triggered';
+            console.log(`enrichment-api - Synthesis triggered for ${professional_id}`);
+          } else {
+            synthesisTriggerResult = `failed: ${synthesisResponse.status}`;
+            console.error(`enrichment-api - Synthesis trigger failed: ${synthesisResponse.status}`);
+          }
+        } catch (synthError) {
+          synthesisTriggerResult = `error: ${synthError instanceof Error ? synthError.message : 'unknown'}`;
+          console.error('enrichment-api - Synthesis trigger error:', synthError);
+        }
+      } else if (isQualified) {
+        console.log(`enrichment-api - Agent ${professional_id} is QUALIFIED but already has bio`);
+        synthesisTriggerResult = 'skipped_has_bio';
+      } else {
+        console.log(`enrichment-api - Agent ${professional_id} is NOT qualified (rating: ${data.review_stars_rating}, reviews: ${data.num_total_reviews})`);
+        synthesisTriggerResult = 'not_qualified';
+      }
       
       return new Response(
-        JSON.stringify({ success: true, updated: data, fields_updated: Object.keys(sanitizedUpdate) }),
+        JSON.stringify({ 
+          success: true, 
+          updated: data, 
+          fields_updated: Object.keys(sanitizedUpdate),
+          qualified: isQualified,
+          synthesis: synthesisTriggerResult
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
