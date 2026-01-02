@@ -234,7 +234,7 @@ serve(async (req) => {
       
       const { data, error } = await supabase
         .from('state_licenses')
-        .select('id, name, city, state')
+        .select('id, name, city, state, license_number')
         .is('zillow_scraped_at', null)
         .order('created_at', { ascending: true })
         .limit(limit);
