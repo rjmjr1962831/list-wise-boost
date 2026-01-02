@@ -455,3 +455,6 @@ verify_jwt = false
 
 [functions.prerender-diagnostics]
 verify_jwt = false
+
+[functions.enrichment-api]
+verify_jwt = false
