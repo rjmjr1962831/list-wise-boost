@@ -464,3 +464,6 @@ verify_jwt = false
 
 [functions.test-firecrawl-zillow]
 verify_jwt = false
+
+[functions.exa-ca-zillow-search]
+verify_jwt = false

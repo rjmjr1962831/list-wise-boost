@@ -2168,6 +2168,8 @@ export type Database = {
           city: string | null
           created_at: string | null
           email: string | null
+          exa_search_notes: string | null
+          exa_searched_at: string | null
           id: string
           license_number: string
           license_type: string | null
@@ -2198,6 +2200,8 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           email?: string | null
+          exa_search_notes?: string | null
+          exa_searched_at?: string | null
           id?: string
           license_number: string
           license_type?: string | null
@@ -2228,6 +2232,8 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           email?: string | null
+          exa_search_notes?: string | null
+          exa_searched_at?: string | null
           id?: string
           license_number?: string
           license_type?: string | null
