@@ -5,6 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { RefreshCw, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
+type PullProgress = {
+  total: number;
+  processed: number;
+  updated: number;
+  skipped: number;
+  errors: number;
+};
+
 export default function AdminPipedriveSync() {
   const [stats, setStats] = useState({
     total: 0,
@@ -19,6 +27,16 @@ export default function AdminPipedriveSync() {
   const [recentErrors, setRecentErrors] = useState<any[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isSyncingProfessionals, setIsSyncingProfessionals] = useState(false);
+
+  const [isPullingBios, setIsPullingBios] = useState(false);
+  const [pullProgress, setPullProgress] = useState<PullProgress>({
+    total: 0,
+    processed: 0,
+    updated: 0,
+    skipped: 0,
+    errors: 0,
+  });
+
   const { toast } = useToast();
 
   const fetchStats = async () => {
@@ -136,6 +154,79 @@ export default function AdminPipedriveSync() {
       });
     } finally {
       setIsSyncingProfessionals(false);
+    }
+  };
+
+  const handlePullMissingBiosFromPipedrive = async () => {
+    setIsPullingBios(true);
+    setPullProgress({ total: 0, processed: 0, updated: 0, skipped: 0, errors: 0 });
+
+    let updated = 0;
+    let skipped = 0;
+    let errors = 0;
+
+    try {
+      // Pull only active professionals missing synthesized_bio.
+      // We'll attempt the Pipedrive pull; if a record isn't linked to Pipedrive, it will error/skip.
+      const { data: missing, error } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('active', true)
+        .is('synthesized_bio', null)
+        .limit(200);
+
+      if (error) throw error;
+
+      const ids = (missing || []).map((r: any) => r.id).filter(Boolean);
+      setPullProgress((p) => ({ ...p, total: ids.length }));
+
+      for (const id of ids) {
+        try {
+          const { data, error: invokeError } = await supabase.functions.invoke('fetch-from-pipedrive', {
+            body: { professional_id: id },
+          });
+
+          if (invokeError) throw invokeError;
+
+          const updates = (data?.updates as string[] | undefined) || [];
+          const didUpdateBio = updates.includes('synthesized_bio');
+
+          if (didUpdateBio) updated += 1;
+          else skipped += 1;
+
+          setPullProgress((p) => ({
+            ...p,
+            processed: p.processed + 1,
+            updated,
+            skipped,
+            errors,
+          }));
+        } catch (_err) {
+          errors += 1;
+          setPullProgress((p) => ({
+            ...p,
+            processed: p.processed + 1,
+            updated,
+            skipped,
+            errors,
+          }));
+        }
+      }
+
+      toast({
+        title: 'Pipedrive Pull Complete',
+        description: `Updated bios: ${updated} • Skipped: ${skipped} • Errors: ${errors}`,
+      });
+
+      fetchStats();
+    } catch (err: any) {
+      toast({
+        title: 'Pull Failed',
+        description: err?.message || 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPullingBios(false);
     }
   };
 
