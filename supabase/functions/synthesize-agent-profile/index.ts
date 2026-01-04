@@ -228,13 +228,13 @@ const OPENAI_SYNTHESIS_TOOL = {
   type: "function" as const,
   function: {
     name: 'synthesize_profile',
-    description: 'Create a 150-200 word professional biography in 4 paragraphs with markdown bold formatting for key categories',
+    description: 'Create a 250-300 word professional biography in EXACTLY 4 paragraphs with markdown bold formatting for key categories. Plain text only - no HTML tags.',
     parameters: {
       type: 'object',
       properties: {
         synthesized_bio: {
           type: 'string',
-          description: '150-200 word biography in 4 paragraphs. Bold numbers/stats, certifications, awards, press outlets, community roles, and charities. Do NOT bold names, brokerages, locations. Never include cities/neighborhoods/service areas.'
+          description: '250-300 word biography in EXACTLY 4 paragraphs separated by double newlines. Paragraph 1: Track record (name, brokerage, years, reviews, stats). Paragraph 2: Expertise (credentials, certifications, education). Paragraph 3: Recognition (awards, rankings, press). Paragraph 4: Community service (REQUIRED - boards, volunteer, charities). Plain text only - NO HTML tags. Bold using **markdown** for numbers, certifications, awards, press outlets, community roles, charities. Do NOT bold names, brokerages, locations.'
         },
         specialties_extracted: {
           type: 'array',
@@ -717,58 +717,59 @@ serve(async (req) => {
 ## OUTPUT REQUIREMENTS
 
 ### Length
-150-200 words in 4 paragraphs with blank lines between each.
+EXACTLY 250-300 words in EXACTLY 4 paragraphs. Use double newlines (\\n\\n) between paragraphs.
 
-### Structure
-Paragraph 1: Name, brokerage, years active, headline stat (transactions and/or reviews)
-Paragraph 2: Credentials — education, certifications, professional designations
-Paragraph 3: Recognition — press mentions, awards, rankings (cite specific publications by name)
-Paragraph 4: Community involvement — church/faith community, charities, nonprofit board seats, volunteer work, coaching, mentoring, sponsorships, fundraising, community events, school involvement, youth sports, civic organizations, professional associations leadership
+### Format
+PLAIN TEXT ONLY. NO HTML TAGS whatsoever. No <p>, <strong>, <br>, etc.
+Use **markdown bold** (double asterisks) for emphasis.
 
-### Formatting
-Use **bold** markdown for these CATEGORIES (apply to whatever data exists for each agent):
-- Numbers and statistics (transaction counts, review counts, ratings, years, percentages, dollar amounts raised)
-- Certifications and designations (any professional credential acronyms or full names)
+### Structure (REQUIRED - all 4 paragraphs must be present)
+**Paragraph 1 - Track Record:** Name, brokerage, years active, headline stat (transactions and/or reviews, rating)
+**Paragraph 2 - Expertise:** Education, certifications, professional designations, specialized knowledge, market expertise
+**Paragraph 3 - Recognition:** Press mentions (cite by name), awards, rankings, industry honors. If minimal data, mention any team/brokerage recognition.
+**Paragraph 4 - Community Service (REQUIRED):** Boards, volunteer work, charities, church/faith community, coaching, mentoring, sponsorships, civic organizations. If minimal data, mention general community involvement or professional association participation.
+
+### Formatting (Markdown Bold)
+Use **bold** for these CATEGORIES:
+- Numbers and statistics (transaction counts, review counts, ratings, years, percentages, dollar amounts)
+- Certifications and designations (CRS, GRI, CLHMS, etc.)
 - Awards and honors (any named award, club, or recognition)
-- Press and media outlets (any publication, news source, or media mention)
-- Community roles (board positions, volunteer titles, leadership roles, committee chairs)
-- Named charitable organizations (any nonprofit, charity, church program, civic group, foundation, school, youth organization)
-- Event names (galas, fundraisers, tournaments, drives)
+- Press and media outlets (any publication, news source)
+- Community roles (board positions, volunteer titles)
+- Named charitable organizations (nonprofits, charities, foundations)
 
 Do NOT bold:
 - People's names
 - Brokerage names
 - City or location names
-- Generic words like "experience", "service", "clients", "transactions"
+- Generic words like "experience", "service", "clients"
 
 ### CRITICAL: What to NEVER include
-- Cities, neighborhoods, or service areas (this is premium content)
+- Cities, neighborhoods, or service areas (premium content)
 - Zip codes or geographic regions
 - Property listings or current inventory
 - Promotional language ("Call today!")
 - Unverifiable superlatives ("best agent in Phoenix")
+- HTML tags of any kind
 
 ### Content Rules
 - Write in third person
 - Lead with verifiable facts, not opinions
 - Include specific numbers when available
-- Name press outlets and awards specifically — generic "award-winning" is worthless
-- If no press mentions exist, skip paragraph 3 (do not invent)
-- If no community involvement data exists, skip paragraph 4 (do not invent)
-- For paragraph 4, include ALL community activities found: volunteer work, board memberships, sponsorships, coaching, faith community service, charitable donations, event organizing, mentoring programs
+- Name press outlets and awards specifically
+- ALL 4 paragraphs are REQUIRED - synthesize from available data
+- For paragraph 4: If no specific charities found, mention professional association involvement or general community service commitment
 
 ### CRITICAL: Paraphrasing Requirement
-- NEVER copy phrases verbatim from the existing bio — completely rephrase everything
-- If bio says "unwavering passion and integrity", write something like "a commitment to excellence and honest practice"
-- If bio says "extensive local knowledge", write something like "deep understanding of the market" or "years of hands-on experience"
-- Transform every phrase into your own words while preserving the meaning
+- NEVER copy phrases verbatim from the existing bio
+- Transform every phrase into your own words
 - Using the same adjectives or phrasing as the source is FORBIDDEN
 
-## EXAMPLE OUTPUT
+## EXAMPLE OUTPUT (Plain text, 4 paragraphs, ~280 words)
 
-Adam Hamblen has led the Hamblen Team at Realty One Group since **2003**, completing over **3,500 transactions** with a **5-star rating** across **1,000+ reviews**.
+Adam Hamblen has led the Hamblen Team at Realty One Group since **2003**, completing over **3,500 transactions** with a **5-star rating** across **1,000+ reviews**. His two-decade track record demonstrates consistent excellence in residential real estate.
 
-An Arizona native with degrees from ASU and Ottawa University, Hamblen holds elite certifications including **Certified Luxury Home Marketing Specialist (CLHMS)** and **Certified Negotiation Expert (CNE)**. He's been a **Dave Ramsey Endorsed Local Provider** since 2010.
+An Arizona native with degrees from ASU and Ottawa University, Hamblen holds elite certifications including **Certified Luxury Home Marketing Specialist (CLHMS)** and **Certified Negotiation Expert (CNE)**. He has been a **Dave Ramsey Endorsed Local Provider** since 2010, reflecting his commitment to ethical client guidance.
 
 His market insights have been featured in **Phoenix Business Journal**, **AZCentral**, and **Phoenix Agent Magazine**. The Hamblen Team has earned Realty One Group's **President's Circle Award** three consecutive years and ranks in the **top 1% of agents nationwide**.
 
@@ -783,7 +784,14 @@ ${JSON.stringify(context.salesStats, null, 2)}` : '';
 === CERTIFICATIONS (INCLUDE THESE) ===
 ${JSON.stringify(context.certifications, null, 2)}` : '';
 
-    const userPrompt = `Create a 150-200 word professional biography for this agent following the exact 4-paragraph structure.
+    const userPrompt = `Create a 250-300 word professional biography in EXACTLY 4 paragraphs. PLAIN TEXT ONLY - NO HTML TAGS.
+
+⚠️ CRITICAL FORMAT REQUIREMENTS:
+- EXACTLY 4 paragraphs (Track Record → Expertise → Recognition → Community Service)
+- 250-300 words total
+- Plain text with **markdown bold** only - NO <p>, <strong>, <br>, or any HTML
+- Separate paragraphs with double newlines (\\n\\n)
+- ALL 4 paragraphs are REQUIRED - do not skip any
 
 ⚠️ CRITICAL UNIQUENESS REQUIREMENT: This biography MUST be completely unique. Do not use generic phrases like:
 - "dedicated to client satisfaction" 
@@ -830,13 +838,13 @@ ${context.hasDuplicateSource ? '\n⚠️ NOTE: This bio data was duplicated in t
 ${context.existingCommunityRoles?.length > 0 ? JSON.stringify(context.existingCommunityRoles, null, 2) : 'No existing community roles - search bio and website for volunteer work, board seats, charity involvement'}
 
 REMEMBER:
-- 4 paragraphs with blank lines between each
-- Bold numbers, certifications, awards, press outlets, community roles, charities
+- EXACTLY 4 paragraphs: Track Record → Expertise → Recognition → Community Service
+- 250-300 words total, separated by double newlines
+- PLAIN TEXT ONLY - NO HTML TAGS (no <p>, <strong>, <br>, etc.)
+- Use **markdown bold** for numbers, certifications, awards, press outlets, community roles, charities
 - Do NOT bold names, brokerages, locations, or generic words
 - NEVER include cities, neighborhoods, or service areas
-- Skip paragraph 3 if no press/awards exist
-- For paragraph 4: THOROUGHLY search all sources for community involvement
-- Skip paragraph 4 ONLY if absolutely no community involvement exists
+- ALL 4 paragraphs are REQUIRED - synthesize paragraph 4 from any available community data
 - EVERY BIO MUST BE UNIQUE - use the specific stats and facts for THIS agent`;
 
     // Try Claude first, fall back to OpenAI GPT-4o on failure
@@ -862,13 +870,13 @@ REMEMBER:
           tools: [
             {
               name: 'synthesize_profile',
-              description: 'Create a 150-200 word professional biography in 4 paragraphs with markdown bold formatting for key categories',
+              description: 'Create a 250-300 word professional biography in EXACTLY 4 paragraphs with markdown bold formatting. Plain text only - no HTML.',
               input_schema: {
                 type: 'object',
                 properties: {
                   synthesized_bio: {
                     type: 'string',
-                    description: '150-200 word biography in 4 paragraphs. Bold numbers/stats, certifications, awards, press outlets, community roles, and charities. Do NOT bold names, brokerages, locations. Never include cities/neighborhoods/service areas.'
+                    description: '250-300 word biography in EXACTLY 4 paragraphs separated by double newlines. Paragraph 1: Track record. Paragraph 2: Expertise. Paragraph 3: Recognition. Paragraph 4: Community service (REQUIRED). Plain text only - NO HTML tags. Use **markdown bold** for numbers, certifications, awards, press, community roles, charities.'
                   },
                   specialties_extracted: {
                     type: 'array',
@@ -1001,10 +1009,27 @@ REMEMBER:
       console.log('⚠️ Used OpenAI GPT-4o fallback for this synthesis');
     }
     
-    // Convert markdown bold (**text**) to HTML <strong> tags
+    // Post-process bio: strip any HTML tags Claude might have included, then convert markdown to HTML
     if (synthesizedData.synthesized_bio) {
-      synthesizedData.synthesized_bio = synthesizedData.synthesized_bio
-        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      // First, strip any HTML tags that shouldn't be there
+      let cleanBio = synthesizedData.synthesized_bio
+        .replace(/<\/?p>/g, '\n\n')  // Convert <p> tags to double newlines
+        .replace(/<br\s*\/?>/gi, '\n')  // Convert <br> to single newline
+        .replace(/<\/?strong>/g, '**')  // Convert <strong> to markdown bold
+        .replace(/<\/?b>/g, '**')  // Convert <b> to markdown bold
+        .replace(/<\/?em>/g, '*')  // Convert <em> to markdown italic
+        .replace(/<\/?i>/g, '*')  // Convert <i> to markdown italic
+        .replace(/<[^>]+>/g, '')  // Strip any remaining HTML tags
+        .replace(/\n{3,}/g, '\n\n')  // Normalize multiple newlines to double
+        .trim();
+      
+      // Now convert markdown bold to HTML strong
+      cleanBio = cleanBio.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      
+      // Convert double newlines to paragraph breaks
+      cleanBio = cleanBio.split('\n\n').map((p: string) => `<p>${p.trim()}</p>`).join('\n');
+      
+      synthesizedData.synthesized_bio = cleanBio;
     }
     
     console.log('Synthesized data:', JSON.stringify(synthesizedData, null, 2));

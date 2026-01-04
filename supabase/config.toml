@@ -467,3 +467,6 @@ verify_jwt = false
 
 [functions.exa-ca-zillow-search]
 verify_jwt = false
+
+[functions.resync-long-bios]
+verify_jwt = false
