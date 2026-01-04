@@ -390,4 +390,14 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+
+  <!-- =========================================== -->
+  <!-- FEATURED AGENT PROFILES - Example for llms.txt -->
+  <!-- =========================================== -->
+  <url>
+    <loc>https://www.top10lists.us/arizona/scottsdale/top10realestateagents/lauren-rosin-2288</loc>
+    <lastmod>2026-01-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>
