@@ -367,6 +367,18 @@ serve(async (req) => {
     // Helper to truncate strings to Pipedrive's 255 char limit
     const truncate = (str: string, max = 255) => str && str.length > max ? str.substring(0, max - 3) + '...' : str;
 
+    // Helper to format dates to YYYY-MM-DD for Pipedrive
+    const toDateOnly = (dateVal: any): string | null => {
+      if (!dateVal) return null;
+      try {
+        const d = new Date(dateVal);
+        if (isNaN(d.getTime())) return null;
+        return d.toISOString().split('T')[0]; // Returns YYYY-MM-DD
+      } catch {
+        return null;
+      }
+    };
+
     // Extract address components from business_address JSON
     const businessAddress = professional.business_address || {};
     const streetAddress = businessAddress.address1 || professional.address || '';
@@ -418,10 +430,10 @@ serve(async (req) => {
       active_status: professional.active ? 'Active' : 'Inactive',
       // Funnel & subscription tracking fields
       funnel_status: truncate(syncData.funnel_status),
-      funnel_started_at: syncData.funnel_started_at,
+      funnel_started_at: toDateOnly(syncData.funnel_started_at),
       subscription_status: truncate(syncData.subscription_status),
       promo_code_used: truncate(syncData.promo_code_used),
-      last_payment_date: syncData.last_payment_date,
+      last_payment_date: toDateOnly(syncData.last_payment_date),
       last_payment_status: truncate(syncData.last_payment_status),
       cities_subscribed: truncate(syncData.cities_subscribed),
     };
