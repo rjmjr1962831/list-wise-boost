@@ -5,12 +5,10 @@ import { Helmet } from 'react-helmet-async';
 import { Loader2 } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { Professional } from '@/types/professional';
-import { generateAgentSlug } from '@/utils/routeHelpers';
 import { generateAgentProfileSchema, professionalToSchemaData } from '@/utils/agentSchema';
 import { generateVerifiedAgentSchema, generateCitationText } from '@/utils/verifiedAgentSchema';
 import { professionalToVerifiedAgent } from '@/utils/professionalToVerifiedAgent';
 import { VerifiedAgent } from '@/types/verifiedAgent';
-import { normalizeStateSlug } from '@/utils/stateSlugMapping';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
 
 interface DBProfessional {
@@ -63,6 +61,10 @@ interface DBProfessional {
   card_created_at: string | null;
   created_at: string;
   updated_at: string;
+  // New canonical fields
+  canonical_slug: string | null;
+  state_slug: string | null;
+  served_cities: string[] | null;
 }
 
 interface City {
@@ -158,26 +160,11 @@ function convertToProfessional(dbProf: DBProfessional): Professional {
   return enriched;
 }
 
-export default function AgentProfile() {
-  const { stateSlug, citySlug, categorySlug, agentSlug } = useParams<{ 
+export default function CanonicalAgentProfile() {
+  const { stateSlug, canonicalSlug } = useParams<{ 
     stateSlug: string; 
-    citySlug: string; 
-    categorySlug: string;
-    agentSlug: string;
+    canonicalSlug: string;
   }>();
-  
-  // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
-  const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
-  
-  // If state slug is an abbreviation, redirect to canonical full name URL
-  if (stateSlug && stateNormalized?.needsRedirect) {
-    const newPath = `/${stateNormalized.normalized}/${citySlug}/${categorySlug}/${agentSlug}`;
-    console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
-    return <Navigate to={newPath} replace />;
-  }
-  
-  // Use normalized state slug for all operations
-  const normalizedStateSlug = stateNormalized?.normalized || stateSlug || '';
   
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -193,23 +180,41 @@ export default function AgentProfile() {
 
   useEffect(() => {
     const fetchAgent = async () => {
-      if (!normalizedStateSlug || !citySlug || !categorySlug || !agentSlug) {
+      if (!stateSlug || !canonicalSlug) {
         setNotFound(true);
         setLoading(false);
         return;
       }
 
       try {
-        // Fetch city
-        const { data: cityData, error: cityError } = await supabase
-          .from('cities')
+        // Query professional by state_slug + canonical_slug (uses the new index)
+        const { data: agent, error: agentError } = await supabase
+          .from('professionals')
           .select('*')
-          .eq('slug', citySlug)
-          .eq('state_slug', normalizedStateSlug)
+          .eq('state_slug', stateSlug)
+          .eq('canonical_slug', canonicalSlug)
           .eq('active', true)
           .single();
 
+        if (agentError || !agent) {
+          console.log('[CanonicalAgentProfile] Agent not found:', { stateSlug, canonicalSlug, error: agentError });
+          setNotFound(true);
+          setLoading(false);
+          return;
+        }
+
+        // Store raw DB professional
+        setRawDbProf(agent as DBProfessional);
+
+        // Fetch city info
+        const { data: cityData, error: cityError } = await supabase
+          .from('cities')
+          .select('*')
+          .eq('id', agent.city_id)
+          .single();
+
         if (cityError || !cityData) {
+          console.log('[CanonicalAgentProfile] City not found:', agent.city_id);
           setNotFound(true);
           setLoading(false);
           return;
@@ -217,15 +222,15 @@ export default function AgentProfile() {
 
         setCity(cityData);
 
-        // Fetch category
+        // Fetch category info
         const { data: categoryData, error: categoryError } = await supabase
           .from('categories')
           .select('*')
-          .eq('slug', categorySlug)
-          .eq('active', true)
+          .eq('id', agent.category_id)
           .single();
 
         if (categoryError || !categoryData) {
+          console.log('[CanonicalAgentProfile] Category not found:', agent.category_id);
           setNotFound(true);
           setLoading(false);
           return;
@@ -233,65 +238,10 @@ export default function AgentProfile() {
 
         setCategory(categoryData);
 
-        // Fetch professionals for this city/category
-        const { data: professionals, error: profError } = await supabase
-          .from('professionals')
-          .select('*')
-          .eq('city_id', cityData.id)
-          .eq('category_id', categoryData.id)
-          .eq('active', true);
-
-        if (profError || !professionals || professionals.length === 0) {
-          setNotFound(true);
-          setLoading(false);
-          return;
-        }
-
-        // Find the agent by matching slug
-        // New format: slug ends with 4 digits of phone (e.g., "andrew-bloom-7521")
-        // Match by name slug prefix + phone suffix for disambiguation
-        const phoneSuffixMatch = agentSlug?.match(/-(\d{4})$/);
-        let agent: any = null;
-        
-        if (phoneSuffixMatch) {
-          // New format with phone suffix - match by name AND phone
-          const phoneSuffix = phoneSuffixMatch[1];
-          const nameSlug = agentSlug!.replace(/-\d{4}$/, '');
-          
-          agent = professionals.find((p: any) => {
-            const pNameSlug = generateAgentSlug(p.name);
-            if (pNameSlug !== nameSlug) return false;
-            if (!p.phone) return false;
-            const digits = String(p.phone).replace(/\D/g, '');
-            return digits.slice(-4) === phoneSuffix;
-          });
-        } else {
-          // Legacy format - just match by name slug
-          agent = professionals.find((p: any) => 
-            generateAgentSlug(p.name) === agentSlug
-          );
-        }
-
-        if (!agent) {
-          setNotFound(true);
-          setLoading(false);
-          return;
-        }
-
-        // Check if agent has a canonical_slug - if so, redirect to canonical URL
-        if (agent.canonical_slug && agent.state_slug) {
-          console.log(`[AgentProfile] Agent has canonical URL, redirecting: /${agent.state_slug}/agents/${agent.canonical_slug}`);
-          window.location.replace(`/${agent.state_slug}/agents/${agent.canonical_slug}`);
-          return;
-        }
-
-        // Store raw DB professional for verified transformation
-        setRawDbProf(agent as DBProfessional);
-        
         // Convert to Professional for existing components
         setProfessional(convertToProfessional(agent as DBProfessional));
         
-        // Convert to VerifiedAgent for new components
+        // Convert to VerifiedAgent for enhanced schema
         const stateAbbrev = cityData.state === 'Arizona' ? 'AZ' : cityData.state.substring(0, 2).toUpperCase();
         const verified = professionalToVerifiedAgent(
           agent,
@@ -304,27 +254,30 @@ export default function AgentProfile() {
         setLoading(false);
 
       } catch (error) {
-        console.error('Error fetching agent:', error);
+        console.error('[CanonicalAgentProfile] Error fetching agent:', error);
         setNotFound(true);
         setLoading(false);
       }
     };
 
     fetchAgent();
-  }, [stateSlug, citySlug, categorySlug, agentSlug]);
+  }, [stateSlug, canonicalSlug]);
 
   // Generate loading state meta info from URL params
-  const loadingCityName = citySlug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Arizona';
-  const loadingAgentName = agentSlug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Agent';
-  const loadingDescription = `${loadingAgentName} is a top-rated real estate agent in ${loadingCityName}, Arizona. View verified credentials, reviews, and contact information.`;
+  const loadingAgentName = canonicalSlug?.replace(/-\d{4}$/, '').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'Agent';
+  const loadingStateName = stateSlug?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) || 'State';
+  const loadingDescription = `${loadingAgentName} is a top-rated real estate agent in ${loadingStateName}. View verified credentials, reviews, and contact information.`;
+
+  // Canonical URL for this page
+  const canonicalUrl = `https://www.top10lists.us/${stateSlug}/agents/${canonicalSlug}`;
 
   if (loading) {
     return (
       <>
         <Helmet>
-          <title>{`${loadingAgentName} - Real Estate Agent in ${loadingCityName}, AZ | Top10Lists.us`}</title>
+          <title>{`${loadingAgentName} - Real Estate Agent in ${loadingStateName} | Top10Lists.us`}</title>
           <meta name="description" content={loadingDescription} />
-        <meta name="robots" content="noindex, nofollow" />
+          <meta name="robots" content="noindex, nofollow" />
         </Helmet>
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -347,7 +300,7 @@ export default function AgentProfile() {
     city.name,
     city.state,
     city.state.substring(0, 2).toUpperCase(),
-    agentSlug || ''
+    canonicalSlug || ''
   );
   const agentSchema = generateAgentProfileSchema(schemaData);
 
@@ -355,19 +308,24 @@ export default function AgentProfile() {
   const verifiedSchema = verifiedAgent ? generateVerifiedAgentSchema(verifiedAgent) : null;
   const citationText = verifiedAgent ? generateCitationText(verifiedAgent) : null;
 
+  // Get state abbreviation for display
+  const stateAbbrev = city.state === 'Arizona' ? 'AZ' : city.state.substring(0, 2).toUpperCase();
+
   return (
     <>
       <Helmet>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
-        <meta name="robots" content="noindex, nofollow" />
+        <meta name="robots" content="index, follow" />
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="profile" />
+        <meta property="og:url" content={canonicalUrl} />
         <meta property="og:image" content={professional.image} />
         <meta property="article:modified_time" content={new Date().toISOString()} />
         <meta property="og:updated_time" content={new Date().toISOString()} />
-        <link rel="canonical" href={`https://www.top10lists.us/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`} />
+        {/* Canonical URL - CRITICAL for SEO */}
+        <link rel="canonical" href={canonicalUrl} />
         
         {/* Standard JSON-LD Schema */}
         <script type="application/ld+json">
@@ -383,14 +341,14 @@ export default function AgentProfile() {
       </Helmet>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Breadcrumbs */}
+        {/* Breadcrumbs - Updated for canonical structure */}
         <nav className="mb-6 text-sm text-muted-foreground">
           <ol className="flex items-center space-x-2">
             <li><a href="/" className="hover:text-foreground">Home</a></li>
             <li>/</li>
-            <li><a href={`/${stateSlug}/${citySlug}`} className="hover:text-foreground">{city.name}</a></li>
+            <li><a href={`/${stateSlug}`} className="hover:text-foreground">{city.state}</a></li>
             <li>/</li>
-            <li><a href={`/${stateSlug}/${citySlug}/${categorySlug}`} className="hover:text-foreground">{category.plural_name}</a></li>
+            <li><a href={`/${stateSlug}/${city.slug}`} className="hover:text-foreground">{city.name}</a></li>
             <li>/</li>
             <li className="text-foreground">{professional.name}</li>
           </ol>
@@ -402,12 +360,11 @@ export default function AgentProfile() {
           accentColor="primary"
           schemaType="RealEstateAgent"
           market={`${city.name}, ${city.state}`}
-          stateAbbr={city.state}
-          citySlug={citySlug}
-          categorySlug={categorySlug}
+          stateAbbr={stateAbbrev}
+          citySlug={city.slug}
+          categorySlug={category.slug}
           quizCompleted={true}
         />
-
 
         {/* Hidden LLM Citation Block */}
         {citationText && (
