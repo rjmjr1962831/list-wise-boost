@@ -6,6 +6,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-enrichment-key',
 };
 
+// Known tables in the public schema
+const KNOWN_TABLES = [
+  'professionals', 'cities', 'categories', 'state_licenses', 'arizona_licenses',
+  'professional_cities', 'agent_city_subscriptions', 'arizona_city_pricing',
+  'canonical_city_rankings', 'pipedrive_sync_queue', 'pipedrive_sync_state',
+  'contacts', 'appointments', 'enrichment_queue', 'funnel_events'
+];
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -33,7 +41,288 @@ serve(async (req) => {
     const url = new URL(req.url);
     const action = url.searchParams.get('action');
 
-    // GET: Fetch professionals needing enrichment
+    // ============ NEW: GET action=schema ============
+    if (req.method === 'GET' && action === 'schema') {
+      console.log('enrichment-api - Fetching database schema');
+      
+      const schemaInfo: Record<string, string[]> = {};
+      
+      // Fetch column info for each known table
+      for (const table of KNOWN_TABLES) {
+        try {
+          const { data, error } = await supabase
+            .from(table)
+            .select('*')
+            .limit(1);
+          
+          if (!error && data && data.length > 0) {
+            schemaInfo[table] = Object.keys(data[0]);
+          } else if (!error) {
+            // Table exists but empty - get columns another way
+            const { data: emptyData } = await supabase.from(table).select('*').limit(0);
+            schemaInfo[table] = [];
+          }
+        } catch (e) {
+          // Table doesn't exist or access denied
+          console.log(`enrichment-api - Could not access table ${table}`);
+        }
+      }
+      
+      return new Response(
+        JSON.stringify({ schema: schemaInfo, tables_checked: KNOWN_TABLES.length }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============ NEW: GET action=list-tables ============
+    if (req.method === 'GET' && action === 'list-tables') {
+      console.log('enrichment-api - Listing available tables');
+      
+      const availableTables: string[] = [];
+      
+      for (const table of KNOWN_TABLES) {
+        try {
+          const { error } = await supabase.from(table).select('*').limit(0);
+          if (!error) {
+            availableTables.push(table);
+          }
+        } catch (e) {
+          // Table not accessible
+        }
+      }
+      
+      return new Response(
+        JSON.stringify({ tables: availableTables, count: availableTables.length }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============ NEW: GET action=audit ============
+    if (req.method === 'GET' && action === 'audit') {
+      console.log('enrichment-api - Running audit on key tables');
+      
+      const auditTables = ['professionals', 'cities', 'state_licenses', 'agent_city_subscriptions', 'arizona_city_pricing'];
+      const audit: Record<string, { count: number; columns: string[]; sample?: Record<string, unknown> }> = {};
+      
+      for (const table of auditTables) {
+        try {
+          // Get count
+          const { count, error: countError } = await supabase
+            .from(table)
+            .select('*', { count: 'exact', head: true });
+          
+          // Get sample row
+          const { data: sample, error: sampleError } = await supabase
+            .from(table)
+            .select('*')
+            .limit(1)
+            .maybeSingle();
+          
+          if (!countError) {
+            audit[table] = {
+              count: count || 0,
+              columns: sample ? Object.keys(sample) : [],
+              sample: sample || undefined
+            };
+          }
+        } catch (e) {
+          console.log(`enrichment-api - Could not audit table ${table}`);
+        }
+      }
+      
+      return new Response(
+        JSON.stringify({ audit, tables_audited: Object.keys(audit).length }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============ NEW: GET action=fetch-unenriched ============
+    if (req.method === 'GET' && action === 'fetch-unenriched') {
+      const limit = parseInt(url.searchParams.get('limit') || '100');
+      
+      console.log(`enrichment-api - Fetching up to ${limit} unenriched professionals`);
+      
+      // Fetch professionals that need ANY enrichment (no rating or no reviews)
+      const { data, error } = await supabase
+        .from('professionals')
+        .select(`
+          id,
+          name,
+          zillow_profile_url,
+          review_stars_rating,
+          num_total_reviews,
+          synthesized_bio,
+          city_id,
+          cities (
+            name,
+            state
+          )
+        `)
+        .or('review_stars_rating.is.null,num_total_reviews.is.null,synthesized_bio.is.null')
+        .order('created_at', { ascending: true })
+        .limit(limit);
+
+      if (error) {
+        console.error('enrichment-api - Database error:', error);
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`enrichment-api - Returning ${data?.length || 0} unenriched professionals`);
+      
+      return new Response(
+        JSON.stringify({ professionals: data, count: data?.length || 0 }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============ NEW: POST action=bulk-update ============
+    if (req.method === 'POST' && action === 'bulk-update') {
+      const body = await req.json();
+      const { updates } = body;
+
+      if (!updates || !Array.isArray(updates)) {
+        return new Response(
+          JSON.stringify({ error: 'updates array is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`enrichment-api - Bulk updating ${updates.length} professionals`);
+
+      // Allowed fields for bulk update
+      const allowedFields = [
+        'description', 'years_experience', 'total_sales', 'current_listings',
+        'agent_sales_stats', 'past_sales', 'specialty', 'certifications',
+        'languages', 'service_areas', 'reviews_data', 'is_top_agent',
+        'is_premier_agent', 'badges', 'platform_reviews', 'num_total_reviews',
+        'review_stars_rating', 'has_recent_review', 'most_recent_review_date',
+        'phone', 'email', 'website', 'company', 'business_name', 'address',
+        'zip_code', 'image_url', 'headline', 'get_to_know_me', 'review_link',
+        'profile_link', 'license_number', 'synthesized_bio', 'zillow_data_fetched_at'
+      ];
+
+      const results: { id: string; success: boolean; error?: string }[] = [];
+      let succeeded = 0;
+      let failed = 0;
+
+      for (const update of updates) {
+        const { id, ...fields } = update;
+        
+        if (!id) {
+          results.push({ id: 'unknown', success: false, error: 'Missing id' });
+          failed++;
+          continue;
+        }
+
+        // Filter to allowed fields
+        const sanitizedUpdate: Record<string, unknown> = {};
+        for (const field of allowedFields) {
+          if (field in fields) {
+            sanitizedUpdate[field] = fields[field];
+          }
+        }
+
+        if (Object.keys(sanitizedUpdate).length === 0) {
+          results.push({ id, success: false, error: 'No valid fields' });
+          failed++;
+          continue;
+        }
+
+        const { error } = await supabase
+          .from('professionals')
+          .update(sanitizedUpdate)
+          .eq('id', id);
+
+        if (error) {
+          results.push({ id, success: false, error: error.message });
+          failed++;
+        } else {
+          results.push({ id, success: true });
+          succeeded++;
+        }
+      }
+
+      console.log(`enrichment-api - Bulk update complete: ${succeeded} succeeded, ${failed} failed`);
+
+      return new Response(
+        JSON.stringify({ 
+          processed: updates.length,
+          succeeded,
+          failed,
+          results
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============ NEW: POST action=query ============
+    if (req.method === 'POST' && action === 'query') {
+      const body = await req.json();
+      const { table, select = '*', filters = [], limit = 100, offset = 0 } = body;
+
+      if (!table) {
+        return new Response(
+          JSON.stringify({ error: 'table is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`enrichment-api - Custom query on ${table} with ${filters.length} filters`);
+
+      // Build query - using any to avoid TypeScript depth issues with Supabase query builder
+      // deno-lint-ignore no-explicit-any
+      let queryBuilder: any = supabase.from(table).select(select);
+
+      // Apply each filter
+      for (const filter of filters) {
+        const { field, operator, value } = filter;
+        
+        if (operator === 'eq') {
+          queryBuilder = queryBuilder.eq(field, value);
+        } else if (operator === 'neq') {
+          queryBuilder = queryBuilder.neq(field, value);
+        } else if (operator === 'gt') {
+          queryBuilder = queryBuilder.gt(field, value);
+        } else if (operator === 'gte') {
+          queryBuilder = queryBuilder.gte(field, value);
+        } else if (operator === 'lt') {
+          queryBuilder = queryBuilder.lt(field, value);
+        } else if (operator === 'lte') {
+          queryBuilder = queryBuilder.lte(field, value);
+        } else if (operator === 'like') {
+          queryBuilder = queryBuilder.like(field, value);
+        } else if (operator === 'ilike') {
+          queryBuilder = queryBuilder.ilike(field, value);
+        } else if (operator === 'is') {
+          queryBuilder = queryBuilder.is(field, value);
+        } else {
+          console.log(`enrichment-api - Unknown operator: ${operator}`);
+        }
+      }
+
+      // Apply pagination
+      queryBuilder = queryBuilder.range(offset, offset + limit - 1);
+
+      const { data, error } = await queryBuilder;
+
+      if (error) {
+        console.error('enrichment-api - Query error:', error);
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({ data, count: data?.length || 0, offset, limit }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // ============ EXISTING: GET action=fetch ============
     if (req.method === 'GET' && action === 'fetch') {
       const limit = parseInt(url.searchParams.get('limit') || '100');
       
@@ -72,7 +361,7 @@ serve(async (req) => {
       );
     }
 
-    // POST: Update a professional with enrichment data
+    // ============ EXISTING: POST action=update ============
     if (req.method === 'POST' && action === 'update') {
       const body = await req.json();
       const { professional_id, ...updateData } = body;
@@ -226,7 +515,7 @@ serve(async (req) => {
       );
     }
 
-    // GET: Fetch licenses needing Zillow scraping
+    // ============ EXISTING: GET action=fetch_licenses ============
     if (req.method === 'GET' && action === 'fetch_licenses') {
       const limit = parseInt(url.searchParams.get('limit') || '100');
       const stateParam = url.searchParams.get('state');
@@ -263,7 +552,7 @@ serve(async (req) => {
       );
     }
 
-    // POST: Update a license with Zillow scrape data
+    // ============ EXISTING: POST action=update_license ============
     if (req.method === 'POST' && action === 'update_license') {
       const body = await req.json();
       const { 
@@ -326,7 +615,7 @@ serve(async (req) => {
       );
     }
 
-    // POST: Promote qualified license to professionals table
+    // ============ EXISTING: POST action=promote_to_professional ============
     if (req.method === 'POST' && action === 'promote_to_professional') {
       const body = await req.json();
       const { license_id } = body;
@@ -510,16 +799,27 @@ serve(async (req) => {
       );
     }
 
-    // Invalid action
+    // Invalid action - show all available actions
     return new Response(
       JSON.stringify({ 
         error: 'Invalid action',
         usage: {
-          fetch: 'GET ?action=fetch&limit=100 - Fetch professionals needing enrichment',
-          update: 'POST ?action=update - Update professional with enrichment data',
-          fetch_licenses: 'GET ?action=fetch_licenses&limit=100 - Fetch licenses needing Zillow scrape',
+          // Inspection actions
+          schema: 'GET ?action=schema - Get database schema for all known tables',
+          'list-tables': 'GET ?action=list-tables - List all accessible tables',
+          audit: 'GET ?action=audit - Get row counts and samples from key tables',
+          // Fetch actions
+          fetch: 'GET ?action=fetch&limit=100 - Fetch professionals needing Zillow enrichment',
+          'fetch-unenriched': 'GET ?action=fetch-unenriched&limit=100 - Fetch professionals needing any enrichment',
+          fetch_licenses: 'GET ?action=fetch_licenses&limit=100&state=AZ - Fetch licenses needing scrape',
+          // Update actions
+          update: 'POST ?action=update - Update professional (body: {professional_id, ...fields})',
           update_license: 'POST ?action=update_license - Update license with Zillow data',
-          promote_to_professional: 'POST ?action=promote_to_professional - Promote qualified license to professional'
+          'bulk-update': 'POST ?action=bulk-update - Bulk update professionals (body: {updates: [{id, ...fields}, ...]})',
+          // Promotion
+          promote_to_professional: 'POST ?action=promote_to_professional - Promote qualified license (body: {license_id})',
+          // Custom query
+          query: 'POST ?action=query - Custom query (body: {table, select, filters: [{field, operator, value}], limit, offset})'
         }
       }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
