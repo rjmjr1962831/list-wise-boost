@@ -90,7 +90,9 @@ function convertToDisplayProfessional(db: any, rank: number): Professional {
     certifications_verified: db.certifications_verified || [],
     awards_verified: db.awards_verified || [],
     synthesized_bio: db.synthesized_bio || '',
-    get_to_know_me: db.get_to_know_me || '',
+    // In the claim/onboarding flow, the "From {Name}" section should reflect the agent-editable bio.
+    // We map it into get_to_know_me so the shared ProfessionalCard renders it consistently.
+    get_to_know_me: db.get_to_know_me || db.description || 'Add your bio by clicking "Edit & Claim My Listing".',
     years_experience: db.years_experience || null,
     total_sales: db.total_sales || null,
     current_listings: db.current_listings || null,
@@ -976,7 +978,8 @@ export default function StreamlinedOnboarding() {
                       citySlug={selectedCity?.slug}
                       categorySlug={(professional as any)?.categories?.slug || 'top10realestateagents'}
                       quizCompleted={true}
-                      expandSections={true}
+                      // Don't auto-expand everything in the claim funnel; it makes the synthesis feel "endless".
+                      expandSections={false}
                     />
                   )}
                 </div>
