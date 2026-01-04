@@ -15,6 +15,9 @@ import DynamicCategoryList from "./pages/DynamicCategoryList";
 import AgentProfile from "./pages/AgentProfile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
+// Canonical agent profile - new URL structure
+const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile"));
+
 // Lazy load all pages except Index and NotFound for better initial load performance
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
@@ -201,9 +204,11 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
                     {/* Legacy /az/ magic link format - redirect to full state name with category */}
                     <Route path="/az/:citySlug/:agentSlug" element={<AzMagicLinkRedirect />} />
+                    {/* NEW: Canonical agent profile URL - /{state}/agents/{canonical_slug} */}
+                    <Route path="/:stateSlug/agents/:canonicalSlug" element={<CanonicalAgentProfile />} />
                     {/* Smart router to distinguish magic links from categories for any state */}
                     <Route path="/:stateSlug/:citySlug/:thirdSegment" element={<StateAgentOrCategoryRouter />} />
-                    {/* Agent profile with 4 params */}
+                    {/* Agent profile with 4 params (legacy format) */}
                     <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     {/* State landing page - must be after city routes */}
