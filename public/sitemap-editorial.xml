@@ -60,6 +60,20 @@
     <priority>0.7</priority>
   </url>
 
+  <url>
+    <loc>https://www.top10lists.us/ai-liability</loc>
+    <lastmod>2026-01-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/transparency</loc>
+    <lastmod>2026-01-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
   <!-- Agent-Facing Pages -->
   <url>
     <loc>https://www.top10lists.us/are-you-an-agent</loc>
