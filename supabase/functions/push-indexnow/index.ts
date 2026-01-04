@@ -10,15 +10,28 @@ const SITE_HOST = 'www.top10lists.us';
 
 // Key pages to submit to IndexNow
 const KEY_URLS = [
+  // Homepage
   'https://www.top10lists.us/',
+  
+  // Core pages
   'https://www.top10lists.us/about',
   'https://www.top10lists.us/faq',
   'https://www.top10lists.us/for-agents',
   'https://www.top10lists.us/compare',
   'https://www.top10lists.us/test',
+  
+  // AI-specific pages
+  'https://www.top10lists.us/for-ai',
+  'https://www.top10lists.us/ai-liability',
+  'https://www.top10lists.us/transparency',
+  
+  // Technical/AI files
   'https://www.top10lists.us/llms.txt',
   'https://www.top10lists.us/.well-known/ai-content-index.json',
   'https://www.top10lists.us/sitemap.xml',
+  
+  // Featured agent profile (example in llms.txt)
+  'https://www.top10lists.us/arizona/scottsdale/top10realestateagents/lauren-rosin-2288',
 ];
 
 serve(async (req) => {
