@@ -57,7 +57,7 @@ serve(async (req) => {
       return result;
     };
 
-    // Fetch professional with city info
+    // Fetch professional with city info (including state_slug for dynamic URL generation)
     const { data: existing, error: fetchError } = await supabase
       .from('professionals')
       .select(`
@@ -68,7 +68,7 @@ serve(async (req) => {
         name, 
         email, 
         phone,
-        cities:city_id (slug)
+        cities:city_id (slug, state_slug)
       `)
       .eq('id', professional_id)
       .single();
@@ -79,9 +79,10 @@ serve(async (req) => {
     let shortCode = existing.short_code;
     let profileLink = existing.profile_link;
     
-    // Get city slug and phone digits for SEO-friendly format
+    // Get city slug, state slug, and phone digits for SEO-friendly format
     const cityData = existing.cities as any;
     const citySlug = cityData?.slug;
+    const stateSlug = cityData?.state_slug;
     const phoneDigits = getLastFourDigits(existing.phone);
     const nameSlug = generateNameSlug(existing.name);
 
@@ -95,12 +96,13 @@ serve(async (req) => {
       console.log('🆕 Generated new short_code for legacy support:', shortCode);
     }
 
-    // Generate the SEO-friendly profile link: /az/city/firstname-lastname-1234
+    // Generate the SEO-friendly profile link: /{state}/{city}/{firstname-lastname-1234}
     const generateSEOLink = () => {
-      if (citySlug && nameSlug && phoneDigits) {
-        return `${appUrl}/az/${citySlug}/${nameSlug}-${phoneDigits}`;
+      if (stateSlug && citySlug && nameSlug && phoneDigits) {
+        return `${appUrl}/${stateSlug}/${citySlug}/${nameSlug}-${phoneDigits}`;
       }
       // Fallback to short code format if missing data
+      console.log('⚠️ Missing data for SEO link:', { stateSlug, citySlug, nameSlug, phoneDigits });
       return `${appUrl}/p/${shortCode}`;
     };
 
