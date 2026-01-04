@@ -94,6 +94,7 @@ const TestAI = lazy(() => import("./pages/TestAI"));
 const Transparency = lazy(() => import("./pages/Transparency"));
 const EditorialUpdates = lazy(() => import("./pages/EditorialUpdates"));
 const Founder = lazy(() => import("./pages/Founder"));
+const AILiability = lazy(() => import("./pages/AILiability"));
 
 const queryClient = new QueryClient();
 
@@ -140,6 +141,7 @@ const App = () => (
                     <Route path="/editorial-updates" element={<EditorialUpdates />} />
                     <Route path="/test" element={<TestAI />} />
                     <Route path="/ai-compare" element={<AICompare />} />
+                    <Route path="/ai-liability" element={<AILiability />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
