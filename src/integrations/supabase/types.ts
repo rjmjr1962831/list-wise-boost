@@ -1550,6 +1550,7 @@ export type Database = {
           badges: string[] | null
           business_address: Json | null
           business_name: string | null
+          canonical_slug: string | null
           card_created_at: string | null
           category_id: string
           certifications: Json | null
@@ -1571,6 +1572,7 @@ export type Database = {
           email: string | null
           email_verified_at: string | null
           encoded_zuid: string | null
+          free_pool_position: number | null
           funnel_completed_at: string | null
           funnel_started_at: string | null
           funnel_status: string | null
@@ -1586,6 +1588,7 @@ export type Database = {
           languages: Json | null
           last_payment_at: string | null
           last_payment_status: string | null
+          legacy_url_slug: string | null
           license_expires_at: string | null
           license_issued_at: string | null
           license_number: string | null
@@ -1598,6 +1601,7 @@ export type Database = {
           notable_achievements: Json | null
           num_total_reviews: number | null
           og_image_url: string | null
+          paid_cities: string[] | null
           past_sales: Json | null
           phone: string | null
           phone_numbers: Json | null
@@ -1622,6 +1626,7 @@ export type Database = {
           screen_name: string | null
           selection_rationale: string | null
           selection_rationale_generated_at: string | null
+          served_cities: string[] | null
           service_areas: Json | null
           short_code: string | null
           sidebar_video_url: string | null
@@ -1632,6 +1637,7 @@ export type Database = {
           social_tiktok: string | null
           social_twitter: string | null
           specialty: string[] | null
+          state_slug: string | null
           subscription_status: string | null
           synthesized_bio: string | null
           team_display_information: Json | null
@@ -1663,6 +1669,7 @@ export type Database = {
           badges?: string[] | null
           business_address?: Json | null
           business_name?: string | null
+          canonical_slug?: string | null
           card_created_at?: string | null
           category_id: string
           certifications?: Json | null
@@ -1684,6 +1691,7 @@ export type Database = {
           email?: string | null
           email_verified_at?: string | null
           encoded_zuid?: string | null
+          free_pool_position?: number | null
           funnel_completed_at?: string | null
           funnel_started_at?: string | null
           funnel_status?: string | null
@@ -1699,6 +1707,7 @@ export type Database = {
           languages?: Json | null
           last_payment_at?: string | null
           last_payment_status?: string | null
+          legacy_url_slug?: string | null
           license_expires_at?: string | null
           license_issued_at?: string | null
           license_number?: string | null
@@ -1711,6 +1720,7 @@ export type Database = {
           notable_achievements?: Json | null
           num_total_reviews?: number | null
           og_image_url?: string | null
+          paid_cities?: string[] | null
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
@@ -1735,6 +1745,7 @@ export type Database = {
           screen_name?: string | null
           selection_rationale?: string | null
           selection_rationale_generated_at?: string | null
+          served_cities?: string[] | null
           service_areas?: Json | null
           short_code?: string | null
           sidebar_video_url?: string | null
@@ -1745,6 +1756,7 @@ export type Database = {
           social_tiktok?: string | null
           social_twitter?: string | null
           specialty?: string[] | null
+          state_slug?: string | null
           subscription_status?: string | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
@@ -1776,6 +1788,7 @@ export type Database = {
           badges?: string[] | null
           business_address?: Json | null
           business_name?: string | null
+          canonical_slug?: string | null
           card_created_at?: string | null
           category_id?: string
           certifications?: Json | null
@@ -1797,6 +1810,7 @@ export type Database = {
           email?: string | null
           email_verified_at?: string | null
           encoded_zuid?: string | null
+          free_pool_position?: number | null
           funnel_completed_at?: string | null
           funnel_started_at?: string | null
           funnel_status?: string | null
@@ -1812,6 +1826,7 @@ export type Database = {
           languages?: Json | null
           last_payment_at?: string | null
           last_payment_status?: string | null
+          legacy_url_slug?: string | null
           license_expires_at?: string | null
           license_issued_at?: string | null
           license_number?: string | null
@@ -1824,6 +1839,7 @@ export type Database = {
           notable_achievements?: Json | null
           num_total_reviews?: number | null
           og_image_url?: string | null
+          paid_cities?: string[] | null
           past_sales?: Json | null
           phone?: string | null
           phone_numbers?: Json | null
@@ -1848,6 +1864,7 @@ export type Database = {
           screen_name?: string | null
           selection_rationale?: string | null
           selection_rationale_generated_at?: string | null
+          served_cities?: string[] | null
           service_areas?: Json | null
           short_code?: string | null
           sidebar_video_url?: string | null
@@ -1858,6 +1875,7 @@ export type Database = {
           social_tiktok?: string | null
           social_twitter?: string | null
           specialty?: string[] | null
+          state_slug?: string | null
           subscription_status?: string | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
@@ -2574,6 +2592,10 @@ export type Database = {
     Functions: {
       check_recent_reviews: { Args: { reviews_data: Json }; Returns: boolean }
       check_warm_cache_cron: { Args: never; Returns: Json }
+      generate_canonical_slug: {
+        Args: { full_name: string; phone: string }
+        Returns: string
+      }
       generate_short_code: { Args: never; Returns: string }
       has_role: {
         Args: {
@@ -2584,6 +2606,7 @@ export type Database = {
       }
       start_warm_cache_cron: { Args: never; Returns: undefined }
       stop_warm_cache_cron: { Args: never; Returns: undefined }
+      unaccent: { Args: { "": string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer"
