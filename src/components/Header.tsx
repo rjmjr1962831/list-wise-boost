@@ -11,8 +11,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User as UserIcon, Shield, LayoutDashboard } from "lucide-react";
+import { LogOut, User as UserIcon, Shield, LayoutDashboard, Menu } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Logo } from "@/components/brand/Logo";
 
@@ -26,6 +33,7 @@ export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [agentProfile, setAgentProfile] = useState<AgentProfile | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   const navigate = useNavigate();
 
@@ -107,6 +115,7 @@ export const Header = () => {
             <Logo className="h-12" />
           </Link>
           
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               About
@@ -208,6 +217,146 @@ export const Header = () => {
               </Link>
             )}
           </nav>
+
+          {/* Mobile Navigation */}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon" aria-label="Open menu">
+                <Menu className="h-6 w-6" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[280px] sm:w-[320px]">
+              <SheetHeader>
+                <SheetTitle className="text-left">Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-4 mt-6">
+                <Link 
+                  to="/about" 
+                  className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  About
+                </Link>
+                <Link 
+                  to="/about/ranking-methodology" 
+                  className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Methodology
+                </Link>
+                <Link 
+                  to="/faq" 
+                  className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  FAQ
+                </Link>
+                <Link 
+                  to="/compare" 
+                  className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Compare Us
+                </Link>
+                <Link 
+                  to="/test" 
+                  className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Test Us
+                </Link>
+                {isAdmin && (
+                  <Link 
+                    to="/admin" 
+                    className="text-base font-medium text-primary hover:text-primary/80 transition-colors py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Admin
+                  </Link>
+                )}
+                {!user && (
+                  <Link 
+                    to="/are-you-an-agent" 
+                    className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Are you an agent?
+                  </Link>
+                )}
+                
+                <div className="border-t pt-4 mt-2">
+                  {user ? (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center gap-3 pb-3">
+                        <Avatar className="h-10 w-10">
+                          {agentProfile?.image_url ? (
+                            <AvatarImage 
+                              src={agentProfile.image_url} 
+                              alt={agentProfile.name || 'Profile'} 
+                            />
+                          ) : null}
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {agentProfile?.name ? getInitials(agentProfile.name) : <UserIcon className="h-5 w-5" />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium">
+                            {agentProfile?.name || 'Account'}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate max-w-[180px]">
+                            {user.email}
+                          </p>
+                        </div>
+                      </div>
+                      {!isAdmin && (
+                        <Button 
+                          variant="outline" 
+                          className="justify-start" 
+                          onClick={() => {
+                            navigate("/dashboard");
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          My Dashboard
+                        </Button>
+                      )}
+                      {isAdmin && (
+                        <Button 
+                          variant="outline" 
+                          className="justify-start" 
+                          onClick={() => {
+                            navigate("/admin");
+                            setMobileMenuOpen(false);
+                          }}
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </Button>
+                      )}
+                      <Button 
+                        variant="destructive" 
+                        className="justify-start" 
+                        onClick={() => {
+                          handleLogout();
+                          setMobileMenuOpen(false);
+                        }}
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </Button>
+                    </div>
+                  ) : (
+                    <Link to="/agent-login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button className="w-full">
+                        Login
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>
