@@ -46,6 +46,14 @@ export const FUNNEL_EVENTS = {
   WELCOME_VIEWED: 'welcome_viewed',
   SEE_LISTING_CLICKED: 'see_listing_clicked',
   
+  // Accuracy Review events (Step 1)
+  ACCURACY_REVIEW_VIEWED: 'accuracy_review_viewed',
+  ACCURACY_CONFIRMED: 'accuracy_confirmed',
+  CORRECTION_STARTED: 'correction_started',
+  CORRECTION_SUBMITTED: 'correction_submitted',
+  FIELD_CORRECTION_CLICKED: 'field_correction_clicked',
+  EXPANDED_VIEW_OPENED: 'expanded_view_opened',
+  
   // Profile edit events
   PROFILE_EDIT_VIEWED: 'profile_edit_viewed',
   PROFILE_EDIT_STARTED: 'profile_edit_started',
