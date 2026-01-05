@@ -95,11 +95,19 @@ serve(async (req) => {
   }
 
   try {
-    console.log("🔄 Starting Pipedrive sync queue processing...");
+    // Parse options from request body
+    const body = await req.json().catch(() => ({}));
+    const stateFilter = body.state || null; // Filter by state (e.g., "arizona")
+    const delayMs = body.delay_ms || 1000; // Default 1 second between syncs
+    const maxRecords = body.max_records || 50; // Max records per run
+    
+    console.log(`🔄 Starting Pipedrive sync queue processing...`);
+    console.log(`   State filter: ${stateFilter || 'all'}, Delay: ${delayMs}ms, Max: ${maxRecords}`);
 
     // IMPORTANT: Process ONE at a time to prevent race conditions creating duplicates
-    const MAX_RECORDS_PER_RUN = 50;
+    const MAX_RECORDS_PER_RUN = maxRecords;
     const BATCH_SIZE = 1;
+    const DELAY_BETWEEN_SYNCS_MS = delayMs; // Configurable delay between syncs
     const DELAY_AFTER_CREATE_MS = 3000; // Wait 3s after creates for Pipedrive search index
     const STALE_PROCESSING_MINUTES = 10; // Reset items stuck in "processing" for more than 10 minutes
     
@@ -127,11 +135,26 @@ serve(async (req) => {
 
     // Process in batches until queue is empty or max records reached
     while (results.processed < MAX_RECORDS_PER_RUN) {
-      // Fetch next batch of pending items
-      const { data: queueItems, error: fetchError } = await supabase
+      // Fetch next batch of pending items, optionally filtered by state
+      let query = supabase
         .from("pipedrive_sync_queue")
-        .select("id, professional_id, attempts, max_attempts, last_error")
+        .select(`
+          id, 
+          professional_id, 
+          attempts, 
+          max_attempts, 
+          last_error,
+          professionals!inner(state_slug, active)
+        `)
         .eq("status", "pending")
+        .eq("professionals.active", true); // Only sync active agents
+      
+      // Apply state filter if specified
+      if (stateFilter) {
+        query = query.eq("professionals.state_slug", stateFilter.toLowerCase());
+      }
+      
+      const { data: queueItems, error: fetchError } = await query
         .order("created_at", { ascending: true })
         .limit(BATCH_SIZE);
 
@@ -173,9 +196,13 @@ serve(async (req) => {
 
         results.processed++;
 
-        // Add delay after CREATE to let Pipedrive index the new contact
+        // Rate limiting delay between all syncs
+        console.log(`⏳ Waiting ${DELAY_BETWEEN_SYNCS_MS}ms before next sync...`);
+        await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_SYNCS_MS));
+
+        // Extra delay after CREATE to let Pipedrive index the new contact
         if (syncResult?.action === 'created') {
-          console.log(`⏳ Waiting ${DELAY_AFTER_CREATE_MS}ms for Pipedrive index after CREATE...`);
+          console.log(`⏳ Additional ${DELAY_AFTER_CREATE_MS}ms wait for Pipedrive index after CREATE...`);
           await new Promise(resolve => setTimeout(resolve, DELAY_AFTER_CREATE_MS));
         }
 
