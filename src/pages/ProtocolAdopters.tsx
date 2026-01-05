@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CheckCircle2, Users, Globe, Bell, Shield, Loader2 } from "lucide-react";
+import { CheckCircle2, Users, Globe, Bell, Shield, Loader2, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 const INDUSTRIES = [
@@ -298,6 +299,21 @@ export default function ProtocolAdopters() {
                     </a>
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Services Link */}
+            <Card className="bg-slate-50 border-dashed">
+              <CardContent className="pt-6 text-center">
+                <h3 className="font-semibold mb-2">Need Help Implementing?</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Professional implementation services available.
+                </p>
+                <Button asChild>
+                  <Link to="/protocol-services">
+                    View Services <ArrowRight className="h-4 w-4 ml-2" />
+                  </Link>
+                </Button>
               </CardContent>
             </Card>
           </div>
