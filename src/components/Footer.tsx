@@ -120,6 +120,12 @@ export const Footer = () => {
               >
                 AI Citation Protocol
               </Link>
+              <Link 
+                to="/protocol-services" 
+                className="block text-slate-300 hover:text-white transition-colors"
+              >
+                Protocol Services
+              </Link>
               <Link
                 to="/privacy" 
                 className="block text-slate-300 hover:text-white transition-colors"

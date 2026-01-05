@@ -2062,6 +2062,51 @@ export type Database = {
         }
         Relationships: []
       }
+      protocol_service_inquiries: {
+        Row: {
+          contact_name: string
+          created_at: string | null
+          email: string
+          id: string
+          industry: string
+          organization_name: string
+          phone: string | null
+          project_description: string | null
+          service_tier: string
+          status: string | null
+          updated_at: string | null
+          website_url: string
+        }
+        Insert: {
+          contact_name: string
+          created_at?: string | null
+          email: string
+          id?: string
+          industry: string
+          organization_name: string
+          phone?: string | null
+          project_description?: string | null
+          service_tier: string
+          status?: string | null
+          updated_at?: string | null
+          website_url: string
+        }
+        Update: {
+          contact_name?: string
+          created_at?: string | null
+          email?: string
+          id?: string
+          industry?: string
+          organization_name?: string
+          phone?: string | null
+          project_description?: string | null
+          service_tier?: string
+          status?: string | null
+          updated_at?: string | null
+          website_url?: string
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           created_at: string
