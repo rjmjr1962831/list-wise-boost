@@ -470,3 +470,6 @@ verify_jwt = false
 
 [functions.resync-long-bios]
 verify_jwt = false
+
+[functions.pipedrive-sync-auto-continue]
+verify_jwt = false
