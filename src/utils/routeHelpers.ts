@@ -36,3 +36,25 @@ export function generateAgentProfileUrl(
   const agentSlug = generateAgentSlug(agentName);
   return `/${stateSlug}/${citySlug}/${categorySlug}/${agentSlug}`;
 }
+
+// NEW: Generate canonical agent profile URL (3-segment format)
+export function generateCanonicalAgentUrl(
+  stateSlug: string,
+  canonicalSlug: string
+): string {
+  return `/${stateSlug}/agents/${canonicalSlug}`;
+}
+
+// Generate canonical slug from name and phone (for fallback when canonical_slug not in DB)
+export function generateCanonicalSlugFromData(name: string, phone: string | null): string | null {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 4) return null;
+  const lastFour = digits.slice(-4);
+  const nameSlug = name
+    .toLowerCase()
+    .replace(/[^a-z\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-');
+  return `${nameSlug}-${lastFour}`;
+}
