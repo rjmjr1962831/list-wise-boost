@@ -263,11 +263,19 @@ serve(async (req) => {
     }
 
     // Build sync data object for hashing
-    const agentSlug = professional.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
-    const cardUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}/${agentSlug}`;
+    // Use canonical URL if available, otherwise fall back to legacy format
+    let cardUrl: string;
+    if (professional.canonical_slug && professional.state_slug) {
+      // New canonical format: /arizona/agents/eric-swiatek-7652
+      cardUrl = `https://www.top10lists.us/${professional.state_slug}/agents/${professional.canonical_slug}`;
+    } else {
+      // Legacy format fallback: /arizona/phoenix/top10realestateagents/eric-swiatek
+      const agentSlug = professional.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+      cardUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}/${agentSlug}`;
+    }
     
     // Generate funnel entry URL (magic link) using verification_token or professional ID
     const funnelToken = professional.verification_token || professional.id;
