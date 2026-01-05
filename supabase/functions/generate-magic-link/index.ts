@@ -96,13 +96,13 @@ serve(async (req) => {
       console.log('🆕 Generated new short_code for legacy support:', shortCode);
     }
 
-    // Generate the SEO-friendly profile link: /{state}/{city}/{firstname-lastname-1234}
+    // Generate the SEO-friendly profile link: /{state}/agents/{firstname-lastname-1234}
     const generateSEOLink = () => {
-      if (stateSlug && citySlug && nameSlug && phoneDigits) {
-        return `${appUrl}/${stateSlug}/${citySlug}/${nameSlug}-${phoneDigits}`;
+      if (stateSlug && nameSlug && phoneDigits) {
+        return `${appUrl}/${stateSlug}/agents/${nameSlug}-${phoneDigits}`;
       }
       // Fallback to short code format if missing data
-      console.log('⚠️ Missing data for SEO link:', { stateSlug, citySlug, nameSlug, phoneDigits });
+      console.log('⚠️ Missing data for SEO link:', { stateSlug, nameSlug, phoneDigits });
       return `${appUrl}/p/${shortCode}`;
     };
 
