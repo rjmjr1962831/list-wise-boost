@@ -28,14 +28,32 @@ serve(async (req) => {
 
     console.log('🔍 Validating token:', token.substring(0, 8) + '...');
 
-    // Validate token and get professional
-    const { data: professional, error: fetchError } = await supabase
-      .from('professionals')
-      .select('id, name, verification_token_expires_at')
-      .eq('verification_token', token)
-      .single();
+    // Check if token is a UUID (professional ID) or a verification token
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
 
-    if (fetchError || !professional) {
+    // Validate token and get professional
+    let professional;
+    if (isUUID) {
+      // Try to find by ID first
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('id, name, verification_token_expires_at')
+        .eq('id', token)
+        .single();
+      professional = data;
+    }
+    
+    if (!professional) {
+      // Fall back to verification_token
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('id, name, verification_token_expires_at')
+        .eq('verification_token', token)
+        .single();
+      professional = data;
+    }
+
+    if (!professional) {
       console.error('❌ Invalid token');
       return new Response(
         JSON.stringify({ 
