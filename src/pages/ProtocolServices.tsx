@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, Loader2, Check, ArrowRight } from "lucide-react";
+import { CheckCircle2, Loader2, Check, ArrowRight, MessageCircle } from "lucide-react";
+import { GradientButton } from "@/components/brand/GradientButton";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
@@ -190,9 +191,24 @@ export default function ProtocolServices() {
                   <p className="text-xs text-muted-foreground mb-4">
                     Best for: Organizations with technical staff who need a solid foundation
                   </p>
-                  <Button className="w-full" variant="outline" asChild>
-                    <a href="#quote-form">Request Quote</a>
-                  </Button>
+                  <a href="https://buy.stripe.com/TIER1_PLACEHOLDER" target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <GradientButton className="w-full">
+                      Buy Now
+                    </GradientButton>
+                  </a>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (typeof window !== 'undefined' && (window as any).chatWidget) {
+                        (window as any).chatWidget.open();
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary mt-3 transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Talk to us
+                  </a>
                 </CardContent>
               </Card>
 
@@ -228,9 +244,24 @@ export default function ProtocolServices() {
                   <p className="text-xs text-muted-foreground mb-4">
                     Best for: Organizations serious about becoming an AI-cited authority
                   </p>
-                  <Button className="w-full" asChild>
-                    <a href="#quote-form">Request Quote</a>
-                  </Button>
+                  <a href="https://buy.stripe.com/TIER2_PLACEHOLDER" target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <GradientButton className="w-full">
+                      Buy Now
+                    </GradientButton>
+                  </a>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (typeof window !== 'undefined' && (window as any).chatWidget) {
+                        (window as any).chatWidget.open();
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary mt-3 transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Talk to us
+                  </a>
                 </CardContent>
               </Card>
 
@@ -262,9 +293,24 @@ export default function ProtocolServices() {
                   <p className="text-xs text-muted-foreground mb-4">
                     Best for: Organizations wanting ongoing optimization as AI evolves
                   </p>
-                  <Button className="w-full" variant="outline" asChild>
-                    <a href="#quote-form">Request Quote</a>
-                  </Button>
+                  <a href="https://buy.stripe.com/TIER3_PLACEHOLDER" target="_blank" rel="noopener noreferrer" className="block w-full">
+                    <GradientButton className="w-full">
+                      Buy Now
+                    </GradientButton>
+                  </a>
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (typeof window !== 'undefined' && (window as any).chatWidget) {
+                        (window as any).chatWidget.open();
+                      }
+                    }}
+                    className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-primary mt-3 transition-colors"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Talk to us
+                  </a>
                 </CardContent>
               </Card>
             </div>
