@@ -392,11 +392,35 @@
   </url>
 
   <!-- =========================================== -->
-  <!-- FEATURED AGENT PROFILES - Example for llms.txt -->
+  <!-- FEATURED AGENT PROFILES - Canonical URL format -->
   <!-- =========================================== -->
   <url>
-    <loc>https://www.top10lists.us/arizona/scottsdale/top10realestateagents/lauren-rosin-2288</loc>
-    <lastmod>2026-01-04</lastmod>
+    <loc>https://www.top10lists.us/arizona/agents/amy-gilner-5479</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/agents/eric-swiatek-7652</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/agents/adam-hamblen-3396</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/agents/becca-grappin-1593</loc>
+    <lastmod>2026-01-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/agents/arianna-ames-2139</loc>
+    <lastmod>2026-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
