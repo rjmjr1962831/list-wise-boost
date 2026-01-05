@@ -69,13 +69,13 @@ export default function ProtocolAdopters() {
     queryKey: ["protocol-adopters"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("protocol_adopters")
+        .from("protocol_adopters" as any)
         .select("id, organization_name, website_url, industry, implementation_status, created_at")
         .eq("approved", true)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as Adopter[];
+      return (data as unknown) as Adopter[];
     }
   });
 
@@ -92,7 +92,7 @@ export default function ProtocolAdopters() {
     try {
       // Insert into database
       const { error: dbError } = await supabase
-        .from("protocol_adopters")
+        .from("protocol_adopters" as any)
         .insert({
           organization_name: formData.organization_name,
           website_url: formData.website_url,
