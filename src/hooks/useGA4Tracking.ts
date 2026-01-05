@@ -54,9 +54,8 @@ export const useGA4Tracking = () => {
     
     if (typeof window.gtag === 'function') {
       window.gtag('event', eventName, params);
-    } else {
-      console.warn('gtag not found - GA4 tracking not initialized');
     }
+    // gtag may not be available in dev environment - this is expected
   }, []);
 
   return { trackEvent };
