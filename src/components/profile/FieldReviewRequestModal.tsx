@@ -95,9 +95,9 @@ export default function FieldReviewRequestModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Request Field Change</DialogTitle>
+          <DialogTitle>Request Correction</DialogTitle>
           <DialogDescription>
-            This field is synced from external sources. To make changes, please submit a review request.
+            Please describe the correction needed. Include supporting documentation if available.
           </DialogDescription>
         </DialogHeader>
 
@@ -167,7 +167,7 @@ export default function FieldReviewRequestModal({
                   Submitting...
                 </>
               ) : (
-                'Submit Request'
+                'Submit Correction Request'
               )}
             </Button>
           </div>

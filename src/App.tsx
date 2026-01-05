@@ -76,6 +76,7 @@ const FreeCityConfirmation = lazy(() => import("./pages/profile/FreeCityConfirma
 const HowItWorksPage = lazy(() => import("./pages/profile/HowItWorksPage"));
 const FreeListingThankYou = lazy(() => import("./pages/profile/FreeListingThankYou"));
 const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
+const AccuracyReview = lazy(() => import("./pages/profile/AccuracyReview"));
 const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
 const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
@@ -174,10 +175,11 @@ const App = () => (
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
                     {/* Short link redirect for magic links */}
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
-                    {/* Streamlined onboarding - new single-page flow */}
-                    <Route path="/profile/:token" element={<StreamlinedOnboarding />} />
+                    {/* Step 1: Accuracy Review */}
+                    <Route path="/profile/:token" element={<AccuracyReview />} />
                     {/* Legacy funnel routes - still accessible but not in main flow */}
-                    <Route path="/profile/:token/intro" element={<FunnelIntro />} />
+                    <Route path="/profile/:token/intro" element={<AccuracyReview />} />
+                    <Route path="/profile/:token/legacy-intro" element={<FunnelIntro />} />
                     <Route path="/profile/:token/setup" element={<AccountSetup />} />
                     <Route path="/profile/:token/listing" element={<VerifyListingByToken />} />
                     <Route path="/profile/:token/fields" element={<ProfileFieldsGuide />} />
