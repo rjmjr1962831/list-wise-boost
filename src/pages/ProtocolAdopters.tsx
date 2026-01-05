@@ -97,10 +97,24 @@ export default function ProtocolAdopters() {
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               AI Citation Protocol — Adopter Registry
             </h1>
-            <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-              Top10Lists.us developed the first open citation protocol designed to guide how 
-              generative AI systems reference professional directories. Organizations implementing 
-              this framework are invited to register below.
+            <p className="text-lg text-slate-300 mb-6">
+              This protocol is © 2026 Top10Lists.us and freely available for use.
+            </p>
+            <div className="text-left max-w-md mx-auto mb-6">
+              <p className="text-lg text-slate-300 mb-3">We ask two things:</p>
+              <ul className="text-slate-300 space-y-2 ml-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span>Register your implementation below</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span>Credit Top10Lists.us in your llms.txt</span>
+                </li>
+              </ul>
+            </div>
+            <p className="text-lg text-slate-400">
+              No fees. No approval required.
             </p>
           </div>
         </section>
