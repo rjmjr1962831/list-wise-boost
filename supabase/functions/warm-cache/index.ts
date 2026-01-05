@@ -345,11 +345,10 @@ async function warmUrl(url: string, canonicalUrl: string): Promise<{ success: bo
   return { success: true };
 }
 
-// Get URLs to warm - includes static pages AND only city/category pages that actually have content
+// Get URLs to warm - ONLY static pages + 5 test agents (no city pages)
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: { fetchUrl: string; canonicalUrl: string }[]; totalCount: number }> {
   const fetchBaseUrl = 'https://list-wise-boost.lovable.app';
   const canonicalBaseUrl = 'https://www.top10lists.us';
-  const regionNormalized = region?.toLowerCase().trim();
 
   // Static crawlable pages (React pages only - Worker skips .txt, .json, .xml files)
   const staticPages = [
@@ -386,49 +385,27 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     fetchUrl: `${fetchBaseUrl}${path}`,
     canonicalUrl: `${canonicalBaseUrl}${path}`,
   }));
-  let allUrls = [...staticUrls];
 
-  try {
-    // Fetch active cities to warm city landing pages (not agent list pages)
-    // City landing pages contain the valuable city facts and information
-    const { data, error } = await supabaseAdmin
-      .from('cities')
-      .select('slug, state_slug, active')
-      .eq('active', true);
+  // 5 test agent pages (demonstration pages only)
+  const testAgentPages = [
+    '/arizona/agents/bobby-lieb-4004',
+    '/arizona/agents/frank-aazami-9650',
+    '/arizona/agents/joan-levinson-8888',
+    '/arizona/agents/trevor-halpern-0000',
+    '/arizona/agents/mark-lindquist-0027',
+  ];
 
-    if (error) throw error;
+  const testAgentUrls = testAgentPages.map((path) => ({
+    fetchUrl: `${fetchBaseUrl}${path}`,
+    canonicalUrl: `${canonicalBaseUrl}${path}`,
+  }));
 
-    const dynamicUrls: { fetchUrl: string; canonicalUrl: string }[] = [];
+  // Combine static pages + test agents only (NO city pages)
+  const allUrls = [...staticUrls, ...testAgentUrls];
 
-    for (const city of data ?? []) {
-      if (!city?.slug || !city?.state_slug) continue;
-
-      if (regionNormalized && String(city.state_slug).toLowerCase() !== regionNormalized) continue;
-
-      // Point to city landing page (with facts), not agent list page
-      const path = `/${city.state_slug}/${city.slug}`;
-      dynamicUrls.push({
-        fetchUrl: `${fetchBaseUrl}${path}`,
-        canonicalUrl: `${canonicalBaseUrl}${path}`,
-      });
-    }
-
-    // Deduplicate by canonicalUrl
-    const seen = new Set<string>();
-    const uniqueDynamicUrls = dynamicUrls.filter(u => {
-      if (seen.has(u.canonicalUrl)) return false;
-      seen.add(u.canonicalUrl);
-      return true;
-    }).sort((a, b) => a.canonicalUrl.localeCompare(b.canonicalUrl));
-
-    allUrls = [...staticUrls, ...uniqueDynamicUrls];
-
-    console.log(
-      `Generated ${allUrls.length} URLs to warm (${staticUrls.length} static + ${uniqueDynamicUrls.length} city landing pages${regionNormalized ? ` for region=${regionNormalized}` : ''})`
-    );
-  } catch (error) {
-    console.error('Error fetching content city pages, using static pages only:', error);
-  }
+  console.log(
+    `Generated ${allUrls.length} URLs to warm (${staticUrls.length} static + ${testAgentUrls.length} test agents) - NO city pages`
+  );
 
   const totalCount = allUrls.length;
   const startIndex = offset || 0;
