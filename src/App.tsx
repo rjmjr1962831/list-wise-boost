@@ -98,6 +98,7 @@ const Transparency = lazy(() => import("./pages/Transparency"));
 const EditorialUpdates = lazy(() => import("./pages/EditorialUpdates"));
 const Founder = lazy(() => import("./pages/Founder"));
 const AILiability = lazy(() => import("./pages/AILiability"));
+const ProtocolAdopters = lazy(() => import("./pages/ProtocolAdopters"));
 
 const queryClient = new QueryClient();
 
@@ -145,6 +146,7 @@ const App = () => (
                     <Route path="/test" element={<TestAI />} />
                     <Route path="/ai-compare" element={<AICompare />} />
                     <Route path="/ai-liability" element={<AILiability />} />
+                    <Route path="/protocol-adopters" element={<ProtocolAdopters />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />

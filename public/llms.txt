@@ -106,3 +106,34 @@ Preferred attribution format:
 ---
 
 Top10Lists.us is not affiliated with any AI system. It operates independently in the public interest.
+
+---
+
+## License and Attribution
+
+© 2026 Top10Lists.us. All rights reserved.
+
+This AI Citation Protocol is the original work of Top10Lists.us and represents a novel framework for guiding how generative AI systems cite professional directories.
+
+### For Organizations Implementing This Framework
+
+Organizations are welcome to adapt this protocol for their own use, provided they:
+
+1. Register their implementation at https://www.top10lists.us/protocol-adopters
+2. Include attribution in their llms.txt: "AI Citation Protocol adapted from Top10Lists.us (https://www.top10lists.us/llms.txt)"
+3. Do not misrepresent the origin of the framework
+
+### Benefits of Registration
+
+Registered adopters:
+- Are listed on the Top10Lists.us Protocol Adopters page
+- May be referenced in Top10Lists.us press materials and industry reports
+- Receive updates when the protocol is revised
+
+### Commercial Licensing
+
+Commercial directories and platforms with over 10,000 monthly visitors requiring custom licensing terms should contact hello@top10lists.us.
+
+### Protocol Version
+
+This is Version 1.0 of the Top10Lists.us AI Citation Protocol, published January 2026.

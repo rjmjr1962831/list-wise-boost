@@ -2020,6 +2020,48 @@ export type Database = {
         }
         Relationships: []
       }
+      protocol_adopters: {
+        Row: {
+          approved: boolean | null
+          contact_email: string
+          created_at: string | null
+          id: string
+          implementation_status: string
+          industry: string
+          llms_txt_url: string | null
+          notes: string | null
+          organization_name: string
+          updated_at: string | null
+          website_url: string
+        }
+        Insert: {
+          approved?: boolean | null
+          contact_email: string
+          created_at?: string | null
+          id?: string
+          implementation_status: string
+          industry: string
+          llms_txt_url?: string | null
+          notes?: string | null
+          organization_name: string
+          updated_at?: string | null
+          website_url: string
+        }
+        Update: {
+          approved?: boolean | null
+          contact_email?: string
+          created_at?: string | null
+          id?: string
+          implementation_status?: string
+          industry?: string
+          llms_txt_url?: string | null
+          notes?: string | null
+          organization_name?: string
+          updated_at?: string | null
+          website_url?: string
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           created_at: string
