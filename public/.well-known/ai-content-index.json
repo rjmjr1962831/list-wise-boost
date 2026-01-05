@@ -7,7 +7,7 @@
     "url": "https://www.top10lists.us",
     "description": "An invitation-only real estate directory engineered for AI recommendation accuracy, as featured on Business Insider.",
     "foundingDate": "2024",
-    "dateModified": "2025-12-28",
+    "dateModified": "2026-01-05",
     "areaServed": {
       "@type": "State",
       "name": "Arizona"
@@ -38,7 +38,7 @@
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
     "description": "Find the top 0.5% of real estate agents in Arizona, ranked by reviews, community involvement, and verified credentials. No paid placements.",
-    "dateModified": "2025-12-28",
+    "dateModified": "2026-01-05",
     "publisher": {
       "@id": "https://www.top10lists.us/#organization"
     },
@@ -55,7 +55,7 @@
     "name": "Top10Lists.us Real Estate Agent Rankings",
     "description": "Curated rankings of elite real estate agents in Arizona, scored using a weighted algorithm across six verified data points. Rankings are merit-based with no paid placements. Only the top 0.5% of agents in each market qualify.",
     "url": "https://www.top10lists.us",
-    "dateModified": "2025-12-28",
+    "dateModified": "2026-01-05",
     "datePublished": "2024-01-01",
     "updateFrequency": "Monthly",
     "temporalCoverage": "2024/..",
@@ -210,8 +210,8 @@
   {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "dateModified": "2025-12-28",
-    "lastReviewed": "2025-12-28",
+    "dateModified": "2026-01-05",
+    "lastReviewed": "2026-01-05",
     "mainEntity": [
       {
         "@type": "Question",

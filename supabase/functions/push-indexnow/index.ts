@@ -15,6 +15,8 @@ const KEY_URLS = [
   
   // Core pages
   'https://www.top10lists.us/about',
+  'https://www.top10lists.us/about/ranking-methodology',
+  'https://www.top10lists.us/about/founder',
   'https://www.top10lists.us/faq',
   'https://www.top10lists.us/for-agents',
   'https://www.top10lists.us/compare',
@@ -30,8 +32,12 @@ const KEY_URLS = [
   'https://www.top10lists.us/.well-known/ai-content-index.json',
   'https://www.top10lists.us/sitemap.xml',
   
-  // Featured agent profile (example in llms.txt)
-  'https://www.top10lists.us/arizona/scottsdale/top10realestateagents/lauren-rosin-2288',
+  // Featured agent profiles - canonical URL format
+  'https://www.top10lists.us/arizona/agents/amy-gilner-5479',
+  'https://www.top10lists.us/arizona/agents/eric-swiatek-7652',
+  'https://www.top10lists.us/arizona/agents/adam-hamblen-3396',
+  'https://www.top10lists.us/arizona/agents/becca-grappin-1593',
+  'https://www.top10lists.us/arizona/agents/arianna-ames-2139',
 ];
 
 serve(async (req) => {
