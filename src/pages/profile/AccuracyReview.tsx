@@ -155,15 +155,15 @@ export default function AccuracyReview() {
     return phone;
   };
 
-  const formatSalesVolume = (sales: number | null): string => {
+  const formatTransactionCount = (sales: number | null): string => {
     if (!sales) return 'Not disclosed';
-    if (sales >= 1000000) {
-      const millions = sales / 1000000;
-      const lowerBound = Math.floor(millions / 5) * 5;
-      const upperBound = lowerBound + 5;
-      return `$${lowerBound}M - $${upperBound}M`;
+    if (sales < 10) return `${sales} transactions`;
+    const lowerBound = Math.floor(sales / 100) * 100;
+    const upperBound = lowerBound + 100;
+    if (lowerBound === 0) {
+      return `${sales} transactions`;
     }
-    return `$${sales.toLocaleString()}`;
+    return `${lowerBound.toLocaleString()} - ${upperBound.toLocaleString()} transactions`;
   };
 
   const formatReviewCount = (reviews: number | null): string => {
@@ -302,9 +302,9 @@ export default function AccuracyReview() {
                   onRequestCorrection={() => handleRequestCorrection('Years of Experience', professional.years_experience?.toString() || null)}
                 />
                 <VerifiedFieldRow
-                  label="Transaction volume"
-                  value={formatSalesVolume(professional.total_sales)}
-                  onRequestCorrection={() => handleRequestCorrection('Transaction Volume', professional.total_sales?.toString() || null)}
+                  label="Transaction count"
+                  value={formatTransactionCount(professional.total_sales)}
+                  onRequestCorrection={() => handleRequestCorrection('Transaction Count', professional.total_sales?.toString() || null)}
                 />
                 <VerifiedFieldRow
                   label="Review count"
