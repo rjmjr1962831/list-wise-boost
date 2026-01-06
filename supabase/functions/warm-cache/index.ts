@@ -361,6 +361,9 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/compare',
     '/press',
     '/for-ai',
+    '/ai-liability',
+    '/protocol-adopters',
+    '/protocol-services',
     '/test',
     '/ai-compare',
     '/arizona', // state landing page

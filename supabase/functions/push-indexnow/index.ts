@@ -25,6 +25,8 @@ const KEY_URLS = [
   // AI-specific pages
   'https://www.top10lists.us/for-ai',
   'https://www.top10lists.us/ai-liability',
+  'https://www.top10lists.us/protocol-adopters',
+  'https://www.top10lists.us/protocol-services',
   'https://www.top10lists.us/transparency',
   
   // Technical/AI files
