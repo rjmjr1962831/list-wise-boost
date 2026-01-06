@@ -1716,14 +1716,15 @@ export const ProfessionalCard = ({
                 {/* Bar 1: From [firstname] - Bio */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
-                  // Use original_description (Zillow bio) as fallback, NOT description (which may be synthesized_bio)
+                  const description = (professional as any).description;
+                  // Use original_description (Zillow bio) as final fallback
                   const originalDescription = (professional as any).original_description;
-                  const fallbackText = originalDescription;
-                  
-                  if (!bioHtml && !fallbackText && !isEditing) return null;
-                  
+                  const source = description || bioHtml || originalDescription;
+
+                  if (!source && !isEditing) return null;
+
                   const firstName = professional.name.split(' ')[0];
-                  
+
                   if (isOwnProfile && isEditing) {
                     return (
                       <div className="border rounded-lg p-4">
@@ -1741,26 +1742,69 @@ export const ProfessionalCard = ({
                       </div>
                     );
                   }
-                  
+
                   if (!bioOpen) return null;
-                  
-                  const cleanText = stripHtml(bioHtml || fallbackText);
+
+                  const escapeHtml = (input: string) =>
+                    input
+                      .replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/\"/g, '&quot;')
+                      .replace(/'/g, '&#039;');
+
+                  // Minimal safety: remove obvious script/style blocks and inline event handlers
+                  const sanitizeHtml = (html: string) =>
+                    html
+                      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+                      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+                      .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+                      .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+                      .replace(/javascript:/gi, '');
+
+                  const toHtmlFromText = (input: string) => {
+                    const normalized = input.replace(/\r\n/g, '\n').trim();
+                    const escaped = escapeHtml(normalized);
+                    const paragraphs = escaped
+                      .split(/\n{2,}/)
+                      .map(p => p.replace(/\n/g, '<br />'))
+                      .filter(Boolean);
+                    return paragraphs.length ? `<p>${paragraphs.join('</p><p>')}</p>` : '';
+                  };
+
+                  const getRenderableHtml = (input: string) => {
+                    const value = (input || '').trim();
+                    if (!value) return '';
+                    const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(value);
+                    return sanitizeHtml(looksLikeHtml ? value : toHtmlFromText(value));
+                  };
+
+                  const cleanText = stripHtml(source);
                   const needsExpander = cleanText.length > 150;
-                  
+                  const shouldClamp = !showFullDescription && needsExpander;
+
                   return (
                     <div className="border rounded-lg p-4 bg-background">
                       <div itemProp="description">
-                        <div 
-                          className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
-                          style={!showFullDescription && needsExpander ? { 
-                            display: '-webkit-box',
-                            WebkitLineClamp: 3,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
-                          } : {}}
-                        >
-                          {cleanText}
-                        </div>
+                        {shouldClamp ? (
+                          <div
+                            className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line"
+                            style={{
+                              display: '-webkit-box',
+                              WebkitLineClamp: 3,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {cleanText}
+                          </div>
+                        ) : (
+                          <div
+                            className="prose prose-sm max-w-none dark:prose-invert text-sm text-muted-foreground leading-relaxed whitespace-pre-line [&>p]:mb-3 [&>p:last-child]:mb-0"
+                            dangerouslySetInnerHTML={{ __html: getRenderableHtml(source) }}
+                          />
+                        )}
+
                         {needsExpander && (
                           <button
                             onClick={() => setShowFullDescription(!showFullDescription)}
