@@ -87,7 +87,7 @@ const BioPreview = ({ text }: { text: string }) => {
   return (
     <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
       <div
-        className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-line [&>p]:mb-3 [&>p:last-child]:mb-0"
+        className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-3 [&>p:last-child]:mb-0"
         dangerouslySetInnerHTML={{ __html: html }}
       />
       {needsTruncation && (
