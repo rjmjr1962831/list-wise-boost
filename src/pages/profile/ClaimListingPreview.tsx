@@ -482,39 +482,34 @@ export default function ClaimListingPreview() {
                   </div>
                 )}
 
-                {/* Section 6: Areas of Focus */}
-                {((professional.specialty && professional.specialty.length > 0) || professional.cities) && (
+                {/* Section 7: Areas of Focus */}
+                {professional.specialty && professional.specialty.length > 0 && (
                   <div className="p-6 border-b">
                     <h3 className="font-semibold text-lg mb-4">Areas of Focus</h3>
-                    
-                    {professional.specialty && professional.specialty.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-sm text-muted-foreground mb-2">Specialties</p>
-                        <div className="flex flex-wrap gap-2">
-                          {professional.specialty.map((spec, i) => (
-                            <Badge key={i} variant="secondary">
-                              {spec}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {professional.cities && (
-                      <div>
-                        <p className="text-sm text-muted-foreground mb-2">Featured City</p>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-primary" />
-                          <span className="font-medium">
-                            {professional.cities.name}, {professional.cities.state}
-                          </span>
-                        </div>
-                      </div>
-                    )}
+                    <div className="flex flex-wrap gap-2">
+                      {professional.specialty.map((spec, i) => (
+                        <Badge key={i} variant="secondary">
+                          {spec}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {/* Section 3: Contact & Online Presence */}
+                {/* Section 8: Featured City */}
+                {professional.cities && (
+                  <div className="p-6 border-b">
+                    <h3 className="font-semibold text-lg mb-4">Featured City</h3>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-primary" />
+                      <span className="font-medium">
+                        {professional.cities.name}, {professional.cities.state}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 9: Contact & Online Presence */}
                 <div className="p-6 border-b">
                   <h3 className="font-semibold text-lg mb-4">Contact & Online Presence</h3>
                   <div className="space-y-3">
