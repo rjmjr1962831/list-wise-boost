@@ -338,49 +338,6 @@ export default function AccuracyReview() {
             </CardContent>
           </Card>
 
-          {/* Expanded View Toggle */}
-          {professional.synthesized_bio && (
-            <div className="space-y-4">
-              <button
-                onClick={() => {
-                  setShowExpandedView(!showExpandedView);
-                  if (!showExpandedView) {
-                    trackEvent(FUNNEL_EVENTS.EXPANDED_VIEW_OPENED);
-                  }
-                }}
-                className="flex items-center gap-2 text-base font-medium text-primary hover:text-primary/80 transition-colors mx-auto py-3 px-4 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10"
-              >
-                {showExpandedView ? (
-                  <>
-                    <ChevronUp className="h-4 w-4" />
-                    Hide full synthesized profile
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown className="h-4 w-4" />
-                    View full synthesized profile (optional)
-                  </>
-                )}
-              </button>
-
-              {showExpandedView && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Synthesized Profile</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      This is an AI-generated summary based on publicly available information. You can request changes in Step 2.
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div 
-                      className="prose prose-sm max-w-none text-foreground whitespace-pre-line"
-                      dangerouslySetInnerHTML={{ __html: professional.synthesized_bio || '' }}
-                    />
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
 
 
           {/* Action Button */}
