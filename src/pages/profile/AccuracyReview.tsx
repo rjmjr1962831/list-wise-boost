@@ -374,38 +374,24 @@ export default function AccuracyReview() {
             By confirming, you are stating that the information above is accurate to the best of your knowledge.
           </p>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          {/* Action Button */}
+          <div className="flex justify-end">
             <Button
               onClick={handleConfirmAccuracy}
               disabled={confirmingAccuracy}
-              className="flex-1"
               size="lg"
             >
-            {confirmingAccuracy ? (
+              {confirmingAccuracy ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Processing...
                 </>
               ) : (
                 <>
-                  <ArrowRight className="h-4 w-4 mr-2" />
                   Next
+                  <ArrowRight className="h-4 w-4 ml-2" />
                 </>
               )}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => {
-                trackEvent(FUNNEL_EVENTS.CORRECTION_STARTED);
-                // Scroll to the fields section
-                document.querySelector('[data-fields-section]')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="flex-1"
-              size="lg"
-            >
-              <Pencil className="h-4 w-4 mr-2" />
-              Request corrections
             </Button>
           </div>
 
