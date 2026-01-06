@@ -14,28 +14,45 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-// Bio Preview component with ...more expander
+// Bio Preview component with ...more expander - renders HTML properly
 const BioPreview = ({ text }: { text: string }) => {
   const [expanded, setExpanded] = useState(false);
   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-  const cleanText = stripHtml(text);
+  const plainText = stripHtml(text);
   const maxLength = 200;
-  const needsTruncation = cleanText.length > maxLength;
-  const displayText = expanded ? cleanText : cleanText.slice(0, maxLength);
+  const needsTruncation = plainText.length > maxLength;
+
+  // For truncated view, we show plain text; for expanded, we render HTML
+  if (!expanded && needsTruncation) {
+    return (
+      <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
+        <span>
+          {plainText.slice(0, maxLength)}
+          <span
+            onClick={() => setExpanded(true)}
+            className="text-primary cursor-pointer hover:underline font-medium ml-1"
+          >
+            ...more
+          </span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
-      <span className="whitespace-pre-line">
-        {displayText}
-        {needsTruncation && (
-          <span
-            onClick={() => setExpanded(!expanded)}
-            className="text-primary cursor-pointer hover:underline font-medium ml-1"
-          >
-            {expanded ? "less" : "...more"}
-          </span>
-        )}
-      </span>
+      <div 
+        className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-3 [&>p:last-child]:mb-0"
+        dangerouslySetInnerHTML={{ __html: text }} 
+      />
+      {needsTruncation && (
+        <span
+          onClick={() => setExpanded(false)}
+          className="text-primary cursor-pointer hover:underline font-medium"
+        >
+          less
+        </span>
+      )}
     </div>
   );
 };
