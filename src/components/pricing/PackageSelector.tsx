@@ -185,32 +185,15 @@ export function PackageSelector({
           );
         })}
 
-        {/* Build Your Own Option */}
-        <div
-          onClick={handleBuildYourOwnClick}
-          className={cn(
-            'flex items-start gap-4 p-4 rounded-lg border cursor-pointer transition-all',
-            mode === 'build-your-own'
-              ? 'border-accent bg-accent/5 ring-2 ring-accent/20'
-              : 'border-border hover:border-accent/50 hover:bg-muted/50'
-          )}
-        >
-          <div className="mt-1">
-            {mode === 'build-your-own' ? (
-              <CheckCircle2 className="h-4 w-4 text-accent" />
-            ) : (
-              <Circle className="h-4 w-4 text-muted-foreground" />
-            )}
+        {/* Build Your Own Section Header */}
+        <div className="pt-4 mt-2 border-t border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <Wrench className="h-4 w-4 text-accent" />
+            <span className="font-semibold text-foreground">Build Your Own</span>
           </div>
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <Wrench className="h-4 w-4 text-accent" />
-              <span className="font-semibold">Build Your Own</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Select individual cities to create a custom coverage area
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Select individual cities below to create a custom coverage area
+          </p>
         </div>
       </div>
     </div>
