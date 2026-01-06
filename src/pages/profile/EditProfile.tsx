@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, X, Check, ChevronsUpDown, MessageSquarePlus } from 'lucide-react';
+import { Loader2, X, Check, ChevronsUpDown, MessageSquarePlus, AlertCircle } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Bio Preview component with ...more expander
 const BioPreview = ({ text }: { text: string }) => {
@@ -26,7 +27,7 @@ const BioPreview = ({ text }: { text: string }) => {
   const displayText = expanded ? cleanText : cleanText.slice(0, maxLength);
 
   return (
-    <div className="bg-muted/50 rounded-md p-3 mb-2 text-sm text-muted-foreground">
+    <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
       <span className="whitespace-pre-line">
         {displayText}
         {needsTruncation && (
@@ -42,14 +43,21 @@ const BioPreview = ({ text }: { text: string }) => {
   );
 };
 
-// Fields that require manual review to change
-const READ_ONLY_FIELDS = [
+// Fields for Section 1: Identity & Performance (read-only, review-required)
+const IDENTITY_FIELDS = [
   { key: 'name', label: 'Name' },
   { key: 'review_stars_rating', label: 'Review Rating' },
-  { key: 'num_total_reviews', label: 'Reviews' },
-  { key: 'years_experience', label: 'Years Experience' },
+  { key: 'num_total_reviews', label: 'Review Count' },
+  { key: 'years_experience', label: 'Years of Experience' },
   { key: 'total_sales', label: 'Total Sales' },
   { key: 'license_number', label: 'License Number' }
+];
+
+// Fields for Section 2: Contact Information (read-only, review-required)
+const CONTACT_FIELDS = [
+  { key: 'email', label: 'Email' },
+  { key: 'phone', label: 'Phone' },
+  { key: 'company', label: 'Brokerage / Company' }
 ];
 
 export default function EditProfile() {
@@ -59,34 +67,33 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<any>(null);
+  const [pendingReviews, setPendingReviews] = useState<string[]>([]);
   const [availableSpecialties, setAvailableSpecialties] = useState<Array<{ id: string; name: string }>>([]);
   const [specialtySearchOpen, setSpecialtySearchOpen] = useState(false);
   const [specialtySearch, setSpecialtySearch] = useState('');
+  const [availableCities, setAvailableCities] = useState<Array<{ id: string; name: string; state: string }>>([]);
+  const [citySearchOpen, setCitySearchOpen] = useState(false);
+  const [citySearch, setCitySearch] = useState('');
   
   // Review request modal state
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<{ key: string; label: string } | null>(null);
   
-  // Form state - only editable fields
+  // Form state - only agent-authored editable fields
   const [formData, setFormData] = useState({
-    email: '',
-    phone: '',
-    company: '',
     headline: '',
-    description: '',
+    description: '', // Agent's bio (first-person)
     specialty: [] as string[],
     certifications: [] as string[],
     languages: [] as string[],
-    service_areas: [] as string[],
+    featured_city: '', // Single city for featuring
     website: '',
     social_linkedin: '',
     social_facebook: '',
-    social_instagram: '',
-    address: '',
-    zip_code: ''
+    social_instagram: ''
   });
 
-  const [newTag, setNewTag] = useState({ certification: '', language: '', service_area: '' });
+  const [newTag, setNewTag] = useState({ certification: '', language: '' });
   const [communicationConsent, setCommunicationConsent] = useState(false);
 
   useEffect(() => {
@@ -101,15 +108,25 @@ export default function EditProfile() {
       }
 
       try {
-        // Load specialties
-        const { data: specialtiesData } = await supabase
-          .from('specialties')
-          .select('id, name')
-          .eq('active', true)
-          .order('name');
+        // Load specialties and cities in parallel
+        const [specialtiesResult, citiesResult] = await Promise.all([
+          supabase
+            .from('specialties')
+            .select('id, name')
+            .eq('active', true)
+            .order('name'),
+          supabase
+            .from('cities')
+            .select('id, name, state')
+            .eq('active', true)
+            .order('name')
+        ]);
         
-        if (specialtiesData) {
-          setAvailableSpecialties(specialtiesData);
+        if (specialtiesResult.data) {
+          setAvailableSpecialties(specialtiesResult.data);
+        }
+        if (citiesResult.data) {
+          setAvailableCities(citiesResult.data);
         }
 
         const { data, error } = await supabase.functions.invoke('validate-profile-token', {
@@ -129,22 +146,29 @@ export default function EditProfile() {
         const prof = data.professional;
         setProfessional(prof);
         
+        // Load pending review requests for this professional
+        const { data: reviewRequests } = await supabase
+          .from('field_change_requests')
+          .select('field_name')
+          .eq('professional_id', prof.id)
+          .eq('status', 'pending');
+        
+        if (reviewRequests) {
+          setPendingReviews(reviewRequests.map(r => r.field_name));
+        }
+        
+        // Only populate agent-authored fields
         setFormData({
-          email: prof.email || '',
-          phone: prof.phone || '',
-          company: prof.company || '',
           headline: prof.headline || '',
           description: prof.description || '',
           specialty: Array.isArray(prof.specialty) ? prof.specialty : [],
           certifications: Array.isArray(prof.certifications) ? prof.certifications : [],
           languages: Array.isArray(prof.languages) ? prof.languages : [],
-          service_areas: Array.isArray(prof.service_areas) ? prof.service_areas : [],
+          featured_city: prof.cities?.name || '',
           website: prof.website || '',
           social_linkedin: prof.social_linkedin || '',
           social_facebook: prof.social_facebook || '',
-          social_instagram: prof.social_instagram || '',
-          address: prof.address || '',
-          zip_code: prof.zip_code || ''
+          social_instagram: prof.social_instagram || ''
         });
 
         // Track edit view
@@ -152,7 +176,7 @@ export default function EditProfile() {
           body: { token, event_name: 'profile_edit_viewed' }
         });
         
-        // Send email notification that agent is viewing edit page
+        // Send email notification
         supabase.functions.invoke('send-funnel-notification', {
           body: {
             event_type: 'profile_edit_viewed',
@@ -189,7 +213,7 @@ export default function EditProfile() {
   };
 
   const getProfileLink = () => {
-    return `https://top10lists.us/profile/${token}`;
+    return `https://www.top10lists.us/profile/${token}`;
   };
 
   const getReadOnlyValue = (key: string) => {
@@ -208,9 +232,19 @@ export default function EditProfile() {
         return professional.total_sales?.toString() || 'N/A';
       case 'license_number':
         return professional.license_number || 'N/A';
+      case 'email':
+        return professional.email || 'N/A';
+      case 'phone':
+        return professional.phone || 'N/A';
+      case 'company':
+        return professional.company || professional.business_name || 'N/A';
       default:
         return 'N/A';
     }
+  };
+
+  const isFieldPendingReview = (fieldLabel: string) => {
+    return pendingReviews.some(f => f.toLowerCase() === fieldLabel.toLowerCase());
   };
 
   const addSpecialtyFromList = (specialtyName: string) => {
@@ -224,7 +258,6 @@ export default function EditProfile() {
     const value = specialtySearch.trim();
     if (!value) return;
 
-    // Check if already exists in list
     const existing = availableSpecialties.find(s => s.name.toLowerCase() === value.toLowerCase());
     if (existing) {
       addSpecialtyFromList(existing.name);
@@ -232,12 +265,10 @@ export default function EditProfile() {
       return;
     }
 
-    // Add to form immediately
     if (!formData.specialty.includes(value)) {
       handleInputChange('specialty', [...formData.specialty, value]);
     }
 
-    // Save to database in background
     try {
       const { data: newSpecialty, error } = await supabase
         .from('specialties')
@@ -249,9 +280,7 @@ export default function EditProfile() {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error saving specialty:', error);
-      } else if (newSpecialty) {
+      if (!error && newSpecialty) {
         setAvailableSpecialties(prev => [...prev, { id: newSpecialty.id, name: newSpecialty.name }].sort((a, b) => a.name.localeCompare(b.name)));
       }
     } catch (err) {
@@ -262,9 +291,14 @@ export default function EditProfile() {
     setSpecialtySearchOpen(false);
   };
 
-  const addTag = (field: 'certifications' | 'languages' | 'service_areas') => {
-    const tagKey = field === 'certifications' ? 'certification' :
-                   field === 'languages' ? 'language' : 'service_area';
+  const selectCity = (cityName: string) => {
+    handleInputChange('featured_city', cityName);
+    setCitySearchOpen(false);
+    setCitySearch('');
+  };
+
+  const addTag = (field: 'certifications' | 'languages') => {
+    const tagKey = field === 'certifications' ? 'certification' : 'language';
     const value = newTag[tagKey].trim();
     
     if (value && !formData[field].includes(value)) {
@@ -273,7 +307,7 @@ export default function EditProfile() {
     }
   };
 
-  const removeTag = (field: 'specialty' | 'certifications' | 'languages' | 'service_areas', tag: string) => {
+  const removeTag = (field: 'specialty' | 'certifications' | 'languages', tag: string) => {
     handleInputChange(field, formData[field].filter(t => t !== tag));
   };
 
@@ -295,7 +329,6 @@ export default function EditProfile() {
         throw new Error(data?.error || 'Failed to update profile');
       }
 
-      // Track completion
       supabase.functions.invoke('track-profile-event', {
         body: { token, event_name: 'profile_edited' }
       });
@@ -318,6 +351,11 @@ export default function EditProfile() {
     }
   };
 
+  const filteredCities = availableCities.filter(city => 
+    city.name.toLowerCase().includes(citySearch.toLowerCase()) ||
+    city.state.toLowerCase().includes(citySearch.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted">
@@ -329,7 +367,7 @@ export default function EditProfile() {
   return (
     <>
       <Helmet>
-        <title>Edit Your Profile | Top10Lists.us</title>
+        <title>Review & Edit Your Profile | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted py-12 px-4">
@@ -351,120 +389,231 @@ export default function EditProfile() {
             Review Your Profile
           </h1>
           <p className="text-muted-foreground">
-            Make sure everything looks accurate
+            Make sure everything looks accurate.
           </p>
         </div>
+
+        {/* Pending Reviews Alert */}
+        {pendingReviews.length > 0 && (
+          <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800 dark:text-amber-200">
+              Some requested changes are pending review. You may continue while they are reviewed.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Form */}
         <Card className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Read-Only Fields Section */}
+            
+            {/* SECTION 1: Synced Information (Identity & Performance) */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Synced Information</h2>
               <p className="text-sm text-muted-foreground">
-                These fields are synced from external sources. To request changes, click "Ask For Review" next to the field.
+                These fields are synced from external sources. To request changes, click <strong>Ask for review</strong> next to the field.
               </p>
               <div className="grid md:grid-cols-2 gap-4">
-                {READ_ONLY_FIELDS.map((field) => (
-                  <div key={field.key} className="space-y-1">
-                    <Label>{field.label}</Label>
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        value={getReadOnlyValue(field.key)}
-                        disabled
-                        className="bg-muted flex-1"
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openReviewModal(field)}
-                        className="whitespace-nowrap"
-                      >
-                        <MessageSquarePlus className="h-4 w-4 mr-1" />
-                        Ask For Review
-                      </Button>
+                {IDENTITY_FIELDS.map((field) => {
+                  const isPending = isFieldPendingReview(field.label);
+                  return (
+                    <div key={field.key} className="space-y-1">
+                      <Label>{field.label}</Label>
+                      <div className="flex gap-2 items-center">
+                        <Input
+                          value={getReadOnlyValue(field.key)}
+                          disabled
+                          className="bg-muted flex-1"
+                        />
+                        {isPending ? (
+                          <Badge variant="secondary" className="whitespace-nowrap">
+                            Review requested
+                          </Badge>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openReviewModal(field)}
+                            className="whitespace-nowrap"
+                          >
+                            <MessageSquarePlus className="h-4 w-4 mr-1" />
+                            Ask for review
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
-            {/* Editable Basic Info */}
+            {/* SECTION 2: Contact Information (Synced) */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Contact Information</h2>
               <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="company">Brokerage/Company</Label>
-                  <Input
-                    id="company"
-                    value={formData.company}
-                    onChange={(e) => handleInputChange('company', e.target.value)}
-                  />
-                </div>
+                {CONTACT_FIELDS.map((field) => {
+                  const isPending = isFieldPendingReview(field.label);
+                  return (
+                    <div key={field.key} className="space-y-1">
+                      <Label>{field.label}</Label>
+                      {field.key === 'phone' && (
+                        <p className="text-xs text-muted-foreground italic">
+                          This may be a tracking number from Zillow or similar platforms.
+                        </p>
+                      )}
+                      <div className="flex gap-2 items-center">
+                        <Input
+                          value={getReadOnlyValue(field.key)}
+                          disabled
+                          className="bg-muted flex-1"
+                        />
+                        {isPending ? (
+                          <Badge variant="secondary" className="whitespace-nowrap">
+                            Review requested
+                          </Badge>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openReviewModal(field)}
+                            className="whitespace-nowrap"
+                          >
+                            <MessageSquarePlus className="h-4 w-4 mr-1" />
+                            Ask for review
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            {/* Professional Info */}
+            {/* SECTION 3: Our Synthesized Review (Read-Only) */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Professional Details</h2>
-              <div>
-                <Label htmlFor="headline">Professional Headline</Label>
-                <Input
-                  id="headline"
-                  placeholder="e.g., Luxury Real Estate Specialist"
-                  value={formData.headline}
-                  onChange={(e) => handleInputChange('headline', e.target.value)}
-                />
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-foreground">Our Synthesized Review</h2>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openReviewModal({ key: 'synthesized_bio', label: 'Synthesized Review' })}
+                  className="whitespace-nowrap"
+                >
+                  <MessageSquarePlus className="h-4 w-4 mr-1" />
+                  Ask for review
+                </Button>
               </div>
-              <div>
-                <Label htmlFor="description">Bio</Label>
-                {/* Current Bio Preview with ...more expander */}
-                {professional?.synthesized_bio && (
-                  <BioPreview text={professional.synthesized_bio} />
-                )}
-                <Textarea
-                  id="description"
-                  rows={4}
-                  placeholder="Enter your bio..."
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                />
-              </div>
+              <p className="text-sm text-muted-foreground">
+                This third-party narrative was written by Top10Lists.us based on publicly available data and observations. It is not editable.
+              </p>
+              {professional?.synthesized_bio ? (
+                <BioPreview text={professional.synthesized_bio} />
+              ) : (
+                <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground italic">
+                  No synthesized review available yet.
+                </div>
+              )}
             </div>
 
-            {/* Specialties */}
+            {/* SECTION 4: Your Bio (Editable - No Review Required) */}
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Specialties</h2>
+              <h2 className="text-xl font-semibold text-foreground">Your Bio</h2>
+              <p className="text-sm text-muted-foreground">
+                This is your statement to the public. We suggest you write it in the first person.
+              </p>
+              <Textarea
+                id="description"
+                rows={5}
+                placeholder="Write your personal bio here..."
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                className="whitespace-pre-line"
+              />
+            </div>
+
+            {/* SECTION 5: Professional Headline (Editable) */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Professional Headline</h2>
+              <p className="text-sm text-muted-foreground">
+                A short descriptor shown near your name (e.g., "Luxury Residential Specialist").
+              </p>
+              <Input
+                id="headline"
+                placeholder="e.g., Luxury Residential Specialist"
+                value={formData.headline}
+                onChange={(e) => handleInputChange('headline', e.target.value)}
+              />
+            </div>
+
+            {/* SECTION 6: Service Area (Controlled Editable) */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">What city would you like to be featured in?</h2>
+              <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={citySearchOpen}
+                    className="w-full justify-between"
+                  >
+                    {formData.featured_city || "Select a city..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0 z-[100] bg-background" align="start" side="bottom">
+                  <Command className="bg-background">
+                    <CommandInput 
+                      placeholder="Search cities..." 
+                      value={citySearch}
+                      onValueChange={setCitySearch}
+                    />
+                    <CommandList className="max-h-[300px] overflow-y-auto bg-background">
+                      <CommandEmpty className="bg-background p-2 text-center text-sm text-muted-foreground">
+                        No city found
+                      </CommandEmpty>
+                      <CommandGroup className="bg-background">
+                        {filteredCities.slice(0, 50).map((city) => (
+                          <CommandItem
+                            key={city.id}
+                            value={city.name}
+                            onSelect={() => selectCity(city.name)}
+                            className="cursor-pointer hover:bg-accent"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.featured_city === city.name ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {city.name}, {city.state}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* SECTION 7: Additional Editable Details */}
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold text-foreground">Additional Details</h2>
+              
+              {/* Specialties */}
               <div>
-                <Label>Select or Add Specialty</Label>
+                <Label>Specialties / Tags</Label>
                 <Popover open={specialtySearchOpen} onOpenChange={setSpecialtySearchOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
                       aria-expanded={specialtySearchOpen}
-                      className="w-full justify-between"
+                      className="w-full justify-between mt-1"
                     >
-                      Select specialty...
+                      Select or add specialty...
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -510,9 +659,6 @@ export default function EditProfile() {
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Select from existing specialties or type to add a new one
-                </p>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {formData.specialty.map(tag => (
                     <Badge key={tag} variant="secondary">
@@ -523,9 +669,10 @@ export default function EditProfile() {
                 </div>
               </div>
 
+              {/* Certifications */}
               <div>
                 <Label htmlFor="certification">Certifications</Label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-1">
                   <Input
                     id="certification"
                     placeholder="e.g., CRS, ABR"
@@ -545,9 +692,10 @@ export default function EditProfile() {
                 </div>
               </div>
 
+              {/* Languages */}
               <div>
                 <Label htmlFor="language">Languages</Label>
-                <div className="flex gap-2">
+                <div className="flex gap-2 mt-1">
                   <Input
                     id="language"
                     placeholder="e.g., Spanish, Mandarin"
@@ -568,51 +716,7 @@ export default function EditProfile() {
               </div>
             </div>
 
-            {/* Location */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Location & Service Areas</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="address">Address</Label>
-                  <Input
-                    id="address"
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="zip_code">Zip Code</Label>
-                  <Input
-                    id="zip_code"
-                    value={formData.zip_code}
-                    onChange={(e) => handleInputChange('zip_code', e.target.value)}
-                  />
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="service_area">Service Areas</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="service_area"
-                    placeholder="e.g., Phoenix Metro"
-                    value={newTag.service_area}
-                    onChange={(e) => setNewTag(prev => ({ ...prev, service_area: e.target.value }))}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag('service_areas'))}
-                  />
-                  <Button type="button" onClick={() => addTag('service_areas')}>Add</Button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.service_areas.map(tag => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag('service_areas', tag)} />
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Online Presence */}
+            {/* SECTION 8: Online Presence */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Online Presence</h2>
               <div className="grid gap-4">
@@ -621,6 +725,7 @@ export default function EditProfile() {
                   <Input
                     id="website"
                     type="url"
+                    placeholder="https://yourwebsite.com"
                     value={formData.website}
                     onChange={(e) => handleInputChange('website', e.target.value)}
                   />
@@ -630,6 +735,7 @@ export default function EditProfile() {
                   <Input
                     id="social_linkedin"
                     type="url"
+                    placeholder="https://linkedin.com/in/yourprofile"
                     value={formData.social_linkedin}
                     onChange={(e) => handleInputChange('social_linkedin', e.target.value)}
                   />
@@ -639,6 +745,7 @@ export default function EditProfile() {
                   <Input
                     id="social_facebook"
                     type="url"
+                    placeholder="https://facebook.com/yourpage"
                     value={formData.social_facebook}
                     onChange={(e) => handleInputChange('social_facebook', e.target.value)}
                   />
@@ -648,6 +755,7 @@ export default function EditProfile() {
                   <Input
                     id="social_instagram"
                     type="url"
+                    placeholder="https://instagram.com/yourprofile"
                     value={formData.social_instagram}
                     onChange={(e) => handleInputChange('social_instagram', e.target.value)}
                   />
@@ -664,15 +772,15 @@ export default function EditProfile() {
                 className="mt-1"
               />
               <Label htmlFor="communicationConsent" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                By checking this box, I confirm that I have read and agree to the{' '}
+                I agree to the{' '}
                 <a href="/terms" target="_blank" className="text-primary hover:underline">Terms and Conditions</a>
-                {' '}and the{' '}
-                <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>
-                , and agree to receive marketing, account status and 2 factor authentication communications in emails and messages from top10lists.us. I know I can opt-out any time.
+                {' '}and{' '}
+                <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>.
+                I consent to receive communications from Top10Lists.us. I can opt-out anytime.
               </Label>
             </div>
 
-            {/* Submit */}
+            {/* Navigation */}
             <div className="flex gap-4 pt-4">
               <Button
                 type="button"
@@ -707,7 +815,7 @@ export default function EditProfile() {
           professionalId={professional?.id || ''}
           professionalEmail={professional?.email}
           pipedrivePersonId={professional?.pipedrive_person_id}
-          currentValue={(professional as any)?.[selectedField.key] || ''}
+          currentValue={selectedField.key === 'synthesized_bio' ? 'See synthesized review above' : (professional as any)?.[selectedField.key] || ''}
         />
       )}
       </div>
