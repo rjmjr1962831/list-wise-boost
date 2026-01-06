@@ -339,7 +339,7 @@ export default function AccuracyReview() {
                     trackEvent(FUNNEL_EVENTS.EXPANDED_VIEW_OPENED);
                   }
                 }}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto"
+                className="flex items-center gap-2 text-base font-medium text-primary hover:text-primary/80 transition-colors mx-auto py-3 px-4 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10"
               >
                 {showExpandedView ? (
                   <>
