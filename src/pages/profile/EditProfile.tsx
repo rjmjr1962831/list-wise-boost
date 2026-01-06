@@ -251,6 +251,11 @@ export default function EditProfile() {
           social_facebook: prof.social_facebook || '',
           social_instagram: prof.social_instagram || ''
         });
+        
+        // Initialize bio last edited date if description exists
+        if (prof.description && prof.updated_at) {
+          setBioLastEdited(prof.updated_at);
+        }
 
         // Track edit view
         supabase.functions.invoke('track-profile-event', {
