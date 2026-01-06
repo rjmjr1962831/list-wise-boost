@@ -19,6 +19,7 @@ import streetInsiderLogo from "@/assets/logos/streetinsider.png";
 import aiJournLogo from "@/assets/logos/aijourn.png";
 import arizonaDailyIndependentLogo from "@/assets/logos/arizona-daily-independent.png";
 import financeWireLogo from "@/assets/logos/financewire.png";
+import yahooFinanceLogo from "@/assets/logos/yahoo-finance.svg";
 
 interface PressArticle {
   name: string;
@@ -50,6 +51,7 @@ const pressArticles: PressArticle[] = [
     title: "Top10Lists.us Reports AI Search Tools Are 7x More Likely to Recommend Its Agents Over Traditional Directories",
     summary: "Yahoo Finance coverage of how Top10Lists.us agents are recommended by AI search tools at 7x the rate of traditional directories, validating the platform's AI-optimized approach to real estate agent rankings.",
     date: "January 2026",
+    logo: yahooFinanceLogo,
   },
   {
     name: "Markets Insider",
