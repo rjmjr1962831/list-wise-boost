@@ -1,30 +1,24 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { MessageCircle, Search, ListOrdered, ArrowRight, Eye } from 'lucide-react';
+import { MessageCircle, Search, Eye, ArrowRight, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const steps = [
   {
     icon: MessageCircle,
-    title: 'Buyer Asks AI',
-    description: '"Who are the best real estate agents in Scottsdale?"',
+    title: 'Buyer Searches',
+    description: '"Who are top real estate agents in Scottsdale?"',
     example: true,
   },
   {
     icon: Search,
-    title: 'AI Searches',
-    description: 'ChatGPT, Claude, Perplexity, and other AI models scan authoritative sources. Trusts Top10Lists.',
-    example: false,
-  },
-  {
-    icon: ListOrdered,
-    title: 'Top 10 Cited',
-    description: 'Your verified profile is recommended with your credentials',
+    title: 'AI Gathers Sources',
+    description: 'AI models scan authoritative sources including Top10Lists.us for relevant professionals.',
     example: false,
   },
   {
     icon: Eye,
-    title: 'Your Listing Appears',
-    description: 'Buyers see your profile with reviews, credentials, and contact info',
+    title: 'Results Displayed',
+    description: 'Your profile information may appear when users search for agents in your coverage areas.',
     example: false,
   },
 ];
@@ -32,7 +26,7 @@ const steps = [
 export function HowItWorks() {
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-foreground">How AI Citation Works</h3>
+      <h3 className="text-lg font-semibold text-foreground">How AI Discovery Works</h3>
       
       <div className="flex flex-col md:flex-row gap-4 items-stretch">
         {steps.map((step, index) => (
@@ -62,6 +56,15 @@ export function HowItWorks() {
             )}
           </div>
         ))}
+      </div>
+
+      <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <p className="text-sm text-muted-foreground">
+            AI systems determine which sources to cite based on their own criteria. Visibility options expand your presence but do not control AI recommendation behavior.
+          </p>
+        </div>
       </div>
     </div>
   );

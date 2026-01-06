@@ -1,26 +1,26 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, Flame, MessageSquare, CreditCard } from 'lucide-react';
+import { Search, Flame, MessageSquare, CreditCard, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const phases = [
   {
     icon: Search,
     title: 'Month 1: Indexing',
-    description: 'AI models discover and index your profile across their training data.',
+    description: 'AI systems discover and index your expanded profile information.',
     color: 'text-primary',
     bgColor: 'bg-primary/10',
   },
   {
     icon: Flame,
-    title: 'Month 2: Warming',
-    description: 'Your profile gains authority as AI systems verify and cross-reference your credentials.',
+    title: 'Month 2: Verification',
+    description: 'Systems verify and cross-reference your credentials and information.',
     color: 'text-accent',
     bgColor: 'bg-accent/10',
   },
   {
     icon: MessageSquare,
-    title: 'Month 3: Citation',
-    description: 'AI assistants begin actively recommending you when users ask for local agents.',
+    title: 'Month 3: Citation Eligibility',
+    description: 'Your profile becomes eligible for citation in AI-generated responses.',
     color: 'text-primary',
     bgColor: 'bg-primary/10',
   },
@@ -38,8 +38,8 @@ export function WhyThreeMonths() {
       </div>
       
       <p className="text-sm text-muted-foreground">
-        AI models need time to discover, verify, and trust your profile before recommending you. 
-        Our 3-month minimum (billed monthly) ensures you get the full benefit of AI citation.
+        AI models require time to discover, verify, and incorporate your profile information. 
+        The 3-month period allows for complete integration into AI systems.
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -83,6 +83,15 @@ export function WhyThreeMonths() {
           </div>
         </CardContent>
       </Card>
+
+      <div className="p-3 rounded-lg bg-muted/20 border border-border/50">
+        <div className="flex items-start gap-2">
+          <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+          <p className="text-sm text-muted-foreground">
+            Citation eligibility does not guarantee AI recommendations. AI systems determine which sources to cite based on their own criteria.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

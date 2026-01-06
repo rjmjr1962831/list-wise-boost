@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Check, X, Sparkles, User, Phone, ChevronDown } from 'lucide-react';
+import { Check, X, MapPin, User, Phone, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface FeatureItem {
@@ -15,16 +15,15 @@ interface FeatureItem {
 }
 
 const features: FeatureItem[] = [
-  // Enabled items first
-  { label: 'Basic profile listing', premiumLabel: 'Enhanced profile listing', free: true, premium: true },
+  // Free features
+  { label: 'Editorial profile in primary city', free: true, premium: true },
   { label: 'Verified license display', free: true, premium: true },
-  { label: 'AI search optimization', free: true, premium: true },
-  
-  { label: 'Video introduction', free: true, premium: true },
-  // Premium-only items
-  { label: 'Guaranteed Top 10 placement', free: false, premium: true },
-  { label: 'Priority position in rankings', free: false, premium: true },
-  { label: 'Multi-city coverage', free: false, premium: true },
+  { label: 'AI search indexing', free: true, premium: true },
+  { label: 'Basic contact information', free: true, premium: true },
+  // Expanded visibility features
+  { label: 'Coverage in additional cities', free: false, premium: true },
+  { label: 'Enhanced profile distribution', free: false, premium: true },
+  { label: 'Multi-market presence', free: false, premium: true },
 ];
 
 interface FreeVsPremiumProps {
@@ -44,7 +43,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-foreground">Free vs Premium Placement</h3>
+      <h3 className="text-lg font-semibold text-foreground">Free Listing vs Expanded Visibility</h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Free Tier */}
@@ -56,7 +55,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
               </div>
               <div>
                 <CardTitle className="text-base">Free Listing</CardTitle>
-                <p className="text-xs text-muted-foreground">Basic visibility</p>
+                <p className="text-xs text-muted-foreground">Always included</p>
               </div>
             </div>
           </CardHeader>
@@ -90,7 +89,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
                       variant="outline" 
                       className="w-full"
                     >
-                      I'm ok, I'll stick with the Free offer
+                      Continue with Free Listing
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-72 p-4 bg-background" align="center">
@@ -99,7 +98,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
                         className="w-full"
                         onClick={handleDone}
                       >
-                        I'm Done
+                        Confirm
                       </Button>
                       
                       <Collapsible open={showContact} onOpenChange={setShowContact}>
@@ -108,7 +107,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
                             variant="outline" 
                             className="w-full justify-between"
                           >
-                            Let's Talk
+                            Have Questions?
                             <ChevronDown className={cn(
                               "h-4 w-4 transition-transform",
                               showContact && "rotate-180"
@@ -136,21 +135,20 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
           </CardContent>
         </Card>
 
-        {/* Premium Tier */}
+        {/* Expanded Visibility */}
         <Card className="border-primary relative overflow-hidden">
           <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-primary to-accent" />
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
+                  <MapPin className="h-4 w-4 text-white" />
                 </div>
                 <div>
-                  <CardTitle className="text-base">Premium Placement</CardTitle>
-                  <p className="text-xs text-muted-foreground">Maximum visibility</p>
+                  <CardTitle className="text-base">Expanded Visibility</CardTitle>
+                  <p className="text-xs text-muted-foreground">Optional add-on</p>
                 </div>
               </div>
-              <Badge className="bg-primary/10 text-primary border-0">Popular</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -171,18 +169,13 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
               </div>
             ))}
             
-            {/* Early adopter benefits */}
-            <div className="flex items-center gap-2 text-sm text-accent">
-              <Check className="h-4 w-4 text-accent" />
-              <span className="font-medium">50% Early Adopter Discount</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-accent">
-              <Check className="h-4 w-4 text-accent" />
-              <span className="font-medium">No price changes for 24 months</span>
+            <div className="pt-3 border-t mt-3">
+              <p className="text-sm text-muted-foreground">Starting at</p>
+              <p className="text-2xl font-bold">$29<span className="text-sm font-normal text-muted-foreground">/mo per city</span></p>
             </div>
             
             {/* Down arrow indicator */}
-            <div className="flex justify-center mt-10">
+            <div className="flex justify-center mt-6">
               <ChevronDown className="h-6 w-6 text-muted-foreground animate-bounce" />
             </div>
           </CardContent>
