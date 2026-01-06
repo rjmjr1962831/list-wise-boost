@@ -47,8 +47,8 @@ export default function ClaimListingPreview() {
           return;
         }
 
-        // Transform to Professional type
-        const pro: Professional = {
+        // Transform to Professional type (with extra fields for ProfessionalCard bio rendering)
+        const pro: Professional & { get_to_know_me?: string; original_description?: string } = {
           id: data.id,
           name: data.name,
           title: data.title || '',
@@ -71,7 +71,9 @@ export default function ClaimListingPreview() {
           verified: !!data.license_verified_at,
           notable_achievements: data.notable_achievements as any[] || [],
           press_mentions: data.press_mentions as any[] || [],
-          synthesized_bio: data.synthesized_bio
+          synthesized_bio: data.synthesized_bio,
+          get_to_know_me: data.get_to_know_me,
+          original_description: data.description
         };
 
         setProfessional(pro);
