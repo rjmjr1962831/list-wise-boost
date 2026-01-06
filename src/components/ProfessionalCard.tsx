@@ -60,6 +60,11 @@ export const ProfessionalCard = ({
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   
+  // Keep local license state synced with incoming data (preview pages can update props after load)
+  useEffect(() => {
+    setLicense(professional.license_number || null);
+  }, [professional.license_number]);
+  
   // Collapsible bar states - auto-expand if expandSections prop is true
   const [bioOpen, setBioOpen] = useState(expandSections);
   const [showFullSynthesizedBio, setShowFullSynthesizedBio] = useState(expandSections);
@@ -74,6 +79,7 @@ export const ProfessionalCard = ({
   const stripHtml = (html: string): string => {
     if (!html) return '';
     const withoutTags = html.replace(/<[^>]*>/g, '');
+    if (typeof document === 'undefined') return withoutTags;
     const textarea = document.createElement('textarea');
     textarea.innerHTML = withoutTags;
     return textarea.value;

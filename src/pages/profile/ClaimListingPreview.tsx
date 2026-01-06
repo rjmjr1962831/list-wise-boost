@@ -26,28 +26,49 @@ export default function ClaimListingPreview() {
 
   useEffect(() => {
     const loadProfessional = async () => {
-      // Use the token from URL, or fall back to test profile
-      const id = token || TEST_PROFILE_ID;
-      setProfileId(id);
+      // Token can be either the professional id OR the verification_token.
+      const lookup = token || TEST_PROFILE_ID;
 
       try {
-        const { data, error: fetchError } = await supabase
+        let data: any = null;
+
+        // Try by ID first
+        const byId = await supabase
           .from('professionals')
           .select(`
             *,
             cities!inner(name, state, slug, state_slug),
             categories!inner(name, slug, plural_name)
           `)
-          .eq('id', id)
+          .eq('id', lookup)
           .maybeSingle();
 
-        if (fetchError || !data) {
+        data = byId.data;
+
+        // Fallback: try by verification_token
+        if (!data) {
+          const byToken = await supabase
+            .from('professionals')
+            .select(`
+              *,
+              cities!inner(name, state, slug, state_slug),
+              categories!inner(name, slug, plural_name)
+            `)
+            .eq('verification_token', lookup)
+            .maybeSingle();
+
+          data = byToken.data;
+        }
+
+        if (!data) {
           setError('Profile not found');
-          setLoading(false);
           return;
         }
 
-        // Transform to Professional type (with extra fields for ProfessionalCard bio rendering)
+        // Always navigate using the canonical professional id
+        setProfileId(data.id);
+
+        // Transform to Professional type (with extra fields for ProfessionalCard rendering)
         const pro: Professional & { get_to_know_me?: string; original_description?: string } = {
           id: data.id,
           name: data.name,
@@ -69,15 +90,23 @@ export default function ClaimListingPreview() {
             currentListings: data.current_listings
           },
           verified: !!data.license_verified_at,
-          notable_achievements: data.notable_achievements as any[] || [],
-          press_mentions: data.press_mentions as any[] || [],
+          notable_achievements: (data.notable_achievements as any[]) || [],
+          press_mentions: (data.press_mentions as any[]) || [],
           synthesized_bio: data.synthesized_bio,
           get_to_know_me: data.get_to_know_me,
-          original_description: data.description
+          original_description: data.description,
+
+          // Fields used by ProfessionalCard for license + verification display
+          license_number: data.license_number,
+          license_verified_at: data.license_verified_at,
+          years_experience: data.years_experience,
+          total_sales: data.total_sales,
+          current_listings: data.current_listings
         };
 
         setProfessional(pro);
       } catch (err) {
+        console.error('ClaimListingPreview loadProfessional error:', err);
         setError('Failed to load profile');
       } finally {
         setLoading(false);
