@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle2, X, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, ArrowRight, CheckCircle2, X, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 import { VerifiedFieldRow } from '@/components/profile/VerifiedFieldRow';
 import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
@@ -382,15 +382,15 @@ export default function AccuracyReview() {
               className="flex-1"
               size="lg"
             >
-              {confirmingAccuracy ? (
+            {confirmingAccuracy ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Confirming...
+                  Processing...
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Confirm accuracy
+                  <ArrowRight className="h-4 w-4 mr-2" />
+                  Next
                 </>
               )}
             </Button>
