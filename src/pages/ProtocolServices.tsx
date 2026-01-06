@@ -1,10 +1,18 @@
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, FileText, Code, Shield, Database } from "lucide-react";
+import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 
 export default function ProtocolServices() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // Signal Prerender.io that page is ready
+  usePrerenderReady();
   return (
     <>
       <Helmet>

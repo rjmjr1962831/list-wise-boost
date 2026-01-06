@@ -11,6 +11,7 @@ import {
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { useEffect } from "react";
 import { Scale, FileText, AlertTriangle, BookOpen, Users, ArrowRight } from "lucide-react";
 
@@ -23,6 +24,9 @@ const AILiability = () => {
       page_path: '/ai-liability'
     });
   }, [trackEvent]);
+
+  // Signal Prerender.io that page is ready
+  usePrerenderReady();
 
   const pageSchema = {
     "@context": "https://schema.org",

@@ -55,21 +55,35 @@
   <!-- AI-Specific Pages -->
   <url>
     <loc>https://www.top10lists.us/for-ai</loc>
-    <lastmod>2026-01-05</lastmod>
+    <lastmod>2026-01-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://www.top10lists.us/ai-liability</loc>
-    <lastmod>2026-01-05</lastmod>
+    <lastmod>2026-01-06</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/protocol-adopters</loc>
+    <lastmod>2026-01-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/protocol-services</loc>
+    <lastmod>2026-01-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://www.top10lists.us/transparency</loc>
-    <lastmod>2026-01-05</lastmod>
+    <lastmod>2026-01-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
