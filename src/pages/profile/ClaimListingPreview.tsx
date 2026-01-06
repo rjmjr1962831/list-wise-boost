@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Edit, 
   Loader2, 
@@ -20,7 +21,8 @@ import {
   Shield,
   Linkedin,
   Facebook,
-  Instagram
+  Instagram,
+  ChevronDown
 } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
 
@@ -63,6 +65,8 @@ export default function ClaimListingPreview() {
   const [professional, setProfessional] = useState<ProfessionalData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string>('');
+  const [editorialExpanded, setEditorialExpanded] = useState(false);
+  const [agentStatementExpanded, setAgentStatementExpanded] = useState(false);
 
   // Test profile UUID for Robert Maynard
   const TEST_PROFILE_ID = '45415a04-dffe-46d0-96c6-fe8dbf6cebff';
@@ -245,38 +249,7 @@ export default function ClaimListingPreview() {
                   </div>
                 </div>
 
-                {/* Section 1: Editorial Review */}
-                {professional.synthesized_bio && (
-                  <div className="p-6 bg-blue-50/50 dark:bg-blue-950/20 border-b">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Award className="h-5 w-5 text-primary" />
-                      <h3 className="font-semibold text-lg">Top10Lists.us Editorial Review</h3>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      This section is written by Top10Lists.us based on publicly available data and editorial review.
-                    </p>
-                    <div className="prose prose-sm dark:prose-invert max-w-none">
-                      <p className="text-foreground whitespace-pre-line leading-relaxed">
-                        {stripHtml(professional.synthesized_bio)}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Section 2: Agent Statement */}
-                {agentStatement && (
-                  <div className="p-6 border-b border-l-4 border-l-amber-400 bg-amber-50/30 dark:bg-amber-950/10">
-                    <h3 className="font-semibold text-lg mb-2">From {firstName}</h3>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      This statement was provided by the agent.
-                    </p>
-                    <blockquote className="italic text-foreground whitespace-pre-line leading-relaxed">
-                      "{stripHtml(agentStatement)}"
-                    </blockquote>
-                  </div>
-                )}
-
-                {/* Section 3: Key Credentials & Metrics */}
+                {/* Section 1: Key Credentials & Metrics */}
                 <div className="p-6 border-b">
                   <h3 className="font-semibold text-lg mb-4">Key Credentials & Metrics</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -314,7 +287,7 @@ export default function ClaimListingPreview() {
                   </div>
                 </div>
 
-                {/* Section 4: Areas of Focus */}
+                {/* Section 2: Areas of Focus */}
                 {((professional.specialty && professional.specialty.length > 0) || professional.cities) && (
                   <div className="p-6 border-b">
                     <h3 className="font-semibold text-lg mb-4">Areas of Focus</h3>
@@ -346,8 +319,8 @@ export default function ClaimListingPreview() {
                   </div>
                 )}
 
-                {/* Section 5: Contact & Online Presence */}
-                <div className="p-6">
+                {/* Section 3: Contact & Online Presence */}
+                <div className="p-6 border-b">
                   <h3 className="font-semibold text-lg mb-4">Contact & Online Presence</h3>
                   <div className="space-y-3">
                     {professional.website && (
@@ -429,6 +402,65 @@ export default function ClaimListingPreview() {
                     )}
                   </div>
                 </div>
+
+                {/* Section 4: Editorial Review (Collapsed by default) */}
+                {professional.synthesized_bio && (
+                  <Collapsible open={editorialExpanded} onOpenChange={setEditorialExpanded}>
+                    <div className="p-6 bg-blue-50/50 dark:bg-blue-950/20 border-b">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Award className="h-5 w-5 text-primary" />
+                            <h3 className="font-semibold text-lg">Top10Lists.us Editorial Review</h3>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Written by Top10Lists.us based on publicly available data and editorial review.
+                          </p>
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-primary shrink-0">
+                            {editorialExpanded ? "Hide" : "Show"}
+                            <ChevronDown className={`h-4 w-4 ml-1 transition-transform duration-200 ${editorialExpanded ? "rotate-180" : ""}`} />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      <CollapsibleContent className="pt-4">
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <p className="text-foreground whitespace-pre-line leading-relaxed">
+                            {stripHtml(professional.synthesized_bio)}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                )}
+
+                {/* Section 5: Agent Statement (Collapsed by default) */}
+                {agentStatement && (
+                  <Collapsible open={agentStatementExpanded} onOpenChange={setAgentStatementExpanded}>
+                    <div className="p-6 border-l-4 border-l-amber-400 bg-amber-50/30 dark:bg-amber-950/10">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">From {firstName}</h3>
+                          <p className="text-xs text-muted-foreground">
+                            Statement provided by the agent.
+                          </p>
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-primary shrink-0">
+                            {agentStatementExpanded ? "Hide" : "Show"}
+                            <ChevronDown className={`h-4 w-4 ml-1 transition-transform duration-200 ${agentStatementExpanded ? "rotate-180" : ""}`} />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      <CollapsibleContent className="pt-4">
+                        <blockquote className="italic text-foreground whitespace-pre-line leading-relaxed">
+                          "{stripHtml(agentStatement)}"
+                        </blockquote>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                )}
 
               </CardContent>
             </Card>
