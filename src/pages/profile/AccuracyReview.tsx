@@ -24,6 +24,19 @@ interface AwardVerified {
   description?: string;
 }
 
+interface NotableAchievement {
+  title: string;
+  description?: string;
+  source?: string;
+  date?: string;
+  credibility?: number;
+}
+
+interface CertificationVerified {
+  designation: string;
+  full_name: string;
+}
+
 interface ProfessionalData {
   id: string;
   name: string;
@@ -36,6 +49,8 @@ interface ProfessionalData {
   review_stars_rating: number | null;
   press_mentions: PressMention[] | null;
   awards_verified: AwardVerified[] | null;
+  notable_achievements: NotableAchievement[] | null;
+  certifications_verified: CertificationVerified[] | null;
   phone: string | null;
   website: string | null;
   email: string | null;
@@ -71,7 +86,7 @@ export default function AccuracyReview() {
           .select(`
             id, name, license_number, company, business_name, 
             years_experience, total_sales, num_total_reviews, review_stars_rating,
-            press_mentions, awards_verified,
+            press_mentions, awards_verified, notable_achievements, certifications_verified,
             phone, website, email, verification_token, state_slug,
             synthesized_bio
           `)
@@ -85,7 +100,7 @@ export default function AccuracyReview() {
             .select(`
               id, name, license_number, company, business_name, 
               years_experience, total_sales, num_total_reviews, review_stars_rating,
-              press_mentions, awards_verified,
+              press_mentions, awards_verified, notable_achievements, certifications_verified,
               phone, website, email, verification_token, state_slug,
               synthesized_bio
             `)
@@ -361,6 +376,22 @@ export default function AccuracyReview() {
                     value={professional.awards_verified.map(a => a.name).join(', ')}
                     source="Verified records"
                     onRequestCorrection={() => handleRequestCorrection('Awards', professional.awards_verified?.map(a => a.name).join(', ') || null)}
+                  />
+                )}
+                {professional.notable_achievements && professional.notable_achievements.length > 0 && (
+                  <VerifiedFieldRow
+                    label="Notable achievements"
+                    value={professional.notable_achievements.filter(a => (a.credibility || 0) >= 7).slice(0, 5).map(a => a.title).join(', ')}
+                    source="Public records & editorial review"
+                    onRequestCorrection={() => handleRequestCorrection('Notable Achievements', professional.notable_achievements?.map(a => a.title).join(', ') || null)}
+                  />
+                )}
+                {professional.certifications_verified && professional.certifications_verified.length > 0 && (
+                  <VerifiedFieldRow
+                    label="Professional designations"
+                    value={professional.certifications_verified.map(c => `${c.designation} (${c.full_name})`).join(', ')}
+                    source="Certification bodies"
+                    onRequestCorrection={() => handleRequestCorrection('Professional Designations', professional.certifications_verified?.map(c => c.designation).join(', ') || null)}
                   />
                 )}
                 <VerifiedFieldRow
