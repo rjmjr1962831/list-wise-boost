@@ -76,6 +76,7 @@ const FreeCitySelection = lazy(() => import("./pages/profile/FreeCitySelection")
 const FreeCityConfirmation = lazy(() => import("./pages/profile/FreeCityConfirmation"));
 const HowItWorksPage = lazy(() => import("./pages/profile/HowItWorksPage"));
 const FreeListingThankYou = lazy(() => import("./pages/profile/FreeListingThankYou"));
+const FunnelSuccess = lazy(() => import("./pages/profile/FunnelSuccess"));
 const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
 const AccuracyReview = lazy(() => import("./pages/profile/AccuracyReview"));
 const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
@@ -187,6 +188,7 @@ const App = () => (
                     <Route path="/profile/:token/fields" element={<ProfileFieldsGuide />} />
                     <Route path="/profile/:token/edit" element={<EditProfile />} />
                     <Route path="/profile/:token/preview" element={<ClaimListingPreview />} />
+                    <Route path="/profile/:token/success" element={<FunnelSuccess />} />
                     <Route path="/profile/:token/review" element={<ReviewListing />} />
                     <Route path="/profile/:token/select-free-city" element={<FreeCitySelection />} />
                     <Route path="/profile/:token/free-confirmed" element={<FreeCityConfirmation />} />
