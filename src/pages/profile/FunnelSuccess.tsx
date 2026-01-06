@@ -18,15 +18,27 @@ export default function FunnelSuccess() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
 
-  // Fetch professional and city data
+  // Fetch professional and city data - try verification_token first, then id
   const { data: professional } = useQuery({
     queryKey: ['professional-success', token],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First try verification_token
+      let { data, error } = await supabase
         .from('professionals')
         .select('id, name, city_id, cities(name)')
         .eq('verification_token', token)
         .maybeSingle();
+      
+      // If not found, try by id
+      if (!data && token) {
+        const result = await supabase
+          .from('professionals')
+          .select('id, name, city_id, cities(name)')
+          .eq('id', token)
+          .maybeSingle();
+        data = result.data;
+        error = result.error;
+      }
       
       if (error) throw error;
       return data;
