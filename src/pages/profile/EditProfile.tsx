@@ -7,15 +7,12 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, X, Check, ChevronsUpDown, MessageSquarePlus, AlertCircle } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2, Check, ChevronsUpDown, CheckCircle, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 // Bio Preview component with ...more expander
 const BioPreview = ({ text }: { text: string }) => {
@@ -43,22 +40,54 @@ const BioPreview = ({ text }: { text: string }) => {
   );
 };
 
-// Fields for Section 1: Identity & Performance (read-only, review-required)
-const IDENTITY_FIELDS = [
-  { key: 'name', label: 'Name' },
-  { key: 'review_stars_rating', label: 'Review Rating' },
-  { key: 'num_total_reviews', label: 'Review Count' },
-  { key: 'years_experience', label: 'Years of Experience' },
-  { key: 'total_sales', label: 'Total Sales' },
-  { key: 'license_number', label: 'License Number' }
-];
+// Approved field row component
+const ApprovedFieldRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+    <div>
+      <span className="font-medium text-foreground">{label}</span>
+      <p className="text-sm text-muted-foreground">{value}</p>
+    </div>
+    <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 gap-1">
+      <CheckCircle className="h-3 w-3" />
+      Approved
+    </Badge>
+  </div>
+);
 
-// Fields for Section 2: Contact Information (read-only, review-required)
-const CONTACT_FIELDS = [
-  { key: 'email', label: 'Email' },
-  { key: 'phone', label: 'Phone' },
-  { key: 'company', label: 'Brokerage / Company' }
-];
+// Under review field row component
+const UnderReviewFieldRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+    <div>
+      <span className="font-medium text-foreground">{label}</span>
+      <p className="text-sm text-muted-foreground">{value}</p>
+    </div>
+    <Badge variant="secondary" className="gap-1">
+      <Clock className="h-3 w-3" />
+      Under review
+    </Badge>
+  </div>
+);
+
+// Field label mapping for display
+const FIELD_LABELS: Record<string, string> = {
+  'name': 'Name',
+  'review_stars_rating': 'Review Rating',
+  'num_total_reviews': 'Review Count',
+  'years_experience': 'Years of Experience',
+  'total_sales': 'Transaction Count',
+  'license_number': 'License Number',
+  'email': 'Email',
+  'phone': 'Phone Number',
+  'company': 'Brokerage Name',
+  'website': 'Website',
+  'social_linkedin': 'LinkedIn',
+  'social_facebook': 'Facebook',
+  'social_instagram': 'Instagram',
+  'address': 'Address',
+  'synthesized_bio': 'Our Synthesized Review',
+  'synthesized_review': 'Our Synthesized Review',
+  'synthesized review': 'Our Synthesized Review'
+};
 
 export default function EditProfile() {
   const { token } = useParams<{ token: string }>();
@@ -67,34 +96,22 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [professional, setProfessional] = useState<any>(null);
-  const [pendingReviews, setPendingReviews] = useState<string[]>([]);
-  const [availableSpecialties, setAvailableSpecialties] = useState<Array<{ id: string; name: string }>>([]);
-  const [specialtySearchOpen, setSpecialtySearchOpen] = useState(false);
-  const [specialtySearch, setSpecialtySearch] = useState('');
+  const [pendingReviews, setPendingReviews] = useState<Array<{ field_name: string; current_value: string | null }>>([]);
+  const [approvedChanges, setApprovedChanges] = useState<Array<{ field_name: string; proposed_value: string | null }>>([]);
   const [availableCities, setAvailableCities] = useState<Array<{ id: string; name: string; state: string }>>([]);
   const [citySearchOpen, setCitySearchOpen] = useState(false);
   const [citySearch, setCitySearch] = useState('');
   
-  // Review request modal state
-  const [reviewModalOpen, setReviewModalOpen] = useState(false);
-  const [selectedField, setSelectedField] = useState<{ key: string; label: string } | null>(null);
-  
-  // Form state - only agent-authored editable fields
+  // Form state - only agent-authored editable fields (no review required)
   const [formData, setFormData] = useState({
     headline: '',
     description: '', // Agent's bio (first-person)
-    specialty: [] as string[],
-    certifications: [] as string[],
-    languages: [] as string[],
     featured_city: '', // Single city for featuring
     website: '',
     social_linkedin: '',
     social_facebook: '',
     social_instagram: ''
   });
-
-  const [newTag, setNewTag] = useState({ certification: '', language: '' });
-  const [communicationConsent, setCommunicationConsent] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -108,23 +125,13 @@ export default function EditProfile() {
       }
 
       try {
-        // Load specialties and cities in parallel
-        const [specialtiesResult, citiesResult] = await Promise.all([
-          supabase
-            .from('specialties')
-            .select('id, name')
-            .eq('active', true)
-            .order('name'),
-          supabase
-            .from('cities')
-            .select('id, name, state')
-            .eq('active', true)
-            .order('name')
-        ]);
+        // Load cities
+        const citiesResult = await supabase
+          .from('cities')
+          .select('id, name, state')
+          .eq('active', true)
+          .order('name');
         
-        if (specialtiesResult.data) {
-          setAvailableSpecialties(specialtiesResult.data);
-        }
         if (citiesResult.data) {
           setAvailableCities(citiesResult.data);
         }
@@ -146,24 +153,32 @@ export default function EditProfile() {
         const prof = data.professional;
         setProfessional(prof);
         
-        // Load pending review requests for this professional
-        const { data: reviewRequests } = await supabase
+        // Load field change requests for this professional
+        const { data: changeRequests } = await supabase
           .from('field_change_requests')
-          .select('field_name')
-          .eq('professional_id', prof.id)
-          .eq('status', 'pending');
+          .select('field_name, status, current_value, proposed_value')
+          .eq('professional_id', prof.id);
         
-        if (reviewRequests) {
-          setPendingReviews(reviewRequests.map(r => r.field_name));
+        if (changeRequests) {
+          // Pending reviews (status = 'pending')
+          setPendingReviews(
+            changeRequests
+              .filter(r => r.status === 'pending')
+              .map(r => ({ field_name: r.field_name, current_value: r.current_value }))
+          );
+          
+          // Approved changes (status = 'approved')
+          setApprovedChanges(
+            changeRequests
+              .filter(r => r.status === 'approved')
+              .map(r => ({ field_name: r.field_name, proposed_value: r.proposed_value }))
+          );
         }
         
         // Only populate agent-authored fields
         setFormData({
           headline: prof.headline || '',
           description: prof.description || '',
-          specialty: Array.isArray(prof.specialty) ? prof.specialty : [],
-          certifications: Array.isArray(prof.certifications) ? prof.certifications : [],
-          languages: Array.isArray(prof.languages) ? prof.languages : [],
           featured_city: prof.cities?.name || '',
           website: prof.website || '',
           social_linkedin: prof.social_linkedin || '',
@@ -207,108 +222,21 @@ export default function EditProfile() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const openReviewModal = (field: { key: string; label: string }) => {
-    setSelectedField(field);
-    setReviewModalOpen(true);
+  const getFieldLabel = (fieldName: string): string => {
+    return FIELD_LABELS[fieldName.toLowerCase()] || fieldName;
   };
 
-  const getProfileLink = () => {
-    return `https://www.top10lists.us/profile/${token}`;
-  };
-
-  const getReadOnlyValue = (key: string) => {
-    if (!professional) return 'N/A';
-    
-    switch (key) {
-      case 'name':
-        return professional.name || 'N/A';
-      case 'review_stars_rating':
-        return professional.review_stars_rating ? `${professional.review_stars_rating} stars` : 'N/A';
-      case 'num_total_reviews':
-        return professional.num_total_reviews?.toString() || 'N/A';
-      case 'years_experience':
-        return professional.years_experience ? `${professional.years_experience} years` : 'N/A';
-      case 'total_sales':
-        return professional.total_sales?.toString() || 'N/A';
-      case 'license_number':
-        return professional.license_number || 'N/A';
-      case 'email':
-        return professional.email || 'N/A';
-      case 'phone':
-        return professional.phone || 'N/A';
-      case 'company':
-        return professional.company || professional.business_name || 'N/A';
-      default:
-        return 'N/A';
-    }
-  };
-
-  const isFieldPendingReview = (fieldLabel: string) => {
-    return pendingReviews.some(f => f.toLowerCase() === fieldLabel.toLowerCase());
-  };
-
-  const addSpecialtyFromList = (specialtyName: string) => {
-    if (!formData.specialty.includes(specialtyName)) {
-      handleInputChange('specialty', [...formData.specialty, specialtyName]);
-    }
-    setSpecialtySearchOpen(false);
-  };
-
-  const addNewSpecialty = async () => {
-    const value = specialtySearch.trim();
-    if (!value) return;
-
-    const existing = availableSpecialties.find(s => s.name.toLowerCase() === value.toLowerCase());
-    if (existing) {
-      addSpecialtyFromList(existing.name);
-      setSpecialtySearch('');
-      return;
-    }
-
-    if (!formData.specialty.includes(value)) {
-      handleInputChange('specialty', [...formData.specialty, value]);
-    }
-
-    try {
-      const { data: newSpecialty, error } = await supabase
-        .from('specialties')
-        .insert({
-          name: value,
-          category_id: professional?.category_id,
-          active: true
-        })
-        .select()
-        .single();
-
-      if (!error && newSpecialty) {
-        setAvailableSpecialties(prev => [...prev, { id: newSpecialty.id, name: newSpecialty.name }].sort((a, b) => a.name.localeCompare(b.name)));
-      }
-    } catch (err) {
-      console.error('Error adding specialty:', err);
-    }
-
-    setSpecialtySearch('');
-    setSpecialtySearchOpen(false);
+  const isSynthesizedBioPending = () => {
+    return pendingReviews.some(r => 
+      r.field_name.toLowerCase().includes('synthesized') || 
+      r.field_name.toLowerCase().includes('bio')
+    );
   };
 
   const selectCity = (cityName: string) => {
     handleInputChange('featured_city', cityName);
     setCitySearchOpen(false);
     setCitySearch('');
-  };
-
-  const addTag = (field: 'certifications' | 'languages') => {
-    const tagKey = field === 'certifications' ? 'certification' : 'language';
-    const value = newTag[tagKey].trim();
-    
-    if (value && !formData[field].includes(value)) {
-      handleInputChange(field, [...formData[field], value]);
-      setNewTag(prev => ({ ...prev, [tagKey]: '' }));
-    }
-  };
-
-  const removeTag = (field: 'specialty' | 'certifications' | 'languages', tag: string) => {
-    handleInputChange(field, formData[field].filter(t => t !== tag));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -364,6 +292,9 @@ export default function EditProfile() {
     );
   }
 
+  const hasApprovedChanges = approvedChanges.length > 0;
+  const hasPendingReviews = pendingReviews.length > 0;
+
   return (
     <>
       <Helmet>
@@ -386,128 +317,74 @@ export default function EditProfile() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-            Review Your Profile
+            Review & Edit
           </h1>
+          <h2 className="text-xl text-foreground mb-2">
+            Review Updates and Complete Your Profile
+          </h2>
           <p className="text-muted-foreground">
-            Make sure everything looks accurate.
+            See what's been updated and add optional details.
           </p>
         </div>
-
-        {/* Pending Reviews Alert */}
-        {pendingReviews.length > 0 && (
-          <Alert className="mb-6 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
-            <AlertCircle className="h-4 w-4 text-amber-600" />
-            <AlertDescription className="text-amber-800 dark:text-amber-200">
-              Some requested changes are pending review. You may continue while they are reviewed.
-            </AlertDescription>
-          </Alert>
-        )}
 
         {/* Form */}
         <Card className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
             
-            {/* SECTION 1: Synced Information (Identity & Performance) */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Synced Information</h2>
-              <p className="text-sm text-muted-foreground">
-                These fields are synced from external sources. To request changes, click <strong>Ask for review</strong> next to the field.
-              </p>
-              <div className="grid md:grid-cols-2 gap-4">
-                {IDENTITY_FIELDS.map((field) => {
-                  const isPending = isFieldPendingReview(field.label);
-                  return (
-                    <div key={field.key} className="space-y-1">
-                      <Label>{field.label}</Label>
-                      <div className="flex gap-2 items-center">
-                        <Input
-                          value={getReadOnlyValue(field.key)}
-                          disabled
-                          className="bg-muted flex-1"
-                        />
-                        {isPending ? (
-                          <Badge variant="secondary" className="whitespace-nowrap">
-                            Review requested
-                          </Badge>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openReviewModal(field)}
-                            className="whitespace-nowrap"
-                          >
-                            <MessageSquarePlus className="h-4 w-4 mr-1" />
-                            Ask for review
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* SECTION 1: APPROVED CHANGES (Read-Only) */}
+            {hasApprovedChanges && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-foreground">Approved Changes</h2>
+                <p className="text-sm text-muted-foreground">
+                  The following updates were approved and applied based on your review request.
+                </p>
+                <div className="bg-green-50 dark:bg-green-950/20 rounded-lg p-4 space-y-1">
+                  {approvedChanges.map((change, index) => (
+                    <ApprovedFieldRow
+                      key={index}
+                      label={getFieldLabel(change.field_name)}
+                      value={change.proposed_value || 'Updated'}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground italic">
+                  These changes require no further action.
+                </p>
               </div>
-            </div>
+            )}
 
-            {/* SECTION 2: Contact Information (Synced) */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Contact Information</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                {CONTACT_FIELDS.map((field) => {
-                  const isPending = isFieldPendingReview(field.label);
-                  return (
-                    <div key={field.key} className="space-y-1">
-                      <Label>{field.label}</Label>
-                      {field.key === 'phone' && (
-                        <p className="text-xs text-muted-foreground italic">
-                          This may be a tracking number from Zillow or similar platforms.
-                        </p>
-                      )}
-                      <div className="flex gap-2 items-center">
-                        <Input
-                          value={getReadOnlyValue(field.key)}
-                          disabled
-                          className="bg-muted flex-1"
-                        />
-                        {isPending ? (
-                          <Badge variant="secondary" className="whitespace-nowrap">
-                            Review requested
-                          </Badge>
-                        ) : (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => openReviewModal(field)}
-                            className="whitespace-nowrap"
-                          >
-                            <MessageSquarePlus className="h-4 w-4 mr-1" />
-                            Ask for review
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+            {/* SECTION 2: CHANGES UNDER REVIEW (Read-Only) */}
+            {hasPendingReviews && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-foreground">Changes Under Review</h2>
+                <p className="text-sm text-muted-foreground">
+                  The following requests are still under review. No action is required at this time.
+                </p>
+                <div className="bg-muted/50 rounded-lg p-4 space-y-1">
+                  {pendingReviews.map((review, index) => (
+                    <UnderReviewFieldRow
+                      key={index}
+                      label={getFieldLabel(review.field_name)}
+                      value={review.current_value || 'Current value on file'}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
-            {/* SECTION 3: Our Synthesized Review (Read-Only) */}
+            {/* SECTION 3: OUR SYNTHESIZED REVIEW (Reference) */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-foreground">Our Synthesized Review</h2>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => openReviewModal({ key: 'synthesized_bio', label: 'Synthesized Review' })}
-                  className="whitespace-nowrap"
-                >
-                  <MessageSquarePlus className="h-4 w-4 mr-1" />
-                  Ask for review
-                </Button>
+                {isSynthesizedBioPending() && (
+                  <Badge variant="secondary" className="gap-1">
+                    <Clock className="h-3 w-3" />
+                    Under review
+                  </Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground">
-                This third-party narrative was written by Top10Lists.us based on publicly available data and observations. It is not editable.
+                This narrative was written by Top10Lists.us based on publicly available data.
               </p>
               {professional?.synthesized_bio ? (
                 <BioPreview text={professional.synthesized_bio} />
@@ -518,7 +395,7 @@ export default function EditProfile() {
               )}
             </div>
 
-            {/* SECTION 4: Your Bio (Editable - No Review Required) */}
+            {/* SECTION 4: YOUR BIO (Editable - No Review Required) */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Bio</h2>
               <p className="text-sm text-muted-foreground">
@@ -534,124 +411,119 @@ export default function EditProfile() {
               />
             </div>
 
-            {/* SECTION 5: Professional Headline (Editable) */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Professional Headline</h2>
-              <p className="text-sm text-muted-foreground">
-                A short descriptor shown near your name (e.g., "Luxury Residential Specialist").
-              </p>
-              <Input
-                id="headline"
-                placeholder="e.g., Luxury Residential Specialist"
-                value={formData.headline}
-                onChange={(e) => handleInputChange('headline', e.target.value)}
-              />
-            </div>
-
-            {/* SECTION 6: Service Area (Controlled Editable) */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">What city would you like to be featured in?</h2>
-              <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={citySearchOpen}
-                    className="w-full justify-between"
-                  >
-                    {formData.featured_city || "Select a city..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0 z-[100] bg-background" align="start" side="bottom">
-                  <Command className="bg-background">
-                    <CommandInput 
-                      placeholder="Search cities..." 
-                      value={citySearch}
-                      onValueChange={setCitySearch}
-                    />
-                    <CommandList className="max-h-[300px] overflow-y-auto bg-background">
-                      <CommandEmpty className="bg-background p-2 text-center text-sm text-muted-foreground">
-                        No city found
-                      </CommandEmpty>
-                      <CommandGroup className="bg-background">
-                        {filteredCities.slice(0, 50).map((city) => (
-                          <CommandItem
-                            key={city.id}
-                            value={city.name}
-                            onSelect={() => selectCity(city.name)}
-                            className="cursor-pointer hover:bg-accent"
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.featured_city === city.name ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {city.name}, {city.state}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* SECTION 7: Additional Editable Details */}
+            {/* SECTION 5: OPTIONAL ADDITIONS (No Review Required) */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-foreground">Additional Details</h2>
-              
-              {/* Specialties */}
               <div>
-                <Label>Specialties / Tags</Label>
-                <Popover open={specialtySearchOpen} onOpenChange={setSpecialtySearchOpen}>
+                <h2 className="text-xl font-semibold text-foreground">Optional Additions</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  You may add or update the following optional details. These do not require review.
+                </p>
+              </div>
+
+              {/* Professional Headline */}
+              <div>
+                <Label htmlFor="headline">Professional Headline</Label>
+                <p className="text-xs text-muted-foreground mb-1">
+                  A short descriptor shown near your name (e.g., "Luxury Residential Specialist").
+                </p>
+                <Input
+                  id="headline"
+                  placeholder="e.g., Luxury Residential Specialist"
+                  value={formData.headline}
+                  onChange={(e) => handleInputChange('headline', e.target.value)}
+                />
+              </div>
+
+              {/* Website */}
+              <div>
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  type="url"
+                  placeholder="https://yourwebsite.com"
+                  value={formData.website}
+                  onChange={(e) => handleInputChange('website', e.target.value)}
+                />
+              </div>
+
+              {/* Social Links */}
+              <div className="space-y-4">
+                <Label>Social Links</Label>
+                <div className="grid gap-4">
+                  <div>
+                    <Label htmlFor="social_linkedin" className="text-xs text-muted-foreground">LinkedIn</Label>
+                    <Input
+                      id="social_linkedin"
+                      type="url"
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      value={formData.social_linkedin}
+                      onChange={(e) => handleInputChange('social_linkedin', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="social_facebook" className="text-xs text-muted-foreground">Facebook</Label>
+                    <Input
+                      id="social_facebook"
+                      type="url"
+                      placeholder="https://facebook.com/yourpage"
+                      value={formData.social_facebook}
+                      onChange={(e) => handleInputChange('social_facebook', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="social_instagram" className="text-xs text-muted-foreground">Instagram</Label>
+                    <Input
+                      id="social_instagram"
+                      type="url"
+                      placeholder="https://instagram.com/yourprofile"
+                      value={formData.social_instagram}
+                      onChange={(e) => handleInputChange('social_instagram', e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Featured City */}
+              <div>
+                <Label htmlFor="featured_city">What city would you like to be featured in?</Label>
+                <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
                       role="combobox"
-                      aria-expanded={specialtySearchOpen}
+                      aria-expanded={citySearchOpen}
                       className="w-full justify-between mt-1"
                     >
-                      Select or add specialty...
+                      {formData.featured_city || "Select a city..."}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[400px] p-0 z-[100] bg-background" align="start" side="bottom">
                     <Command className="bg-background">
                       <CommandInput 
-                        placeholder="Search or add specialty..." 
-                        value={specialtySearch}
-                        onValueChange={setSpecialtySearch}
+                        placeholder="Search cities..." 
+                        value={citySearch}
+                        onValueChange={setCitySearch}
                       />
                       <CommandList className="max-h-[300px] overflow-y-auto bg-background">
-                        <CommandEmpty className="bg-background">
-                          <div className="p-2 text-center">
-                            <p className="text-sm text-muted-foreground mb-2">No specialty found</p>
-                            <Button 
-                              size="sm" 
-                              onClick={addNewSpecialty}
-                              disabled={!specialtySearch.trim()}
-                            >
-                              Add "{specialtySearch}"
-                            </Button>
-                          </div>
+                        <CommandEmpty className="bg-background p-2 text-center text-sm text-muted-foreground">
+                          No city found
                         </CommandEmpty>
                         <CommandGroup className="bg-background">
-                          {availableSpecialties.map((specialty) => (
+                          {filteredCities.slice(0, 50).map((city) => (
                             <CommandItem
-                              key={specialty.id}
-                              value={specialty.name}
-                              onSelect={() => addSpecialtyFromList(specialty.name)}
+                              key={city.id}
+                              value={city.name}
+                              onSelect={() => selectCity(city.name)}
                               className="cursor-pointer hover:bg-accent"
                             >
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  formData.specialty.includes(specialty.name) ? "opacity-100" : "opacity-0"
+                                  formData.featured_city === city.name ? "opacity-100" : "opacity-0"
                                 )}
                               />
-                              {specialty.name}
+                              {city.name}, {city.state}
                             </CommandItem>
                           ))}
                         </CommandGroup>
@@ -659,129 +531,11 @@ export default function EditProfile() {
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.specialty.map(tag => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag('specialty', tag)} />
-                    </Badge>
-                  ))}
-                </div>
               </div>
-
-              {/* Certifications */}
-              <div>
-                <Label htmlFor="certification">Certifications</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    id="certification"
-                    placeholder="e.g., CRS, ABR"
-                    value={newTag.certification}
-                    onChange={(e) => setNewTag(prev => ({ ...prev, certification: e.target.value }))}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag('certifications'))}
-                  />
-                  <Button type="button" onClick={() => addTag('certifications')}>Add</Button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.certifications.map(tag => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag('certifications', tag)} />
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Languages */}
-              <div>
-                <Label htmlFor="language">Languages</Label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    id="language"
-                    placeholder="e.g., Spanish, Mandarin"
-                    value={newTag.language}
-                    onChange={(e) => setNewTag(prev => ({ ...prev, language: e.target.value }))}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag('languages'))}
-                  />
-                  <Button type="button" onClick={() => addTag('languages')}>Add</Button>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.languages.map(tag => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                      <X className="h-3 w-3 ml-1 cursor-pointer" onClick={() => removeTag('languages', tag)} />
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* SECTION 8: Online Presence */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold text-foreground">Online Presence</h2>
-              <div className="grid gap-4">
-                <div>
-                  <Label htmlFor="website">Website</Label>
-                  <Input
-                    id="website"
-                    type="url"
-                    placeholder="https://yourwebsite.com"
-                    value={formData.website}
-                    onChange={(e) => handleInputChange('website', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="social_linkedin">LinkedIn URL</Label>
-                  <Input
-                    id="social_linkedin"
-                    type="url"
-                    placeholder="https://linkedin.com/in/yourprofile"
-                    value={formData.social_linkedin}
-                    onChange={(e) => handleInputChange('social_linkedin', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="social_facebook">Facebook URL</Label>
-                  <Input
-                    id="social_facebook"
-                    type="url"
-                    placeholder="https://facebook.com/yourpage"
-                    value={formData.social_facebook}
-                    onChange={(e) => handleInputChange('social_facebook', e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="social_instagram">Instagram URL</Label>
-                  <Input
-                    id="social_instagram"
-                    type="url"
-                    placeholder="https://instagram.com/yourprofile"
-                    value={formData.social_instagram}
-                    onChange={(e) => handleInputChange('social_instagram', e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Communication Consent */}
-            <div className="flex items-start space-x-3 pt-4 border-t">
-              <Checkbox
-                id="communicationConsent"
-                checked={communicationConsent}
-                onCheckedChange={(checked) => setCommunicationConsent(checked === true)}
-                className="mt-1"
-              />
-              <Label htmlFor="communicationConsent" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                I agree to the{' '}
-                <a href="/terms" target="_blank" className="text-primary hover:underline">Terms and Conditions</a>
-                {' '}and{' '}
-                <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy Policy</a>.
-                I consent to receive communications from Top10Lists.us. I can opt-out anytime.
-              </Label>
             </div>
 
             {/* Navigation */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-4 pt-4 border-t">
               <Button
                 type="button"
                 variant="outline"
@@ -789,35 +543,20 @@ export default function EditProfile() {
               >
                 Back
               </Button>
-              <Button type="submit" disabled={saving || !communicationConsent} className="flex-1">
+              <Button type="submit" disabled={saving} className="flex-1">
                 {saving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Saving...
                   </>
                 ) : (
-                  'Confirm & Continue →'
+                  'Next'
                 )}
               </Button>
             </div>
           </form>
         </Card>
       </div>
-
-      {/* Review Request Modal */}
-      {selectedField && (
-        <FieldReviewRequestModal
-          open={reviewModalOpen}
-          onOpenChange={setReviewModalOpen}
-          fieldName={selectedField.label}
-          profileLink={getProfileLink()}
-          professionalName={professional?.name || ''}
-          professionalId={professional?.id || ''}
-          professionalEmail={professional?.email}
-          pipedrivePersonId={professional?.pipedrive_person_id}
-          currentValue={selectedField.key === 'synthesized_bio' ? 'See synthesized review above' : (professional as any)?.[selectedField.key] || ''}
-        />
-      )}
       </div>
     </>
   );
