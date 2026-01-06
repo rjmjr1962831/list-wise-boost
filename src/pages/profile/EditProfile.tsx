@@ -447,7 +447,13 @@ export default function EditProfile() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                This narrative was written by Top10Lists.us based on publicly available data.
+                This narrative was written by Top10Lists.us based on publicly available data. To change it, please{' '}
+                <span
+                  onClick={() => navigate(`/profile/${token}`)}
+                  className="text-primary cursor-pointer hover:underline font-medium"
+                >
+                  request review
+                </span>.
               </p>
               {professional?.synthesized_bio ? (
                 <BioPreview text={professional.synthesized_bio} />
