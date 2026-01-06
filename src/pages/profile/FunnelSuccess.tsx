@@ -70,8 +70,8 @@ export default function FunnelSuccess() {
             
             {/* Confirmation Section */}
             <div className="text-center mb-10">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 mb-6">
-                <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
+                <CheckCircle2 className="h-10 w-10 text-primary" />
               </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 Your Profile Is Live
@@ -93,7 +93,7 @@ export default function FunnelSuccess() {
                     Your profile will continue to appear to consumers as-is. You can return at any time to update optional details or review performance insights.
                   </p>
                   <p>
-                    No action is required to remain listed.
+                    No action is required to remain listed in {cityName}.
                   </p>
                 </div>
               </CardContent>
