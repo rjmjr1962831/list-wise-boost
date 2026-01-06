@@ -52,19 +52,16 @@ export default function FunnelSuccess() {
               </p>
             </div>
 
-            {/* Business Model Explanation */}
+            {/* What Happens Next */}
             <Card className="mb-8">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">How Top10Lists.us Works</h2>
-                <div className="space-y-4 text-muted-foreground">
+                <h2 className="text-xl font-semibold mb-4">What Happens Next</h2>
+                <div className="space-y-3 text-muted-foreground">
                   <p>
-                    Top10Lists.us is a merit-based directory. Qualified professionals are included and reviewed editorially at no cost.
+                    Your profile will continue to appear to consumers as-is. You can return at any time to update optional details or review performance insights.
                   </p>
                   <p>
-                    We do not sell rankings, endorsements, or editorial placement.
-                  </p>
-                  <p>
-                    To support the platform, we offer optional paid features that expand visibility and provide additional tools, without affecting editorial review or ranking eligibility.
+                    No action is required to remain listed.
                   </p>
                 </div>
               </CardContent>
@@ -74,6 +71,9 @@ export default function FunnelSuccess() {
             <Card className="mb-8">
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Optional Ways to Expand Your Presence</h2>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Some professionals choose to expand their visibility or access additional tools. These options are entirely optional and do not affect inclusion or ranking.
+                </p>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                     <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
@@ -113,8 +113,26 @@ export default function FunnelSuccess() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4 text-center">
-                  These options are optional. Declining them does not affect your current listing.
+                  Declining these options does not affect your current listing.
                 </p>
+              </CardContent>
+            </Card>
+
+            {/* Business Model Explanation */}
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">How Top10Lists.us Works</h2>
+                <div className="space-y-3 text-muted-foreground">
+                  <p>
+                    Top10Lists.us is a merit-based directory. Qualified professionals are included and reviewed editorially at no cost.
+                  </p>
+                  <p>
+                    We do not sell rankings, endorsements, or editorial placement.
+                  </p>
+                  <p>
+                    To support the platform, we offer optional paid features that expand visibility and provide additional tools, without affecting editorial review or ranking eligibility.
+                  </p>
+                </div>
               </CardContent>
             </Card>
 
