@@ -96,6 +96,7 @@ export default function ClaimListingPreview() {
   const [professional, setProfessional] = useState<ProfessionalData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string>('');
+  // Both sections collapsed by default to reduce page length
   const [editorialExpanded, setEditorialExpanded] = useState(false);
   const [agentStatementExpanded, setAgentStatementExpanded] = useState(false);
 
