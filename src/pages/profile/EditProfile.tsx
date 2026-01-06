@@ -163,6 +163,10 @@ export default function EditProfile() {
   const [availableCities, setAvailableCities] = useState<Array<{ id: string; name: string; state: string }>>([]);
   const [citySearchOpen, setCitySearchOpen] = useState(false);
   const [citySearch, setCitySearch] = useState('');
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioEditValue, setBioEditValue] = useState('');
+  const [bioLastEdited, setBioLastEdited] = useState<string | null>(null);
+  const [savingBio, setSavingBio] = useState(false);
   
   // Form state - only agent-authored editable fields (no review required)
   const [formData, setFormData] = useState({
@@ -300,6 +304,42 @@ export default function EditProfile() {
     handleInputChange('featured_city', cityName);
     setCitySearchOpen(false);
     setCitySearch('');
+  };
+
+  const handleSaveBio = async () => {
+    if (!professional?.id) return;
+    setSavingBio(true);
+    try {
+      const { error } = await supabase
+        .from('professionals')
+        .update({ description: bioEditValue })
+        .eq('id', professional.id);
+      
+      if (error) throw error;
+      
+      const now = new Date().toISOString();
+      setProfessional((prev: any) => ({ ...prev, description: bioEditValue }));
+      setBioLastEdited(now);
+      setEditingBio(false);
+      toast({
+        title: 'Bio Updated',
+        description: 'Your bio has been saved successfully.'
+      });
+    } catch (err: any) {
+      console.error('Error saving bio:', err);
+      toast({
+        title: 'Error',
+        description: 'Failed to save bio. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setSavingBio(false);
+    }
+  };
+
+  const startEditingBio = () => {
+    setBioEditValue(professional?.description || '');
+    setEditingBio(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -464,19 +504,66 @@ export default function EditProfile() {
               )}
             </div>
 
-            {/* SECTION 4: YOUR BIO (Read-Only Display) */}
+            {/* SECTION 4: YOUR BIO (Editable) */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Bio</h2>
               <p className="text-sm text-muted-foreground">
                 This is your statement to the public. To change it, please{' '}
                 <span
-                  onClick={() => navigate(`/profile/${token}`)}
+                  onClick={startEditingBio}
                   className="text-primary cursor-pointer hover:underline font-medium"
                 >
-                  request review
+                  edit
                 </span>.
               </p>
-              {professional?.description ? (
+              {bioLastEdited && (
+                <p className="text-xs text-muted-foreground">
+                  Last edited: {new Date(bioLastEdited).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                  })}
+                </p>
+              )}
+              {editingBio ? (
+                <div className="space-y-3">
+                  <Textarea
+                    value={bioEditValue}
+                    onChange={(e) => setBioEditValue(e.target.value)}
+                    placeholder="Write your bio here..."
+                    className="min-h-[200px]"
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleSaveBio} 
+                      disabled={savingBio}
+                      size="sm"
+                    >
+                      {savingBio ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Save
+                        </>
+                      )}
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setEditingBio(false)}
+                      disabled={savingBio}
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : professional?.description ? (
                 <BioPreview text={professional.description} />
               ) : (
                 <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground italic">
