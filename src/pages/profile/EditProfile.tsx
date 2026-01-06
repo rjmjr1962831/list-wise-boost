@@ -458,21 +458,19 @@ export default function EditProfile() {
               )}
             </div>
 
-            {/* SECTION 4: YOUR BIO (Editable - No Review Required) */}
+            {/* SECTION 4: YOUR BIO (Read-Only Display) */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Bio</h2>
               <p className="text-sm text-muted-foreground">
-                This is your statement to the public. We suggest you write it in the first person.
+                This is your statement to the public.
               </p>
-              <Textarea
-                id="description"
-                rows={5}
-                placeholder="Write your personal bio here..."
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                className="whitespace-pre-line"
-              />
-
+              {professional?.description ? (
+                <BioPreview text={professional.description} />
+              ) : (
+                <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground italic">
+                  No bio available yet.
+                </div>
+              )}
             </div>
 
             {/* SECTION 5: OPTIONAL ADDITIONS (No Review Required) */}
