@@ -225,11 +225,14 @@ export default function AccuracyReview() {
           {/* Header */}
           <div className="text-center space-y-2">
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Step 1 of 2
+              Step 1 of 3
             </p>
             <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-              Review Profile for Accuracy
+              Hello {professional.name?.split(' ')[0] || 'there'}
             </h1>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+              Review Profile for Accuracy
+            </h2>
             <p className="text-muted-foreground max-w-lg mx-auto">
               This profile is currently published using publicly available data. Please review the information below to confirm its accuracy or request corrections.
             </p>
