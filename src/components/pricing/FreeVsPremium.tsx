@@ -192,7 +192,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
                 <Badge variant="secondary" className="text-xs bg-accent/10 text-accent">50% off</Badge>
               </div>
               <p className="text-2xl font-bold text-foreground">
-                $29<span className="text-sm font-normal text-muted-foreground">/mo per city</span>
+                <span className="text-sm font-normal text-muted-foreground">as low as </span>$29<span className="text-sm font-normal text-muted-foreground">/mo per city</span>
               </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Rate locked while subscription active
