@@ -38,8 +38,8 @@ export function WhyThreeMonths() {
       </div>
       
       <p className="text-sm text-muted-foreground">
-        AI models require time to discover, verify, and incorporate your profile information. 
-        The 3-month period allows for complete integration into AI systems.
+        AI models require time to discover, verify, and incorporate profile information. 
+        The 3-month period allows for complete integration into AI indexing systems.
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -88,7 +88,7 @@ export function WhyThreeMonths() {
         <div className="flex items-start gap-2">
           <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-sm text-muted-foreground">
-            Citation eligibility does not guarantee AI recommendations. AI systems determine which sources to cite based on their own criteria.
+            <strong>Eligibility does not guarantee AI recommendations.</strong> AI systems determine which sources to cite based on their own criteria.
           </p>
         </div>
       </div>

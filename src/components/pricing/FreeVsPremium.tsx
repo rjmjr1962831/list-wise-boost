@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -9,21 +8,22 @@ import { cn } from '@/lib/utils';
 
 interface FeatureItem {
   label: string;
-  premiumLabel?: string;
   free: boolean;
-  premium: boolean;
+  expanded: boolean;
 }
 
 const features: FeatureItem[] = [
   // Free features
-  { label: 'Editorial profile in primary city', free: true, premium: true },
-  { label: 'Verified license display', free: true, premium: true },
-  { label: 'AI search indexing', free: true, premium: true },
-  { label: 'Basic contact information', free: true, premium: true },
+  { label: 'Editorial profile in one primary city', free: true, expanded: true },
+  { label: 'Verified license display', free: true, expanded: true },
+  { label: 'AI indexing eligibility', free: true, expanded: true },
+  { label: 'Public profile page', free: true, expanded: true },
   // Expanded visibility features
-  { label: 'Coverage in additional cities', free: false, premium: true },
-  { label: 'Enhanced profile distribution', free: false, premium: true },
-  { label: 'Multi-market presence', free: false, premium: true },
+  { label: 'Coverage in additional cities', free: false, expanded: true },
+  { label: 'Enhanced profile distribution', free: false, expanded: true },
+  { label: 'Multi-city discovery contexts', free: false, expanded: true },
+  { label: 'Video introduction support', free: false, expanded: true },
+  { label: 'Ongoing indexing optimization', free: false, expanded: true },
 ];
 
 interface FreeVsPremiumProps {
@@ -80,7 +80,7 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
             <div className="pt-3 border-t mt-3 space-y-3">
               <div>
                 <p className="text-2xl font-bold">$0</p>
-                <p className="text-xs text-muted-foreground">Forever free</p>
+                <p className="text-xs text-muted-foreground">Always included</p>
               </div>
               {onSelectFree && (
                 <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
@@ -146,26 +146,22 @@ export function FreeVsPremium({ onSelectFree }: FreeVsPremiumProps) {
                 </div>
                 <div>
                   <CardTitle className="text-base">Expanded Visibility</CardTitle>
-                  <p className="text-xs text-muted-foreground">Optional add-on</p>
+                  <p className="text-xs text-muted-foreground">Optional</p>
                 </div>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-2">
-            {features.map((feature) => (
+            <p className="text-sm text-muted-foreground mb-2">
+              Optional tools to extend your presence across additional cities and comparison views.
+            </p>
+            {features.filter(f => f.expanded && !f.free).map((feature) => (
               <div 
                 key={feature.label}
                 className="flex items-center gap-2 text-sm"
               >
-                <Check className={cn(
-                  'h-4 w-4',
-                  feature.premium && !feature.free ? 'text-primary' : 'text-muted-foreground'
-                )} />
-                <span className={cn(
-                  feature.premium && !feature.free && 'font-medium'
-                )}>
-                  {feature.premiumLabel || feature.label}
-                </span>
+                <Check className="h-4 w-4 text-primary" />
+                <span>{feature.label}</span>
               </div>
             ))}
             

@@ -138,8 +138,8 @@ export default function PricingInterstitial() {
           </div>
         </div>
 
-        {/* Hero Section */}
-        <div className="text-center mb-12">
+        {/* Hero Section - REPLACED ENTIRELY */}
+        <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
             Expand Your Visibility Across More Cities
           </h1>
@@ -149,48 +149,45 @@ export default function PricingInterstitial() {
         </div>
 
         {/* Hero Supporting Copy */}
-        <Card className="mb-10 border-primary/20 bg-primary/5">
-          <CardContent className="p-6 text-center">
+        <Card className="mb-10 border-border bg-muted/30">
+          <CardContent className="p-6 text-center space-y-3">
             <p className="text-foreground">
-              Extend where and how your profile appears when buyers use AI tools to search for top agents.
+              You are already included editorially on Top10Lists.us at no cost.
             </p>
-            <p className="text-sm text-muted-foreground mt-2">
-              Editorial inclusion and ranking eligibility are merit-based and free. Paid options expand visibility and distribution only.
+            <p className="text-muted-foreground">
+              The options below allow you to extend where and how your profile is distributed across additional cities.
+            </p>
+            <p className="text-sm text-muted-foreground font-medium">
+              Editorial inclusion and ranking methodology are independent of payment.
             </p>
           </CardContent>
         </Card>
 
-        {/* Educational Anchor: How This Works */}
+        {/* Educational Anchor: How This Works - REQUIRED */}
         <div className="mb-12">
           <h2 className="text-xl font-semibold text-foreground mb-4">How This Works</h2>
           <Card className="border-border">
             <CardContent className="p-6">
-              <p className="text-muted-foreground mb-4">
-                Think of it like search engine visibility:
-              </p>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
+              <div className="grid md:grid-cols-2 gap-4 mb-4">
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
                   <Search className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                   <div>
                     <p className="font-medium text-foreground">Editorial Inclusion</p>
-                    <p className="text-sm text-muted-foreground">Like organic search results — earned through merit</p>
+                    <p className="text-sm text-muted-foreground">Similar to organic search results</p>
                   </div>
                 </div>
-                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/30">
-                  <ArrowRight className="h-5 w-5 text-accent mt-0.5 shrink-0" />
+                <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50 border border-border">
+                  <ArrowRight className="h-5 w-5 text-muted-foreground mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-medium text-foreground">Expanded Visibility</p>
-                    <p className="text-sm text-muted-foreground">Like advertising — extends reach and distribution</p>
+                    <p className="font-medium text-foreground">Paid Options</p>
+                    <p className="text-sm text-muted-foreground">Similar to advertising</p>
                   </div>
                 </div>
               </div>
-              <div className="mt-4 p-3 rounded-lg bg-muted/20 border border-border/50">
-                <div className="flex items-start gap-2">
-                  <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-                  <p className="text-sm text-muted-foreground">
-                    Payment does not change editorial criteria or ranking methodology.
-                  </p>
-                </div>
+              <div className="p-3 rounded-lg bg-muted/30 border border-border/50">
+                <p className="text-sm text-muted-foreground">
+                  Payment expands visibility and distribution but does not change editorial criteria or ranking.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -215,7 +212,7 @@ export default function PricingInterstitial() {
                 <ul className="space-y-3">
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-muted-foreground" />
-                    <span>Editorial profile in your primary city</span>
+                    <span>Editorial profile in one primary city</span>
                   </li>
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-muted-foreground" />
@@ -223,17 +220,24 @@ export default function PricingInterstitial() {
                   </li>
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-muted-foreground" />
-                    <span>AI search indexing</span>
+                    <span>AI indexing eligibility</span>
                   </li>
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-muted-foreground" />
-                    <span>Basic contact information</span>
+                    <span>Public profile page</span>
                   </li>
                 </ul>
                 <div className="mt-6 pt-4 border-t">
                   <p className="text-2xl font-bold text-foreground">$0</p>
-                  <p className="text-xs text-muted-foreground">Forever free</p>
+                  <p className="text-xs text-muted-foreground">Always included</p>
                 </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-4"
+                  onClick={() => navigate(`/profile/${token}/edit`)}
+                >
+                  Continue with Free Listing
+                </Button>
               </CardContent>
             </Card>
 
@@ -248,26 +252,33 @@ export default function PricingInterstitial() {
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Expanded Visibility</h3>
-                      <p className="text-xs text-muted-foreground">Optional add-on</p>
+                      <p className="text-xs text-muted-foreground">Optional</p>
                     </div>
                   </div>
                 </div>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Optional tools to extend your presence across additional cities and comparison views.
+                </p>
                 <ul className="space-y-3">
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-primary" />
-                    <span>Everything in Free Listing</span>
+                    <span>Coverage in additional cities</span>
                   </li>
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-primary" />
-                    <span className="font-medium">Coverage in additional cities</span>
+                    <span>Enhanced profile distribution</span>
                   </li>
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-primary" />
-                    <span className="font-medium">Enhanced profile distribution</span>
+                    <span>Multi-city discovery contexts</span>
                   </li>
                   <li className="flex items-center gap-2 text-sm">
                     <Check className="h-4 w-4 text-primary" />
-                    <span className="font-medium">Multi-market presence</span>
+                    <span>Video introduction support</span>
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <Check className="h-4 w-4 text-primary" />
+                    <span>Ongoing indexing optimization</span>
                   </li>
                 </ul>
                 <div className="mt-6 pt-4 border-t">
@@ -283,7 +294,7 @@ export default function PricingInterstitial() {
         <div className="mb-12">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-xl font-semibold text-foreground">City Coverage Options</h2>
+              <h2 className="text-xl font-semibold text-foreground">Custom City Coverage</h2>
               <p className="text-sm text-muted-foreground">Select cities to expand your visibility</p>
             </div>
             {/* Billing Toggle */}
@@ -349,11 +360,10 @@ export default function PricingInterstitial() {
             })}
           </div>
 
-          <div className="mt-4 text-center">
-            <Button onClick={handleProceedToSelection} size="lg">
-              Select Visibility Options
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+          <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/50">
+            <p className="text-sm text-muted-foreground">
+              City availability is limited to maintain editorial quality.
+            </p>
           </div>
         </div>
 
@@ -363,11 +373,11 @@ export default function PricingInterstitial() {
           <Card className="border-border">
             <CardContent className="p-6">
               <p className="text-sm text-muted-foreground mb-6">
-                AI models require time to discover, verify, and incorporate your profile information. The 3-month period allows for complete integration into AI systems.
+                AI models require time to discover, verify, and incorporate profile information. The 3-month period allows for complete integration into AI indexing systems.
               </p>
               
               <div className="grid md:grid-cols-3 gap-4">
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
                   <div className="flex items-center gap-2 mb-2">
                     <Search className="h-5 w-5 text-primary" />
                     <span className="font-medium">Month 1: Indexing</span>
@@ -377,7 +387,7 @@ export default function PricingInterstitial() {
                   </p>
                 </div>
                 
-                <div className="p-4 rounded-lg bg-accent/5 border border-accent/10">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
                   <div className="flex items-center gap-2 mb-2">
                     <Flame className="h-5 w-5 text-accent" />
                     <span className="font-medium">Month 2: Verification</span>
@@ -387,10 +397,10 @@ export default function PricingInterstitial() {
                   </p>
                 </div>
                 
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/10">
+                <div className="p-4 rounded-lg bg-muted/30 border border-border">
                   <div className="flex items-center gap-2 mb-2">
                     <MessageSquare className="h-5 w-5 text-primary" />
-                    <span className="font-medium">Month 3: Citation</span>
+                    <span className="font-medium">Month 3: Citation Eligibility</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     Your profile becomes eligible for citation in AI-generated responses.
@@ -398,24 +408,27 @@ export default function PricingInterstitial() {
                 </div>
               </div>
 
-              <div className="mt-4 p-3 rounded-lg bg-muted/30 border border-border/50">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Billing:</strong> You're charged monthly—not upfront. After your 3-month commitment, you can cancel anytime or continue month-to-month.
-                </p>
+              <div className="mt-6 p-3 rounded-lg bg-muted/20 border border-border/50">
+                <div className="flex items-start gap-2">
+                  <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Eligibility does not guarantee AI recommendations.</strong> AI systems determine which sources to cite based on their own criteria. You're charged monthly—not upfront. After your 3-month commitment, you can cancel anytime.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Trust Statement */}
-        <Card className="mb-10 border-border bg-muted/30">
+        {/* Trust Lock - MANDATORY */}
+        <Card className="mb-10 border-2 border-primary/20 bg-primary/5">
           <CardContent className="p-6">
             <div className="flex items-start gap-3">
               <Shield className="h-6 w-6 text-primary mt-0.5 shrink-0" />
               <div>
-                <h3 className="font-semibold text-foreground mb-2">Editorial Integrity</h3>
+                <h3 className="font-semibold text-foreground mb-2">Editorial Integrity Statement</h3>
                 <p className="text-sm text-muted-foreground">
-                  Expanded Visibility affects distribution and prominence only. It does not affect editorial inclusion criteria or ranking methodology. All professionals on Top10Lists.us meet our merit-based standards.
+                  Expanded Visibility affects distribution scope and prominence. It does not affect editorial inclusion, ranking methodology, or review outcomes.
                 </p>
               </div>
             </div>
