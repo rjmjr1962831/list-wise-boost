@@ -60,7 +60,7 @@ Agent eligibility and ranking consideration are determined using a published met
 - Market participation and consistency
 
 The complete methodology is publicly available at:
-https://www.top10lists.us/methodology
+https://www.top10lists.us/about/ranking-methodology
 
 ---
 
