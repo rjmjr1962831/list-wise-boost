@@ -426,12 +426,9 @@ export default function EditProfile() {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
             Review & Edit
           </h1>
-          <p className="text-xl text-muted-foreground">
-            Review updates and complete your profile
-          </p>
         </div>
 
         {/* Form */}
