@@ -14,19 +14,62 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-// Bio Preview component with ...more expander - renders HTML properly
+// Bio Preview component with ...more expander - renders HTML while preserving paragraph breaks
 const BioPreview = ({ text }: { text: string }) => {
   const [expanded, setExpanded] = useState(false);
-  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+  const stripHtml = (html: string) =>
+    html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+
+  const escapeHtml = (input: string) =>
+    input
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+
+  // Minimal safety: remove obvious script/style blocks and inline event handlers
+  const sanitizeHtml = (html: string) =>
+    html
+      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+      .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+      .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+      .replace(/javascript:/gi, '');
+
+  const toHtmlFromText = (input: string) => {
+    const normalized = input.replace(/\r\n/g, '\n').trim();
+    const escaped = escapeHtml(normalized);
+
+    // Convert blank-line separated blocks to <p> and single newlines to <br />
+    const paragraphs = escaped
+      .split(/\n{2,}/)
+      .map(p => p.replace(/\n/g, '<br />'))
+      .filter(Boolean);
+
+    if (paragraphs.length === 0) return '';
+    return `<p>${paragraphs.join('</p><p>')}</p>`;
+  };
+
+  const getRenderableHtml = (input: string) => {
+    const value = (input || '').trim();
+    if (!value) return '';
+
+    const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(value);
+    const html = looksLikeHtml ? value : toHtmlFromText(value);
+    return sanitizeHtml(html);
+  };
+
   const plainText = stripHtml(text);
   const maxLength = 200;
   const needsTruncation = plainText.length > maxLength;
 
-  // For truncated view, we show plain text; for expanded, we render HTML
+  // Truncated view: show plain text (but keep whitespace) + ...more
   if (!expanded && needsTruncation) {
     return (
       <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
-        <span>
+        <span className="whitespace-pre-line">
           {plainText.slice(0, maxLength)}
           <span
             onClick={() => setExpanded(true)}
@@ -39,11 +82,13 @@ const BioPreview = ({ text }: { text: string }) => {
     );
   }
 
+  const html = getRenderableHtml(text);
+
   return (
     <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
-      <div 
-        className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-3 [&>p:last-child]:mb-0"
-        dangerouslySetInnerHTML={{ __html: text }} 
+      <div
+        className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-line [&>p]:mb-3 [&>p:last-child]:mb-0"
+        dangerouslySetInnerHTML={{ __html: html }}
       />
       {needsTruncation && (
         <span
