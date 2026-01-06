@@ -240,13 +240,13 @@ export default function PremiumPricingPage() {
   return (
     <>
       <Helmet>
-        <title>Premium Placement Pricing | Top10Lists.us</title>
-        <meta name="description" content="Get guaranteed Top 10 placement in Arizona's most searched real estate markets. AI-optimized profiles that get recommended." />
+        <title>Early Adopter Discounted Pricing | Top10Lists.us</title>
+        <meta name="description" content="Lock in discounted early adopter pricing for expanded visibility across Arizona real estate markets. Limited capacity per city." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
       <div className="min-h-screen bg-background pb-24 lg:pb-8">
-        {/* Header */}
+        {/* Hero Section */}
         <div className="border-b bg-gradient-to-br from-primary/5 to-accent/5">
           <div className="container max-w-6xl py-8">
             <Button
@@ -259,24 +259,43 @@ export default function PremiumPricingPage() {
               Back to Profile
             </Button>
 
-            <div className="flex items-center gap-3 mb-2">
-              <CheckCircle2 className="h-6 w-6 text-primary" />
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
-                Early Adopter Pricing
+            {/* Early Adopter Badge + Scarcity */}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <Badge className="bg-accent text-accent-foreground text-sm px-3 py-1">
+                Early Adopter Discounted Pricing
               </Badge>
+              <span className="text-sm text-muted-foreground">
+                Limited spots • Rates locked while active
+              </span>
             </div>
             
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">
-              Secure Your Premium Placement
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+              Expand Where Your Profile Appears
             </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl">
-              Get guaranteed Top 10 placement in the cities of your choice when buyers ask AI assistants for agent recommendations.
-              <span className="font-medium text-foreground"> Limited spots available.</span>
+            <p className="text-lg text-muted-foreground max-w-2xl mb-4">
+              You've already qualified editorially. These optional visibility tools extend your presence 
+              to additional cities at founding member rates—before standard pricing takes effect.
             </p>
+            
+            {/* Value Proposition Bullets */}
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                50% off standard rates
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                Lock in pricing while subscribed
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                Cancel anytime after 3 months
+              </span>
+            </div>
 
             {professional && (
-              <p className="text-sm text-muted-foreground mt-4">
-                Selecting cities for: <span className="font-medium text-foreground">{professional.name}</span>
+              <p className="text-sm text-muted-foreground mt-6 pt-4 border-t border-border/50">
+                Profile: <span className="font-medium text-foreground">{professional.name}</span>
               </p>
             )}
           </div>
