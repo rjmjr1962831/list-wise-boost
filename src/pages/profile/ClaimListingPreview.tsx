@@ -39,6 +39,13 @@ interface Certification {
   full_name: string;
 }
 
+interface PressMention {
+  title: string;
+  outlet?: string;
+  url?: string;
+  date?: string;
+}
+
 interface ProfessionalData {
   id: string;
   name: string;
@@ -65,6 +72,7 @@ interface ProfessionalData {
   social_tiktok: string | null;
   notable_achievements: unknown;
   certifications_verified: unknown;
+  press_mentions: unknown;
   cities: {
     name: string;
     state: string;
@@ -106,7 +114,7 @@ export default function ClaimListingPreview() {
             license_number, license_verified_at, years_experience, total_sales, current_listings,
             synthesized_bio, get_to_know_me,
             social_linkedin, social_facebook, social_instagram, social_tiktok,
-            notable_achievements, certifications_verified,
+            notable_achievements, certifications_verified, press_mentions,
             cities!inner(name, state, slug, state_slug)
           `)
           .eq('id', lookup)
@@ -124,7 +132,7 @@ export default function ClaimListingPreview() {
               license_number, license_verified_at, years_experience, total_sales, current_listings,
               synthesized_bio, get_to_know_me,
               social_linkedin, social_facebook, social_instagram, social_tiktok,
-              notable_achievements, certifications_verified,
+              notable_achievements, certifications_verified, press_mentions,
               cities!inner(name, state, slug, state_slug)
             `)
             .eq('verification_token', lookup)
@@ -348,7 +356,41 @@ export default function ClaimListingPreview() {
                   </div>
                 )}
 
-                {/* Section 4: Areas of Focus */}
+                {/* Section 4: Press Mentions */}
+                {professional.press_mentions && Array.isArray(professional.press_mentions) && professional.press_mentions.length > 0 && (
+                  <div className="p-6 border-b">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <Globe className="h-5 w-5 text-primary" />
+                      Press Mentions
+                    </h3>
+                    <div className="space-y-3">
+                      {(professional.press_mentions as PressMention[]).slice(0, 5).map((mention, i) => (
+                        <div key={i} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                          <CheckCircle2 className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
+                          <div>
+                            {mention.url ? (
+                              <a 
+                                href={mention.url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="font-medium text-sm text-primary hover:underline"
+                              >
+                                {mention.title}
+                              </a>
+                            ) : (
+                              <p className="font-medium text-sm">{mention.title}</p>
+                            )}
+                            {mention.outlet && (
+                              <p className="text-xs text-muted-foreground mt-1">{mention.outlet}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 5: Areas of Focus */}
                 {((professional.specialty && professional.specialty.length > 0) || professional.cities) && (
                   <div className="p-6 border-b">
                     <h3 className="font-semibold text-lg mb-4">Areas of Focus</h3>
