@@ -320,7 +320,66 @@ export default function ClaimListingPreview() {
                   </div>
                 </div>
 
-                {/* Section 2: Notable Achievements & Awards */}
+                {/* Section: Editorial Review (Collapsed by default) - Moved here */}
+                {professional.synthesized_bio && (
+                  <Collapsible open={editorialExpanded} onOpenChange={setEditorialExpanded}>
+                    <div className="p-6 bg-blue-50/50 dark:bg-blue-950/20 border-b">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Award className="h-5 w-5 text-primary" />
+                            <h3 className="font-semibold text-lg">Top10Lists.us Editorial Review</h3>
+                          </div>
+                          <p className="text-xs text-muted-foreground">
+                            Written by Top10Lists.us based on publicly available data and editorial review.
+                          </p>
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-primary shrink-0">
+                            {editorialExpanded ? "Hide" : "Show"}
+                            <ChevronDown className={`h-4 w-4 ml-1 transition-transform duration-200 ${editorialExpanded ? "rotate-180" : ""}`} />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      <CollapsibleContent className="pt-4">
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <p className="text-foreground whitespace-pre-line leading-relaxed">
+                            {stripHtml(professional.synthesized_bio)}
+                          </p>
+                        </div>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                )}
+
+                {/* Section: Agent Statement (Collapsed by default) - Moved here */}
+                {agentStatement && (
+                  <Collapsible open={agentStatementExpanded} onOpenChange={setAgentStatementExpanded}>
+                    <div className="p-6 border-l-4 border-l-amber-400 bg-amber-50/30 dark:bg-amber-950/10 border-b">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-1">From {firstName}</h3>
+                          <p className="text-xs text-muted-foreground">
+                            Statement provided by the agent.
+                          </p>
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-primary shrink-0">
+                            {agentStatementExpanded ? "Hide" : "Show"}
+                            <ChevronDown className={`h-4 w-4 ml-1 transition-transform duration-200 ${agentStatementExpanded ? "rotate-180" : ""}`} />
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      <CollapsibleContent className="pt-4">
+                        <blockquote className="italic text-foreground whitespace-pre-line leading-relaxed">
+                          "{stripHtml(agentStatement)}"
+                        </blockquote>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                )}
+
+                {/* Section: Notable Achievements & Awards */}
                 {professional.notable_achievements && Array.isArray(professional.notable_achievements) && professional.notable_achievements.length > 0 && (
                   <div className="p-6 border-b">
                     <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
@@ -537,65 +596,6 @@ export default function ClaimListingPreview() {
                     )}
                   </div>
                 </div>
-
-                {/* Section 4: Editorial Review (Collapsed by default) */}
-                {professional.synthesized_bio && (
-                  <Collapsible open={editorialExpanded} onOpenChange={setEditorialExpanded}>
-                    <div className="p-6 bg-blue-50/50 dark:bg-blue-950/20 border-b">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Award className="h-5 w-5 text-primary" />
-                            <h3 className="font-semibold text-lg">Top10Lists.us Editorial Review</h3>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Written by Top10Lists.us based on publicly available data and editorial review.
-                          </p>
-                        </div>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-primary shrink-0">
-                            {editorialExpanded ? "Hide" : "Show"}
-                            <ChevronDown className={`h-4 w-4 ml-1 transition-transform duration-200 ${editorialExpanded ? "rotate-180" : ""}`} />
-                          </Button>
-                        </CollapsibleTrigger>
-                      </div>
-                      <CollapsibleContent className="pt-4">
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                          <p className="text-foreground whitespace-pre-line leading-relaxed">
-                            {stripHtml(professional.synthesized_bio)}
-                          </p>
-                        </div>
-                      </CollapsibleContent>
-                    </div>
-                  </Collapsible>
-                )}
-
-                {/* Section 5: Agent Statement (Collapsed by default) */}
-                {agentStatement && (
-                  <Collapsible open={agentStatementExpanded} onOpenChange={setAgentStatementExpanded}>
-                    <div className="p-6 border-l-4 border-l-amber-400 bg-amber-50/30 dark:bg-amber-950/10">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-1">From {firstName}</h3>
-                          <p className="text-xs text-muted-foreground">
-                            Statement provided by the agent.
-                          </p>
-                        </div>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-primary shrink-0">
-                            {agentStatementExpanded ? "Hide" : "Show"}
-                            <ChevronDown className={`h-4 w-4 ml-1 transition-transform duration-200 ${agentStatementExpanded ? "rotate-180" : ""}`} />
-                          </Button>
-                        </CollapsibleTrigger>
-                      </div>
-                      <CollapsibleContent className="pt-4">
-                        <blockquote className="italic text-foreground whitespace-pre-line leading-relaxed">
-                          "{stripHtml(agentStatement)}"
-                        </blockquote>
-                      </CollapsibleContent>
-                    </div>
-                  </Collapsible>
-                )}
 
               </CardContent>
             </Card>
