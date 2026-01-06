@@ -1,7 +1,9 @@
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   CheckCircle2, 
   ExternalLink, 
@@ -15,6 +17,24 @@ import {
 export default function FunnelSuccess() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+
+  // Fetch professional and city data
+  const { data: professional } = useQuery({
+    queryKey: ['professional-success', token],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('id, name, city_id, cities(name)')
+        .eq('verification_token', token)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!token,
+  });
+
+  const cityName = (professional?.cities as { name: string } | null)?.name || 'your selected city';
 
   const handleExploreOptions = () => {
     navigate(`/profile/${token}/pricing`);
@@ -45,7 +65,7 @@ export default function FunnelSuccess() {
                 Your Profile Is Live
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-3">
-                Your Top10Lists.us profile is now live and visible to consumers searching for top agents in your selected city.
+                Your Top10Lists.us profile is now live and visible to consumers searching for top agents in {cityName}.
               </p>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">
                 Your inclusion and editorial review are based on merit and publicly available data. Rankings and inclusion are never sold.
