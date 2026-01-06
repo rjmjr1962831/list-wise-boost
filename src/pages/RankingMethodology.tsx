@@ -452,6 +452,45 @@ const RankingMethodology = () => {
           </div>
         </section>
 
+        {/* Editorial vs Paid Separation - NEW SECTION */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-primary/20">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold mb-4">Separation of Editorial and Paid Features</h3>
+                <p className="text-muted-foreground mb-4">
+                  Top10Lists.us maintains a clear separation between editorial decisions and paid visibility options:
+                </p>
+                <div className="grid md:grid-cols-2 gap-6 mb-4">
+                  <div className="p-4 bg-primary/5 rounded-lg">
+                    <h4 className="font-semibold mb-2 text-foreground">Editorial (Merit-Based)</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Agent selection and invitation</li>
+                      <li>• Ranking position within lists</li>
+                      <li>• Quality threshold enforcement</li>
+                      <li>• Removal for underperformance</li>
+                    </ul>
+                    <p className="text-xs mt-2 text-primary font-medium">Cannot be purchased or influenced by payment</p>
+                  </div>
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-semibold mb-2 text-foreground">Paid (Optional Visibility)</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Expanded city coverage</li>
+                      <li>• Prominence in rotation</li>
+                      <li>• Profile enhancements</li>
+                      <li>• Geographic reach</li>
+                    </ul>
+                    <p className="text-xs mt-2 text-muted-foreground font-medium">Available only to agents who already qualify editorially</p>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  This model is analogous to traditional media: editorial content is independent, while advertising affects where content appears—not what it says.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
         {/* Monitoring Section */}
         <section className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">

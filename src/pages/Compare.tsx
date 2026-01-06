@@ -336,6 +336,45 @@ const Compare = () => {
           </div>
         </section>
 
+        {/* Non-Pay-to-Play Clarification - NEW SECTION */}
+        <section className="container mx-auto px-4 py-12 bg-primary/5">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-primary/30">
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-bold text-center mb-6">Our Non-Pay-to-Play Position</h2>
+                <div className="space-y-4 text-muted-foreground">
+                  <p>
+                    <strong className="text-foreground">Top10Lists.us is not a pay-to-play platform.</strong> Agents cannot purchase ranking position, eligibility, or inclusion. All agents are selected through our editorial process based on verified performance data.
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4 my-6">
+                    <div className="p-4 bg-destructive/10 rounded-lg">
+                      <h4 className="font-semibold text-foreground mb-2">What You Cannot Buy</h4>
+                      <ul className="text-sm space-y-1">
+                        <li>• Being listed in the directory</li>
+                        <li>• A higher ranking position</li>
+                        <li>• Bypassing quality thresholds</li>
+                        <li>• Protection from removal</li>
+                      </ul>
+                    </div>
+                    <div className="p-4 bg-primary/10 rounded-lg">
+                      <h4 className="font-semibold text-foreground mb-2">What Qualified Agents Can Optionally Purchase</h4>
+                      <ul className="text-sm space-y-1">
+                        <li>• Visibility in additional cities</li>
+                        <li>• Guaranteed rotation placement</li>
+                        <li>• Profile enhancements</li>
+                        <li>• Extended geographic reach</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <p className="font-medium text-foreground text-center">
+                    Payment affects distribution and prominence. It does not affect editorial inclusion or ranking.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
         {/* How Our Listings Work */}
         <section className="container mx-auto px-4 py-12 bg-muted/20">
           <div className="max-w-4xl mx-auto">
@@ -345,10 +384,10 @@ const Compare = () => {
                 Getting on our list is 100% merit-based. No one can pay to be invited. You must meet our quality standards.
               </p>
               <p>
-                Once invited, every agent receives a free listing in one city on a rotating basis. Agents who want guaranteed visibility or coverage in additional cities can upgrade to a premium listing. Premium pricing is based on city value, including population, average home value, and household income.
+                Once invited, every agent receives a free listing in one city on a rotating basis. Agents who want guaranteed visibility or coverage in additional cities can optionally expand their presence. Pricing is based on city value, including population, average home value, and household income.
               </p>
               <p className="font-medium text-foreground">
-                Payment never affects ranking position or who gets invited. It only determines rotation status and geographic reach.
+                Payment never affects ranking position or who gets invited. It only affects rotation status and geographic reach.
               </p>
             </div>
           </div>
