@@ -14,58 +14,37 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
-// Bio Preview component with ...more expander - renders HTML while preserving paragraph breaks
+// Bio Preview component with ...more expander - converts HTML to plain text with paragraph breaks
 const BioPreview = ({ text }: { text: string }) => {
   const [expanded, setExpanded] = useState(false);
 
-  const stripHtml = (html: string) =>
-    html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
-
-  const escapeHtml = (input: string) =>
-    input
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-
-  // Minimal safety: remove obvious script/style blocks and inline event handlers
-  const sanitizeHtml = (html: string) =>
-    html
-      .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
-      .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
-      .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
-      .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
-      .replace(/javascript:/gi, '');
-
-  const toHtmlFromText = (input: string) => {
-    const normalized = input.replace(/\r\n/g, '\n').trim();
-    const escaped = escapeHtml(normalized);
-
-    // Convert blank-line separated blocks to <p> and single newlines to <br />
-    const paragraphs = escaped
-      .split(/\n{2,}/)
-      .map(p => p.replace(/\n/g, '<br />'))
-      .filter(Boolean);
-
-    if (paragraphs.length === 0) return '';
-    return `<p>${paragraphs.join('</p><p>')}</p>`;
+  // Convert HTML to plain text while preserving paragraph breaks
+  const htmlToPlainText = (html: string) => {
+    if (!html) return '';
+    
+    // Replace </p><p> or </p> <p> with double newlines for paragraph breaks
+    let result = html
+      .replace(/<\/p>\s*<p>/gi, '\n\n')
+      .replace(/<p>/gi, '')
+      .replace(/<\/p>/gi, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
+      .trim();
+    
+    return result;
   };
 
-  const getRenderableHtml = (input: string) => {
-    const value = (input || '').trim();
-    if (!value) return '';
-
-    const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(value);
-    const html = looksLikeHtml ? value : toHtmlFromText(value);
-    return sanitizeHtml(html);
-  };
-
-  const plainText = stripHtml(text);
+  const plainText = htmlToPlainText(text);
   const maxLength = 200;
   const needsTruncation = plainText.length > maxLength;
 
-  // Truncated view: show plain text (but keep whitespace) + ...more
+  // Truncated view
   if (!expanded && needsTruncation) {
     return (
       <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
@@ -82,14 +61,11 @@ const BioPreview = ({ text }: { text: string }) => {
     );
   }
 
-  const html = getRenderableHtml(text);
-
   return (
     <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
-      <div
-        className="prose prose-sm max-w-none dark:prose-invert [&>p]:mb-3 [&>p:last-child]:mb-0"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
+      <div className="whitespace-pre-line">
+        {plainText}
+      </div>
       {needsTruncation && (
         <span
           onClick={() => setExpanded(false)}
