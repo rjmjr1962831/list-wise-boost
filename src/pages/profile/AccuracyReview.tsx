@@ -373,10 +373,6 @@ export default function AccuracyReview() {
             </div>
           )}
 
-          {/* Confirmation Statement */}
-          <p className="text-sm text-center text-muted-foreground">
-            By confirming, you are stating that the information above is accurate to the best of your knowledge.
-          </p>
 
           {/* Action Button */}
           <div className="flex justify-end">
