@@ -166,6 +166,7 @@ export default function EditProfile() {
   const [editingBio, setEditingBio] = useState(false);
   const [bioEditValue, setBioEditValue] = useState('');
   const [bioLastEdited, setBioLastEdited] = useState<string | null>(null);
+  const [bioEditedByAgent, setBioEditedByAgent] = useState(false);
   const [savingBio, setSavingBio] = useState(false);
   
   // Form state - only agent-authored editable fields (no review required)
@@ -325,6 +326,7 @@ export default function EditProfile() {
       const now = new Date().toISOString();
       setProfessional((prev: any) => ({ ...prev, description: bioEditValue }));
       setBioLastEdited(now);
+      setBioEditedByAgent(true);
       setEditingBio(false);
       toast({
         title: 'Bio Updated',
@@ -520,7 +522,7 @@ export default function EditProfile() {
               </p>
               {bioLastEdited && (
                 <p className="text-xs text-muted-foreground italic">
-                  Last edited by you on {new Date(bioLastEdited).toLocaleDateString('en-US', { 
+                  Last updated by {bioEditedByAgent ? 'you' : 'us'} on {new Date(bioLastEdited).toLocaleDateString('en-US', { 
                     month: 'long', 
                     day: 'numeric',
                     year: 'numeric'
