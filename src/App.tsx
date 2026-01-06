@@ -55,6 +55,7 @@ const PaymentComingSoon = lazy(() => import("./pages/PaymentComingSoon"));
 const About = lazy(() => import("./pages/About"));
 const RankingMethodology = lazy(() => import("./pages/RankingMethodology"));
 const RankingMethodologyRedirect = lazy(() => import("./pages/RankingMethodologyRedirect"));
+const MethodologyRedirect = lazy(() => import("./pages/MethodologyRedirect"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
@@ -125,6 +126,7 @@ const App = () => (
                     <Route path="/about/founder" element={<Founder />} />
                     <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
+                    <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
