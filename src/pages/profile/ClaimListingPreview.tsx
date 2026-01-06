@@ -26,6 +26,19 @@ import {
 } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
 
+interface NotableAchievement {
+  title: string;
+  description: string;
+  source?: string;
+  date?: string;
+  credibility?: number;
+}
+
+interface Certification {
+  designation: string;
+  full_name: string;
+}
+
 interface ProfessionalData {
   id: string;
   name: string;
@@ -50,6 +63,8 @@ interface ProfessionalData {
   social_facebook: string | null;
   social_instagram: string | null;
   social_tiktok: string | null;
+  notable_achievements: unknown;
+  certifications_verified: unknown;
   cities: {
     name: string;
     state: string;
@@ -91,6 +106,7 @@ export default function ClaimListingPreview() {
             license_number, license_verified_at, years_experience, total_sales, current_listings,
             synthesized_bio, get_to_know_me,
             social_linkedin, social_facebook, social_instagram, social_tiktok,
+            notable_achievements, certifications_verified,
             cities!inner(name, state, slug, state_slug)
           `)
           .eq('id', lookup)
@@ -108,6 +124,7 @@ export default function ClaimListingPreview() {
               license_number, license_verified_at, years_experience, total_sales, current_listings,
               synthesized_bio, get_to_know_me,
               social_linkedin, social_facebook, social_instagram, social_tiktok,
+              notable_achievements, certifications_verified,
               cities!inner(name, state, slug, state_slug)
             `)
             .eq('verification_token', lookup)
@@ -287,7 +304,51 @@ export default function ClaimListingPreview() {
                   </div>
                 </div>
 
-                {/* Section 2: Areas of Focus */}
+                {/* Section 2: Notable Achievements & Awards */}
+                {professional.notable_achievements && Array.isArray(professional.notable_achievements) && professional.notable_achievements.length > 0 && (
+                  <div className="p-6 border-b">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <Award className="h-5 w-5 text-primary" />
+                      Notable Achievements & Awards
+                    </h3>
+                    <div className="space-y-3">
+                      {(professional.notable_achievements as NotableAchievement[])
+                        .filter(a => a.credibility && a.credibility >= 7)
+                        .slice(0, 5)
+                        .map((achievement, i) => (
+                          <div key={i} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                            <div>
+                              <p className="font-medium text-sm">{achievement.title}</p>
+                              {achievement.description && (
+                                <p className="text-xs text-muted-foreground mt-1">{achievement.description}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 3: Professional Certifications */}
+                {professional.certifications_verified && Array.isArray(professional.certifications_verified) && professional.certifications_verified.length > 0 && (
+                  <div className="p-6 border-b">
+                    <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      Professional Certifications
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {(professional.certifications_verified as Certification[]).map((cert, i) => (
+                        <Badge key={i} variant="outline" className="py-1.5">
+                          <span className="font-semibold mr-1">{cert.designation}</span>
+                          <span className="text-muted-foreground">- {cert.full_name}</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Section 4: Areas of Focus */}
                 {((professional.specialty && professional.specialty.length > 0) || professional.cities) && (
                   <div className="p-6 border-b">
                     <h3 className="font-semibold text-lg mb-4">Areas of Focus</h3>
