@@ -468,7 +468,13 @@ export default function EditProfile() {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Bio</h2>
               <p className="text-sm text-muted-foreground">
-                This is your statement to the public.
+                This is your statement to the public. To change it, please{' '}
+                <span
+                  onClick={() => navigate(`/profile/${token}`)}
+                  className="text-primary cursor-pointer hover:underline font-medium"
+                >
+                  request review
+                </span>.
               </p>
               {professional?.description ? (
                 <BioPreview text={professional.description} />
