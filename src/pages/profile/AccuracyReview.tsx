@@ -10,6 +10,20 @@ import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModa
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { useToast } from '@/hooks/use-toast';
 
+interface PressMention {
+  title: string;
+  outlet?: string;
+  url?: string;
+  date?: string;
+}
+
+interface AwardVerified {
+  name: string;
+  year?: string;
+  issuingOrganization?: string;
+  description?: string;
+}
+
 interface ProfessionalData {
   id: string;
   name: string;
@@ -19,6 +33,9 @@ interface ProfessionalData {
   years_experience: number | null;
   total_sales: number | null;
   num_total_reviews: number | null;
+  review_stars_rating: number | null;
+  press_mentions: PressMention[] | null;
+  awards_verified: AwardVerified[] | null;
   phone: string | null;
   website: string | null;
   email: string | null;
@@ -53,7 +70,8 @@ export default function AccuracyReview() {
           .from('professionals')
           .select(`
             id, name, license_number, company, business_name, 
-            years_experience, total_sales, num_total_reviews, 
+            years_experience, total_sales, num_total_reviews, review_stars_rating,
+            press_mentions, awards_verified,
             phone, website, email, verification_token, state_slug,
             synthesized_bio
           `)
@@ -66,7 +84,8 @@ export default function AccuracyReview() {
             .from('professionals')
             .select(`
               id, name, license_number, company, business_name, 
-              years_experience, total_sales, num_total_reviews, 
+              years_experience, total_sales, num_total_reviews, review_stars_rating,
+              press_mentions, awards_verified,
               phone, website, email, verification_token, state_slug,
               synthesized_bio
             `)
@@ -87,7 +106,7 @@ export default function AccuracyReview() {
           return;
         }
 
-        setProfessional(data);
+        setProfessional(data as unknown as ProfessionalData);
         trackEvent(FUNNEL_EVENTS.ACCURACY_REVIEW_VIEWED);
         
         // Update funnel status
@@ -320,6 +339,30 @@ export default function AccuracyReview() {
                   source="Zillow"
                   onRequestCorrection={() => handleRequestCorrection('Review Count', professional.num_total_reviews?.toString() || null)}
                 />
+                {professional.review_stars_rating && (
+                  <VerifiedFieldRow
+                    label="Star rating"
+                    value={`${professional.review_stars_rating.toFixed(1)} stars`}
+                    source="Zillow"
+                    onRequestCorrection={() => handleRequestCorrection('Star Rating', professional.review_stars_rating?.toString() || null)}
+                  />
+                )}
+                {professional.press_mentions && professional.press_mentions.length > 0 && (
+                  <VerifiedFieldRow
+                    label="Press mentions"
+                    value={`${professional.press_mentions.length} mention${professional.press_mentions.length !== 1 ? 's' : ''}: ${professional.press_mentions.slice(0, 2).map(p => p.outlet || p.title).join(', ')}${professional.press_mentions.length > 2 ? '...' : ''}`}
+                    source="Public media"
+                    onRequestCorrection={() => handleRequestCorrection('Press Mentions', professional.press_mentions?.map(p => p.title).join(', ') || null)}
+                  />
+                )}
+                {professional.awards_verified && professional.awards_verified.length > 0 && (
+                  <VerifiedFieldRow
+                    label="Awards & recognition"
+                    value={professional.awards_verified.map(a => a.name).join(', ')}
+                    source="Verified records"
+                    onRequestCorrection={() => handleRequestCorrection('Awards', professional.awards_verified?.map(a => a.name).join(', ') || null)}
+                  />
+                )}
                 <VerifiedFieldRow
                   label="Phone number"
                   value={formatPhone(professional.phone)}
