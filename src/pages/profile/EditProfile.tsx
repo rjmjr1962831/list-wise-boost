@@ -295,6 +295,41 @@ export default function EditProfile() {
     );
   };
 
+  // Render "Your Bio" as HTML (preserve paragraph breaks when plain text is provided)
+  const getRenderableBioHtml = (input: string) => {
+    const value = (input || '').trim();
+    if (!value) return '';
+
+    const escapeHtml = (text: string) =>
+      text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+    const sanitizeHtml = (html: string) =>
+      html
+        .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, '')
+        .replace(/\son\w+\s*=\s*"[^"]*"/gi, '')
+        .replace(/\son\w+\s*=\s*'[^']*'/gi, '')
+        .replace(/javascript:/gi, '');
+
+    const toHtmlFromText = (text: string) => {
+      const normalized = text.replace(/\r\n/g, '\n').trim();
+      const escaped = escapeHtml(normalized);
+      const paragraphs = escaped
+        .split(/\n{2,}/)
+        .map(p => p.replace(/\n/g, '<br />'))
+        .filter(Boolean);
+      return paragraphs.length ? `<p>${paragraphs.join('</p><p>')}</p>` : '';
+    };
+
+    const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(value);
+    return sanitizeHtml(looksLikeHtml ? value : toHtmlFromText(value));
+  };
+
   const selectCity = (cityName: string) => {
     handleInputChange('featured_city', cityName);
     setCitySearchOpen(false);
@@ -471,6 +506,16 @@ export default function EditProfile() {
                 onChange={(e) => handleInputChange('description', e.target.value)}
                 className="whitespace-pre-line"
               />
+
+              {formData.description?.trim() ? (
+                <div className="bg-muted/50 rounded-md p-4">
+                  <p className="text-xs text-muted-foreground mb-2">Preview</p>
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-line [&>p]:mb-3 [&>p:last-child]:mb-0"
+                    dangerouslySetInnerHTML={{ __html: getRenderableBioHtml(formData.description) }}
+                  />
+                </div>
+              ) : null}
             </div>
 
             {/* SECTION 5: OPTIONAL ADDITIONS (No Review Required) */}
