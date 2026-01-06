@@ -427,11 +427,8 @@ export default function EditProfile() {
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
             Review & Edit
           </h1>
-          <h2 className="text-xl text-foreground mb-2">
-            Review Updates and Complete Your Profile
-          </h2>
-          <p className="text-muted-foreground">
-            See what's been updated and add optional details.
+          <p className="text-xl text-muted-foreground">
+            Review updates and complete your profile
           </p>
         </div>
 
@@ -480,7 +477,7 @@ export default function EditProfile() {
               </div>
             )}
 
-            {/* SECTION 3: OUR SYNTHESIZED REVIEW (Reference) */}
+            {/* SECTION 1: OUR SYNTHESIZED REVIEW (Read-Only, Review Required) */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-semibold text-foreground">Our Synthesized Review</h2>
@@ -492,12 +489,12 @@ export default function EditProfile() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                This narrative was written by Top10Lists.us based on publicly available data. To change it, please{' '}
+                This narrative was written by Top10Lists.us based on publicly available data and editorial review. If you believe any part is inaccurate, you may{' '}
                 <span
                   onClick={() => navigate(`/profile/${token}`)}
                   className="text-primary cursor-pointer hover:underline font-medium"
                 >
-                  request review
+                  request a review
                 </span>.
               </p>
               {professional?.synthesized_bio ? (
@@ -509,24 +506,25 @@ export default function EditProfile() {
               )}
             </div>
 
-            {/* SECTION 4: YOUR BIO (Editable) */}
+            {/* SECTION 2: YOUR BIO (Editable — Agent Source of Truth) */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Bio</h2>
               <p className="text-sm text-muted-foreground">
-                This is your statement to the public. To change it, please{' '}
+                This is your statement to the public. We suggest you write it in the first person.{' '}
                 <span
                   onClick={startEditingBio}
                   className="text-primary cursor-pointer hover:underline font-medium"
                 >
-                  edit
-                </span>.
+                  Edit
+                </span>
               </p>
               {bioLastEdited && (
-                <p className="text-xs text-muted-foreground">
-                  Last edited: {new Date(bioLastEdited).toLocaleDateString('en-US', { 
-                    year: 'numeric', 
+                <p className="text-xs text-muted-foreground italic">
+                  Last edited by you on {new Date(bioLastEdited).toLocaleDateString('en-US', { 
                     month: 'long', 
                     day: 'numeric',
+                    year: 'numeric'
+                  })} at {new Date(bioLastEdited).toLocaleTimeString('en-US', {
                     hour: 'numeric',
                     minute: '2-digit'
                   })}
@@ -577,7 +575,7 @@ export default function EditProfile() {
               )}
             </div>
 
-            {/* SECTION 5: OPTIONAL ADDITIONS (No Review Required) */}
+            {/* SECTION 3: OPTIONAL ADDITIONS (Editable — Agent Source of Truth) */}
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">Optional Additions</h2>
@@ -648,56 +646,57 @@ export default function EditProfile() {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Featured City */}
-              <div>
-                <Label htmlFor="featured_city">What city would you like to be featured in?</Label>
-                <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={citySearchOpen}
-                      className="w-full justify-between mt-1"
-                    >
-                      {formData.featured_city || "Select a city..."}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[400px] p-0 z-[100] bg-background" align="start" side="bottom">
-                    <Command className="bg-background">
-                      <CommandInput 
-                        placeholder="Search cities..." 
-                        value={citySearch}
-                        onValueChange={setCitySearch}
-                      />
-                      <CommandList className="max-h-[300px] overflow-y-auto bg-background">
-                        <CommandEmpty className="bg-background p-2 text-center text-sm text-muted-foreground">
-                          No city found
-                        </CommandEmpty>
-                        <CommandGroup className="bg-background">
-                          {filteredCities.slice(0, 50).map((city) => (
-                            <CommandItem
-                              key={city.id}
-                              value={city.name}
-                              onSelect={() => selectCity(city.name)}
-                              className="cursor-pointer hover:bg-accent"
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  formData.featured_city === city.name ? "opacity-100" : "opacity-0"
-                                )}
-                              />
-                              {city.name}, {city.state}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+            {/* SECTION 4: FEATURED CITY (Editable — Agent Source of Truth) */}
+            <div className="space-y-4">
+              <Label htmlFor="featured_city" className="text-xl font-semibold text-foreground">What city would you like to be featured in?</Label>
+              <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={citySearchOpen}
+                    className="w-full justify-between"
+                  >
+                    {formData.featured_city || "Select a city..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] p-0 z-[100] bg-background" align="start" side="bottom">
+                  <Command className="bg-background">
+                    <CommandInput 
+                      placeholder="Search cities..." 
+                      value={citySearch}
+                      onValueChange={setCitySearch}
+                    />
+                    <CommandList className="max-h-[300px] overflow-y-auto bg-background">
+                      <CommandEmpty className="bg-background p-2 text-center text-sm text-muted-foreground">
+                        No city found
+                      </CommandEmpty>
+                      <CommandGroup className="bg-background">
+                        {filteredCities.slice(0, 50).map((city) => (
+                          <CommandItem
+                            key={city.id}
+                            value={city.name}
+                            onSelect={() => selectCity(city.name)}
+                            className="cursor-pointer hover:bg-accent"
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                formData.featured_city === city.name ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {city.name}, {city.state}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              <p className="text-xs text-muted-foreground italic">You may change this later.</p>
             </div>
 
             {/* Navigation */}
