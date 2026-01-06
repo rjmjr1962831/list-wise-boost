@@ -364,7 +364,7 @@ export default function AccuracyReview() {
                   </CardHeader>
                   <CardContent>
                     <div 
-                      className="prose prose-sm max-w-none text-foreground"
+                      className="prose prose-sm max-w-none text-foreground whitespace-pre-line"
                       dangerouslySetInnerHTML={{ __html: professional.synthesized_bio || '' }}
                     />
                   </CardContent>
