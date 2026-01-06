@@ -169,8 +169,8 @@ export default function ClaimListingPreview() {
   }, [token]);
 
   const handleFinish = () => {
-    // Navigate to home or a success state
-    navigate('/');
+    // Navigate to success page
+    navigate(`/profile/${profileId}/success`);
   };
 
   const handleContinueEditing = () => {
