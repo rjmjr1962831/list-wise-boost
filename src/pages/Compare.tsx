@@ -336,15 +336,18 @@ const Compare = () => {
           </div>
         </section>
 
-        {/* Non-Pay-to-Play Clarification - NEW SECTION */}
+        {/* Not Pay-to-Play */}
         <section className="container mx-auto px-4 py-12 bg-primary/5">
           <div className="max-w-4xl mx-auto">
             <Card className="border-2 border-primary/30">
               <CardContent className="p-6">
-                <h2 className="text-2xl font-bold text-center mb-6">Our Non-Pay-to-Play Position</h2>
+                <h2 className="text-2xl font-bold text-center mb-6">Not Pay-to-Play</h2>
                 <div className="space-y-4 text-muted-foreground">
+                  <p className="text-foreground font-medium">
+                    Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking.
+                  </p>
                   <p>
-                    <strong className="text-foreground">Top10Lists.us is not a pay-to-play platform.</strong> Agents cannot purchase ranking position, eligibility, or inclusion. All agents are selected through our editorial process based on verified performance data.
+                    Unlike pay-to-play directories where agents can purchase ranking position, visibility, or placement, Top10Lists.us requires agents to qualify editorially before any paid options become available. All agents are selected through our merit-based process using verified performance data.
                   </p>
                   <div className="grid md:grid-cols-2 gap-4 my-6">
                     <div className="p-4 bg-destructive/10 rounded-lg">
