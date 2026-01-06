@@ -33,6 +33,16 @@ interface PressArticle {
 
 const pressArticles: PressArticle[] = [
   {
+    name: "AIJourn",
+    tier: "Trade",
+    tierColor: "bg-muted text-muted-foreground",
+    url: "https://aijourn.com/top10lists-us-releases-open-source-ai-citation-protocol/",
+    title: "Top10Lists.us Releases Open Source AI Citation Protocol",
+    summary: "Coverage of Top10Lists.us releasing an open-source AI citation protocol designed to improve transparency and attribution in AI-generated content across the real estate industry.",
+    date: "January 6, 2026",
+    logo: aiJournLogo,
+  },
+  {
     name: "Yahoo Finance",
     tier: "Tier 1",
     tierColor: "bg-primary text-primary-foreground",
