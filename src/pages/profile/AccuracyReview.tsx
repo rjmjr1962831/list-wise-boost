@@ -287,41 +287,50 @@ export default function AccuracyReview() {
                 <VerifiedFieldRow
                   label="Name"
                   value={professional.name}
+                  source="State licensing records"
                   onRequestCorrection={() => handleRequestCorrection('Name', professional.name)}
                 />
                 <VerifiedFieldRow
                   label="License number and issuing authority"
                   value={licenseDisplay}
+                  source="State licensing records"
                   onRequestCorrection={() => handleRequestCorrection('License Number', professional.license_number)}
                 />
                 <VerifiedFieldRow
                   label="Brokerage"
                   value={professional.company || professional.business_name}
+                  source="MLS / brokerage records"
                   onRequestCorrection={() => handleRequestCorrection('Brokerage', professional.company || professional.business_name)}
                 />
                 <VerifiedFieldRow
                   label="Years of experience"
                   value={professional.years_experience ? `${professional.years_experience} years` : null}
+                  source="Transaction history"
                   onRequestCorrection={() => handleRequestCorrection('Years of Experience', professional.years_experience?.toString() || null)}
                 />
                 <VerifiedFieldRow
-                  label="Transaction count"
+                  label="Transaction count (range)"
                   value={formatTransactionCount(professional.total_sales)}
+                  source="MLS aggregates"
                   onRequestCorrection={() => handleRequestCorrection('Transaction Count', professional.total_sales?.toString() || null)}
                 />
                 <VerifiedFieldRow
-                  label="Review count"
+                  label="Review count (range)"
                   value={formatReviewCount(professional.num_total_reviews)}
+                  source="Zillow"
                   onRequestCorrection={() => handleRequestCorrection('Review Count', professional.num_total_reviews?.toString() || null)}
                 />
                 <VerifiedFieldRow
                   label="Phone number"
                   value={formatPhone(professional.phone)}
+                  source="Zillow"
+                  note="This may be a tracking number used by listing platforms."
                   onRequestCorrection={() => handleRequestCorrection('Phone Number', professional.phone)}
                 />
                 <VerifiedFieldRow
                   label="Professional website"
                   value={professional.website}
+                  source="Public website"
                   onRequestCorrection={() => handleRequestCorrection('Website', professional.website)}
                   isLink={true}
                 />
@@ -397,7 +406,7 @@ export default function AccuracyReview() {
 
           {/* Disclosure Footer */}
           <p className="text-xs text-center text-muted-foreground pt-4 border-t">
-            If you do not confirm accuracy or request corrections, this profile will remain published as-is using publicly available data.
+            If you proceed without requesting corrections, this profile will remain published as-is using publicly available data.
           </p>
         </div>
       </div>

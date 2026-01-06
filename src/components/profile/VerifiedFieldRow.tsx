@@ -6,13 +6,17 @@ interface VerifiedFieldRowProps {
   value: string | null | undefined;
   onRequestCorrection: () => void;
   isLink?: boolean;
+  source?: string;
+  note?: string;
 }
 
 export function VerifiedFieldRow({ 
   label, 
   value, 
   onRequestCorrection,
-  isLink = false 
+  isLink = false,
+  source,
+  note
 }: VerifiedFieldRowProps) {
   const displayValue = value || 'Not listed';
   const hasValue = !!value;
@@ -36,6 +40,12 @@ export function VerifiedFieldRow({
             <p className={`text-base ${hasValue ? 'text-foreground' : 'text-muted-foreground italic'}`}>
               {displayValue}
             </p>
+          )}
+          {source && (
+            <p className="text-xs text-muted-foreground mt-1">Source: {source}</p>
+          )}
+          {note && (
+            <p className="text-xs text-muted-foreground italic mt-0.5">{note}</p>
           )}
         </div>
       </div>
