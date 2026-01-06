@@ -326,6 +326,16 @@ export default function AccuracyReview() {
                   source="Zillow"
                   note="This may be a tracking number used by listing platforms."
                   onRequestCorrection={() => handleRequestCorrection('Phone Number', professional.phone)}
+                  editable={true}
+                  onSave={async (newValue: string) => {
+                    const { error } = await supabase
+                      .from('professionals')
+                      .update({ phone: newValue })
+                      .eq('id', professional.id);
+                    if (error) throw error;
+                    setProfessional(prev => prev ? { ...prev, phone: newValue } : null);
+                    toast({ title: 'Phone number updated', description: 'Your phone number has been saved.' });
+                  }}
                 />
                 <VerifiedFieldRow
                   label="Professional website"
