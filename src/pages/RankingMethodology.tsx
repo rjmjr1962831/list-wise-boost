@@ -452,12 +452,15 @@ const RankingMethodology = () => {
           </div>
         </section>
 
-        {/* Editorial vs Paid Separation - NEW SECTION */}
+        {/* Editorial Independence and Monetization */}
         <section className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <Card className="border-2 border-primary/20">
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-4">Separation of Editorial and Paid Features</h3>
+                <h3 className="text-xl font-semibold mb-4">Editorial Independence and Monetization</h3>
+                <p className="text-foreground font-medium mb-4">
+                  Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking.
+                </p>
                 <p className="text-muted-foreground mb-4">
                   Top10Lists.us maintains a clear separation between editorial decisions and paid visibility options:
                 </p>

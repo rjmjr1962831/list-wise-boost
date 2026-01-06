@@ -207,11 +207,14 @@ const About = () => {
           </div>
         </section>
 
-        {/* Editorial Control */}
+        {/* Editorial Model */}
         <section className="container mx-auto px-4 py-8">
           <div className="max-w-4xl mx-auto">
             <div className="bg-primary/5 border-l-4 border-primary rounded-r-lg p-6">
-              <h2 className="text-xl font-bold mb-3 text-foreground">Editorial Control</h2>
+              <h2 className="text-xl font-bold mb-3 text-foreground">Editorial Model</h2>
+              <p className="text-foreground font-medium mb-3">
+                Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking.
+              </p>
               <p className="text-muted-foreground leading-relaxed">
                 While agents may participate in paid visibility programs, payment does not influence ranking position or inclusion decisions. Final editorial judgment remains with Top10Lists.us. Paid visibility options are available exclusively to agents who have already qualified through our editorial evaluation process.
               </p>
