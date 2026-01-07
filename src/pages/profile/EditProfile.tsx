@@ -658,7 +658,7 @@ export default function EditProfile() {
                   className="w-full"
                 />
                 {citySearchOpen && (
-                  <div className="absolute z-[100] w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-[300px] overflow-y-auto">
+                  <div className="absolute z-[100] w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-[300px] overflow-hidden">
                     {citySearch.trim().length < 2 ? (
                       <div className="p-3 text-sm text-muted-foreground text-center">
                         Type at least 2 characters to search...
