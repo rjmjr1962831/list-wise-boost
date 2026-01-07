@@ -140,39 +140,13 @@ async function regenerateCanonicalRankings(
 }
 
 /**
- * Invalidates Prerender.io cache for a specific URL
+ * DISABLED: Prerender.io integration has been removed
+ * This function is now a no-op that always returns true
  */
 async function invalidatePrerenderCache(url: string): Promise<boolean> {
-  const prerenderToken = Deno.env.get('PRERENDER_TOKEN');
-  
-  if (!prerenderToken) {
-    console.warn('PRERENDER_TOKEN not configured, skipping cache invalidation');
-    return true; // Don't fail the job if prerender isn't configured
-  }
-
-  try {
-    console.log(`Invalidating Prerender.io cache for: ${url}`);
-    
-    const response = await fetch('https://api.prerender.io/recache', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Prerender-Token': prerenderToken
-      },
-      body: JSON.stringify({ url })
-    });
-
-    if (!response.ok) {
-      console.error(`Prerender cache invalidation failed: ${response.status}`);
-      return false;
-    }
-
-    console.log('✅ Successfully invalidated Prerender cache');
-    return true;
-  } catch (error) {
-    console.error('Error invalidating Prerender cache:', error);
-    return false;
-  }
+  // Prerender.io is disabled - skip cache invalidation
+  console.log(`Skipping Prerender.io cache invalidation (disabled): ${url}`);
+  return true;
 }
 
 Deno.serve(async (req) => {
