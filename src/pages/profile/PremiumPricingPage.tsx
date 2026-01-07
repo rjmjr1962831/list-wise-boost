@@ -262,7 +262,7 @@ export default function PremiumPricingPage() {
             {/* Early Adopter Badge + Scarcity */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <Badge className="bg-accent text-accent-foreground text-sm px-3 py-1">
-                Early Adopter Discounted Pricing
+                Early Adopter Discount
               </Badge>
               <span className="text-sm text-muted-foreground">
                 Limited spots • Rates locked while active
