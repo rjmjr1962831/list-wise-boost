@@ -131,6 +131,43 @@ Review in Admin: Field Change Requests tab
       }
     }
 
+    // Send acknowledgment email if we have the professional's email
+    if (professionalEmail) {
+      try {
+        // Extract first name from full name
+        const firstName = professionalName?.split(' ')[0] || 'there';
+        
+        const emailResponse = await fetch(
+          `${supabaseUrl}/functions/v1/send-change-request-acknowledgment`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseKey}`
+            },
+            body: JSON.stringify({
+              email: professionalEmail,
+              firstName,
+              fields: [{
+                fieldName,
+                currentValue: currentValue || null,
+                proposedValue: proposedValue || null
+              }]
+            })
+          }
+        );
+
+        if (emailResponse.ok) {
+          console.log('✅ Acknowledgment email sent to:', professionalEmail);
+        } else {
+          const emailError = await emailResponse.text();
+          console.error('⚠️ Failed to send acknowledgment email (non-fatal):', emailError);
+        }
+      } catch (emailErr) {
+        console.error('⚠️ Error sending acknowledgment email (non-fatal):', emailErr);
+      }
+    }
+
     return new Response(
       JSON.stringify({ 
         success: true, 

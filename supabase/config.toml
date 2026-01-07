@@ -476,3 +476,12 @@ verify_jwt = false
 
 [functions.send-protocol-service-inquiry-email]
 verify_jwt = false
+
+[functions.send-change-request-acknowledgment]
+verify_jwt = false
+
+[functions.send-change-request-completed]
+verify_jwt = false
+
+[functions.create-pipedrive-task]
+verify_jwt = false
