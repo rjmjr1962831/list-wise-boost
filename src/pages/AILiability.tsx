@@ -220,6 +220,25 @@ const AILiability = () => {
               </p>
             </section>
 
+            {/* Supporting White Paper */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Supporting White Paper</h2>
+              <p className="text-muted-foreground">
+                This page provides a high-level summary of how AI-generated recommendations create legal and compliance exposure.
+              </p>
+              <p className="text-muted-foreground">
+                A more detailed analysis is available in the accompanying white paper, which examines AI citation through existing legal doctrine and frames citation as a liability allocation mechanism rather than a transparency feature.
+              </p>
+              <p className="text-muted-foreground">
+                The paper is descriptive, non-adversarial, and intended to support internal legal, policy, and compliance review.
+              </p>
+              <p className="text-muted-foreground">
+                <a href="/AI_Citation_Liability_Whitepaper_With_Metadata.pdf" className="text-primary hover:underline">
+                  Read the full white paper (PDF)
+                </a>
+              </p>
+            </section>
+
             {/* A structural approach */}
             <section className="space-y-4">
               <h2 className="text-2xl font-bold text-foreground">A structural approach</h2>
