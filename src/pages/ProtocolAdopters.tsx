@@ -274,69 +274,6 @@ export default function ProtocolAdopters() {
               </p>
             </section>
 
-            {/* Adopter Listing */}
-            <section className="pt-6">
-              <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <Users className="h-6 w-6 text-primary" />
-                Registered Adopters
-              </h2>
-              
-              {loadingAdopters ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                </div>
-              ) : adopters.length > 0 ? (
-                <div className="grid md:grid-cols-2 gap-4">
-                  {adopters.map((adopter) => (
-                    <Card key={adopter.id}>
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <Building2 className="h-5 w-5 text-muted-foreground" />
-                            <h3 className="font-semibold">{adopter.organization_name}</h3>
-                          </div>
-                          {getStatusBadge(adopter.implementation_status)}
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-3">{adopter.industry}</p>
-                        <div className="flex items-center gap-4 text-sm">
-                          <a 
-                            href={adopter.website_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-primary hover:underline"
-                          >
-                            <Globe className="h-4 w-4" />
-                            Website
-                          </a>
-                          {adopter.llms_txt_url && (
-                            <a 
-                              href={adopter.llms_txt_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 text-primary hover:underline"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                              llms.txt
-                            </a>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              ) : (
-                <Card className="border-dashed">
-                  <CardContent className="py-12 text-center">
-                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="font-semibold mb-2">No Adopters Listed Yet</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Be among the first to register your organization as a protocol adopter.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
-            </section>
-
             {/* Registration Form */}
             <section>
               <Card>
