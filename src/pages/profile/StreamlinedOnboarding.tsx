@@ -283,9 +283,10 @@ interface LockedFieldProps {
   professionalName: string;
   professionalEmail?: string;
   profileLink: string;
+  isPendingReview?: boolean;
 }
 
-const LockedField = ({ label, value, fieldKey, professionalId, professionalName, professionalEmail, profileLink }: LockedFieldProps) => {
+const LockedField = ({ label, value, fieldKey, professionalId, professionalName, professionalEmail, profileLink, isPendingReview }: LockedFieldProps) => {
   const [showModal, setShowModal] = useState(false);
   const displayValue = value?.toString() || 'NA';
 
@@ -295,18 +296,29 @@ const LockedField = ({ label, value, fieldKey, professionalId, professionalName,
         <div className="flex items-center gap-2">
           <Lock className="h-4 w-4 text-muted-foreground" />
           <div>
-            <div className="text-xs text-muted-foreground">{label}</div>
+            <div className="text-xs text-muted-foreground flex items-center gap-2">
+              {label}
+              {isPendingReview && (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-amber-600 border-amber-400 bg-amber-50 dark:bg-amber-950/30">
+                  Pending Editorial Review
+                </Badge>
+              )}
+            </div>
             <div className="text-sm font-medium text-foreground">{displayValue}</div>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={() => setShowModal(true)}
-          className="text-xs text-primary hover:text-primary/80"
-        >
-          Request Review
-        </Button>
+        {isPendingReview ? (
+          <span className="text-xs text-amber-600 dark:text-amber-400">Under Review</span>
+        ) : (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowModal(true)}
+            className="text-xs text-primary hover:text-primary/80"
+          >
+            Request Review
+          </Button>
+        )}
       </div>
       
       <FieldReviewRequestModal
@@ -330,29 +342,41 @@ interface SynthesizedBioSectionProps {
   professionalName: string;
   professionalEmail: string;
   profileLink: string;
+  isPendingReview?: boolean;
 }
 
-const SynthesizedBioSection = ({ bio, professionalId, professionalName, professionalEmail, profileLink }: SynthesizedBioSectionProps) => {
+const SynthesizedBioSection = ({ bio, professionalId, professionalName, professionalEmail, profileLink, isPendingReview }: SynthesizedBioSectionProps) => {
   const [showModal, setShowModal] = useState(false);
 
   return (
     <>
       <div className="p-6 border-b border-border">
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-3 flex-wrap">
           <FileText className="h-5 w-5 text-primary" />
           <h4 className="font-semibold text-foreground">Your AI-Generated Profile</h4>
           <Badge variant="secondary" className="text-xs">Our Synthesis</Badge>
+          {isPendingReview && (
+            <Badge variant="outline" className="text-xs text-amber-600 border-amber-400 bg-amber-50 dark:bg-amber-950/30">
+              Pending Editorial Review
+            </Badge>
+          )}
         </div>
         <BioPreview text={bio} />
         <p className="text-xs text-muted-foreground mt-2">
-          This bio was generated based on our research.{' '}
-          <span
-            onClick={() => setShowModal(true)}
-            className="text-primary cursor-pointer hover:underline font-medium"
-          >
-            Request Review
-          </span>{' '}
-          to suggest changes.
+          {isPendingReview ? (
+            <span className="text-amber-600 dark:text-amber-400 font-medium">Your revision is under review. We'll notify you when it's complete.</span>
+          ) : (
+            <>
+              This bio was generated based on our research.{' '}
+              <span
+                onClick={() => setShowModal(true)}
+                className="text-primary cursor-pointer hover:underline font-medium"
+              >
+                Request Review
+              </span>{' '}
+              to suggest changes.
+            </>
+          )}
         </p>
       </div>
       
@@ -1219,6 +1243,7 @@ export default function StreamlinedOnboarding() {
                   professionalName={professional.name}
                   professionalEmail={professional.email || ''}
                   profileLink={`/arizona/realtors/${professional.id}`}
+                  isPendingReview={pendingReviewRequests.some(r => r.field_name === 'AI-Generated Bio')}
                 />
               )}
 
@@ -1410,6 +1435,7 @@ export default function StreamlinedOnboarding() {
                     professionalName={professional?.name}
                     professionalEmail={professional?.email}
                     profileLink={getProfileLink()}
+                    isPendingReview={pendingReviewRequests.some(r => r.field_name === 'Name')}
                   />
                   
                   <LockedField
@@ -1420,6 +1446,7 @@ export default function StreamlinedOnboarding() {
                     professionalName={professional?.name}
                     professionalEmail={professional?.email}
                     profileLink={getProfileLink()}
+                    isPendingReview={pendingReviewRequests.some(r => r.field_name === 'Brokerage')}
                   />
                   
                   <LockedField
@@ -1430,6 +1457,7 @@ export default function StreamlinedOnboarding() {
                     professionalName={professional?.name}
                     professionalEmail={professional?.email}
                     profileLink={getProfileLink()}
+                    isPendingReview={pendingReviewRequests.some(r => r.field_name === 'Rating')}
                   />
                   
                   <LockedField
@@ -1440,6 +1468,7 @@ export default function StreamlinedOnboarding() {
                     professionalName={professional?.name}
                     professionalEmail={professional?.email}
                     profileLink={getProfileLink()}
+                    isPendingReview={pendingReviewRequests.some(r => r.field_name === 'Reviews')}
                   />
                   
                   <LockedField
@@ -1450,6 +1479,7 @@ export default function StreamlinedOnboarding() {
                     professionalName={professional?.name}
                     professionalEmail={professional?.email}
                     profileLink={getProfileLink()}
+                    isPendingReview={pendingReviewRequests.some(r => r.field_name === 'Total Sales')}
                   />
                   
                   <LockedField
@@ -1460,6 +1490,7 @@ export default function StreamlinedOnboarding() {
                     professionalName={professional?.name}
                     professionalEmail={professional?.email}
                     profileLink={getProfileLink()}
+                    isPendingReview={pendingReviewRequests.some(r => r.field_name === 'Years Experience')}
                   />
                   
                   <LockedField
@@ -1470,6 +1501,7 @@ export default function StreamlinedOnboarding() {
                     professionalName={professional?.name}
                     professionalEmail={professional?.email}
                     profileLink={getProfileLink()}
+                    isPendingReview={pendingReviewRequests.some(r => r.field_name === 'License Number')}
                   />
                 </div>
               </div>
