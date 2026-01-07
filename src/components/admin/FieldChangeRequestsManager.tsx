@@ -71,6 +71,38 @@ export function FieldChangeRequestsManager() {
     fetchRequests();
   }, []);
 
+  const sendCompletionEmail = async (request: FieldChangeRequest, status: 'approved' | 'rejected') => {
+    if (!request.professional?.email) {
+      console.log('No email for professional, skipping completion email');
+      return;
+    }
+
+    try {
+      const firstName = request.professional.name?.split(' ')[0] || 'there';
+      
+      const { error } = await supabase.functions.invoke('send-change-request-completed', {
+        body: {
+          email: request.professional.email,
+          firstName,
+          results: [{
+            fieldName: request.field_name,
+            previousValue: request.current_value,
+            newValue: status === 'approved' ? request.proposed_value : request.current_value,
+            status
+          }]
+        }
+      });
+
+      if (error) {
+        console.error('Failed to send completion email:', error);
+      } else {
+        console.log('Completion email sent to:', request.professional.email);
+      }
+    } catch (err) {
+      console.error('Error sending completion email:', err);
+    }
+  };
+
   const handleApprove = async (request: FieldChangeRequest) => {
     setProcessing(request.id);
     try {
@@ -98,6 +130,9 @@ export function FieldChangeRequestsManager() {
         .eq('id', request.id);
 
       if (statusError) throw statusError;
+
+      // Send completion email
+      await sendCompletionEmail(request, 'approved');
 
       toast({
         title: 'Approved',
@@ -131,6 +166,9 @@ export function FieldChangeRequestsManager() {
         .eq('id', request.id);
 
       if (error) throw error;
+
+      // Send completion email
+      await sendCompletionEmail(request, 'rejected');
 
       toast({
         title: 'Rejected',
