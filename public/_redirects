@@ -1,11 +1,2 @@
-# Prerender.io Bot Detection and Routing
-# This file configures redirects for bot traffic to use pre-rendered content
-
-# Note: This file is for Netlify-style hosting
-# For proper Prerender.io integration on Lovable, follow these steps:
-# 1. Go to https://dashboard.prerender.io/integration-wizard
-# 2. Select your hosting provider
-# 3. Follow the DNS/hosting configuration instructions
-# 4. Prerender.io will intercept bot requests at the infrastructure level
-
+# SPA fallback for client-side routing
 /*    /index.html   200

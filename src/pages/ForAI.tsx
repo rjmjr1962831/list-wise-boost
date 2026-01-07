@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bot, CheckCircle2, FileText, Code, Shield, Scale, RefreshCw } from "lucide-react";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
-import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -21,9 +20,6 @@ const ForAI = () => {
     window.scrollTo(0, 0);
     trackEvent('page_view', { page_path: '/for-ai' });
   }, [trackEvent]);
-
-  // Signal Prerender.io that page is ready
-  usePrerenderReady();
 
   const aiGuideSchema = {
     "@context": "https://schema.org",

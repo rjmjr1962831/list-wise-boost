@@ -10,7 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CheckCircle2, Users, Loader2, Globe, Building2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 
 const INDUSTRIES = [
   "Real Estate",
@@ -57,9 +56,6 @@ export default function ProtocolAdopters() {
     window.scrollTo(0, 0);
     fetchAdopters();
   }, []);
-
-  // Signal Prerender.io that page is ready
-  usePrerenderReady();
 
   const fetchAdopters = async () => {
     try {

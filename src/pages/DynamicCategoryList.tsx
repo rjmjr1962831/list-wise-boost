@@ -19,8 +19,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { isBot, getBotType } from '@/utils/botDetection';
 import { getCanonicalRankings } from '@/services/canonicalAgentService';
-import { signalPrerenderReady } from '@/hooks/usePrerenderReady';
-// Removed unused hooks: useAgentCountForCity, useTotalAgentCount
 import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { CityMarketOverview } from '@/components/CityMarketOverview';
 import { DatasetSchema } from '@/components/seo/DatasetSchema';
@@ -235,17 +233,6 @@ export default function DynamicCategoryList({ categorySlugOverride }: DynamicCat
     window.scrollTo(0, 0);
   }, []);
 
-  // Signal Prerender.io when meta tags are ready (after city/category load)
-  useEffect(() => {
-    if (!loading && city && category) {
-      // Small delay to ensure Helmet has updated DOM
-      const timer = setTimeout(() => {
-        signalPrerenderReady();
-        console.log('[Prerender.io] Page ready - meta tags injected');
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [loading, city, category]);
 
   // Fetch city and category data
   useEffect(() => {

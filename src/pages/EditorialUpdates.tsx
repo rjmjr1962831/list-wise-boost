@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FileText, Database, Scale, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 
 interface UpdateEntry {
   date: string;
@@ -117,8 +116,6 @@ const EditorialUpdates = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  usePrerenderReady();
 
   const lastUpdate = "2024-12-24";
 
