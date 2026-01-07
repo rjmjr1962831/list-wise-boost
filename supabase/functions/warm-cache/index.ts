@@ -247,19 +247,17 @@ function stripAgentContent(html: string): string {
   return sanitized;
 }
 
-// Fetch rendered HTML via Prerender.io, then strip agent content from city pages
+// DISABLED: Prerender.io integration has been removed
+// This function now returns an error since cache warming requires prerendering
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
-  const PRERENDER_TOKEN = Deno.env.get('PRERENDER_TOKEN');
-  
-  if (!PRERENDER_TOKEN) {
-    return { success: false, error: 'PRERENDER_TOKEN not configured' };
-  }
+  // Prerender.io is disabled - cache warming is not available
+  console.log(`Skipping fetch (Prerender.io disabled): ${url}`);
   
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
 
-    // Skip prerendering for static files - fetch directly
+    // For static files, we can still fetch directly
     if (isStaticFile(url)) {
       const response = await fetch(url, {
         method: 'GET',
@@ -277,47 +275,9 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
       return { success: false, error: `HTTP ${response.status}` };
     }
 
-    // Use Prerender.io for HTML pages
-    const prerenderUrl = `https://service.prerender.io/${url}`;
-    console.log(`  Fetching via Prerender.io: ${prerenderUrl}`);
-    
-    const response = await fetch(prerenderUrl, {
-      method: 'GET',
-      headers: {
-        'X-Prerender-Token': PRERENDER_TOKEN,
-      },
-      signal: controller.signal,
-    });
-
+    // For HTML pages, we cannot render without Prerender.io
     clearTimeout(timeoutId);
-
-    if (response.ok) {
-      let content = await response.text();
-      
-      // Validate rendered content
-      const hasContent = content.length > 1000 && content.includes('</html>');
-      
-      if (hasContent) {
-        // Replace lovable.app URLs with canonical domain
-        content = content.replace(
-          /https:\/\/list-wise-boost\.lovable\.app/g, 
-          'https://www.top10lists.us'
-        );
-        
-        // Strip agent content from city pages (but not static pages)
-        if (isCityPage(url)) {
-          const originalLength = content.length;
-          content = stripAgentContent(content);
-          console.log(`  🔒 Stripped agent content from city page (${originalLength} → ${content.length} bytes)`);
-        }
-        
-        return { success: true, html: content };
-      } else {
-        return { success: false, error: 'Prerender returned insufficient content' };
-      }
-    } else {
-      return { success: false, error: `Prerender HTTP ${response.status}` };
-    }
+    return { success: false, error: 'Prerender.io is disabled - cannot fetch rendered HTML' };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return { success: false, error: message };

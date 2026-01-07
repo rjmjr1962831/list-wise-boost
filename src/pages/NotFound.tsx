@@ -21,7 +21,6 @@ const NotFound = () => {
   return (
     <>
       <Helmet>
-        <meta name="prerender-status-code" content="404" />
         <title>Page Not Found | Top10Lists.us</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
