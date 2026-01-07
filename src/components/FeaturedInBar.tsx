@@ -45,7 +45,7 @@ const pressArticles: PressArticle[] = [
   {
     name: "AIJourn",
     shortName: "AIJourn",
-    url: "https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/",
+    url: "https://aijourn.com/top10lists-us-releases-open-source-ai-citation-protocol/",
     tier: "trade",
     logo: aiJournLogo,
   },
