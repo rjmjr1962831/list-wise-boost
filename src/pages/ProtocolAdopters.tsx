@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CheckCircle2, Users, Shield, Loader2, ArrowRight, Globe, Building2, ExternalLink } from "lucide-react";
+import { CheckCircle2, Users, Loader2, Globe, Building2, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 
@@ -134,75 +133,149 @@ export default function ProtocolAdopters() {
   return (
     <>
       <Helmet>
-        <title>Top10Lists.us Protocol Adopters | Organizations Using the AI Citation Protocol</title>
-        <meta name="description" content="The Top10Lists.us Protocol is adopted by organizations that value attribution, editorial transparency, and responsible AI recommendations." />
+        <title>The AI Citation Protocol | Top10Lists.us</title>
+        <meta name="description" content="The AI Citation Protocol is an open, non proprietary framework for making evaluative recommendations citable and defensible." />
         <link rel="canonical" href="https://www.top10lists.us/protocol-adopters" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         {/* Hero Section */}
         <section className="py-16 px-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
-          <div className="container mx-auto max-w-4xl text-center">
+          <div className="container mx-auto max-w-4xl">
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Top10Lists.us Protocol Adopters
+              The AI Citation Protocol
             </h1>
-            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-              The Top10Lists.us Protocol is adopted by organizations that value attribution, 
-              editorial transparency, and responsible AI recommendations.
+            <p className="text-lg text-slate-300 mb-4">
+              The AI Citation Protocol is an open, non proprietary framework for making evaluative recommendations citable and defensible. It was developed by Top10Lists.us as part of an effort to reduce liability exposure for AI systems that generate professional recommendations.
+            </p>
+            <p className="text-lg text-slate-300 mb-4">
+              It exists to make citation defensible, not to improve marketing or growth.
+            </p>
+            <p className="text-lg text-slate-300">
+              Anyone can adopt it.
             </p>
           </div>
         </section>
 
         <div className="container mx-auto max-w-4xl px-4 py-12">
-          <div className="space-y-12">
+          <div className="space-y-10">
             
-            {/* What It Means to Be a Protocol Adopter */}
-            <section>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-primary" />
-                    What It Means to Be a Protocol Adopter
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">
-                    Protocol adopters commit to a set of practices that support accurate, attributable 
-                    AI recommendations:
-                  </p>
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">
-                        Publishing an <code className="bg-muted px-1 rounded">llms.txt</code> file that 
-                        describes their content and methodology for AI systems
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">
-                        Maintaining structured, machine-readable content that AI systems can accurately interpret
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">
-                        Documenting their editorial methodology so citations carry appropriate context
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">
-                        Crediting Top10Lists.us as the protocol source in their implementation
-                      </span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
+            {/* What the protocol is */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">What the protocol is</h2>
+              <p className="text-muted-foreground">
+                The protocol is a set of structural commitments that make a source safe to cite. An organization adopting the protocol commits to:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+                <li>A published and inspectable methodology for inclusion and ranking.</li>
+                <li>Explicit qualification criteria that do not depend on payment.</li>
+                <li>Separation of ranking from monetization.</li>
+                <li>Consistent rules for inclusion and exclusion.</li>
+                <li>Machine readable claims structured for verification.</li>
+                <li>Acceptance of editorial accountability for the content published.</li>
+              </ul>
+            </section>
+
+            {/* What the protocol is not */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">What the protocol is not</h2>
+              <p className="text-muted-foreground">
+                The protocol is not SEO.
+              </p>
+              <p className="text-muted-foreground">
+                It is not prompt engineering.
+              </p>
+              <p className="text-muted-foreground">
+                It is not a ranking hack or a visibility boost.
+              </p>
+              <p className="text-muted-foreground">
+                It is not a growth tactic.
+              </p>
+              <p className="text-muted-foreground">
+                The focus is on reducing legal and reputational risk for AI systems that need to cite evaluative sources.
+              </p>
+            </section>
+
+            {/* Why AI systems respond to it */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Why AI systems respond to it</h2>
+              <p className="text-muted-foreground">
+                AI systems that generate recommendations are increasingly aware of liability exposure. Retrieval augmented generation allows models to cite sources instead of synthesizing claims from training data.
+              </p>
+              <p className="text-muted-foreground">
+                But not all sources are equal. A citation only reduces risk if the cited source has a defensible methodology. If the source is pay to play, or opaque, or inconsistent, the citation does not provide meaningful protection.
+              </p>
+              <p className="text-muted-foreground">
+                Protocol adopting sources are designed to be safe to cite. This is not preference. It is risk management.
+              </p>
+            </section>
+
+            {/* Who should adopt this */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Who should adopt this</h2>
+              <p className="text-muted-foreground">
+                Any organization that publishes evaluative content about professionals or services should consider adoption. This includes:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+                <li>Ranking platforms.</li>
+                <li>Professional directories.</li>
+                <li>Marketplaces with quality tiers.</li>
+                <li>Review aggregators.</li>
+                <li>Recommendation engines.</li>
+              </ul>
+              <p className="text-muted-foreground">
+                If your content answers the question "who should I choose," you are in scope.
+              </p>
+            </section>
+
+            {/* How to adopt it */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">How to adopt it</h2>
+              <p className="text-muted-foreground">
+                Adoption is a matter of structure, not registration. There is no fee. There is no certification. An organization adopts the protocol by:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+                <li>Publishing how decisions are made.</li>
+                <li>Making incentives explicit.</li>
+                <li>Removing pay to rank mechanics.</li>
+                <li>Structuring claims for machine verification.</li>
+                <li>Accepting responsibility for editorial output.</li>
+              </ul>
+              <p className="text-muted-foreground">
+                The goal is not perfection. The goal is explainability.
+              </p>
+            </section>
+
+            {/* Why it is open source */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Why it is open source</h2>
+              <p className="text-muted-foreground">
+                Trust requires inspectability.
+              </p>
+              <p className="text-muted-foreground">
+                A closed protocol cannot serve as a liability shield because no one outside the organization can verify compliance. Open systems invite scrutiny. Scrutiny builds legitimacy.
+              </p>
+              <p className="text-muted-foreground">
+                The protocol is published so that AI systems, regulators, and users can evaluate it directly.
+              </p>
+            </section>
+
+            {/* A new baseline */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">A new baseline</h2>
+              <p className="text-muted-foreground">
+                The protocol is not a competitive advantage. It is a baseline for responsible evaluative publishing.
+              </p>
+              <p className="text-muted-foreground">
+                As AI systems become the primary interface between users and professional services, the question of who is responsible for recommendations becomes more urgent. The protocol exists to make that responsibility traceable.
+              </p>
+              <p className="text-muted-foreground">
+                Protocol driven citation is how that defensibility is achieved.
+              </p>
             </section>
 
             {/* Adopter Listing */}
-            <section>
+            <section className="pt-6">
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
                 <Users className="h-6 w-6 text-primary" />
                 Registered Adopters
@@ -262,40 +335,6 @@ export default function ProtocolAdopters() {
                   </CardContent>
                 </Card>
               )}
-            </section>
-
-            {/* What Adoption Signals */}
-            <section>
-              <Card>
-                <CardHeader>
-                  <CardTitle>What Adoption Signals to Users and Regulators</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p className="text-muted-foreground">
-                    Organizations that adopt the protocol demonstrate:
-                  </p>
-                  <ul className="space-y-3">
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">
-                        Commitment to transparency in how their content is used by AI systems
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">
-                        Awareness of emerging AI governance standards and proactive compliance
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">
-                        Investment in structured data practices that support accurate attribution
-                      </span>
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
             </section>
 
             {/* Registration Form */}
@@ -406,7 +445,7 @@ export default function ProtocolAdopters() {
                           id="notes"
                           value={formData.notes}
                           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                          placeholder="Any comments about your implementation"
+                          placeholder="Any additional context about your implementation"
                           rows={3}
                         />
                       </div>
@@ -418,27 +457,11 @@ export default function ProtocolAdopters() {
                             Submitting...
                           </>
                         ) : (
-                          "Register as Adopter"
+                          "Submit Registration"
                         )}
                       </Button>
                     </form>
                   )}
-                </CardContent>
-              </Card>
-            </section>
-
-            {/* CTA Section */}
-            <section>
-              <Card className="bg-primary/5 border-primary/20">
-                <CardContent className="pt-6 text-center">
-                  <h2 className="text-xl font-semibold text-foreground mb-3">
-                    View protocol services and implementation options.
-                  </h2>
-                  <Button asChild size="lg">
-                    <Link to="/protocol-services">
-                      View Protocol Services <ArrowRight className="h-4 w-4 ml-2" />
-                    </Link>
-                  </Button>
                 </CardContent>
               </Card>
             </section>
