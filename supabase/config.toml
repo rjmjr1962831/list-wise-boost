@@ -369,11 +369,9 @@ verify_jwt = false
 [functions.rerun-press-synthesis]
 verify_jwt = false
 
-[functions.prerender-recache]
-verify_jwt = false
-
-[functions.test-exa-search]
-verify_jwt = false
+# DEPRECATED: prerender-recache removed - we are not using prerender.io
+# [functions.prerender-recache]
+# verify_jwt = false
 
 [functions.search-agent-exa]
 verify_jwt = false
@@ -453,8 +451,9 @@ verify_jwt = false
 [functions.geo-monitor-cron]
 verify_jwt = false
 
-[functions.prerender-diagnostics]
-verify_jwt = false
+# DEPRECATED: prerender-diagnostics removed - we are not using prerender.io
+# [functions.prerender-diagnostics]
+# verify_jwt = false
 
 [functions.enrichment-api]
 verify_jwt = false
@@ -481,6 +480,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.send-change-request-completed]
+verify_jwt = false
+
+[functions.send-batch-change-request-acknowledgment]
 verify_jwt = false
 
 [functions.create-pipedrive-task]
