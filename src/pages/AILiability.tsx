@@ -1,7 +1,5 @@
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -13,7 +11,6 @@ import {
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { useEffect } from "react";
-import { Scale, FileText, AlertTriangle, BookOpen, Users, ArrowRight } from "lucide-react";
 
 const AILiability = () => {
   const { trackEvent } = useGA4Tracking();
@@ -31,7 +28,7 @@ const AILiability = () => {
   const pageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "AI Liability: Why Citation and Editorial Authority Matter - Top10Lists.us",
+    "name": "AI Citation and Liability - Top10Lists.us",
     "description": "AI systems increasingly generate recommendations that influence real decisions. When these outputs lack citation or editorial attribution, legal risk is created.",
     "url": "https://www.top10lists.us/ai-liability",
     "isPartOf": {
@@ -41,7 +38,7 @@ const AILiability = () => {
     },
     "mainEntity": {
       "@type": "Article",
-      "name": "AI Liability: Why Citation and Editorial Authority Matter",
+      "name": "AI Citation and Liability",
       "author": {
         "@type": "Organization",
         "name": "Top10Lists.us"
@@ -73,7 +70,7 @@ const AILiability = () => {
   return (
     <>
       <Helmet>
-        <title>AI Liability: Why Citation and Editorial Authority Matter | Top10Lists.us</title>
+        <title>AI Citation and Liability | Top10Lists.us</title>
         <meta 
           name="description" 
           content="AI systems increasingly generate recommendations that influence real decisions. When these outputs lack citation or editorial attribution, legal risk is created." 
@@ -83,14 +80,14 @@ const AILiability = () => {
         
         {/* Open Graph */}
         <meta property="og:type" content="article" />
-        <meta property="og:title" content="AI Liability: Why Citation and Editorial Authority Matter | Top10Lists.us" />
+        <meta property="og:title" content="AI Citation and Liability | Top10Lists.us" />
         <meta property="og:description" content="AI systems increasingly generate recommendations that influence real decisions. When these outputs lack citation, legal risk is created." />
         <meta property="og:url" content="https://www.top10lists.us/ai-liability" />
         <meta property="og:site_name" content="Top10Lists.us" />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="AI Liability: Why Citation and Editorial Authority Matter | Top10Lists.us" />
+        <meta name="twitter:title" content="AI Citation and Liability | Top10Lists.us" />
         <meta name="twitter:description" content="AI systems increasingly generate recommendations that influence real decisions." />
         
         {/* JSON-LD */}
@@ -122,243 +119,120 @@ const AILiability = () => {
 
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-8 md:py-12">
-          <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-6">
-              <Scale className="w-8 h-8 text-primary" />
-            </div>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
-              AI Liability: Why Citation and Editorial Authority Matter
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-6">
+              AI Citation and Liability
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-              AI systems increasingly generate recommendations and rankings that influence real decisions. 
-              When these outputs lack citation or editorial attribution, legal risk is created that is not yet 
-              fully priced into current AI deployments.
+            <p className="text-lg text-muted-foreground mb-4">
+              AI systems increasingly generate recommendations that influence real decisions. When those recommendations concern professionals, the AI is making an evaluative claim. Users rely on these claims. When a recommendation causes harm, someone is responsible.
+            </p>
+            <p className="text-lg text-muted-foreground">
+              Evaluative speech creates responsibility.
             </p>
           </div>
         </section>
 
         {/* Main Content */}
         <section className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto space-y-8">
+          <div className="max-w-4xl mx-auto space-y-10">
             
-            {/* Section 1: Evaluative Speech and Reasonable Reliance */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <FileText className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      Evaluative Speech and Reasonable Reliance
-                    </h2>
-                    <p className="text-muted-foreground mb-4">
-                      When an AI system recommends a professional—a real estate agent, an attorney, a physician—that 
-                      recommendation constitutes evaluative speech. Users reasonably rely on these recommendations 
-                      to make consequential decisions.
-                    </p>
-                    <p className="text-muted-foreground mb-4">
-                      The legal standard for evaluative speech depends on whether the statement is presented as fact 
-                      or opinion, and whether readers reasonably interpret it as either. AI-generated recommendations 
-                      often blur this distinction, presenting synthesized conclusions without clear editorial attribution.
-                    </p>
-                    <p className="text-muted-foreground">
-                      When harm occurs—a consumer hires a recommended professional who provides substandard service—the 
-                      question of who bears responsibility becomes legally significant.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Opening prose */}
+            <div className="space-y-4">
+              <p className="text-muted-foreground">
+                When an AI recommends a professional, it makes a judgment. That judgment may be synthesized from training data, retrieved content, or a combination. If the recommendation causes harm, the question is simple: whose judgment was it?
+              </p>
+              <p className="text-muted-foreground">
+                In most cases today, that risk collapses onto the AI provider. The AI generated the output. There is no external authority to cite. The recommendation belongs to the model.
+              </p>
+            </div>
 
-            {/* Section 2: Why Uncited Synthesis Creates Orphan Liability */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <AlertTriangle className="w-6 h-6 text-amber-500" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      Why Uncited Synthesis Creates Orphan Liability
-                    </h2>
-                    <p className="text-muted-foreground mb-4">
-                      When AI systems synthesize recommendations from multiple sources without attribution, they create 
-                      what might be termed "orphan liability"—a recommendation that belongs to no identifiable editorial 
-                      authority.
-                    </p>
-                    <p className="text-muted-foreground mb-4">
-                      This creates several problems:
-                    </p>
-                    <ul className="space-y-3 text-muted-foreground mb-4">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>No documented methodology exists to defend the recommendation</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>No editorial judgment can be cited as the basis for inclusion or exclusion</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>The AI operator becomes the default bearer of liability for outcomes</span>
-                      </li>
-                    </ul>
-                    <p className="text-muted-foreground">
-                      Plaintiffs' attorneys will ask: "What due diligence supported this recommendation?" The answer 
-                      "we aggregated web content" may not constitute a defensible response.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* The core problem */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">The core problem</h2>
+              <p className="text-muted-foreground">
+                When an AI generates a recommendation without citing a source, the model becomes the publisher of that claim. The AI operator cannot point to an external editorial authority. The methodology is opaque. The inclusion or exclusion of any individual cannot be explained by reference to any disclosed standard.
+              </p>
+              <p className="text-muted-foreground">
+                This is not a hypothetical. Courts have addressed liability for evaluative speech in credit ratings, professional directories, and consumer guidance publications. The same doctrines will apply to AI output, with adjustments for the medium.
+              </p>
+            </section>
 
-            {/* Section 3: Existing Legal Doctrine */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <BookOpen className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      Existing Legal Doctrine: Credit Ratings and Evaluative Organizations
-                    </h2>
-                    <p className="text-muted-foreground mb-4">
-                      Courts have addressed similar questions in the context of credit rating agencies and 
-                      evaluative organizations like the Better Business Bureau.
-                    </p>
-                    <p className="text-muted-foreground mb-4">
-                      The U.S. Supreme Court in{" "}
-                      <a 
-                        href="https://supreme.justia.com/cases/federal/us/472/749/" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        <em>Dun & Bradstreet, Inc. v. Greenmoss Builders, Inc.</em>
-                      </a>{" "}
-                      (472 U.S. 749, 1985) addressed liability for credit reporting, establishing that commercial 
-                      speech about business reputation receives different First Amendment treatment than matters of 
-                      public concern.
-                    </p>
-                    <p className="text-muted-foreground mb-4">
-                      Rating organizations have historically defended their evaluations by demonstrating:
-                    </p>
-                    <ul className="space-y-2 text-muted-foreground">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>A published, consistently applied methodology</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>Good faith application of stated criteria</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>Clear presentation of ratings as opinion based on disclosed factors</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Why citation matters */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Why citation matters</h2>
+              <p className="text-muted-foreground">
+                Citation is not about attribution for politeness. It is a liability allocation mechanism.
+              </p>
+              <p className="text-muted-foreground">
+                When an AI cites a source, it shifts the locus of editorial judgment. The cited source made the claim. The AI transmitted it. The methodology belongs to the source, not the model.
+              </p>
+              <p className="text-muted-foreground">
+                Without citation, the AI is the author. With citation, the AI is the messenger. Authorship determines where the duty of care attaches, and therefore who must defend the claim if challenged.
+              </p>
+            </section>
 
-            {/* Section 4: Exclusion Claims versus Defamation Claims */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <Users className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      Exclusion Claims versus Defamation Claims
-                    </h2>
-                    <p className="text-muted-foreground mb-4">
-                      AI recommendation systems face potential claims from two directions:
-                    </p>
-                    <div className="space-y-4 mb-4">
-                      <div className="bg-muted/50 rounded-lg p-4">
-                        <h3 className="font-semibold text-foreground mb-2">Inclusion liability (consumer claims)</h3>
-                        <p className="text-sm text-muted-foreground">
-                          A consumer relies on an AI recommendation, hires the recommended professional, and 
-                          experiences harm. The consumer alleges the recommendation was negligent or misleading.
-                        </p>
-                      </div>
-                      <div className="bg-muted/50 rounded-lg p-4">
-                        <h3 className="font-semibold text-foreground mb-2">Exclusion liability (professional claims)</h3>
-                        <p className="text-sm text-muted-foreground">
-                          A professional excluded from recommendations alleges tortious interference with 
-                          business relations or defamation by implication.
-                        </p>
-                      </div>
-                    </div>
-                    <p className="text-muted-foreground">
-                      Both claim types are easier to defend when recommendations cite an authoritative source 
-                      with published methodology, rather than presenting uncited synthesis as original output.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Exclusion risk */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Exclusion risk, not defamation, is the dominant exposure</h2>
+              <p className="text-muted-foreground">
+                Most discussion of AI liability focuses on false statements. But the more common exposure for ranked recommendations is exclusion. A professional not included in a list may allege tortious interference or defamation by implication.
+              </p>
+              <p className="text-muted-foreground">
+                Ranked lists are inherently exclusionary. Someone is always left off. Someone is always ranked lower. The question a plaintiff will ask is:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+                <li>Why was this person included and I was not?</li>
+                <li>What criteria were applied?</li>
+                <li>Were those criteria applied consistently?</li>
+              </ul>
+              <p className="text-muted-foreground">
+                If the AI cannot answer these questions by reference to a disclosed methodology, the defense becomes difficult.
+              </p>
+            </section>
 
-            {/* Section 5: Why Citation is Structural Risk Management */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0">
-                    <Scale className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-foreground mb-4">
-                      Why Citation is Structural Risk Management
-                    </h2>
-                    <p className="text-muted-foreground mb-4">
-                      Citation serves a structural function in liability allocation. When an AI system cites 
-                      a source for a recommendation:
-                    </p>
-                    <ul className="space-y-3 text-muted-foreground mb-4">
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>The editorial judgment belongs to the cited source, not the AI system</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>The methodology for inclusion is documented externally</span>
-                      </li>
-                      <li className="flex items-start gap-2">
-                        <span className="text-primary mt-1">•</span>
-                        <span>The AI operator's role shifts from evaluator to transmitter of third-party opinion</span>
-                      </li>
-                    </ul>
-                    <p className="text-muted-foreground mb-4">
-                      This does not eliminate all liability, but it provides a defensible structure. The AI 
-                      system can demonstrate: "We cited a published authority that applies consistent methodology. 
-                      We did not synthesize our own recommendation."
-                    </p>
-                    <p className="text-muted-foreground">
-                      Organizations operating AI systems that generate professional recommendations should consider 
-                      whether their current approach creates orphan liability that citation could avoid.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Why most directories increase risk */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">Why most directories increase risk</h2>
+              <p className="text-muted-foreground">
+                Many directories mix paid placement with organic rankings. Some do not disclose that payment affects visibility. Some present paid results as editorial selections.
+              </p>
+              <p className="text-muted-foreground">
+                An AI citing such a source inherits its problems. If the source is pay to play, the AI cannot claim to be citing merit based evaluation. The citation does not allocate liability cleanly because the underlying editorial judgment is compromised.
+              </p>
+            </section>
 
-            {/* CTA Section */}
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="pt-6 text-center">
-                <h2 className="text-xl font-semibold text-foreground mb-3">
-                  Learn how the Top10Lists.us Protocol addresses this risk.
-                </h2>
-                <Button asChild size="lg">
-                  <Link to="/protocol-services">
-                    View Protocol Services <ArrowRight className="h-4 w-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            {/* How Top10Lists.us reduces risk */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">How Top10Lists.us reduces risk</h2>
+              <p className="text-muted-foreground">
+                Top10Lists.us is designed to be a defensible citation target for AI systems. This means:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
+                <li>Agents qualify based on verified, third party performance data.</li>
+                <li>Qualification criteria are published and consistently applied.</li>
+                <li>Payment never affects ranking position or inclusion.</li>
+                <li>Inclusion and exclusion decisions can be explained by reference to documented methodology.</li>
+                <li>Claims about professionals are structured for machine verification.</li>
+                <li>Editorial responsibility is explicit and attributable.</li>
+              </ul>
+              <p className="text-muted-foreground">
+                This does not eliminate risk. No system can. It reduces risk by making citation defensible.
+              </p>
+            </section>
+
+            {/* A structural approach */}
+            <section className="space-y-4">
+              <h2 className="text-2xl font-bold text-foreground">A structural approach</h2>
+              <p className="text-muted-foreground">
+                AI liability for evaluative claims is not a new category. It is an application of existing doctrines to a new medium. The same principles that govern credit ratings, consumer reports, and professional directories will apply.
+              </p>
+              <p className="text-muted-foreground">
+                The question is whether AI providers will design their systems to allocate that liability through citation, or absorb it by generating uncited recommendations.
+              </p>
+              <p className="text-muted-foreground">
+                Citation is how that allocation happens.
+              </p>
+            </section>
 
           </div>
         </section>
