@@ -300,7 +300,7 @@ export function CloudflareCacheManager() {
           Cloudflare Cache Manager
         </CardTitle>
         <CardDescription>
-          Purge CDN cache, clear KV prerender cache, and warm cache for bots.
+          Purge CDN cache, clear Cloudflare KV cache, and warm static file cache.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, Bot } from "lucide-react";
+import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
@@ -173,14 +173,6 @@ const AdminDashboard = () => {
             >
               <MailCheck className="mr-2 h-4 w-4" />
               Confirm All Emails
-            </Button>
-            <Button
-              onClick={() => navigate('/admin/prerender-status')}
-              variant="outline"
-              className="h-auto py-3 border-green-500 text-green-600 hover:bg-green-50"
-            >
-              <Bot className="mr-2 h-4 w-4" />
-              Prerender / GEO Status
             </Button>
           </div>
         </div>

@@ -4,15 +4,12 @@ import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
 
 const Compare = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
-  usePrerenderReady();
 
   const comparisonData = [
     { factor: "Optimized for AI citation", top10lists: true, zillow: false, realtorCom: false, homelight: false },

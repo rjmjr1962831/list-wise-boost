@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { Top10SearchForm } from "@/components/Top10SearchForm";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { usePrerenderReady } from "@/hooks/usePrerenderReady";
 import { generateHomepageSchema } from "@/utils/homepageSchema";
 
 import { FeaturedInBar } from "@/components/FeaturedInBar";
@@ -12,9 +11,6 @@ const Index = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
-  // Signal Prerender.io that meta tags are ready
-  usePrerenderReady();
 
   // Generate all homepage schemas
   const homepageSchemas = generateHomepageSchema();
