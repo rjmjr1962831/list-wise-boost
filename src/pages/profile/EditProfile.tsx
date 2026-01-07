@@ -7,11 +7,9 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Check, ChevronsUpDown, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, Check, CheckCircle, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 // Bio Preview component with ...more expander - converts HTML to plain text with paragraph breaks
@@ -168,16 +166,6 @@ export default function EditProfile() {
       }
 
       try {
-        // Load cities
-        const citiesResult = await supabase
-          .from('cities')
-          .select('id, name, state')
-          .eq('active', true)
-          .order('name');
-        
-        if (citiesResult.data) {
-          setAvailableCities(citiesResult.data);
-        }
 
         const { data, error } = await supabase.functions.invoke('validate-profile-token', {
           body: { token }
@@ -232,6 +220,32 @@ export default function EditProfile() {
         // Initialize bio last edited date if description exists
         if (prof.description && prof.updated_at) {
           setBioLastEdited(prof.updated_at);
+        }
+
+        // Load cities filtered by agent's state (convert state_slug to state name)
+        const stateSlug = prof.state_slug || prof.cities?.state_slug;
+        if (stateSlug) {
+          const citiesResult = await supabase
+            .from('cities')
+            .select('id, name, state')
+            .eq('active', true)
+            .eq('state_slug', stateSlug)
+            .order('name');
+          
+          if (citiesResult.data) {
+            // Filter out junk city names (empty, null, placeholders, special characters only)
+            const validCities = citiesResult.data.filter(city => {
+              const name = city.name?.trim();
+              if (!name) return false;
+              if (name.startsWith('[') || name.startsWith('/') || name.startsWith(':')) return false;
+              if (name.toLowerCase().includes('placeholder')) return false;
+              if (name.length < 2) return false;
+              // Must start with a letter
+              if (!/^[a-zA-Z]/.test(name)) return false;
+              return true;
+            });
+            setAvailableCities(validCities);
+          }
         }
 
         // Track edit view
@@ -365,10 +379,12 @@ export default function EditProfile() {
     }
   };
 
-  const filteredCities = availableCities.filter(city => 
-    city.name.toLowerCase().includes(citySearch.toLowerCase()) ||
-    city.state.toLowerCase().includes(citySearch.toLowerCase())
-  );
+  // Only show cities when user starts typing (typeahead behavior)
+  const filteredCities = citySearch.trim().length >= 2 
+    ? availableCities.filter(city => 
+        city.name.toLowerCase().includes(citySearch.toLowerCase())
+      )
+    : [];
 
   if (loading) {
     return (
@@ -626,51 +642,56 @@ export default function EditProfile() {
             {/* SECTION 4: FEATURED CITY (Editable — Agent Source of Truth) */}
             <div className="space-y-4">
               <Label htmlFor="featured_city" className="text-xl font-semibold text-foreground">What city would you like to be featured in?</Label>
-              <Popover open={citySearchOpen} onOpenChange={setCitySearchOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={citySearchOpen}
-                    className="w-full justify-between"
-                  >
-                    {formData.featured_city || "Select a city..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0 z-[100] bg-background" align="start" side="bottom">
-                  <Command className="bg-background">
-                    <CommandInput 
-                      placeholder="Search cities..." 
-                      value={citySearch}
-                      onValueChange={setCitySearch}
-                    />
-                    <CommandList className="max-h-[300px] overflow-y-auto bg-background">
-                      <CommandEmpty className="bg-background p-2 text-center text-sm text-muted-foreground">
-                        No city found
-                      </CommandEmpty>
-                      <CommandGroup className="bg-background">
-                        {filteredCities.slice(0, 50).map((city) => (
-                          <CommandItem
-                            key={city.id}
-                            value={city.name}
-                            onSelect={() => selectCity(city.name)}
-                            className="cursor-pointer hover:bg-accent"
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                formData.featured_city === city.name ? "opacity-100" : "opacity-0"
-                              )}
-                            />
-                            {city.name}, {city.state}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <div className="relative">
+                <Input
+                  placeholder="Start typing a city name..."
+                  value={citySearchOpen ? citySearch : formData.featured_city}
+                  onChange={(e) => {
+                    setCitySearch(e.target.value);
+                    setCitySearchOpen(true);
+                  }}
+                  onFocus={() => setCitySearchOpen(true)}
+                  onBlur={() => {
+                    // Delay to allow click on suggestion
+                    setTimeout(() => setCitySearchOpen(false), 200);
+                  }}
+                  className="w-full"
+                />
+                {citySearchOpen && (
+                  <div className="absolute z-[100] w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-[300px] overflow-y-auto">
+                    {citySearch.trim().length < 2 ? (
+                      <div className="p-3 text-sm text-muted-foreground text-center">
+                        Type at least 2 characters to search...
+                      </div>
+                    ) : filteredCities.length === 0 ? (
+                      <div className="p-3 text-sm text-muted-foreground text-center">
+                        No cities found
+                      </div>
+                    ) : (
+                      filteredCities.slice(0, 20).map((city) => (
+                        <div
+                          key={city.id}
+                          className="px-3 py-2 cursor-pointer hover:bg-accent flex items-center gap-2"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectCity(city.name);
+                            setCitySearch('');
+                            setCitySearchOpen(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "h-4 w-4",
+                              formData.featured_city === city.name ? "opacity-100 text-primary" : "opacity-0"
+                            )}
+                          />
+                          {city.name}, {city.state}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground italic">You may change this later.</p>
             </div>
 
