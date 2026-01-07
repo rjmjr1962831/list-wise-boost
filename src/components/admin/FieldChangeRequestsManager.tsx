@@ -84,6 +84,7 @@ export function FieldChangeRequestsManager() {
         body: {
           email: request.professional.email,
           firstName,
+          professionalId: request.professional_id,
           results: [{
             fieldName: request.field_name,
             previousValue: request.current_value,

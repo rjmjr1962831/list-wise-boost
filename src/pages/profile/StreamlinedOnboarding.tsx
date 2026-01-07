@@ -599,6 +599,22 @@ export default function StreamlinedOnboarding() {
 
       console.log('Email sent successfully', emailData);
 
+      // Send batch acknowledgment email for any pending change requests
+      if (pendingReviewRequests.length > 0) {
+        try {
+          const { error: batchError } = await supabase.functions.invoke('send-batch-change-request-acknowledgment', {
+            body: { professionalId: professional.id }
+          });
+          if (batchError) {
+            console.error('Batch acknowledgment email error (non-fatal):', batchError);
+          } else {
+            console.log('Batch acknowledgment email sent for', pendingReviewRequests.length, 'pending requests');
+          }
+        } catch (batchErr) {
+          console.error('Error sending batch acknowledgment (non-fatal):', batchErr);
+        }
+      }
+
       setClaimedCityName(selectedCity?.name || '');
       setClaimed(true);
       toast.success('Check your email for a verification link!');

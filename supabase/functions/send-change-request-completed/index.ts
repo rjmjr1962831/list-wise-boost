@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -18,6 +19,7 @@ interface FieldResult {
 interface CompletedRequest {
   email: string;
   firstName: string;
+  professionalId: string;
   results: FieldResult[];
 }
 
@@ -27,12 +29,37 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, firstName, results }: CompletedRequest = await req.json();
+    const { email, firstName, professionalId, results }: CompletedRequest = await req.json();
 
-    console.log("📧 Sending change request completed email:", { email, firstName, resultCount: results.length });
+    console.log("📧 Sending change request completed email:", { email, firstName, professionalId, resultCount: results.length });
 
     if (!email || !firstName || !results || results.length === 0) {
       throw new Error("Missing required fields: email, firstName, and results are required");
+    }
+
+    // Initialize Supabase client to generate magic link
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Generate a magic link for the professional's dashboard
+    let dashboardLink = 'https://www.top10lists.us/dashboard';
+    
+    if (professionalId) {
+      try {
+        // Get the verification token for the professional
+        const { data: prof } = await supabase
+          .from('professionals')
+          .select('verification_token')
+          .eq('id', professionalId)
+          .single();
+        
+        if (prof?.verification_token) {
+          dashboardLink = `https://www.top10lists.us/profile/${prof.verification_token}/edit`;
+        }
+      } catch (tokenErr) {
+        console.error('Error fetching verification token (non-fatal):', tokenErr);
+      }
     }
 
     // Separate approved and rejected results
@@ -98,6 +125,13 @@ const handler = async (req: Request): Promise<Response> => {
         <p style="font-size: 16px; line-height: 1.6; background-color: #f8fafc; padding: 16px; border-radius: 8px;">
           ${summaryText}
         </p>
+
+        <div style="margin: 24px 0; text-align: center;">
+          <a href="${dashboardLink}" 
+             style="display: inline-block; background-color: #1e3a5f; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+            Review Your Profile
+          </a>
+        </div>
 
         <p style="font-size: 16px; line-height: 1.6;">
           If you would like to discuss this more, please give us a call at 
