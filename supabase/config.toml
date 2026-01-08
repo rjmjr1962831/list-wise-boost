@@ -511,3 +511,9 @@ verify_jwt = false
 
 [functions.compute-neighborhood-price]
 verify_jwt = false
+
+[functions.validate-neighborhood]
+verify_jwt = false
+
+[functions.quote-neighborhood-cart]
+verify_jwt = false
