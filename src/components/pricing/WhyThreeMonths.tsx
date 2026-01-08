@@ -79,7 +79,7 @@ export function WhyThreeMonths() {
           <div className="flex items-start gap-3">
             <Badge className="bg-accent text-accent-foreground shrink-0 mt-0.5">Early Adopter</Badge>
             <div className="space-y-1">
-              <p className="font-medium text-foreground">Discounted rates during AI warm-up period</p>
+              <p className="font-medium text-foreground">Discounted rates for two years</p>
               <p className="text-sm text-muted-foreground">
                 Early adopters receive 50% off standard pricing. This discount compensates for the indexing timeline 
                 and locks in your rate while your subscription remains active.
