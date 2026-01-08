@@ -7,15 +7,18 @@ const corsHeaders = {
 };
 
 interface NeighborhoodRecord {
-  state: string;
-  city_area: string;
+  state?: string;
+  city_area?: string;
+  metro?: string; // California format uses metro
   neighborhood: string;
-  zips: string | string[];
+  zips?: string | string[];
+  primary_zip?: string; // California format
+  nearby_zips?: string[]; // California format
   lat?: number;
   lon?: number;
   median_income?: number;
   median_home_value?: number;
-  tier: string;
+  tier?: string;
   income_pct?: number;
   value_pct?: number;
   score?: number;
@@ -80,24 +83,34 @@ const handler = async (req: Request): Promise<Response> => {
       for (let i = 0; i < data.length; i += batchSize) {
         const batch = data.slice(i, i + batchSize);
         
-        const records = batch.map((item: NeighborhoodRecord) => ({
-          state: item.state || state || 'AZ',
-          city_area: item.city_area,
-          city_area_slug: generateSlug(item.city_area),
-          neighborhood: item.neighborhood,
-          neighborhood_slug: generateSlug(item.neighborhood),
-          zips: parseZips(item.zips),
-          lat: item.lat || null,
-          lon: item.lon || null,
-          median_income: item.median_income || null,
-          median_home_value: item.median_home_value || null,
-          tier: item.tier || 'Main',
-          income_pct: item.income_pct || null,
-          value_pct: item.value_pct || null,
-          score: item.score || null,
-          is_verified: true,
-          is_active: true,
-        }));
+        const records = batch.map((item: NeighborhoodRecord) => {
+          // Handle both Arizona format (city_area, zips) and California format (metro, primary_zip)
+          const cityArea = item.city_area || item.metro || 'Unknown';
+          const zipsArray = item.zips 
+            ? parseZips(item.zips) 
+            : item.primary_zip 
+              ? [item.primary_zip, ...(item.nearby_zips || [])]
+              : [];
+          
+          return {
+            state: item.state || state || 'AZ',
+            city_area: cityArea,
+            city_area_slug: generateSlug(cityArea),
+            neighborhood: item.neighborhood,
+            neighborhood_slug: generateSlug(item.neighborhood),
+            zips: zipsArray,
+            lat: item.lat || null,
+            lon: item.lon || null,
+            median_income: item.median_income || null,
+            median_home_value: item.median_home_value || null,
+            tier: item.tier || 'Main',
+            income_pct: item.income_pct || null,
+            value_pct: item.value_pct || null,
+            score: item.score || null,
+            is_verified: true,
+            is_active: true,
+          };
+        });
 
         const { error: insertError, data: insertedData } = await supabase
           .from('neighborhood_catalog')
