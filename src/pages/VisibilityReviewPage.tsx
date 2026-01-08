@@ -38,6 +38,56 @@ export default function VisibilityReviewPage() {
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
   const [cityNames, setCityNames] = useState<Map<string, string>>(new Map());
   const [showPriceMismatchModal, setShowPriceMismatchModal] = useState(false);
+  const [professionalId, setProfessionalId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+
+  // Get authenticated user and their professional ID
+  useEffect(() => {
+    async function loadAuth() {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (error || !user) {
+          toast({
+            title: 'Authentication required',
+            description: 'Please sign in to continue.',
+            variant: 'destructive',
+          });
+          navigate('/auth?returnTo=/visibility/review');
+          return;
+        }
+
+        setUserEmail(user.email ?? null);
+
+        // Look up professional by email
+        const { data: professional } = await supabase
+          .from('professionals')
+          .select('id')
+          .eq('email', user.email)
+          .eq('active', true)
+          .single();
+
+        if (professional) {
+          setProfessionalId(professional.id);
+        } else {
+          toast({
+            title: 'Profile not found',
+            description: 'No active professional profile found for your account.',
+            variant: 'destructive',
+          });
+          navigate('/');
+          return;
+        }
+      } catch (e) {
+        console.error('Error loading auth:', e);
+      } finally {
+        setIsLoadingAuth(false);
+      }
+    }
+
+    loadAuth();
+  }, [navigate, toast]);
 
   // Load selection from sessionStorage
   useEffect(() => {
@@ -131,16 +181,22 @@ export default function VisibilityReviewPage() {
 
   // Handle proceed to payment
   const handleProceedToPayment = async () => {
-    if (!selection) return;
+    if (!selection || !professionalId || !userEmail) {
+      toast({
+        title: 'Not ready',
+        description: 'Please wait while we load your profile.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    // For now, we'll create a test checkout - in production this would use real professional ID
     setIsCreatingCheckout(true);
 
     try {
       // Build checkout request matching create-agent-checkout interface
       const checkoutRequest = {
-        professionalId: 'test-professional-id', // TODO: Get from auth context
-        email: 'test@example.com', // TODO: Get from auth context
+        professionalId,
+        email: userEmail,
         selectedNeighborhoods: selection.selectedNeighborhoods.map(n => ({
           neighborhoodId: n.id,
           neighborhoodName: n.neighborhood,
@@ -204,7 +260,7 @@ export default function VisibilityReviewPage() {
     fetchQuote();
   };
 
-  if (!selection) {
+  if (!selection || isLoadingAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
