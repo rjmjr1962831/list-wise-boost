@@ -255,17 +255,20 @@ export default function AgentDashboard() {
       setProfessionalId(data.id);
       setVerificationToken(data.verification_token || data.id);
 
-      // Fetch city subscriptions
+      // Fetch neighborhood subscriptions (new model)
       const { data: subs } = await supabase
-        .from('agent_city_subscriptions')
+        .from('agent_neighborhood_subscriptions')
         .select(`
           id,
           subscription_type,
           is_active,
           started_at,
           expires_at,
-          city_id (
-            city_name
+          tier_at_purchase,
+          neighborhood_id,
+          neighborhood_catalog (
+            neighborhood,
+            city_area
           )
         `)
         .eq('professional_id', data.id);
@@ -273,11 +276,13 @@ export default function AgentDashboard() {
       if (subs && subs.length > 0) {
         const formattedSubs = subs.map((sub: any) => ({
           id: sub.id,
-          city_name: sub.city_id?.city_name || 'Unknown',
+          city_name: sub.neighborhood_catalog?.city_area || 'Unknown',
+          neighborhood_name: sub.neighborhood_catalog?.neighborhood || 'Unknown',
           subscription_type: sub.subscription_type,
           is_active: sub.is_active,
           started_at: sub.started_at,
           expires_at: sub.expires_at,
+          tier: sub.tier_at_purchase,
         }));
         setSubscriptions(formattedSubs);
         

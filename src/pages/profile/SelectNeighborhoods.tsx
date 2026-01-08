@@ -1,6 +1,5 @@
-// src/pages/SelectCities.tsx
-// DEPRECATED: This component is being replaced by SelectNeighborhoods.tsx
-// Kept for backward compatibility during migration
+// src/pages/profile/SelectNeighborhoods.tsx
+// New neighborhood-based selection page (replaces SelectCities.tsx)
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,146 +13,99 @@ import {
 } from '@/types/neighborhoodPricing';
 
 // ============================================
-// TYPES - Using new neighborhood-based types
-// ============================================
-type TierName = NeighborhoodTier;
-
-// Map old city pricing to neighborhood catalog for backward compat
-interface CityPricing {
-  id: string;
-  city_name: string;
-  city_slug: string;
-  state: string;
-  state_abbr: string;
-  value_tier: number;
-  tier_name: TierName;
-  price_monthly: number;
-  price_annual: number;
-  zip_codes: string[];
-  description: string | null;
-  is_active: boolean;
-  display_order: number;
-}
-
-interface PricingTier {
-  name: TierName;
-  priceMonthly: number;
-  priceAnnual: number;
-  color: string;
-}
-
-// Use new neighborhood tier prices
-const PRICING_TIERS: PricingTier[] = [
-  { name: 'Luxury', priceMonthly: NEIGHBORHOOD_TIER_PRICES.Luxury, priceAnnual: getAnnualPrice(NEIGHBORHOOD_TIER_PRICES.Luxury), color: 'text-amber-600' },
-  { name: 'Prime', priceMonthly: NEIGHBORHOOD_TIER_PRICES.Prime, priceAnnual: getAnnualPrice(NEIGHBORHOOD_TIER_PRICES.Prime), color: 'text-blue-600' },
-  { name: 'Main', priceMonthly: NEIGHBORHOOD_TIER_PRICES.Main, priceAnnual: getAnnualPrice(NEIGHBORHOOD_TIER_PRICES.Main), color: 'text-slate-600' }
-];
-
-// ============================================
-// TIER STYLES - Using new neighborhood tier styles
-// ============================================
-const tierStyles = NEIGHBORHOOD_TIER_STYLES;
-
-// ============================================
 // COMPONENT
 // ============================================
-export default function SelectCities() {
+export default function SelectNeighborhoods() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   
-  // Redirect to new neighborhood selection page
-  useEffect(() => {
-    // For now, still load from neighborhood_catalog but display as "cities"
-    // This maintains backward compatibility while using new data
-  }, []);
-  
-  const [cities, setCities] = useState<CityPricing[]>([]);
-  const [selectedCities, setSelectedCities] = useState<CityPricing[]>([]);
+  const [neighborhoods, setNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
+  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [filterTier, setFilterTier] = useState<string>('all');
+  const [filterCity, setFilterCity] = useState<string>('all');
   const [loading, setLoading] = useState(true);
-  const [freeCity, setFreeCity] = useState<CityPricing | null>(null);
+  const [freeNeighborhood, setFreeNeighborhood] = useState<NeighborhoodCatalogItem | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    loadCities();
+    loadNeighborhoods();
   }, []);
 
-  const loadCities = async () => {
-    // Load from neighborhood_catalog and transform to city-like format
+  const loadNeighborhoods = async () => {
     const { data, error } = await supabase
       .from('neighborhood_catalog')
       .select('*')
       .eq('is_active', true)
-      .order('score', { ascending: false })
-      .limit(100);
+      .order('score', { ascending: false });
     
     if (data) {
-      // Transform neighborhood data to city format for backward compat
-      const cityData: CityPricing[] = data.map((n: any, index: number) => ({
-        id: n.id,
-        city_name: `${n.neighborhood} (${n.city_area})`,
-        city_slug: n.neighborhood_slug,
-        state: n.state,
-        state_abbr: n.state,
-        value_tier: n.tier === 'Luxury' ? 3 : n.tier === 'Prime' ? 2 : 1,
-        tier_name: n.tier as TierName,
-        price_monthly: NEIGHBORHOOD_TIER_PRICES[n.tier as NeighborhoodTier],
-        price_annual: getAnnualPrice(NEIGHBORHOOD_TIER_PRICES[n.tier as NeighborhoodTier]),
-        zip_codes: n.zips || [],
-        description: `${n.city_area}, ${n.state}`,
-        is_active: n.is_active,
-        display_order: index
-      }));
-      setCities(cityData);
+      setNeighborhoods(data as NeighborhoodCatalogItem[]);
     }
     setLoading(false);
   };
 
-  const handleCitySelect = (city: CityPricing) => {
-    // If clicking on the current free city, deselect it
-    if (freeCity?.id === city.id) {
-      setFreeCity(null);
+  const handleNeighborhoodSelect = (neighborhood: NeighborhoodCatalogItem) => {
+    // If clicking on the current free neighborhood, deselect it
+    if (freeNeighborhood?.id === neighborhood.id) {
+      setFreeNeighborhood(null);
       return;
     }
     
-    // If clicking on a selected paid city, deselect it
-    if (selectedCities.find(c => c.id === city.id)) {
-      setSelectedCities(selectedCities.filter(c => c.id !== city.id));
+    // If clicking on a selected paid neighborhood, deselect it
+    if (selectedNeighborhoods.find(n => n.id === neighborhood.id)) {
+      setSelectedNeighborhoods(selectedNeighborhoods.filter(n => n.id !== neighborhood.id));
       return;
     }
     
     // First selection is free
-    if (!freeCity) {
-      setFreeCity(city);
+    if (!freeNeighborhood) {
+      setFreeNeighborhood(neighborhood);
       return;
     }
     
     // Add to paid selections
-    setSelectedCities([...selectedCities, city]);
+    setSelectedNeighborhoods([...selectedNeighborhoods, neighborhood]);
+  };
+
+  const getPrice = (tier: NeighborhoodTier) => {
+    const monthly = NEIGHBORHOOD_TIER_PRICES[tier];
+    return billingCycle === 'annual' ? getAnnualPrice(monthly) : monthly;
   };
 
   const calculateTotal = () => {
-    return selectedCities.reduce((sum, city) => {
-      return sum + (billingCycle === 'annual' ? city.price_annual : city.price_monthly);
+    return selectedNeighborhoods.reduce((sum, n) => {
+      return sum + getPrice(n.tier);
     }, 0);
   };
 
-  const filteredCities = cities.filter(city => {
-    if (filterTier === 'all') return true;
-    return city.tier_name === filterTier;
+  // Get unique cities for filter
+  const uniqueCities = [...new Set(neighborhoods.map(n => n.city_area))].sort();
+
+  // Filter neighborhoods
+  const filteredNeighborhoods = neighborhoods.filter(n => {
+    const matchesTier = filterTier === 'all' || n.tier === filterTier;
+    const matchesCity = filterCity === 'all' || n.city_area === filterCity;
+    const matchesSearch = searchQuery === '' || 
+      n.neighborhood.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      n.city_area.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesTier && matchesCity && matchesSearch;
   });
 
-  const groupedCities = {
-    Luxury: filteredCities.filter(c => c.tier_name === 'Luxury'),
-    Prime: filteredCities.filter(c => c.tier_name === 'Prime'),
-    Main: filteredCities.filter(c => c.tier_name === 'Main')
+  // Group by tier
+  const groupedNeighborhoods = {
+    Luxury: filteredNeighborhoods.filter(n => n.tier === 'Luxury'),
+    Prime: filteredNeighborhoods.filter(n => n.tier === 'Prime'),
+    Main: filteredNeighborhoods.filter(n => n.tier === 'Main')
   };
 
   const formatPrice = (amount: number) => `$${amount.toLocaleString()}`;
+
+  const tierOrder: NeighborhoodTier[] = ['Luxury', 'Prime', 'Main'];
 
   // ============================================
   // LOADING STATE
@@ -215,15 +167,29 @@ export default function SelectCities() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Page Title */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Select Your Cities</h1>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">Select Your Neighborhoods</h1>
           <p className="text-slate-600">
-            Your first city is <span className="font-semibold text-green-600">FREE</span>. 
-            Add more cities to expand your reach.
+            Your first neighborhood is <span className="font-semibold text-green-600">FREE</span>. 
+            Add more to expand your reach.
+          </p>
+          <p className="text-sm text-slate-500 mt-2">
+            Cities are free — pay only for neighborhood specialization
           </p>
         </div>
 
-        {/* Free City Prompt or Selection */}
-        {!freeCity ? (
+        {/* Search */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search neighborhoods or cities..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* Free Neighborhood Prompt or Selection */}
+        {!freeNeighborhood ? (
           <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 mb-8">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
@@ -232,8 +198,8 @@ export default function SelectCities() {
                 </svg>
               </div>
               <div>
-                <h2 className="text-xl font-bold text-green-900">Your Free City</h2>
-                <p className="text-green-700">Select your primary market below — it's on us!</p>
+                <h2 className="text-xl font-bold text-green-900">Your Free Neighborhood</h2>
+                <p className="text-green-700">Select your primary neighborhood below — it's on us!</p>
               </div>
             </div>
           </div>
@@ -247,12 +213,12 @@ export default function SelectCities() {
                   </svg>
                 </div>
                 <div>
-                  <p className="font-bold text-green-900">{freeCity.city_name}</p>
-                  <p className="text-sm text-green-700">Your FREE city listing</p>
+                  <p className="font-bold text-green-900">{freeNeighborhood.neighborhood}</p>
+                  <p className="text-sm text-green-700">{freeNeighborhood.city_area} · Your FREE neighborhood</p>
                 </div>
               </div>
               <button 
-                onClick={() => setFreeCity(null)}
+                onClick={() => setFreeNeighborhood(null)}
                 className="text-green-600 hover:text-green-800 text-sm font-medium"
               >
                 Change
@@ -262,7 +228,8 @@ export default function SelectCities() {
         )}
 
         {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <div className="flex flex-wrap gap-2 mb-6">
+          {/* Tier filters */}
           <button
             onClick={() => setFilterTier('all')}
             className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
@@ -271,65 +238,82 @@ export default function SelectCities() {
                 : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
             }`}
           >
-            All Cities ({cities.length})
+            All Tiers ({neighborhoods.length})
           </button>
-          {PRICING_TIERS.map(tier => {
-            const count = cities.filter(c => c.tier_name === tier.name).length;
+          {tierOrder.map(tier => {
+            const count = neighborhoods.filter(n => n.tier === tier).length;
+            const price = NEIGHBORHOOD_TIER_PRICES[tier];
             return (
               <button
-                key={tier.name}
-                onClick={() => setFilterTier(tier.name)}
+                key={tier}
+                onClick={() => setFilterTier(tier)}
                 className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  filterTier === tier.name
+                  filterTier === tier
                     ? 'bg-slate-900 text-white'
                     : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                 }`}
               >
-                {tier.name} ({count}) · {formatPrice(billingCycle === 'annual' ? tier.priceAnnual : tier.priceMonthly)}
+                {tier} ({count}) · ${price}/mo
               </button>
             );
           })}
         </div>
 
-        {/* City Grid by Tier */}
-        {Object.entries(groupedCities).map(([tierName, tierCities]) => {
-          if (tierCities.length === 0) return null;
+        {/* City filter dropdown */}
+        <div className="mb-6">
+          <select
+            value={filterCity}
+            onChange={(e) => setFilterCity(e.target.value)}
+            className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700"
+          >
+            <option value="all">All Cities ({uniqueCities.length})</option>
+            {uniqueCities.map(city => (
+              <option key={city} value={city}>{city}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Neighborhood Grid by Tier */}
+        {tierOrder.map(tierName => {
+          const tierNeighborhoods = groupedNeighborhoods[tierName];
+          if (tierNeighborhoods.length === 0) return null;
           
-          const tier = PRICING_TIERS.find(t => t.name === tierName);
-          const styles = tierStyles[tierName as TierName];
+          const styles = NEIGHBORHOOD_TIER_STYLES[tierName];
+          const price = NEIGHBORHOOD_TIER_PRICES[tierName];
+          const displayPrice = billingCycle === 'annual' ? getAnnualPrice(price) : price;
           
           return (
             <div key={tierName} className="mb-10">
               <div className="flex items-center gap-3 mb-4">
                 <h2 className="text-xl font-bold text-slate-900">{tierName}</h2>
-                <span className={`text-sm ${tier?.color}`}>
-                  {formatPrice(billingCycle === 'annual' ? tier?.priceAnnual || 0 : tier?.priceMonthly || 0)}
+                <span className={`text-sm ${styles.color}`}>
+                  {formatPrice(displayPrice)}
                   /{billingCycle === 'annual' ? 'year' : 'month'}
                 </span>
                 <span className="text-sm text-slate-400">
-                  · {tierCities.length} {tierCities.length === 1 ? 'city' : 'cities'}
+                  · {tierNeighborhoods.length} {tierNeighborhoods.length === 1 ? 'neighborhood' : 'neighborhoods'}
                 </span>
               </div>
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tierCities.map(city => {
-                  const isFreeCitySelected = freeCity?.id === city.id;
-                  const isPaidSelected = selectedCities.some(c => c.id === city.id);
-                  const price = billingCycle === 'annual' ? city.price_annual : city.price_monthly;
+                {tierNeighborhoods.slice(0, 30).map(neighborhood => {
+                  const isFreeSelected = freeNeighborhood?.id === neighborhood.id;
+                  const isPaidSelected = selectedNeighborhoods.some(n => n.id === neighborhood.id);
+                  const priceDisplay = billingCycle === 'annual' ? getAnnualPrice(NEIGHBORHOOD_TIER_PRICES[neighborhood.tier]) : NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
                   
                   return (
                     <div
-                      key={city.id}
-                      onClick={() => handleCitySelect(city)}
+                      key={neighborhood.id}
+                      onClick={() => handleNeighborhoodSelect(neighborhood)}
                       className={`
                         relative rounded-2xl border-2 p-6 transition-all cursor-pointer hover:shadow-lg
                         ${styles.bg} ${styles.border}
-                        ${isFreeCitySelected ? 'ring-2 ring-green-500 ring-offset-2' : ''}
+                        ${isFreeSelected ? 'ring-2 ring-green-500 ring-offset-2' : ''}
                         ${isPaidSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
                       `}
                     >
                       {/* Free badge */}
-                      {isFreeCitySelected && (
+                      {isFreeSelected && (
                         <div className="absolute -top-3 -right-3">
                           <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
                             FREE
@@ -340,24 +324,20 @@ export default function SelectCities() {
                       {/* Header */}
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="text-lg font-bold text-slate-900">{city.city_name}</h3>
+                          <h3 className="text-lg font-bold text-slate-900">{neighborhood.neighborhood}</h3>
+                          <p className="text-sm text-slate-600">{neighborhood.city_area}, {neighborhood.state}</p>
                         </div>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${styles.badge}`}>
-                          {city.tier_name}
+                          {neighborhood.tier}
                         </span>
                       </div>
                       
-                      {/* Description */}
-                      {city.description && (
-                        <p className="text-sm text-slate-600 mb-3">{city.description}</p>
-                      )}
-                      
                       {/* Pricing */}
-                      {!isFreeCitySelected ? (
+                      {!isFreeSelected ? (
                         <div className="mb-3">
                           <div className="flex items-baseline gap-1">
                             <span className={`text-2xl font-bold ${styles.text}`}>
-                              {formatPrice(price)}
+                              {formatPrice(priceDisplay)}
                             </span>
                             <span className="text-slate-500 text-sm">
                               /{billingCycle === 'annual' ? 'yr' : 'mo'}
@@ -371,32 +351,34 @@ export default function SelectCities() {
                       )}
                       
                       {/* Zip Codes */}
-                      <div className="pt-3 border-t border-slate-200/50">
-                        <p className="text-xs text-slate-500 mb-1">
-                          {city.zip_codes.length} ZIP code{city.zip_codes.length > 1 ? 's' : ''} included
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                          {city.zip_codes.slice(0, 4).map(zip => (
-                            <span key={zip} className="text-xs bg-white/60 px-1.5 py-0.5 rounded text-slate-500">
-                              {zip}
-                            </span>
-                          ))}
-                          {city.zip_codes.length > 4 && (
-                            <span className="text-xs text-slate-400">
-                              +{city.zip_codes.length - 4}
-                            </span>
-                          )}
+                      {neighborhood.zips && neighborhood.zips.length > 0 && (
+                        <div className="pt-3 border-t border-slate-200/50">
+                          <p className="text-xs text-slate-500 mb-1">
+                            {neighborhood.zips.length} ZIP code{neighborhood.zips.length > 1 ? 's' : ''}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {neighborhood.zips.slice(0, 3).map(zip => (
+                              <span key={zip} className="text-xs bg-white/60 px-1.5 py-0.5 rounded text-slate-500">
+                                {zip}
+                              </span>
+                            ))}
+                            {neighborhood.zips.length > 3 && (
+                              <span className="text-xs text-slate-400">
+                                +{neighborhood.zips.length - 3}
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                       
                       {/* Selection indicator */}
-                      {(isFreeCitySelected || isPaidSelected) && (
-                        <div className={`mt-3 flex items-center gap-2 ${isFreeCitySelected ? 'text-green-600' : 'text-blue-600'}`}>
+                      {(isFreeSelected || isPaidSelected) && (
+                        <div className={`mt-3 flex items-center gap-2 ${isFreeSelected ? 'text-green-600' : 'text-blue-600'}`}>
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                           <span className="text-sm font-medium">
-                            {isFreeCitySelected ? 'Your Free City' : 'Selected'}
+                            {isFreeSelected ? 'Your Free Neighborhood' : 'Selected'}
                           </span>
                         </div>
                       )}
@@ -404,6 +386,12 @@ export default function SelectCities() {
                   );
                 })}
               </div>
+              
+              {tierNeighborhoods.length > 30 && (
+                <p className="text-sm text-slate-500 mt-4 text-center">
+                  Showing 30 of {tierNeighborhoods.length} neighborhoods. Use search to find specific areas.
+                </p>
+              )}
             </div>
           );
         })}
@@ -415,31 +403,31 @@ export default function SelectCities() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-4 mb-1">
-                {freeCity && (
+                {freeNeighborhood && (
                   <span className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                    1 free city
+                    1 free neighborhood
                   </span>
                 )}
-                {selectedCities.length > 0 && (
+                {selectedNeighborhoods.length > 0 && (
                   <span className="text-sm text-slate-600">
-                    + {selectedCities.length} paid {selectedCities.length === 1 ? 'city' : 'cities'}
+                    + {selectedNeighborhoods.length} paid {selectedNeighborhoods.length === 1 ? 'neighborhood' : 'neighborhoods'}
                   </span>
                 )}
-                {!freeCity && selectedCities.length === 0 && (
-                  <span className="text-sm text-slate-400">Select a city to get started</span>
+                {!freeNeighborhood && selectedNeighborhoods.length === 0 && (
+                  <span className="text-sm text-slate-400">Select a neighborhood to get started</span>
                 )}
               </div>
               <div className="flex items-baseline gap-2">
-                {selectedCities.length === 0 ? (
+                {selectedNeighborhoods.length === 0 ? (
                   <span className="text-2xl font-bold text-green-600">
-                    {freeCity ? 'FREE' : '$0'}
+                    {freeNeighborhood ? 'FREE' : '$0'}
                   </span>
                 ) : (
                   <>
                     <span className="text-2xl font-bold text-slate-900">
                       {formatPrice(calculateTotal())}
                     </span>
-                    <span className="text-sm text-slate-500">
+                    <span className="text-slate-500 text-sm">
                       /{billingCycle === 'annual' ? 'year' : 'month'}
                     </span>
                   </>
@@ -449,22 +437,20 @@ export default function SelectCities() {
             
             <button
               onClick={() => {
-                // Navigate to checkout or next step
-                if (token) {
-                  navigate(`/profile/${token}/checkout`, {
-                    state: {
-                      freeCity,
-                      selectedCities,
-                      billingCycle,
-                      total: calculateTotal()
-                    }
-                  });
-                }
+                // TODO: Navigate to checkout with selections
+                console.log('Checkout with:', { freeNeighborhood, selectedNeighborhoods, billingCycle });
+                navigate(`/profile/${token}/checkout`);
               }}
-              disabled={!freeCity}
-              className="px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!freeNeighborhood && selectedNeighborhoods.length === 0}
+              className={`
+                px-8 py-3 rounded-xl font-semibold text-white transition-all
+                ${freeNeighborhood || selectedNeighborhoods.length > 0
+                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
+                  : 'bg-slate-300 cursor-not-allowed'
+                }
+              `}
             >
-              {freeCity ? 'Continue' : 'Select a City'}
+              Continue
             </button>
           </div>
         </div>

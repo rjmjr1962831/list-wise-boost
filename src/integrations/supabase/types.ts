@@ -110,7 +110,7 @@ export type Database = {
         }
         Relationships: []
       }
-      agent_city_subscriptions: {
+      agent_city_subscriptions_deprecated: {
         Row: {
           city_id: string
           created_at: string | null
@@ -155,7 +155,7 @@ export type Database = {
             foreignKeyName: "agent_city_subscriptions_city_id_fkey"
             columns: ["city_id"]
             isOneToOne: false
-            referencedRelation: "arizona_city_pricing"
+            referencedRelation: "arizona_city_pricing_deprecated"
             referencedColumns: ["id"]
           },
           {
@@ -167,6 +167,76 @@ export type Database = {
           },
           {
             foreignKeyName: "agent_city_subscriptions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_neighborhood_subscriptions: {
+        Row: {
+          config_version_used: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          neighborhood_id: string
+          price_paid: number
+          professional_id: string
+          started_at: string | null
+          stripe_subscription_id: string | null
+          subscription_type: string
+          tier_at_purchase: string
+          updated_at: string | null
+        }
+        Insert: {
+          config_version_used?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          neighborhood_id: string
+          price_paid?: number
+          professional_id: string
+          started_at?: string | null
+          stripe_subscription_id?: string | null
+          subscription_type?: string
+          tier_at_purchase: string
+          updated_at?: string | null
+        }
+        Update: {
+          config_version_used?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          neighborhood_id?: string
+          price_paid?: number
+          professional_id?: string
+          started_at?: string | null
+          stripe_subscription_id?: string | null
+          subscription_type?: string
+          tier_at_purchase?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_neighborhood_subscriptions_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "neighborhood_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_neighborhood_subscriptions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_neighborhood_subscriptions_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "professionals_public"
@@ -410,7 +480,7 @@ export type Database = {
           },
         ]
       }
-      arizona_city_pricing: {
+      arizona_city_pricing_deprecated: {
         Row: {
           city_name: string
           city_slug: string
@@ -1161,6 +1231,72 @@ export type Database = {
         }
         Relationships: []
       }
+      neighborhood_catalog: {
+        Row: {
+          city_area: string
+          city_area_slug: string
+          created_at: string | null
+          id: string
+          income_pct: number | null
+          is_active: boolean | null
+          is_verified: boolean | null
+          lat: number | null
+          lon: number | null
+          median_home_value: number | null
+          median_income: number | null
+          neighborhood: string
+          neighborhood_slug: string
+          score: number | null
+          state: string
+          tier: string
+          updated_at: string | null
+          value_pct: number | null
+          zips: string[] | null
+        }
+        Insert: {
+          city_area: string
+          city_area_slug: string
+          created_at?: string | null
+          id?: string
+          income_pct?: number | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          lat?: number | null
+          lon?: number | null
+          median_home_value?: number | null
+          median_income?: number | null
+          neighborhood: string
+          neighborhood_slug: string
+          score?: number | null
+          state: string
+          tier: string
+          updated_at?: string | null
+          value_pct?: number | null
+          zips?: string[] | null
+        }
+        Update: {
+          city_area?: string
+          city_area_slug?: string
+          created_at?: string | null
+          id?: string
+          income_pct?: number | null
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          lat?: number | null
+          lon?: number | null
+          median_home_value?: number | null
+          median_income?: number | null
+          neighborhood?: string
+          neighborhood_slug?: string
+          score?: number | null
+          state?: string
+          tier?: string
+          updated_at?: string | null
+          value_pct?: number | null
+          zips?: string[] | null
+        }
+        Relationships: []
+      }
       payment_transactions: {
         Row: {
           amount_cents: number
@@ -1449,6 +1585,54 @@ export type Database = {
           total_processed?: number
           total_qualified?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_configs: {
+        Row: {
+          config_version: string
+          created_at: string | null
+          effective_from: string | null
+          id: string
+          is_active: boolean | null
+          market_multipliers: Json | null
+          neighborhood_overrides: Json | null
+          rounding: Json | null
+          scope_key: string | null
+          scope_type: string
+          tier_prices: Json
+          time_rules: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          config_version: string
+          created_at?: string | null
+          effective_from?: string | null
+          id?: string
+          is_active?: boolean | null
+          market_multipliers?: Json | null
+          neighborhood_overrides?: Json | null
+          rounding?: Json | null
+          scope_key?: string | null
+          scope_type?: string
+          tier_prices?: Json
+          time_rules?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          config_version?: string
+          created_at?: string | null
+          effective_from?: string | null
+          id?: string
+          is_active?: boolean | null
+          market_multipliers?: Json | null
+          neighborhood_overrides?: Json | null
+          rounding?: Json | null
+          scope_key?: string | null
+          scope_type?: string
+          tier_prices?: Json
+          time_rules?: Json | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2474,6 +2658,57 @@ export type Database = {
           zillow_url?: string | null
         }
         Relationships: []
+      }
+      unrecognized_neighborhoods: {
+        Row: {
+          city_area: string | null
+          created_at: string | null
+          id: string
+          input_string: string
+          request_count: number | null
+          requested_by: string | null
+          state: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          city_area?: string | null
+          created_at?: string | null
+          id?: string
+          input_string: string
+          request_count?: number | null
+          requested_by?: string | null
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          city_area?: string | null
+          created_at?: string | null
+          id?: string
+          input_string?: string
+          request_count?: number | null
+          requested_by?: string | null
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unrecognized_neighborhoods_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "unrecognized_neighborhoods_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
