@@ -48,7 +48,8 @@ const AgentPaymentSuccess = lazy(() => import("./pages/AgentPaymentSuccess"));
 const AgentInfo = lazy(() => import("./pages/AgentInfo"));
 const AgentLanding = lazy(() => import("./pages/AgentLanding"));
 const AgentSetup = lazy(() => import("./pages/AgentSetup"));
-const AgentDashboard = lazy(() => import("./pages/AgentDashboard"));
+const LegacyAgentDashboard = lazy(() => import("./pages/AgentDashboard"));
+const AgentDashboard = lazy(() => import("./pages/agent/AgentDashboard"));
 const AgentLogin = lazy(() => import("./pages/AgentLogin"));
 const AgentLoginRequest = lazy(() => import("./pages/agent/AgentLoginRequest"));
 const AgentCodeVerify = lazy(() => import("./pages/agent/AgentCodeVerify"));
@@ -161,7 +162,7 @@ const App = () => (
                     <Route path="/join" element={<AgentLanding />} />
                     <Route path="/agent-setup" element={<AgentSetup />} />
                     <Route path="/agent/dashboard" element={<AgentDashboard />} />
-                    <Route path="/dashboard" element={<AgentDashboard />} />
+                    <Route path="/dashboard" element={<LegacyAgentDashboard />} />
                     <Route path="/agent-login" element={<AgentLogin />} />
                     <Route path="/agent/login" element={<AgentLoginRequest />} />
                     <Route path="/agent/verify" element={<AgentCodeVerify />} />
