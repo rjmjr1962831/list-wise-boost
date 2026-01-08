@@ -505,3 +505,9 @@ verify_jwt = false
 
 [functions.submit-change-request]
 verify_jwt = false
+
+[functions.setup-neighborhood-catalog]
+verify_jwt = false
+
+[functions.compute-neighborhood-price]
+verify_jwt = false

@@ -70,6 +70,7 @@ const EditProfile = lazy(() => import("./pages/profile/EditProfile"));
 const ProfileFieldsGuide = lazy(() => import("./pages/profile/ProfileFieldsGuide"));
 const PremiumPricingPage = lazy(() => import("./pages/profile/PremiumPricingPage"));
 const SelectCities = lazy(() => import("./pages/profile/SelectCities"));
+const SelectNeighborhoods = lazy(() => import("./pages/profile/SelectNeighborhoods"));
 const SelectionPlaceholder = lazy(() => import("./pages/profile/SelectionPlaceholder"));
 const ScheduleCall = lazy(() => import("./pages/profile/ScheduleCall"));
 const ClaimListingPreview = lazy(() => import("./pages/profile/ClaimListingPreview"));
@@ -199,6 +200,7 @@ const App = () => (
                     <Route path="/profile/:token/thank-you" element={<FreeListingThankYou />} />
                     <Route path="/profile/:token/pricing" element={<PremiumPricingPage />} />
                     <Route path="/profile/:token/select-cities" element={<SelectCities />} />
+                    <Route path="/profile/:token/select-neighborhoods" element={<SelectNeighborhoods />} />
                     <Route path="/profile/:token/select" element={<SelectionPlaceholder />} />
                     <Route path="/profile/:token/schedule" element={<ScheduleCall />} />
                     {/* Legacy profile view route */}

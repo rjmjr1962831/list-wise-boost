@@ -1,0 +1,17 @@
+{
+  "config_version": "2026-01-08",
+  "currency": "USD",
+  "tier_prices": {
+    "Main": 39,
+    "Prime": 69,
+    "Luxury": 99
+  },
+  "market_multipliers": [],
+  "neighborhood_overrides": [],
+  "time_rules": [],
+  "rounding": {
+    "method": "nearest",
+    "increment": 1
+  },
+  "notes": "Default pricing config. Add market multipliers / overrides / time rules here; keep neighborhood catalog free of hardcoded pricing."
+}
