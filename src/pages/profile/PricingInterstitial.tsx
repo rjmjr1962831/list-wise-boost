@@ -8,14 +8,14 @@ import { Loader2, MapPin, ArrowRight, Search, Flame, MessageSquare, Shield, Info
 import { useToast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { PRICING_TIERS } from '@/types/pricing';
+import { NeighborhoodTier, NEIGHBORHOOD_TIER_PRICES, NEIGHBORHOOD_TIER_STYLES, getAnnualPrice } from '@/types/neighborhoodPricing';
 
-interface PricingTierSummary {
-  tier_name: 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
-  city_count: number;
+interface NeighborhoodTierSummary {
+  tier_name: NeighborhoodTier;
+  neighborhood_count: number;
   price_monthly: number;
   price_annual: number;
-  sample_cities: string[];
+  sample_neighborhoods: string[];
 }
 
 export default function PricingInterstitial() {
@@ -23,7 +23,7 @@ export default function PricingInterstitial() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
-  const [tiers, setTiers] = useState<PricingTierSummary[]>([]);
+  const [tiers, setTiers] = useState<NeighborhoodTierSummary[]>([]);
   const [isAnnual, setIsAnnual] = useState(true);
 
   useEffect(() => {
@@ -53,38 +53,42 @@ export default function PricingInterstitial() {
           return;
         }
 
-        // Fetch Arizona city pricing
-        const { data: cityData, error: cityError } = await supabase
-          .from('arizona_city_pricing')
+        // Fetch neighborhood catalog for pricing display
+        const { data: neighborhoodData, error: neighborhoodError } = await supabase
+          .from('neighborhood_catalog')
           .select('*')
           .eq('is_active', true)
-          .order('value_tier', { ascending: false });
+          .order('score', { ascending: false })
+          .limit(100); // Sample for display
 
-        if (cityError) throw cityError;
+        if (neighborhoodError) throw neighborhoodError;
 
-        // Group by tier and create summary
-        const tierMap = new Map<string, PricingTierSummary>();
+        // Group by tier and create summary using derived pricing
+        const tierMap = new Map<NeighborhoodTier, NeighborhoodTierSummary>();
         
-        (cityData || []).forEach(city => {
-          const existing = tierMap.get(city.tier_name);
+        (neighborhoodData || []).forEach(neighborhood => {
+          const tier = neighborhood.tier as NeighborhoodTier;
+          const existing = tierMap.get(tier);
           if (existing) {
-            existing.city_count++;
-            if (existing.sample_cities.length < 3) {
-              existing.sample_cities.push(city.city_name);
+            existing.neighborhood_count++;
+            if (existing.sample_neighborhoods.length < 3) {
+              existing.sample_neighborhoods.push(`${neighborhood.neighborhood} (${neighborhood.city_area})`);
             }
           } else {
-            tierMap.set(city.tier_name, {
-              tier_name: city.tier_name as any,
-              city_count: 1,
-              price_monthly: city.price_monthly,
-              price_annual: city.price_annual,
-              sample_cities: [city.city_name]
+            const monthlyPrice = NEIGHBORHOOD_TIER_PRICES[tier];
+            tierMap.set(tier, {
+              tier_name: tier,
+              neighborhood_count: 1,
+              price_monthly: monthlyPrice,
+              price_annual: getAnnualPrice(monthlyPrice),
+              sample_neighborhoods: [`${neighborhood.neighborhood} (${neighborhood.city_area})`]
             });
           }
         });
 
+        // Sort tiers: Luxury > Prime > Main
         const sortedTiers = Array.from(tierMap.values()).sort((a, b) => {
-          const order = { Platinum: 4, Gold: 3, Silver: 2, Bronze: 1 };
+          const order: Record<NeighborhoodTier, number> = { Luxury: 3, Prime: 2, Main: 1 };
           return order[b.tier_name] - order[a.tier_name];
         });
 
@@ -316,21 +320,21 @@ export default function PricingInterstitial() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
             {tiers.map((tier) => {
-              const tierConfig = PRICING_TIERS.find(t => t.name === tier.tier_name);
-              if (!tierConfig) return null;
+              const tierStyle = NEIGHBORHOOD_TIER_STYLES[tier.tier_name];
+              if (!tierStyle) return null;
 
-              const price = isAnnual ? tier.price_annual / 12 : tier.price_monthly;
+              const price = isAnnual ? tier.price_annual / 10 : tier.price_monthly;
 
               return (
                 <Card
                   key={tier.tier_name}
-                  className={`p-5 ${tierConfig.bgColor} ${tierConfig.borderColor} border hover:shadow-md transition-shadow cursor-pointer`}
+                  className={`p-5 ${tierStyle.bg} ${tierStyle.border} border hover:shadow-md transition-shadow cursor-pointer`}
                   onClick={handleProceedToSelection}
                 >
                   <div className="mb-4">
-                    <Badge className={`${tierConfig.badgeColor} mb-2`}>
+                    <Badge className={`${tierStyle.badge} mb-2`}>
                       {tier.tier_name}
                     </Badge>
                     <h3 className="text-xl font-bold text-foreground">
@@ -341,19 +345,19 @@ export default function PricingInterstitial() {
 
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center gap-2 text-sm">
-                      <MapPin className={`h-4 w-4 ${tierConfig.color}`} />
+                      <MapPin className={`h-4 w-4 ${tierStyle.color}`} />
                       <span className="font-medium">
-                        Covers {tier.city_count} {tier.city_count === 1 ? 'city' : 'cities'}
+                        {tier.neighborhood_count} {tier.neighborhood_count === 1 ? 'neighborhood' : 'neighborhoods'}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      Including: {tier.sample_cities.join(', ')}
-                      {tier.city_count > 3 && ` +${tier.city_count - 3} more`}
+                      Including: {tier.sample_neighborhoods.slice(0, 2).join(', ')}
+                      {tier.neighborhood_count > 2 && ` +${tier.neighborhood_count - 2} more`}
                     </p>
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    Limited editorial capacity per city
+                    Limited capacity per neighborhood
                   </p>
                 </Card>
               );

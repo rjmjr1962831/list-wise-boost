@@ -36,19 +36,22 @@ export default function AgentPaymentSuccess() {
 
       try {
         const { data, error } = await supabase
-          .from('agent_city_subscriptions')
-          .select('city_id, arizona_city_pricing(city_name)')
+          .from('agent_neighborhood_subscriptions')
+          .select('neighborhood_id, neighborhood_catalog(neighborhood, city_area)')
           .eq('professional_id', professionalId)
           .eq('is_active', true);
 
         if (!error && data) {
-          const cityNames = data
-            .map((sub: any) => sub.arizona_city_pricing?.city_name)
+          const neighborhoodNames = data
+            .map((sub: any) => {
+              const n = sub.neighborhood_catalog;
+              return n ? `${n.neighborhood} (${n.city_area})` : null;
+            })
             .filter(Boolean);
-          setSelectedCities(cityNames);
+          setSelectedCities(neighborhoodNames);
         }
       } catch (err) {
-        console.error('Error fetching cities:', err);
+        console.error('Error fetching neighborhoods:', err);
       }
     }
 
