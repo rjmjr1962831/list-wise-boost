@@ -106,6 +106,7 @@ const Founder = lazy(() => import("./pages/Founder"));
 const AILiability = lazy(() => import("./pages/AILiability"));
 const ProtocolAdopters = lazy(() => import("./pages/ProtocolAdopters"));
 const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
+const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods"));
 
 const queryClient = new QueryClient();
 
@@ -137,6 +138,7 @@ const App = () => (
                     <Route path="/admin" element={<AdminDashboard />} />
                     <Route path="/og-preview" element={<OGPreview />} />
                     <Route path="/crm" element={<CRM />} />
+                    <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />
                     <Route path="/migrate-data" element={<MigrateData />} />
                     {/* Static pages */}
                     <Route path="/faq" element={<FAQ />} />
