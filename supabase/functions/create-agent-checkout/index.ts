@@ -10,9 +10,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Legacy city-based pricing (deprecated)
 interface SelectedCity {
   cityId: string;
   cityName: string;
+  price: number;
+}
+
+// NEW: Neighborhood-based pricing
+interface SelectedNeighborhood {
+  neighborhoodId: string;
+  neighborhoodName: string;
+  cityArea: string;
+  tier: 'Main' | 'Prime' | 'Luxury';
   price: number;
 }
 
@@ -26,10 +36,14 @@ interface PackageInfo {
 interface CheckoutRequest {
   professionalId: string;
   email: string;
+  // Legacy fields (deprecated but still supported)
   package?: PackageInfo;
   premiumCities?: SelectedCity[];
   selectedCities?: SelectedCity[];
   allCityIds?: string[];
+  // NEW: Neighborhood-based fields
+  selectedNeighborhoods?: SelectedNeighborhood[];
+  allNeighborhoodIds?: string[];
   monthlyTotal: number;
   successUrl: string;
   cancelUrl: string;
@@ -48,6 +62,8 @@ const handler = async (req: Request): Promise<Response> => {
       premiumCities,
       selectedCities,
       allCityIds,
+      selectedNeighborhoods,
+      allNeighborhoodIds,
       monthlyTotal,
       successUrl,
       cancelUrl 
@@ -60,12 +76,35 @@ const handler = async (req: Request): Promise<Response> => {
       packageName: packageInfo?.name,
       premiumCityCount: premiumCities?.length || 0,
       selectedCityCount: selectedCities?.length || 0,
+      selectedNeighborhoodCount: selectedNeighborhoods?.length || 0,
       monthlyTotal 
     });
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
-    // Add package as single line item if selected
+    // NEW: Add neighborhood subscriptions as line items
+    if (selectedNeighborhoods && selectedNeighborhoods.length > 0) {
+      selectedNeighborhoods.forEach((neighborhood) => {
+        lineItems.push({
+          price_data: {
+            currency: 'usd',
+            recurring: { interval: 'month' as const },
+            unit_amount: Math.round(neighborhood.price * 100),
+            product_data: {
+              name: `${neighborhood.neighborhoodName} (${neighborhood.tier})`,
+              description: `${neighborhood.tier} neighborhood in ${neighborhood.cityArea} - Guaranteed Top 10 placement`,
+              metadata: {
+                neighborhood_id: neighborhood.neighborhoodId,
+                tier: neighborhood.tier,
+              },
+            },
+          },
+          quantity: 1,
+        });
+      });
+    }
+
+    // LEGACY: Add package as single line item if selected (deprecated)
     if (packageInfo) {
       lineItems.push({
         price_data: {
@@ -81,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Add premium add-on cities as separate line items
+    // LEGACY: Add premium add-on cities as separate line items (deprecated)
     if (premiumCities && premiumCities.length > 0) {
       premiumCities.forEach((city) => {
         lineItems.push({
@@ -99,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Add à la carte cities (build-your-own mode)
+    // LEGACY: Add à la carte cities (build-your-own mode) (deprecated)
     if (selectedCities && selectedCities.length > 0) {
       selectedCities.forEach((city) => {
         lineItems.push({
@@ -131,11 +170,34 @@ const handler = async (req: Request): Promise<Response> => {
     // Build success URL with professional ID for completion
     const successUrlWithParams = `${successUrl}?session_id={CHECKOUT_SESSION_ID}&professional_id=${professionalId}`;
 
-    // Calculate total city count
+    // Calculate totals for metadata
+    const totalNeighborhoods = allNeighborhoodIds?.length || selectedNeighborhoods?.length || 0;
     const totalCities = allCityIds?.length || 
       (packageInfo?.cityCount || 0) + 
       (premiumCities?.length || 0) + 
       (selectedCities?.length || 0);
+
+    // Build metadata
+    const metadata: Record<string, string> = {
+      professionalId,
+      monthlyTotal: monthlyTotal.toString(),
+    };
+
+    // Add neighborhood metadata if present
+    if (allNeighborhoodIds && allNeighborhoodIds.length > 0) {
+      metadata.neighborhoodIds = allNeighborhoodIds.join(',');
+      metadata.neighborhoodCount = totalNeighborhoods.toString();
+    }
+
+    // Add legacy city metadata if present
+    if (packageInfo) {
+      metadata.packageId = packageInfo.id;
+      metadata.packageName = packageInfo.name;
+    }
+    if (allCityIds && allCityIds.length > 0) {
+      metadata.cityIds = allCityIds.join(',');
+      metadata.cityCount = totalCities.toString();
+    }
 
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -145,14 +207,7 @@ const handler = async (req: Request): Promise<Response> => {
       customer: customerId,
       customer_email: customerId ? undefined : email,
       client_reference_id: professionalId,
-      metadata: {
-        professionalId,
-        packageId: packageInfo?.id || '',
-        packageName: packageInfo?.name || '',
-        cityCount: totalCities.toString(),
-        cityIds: allCityIds?.join(',') || '',
-        monthlyTotal: monthlyTotal.toString(),
-      },
+      metadata,
       success_url: successUrlWithParams,
       cancel_url: cancelUrl,
       allow_promotion_codes: true,
@@ -160,6 +215,7 @@ const handler = async (req: Request): Promise<Response> => {
       subscription_data: {
         metadata: {
           professionalId,
+          neighborhoodIds: allNeighborhoodIds?.join(',') || '',
           packageId: packageInfo?.id || '',
           cityIds: allCityIds?.join(',') || '',
         },
