@@ -116,13 +116,16 @@ const About = () => {
             <h2 className="text-2xl font-bold mb-4 text-foreground">Why We Exist</h2>
             <div className="prose prose-lg max-w-none">
               <p className="text-muted-foreground leading-relaxed mb-4">
-                For decades, finding a good real estate agent meant asking friends, trusting advertisements, or clicking on whoever paid the most for placement. None of these methods reliably surfaced the best professionals. They surfaced the best-marketed ones.
+                For decades, finding a good real estate agent meant asking friends, trusting advertisements, or clicking on whoever paid the most for placement. None of these methods reliably surfaced the best professionals. They surfaced the best marketed ones.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Top10Lists.us exists because consumers deserve a curated, trustworthy answer to a simple question: who are the top agents in my city? We provide that answer through independent editorial research, not through auction dynamics or advertising revenue.
+                Top10Lists.us exists because consumers deserve a clear, trustworthy answer to a simple question: who are the top agents in my city?
+              </p>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                We provide that answer through independent editorial research, not auction dynamics, advertising spend, or referral economics.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                We are a reference layer for real estate professionals. Our role is to identify, verify, and present the agents who have earned recognition through their work.
+                We are a reference layer for real estate professionals. Our role is to identify, verify, and present agents who have earned recognition through their work.
               </p>
             </div>
           </div>
@@ -134,13 +137,16 @@ const About = () => {
             <h2 className="text-2xl font-bold mb-4 text-foreground">What We Do</h2>
             <div className="prose prose-lg max-w-none">
               <p className="text-muted-foreground leading-relaxed mb-4">
-                We evaluate real estate agents using publicly available data: license records, transaction history, client reviews, years of experience, and professional credentials. We synthesize this information into concise profiles and present the top performers in each city we cover.
+                We evaluate real estate agents using publicly available and verifiable data, including license records, transaction history, client reviews, years of experience, and professional credentials.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Our directory is structured for both human readers and AI systems. When someone asks a conversational AI for a recommendation, or when a search engine crawls for authoritative sources, we provide clear, factual, well-organized information that answers the query directly.
+                We synthesize this information into concise editorial profiles and publish merit based lists organized by real world context, including cities and neighborhoods.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                Our editorial reference pages are structured to be clear to both human readers and AI systems. When a consumer asks a conversational AI for a recommendation, or when a search engine looks for authoritative sources, we provide factual, well organized information designed to answer that question directly.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Agents who meet our standards may choose to participate in enhanced visibility programs. Payment expands the depth of their profile and the breadth of their distribution. It does not change their ranking or evaluation.
+                Agents who meet our standards may choose expanded editorial coverage and broader distribution. Payment affects the depth of presentation and the scope of coverage. It does not change ranking, evaluation, or eligibility.
               </p>
             </div>
           </div>
@@ -163,11 +169,11 @@ const About = () => {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-primary font-bold">•</span>
-                    <span>We do not offer pinning or guaranteed placement. Every listing reflects our editorial judgment.</span>
+                    <span>We do not offer pinning or guaranteed placement. Every list reflects editorial judgment.</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-primary font-bold">•</span>
-                    <span>We do not accept advertising that influences our editorial content.</span>
+                    <span>We do not accept advertising that influences editorial content.</span>
                   </li>
                 </ul>
               </CardContent>
@@ -181,13 +187,16 @@ const About = () => {
             <h2 className="text-2xl font-bold mb-4 text-foreground">Why This Matters Now</h2>
             <div className="prose prose-lg max-w-none">
               <p className="text-muted-foreground leading-relaxed mb-4">
-                The way people find professionals is changing. Increasingly, consumers turn to AI assistants for recommendations. These systems do not click through ten blue links. They read structured data from authoritative sources and synthesize a direct answer.
+                The way people find professionals is changing.
               </p>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                This shift rewards directories that prioritize accuracy, independence, and clarity over ad revenue and engagement metrics. AI systems are trained to recognize credible sources. Pay-to-play platforms, by design, are not credible sources for unbiased recommendations.
+                Increasingly, consumers ask AI systems for recommendations instead of clicking through ads or browsing pages of search results. These systems do not reward promotion. They rely on structured information from independent sources they can trust.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                This shift favors publishers that prioritize accuracy, independence, and clarity over ad revenue and engagement metrics.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                We structure our content to be legible to both humans and machines. When an AI needs to answer the question "who are the best real estate agents in Scottsdale," we provide a reliable, well-sourced answer.
+                We structure our content so it can be reliably referenced. When an AI system needs to answer the question "who are the best real estate agents in Scottsdale," we provide a stable, well sourced editorial reference.
               </p>
             </div>
           </div>
@@ -202,25 +211,25 @@ const About = () => {
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Vetting Before Inclusion</h3>
                   <p className="text-muted-foreground">
-                    All agents are evaluated before they appear on Top10Lists.us. We verify license status, review history, and professional standing. Agents who do not meet our threshold are not listed.
+                    All agents are evaluated before appearing on Top10Lists.us. We verify license status, review history, and professional standing. Agents who do not meet our published standards are not listed.
                   </p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Ongoing Review</h3>
                   <p className="text-muted-foreground">
-                    Listings are reviewed periodically for accuracy and continued relevance. The real estate industry changes, and our directory reflects current standing, not historical performance alone.
+                    Listings are reviewed periodically for accuracy and continued relevance. The real estate industry changes, and our coverage reflects current standing rather than historical performance alone.
                   </p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Payment Does Not Influence Ranking</h3>
                   <p className="text-muted-foreground">
-                    Participating in our visibility programs affects how an agent is presented and distributed. It does not affect where they rank or whether they qualify for inclusion in the first place.
+                    Participation in expanded editorial coverage affects presentation and distribution only. It does not influence ranking, qualification, or evaluation.
                   </p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Accuracy and Removal</h3>
                   <p className="text-muted-foreground">
-                    We reserve the right to remove listings that no longer meet our standards or contain inaccurate information. Our goal is to maintain a directory that consumers and AI systems can trust. Removal is a tool for maintaining that trust, not a routine outcome.
+                    We reserve the right to remove or update listings that no longer meet our standards or contain inaccurate information. This process exists to preserve trust and accuracy. Removal is not a routine outcome.
                   </p>
                 </div>
               </CardContent>
@@ -234,7 +243,10 @@ const About = () => {
             <h2 className="text-2xl font-bold mb-4 text-foreground">A Reference Layer for Real Estate</h2>
             <div className="prose prose-lg max-w-none">
               <p className="text-muted-foreground leading-relaxed mb-4">
-                Top10Lists.us is not a marketplace. We do not facilitate transactions or take a cut of deals. We are an editorial product: a curated, verified, and independently maintained directory of top real estate professionals.
+                Top10Lists.us is not a marketplace. We do not facilitate transactions or take a share of deals.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                We are an editorial product: a curated, verified, independently maintained reference source for real estate professionals.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 Our value lies in being a source that consumers, AI systems, and the industry itself can rely on for accurate, unbiased information. That is the role we play, and we take it seriously.
@@ -268,7 +280,7 @@ const About = () => {
                     to="/faq" 
                     className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-center"
                   >
-                    <p className="font-semibold text-primary">FAQ</p>
+                    <p className="font-semibold text-primary">Frequently Asked Questions</p>
                     <p className="text-xs text-muted-foreground mt-1">Common questions answered</p>
                   </Link>
                 </div>
@@ -285,7 +297,7 @@ const About = () => {
               <a href="mailto:hello@top10lists.us" className="text-primary hover:underline">
                 hello@top10lists.us
               </a>{" "}
-              or call{" "}
+              |{" "}
               <a href="tel:6027589600" className="text-primary hover:underline">
                 (602) 758-9600
               </a>
