@@ -496,3 +496,12 @@ verify_jwt = false
 
 [functions.validate-agent-session]
 verify_jwt = false
+
+[functions.get-agent-profile]
+verify_jwt = false
+
+[functions.update-agent-profile]
+verify_jwt = false
+
+[functions.submit-change-request]
+verify_jwt = false
