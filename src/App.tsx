@@ -107,6 +107,7 @@ const AILiability = lazy(() => import("./pages/AILiability"));
 const ProtocolAdopters = lazy(() => import("./pages/ProtocolAdopters"));
 const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
 const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods"));
+const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 
 const queryClient = new QueryClient();
 
@@ -139,6 +140,7 @@ const App = () => (
                     <Route path="/og-preview" element={<OGPreview />} />
                     <Route path="/crm" element={<CRM />} />
                     <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />
+                    <Route path="/test-visibility-components" element={<TestVisibilityComponents />} />
                     <Route path="/migrate-data" element={<MigrateData />} />
                     {/* Static pages */}
                     <Route path="/faq" element={<FAQ />} />
