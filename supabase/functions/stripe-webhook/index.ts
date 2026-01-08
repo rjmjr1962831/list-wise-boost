@@ -146,6 +146,11 @@ serve(async (req) => {
         const packageName = session.metadata?.packageName || '';
         const monthlyTotal = parseInt(session.metadata?.monthlyTotal || '0');
         
+        // NEW: Extract neighborhood data for visibility flow
+        const neighborhoodIds = session.metadata?.neighborhoodIds?.split(',').filter(Boolean) || [];
+        const billingPeriod = session.metadata?.billingPeriod || 'monthly';
+        const configVersion = session.metadata?.configVersion || null;
+        
         // Get promo code if used
         let promoCode: string | null = null;
         let discountAmountCents = 0;
@@ -163,7 +168,7 @@ serve(async (req) => {
           promoCode = discounts[0].discount.coupon.name;
         }
 
-        // Get city names
+        // Get city names (legacy flow)
         const { data: cities } = await supabase
           .from('arizona_city_pricing')
           .select('city_name')
@@ -205,6 +210,56 @@ serve(async (req) => {
           })
           .eq('id', professionalId);
 
+        // NEW: Create neighborhood subscriptions if present
+        if (neighborhoodIds.length > 0) {
+          logStep('Creating neighborhood subscriptions', { count: neighborhoodIds.length, billingPeriod });
+          
+          const stripeSubscriptionId = typeof session.subscription === 'string' 
+            ? session.subscription 
+            : (session.subscription as any)?.id;
+          
+          // Get neighborhood details for tier_at_purchase
+          const { data: neighborhoods } = await supabase
+            .from('neighborhood_catalog')
+            .select('id, tier')
+            .in('id', neighborhoodIds);
+
+          // Calculate subscription dates
+          const startedAt = new Date();
+          const expiresAt = billingPeriod === 'annual' 
+            ? new Date(startedAt.getTime() + 365 * 24 * 60 * 60 * 1000)
+            : null; // Monthly subscriptions renew, no fixed expiry
+
+          // Calculate price per neighborhood from session amount
+          const pricePerNeighborhood = Math.round((session.amount_total || 0) / neighborhoodIds.length);
+
+          // Insert subscription records
+          const subscriptionRecords = neighborhoodIds.map((neighborhoodId: string) => ({
+            professional_id: professionalId,
+            neighborhood_id: neighborhoodId,
+            tier_at_purchase: neighborhoods?.find((n: { id: string; tier: string }) => n.id === neighborhoodId)?.tier || 'Main',
+            price_paid: pricePerNeighborhood,
+            config_version_used: configVersion,
+            stripe_subscription_id: stripeSubscriptionId,
+            subscription_type: billingPeriod,
+            is_active: true,
+            started_at: startedAt.toISOString(),
+            expires_at: expiresAt?.toISOString() || null,
+          }));
+
+          const { error: subError } = await supabase
+            .from('agent_neighborhood_subscriptions')
+            .upsert(subscriptionRecords, { 
+              onConflict: 'professional_id,neighborhood_id' 
+            });
+
+          if (subError) {
+            logStep('Warning: Could not create neighborhood subscriptions', { error: subError.message });
+          } else {
+            logStep('Neighborhood subscriptions created', { count: neighborhoodIds.length });
+          }
+        }
+
         // Track funnel event
         await trackFunnelEvent(professionalId, 'checkout_completed', {
           session_id: session.id,
@@ -213,13 +268,15 @@ serve(async (req) => {
           discount_cents: discountAmountCents,
           package_name: packageName,
           city_count: cityIds.length,
-          city_names: cityNames
+          city_names: cityNames,
+          neighborhood_count: neighborhoodIds.length,
+          billing_period: billingPeriod
         });
 
         // Trigger Pipedrive sync
         await triggerPipedriveSync(professionalId);
 
-        logStep('Checkout completed', { professionalId, amount: session.amount_total });
+        logStep('Checkout completed', { professionalId, amount: session.amount_total, neighborhoodCount: neighborhoodIds.length });
         break;
       }
 
@@ -355,21 +412,47 @@ serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         const subscriptionId = subscription.id;
 
-        // Find professional
-        const { data: subData } = await supabase
+        // Find professional - check both city subscriptions (legacy) and neighborhood subscriptions (new)
+        let professionalId: string | null = null;
+        
+        // Try legacy city subscriptions first
+        const { data: citySubData } = await supabase
           .from('agent_city_subscriptions')
           .select('professional_id')
           .eq('stripe_subscription_id', subscriptionId)
           .limit(1)
           .single();
+        
+        if (citySubData?.professional_id) {
+          professionalId = citySubData.professional_id;
+        } else {
+          // Try neighborhood subscriptions
+          const { data: neighborhoodSubData } = await supabase
+            .from('agent_neighborhood_subscriptions')
+            .select('professional_id')
+            .eq('stripe_subscription_id', subscriptionId)
+            .limit(1)
+            .single();
+          
+          if (neighborhoodSubData?.professional_id) {
+            professionalId = neighborhoodSubData.professional_id;
+          }
+        }
 
-        if (!subData?.professional_id) break;
+        if (!professionalId) {
+          logStep('Could not find professional for canceled subscription', { subscriptionId });
+          break;
+        }
 
-        const professionalId = subData.professional_id;
-
-        // Deactivate all city subscriptions
+        // Deactivate all city subscriptions (legacy)
         await supabase
           .from('agent_city_subscriptions')
+          .update({ is_active: false })
+          .eq('stripe_subscription_id', subscriptionId);
+
+        // Deactivate all neighborhood subscriptions (new)
+        await supabase
+          .from('agent_neighborhood_subscriptions')
           .update({ is_active: false })
           .eq('stripe_subscription_id', subscriptionId);
 

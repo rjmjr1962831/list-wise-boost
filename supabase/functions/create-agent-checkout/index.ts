@@ -44,6 +44,9 @@ interface CheckoutRequest {
   // NEW: Neighborhood-based fields
   selectedNeighborhoods?: SelectedNeighborhood[];
   allNeighborhoodIds?: string[];
+  // NEW: Visibility flow fields
+  billingPeriod?: 'monthly' | 'annual';
+  configVersion?: string;
   monthlyTotal: number;
   successUrl: string;
   cancelUrl: string;
@@ -64,6 +67,8 @@ const handler = async (req: Request): Promise<Response> => {
       allCityIds,
       selectedNeighborhoods,
       allNeighborhoodIds,
+      billingPeriod,
+      configVersion,
       monthlyTotal,
       successUrl,
       cancelUrl 
@@ -77,19 +82,31 @@ const handler = async (req: Request): Promise<Response> => {
       premiumCityCount: premiumCities?.length || 0,
       selectedCityCount: selectedCities?.length || 0,
       selectedNeighborhoodCount: selectedNeighborhoods?.length || 0,
+      billingPeriod: billingPeriod || 'monthly',
+      configVersion,
       monthlyTotal 
     });
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
+    // Determine billing interval based on billingPeriod
+    const isAnnual = billingPeriod === 'annual';
+
     // NEW: Add neighborhood subscriptions as line items
     if (selectedNeighborhoods && selectedNeighborhoods.length > 0) {
       selectedNeighborhoods.forEach((neighborhood) => {
+        // For annual billing: pay for 10 months upfront
+        const unitAmount = isAnnual 
+          ? Math.round(neighborhood.price * 100 * 10) // 10 months upfront for annual
+          : Math.round(neighborhood.price * 100);     // Monthly price
+        
         lineItems.push({
           price_data: {
             currency: 'usd',
-            recurring: { interval: 'month' as const },
-            unit_amount: Math.round(neighborhood.price * 100),
+            recurring: { 
+              interval: isAnnual ? 'year' as const : 'month' as const
+            },
+            unit_amount: unitAmount,
             product_data: {
               name: `${neighborhood.neighborhoodName} (${neighborhood.tier})`,
               description: `${neighborhood.tier} neighborhood in ${neighborhood.cityArea} - Guaranteed Top 10 placement`,
@@ -181,7 +198,13 @@ const handler = async (req: Request): Promise<Response> => {
     const metadata: Record<string, string> = {
       professionalId,
       monthlyTotal: monthlyTotal.toString(),
+      billingPeriod: billingPeriod || 'monthly',
     };
+
+    // Add config version if present (for visibility flow)
+    if (configVersion) {
+      metadata.configVersion = configVersion;
+    }
 
     // Add neighborhood metadata if present
     if (allNeighborhoodIds && allNeighborhoodIds.length > 0) {
@@ -216,6 +239,8 @@ const handler = async (req: Request): Promise<Response> => {
         metadata: {
           professionalId,
           neighborhoodIds: allNeighborhoodIds?.join(',') || '',
+          billingPeriod: billingPeriod || 'monthly',
+          configVersion: configVersion || '',
           packageId: packageInfo?.id || '',
           cityIds: allCityIds?.join(',') || '',
         },
