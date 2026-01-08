@@ -29,17 +29,17 @@ interface ComputePriceRequest {
 }
 
 interface ComputePriceResponse {
+  neighborhood_id: string;
   neighborhood: string;
-  neighborhood_id?: string;
   city_area: string;
   state: string;
-  tier: string;
+  tier: 'Main' | 'Prime' | 'Luxury';
   base_price: number;
   multiplier: number;
-  override_price: number | null;
+  override_applied: boolean;
   final_price: number;
-  config_version: string;
   price_source: string;
+  config_version_used: string;
 }
 
 function applyRounding(price: number, rounding: { method: string; increment: number } | null): number {
@@ -219,17 +219,17 @@ const handler = async (req: Request): Promise<Response> => {
     const finalPrice = applyRounding(price, config.rounding);
 
     const response: ComputePriceResponse = {
+      neighborhood_id: neighborhood.id || '',
       neighborhood: neighborhood.neighborhood || '',
-      neighborhood_id: neighborhood.id,
       city_area: neighborhood.city_area || '',
       state,
-      tier,
+      tier: tier as 'Main' | 'Prime' | 'Luxury',
       base_price: basePrice,
       multiplier,
-      override_price: overridePrice,
+      override_applied: overridePrice !== null,
       final_price: finalPrice,
-      config_version: config.config_version,
       price_source: priceSource,
+      config_version_used: config.config_version,
     };
 
     console.log('[compute-neighborhood-price] Result:', response);

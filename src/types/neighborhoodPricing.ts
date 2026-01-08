@@ -41,6 +41,10 @@ export const NEIGHBORHOOD_TIER_STYLES: Record<NeighborhoodTier, {
   }
 };
 
+// ========================================
+// Neighborhood Catalog Types
+// ========================================
+
 // Neighborhood catalog item (from database)
 export interface NeighborhoodCatalogItem {
   id: string;
@@ -61,6 +65,10 @@ export interface NeighborhoodCatalogItem {
   is_verified: boolean;
   is_active: boolean;
 }
+
+// ========================================
+// Pricing Config Types
+// ========================================
 
 // Pricing config from database
 export interface PricingConfig {
@@ -100,7 +108,67 @@ export interface RoundingConfig {
   increment: number;
 }
 
-// Computed price result
+// ========================================
+// Search & Validation Types
+// ========================================
+
+export interface NeighborhoodSuggestion {
+  id: string;
+  neighborhood: string;
+  neighborhood_slug: string;
+  city_area: string;
+  city_area_slug: string;
+  state: string;
+  tier: NeighborhoodTier;
+  zips: string[];
+  lat: number | null;
+  lon: number | null;
+}
+
+export interface ValidateNeighborhoodRequest {
+  input_string: string;
+  state: string;
+  city_area?: string;
+  limit?: number;
+}
+
+export interface ValidateNeighborhoodResponse {
+  found: boolean;
+  suggestions: NeighborhoodSuggestion[];
+  normalized_input: string;
+  message: string | null;
+}
+
+// ========================================
+// Price Computation Types
+// ========================================
+
+// Request to compute-neighborhood-price
+export interface ComputePriceRequest {
+  neighborhood_id?: string;
+  state?: string;
+  city_area?: string;
+  neighborhood?: string;
+  tier?: string;
+  config_version?: string;
+}
+
+// Response from compute-neighborhood-price
+export interface ComputePriceResponse {
+  neighborhood_id: string;
+  neighborhood: string;
+  city_area: string;
+  state: string;
+  tier: NeighborhoodTier;
+  base_price: number;
+  multiplier: number;
+  override_applied: boolean;
+  final_price: number;
+  price_source: string;
+  config_version_used: string;
+}
+
+// Legacy computed price (for frontend helper function)
 export interface ComputedPrice {
   neighborhood: string;
   neighborhood_id: string;
@@ -111,6 +179,55 @@ export interface ComputedPrice {
   multiplier_applied?: number;
   override_applied?: boolean;
 }
+
+// ========================================
+// Cart & Quote Types
+// ========================================
+
+export interface QuoteCartRequest {
+  neighborhood_ids: string[];
+  config_version?: string;
+}
+
+export interface QuoteItem {
+  neighborhood_id: string;
+  neighborhood: string;
+  city_area: string;
+  tier: NeighborhoodTier;
+  final_price_monthly: number;
+  price_source: string;
+}
+
+export interface QuoteCartResponse {
+  config_version_used: string;
+  items: QuoteItem[];
+  total_monthly: number;
+  total_annual: number;
+}
+
+// ========================================
+// Selection & Coverage Types
+// ========================================
+
+export interface SelectedNeighborhood {
+  id: string;
+  neighborhood: string;
+  city_area: string;
+  state: string;
+  tier_at_selection: NeighborhoodTier;
+  price_monthly: number;
+  price_source: string;
+}
+
+export interface CoverageSelection {
+  selectedCityIds: string[];
+  selectedNeighborhoods: SelectedNeighborhood[];
+  pricingConfigVersion?: string;
+}
+
+// ========================================
+// Subscription Types
+// ========================================
 
 // Agent neighborhood subscription
 export interface AgentNeighborhoodSubscription {
@@ -128,7 +245,11 @@ export interface AgentNeighborhoodSubscription {
   expires_at: string | null;
 }
 
-// Helper function to compute price from config
+// ========================================
+// Helper Functions
+// ========================================
+
+// Helper function to compute price from config (frontend only)
 export function computeNeighborhoodPrice(
   neighborhood: NeighborhoodCatalogItem,
   config: PricingConfig
@@ -207,7 +328,7 @@ export function getTierPrice(tier: NeighborhoodTier): number {
   return NEIGHBORHOOD_TIER_PRICES[tier];
 }
 
-// Helper to get annual price (10 months for price of 12)
+// Helper to get annual price (pay for 10 months, get 12 - 2 months free)
 export function getAnnualPrice(monthlyPrice: number): number {
-  return monthlyPrice * 10; // 2 months free
+  return monthlyPrice * 10;
 }
