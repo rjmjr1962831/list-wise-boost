@@ -487,3 +487,12 @@ verify_jwt = false
 
 [functions.create-pipedrive-task]
 verify_jwt = false
+
+[functions.send-agent-verification-code]
+verify_jwt = false
+
+[functions.verify-agent-code]
+verify_jwt = false
+
+[functions.validate-agent-session]
+verify_jwt = false

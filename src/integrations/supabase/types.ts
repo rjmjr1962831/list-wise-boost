@@ -174,6 +174,72 @@ export type Database = {
           },
         ]
       }
+      agent_rate_limits: {
+        Row: {
+          attempt_type: string
+          created_at: string
+          email: string
+          id: string
+          locked_until: string | null
+        }
+        Insert: {
+          attempt_type?: string
+          created_at?: string
+          email: string
+          id?: string
+          locked_until?: string | null
+        }
+        Update: {
+          attempt_type?: string
+          created_at?: string
+          email?: string
+          id?: string
+          locked_until?: string | null
+        }
+        Relationships: []
+      }
+      agent_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          last_active_at: string
+          professional_id: string
+          session_token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_active_at?: string
+          professional_id: string
+          session_token: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_active_at?: string
+          professional_id?: string
+          session_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_sessions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_sessions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_subscriptions: {
         Row: {
           consent: boolean
@@ -206,6 +272,51 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      agent_verification_codes: {
+        Row: {
+          code: string
+          created_at: string
+          delivery_method: string
+          expires_at: string
+          id: string
+          professional_id: string
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          delivery_method?: string
+          expires_at?: string
+          id?: string
+          professional_id: string
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          delivery_method?: string
+          expires_at?: string
+          id?: string
+          professional_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_verification_codes_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_verification_codes_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       appointment_types: {
         Row: {
