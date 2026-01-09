@@ -119,7 +119,12 @@ export default function VisibilityExpertisePage() {
 
   // Handle neighborhood add
   const handleAddNeighborhood = (neighborhood: SelectedNeighborhood) => {
-    setSelectedNeighborhoods(prev => [...prev, neighborhood]);
+    console.log('[VisibilityExpertisePage] handleAddNeighborhood called:', neighborhood);
+    setSelectedNeighborhoods(prev => {
+      const next = [...prev, neighborhood];
+      console.log('[VisibilityExpertisePage] New selectedNeighborhoods:', next);
+      return next;
+    });
   };
 
   // Handle neighborhood remove
