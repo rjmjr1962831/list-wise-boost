@@ -16,58 +16,61 @@ import { cn } from '@/lib/utils';
 const BioPreview = ({ text }: { text: string }) => {
   const [expanded, setExpanded] = useState(false);
 
-  // Convert HTML to plain text while preserving paragraph breaks
-  const htmlToPlainText = (html: string) => {
-    if (!html) return '';
-    
-    // Replace </p><p> or </p> <p> with double newlines for paragraph breaks
-    let result = html
-      .replace(/<\/p>\s*<p>/gi, '\n\n')
-      .replace(/<p>/gi, '')
-      .replace(/<\/p>/gi, '')
-      .replace(/<br\s*\/?>/gi, '\n')
-      .replace(/&nbsp;/g, ' ')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&quot;/g, '"')
-      .replace(/&#039;/g, "'")
-      .replace(/<[^>]*>/g, '') // Remove any remaining HTML tags
-      .trim();
-    
-    return result;
+  // Get plain text length for truncation calculation only
+  const getPlainTextLength = (html: string) => {
+    if (!html) return 0;
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    return (temp.textContent || temp.innerText || '').length;
   };
 
-  const plainText = htmlToPlainText(text);
-  const maxLength = 200;
-  const needsTruncation = plainText.length > maxLength;
+  const textLength = getPlainTextLength(text);
+  const maxLength = 600; // Character limit for truncation
+  const needsTruncation = textLength > maxLength;
+
+  // For truncated view, we need to cut the HTML safely
+  const getTruncatedHtml = (html: string, limit: number) => {
+    if (!html) return '';
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    const plainText = temp.textContent || temp.innerText || '';
+    if (plainText.length <= limit) return html;
+    
+    // Find a good break point in the plain text
+    const truncated = plainText.slice(0, limit);
+    const lastSpace = truncated.lastIndexOf(' ');
+    const breakPoint = lastSpace > limit * 0.8 ? lastSpace : limit;
+    
+    return plainText.slice(0, breakPoint) + '...';
+  };
 
   // Truncated view
   if (!expanded && needsTruncation) {
     return (
       <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
-        <span className="whitespace-pre-line">
-          {plainText.slice(0, maxLength)}
+        <div className="whitespace-pre-line">
+          {getTruncatedHtml(text, maxLength)}
           <span
             onClick={() => setExpanded(true)}
             className="text-primary cursor-pointer hover:underline font-medium ml-1"
           >
-            ...more
+            more
           </span>
-        </span>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
-      <div className="whitespace-pre-line">
-        {plainText}
-      </div>
+      <div 
+        className="prose prose-sm max-w-none [&>p]:mb-4 [&>p:last-child]:mb-0"
+        dangerouslySetInnerHTML={{ __html: text }}
+      />
       {needsTruncation && (
         <span
           onClick={() => setExpanded(false)}
-          className="text-primary cursor-pointer hover:underline font-medium"
+          className="text-primary cursor-pointer hover:underline font-medium mt-2 inline-block"
         >
           less
         </span>
