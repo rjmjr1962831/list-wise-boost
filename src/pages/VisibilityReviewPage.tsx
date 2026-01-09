@@ -42,6 +42,11 @@ export default function VisibilityReviewPage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Get authenticated user and their professional ID
   useEffect(() => {
     async function loadAuth() {

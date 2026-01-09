@@ -37,6 +37,11 @@ export default function VisibilityExpertisePage() {
   const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
   const [isFooterExpanded, setIsFooterExpanded] = useState(false);
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Detect mobile
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 1024);

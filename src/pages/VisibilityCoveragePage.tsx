@@ -42,6 +42,11 @@ export default function VisibilityCoveragePage() {
   const [isLoading, setIsLoading] = useState(true);
 
 
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Load cities from database
   useEffect(() => {
     async function loadCities() {
