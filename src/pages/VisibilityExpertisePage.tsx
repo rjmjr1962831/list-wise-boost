@@ -194,9 +194,17 @@ export default function VisibilityExpertisePage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Highlight Your Neighborhood Expertise</h1>
           <p className="text-muted-foreground mt-1">
-            Optionally highlight specific neighborhoods where you have demonstrated experience. 
-            Neighborhood highlights refine how your profile is presented and do not affect ranking eligibility or position.
+            Stand out in the specific neighborhoods where you do the most business. Premium placement ensures you're the go-to agent for hyperlocal searches.
           </p>
+        </div>
+
+        {/* Value props */}
+        <div className="mb-6 p-4 rounded-lg bg-muted/30 border">
+          <div className="text-sm space-y-1">
+            <p>• Guaranteed Top 10 placement in neighborhood searches</p>
+            <p>• AI systems cite neighborhood specialists first</p>
+            <p>• Cancel anytime, no long-term commitment</p>
+          </div>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">

@@ -69,13 +69,14 @@ export default function VisibilityCoveragePage() {
 
         setCities(cityOptions);
 
-        // Build bundles from REGIONAL_PACKAGES with actual city IDs and names
+        // Build bundles from REGIONAL_PACKAGES with actual city IDs, names, and categories
         const cityBySlug = new Map(cityOptions.map(c => [c.slug, c.id]));
         const cityNameBySlug = new Map(cityOptions.map(c => [c.slug, c.name]));
         const resolvedBundles: CityBundle[] = REGIONAL_PACKAGES.map(pkg => ({
           id: pkg.id,
           name: pkg.name,
           description: pkg.description,
+          category: pkg.category,
           cityIds: pkg.includedCityIds
             .map(slug => cityBySlug.get(slug))
             .filter((id): id is string => !!id),
@@ -179,7 +180,7 @@ export default function VisibilityCoveragePage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Select Your Coverage Areas</h1>
           <p className="text-muted-foreground mt-1">
-            Choose the cities where you actively serve clients. Coverage defines where you may be evaluated if you qualify. City coverage is free.
+            Choose the cities where you want to appear in the Top 10. City coverage is free.
           </p>
         </div>
 
