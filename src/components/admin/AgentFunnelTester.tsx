@@ -145,10 +145,10 @@ export const AgentFunnelTester = () => {
   ];
 
   const visibilitySteps = [
-    { path: `/visibility/coverage`, name: '1. Coverage (Cities)' },
-    { path: `/visibility/expertise`, name: '2. Expertise (Neighborhoods)' },
-    { path: `/visibility/review`, name: '3. Review & Checkout' },
-    { path: `/visibility/success`, name: '4. Success' },
+    { path: `/visibility/coverage`, name: '4. Cities' },
+    { path: `/visibility/expertise`, name: '5. Neighborhoods' },
+    { path: `/visibility/review`, name: '6. Review & Pay' },
+    { path: `/visibility/success`, name: '7. Done' },
   ];
 
   return (

@@ -8,8 +8,6 @@ import {
   CheckCircle2, 
   ExternalLink, 
   MapPin, 
-  BarChart3, 
-  RefreshCw, 
   Eye,
   Shield
 } from 'lucide-react';
@@ -106,54 +104,33 @@ export default function FunnelSuccess() {
               </CardContent>
             </Card>
 
-            {/* Optional Visibility Features */}
-            <Card className="mb-8">
+            {/* Next Step: Select Your Cities */}
+            <Card className="mb-8 border-primary">
               <CardContent className="p-6">
-                <h2 className="text-xl font-semibold mb-4">Optional Ways to Expand Your Presence</h2>
+                <h2 className="text-xl font-semibold mb-4">Next: Select Your Coverage Areas</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Some professionals choose to expand their visibility or access additional tools. These options are entirely optional and do not affect inclusion or ranking.
+                  Now that your profile is live, choose the cities and neighborhoods where you'd like to be featured. Your primary city listing is free—additional areas are optional.
                 </p>
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
                     <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-medium text-sm">Additional Cities</p>
+                      <p className="font-medium text-sm">City Coverage</p>
                       <p className="text-sm text-muted-foreground">
-                        Be featured in more than one city beyond your initial selection.
+                        Select the cities where you work. Your primary city is included free.
                       </p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
                     <Eye className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-medium text-sm">Enhanced Profile Visibility</p>
+                      <p className="font-medium text-sm">Neighborhood Expertise</p>
                       <p className="text-sm text-muted-foreground">
-                        Highlight your profile in comparison views and category browsing.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                    <BarChart3 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-medium text-sm">Insights & Performance Analytics</p>
-                      <p className="text-sm text-muted-foreground">
-                        See how users interact with your profile.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                    <RefreshCw className="h-5 w-5 text-primary mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-medium text-sm">Ongoing Editorial Updates</p>
-                      <p className="text-sm text-muted-foreground">
-                        Request periodic refresh reviews as your career evolves.
+                        Highlight specific neighborhoods where you have deep expertise.
                       </p>
                     </div>
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-4 text-center">
-                  Declining these options does not affect your current listing.
-                </p>
               </CardContent>
             </Card>
 
@@ -182,7 +159,7 @@ export default function FunnelSuccess() {
                 onClick={handleExploreOptions}
                 className="w-full sm:w-auto"
               >
-                Explore Visibility Options
+                Continue to City Selection
                 <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
               <Button
