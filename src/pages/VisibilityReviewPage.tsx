@@ -59,7 +59,9 @@ export default function VisibilityReviewPage() {
             description: 'Please sign in to continue.',
             variant: 'destructive',
           });
-          navigate('/auth?returnTo=/visibility/review');
+          // Store return URL for post-login redirect
+          sessionStorage.setItem('visibility_return_url', '/visibility/review');
+          navigate('/agent/login');
           return;
         }
 
