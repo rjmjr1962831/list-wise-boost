@@ -192,18 +192,18 @@ export default function VisibilityExpertisePage() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">Highlight Your Neighborhood Expertise</h1>
+          <h1 className="text-2xl font-bold">Highlight Verified Neighborhood Expertise</h1>
           <p className="text-muted-foreground mt-1">
-            Stand out in the specific neighborhoods where you do the most business. Premium placement ensures you're the go-to agent for hyperlocal searches.
+            We highlight agents who have demonstrated verified experience in specific neighborhoods, adding clarity for consumers and AI systems evaluating local specialization.
           </p>
         </div>
 
         {/* Value props */}
         <div className="mb-6 p-4 rounded-lg bg-muted/30 border">
           <div className="text-sm space-y-1">
-            <p>• Guaranteed Top 10 placement in neighborhood searches</p>
-            <p>• AI systems cite neighborhood specialists first</p>
-            <p>• Cancel anytime, no long-term commitment</p>
+            <p>• Highlights agents with verified neighborhood-level experience</p>
+            <p>• Adds geographic context to agent profiles without affecting ranking position</p>
+            <p>• Optional and cancellable at any time</p>
           </div>
         </div>
 
