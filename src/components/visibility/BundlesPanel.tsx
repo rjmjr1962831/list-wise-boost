@@ -7,6 +7,7 @@ export interface CityBundle {
   name: string;
   description?: string;
   cityIds: string[];
+  cityNames?: string[]; // Added to display full city list
 }
 
 interface BundlesPanelProps {
@@ -48,14 +49,15 @@ export function BundlesPanel({
               )}
             >
               <div className="flex flex-col gap-2">
-                <h4 className="font-medium">{bundle.name}</h4>
-                {bundle.description && (
-                  <p className="text-sm text-muted-foreground">
-                    {bundle.description}
-                  </p>
-                )}
-                <p className="text-xs text-muted-foreground">
-                  {bundle.cityIds.length} cities
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium">{bundle.name}</h4>
+                  <span className="text-xs text-muted-foreground">
+                    {bundle.cityIds.length} cities
+                  </span>
+                </div>
+                {/* Show all city names */}
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {bundle.cityNames?.join(', ') || bundle.description}
                 </p>
                 <Button
                   variant={isAdded ? 'outline' : 'default'}

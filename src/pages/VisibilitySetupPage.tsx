@@ -75,8 +75,9 @@ export default function VisibilitySetupPage() {
 
         setCities(cityOptions);
 
-        // Build bundles from REGIONAL_PACKAGES with actual city IDs
+        // Build bundles from REGIONAL_PACKAGES with actual city IDs and names
         const cityBySlug = new Map(cityOptions.map(c => [c.slug, c.id]));
+        const cityNameBySlug = new Map(cityOptions.map(c => [c.slug, c.name]));
         const resolvedBundles: CityBundle[] = REGIONAL_PACKAGES.map(pkg => ({
           id: pkg.id,
           name: pkg.name,
@@ -84,6 +85,9 @@ export default function VisibilitySetupPage() {
           cityIds: pkg.includedCityIds
             .map(slug => cityBySlug.get(slug))
             .filter((id): id is string => !!id),
+          cityNames: pkg.includedCityIds
+            .map(slug => cityNameBySlug.get(slug))
+            .filter((name): name is string => !!name),
         }));
         setBundles(resolvedBundles);
 
