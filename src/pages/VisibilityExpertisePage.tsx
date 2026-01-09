@@ -292,18 +292,10 @@ export default function VisibilityExpertisePage() {
                     }
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <div className="w-full sm:w-auto">
                   <Button onClick={handleContinue} className="w-full sm:w-auto">
                     Continue to Review
                   </Button>
-                  {neighborhoodCount === 0 && (
-                    <button
-                      onClick={handleSkip}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      Skip neighborhoods
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
