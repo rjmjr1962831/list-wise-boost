@@ -1,10 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
-import { CitiesPanel, type CityOption } from '@/components/visibility/CitiesPanel';
 import { BundlesPanel, type CityBundle } from '@/components/visibility/BundlesPanel';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -27,24 +26,21 @@ interface StoredSelection {
   skippedExpertise?: boolean;
   savedAt: string;
 }
+interface CityData {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export default function VisibilityCoveragePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  const [cities, setCities] = useState<CityOption[]>([]);
+  const [cities, setCities] = useState<CityData[]>([]);
   const [bundles, setBundles] = useState<CityBundle[]>([]);
   const [selectedCityIds, setSelectedCityIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
 
-  // Detect mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 1024);
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Load cities from database
   useEffect(() => {
@@ -60,7 +56,7 @@ export default function VisibilityCoveragePage() {
 
         if (error) throw error;
 
-        const cityOptions: CityOption[] = (data || []).map(c => ({
+        const cityOptions: CityData[] = (data || []).map(c => ({
           id: c.id,
           name: c.name,
           slug: c.slug,
@@ -116,18 +112,6 @@ export default function VisibilityCoveragePage() {
 
     loadCities();
   }, [toast]);
-
-  // Build city names map for display
-  const cityNames = useMemo(() => {
-    const map = new Map<string, string>();
-    cities.forEach(c => map.set(c.id, c.name));
-    return map;
-  }, [cities]);
-
-  // Handle city selection changes
-  const handleCityChange = (next: Set<string>) => {
-    setSelectedCityIds(next);
-  };
 
   // Handle bundle add
   const handleAddBundle = (_bundleId: string, cityIds: string[]) => {
@@ -194,83 +178,31 @@ export default function VisibilityCoveragePage() {
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left column - Selection panels */}
-          <div className="flex-1 space-y-6">
-            {/* City Bundles */}
-            <BundlesPanel
-              bundles={bundles}
-              selectedCities={selectedCityIds}
-              onAddBundle={handleAddBundle}
-            />
-
-            {/* Individual Cities */}
-            <CitiesPanel
-              allCities={cities}
-              selected={selectedCityIds}
-              onChange={handleCityChange}
-            />
-          </div>
-
-          {/* Right column - Summary (desktop only) */}
-          {!isMobile && (
-            <div className="w-80 flex-shrink-0">
-              <div className="sticky top-6 rounded-lg border bg-card shadow-sm">
-                {/* Cities Section */}
-                <div className="p-4 border-b">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h4 className="font-semibold text-sm">Cities Selected</h4>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
-                      Free
-                    </span>
-                  </div>
-
-                  {cityCount === 0 ? (
-                    <p className="text-sm text-muted-foreground">No cities selected</p>
-                  ) : (
-                    <p className="text-2xl font-bold">{cityCount} cities</p>
-                  )}
-                </div>
-
-                {/* CTA Section */}
-                <div className="p-4">
-                  <Button
-                    className="w-full"
-                    disabled={!hasSelections}
-                    onClick={handleContinue}
-                  >
-                    Continue to Expertise
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
+        {/* City Bundles */}
+        <div className="max-w-4xl">
+          <BundlesPanel
+            bundles={bundles}
+            selectedCities={selectedCityIds}
+            onAddBundle={handleAddBundle}
+          />
         </div>
 
-        {/* Mobile footer */}
-        {isMobile && (
-          <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg z-50">
-            <div className="flex items-center justify-between px-4 py-3">
-              <div className="text-sm">
-                <span className="font-medium">{cityCount} cities selected</span>
-                <span className="text-muted-foreground"> · </span>
-                <span className="text-green-600 font-medium">Free</span>
-              </div>
-              <Button
-                size="sm"
-                disabled={!hasSelections}
-                onClick={handleContinue}
-              >
-                Continue
-                <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
+        {/* Summary and CTA */}
+        <div className="max-w-4xl mt-6 p-4 rounded-lg border bg-card flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-semibold">{cityCount} cities selected</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+              Free
+            </span>
           </div>
-        )}
-        
-        {/* Spacer for mobile footer */}
-        {isMobile && <div className="h-16" />}
+          <Button
+            disabled={!hasSelections}
+            onClick={handleContinue}
+          >
+            Continue to Expertise
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
       </div>
     </>
   );
