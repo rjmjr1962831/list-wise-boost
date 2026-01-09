@@ -118,10 +118,16 @@ export default function TestVisibilityComponents() {
           <h2 className="text-xl font-semibold border-b pb-2">2. CoverageProgress</h2>
           <div className="flex gap-2 mb-4">
             <button
-              onClick={() => setProgressStep('setup')}
-              className={`px-3 py-1 rounded text-sm ${progressStep === 'setup' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+              onClick={() => setProgressStep('coverage')}
+              className={`px-3 py-1 rounded text-sm ${progressStep === 'coverage' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
             >
-              Setup
+              Coverage
+            </button>
+            <button
+              onClick={() => setProgressStep('expertise')}
+              className={`px-3 py-1 rounded text-sm ${progressStep === 'expertise' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+            >
+              Expertise
             </button>
             <button
               onClick={() => setProgressStep('review')}

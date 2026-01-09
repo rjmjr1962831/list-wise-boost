@@ -1,19 +1,21 @@
-import { Check, MapPin, FileText, CreditCard } from 'lucide-react';
+import { Check, MapPin, Target, FileText, CreditCard } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-type Step = 'setup' | 'review' | 'payment';
+type Step = 'coverage' | 'expertise' | 'review' | 'payment';
 
 interface CoverageProgressProps {
   current: Step;
   labels?: {
-    setup?: string;
+    coverage?: string;
+    expertise?: string;
     review?: string;
     payment?: string;
   };
 }
 
 const steps: { key: Step; icon: React.ElementType; defaultLabel: string }[] = [
-  { key: 'setup', icon: MapPin, defaultLabel: 'Edit Coverage' },
+  { key: 'coverage', icon: MapPin, defaultLabel: 'Coverage' },
+  { key: 'expertise', icon: Target, defaultLabel: 'Expertise' },
   { key: 'review', icon: FileText, defaultLabel: 'Review' },
   { key: 'payment', icon: CreditCard, defaultLabel: 'Payment' },
 ];
