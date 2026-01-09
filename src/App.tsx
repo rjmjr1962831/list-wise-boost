@@ -191,6 +191,7 @@ const App = () => (
                     <Route path="/apply/onboarding" element={<AgentOnboardingFunnel />} />
                     <Route path="/apply/payment-coming-soon" element={<PaymentComingSoon />} />
                     {/* Verification funnel */}
+                    <Route path="/verify" element={<Navigate to="/verify/ee5a75fc-2a6e-4a03-980e-f40532c55f59" replace />} />
                     <Route path="/verify/:token" element={<VerifyListing />} />
                     <Route path="/verify/:token/details" element={<VerifyDetails />} />
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
