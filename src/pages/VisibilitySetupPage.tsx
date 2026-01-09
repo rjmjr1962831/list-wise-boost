@@ -11,32 +11,7 @@ import { NeighborhoodsPanel } from '@/components/visibility/NeighborhoodsPanel';
 import { CoverageSummaryCard } from '@/components/visibility/CoverageSummaryCard';
 import { CoverageSummaryFooter } from '@/components/visibility/CoverageSummaryFooter';
 import { useToast } from '@/hooks/use-toast';
-
-// Static bundle definitions - city IDs will be populated on load
-const STATIC_BUNDLES: Omit<CityBundle, 'cityIds'>[] = [
-  {
-    id: 'east-valley',
-    name: 'East Valley',
-    description: 'Mesa, Tempe, Chandler, Gilbert, Scottsdale',
-  },
-  {
-    id: 'phoenix-core',
-    name: 'Phoenix Metro',
-    description: 'Phoenix, Scottsdale, Paradise Valley',
-  },
-  {
-    id: 'west-valley',
-    name: 'West Valley',
-    description: 'Glendale, Peoria, Surprise, Goodyear',
-  },
-];
-
-// City slug to bundle mapping
-const BUNDLE_CITY_SLUGS: Record<string, string[]> = {
-  'east-valley': ['mesa', 'tempe', 'chandler', 'gilbert', 'scottsdale'],
-  'phoenix-core': ['phoenix', 'scottsdale', 'paradise-valley'],
-  'west-valley': ['glendale', 'peoria', 'surprise', 'goodyear'],
-};
+import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 
 const STORAGE_KEY = 'visibility_selection';
 const STORAGE_EXPIRY_HOURS = 24;
@@ -100,11 +75,13 @@ export default function VisibilitySetupPage() {
 
         setCities(cityOptions);
 
-        // Build bundles with actual city IDs
+        // Build bundles from REGIONAL_PACKAGES with actual city IDs
         const cityBySlug = new Map(cityOptions.map(c => [c.slug, c.id]));
-        const resolvedBundles: CityBundle[] = STATIC_BUNDLES.map(bundle => ({
-          ...bundle,
-          cityIds: (BUNDLE_CITY_SLUGS[bundle.id] || [])
+        const resolvedBundles: CityBundle[] = REGIONAL_PACKAGES.map(pkg => ({
+          id: pkg.id,
+          name: pkg.name,
+          description: pkg.description,
+          cityIds: pkg.includedCityIds
             .map(slug => cityBySlug.get(slug))
             .filter((id): id is string => !!id),
         }));
