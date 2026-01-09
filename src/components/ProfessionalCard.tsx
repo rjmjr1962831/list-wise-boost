@@ -1722,10 +1722,10 @@ export const ProfessionalCard = ({
                 {/* Bar 1: From [firstname] - Bio */}
                 {(() => {
                   const bioHtml = (professional as any).get_to_know_me;
-                  const description = (professional as any).description;
                   // Use original_description (Zillow bio) as final fallback
+                  // Note: description is excluded to avoid duplicating synthesized_bio content
                   const originalDescription = (professional as any).original_description;
-                  const source = description || bioHtml || originalDescription;
+                  const source = bioHtml || originalDescription;
 
                   if (!source && !isEditing) return null;
 
