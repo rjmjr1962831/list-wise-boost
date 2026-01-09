@@ -1619,16 +1619,21 @@ export const ProfessionalCard = ({
               )}
             </div>
 
-              {/* Synthesized Bio Display (if available, show above buttons) */}
+              {/* Synthesized Bio Display - always show, fallback to description if no synthesized_bio */}
               {(() => {
+                if (isEditing) return null;
+                
                 const synthesizedBio = (professional as any).synthesized_bio;
-                if (!synthesizedBio || isEditing) return null;
+                const descriptionFallback = (professional as any).description;
+                const bioContent = synthesizedBio || descriptionFallback;
+                
+                if (!bioContent) return null;
                 
                 const CHAR_LIMIT = 400;
-                const needsTruncation = synthesizedBio.length > CHAR_LIMIT;
+                const needsTruncation = bioContent.length > CHAR_LIMIT;
                 const displayText = showFullSynthesizedBio || !needsTruncation 
-                  ? synthesizedBio 
-                  : synthesizedBio.slice(0, CHAR_LIMIT) + '...';
+                  ? bioContent 
+                  : bioContent.slice(0, CHAR_LIMIT) + '...';
                 
                 return (
                   <div className="border rounded-lg p-4 bg-primary/5 mt-3">
