@@ -281,6 +281,31 @@ export default function VisibilityExpertisePage() {
                 onAdd={handleAddNeighborhood}
                 onRemove={handleRemoveNeighborhood}
               />
+
+              {/* Continue button - always visible */}
+              <div className="mt-6 p-4 rounded-lg border bg-card flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-center sm:text-left">
+                  <p className="text-sm text-muted-foreground">
+                    {neighborhoodCount === 0 
+                      ? "No neighborhoods selected yet. You can add them later or continue with free city coverage."
+                      : `${neighborhoodCount} neighborhood${neighborhoodCount !== 1 ? 's' : ''} selected · $${monthlyTotal}/mo`
+                    }
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                  <Button onClick={handleContinue} className="w-full sm:w-auto">
+                    Continue to Review
+                  </Button>
+                  {neighborhoodCount === 0 && (
+                    <button
+                      onClick={handleSkip}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Skip neighborhoods
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
