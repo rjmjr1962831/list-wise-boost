@@ -78,13 +78,27 @@ export default function VisibilityReviewPage() {
         if (professional) {
           setProfessionalId(professional.id);
         } else {
-          toast({
-            title: 'Profile not found',
-            description: 'No active professional profile found for your account.',
-            variant: 'destructive',
-          });
-          navigate('/');
-          return;
+          // Check if user is admin - allow them to proceed with test professional
+          const { data: adminRole } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+
+          if (adminRole) {
+            // Use test professional (Robert Maynard) for admin testing
+            setProfessionalId('20e0b7f2-5652-424a-9d46-ba74a19cd9a8');
+            console.log('Admin bypass: using test professional ID');
+          } else {
+            toast({
+              title: 'Profile not found',
+              description: 'No active professional profile found for your account.',
+              variant: 'destructive',
+            });
+            navigate('/');
+            return;
+          }
         }
       } catch (e) {
         console.error('Error loading auth:', e);
