@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 
 const TEST_PROFILE_ID = '0efe9b64-b34d-4fd9-9a78-45a304ed190e'; // Adam Hamblen
 const ADMIN_TEST_PROFILE_ID = '20e0b7f2-5652-424a-9d46-ba74a19cd9a8'; // Robert Maynard - for funnel testing
+const ADMIN_TEST_TOKEN = 'ee5a75fc-2a6e-4a03-980e-f40532c55f59'; // Robert Maynard's verification token
 
 interface Professional {
   id: string;
@@ -136,6 +137,19 @@ export const AgentFunnelTester = () => {
     { path: `/profile/${TEST_PROFILE_ID}/pricing`, name: 'Pricing', status: 'pricing_viewed' },
     { path: `/profile/${TEST_PROFILE_ID}/select`, name: 'Selection', status: 'selection_made' },
     { path: `/profile/${TEST_PROFILE_ID}/schedule`, name: 'Schedule Call', status: 'call_scheduled' }
+  ];
+
+  const verificationSteps = [
+    { path: `/verify/${ADMIN_TEST_TOKEN}`, name: 'Verify Start' },
+    { path: `/verify/${ADMIN_TEST_TOKEN}/details`, name: 'Verify Details' },
+    { path: `/verify/${ADMIN_TEST_TOKEN}/specialties`, name: 'Verify Specialties' },
+    { path: `/verify/${ADMIN_TEST_TOKEN}/cities`, name: 'Verify Cities' },
+  ];
+
+  const visibilitySteps = [
+    { path: `/visibility/coverage`, name: 'Coverage (Cities)' },
+    { path: `/visibility/expertise`, name: 'Expertise (Neighborhoods)' },
+    { path: `/visibility/review`, name: 'Review & Checkout' },
   ];
 
   return (
@@ -335,21 +349,59 @@ export const AgentFunnelTester = () => {
           </div>
         )}
 
-        <div className="space-y-2 pt-4 border-t">
-          <h4 className="text-sm font-semibold">Jump to Funnel Step:</h4>
-          <div className="grid grid-cols-2 gap-2">
-            {funnelSteps.map((step, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                className="justify-start text-xs"
-                onClick={() => navigate(step.path)}
-              >
-                <Play className="mr-2 h-3 w-3" />
-                {step.name}
-              </Button>
-            ))}
+        <div className="space-y-4 pt-4 border-t">
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold">Profile Funnel Steps:</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {funnelSteps.map((step, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="justify-start text-xs"
+                  onClick={() => navigate(step.path)}
+                >
+                  <Play className="mr-2 h-3 w-3" />
+                  {step.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold">Verification Flow:</h4>
+            <div className="grid grid-cols-2 gap-2">
+              {verificationSteps.map((step, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="justify-start text-xs"
+                  onClick={() => navigate(step.path)}
+                >
+                  <Play className="mr-2 h-3 w-3" />
+                  {step.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold">Visibility Funnel:</h4>
+            <div className="grid grid-cols-3 gap-2">
+              {visibilitySteps.map((step, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  className="justify-start text-xs"
+                  onClick={() => navigate(step.path)}
+                >
+                  <Play className="mr-2 h-3 w-3" />
+                  {step.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </CardContent>
