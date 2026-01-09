@@ -639,60 +639,18 @@ export default function EditProfile() {
               </div>
             </div>
 
-            {/* SECTION 4: FEATURED CITY (Editable — Agent Source of Truth) */}
-            <div className="space-y-4">
-              <Label htmlFor="featured_city" className="text-xl font-semibold text-foreground">What city would you like to be featured in?</Label>
-              <div className="relative">
-                <Input
-                  placeholder="Start typing a city name..."
-                  value={citySearchOpen ? citySearch : formData.featured_city}
-                  onChange={(e) => {
-                    setCitySearch(e.target.value);
-                    setCitySearchOpen(true);
-                  }}
-                  onFocus={() => setCitySearchOpen(true)}
-                  onBlur={() => {
-                    // Delay to allow click on suggestion
-                    setTimeout(() => setCitySearchOpen(false), 200);
-                  }}
-                  className="w-full"
-                />
-                {citySearchOpen && (
-                  <div className="absolute z-[100] w-full mt-1 bg-background border border-border rounded-md shadow-lg max-h-[300px] overflow-hidden">
-                    {citySearch.trim().length < 2 ? (
-                      <div className="p-3 text-sm text-muted-foreground text-center">
-                        Type at least 2 characters to search...
-                      </div>
-                    ) : filteredCities.length === 0 ? (
-                      <div className="p-3 text-sm text-muted-foreground text-center">
-                        No cities found
-                      </div>
-                    ) : (
-                      filteredCities.slice(0, 20).map((city) => (
-                        <div
-                          key={city.id}
-                          className="px-3 py-2 cursor-pointer hover:bg-accent flex items-center gap-2"
-                          onMouseDown={(e) => {
-                            e.preventDefault();
-                            selectCity(city.name);
-                            setCitySearch('');
-                            setCitySearchOpen(false);
-                          }}
-                        >
-                          <Check
-                            className={cn(
-                              "h-4 w-4",
-                              formData.featured_city === city.name ? "opacity-100 text-primary" : "opacity-0"
-                            )}
-                          />
-                          {city.name}, {city.state}
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground italic">You may change this later.</p>
+            {/* SECTION 4: FEATURED CITY */}
+            <div className="space-y-3">
+              <h2 className="text-xl font-semibold text-foreground">Featured city</h2>
+              <p className="text-sm text-muted-foreground">
+                We'll feature you in{' '}
+                <span className="font-medium text-foreground">
+                  {formData.featured_city || (professional?.cities?.name ?? 'your primary city')}
+                </span>.
+              </p>
+              <p className="text-xs text-muted-foreground italic">
+                You'll choose your full coverage areas next.
+              </p>
             </div>
 
             {/* Navigation */}
