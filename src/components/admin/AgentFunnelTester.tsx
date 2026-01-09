@@ -134,9 +134,7 @@ export const AgentFunnelTester = () => {
     { path: `/profile/${TEST_PROFILE_ID}`, name: 'Welcome', status: 'welcome' },
     { path: `/profile/${TEST_PROFILE_ID}/edit`, name: 'Edit Profile', status: 'edit_complete' },
     { path: `/profile/${TEST_PROFILE_ID}/preview`, name: 'Preview', status: 'preview' },
-    { path: `/profile/${TEST_PROFILE_ID}/pricing`, name: 'Pricing', status: 'pricing_viewed' },
-    { path: `/profile/${TEST_PROFILE_ID}/select`, name: 'Selection', status: 'selection_made' },
-    { path: `/profile/${TEST_PROFILE_ID}/schedule`, name: 'Schedule Call', status: 'call_scheduled' }
+    { path: `/profile/${TEST_PROFILE_ID}/success`, name: 'Success', status: 'success' },
   ];
 
   const verificationSteps = [
@@ -147,9 +145,10 @@ export const AgentFunnelTester = () => {
   ];
 
   const visibilitySteps = [
-    { path: `/visibility/coverage`, name: 'Coverage (Cities)' },
-    { path: `/visibility/expertise`, name: 'Expertise (Neighborhoods)' },
-    { path: `/visibility/review`, name: 'Review & Checkout' },
+    { path: `/visibility/coverage`, name: '1. Coverage (Cities)' },
+    { path: `/visibility/expertise`, name: '2. Expertise (Neighborhoods)' },
+    { path: `/visibility/review`, name: '3. Review & Checkout' },
+    { path: `/visibility/success`, name: '4. Success' },
   ];
 
   return (

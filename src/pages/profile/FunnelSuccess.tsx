@@ -49,7 +49,14 @@ export default function FunnelSuccess() {
   const cityName = (professional?.cities as { name: string } | null)?.name || 'your selected city';
 
   const handleExploreOptions = () => {
-    navigate(`/profile/${token}/pricing`);
+    // Store professional context for visibility funnel
+    if (professional?.id) {
+      sessionStorage.setItem('visibility_professional_id', professional.id);
+    }
+    if (token) {
+      sessionStorage.setItem('visibility_professional_token', token);
+    }
+    navigate('/visibility/coverage');
   };
 
   const handleViewProfile = () => {
