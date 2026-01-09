@@ -140,10 +140,10 @@ export const AgentFunnelTester = () => {
   ];
 
   const verificationSteps = [
-    { path: `/verify/${ADMIN_TEST_TOKEN}`, name: 'Verify Start' },
-    { path: `/verify/${ADMIN_TEST_TOKEN}/details`, name: 'Verify Details' },
-    { path: `/verify/${ADMIN_TEST_TOKEN}/specialties`, name: 'Verify Specialties' },
-    { path: `/verify/${ADMIN_TEST_TOKEN}/cities`, name: 'Verify Cities' },
+    { path: `/verify/${ADMIN_TEST_TOKEN}`, name: '1. Start (Listing)' },
+    { path: `/verify/${ADMIN_TEST_TOKEN}/cities`, name: '2. Cities' },
+    { path: `/verify/${ADMIN_TEST_TOKEN}/specialties`, name: '3. Specialties' },
+    { path: `/verify/${ADMIN_TEST_TOKEN}/details`, name: '4. Details' },
   ];
 
   const visibilitySteps = [
