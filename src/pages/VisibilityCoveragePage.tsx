@@ -41,6 +41,21 @@ export default function VisibilityCoveragePage() {
   const [selectedCityIds, setSelectedCityIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
+  // Gate: require professional context from profile funnel
+  useEffect(() => {
+    const professionalId = sessionStorage.getItem('visibility_professional_id');
+    const professionalToken = sessionStorage.getItem('visibility_professional_token');
+    
+    if (!professionalId && !professionalToken) {
+      toast({
+        title: 'Complete your profile first',
+        description: 'Please complete your profile review before selecting coverage areas.',
+        variant: 'destructive',
+      });
+      navigate('/');
+      return;
+    }
+  }, [navigate, toast]);
 
   // Scroll to top on mount
   useEffect(() => {
