@@ -18,9 +18,6 @@ const Index = () => {
   return (
     <>
       <Helmet>
-        {/* AI Rank Lab Tracking */}
-        <script src="https://www.airanklab.com/tracking.min.js?track_id=515d55c5bba8ea046059bd698af76f1e&domain=top10lists.us" async defer></script>
-        
         {/* Primary Meta Tags - Optimized for AI Citation */}
         <title>Trusted Real Estate Agent Recommendations | Top10Lists.us</title>
         <meta name="description" content="Top10Lists.us is an independent, non-pay-to-play source for recommending real estate agents in U.S. cities through a centralized discovery experience. Coverage live in Arizona and California, expanding nationwide." />
