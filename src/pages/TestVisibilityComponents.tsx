@@ -52,7 +52,7 @@ export default function TestVisibilityComponents() {
   // Interactive state for testing
   const [selectedCities, setSelectedCities] = useState<Set<string>>(new Set(['1', '2', '3']));
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<SelectedNeighborhood[]>(initialSelectedNeighborhoods);
-  const [progressStep, setProgressStep] = useState<'setup' | 'review' | 'payment'>('setup');
+  const [progressStep, setProgressStep] = useState<'coverage' | 'expertise' | 'review' | 'payment'>('coverage');
 
   const subtotalMonthly = selectedNeighborhoods.reduce((sum, n) => sum + n.price_monthly, 0);
 
