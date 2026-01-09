@@ -639,19 +639,6 @@ export default function EditProfile() {
               </div>
             </div>
 
-            {/* SECTION 4: FEATURED CITY */}
-            <div className="space-y-3">
-              <h2 className="text-xl font-semibold text-foreground">Featured city</h2>
-              <p className="text-sm text-muted-foreground">
-                We'll feature you in{' '}
-                <span className="font-medium text-foreground">
-                  {formData.featured_city || (professional?.cities?.name ?? 'your primary city')}
-                </span>.
-              </p>
-              <p className="text-xs text-muted-foreground italic">
-                You'll choose your full coverage areas next.
-              </p>
-            </div>
 
             {/* Navigation */}
             <div className="flex gap-4 pt-4 border-t">
