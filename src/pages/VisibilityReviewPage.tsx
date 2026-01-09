@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Loader2, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
@@ -23,7 +23,7 @@ const STORAGE_EXPIRY_HOURS = 24;
 interface StoredSelection {
   selectedCityIds: string[];
   selectedNeighborhoods: SelectedNeighborhood[];
-  pricingConfigVersion?: string;
+  skippedExpertise?: boolean;
   savedAt: string;
 }
 
@@ -99,7 +99,7 @@ export default function VisibilityReviewPage() {
           description: 'Please start by selecting your coverage.',
           variant: 'destructive',
         });
-        navigate('/visibility');
+        navigate('/visibility/coverage');
         return;
       }
 
@@ -115,14 +115,14 @@ export default function VisibilityReviewPage() {
           description: 'Your selection has expired. Please start again.',
           variant: 'destructive',
         });
-        navigate('/visibility');
+        navigate('/visibility/coverage');
         return;
       }
 
       setSelection(parsed);
     } catch (e) {
       console.error('Error loading selection:', e);
-      navigate('/visibility');
+      navigate('/visibility/coverage');
     }
   }, [navigate, toast]);
 
@@ -244,9 +244,26 @@ export default function VisibilityReviewPage() {
     }
   };
 
-  // Handle edit coverage (go back)
+  // Handle confirm free coverage (cities only)
+  const handleConfirmFreeCoverage = () => {
+    // For now, just show success and clear storage
+    // In production, this would save the city coverage to the database
+    toast({
+      title: 'Coverage Confirmed',
+      description: 'Your city coverage has been set up successfully.',
+    });
+    sessionStorage.removeItem(STORAGE_KEY);
+    navigate('/visibility/success?type=free');
+  };
+
+  // Handle edit coverage (go back to coverage step)
   const handleEditCoverage = () => {
-    navigate('/visibility');
+    navigate('/visibility/coverage');
+  };
+
+  // Handle edit expertise (go back to expertise step)
+  const handleEditExpertise = () => {
+    navigate('/visibility/expertise');
   };
 
   // Handle retry quote
@@ -270,12 +287,14 @@ export default function VisibilityReviewPage() {
 
   const hasNeighborhoods = selection.selectedNeighborhoods.length > 0;
   const hasCities = selection.selectedCityIds.length > 0;
+  const cityCount = selection.selectedCityIds.length;
+  const neighborhoodCount = selection.selectedNeighborhoods.length;
 
   return (
     <>
       <Helmet>
         <title>Review Your Coverage | Top10Lists</title>
-        <meta name="description" content="Review your selected coverage before checkout." />
+        <meta name="description" content="Review your selected coverage before confirming." />
       </Helmet>
 
       <div className="container max-w-3xl mx-auto px-4 py-8">
@@ -287,27 +306,100 @@ export default function VisibilityReviewPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Review Your Coverage</h1>
           <p className="text-muted-foreground mt-1">
-            Confirm your selection before proceeding to payment.
+            {hasNeighborhoods 
+              ? 'Confirm your selection before proceeding to payment.'
+              : 'Review your free city coverage before confirming.'
+            }
           </p>
         </div>
 
-        {/* Review Summary Card */}
-        <ReviewSummaryCard
-          selectedCities={new Set(selection.selectedCityIds)}
-          cityNames={cityNames}
-          selectedNeighborhoods={selection.selectedNeighborhoods}
-          serverQuote={serverQuote ?? undefined}
-          isLoadingQuote={isLoadingQuote}
-          quoteError={quoteError}
-          onRetry={handleRetryQuote}
-        />
+        {/* Cities Summary */}
+        <div className="rounded-lg border bg-card mb-4">
+          <div className="flex items-center justify-between p-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <div>
+                <h3 className="font-semibold">City Coverage</h3>
+                <p className="text-sm text-muted-foreground">
+                  {cityCount} cities selected
+                </p>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                Free
+              </span>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleEditCoverage}>
+              Edit
+            </Button>
+          </div>
+          <div className="px-4 pb-4">
+            <div className="flex flex-wrap gap-1">
+              {Array.from(cityNames.values()).map((name) => (
+                <span
+                  key={name}
+                  className="text-xs bg-muted px-2 py-1 rounded"
+                >
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Neighborhoods Summary (if any) */}
+        {hasNeighborhoods && (
+          <div className="rounded-lg border bg-card mb-4">
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-primary" />
+                <div>
+                  <h3 className="font-semibold">Neighborhood Highlights</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {neighborhoodCount} neighborhoods selected
+                  </p>
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" onClick={handleEditExpertise}>
+                Edit
+              </Button>
+            </div>
+            <ReviewSummaryCard
+              selectedCities={new Set([])}
+              cityNames={new Map()}
+              selectedNeighborhoods={selection.selectedNeighborhoods}
+              serverQuote={serverQuote ?? undefined}
+              isLoadingQuote={isLoadingQuote}
+              quoteError={quoteError}
+              onRetry={handleRetryQuote}
+            />
+          </div>
+        )}
+
+        {/* No neighborhoods message */}
+        {!hasNeighborhoods && hasCities && (
+          <div className="rounded-lg border bg-card p-4 mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                <span className="text-lg">🏘️</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">
+                  No neighborhood highlights selected. You can add them later from your dashboard.
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleEditExpertise}>
+                Add Neighborhoods
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* No selections message */}
         {!hasNeighborhoods && !hasCities && (
           <div className="mt-6 p-4 rounded-lg border border-dashed flex items-center gap-3">
             <AlertCircle className="w-5 h-5 text-muted-foreground" />
             <p className="text-muted-foreground">
-              You haven't selected any coverage. Go back to add cities or neighborhoods.
+              You haven't selected any coverage. Go back to add cities.
             </p>
           </div>
         )}
@@ -342,18 +434,10 @@ export default function VisibilityReviewPage() {
 
           {!hasNeighborhoods && hasCities && (
             <Button
-              onClick={() => {
-                // Just cities (free) - no payment needed
-                toast({
-                  title: 'Free Coverage Confirmed',
-                  description: 'Your city coverage has been set up.',
-                });
-                sessionStorage.removeItem(STORAGE_KEY);
-                navigate('/visibility/success');
-              }}
+              onClick={handleConfirmFreeCoverage}
               className="sm:order-2 flex-1 sm:flex-none"
             >
-              Confirm Free Cities
+              Confirm Free Coverage
             </Button>
           )}
         </div>

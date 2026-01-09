@@ -14,6 +14,9 @@ export default function VisibilitySuccessPage() {
 
   const sessionId = searchParams.get('session_id');
   const professionalId = searchParams.get('professional_id');
+  const type = searchParams.get('type'); // 'free' for free city coverage only
+
+  const isFreeOnly = type === 'free';
 
   // Clear session storage on mount
   useEffect(() => {
@@ -32,8 +35,8 @@ export default function VisibilitySuccessPage() {
   return (
     <>
       <Helmet>
-        <title>Payment Successful | Top10Lists</title>
-        <meta name="description" content="Your subscription has been activated successfully." />
+        <title>{isFreeOnly ? 'Coverage Confirmed' : 'Payment Successful'} | Top10Lists</title>
+        <meta name="description" content={isFreeOnly ? "Your city coverage has been set up successfully." : "Your subscription has been activated successfully."} />
       </Helmet>
 
       <div className="container max-w-2xl mx-auto px-4 py-8">
@@ -51,7 +54,10 @@ export default function VisibilitySuccessPage() {
           <h1 className="text-3xl font-bold mb-4">You're All Set!</h1>
           
           <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
-            Your subscription has been activated. You'll now appear in the Top 10 for your selected coverage areas.
+            {isFreeOnly 
+              ? "Your city coverage has been confirmed. You may be evaluated for rankings in your selected cities if you qualify."
+              : "Your subscription has been activated. You'll now appear with enhanced visibility in your selected coverage areas."
+            }
           </p>
 
           {/* Summary card */}
@@ -60,24 +66,36 @@ export default function VisibilitySuccessPage() {
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Your profile is now live in your selected neighborhoods</span>
+                <span>
+                  {isFreeOnly 
+                    ? "Your profile is now active in your selected cities"
+                    : "Your profile is now live with neighborhood highlights"
+                  }
+                </span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>Rankings update throughout the day based on our algorithm</span>
+                <span>Rankings are merit-based and update throughout the day</span>
               </li>
               <li className="flex items-start gap-3">
                 <CheckCircle className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
-                <span>You can manage your subscription anytime from your dashboard</span>
+                <span>
+                  {isFreeOnly 
+                    ? "You can add neighborhood highlights anytime from your dashboard"
+                    : "You can manage your subscription anytime from your dashboard"
+                  }
+                </span>
               </li>
             </ul>
           </div>
 
-          {/* Email confirmation note */}
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
-            <Mail className="w-4 h-4" />
-            <span>A confirmation email has been sent to your inbox</span>
-          </div>
+          {/* Email confirmation note - only for paid */}
+          {!isFreeOnly && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-8">
+              <Mail className="w-4 h-4" />
+              <span>A confirmation email has been sent to your inbox</span>
+            </div>
+          )}
 
           {/* CTA */}
           <Button size="lg" onClick={handleGoToDashboard}>

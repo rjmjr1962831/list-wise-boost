@@ -110,7 +110,8 @@ const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods
 const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 
 // Visibility funnel pages
-const VisibilitySetupPage = lazy(() => import("./pages/VisibilitySetupPage"));
+const VisibilityCoveragePage = lazy(() => import("./pages/VisibilityCoveragePage"));
+const VisibilityExpertisePage = lazy(() => import("./pages/VisibilityExpertisePage"));
 const VisibilityReviewPage = lazy(() => import("./pages/VisibilityReviewPage"));
 const VisibilitySuccessPage = lazy(() => import("./pages/VisibilitySuccessPage"));
 
@@ -147,7 +148,9 @@ const App = () => (
                     <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />
                     <Route path="/test-visibility-components" element={<TestVisibilityComponents />} />
                     {/* Visibility funnel */}
-                    <Route path="/visibility" element={<VisibilitySetupPage />} />
+                    <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
+                    <Route path="/visibility/coverage" element={<VisibilityCoveragePage />} />
+                    <Route path="/visibility/expertise" element={<VisibilityExpertisePage />} />
                     <Route path="/visibility/review" element={<VisibilityReviewPage />} />
                     <Route path="/visibility/success" element={<VisibilitySuccessPage />} />
                     <Route path="/migrate-data" element={<MigrateData />} />

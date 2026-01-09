@@ -1,15 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { useCoverageSelection } from '@/hooks/useCoverageSelection';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
 import { CitiesPanel, type CityOption } from '@/components/visibility/CitiesPanel';
 import { BundlesPanel, type CityBundle } from '@/components/visibility/BundlesPanel';
-import { NeighborhoodsPanel } from '@/components/visibility/NeighborhoodsPanel';
-import { CoverageSummaryCard } from '@/components/visibility/CoverageSummaryCard';
-import { CoverageSummaryFooter } from '@/components/visibility/CoverageSummaryFooter';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 
@@ -18,32 +15,28 @@ const STORAGE_EXPIRY_HOURS = 24;
 
 interface StoredSelection {
   selectedCityIds: string[];
-  selectedNeighborhoods: ReturnType<typeof useCoverageSelection>['selectedNeighborhoods'];
-  pricingConfigVersion?: string;
+  selectedNeighborhoods: Array<{
+    id: string;
+    neighborhood: string;
+    city_area: string;
+    state: string;
+    tier_at_selection: string;
+    price_monthly: number;
+    price_source: string;
+  }>;
+  skippedExpertise?: boolean;
   savedAt: string;
 }
 
-export default function VisibilitySetupPage() {
+export default function VisibilityCoveragePage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
   const [cities, setCities] = useState<CityOption[]>([]);
   const [bundles, setBundles] = useState<CityBundle[]>([]);
+  const [selectedCityIds, setSelectedCityIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-
-  const {
-    selectedCityIds,
-    addCity,
-    removeCity,
-    addCities,
-    clearCities,
-    selectedNeighborhoods,
-    addNeighborhood,
-    removeNeighborhood,
-    subtotalMonthly,
-    loadSelection,
-  } = useCoverageSelection();
 
   // Detect mobile
   useEffect(() => {
@@ -100,12 +93,8 @@ export default function VisibilitySetupPage() {
             const now = new Date();
             const hoursOld = (now.getTime() - savedAt.getTime()) / (1000 * 60 * 60);
             
-            if (hoursOld < STORAGE_EXPIRY_HOURS) {
-              loadSelection({
-                selectedCityIds: parsed.selectedCityIds,
-                selectedNeighborhoods: parsed.selectedNeighborhoods,
-                pricingConfigVersion: parsed.pricingConfigVersion,
-              });
+            if (hoursOld < STORAGE_EXPIRY_HOURS && parsed.selectedCityIds) {
+              setSelectedCityIds(new Set(parsed.selectedCityIds));
             } else {
               sessionStorage.removeItem(STORAGE_KEY);
             }
@@ -126,7 +115,7 @@ export default function VisibilitySetupPage() {
     }
 
     loadCities();
-  }, [loadSelection, toast]);
+  }, [toast]);
 
   // Build city names map for display
   const cityNames = useMemo(() => {
@@ -137,31 +126,45 @@ export default function VisibilitySetupPage() {
 
   // Handle city selection changes
   const handleCityChange = (next: Set<string>) => {
-    // Find what changed
-    const added = [...next].filter(id => !selectedCityIds.has(id));
-    const removed = [...selectedCityIds].filter(id => !next.has(id));
-    
-    added.forEach(id => addCity(id));
-    removed.forEach(id => removeCity(id));
+    setSelectedCityIds(next);
   };
 
   // Handle bundle add
   const handleAddBundle = (_bundleId: string, cityIds: string[]) => {
-    addCities(cityIds);
+    setSelectedCityIds(prev => {
+      const next = new Set(prev);
+      cityIds.forEach(id => next.add(id));
+      return next;
+    });
   };
 
-  // Handle continue to review
+  // Handle continue to expertise
   const handleContinue = () => {
+    // Load existing selection to preserve neighborhoods if any
+    let existingNeighborhoods: StoredSelection['selectedNeighborhoods'] = [];
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: StoredSelection = JSON.parse(stored);
+        existingNeighborhoods = parsed.selectedNeighborhoods || [];
+      }
+    } catch (e) {
+      console.error('Error loading existing neighborhoods:', e);
+    }
+
     // Save selection to sessionStorage
     const selection: StoredSelection = {
       selectedCityIds: Array.from(selectedCityIds),
-      selectedNeighborhoods,
+      selectedNeighborhoods: existingNeighborhoods,
       savedAt: new Date().toISOString(),
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
     
-    navigate('/visibility/review');
+    navigate('/visibility/expertise');
   };
+
+  const cityCount = selectedCityIds.size;
+  const hasSelections = cityCount > 0;
 
   if (isLoading) {
     return (
@@ -174,8 +177,8 @@ export default function VisibilitySetupPage() {
   return (
     <>
       <Helmet>
-        <title>Set Up Your Coverage | Top10Lists</title>
-        <meta name="description" content="Choose your cities and neighborhoods for guaranteed Top 10 placement." />
+        <title>Select Your Coverage Areas | Top10Lists</title>
+        <meta name="description" content="Choose the cities where you actively serve clients. City coverage is free." />
       </Helmet>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">
@@ -185,9 +188,9 @@ export default function VisibilitySetupPage() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">Set Up Your Coverage</h1>
+          <h1 className="text-2xl font-bold">Select Your Coverage Areas</h1>
           <p className="text-muted-foreground mt-1">
-            Select the cities and neighborhoods where you want to appear in the Top 10.
+            Choose the cities where you actively serve clients. Coverage defines where you may be evaluated if you qualify. City coverage is free.
           </p>
         </div>
 
@@ -207,40 +210,67 @@ export default function VisibilitySetupPage() {
               selected={selectedCityIds}
               onChange={handleCityChange}
             />
-
-            {/* Premium Neighborhoods */}
-            <NeighborhoodsPanel
-              state="AZ"
-              selectedNeighborhoods={selectedNeighborhoods}
-              onAdd={addNeighborhood}
-              onRemove={removeNeighborhood}
-            />
           </div>
 
           {/* Right column - Summary (desktop only) */}
           {!isMobile && (
             <div className="w-80 flex-shrink-0">
-              <CoverageSummaryCard
-                selectedCities={selectedCityIds}
-                cityNames={cityNames}
-                selectedNeighborhoods={selectedNeighborhoods}
-                subtotalMonthly={subtotalMonthly}
-                onContinue={handleContinue}
-              />
+              <div className="sticky top-6 rounded-lg border bg-card shadow-sm">
+                {/* Cities Section */}
+                <div className="p-4 border-b">
+                  <div className="flex items-center gap-2 mb-3">
+                    <h4 className="font-semibold text-sm">Cities Selected</h4>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+                      Free
+                    </span>
+                  </div>
+
+                  {cityCount === 0 ? (
+                    <p className="text-sm text-muted-foreground">No cities selected</p>
+                  ) : (
+                    <p className="text-2xl font-bold">{cityCount} cities</p>
+                  )}
+                </div>
+
+                {/* CTA Section */}
+                <div className="p-4">
+                  <Button
+                    className="w-full"
+                    disabled={!hasSelections}
+                    onClick={handleContinue}
+                  >
+                    Continue to Expertise
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
         {/* Mobile footer */}
         {isMobile && (
-          <CoverageSummaryFooter
-            selectedCities={selectedCityIds}
-            cityNames={cityNames}
-            selectedNeighborhoods={selectedNeighborhoods}
-            subtotalMonthly={subtotalMonthly}
-            onContinue={handleContinue}
-          />
+          <div className="fixed bottom-0 left-0 right-0 bg-background border-t shadow-lg z-50">
+            <div className="flex items-center justify-between px-4 py-3">
+              <div className="text-sm">
+                <span className="font-medium">{cityCount} cities selected</span>
+                <span className="text-muted-foreground"> · </span>
+                <span className="text-green-600 font-medium">Free</span>
+              </div>
+              <Button
+                size="sm"
+                disabled={!hasSelections}
+                onClick={handleContinue}
+              >
+                Continue
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
         )}
+        
+        {/* Spacer for mobile footer */}
+        {isMobile && <div className="h-16" />}
       </div>
     </>
   );
