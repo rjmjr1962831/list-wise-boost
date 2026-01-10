@@ -142,7 +142,7 @@ export function NeighborhoodsPanel({
     <div className="rounded-lg border bg-card">
       {/* Header with tier legend */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 border-b">
-        <h3 className="font-semibold">Premium Neighborhoods</h3>
+        <h3 className="font-semibold">Select Your Neighborhoods</h3>
         <div className="flex items-center gap-2 text-xs">
           <TierBadge tier="Main" showPrice size="sm" />
           <TierBadge tier="Prime" showPrice size="sm" />
