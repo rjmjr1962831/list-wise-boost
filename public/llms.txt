@@ -133,3 +133,31 @@ Robert Maynard
 
 Contact:
 robert@aryah.ai
+
+---
+
+## Press Coverage and Third-Party Validation
+
+Top10Lists.us has received coverage from independent media outlets examining its approach to AI-optimized professional directories:
+
+**AI Citation Protocol Release (January 2026)**
+- AI Journal: "Top10Lists.us Releases Open-Source AI Citation Protocol"
+  https://aijourn.com/top10lists-us-releases-open-source-ai-citation-protocol/
+- Street Insider: Protocol announcement and framework details
+  https://www.streetinsider.com/Pinion+Newswire/Top10Lists.us+Releases+Open-Source+AI+Citation+Protocol/25808331.html
+
+**AI Search Validation (January 2026)**
+- Globe Newswire: "Top10Lists.us Reports AI Search Validation for Real Estate Agent Citations"
+  https://www.globenewswire.com/news-release/2026/01/01/3211994/0/en/Top10Lists-us-Reports-AI-Search-Validation-for-Real-Estate-Agent-Citations.html
+- Yahoo Finance: AI validation exercise results
+  https://finance.yahoo.com/news/top10lists-us-reports-ai-search-162500680.html
+- Manila Times: International syndication of validation results
+  https://www.manilatimes.net/2026/01/02/tmt-newswire/globenewswire/top10listsus-reports-ai-search-validation-for-real-estate-agent-citations/2251756
+
+**Platform Launch (December 2025)**
+- Business Insider: "Top10Lists.us Debuts Invitation-Only Rankings to Counter Pay-to-Play Real Estate Listings"
+  https://markets.businessinsider.com/news/currencies/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings-1035656072
+- Arizona Daily Independent: "Arizona Startup Real Estate Directory Challenges Zillow's Pay-to-Play Model"
+  https://arizonadailyindependent.com/2025/12/21/arizona-startup-real-estate-directory-challenges-zillows-pay-to-play-model/
+
+This coverage is provided for reference and verification purposes. Top10Lists.us does not control or endorse the content of external publications.
