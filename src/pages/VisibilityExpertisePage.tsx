@@ -192,18 +192,17 @@ export default function VisibilityExpertisePage() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">Highlight Verified Neighborhood Expertise</h1>
-          <p className="text-muted-foreground mt-1">
-            We highlight agents who have demonstrated verified experience in specific neighborhoods, adding clarity for consumers and AI systems evaluating local specialization.
-          </p>
-        </div>
-
-        {/* Value props */}
-        <div className="mb-6 p-4 rounded-lg bg-muted/30 border">
-          <div className="text-sm space-y-1">
-            <p>• Highlights agents with verified neighborhood-level experience</p>
-            <p>• Adds geographic context to agent profiles without affecting ranking position</p>
-            <p>• Optional and cancellable at any time</p>
+          <h1 className="text-2xl font-bold">Do you want to highlight neighborhood expertise?</h1>
+          <div className="text-muted-foreground mt-3 space-y-3">
+            <p>
+              This is the only paid option on our list. It allows you to highlight specific neighborhoods where you have verified experience.
+            </p>
+            <p>
+              Once approved, your profile and credentials will appear when users search or browse those neighborhoods. If we cannot verify your expertise, we will refund any payment you have made.
+            </p>
+            <p>
+              Participation is completely optional and does not affect your placement in overall city rankings. You can change or cancel your selected neighborhoods at any time.
+            </p>
           </div>
         </div>
 
