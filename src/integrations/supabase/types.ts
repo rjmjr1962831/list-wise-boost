@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_throttle: {
+        Row: {
+          id: string
+          last_logged_at: string | null
+          throttle_key: string
+        }
+        Insert: {
+          id?: string
+          last_logged_at?: string | null
+          throttle_key: string
+        }
+        Update: {
+          id?: string
+          last_logged_at?: string | null
+          throttle_key?: string
+        }
+        Relationships: []
+      }
       agent_applications: {
         Row: {
           ai_generated_bio: string | null
@@ -962,6 +980,39 @@ export type Database = {
         }
         Relationships: []
       }
+      dnc_sync_queue: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          pipedrive_person_id: number | null
+          smartlead_lead_id: string | null
+          source: string
+          synced: boolean | null
+          synced_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          pipedrive_person_id?: number | null
+          smartlead_lead_id?: string | null
+          source: string
+          synced?: boolean | null
+          synced_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          pipedrive_person_id?: number | null
+          smartlead_lead_id?: string | null
+          source?: string
+          synced?: boolean | null
+          synced_at?: string | null
+        }
+        Relationships: []
+      }
       email_verification_queue: {
         Row: {
           attempts: number | null
@@ -1197,6 +1248,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lead_map: {
+        Row: {
+          created_at: string | null
+          id: string
+          pipedrive_lead_id: string
+          pipedrive_person_id: number
+          smartlead_campaign_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          pipedrive_lead_id: string
+          pipedrive_person_id: number
+          smartlead_campaign_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          pipedrive_lead_id?: string
+          pipedrive_person_id?: number
+          smartlead_campaign_id?: string
+        }
+        Relationships: []
       }
       marketing_content: {
         Row: {
@@ -2728,6 +2803,45 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      webhook_events: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          event_type: string
+          id: string
+          idempotency_key: string
+          processed: boolean | null
+          processed_at: string | null
+          raw_payload: Json | null
+          smartlead_campaign_id: string | null
+          smartlead_lead_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          event_type: string
+          id?: string
+          idempotency_key: string
+          processed?: boolean | null
+          processed_at?: string | null
+          raw_payload?: Json | null
+          smartlead_campaign_id?: string | null
+          smartlead_lead_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          event_type?: string
+          id?: string
+          idempotency_key?: string
+          processed?: boolean | null
+          processed_at?: string | null
+          raw_payload?: Json | null
+          smartlead_campaign_id?: string | null
+          smartlead_lead_id?: string | null
         }
         Relationships: []
       }
