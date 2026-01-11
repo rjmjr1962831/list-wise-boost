@@ -223,47 +223,20 @@ function ExpertCard({
           </div>
         </div>
 
-        {/* Contact buttons */}
-        <div className="flex gap-2 mt-4 pt-3 border-t border-border/50">
-          {profileUrl && (
+        {/* View Profile - opens in new tab */}
+        {profileUrl && (
+          <div className="mt-4 pt-3 border-t border-border/50">
             <a
               href={profileUrl}
-              className="flex-1 flex items-center justify-center gap-1 text-sm py-2 px-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1 text-sm py-2 px-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors w-full"
             >
               View Profile
               <ExternalLink className="h-3 w-3" />
             </a>
-          )}
-          {expert.phone && (
-            <a
-              href={`tel:${expert.phone}`}
-              className="flex items-center justify-center p-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors"
-              title="Call"
-            >
-              <Phone className="h-4 w-4" />
-            </a>
-          )}
-          {expert.email && (
-            <a
-              href={`mailto:${expert.email}`}
-              className="flex items-center justify-center p-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors"
-              title="Email"
-            >
-              <Mail className="h-4 w-4" />
-            </a>
-          )}
-          {expert.website && (
-            <a
-              href={expert.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center p-2 rounded-md bg-secondary hover:bg-secondary/80 transition-colors"
-              title="Website"
-            >
-              <Globe className="h-4 w-4" />
-            </a>
-          )}
-        </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
