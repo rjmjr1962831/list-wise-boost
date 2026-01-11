@@ -149,7 +149,9 @@ export const ProfessionalListLayout = ({
               </Link>
               <meta itemProp="position" content="1" />
             </li>
-            {metadata.breadcrumbs.map((crumb, index) => (
+            {metadata.breadcrumbs
+              .filter(crumb => crumb.name.toLowerCase() !== 'home')
+              .map((crumb, index) => (
               <>
                 <span key={`sep-${index}`}>/</span>
                 <li key={`crumb-${index}`} itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
