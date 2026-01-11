@@ -1326,6 +1326,9 @@ export type Database = {
           tier: string
           updated_at: string | null
           value_pct: number | null
+          writeup_generated_at: string | null
+          writeup_html: string | null
+          writeup_research: string | null
           zips: string[] | null
         }
         Insert: {
@@ -1347,6 +1350,9 @@ export type Database = {
           tier: string
           updated_at?: string | null
           value_pct?: number | null
+          writeup_generated_at?: string | null
+          writeup_html?: string | null
+          writeup_research?: string | null
           zips?: string[] | null
         }
         Update: {
@@ -1368,6 +1374,9 @@ export type Database = {
           tier?: string
           updated_at?: string | null
           value_pct?: number | null
+          writeup_generated_at?: string | null
+          writeup_html?: string | null
+          writeup_research?: string | null
           zips?: string[] | null
         }
         Relationships: []

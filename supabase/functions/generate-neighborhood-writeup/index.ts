@@ -182,6 +182,22 @@ Format the response as clean HTML that can be rendered directly on a webpage.`;
 
     console.log(`[NeighborhoodWriteup] Claude narrative complete (${narrativeContent.length} chars)`);
 
+    // Save the writeup to the database
+    const { error: updateError } = await supabase
+      .from('neighborhood_catalog')
+      .update({
+        writeup_html: narrativeContent,
+        writeup_research: researchContent,
+        writeup_generated_at: new Date().toISOString(),
+      })
+      .eq('id', neighborhood.id);
+
+    if (updateError) {
+      console.error('[NeighborhoodWriteup] Failed to save writeup:', updateError);
+    } else {
+      console.log('[NeighborhoodWriteup] Writeup saved to database');
+    }
+
     // Return the generated content
     return new Response(
       JSON.stringify({
