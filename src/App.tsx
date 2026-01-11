@@ -87,7 +87,7 @@ const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
 const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
-
+const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
 // Q&A Landing Pages for LLM optimization
 const QALandingPage = lazy(() => import("./pages/QALandingPage"));
 
@@ -235,6 +235,8 @@ const App = () => (
                     {/* Q&A Landing Pages for LLM optimization */}
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents-:year" element={<QALandingPage />} />
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
+                    {/* Legacy /az/ neighborhood+category format - redirect to full state name */}
+                    <Route path="/az/:citySlug/:neighborhoodSlug/:categorySlug" element={<AzNeighborhoodRedirect />} />
                     {/* Legacy /az/ magic link format - redirect to full state name with category */}
                     <Route path="/az/:citySlug/:agentSlug" element={<AzMagicLinkRedirect />} />
                     {/* NEW: Canonical agent profile URL - /{state}/agents/{canonical_slug} */}
