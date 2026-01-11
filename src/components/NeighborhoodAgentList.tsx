@@ -1,8 +1,6 @@
-import { useSearchParams, Link } from 'react-router-dom';
 import { AgentBadge } from '@/components/AgentBadge';
 import { useNeighborhoodAgents } from '@/hooks/useNeighborhoodAgents';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface NeighborhoodAgentListProps {
@@ -18,27 +16,11 @@ export function NeighborhoodAgentList({
   stateSlug,
   neighborhoodName
 }: NeighborhoodAgentListProps) {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const page = parseInt(searchParams.get('page') || '1', 10);
-  const pageSize = 10;
-
-  const { agents, loading, error, totalCount, hasMore } = useNeighborhoodAgents({
+  const { agents, loading, error, totalCount } = useNeighborhoodAgents({
     neighborhoodSlug,
     citySlug,
-    stateSlug,
-    page,
-    pageSize
+    stateSlug
   });
-
-  const totalPages = Math.ceil(totalCount / pageSize);
-  const paidExpertCount = agents.filter(a => a.isPaidExpert).length;
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > totalPages) return;
-    setSearchParams({ page: String(newPage) });
-    // Scroll to top of agent list
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   if (loading) {
     return (
@@ -102,38 +84,9 @@ export function NeighborhoodAgentList({
         ))}
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 pt-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(page - 1)}
-            disabled={page <= 1}
-          >
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            Previous
-          </Button>
-          
-          <span className="text-sm text-muted-foreground">
-            Page {page} of {totalPages}
-          </span>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handlePageChange(page + 1)}
-            disabled={!hasMore}
-          >
-            Next
-            <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
-        </div>
-      )}
-
       {/* Explanation text */}
-      <p className="text-xs text-muted-foreground text-center">
-        Agents are ranked by office proximity to {neighborhoodName}. 
+      <p className="text-xs text-muted-foreground text-center mt-6">
+        Agents are sorted by office proximity to {neighborhoodName}. 
         All agents have 4.8+ ratings and 20+ verified reviews.
       </p>
     </div>
