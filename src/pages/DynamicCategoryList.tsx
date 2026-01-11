@@ -1062,20 +1062,35 @@ export default function DynamicCategoryList({
     return <Navigate to="/404" replace />;
   }
 
+  // Build titles for empty state
+  const emptyStateTitle = neighborhoodName
+    ? `Top 10 ${category.plural_name} in ${neighborhoodName}, ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`
+    : `Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`;
+  
+  const emptyStateH1 = neighborhoodName
+    ? `Top 10 ${category.plural_name} in ${neighborhoodName}, ${city.name}, ${city.state_slug.toUpperCase()}`
+    : `Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()}`;
+  
+  const emptyStateDescription = neighborhoodName
+    ? `Find ${neighborhoodName}'s top-rated real estate agents in ${city.name}. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`
+    : `Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
+
+  const emptyStateLocation = neighborhoodName ? `${neighborhoodName}, ${city.name}` : city.name;
+
   if (allProfessionals.length === 0) {
     return (
       <>
         <Helmet>
           <meta name="robots" content="noindex, nofollow" />
-          <title>{`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`}</title>
-          <meta name="description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`} />
+          <title>{emptyStateTitle}</title>
+          <meta name="description" content={emptyStateDescription} />
         </Helmet>
         <div className="min-h-screen flex items-center justify-center p-8">
-          <h1 className="sr-only">Top 10 {category.plural_name} in {city.name}, {city.state_slug.toUpperCase()}</h1>
+          <h1 className="sr-only">{emptyStateH1}</h1>
           <div className="text-center max-w-md">
             <h2 className="text-2xl font-bold mb-4">No Listings Yet</h2>
             <p className="text-muted-foreground mb-6">
-              We're importing real agents for {city.name}. This takes a moment—no placeholders will be shown.
+              We're importing real agents for {emptyStateLocation}. This takes a moment—no placeholders will be shown.
             </p>
             <Button
               onClick={() => window.location.reload()}
@@ -1102,15 +1117,36 @@ export default function DynamicCategoryList({
     }
   ];
 
+  // Build location string including neighborhood if present
+  const locationString = neighborhoodName 
+    ? `${neighborhoodName}, ${city.name}, ${city.state}`
+    : `${city.name}, ${city.state}`;
+  
+  const pageTitle = neighborhoodName
+    ? `Top ${category.plural_name} in:\n${neighborhoodName}, ${city.name}`
+    : generatePageTitle(city, category.plural_name);
+  
+  const pageDescription = neighborhoodName
+    ? `After thorough research and analysis, we think these are some of the best ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${city.state}. Expert-vetted professionals with verified licenses, reputations, community involvement, reviews, ratings and transaction history.`
+    : generateMetaDescription(city, category.plural_name);
+
   const metadata = {
-    title: generatePageTitle(city, category.plural_name),
-    description: generateMetaDescription(city, category.plural_name),
-    breadcrumbs: [
-      { name: 'Home', path: '/' },
-      { name: city.state, path: `/${city.state_slug}` },
-      { name: city.name, path: `/${city.state_slug}/${city.slug}` },
-      { name: `Top 10 ${category.plural_name}` }
-    ],
+    title: pageTitle,
+    description: pageDescription,
+    breadcrumbs: neighborhoodSlug
+      ? [
+          { name: 'Home', path: '/' },
+          { name: city.state, path: `/${city.state_slug}` },
+          { name: city.name, path: `/${city.state_slug}/${city.slug}` },
+          { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodSlug}` },
+          { name: `Top 10 ${category.plural_name}` }
+        ]
+      : [
+          { name: 'Home', path: '/' },
+          { name: city.state, path: `/${city.state_slug}` },
+          { name: city.name, path: `/${city.state_slug}/${city.slug}` },
+          { name: `Top 10 ${category.plural_name}` }
+        ],
     location: {
       city: city.name,
       state: city.state,
@@ -1125,9 +1161,13 @@ export default function DynamicCategoryList({
 
   // Get city coordinates for geo tags
   const cityCoords = getCityCoordinates(city.slug);
-  // Canonical URL points to the city page (without category slug)
-  const canonicalUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}`;
-  const pageUrl = `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
+  // Canonical URL includes neighborhood if present
+  const canonicalUrl = neighborhoodSlug
+    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodSlug}/${category.slug}`
+    : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
+  const pageUrl = neighborhoodSlug
+    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodSlug}/${category.slug}`
+    : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
   const ogImageUrl = `https://www.top10lists.us/og-${city.slug}.png`;
   
   // Freshness signals for LLM optimization
@@ -1157,12 +1197,16 @@ export default function DynamicCategoryList({
   // Get all schemas: Place, Service, ItemList, FAQ, Breadcrumb (no individual agent names)
   const citySchemas = generateCityListingSchema(cityListingData);
 
-  // Enhanced JSON-LD schema for city page (CollectionPage wrapper)
+  // Enhanced JSON-LD schema for city/neighborhood page (CollectionPage wrapper)
   const collectionPageSchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "name": `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
-    "description": `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`,
+    "name": neighborhoodName 
+      ? `Top 10 ${category.plural_name} in ${neighborhoodName}, ${city.name}, ${city.state}`
+      : `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
+    "description": neighborhoodName
+      ? `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`
+      : `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`,
     "url": pageUrl,
     "dateModified": lastUpdated,
     "isPartOf": {
@@ -1172,9 +1216,10 @@ export default function DynamicCategoryList({
     },
     "about": {
       "@type": "Place",
-      "name": city.name,
+      "name": neighborhoodName ? `${neighborhoodName}, ${city.name}` : city.name,
       "address": {
         "@type": "PostalAddress",
+        ...(neighborhoodName && { "addressNeighborhood": neighborhoodName }),
         "addressLocality": city.name,
         "addressRegion": stateAbbrev,
         "addressCountry": "US"
@@ -1182,26 +1227,43 @@ export default function DynamicCategoryList({
     }
   };
 
+  // Build SEO-friendly title and description
+  const seoTitle = neighborhoodName
+    ? `Top 10 ${category.plural_name} in ${neighborhoodName}, ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`
+    : `Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`;
+  
+  const seoDescription = neighborhoodName
+    ? `Find ${neighborhoodName}'s top-rated real estate agents in ${city.name}. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`
+    : `Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`;
+
+  const seoSubject = neighborhoodName
+    ? `${neighborhoodName} ${city.name} ${category.plural_name}`
+    : `${city.name} ${category.plural_name}`;
+
+  const seoCoverage = neighborhoodName
+    ? `${neighborhoodName}, ${city.name}, ${city.state}, United States`
+    : `${city.name}, ${city.state}, United States`;
+
   return (
     <>
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>{`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`}</title>
-        <meta name="description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings based on reviews, transactions, and press coverage.`} />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDescription} />
         <meta name="robots" content="noindex, follow" />
         <link rel="canonical" href={canonicalUrl} />
         
         {/* Topic Hints for LLMs */}
-        <meta name="subject" content={`${city.name} ${category.plural_name}`} />
-        <meta name="topic" content={`${city.name} Real Estate`} />
+        <meta name="subject" content={seoSubject} />
+        <meta name="topic" content={`${neighborhoodName ? neighborhoodName + ' ' : ''}${city.name} Real Estate`} />
         <meta name="classification" content="Business/Real Estate" />
-        <meta name="coverage" content={`${city.name}, ${city.state}, United States`} />
+        <meta name="coverage" content={seoCoverage} />
         
         {/* Open Graph Tags */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={pageUrl} />
-        <meta property="og:title" content={`Top 10 ${category.plural_name} in ${city.name}, ${city.state_slug.toUpperCase()} | Top10Lists.us`} />
-        <meta property="og:description" content={`Find ${city.name}'s top-rated real estate agents. Invitation-only directory with multi-source verified rankings.`} />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDescription} />
         <meta property="og:image" content="https://www.top10lists.us/og-image.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
