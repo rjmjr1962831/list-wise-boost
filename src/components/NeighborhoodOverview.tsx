@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, Home, DollarSign, Building2 } from 'lucide-react';
+import { MapPin, Home, DollarSign, Building2, ChevronDown, ChevronUp, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Button } from '@/components/ui/button';
 
 interface NeighborhoodData {
   id: string;
@@ -17,6 +19,7 @@ interface NeighborhoodData {
   zips: string[] | null;
   lat: number | null;
   lon: number | null;
+  writeup_html: string | null;
 }
 
 interface NeighborhoodOverviewProps {
@@ -61,6 +64,7 @@ const getTierDisplayName = (tier: string): string => {
 export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: NeighborhoodOverviewProps) {
   const [neighborhood, setNeighborhood] = useState<NeighborhoodData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
 
   useEffect(() => {
     const fetchNeighborhood = async () => {
@@ -167,12 +171,42 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
           )}
         </div>
 
-        {/* Location context */}
-        <p className="text-sm text-muted-foreground mt-4">
-          {neighborhood.neighborhood} is a neighborhood in {neighborhood.city_area}, {neighborhood.state}.
-          {neighborhood.tier === 'Luxury' && ' This is one of the most prestigious areas in the region.'}
-          {neighborhood.tier === 'Prime' && ' This is a highly sought-after area with strong property values.'}
-        </p>
+        {/* About Section with Expander */}
+        {neighborhood.writeup_html && (
+          <Collapsible open={isAboutOpen} onOpenChange={setIsAboutOpen} className="mt-6">
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="ghost" 
+                className="w-full flex items-center justify-between p-3 rounded-lg bg-background/50 hover:bg-background/70"
+              >
+                <div className="flex items-center gap-2">
+                  <Info className="h-5 w-5 text-primary" />
+                  <span className="font-semibold text-foreground">About {neighborhood.neighborhood}</span>
+                </div>
+                {isAboutOpen ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-4">
+              <div 
+                className="prose prose-sm max-w-none text-muted-foreground [&_p]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-medium [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1"
+                dangerouslySetInnerHTML={{ __html: neighborhood.writeup_html }}
+              />
+            </CollapsibleContent>
+          </Collapsible>
+        )}
+
+        {/* Location context - only show if no writeup */}
+        {!neighborhood.writeup_html && (
+          <p className="text-sm text-muted-foreground mt-4">
+            {neighborhood.neighborhood} is a neighborhood in {neighborhood.city_area}, {neighborhood.state}.
+            {neighborhood.tier === 'Luxury' && ' This is one of the most prestigious areas in the region.'}
+            {neighborhood.tier === 'Prime' && ' This is a highly sought-after area with strong property values.'}
+          </p>
+        )}
       </CardContent>
     </Card>
   );
