@@ -21,6 +21,7 @@ import { isBot, getBotType } from '@/utils/botDetection';
 import { getCanonicalRankings } from '@/services/canonicalAgentService';
 import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { CityMarketOverview } from '@/components/CityMarketOverview';
+import { NeighborhoodOverview } from '@/components/NeighborhoodOverview';
 import { DatasetSchema } from '@/components/seo/DatasetSchema';
 import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchema';
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
@@ -1322,7 +1323,7 @@ export default function DynamicCategoryList({
       <div className="bg-gradient-to-b from-primary/5 to-background pt-8 pb-4">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center text-foreground">
-            Top 10 {category.plural_name} in {city.name}, {stateAbbrev}
+            Top 10 {category.plural_name} in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, {stateAbbrev}
           </h1>
           <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
             Invitation-only directory with multi-source verified rankings
@@ -1331,13 +1332,24 @@ export default function DynamicCategoryList({
           
           {/* Methodology Snapshot */}
           <p className="text-sm text-muted-foreground text-center mt-4 max-w-2xl mx-auto">
-            Agents listed below hold active Arizona licenses, have verified transaction history in {city.name}, and meet minimum review thresholds. Rankings are editorial — agents cannot pay for position or inclusion.{" "}
+            Agents listed below hold active Arizona licenses, have verified transaction history in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, and meet minimum review thresholds. Rankings are editorial — agents cannot pay for position or inclusion.{" "}
             <Link to="/about/ranking-methodology" className="text-primary hover:underline">
               Full methodology →
             </Link>
           </p>
         </div>
       </div>
+      
+      {/* Neighborhood Overview - only show when viewing a neighborhood page */}
+      {neighborhoodSlug && (
+        <div className="container mx-auto px-4 mt-6">
+          <NeighborhoodOverview
+            neighborhoodSlug={neighborhoodSlug}
+            citySlug={citySlug || ''}
+            stateSlug={normalizedStateSlug}
+          />
+        </div>
+      )}
       
       {/* BOT CONTENT: Bots only see city market info - no agent cards */}
       {isBotRequest ? (
