@@ -4,7 +4,7 @@ import {
   Collapsible,
   CollapsibleContent,
 } from "@/components/ui/collapsible";
-import { ProfessionalCard } from "./ProfessionalCard";
+import { AgentBadge } from "./AgentBadge";
 import { CollapsibleHeader } from "./CollapsibleHeader";
 import { ListSection, Professional } from "@/types/professional";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
@@ -82,19 +82,14 @@ export const CollapsibleListSection = ({
           "transition-all duration-200"
         )}
       >
-        {section.items.map((professional) => (
+        {section.items.map((professional, index) => (
           <div key={`${section.title}-${professional.rank}-${professional.id}`} id={`agent-${professional.id}`}>
-            <ProfessionalCard 
+            <AgentBadge 
               professional={professional}
-              accentColor={section.accentColor}
-              schemaType={schemaType}
-              market={market}
-              stateAbbr={stateAbbr}
-              agentType={section.title}
+              stateSlug={stateAbbr?.toLowerCase() === 'az' ? 'arizona' : stateAbbr?.toLowerCase() || 'arizona'}
               citySlug={citySlug}
-              categorySlug={categorySlug}
-              onContactClick={() => onContactClick?.(professional)}
-              quizCompleted={quizCompleted}
+              rank={index + 1}
+              accentColor={section.accentColor}
             />
           </div>
         ))}

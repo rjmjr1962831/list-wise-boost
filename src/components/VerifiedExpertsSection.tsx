@@ -1,27 +1,9 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Star, ExternalLink, Phone, Mail, Globe, Award } from 'lucide-react';
-import { getValidImageUrl } from '@/utils/imageUrlValidator';
-
-interface VerifiedExpert {
-  id: string;
-  name: string;
-  company: string | null;
-  title: string | null;
-  image_url: string | null;
-  review_stars_rating: number | null;
-  num_total_reviews: number | null;
-  years_experience: number | null;
-  phone: string | null;
-  email: string | null;
-  website: string | null;
-  license_number: string | null;
-  synthesized_bio: string | null;
-  specialty: string[] | null;
-  canonical_slug: string | null;
-}
+import { Shield } from 'lucide-react';
+import { AgentBadge } from './AgentBadge';
+import { Professional } from '@/types/professional';
 
 interface VerifiedExpertsSectionProps {
   neighborhoodSlug: string;
@@ -36,9 +18,8 @@ export function VerifiedExpertsSection({
   stateSlug,
   neighborhoodName 
 }: VerifiedExpertsSectionProps) {
-  const [experts, setExperts] = useState<VerifiedExpert[]>([]);
+  const [experts, setExperts] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
-  const [neighborhoodId, setNeighborhoodId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExperts = async () => {
@@ -57,8 +38,6 @@ export function VerifiedExpertsSection({
           setLoading(false);
           return;
         }
-
-        setNeighborhoodId(neighborhood.id);
 
         // Query active subscriptions for this neighborhood with professional data
         const { data: subscriptions, error: subError } = await supabase
@@ -81,7 +60,8 @@ export function VerifiedExpertsSection({
               synthesized_bio,
               specialty,
               canonical_slug,
-              active
+              active,
+              license_verified_at
             )
           `)
           .eq('neighborhood_id', neighborhood.id)
@@ -93,10 +73,32 @@ export function VerifiedExpertsSection({
           return;
         }
 
-        // Extract and filter active professionals
+        // Extract and filter active professionals, map to Professional type
         const activeExperts = (subscriptions || [])
           .map((sub: any) => sub.professionals)
-          .filter((prof: any) => prof && prof.active === true) as VerifiedExpert[];
+          .filter((prof: any) => prof && prof.active === true)
+          .map((prof: any): Professional => ({
+            id: prof.id,
+            rank: 0,
+            name: prof.name,
+            company: prof.company || '',
+            rating: prof.review_stars_rating || 0,
+            reviews: prof.num_total_reviews || 0,
+            specialties: prof.specialty || [],
+            address: '',
+            phone: prof.phone || '',
+            email: prof.email || '',
+            website: prof.website || '',
+            description: prof.synthesized_bio || '',
+            stats: {
+              yearsExperience: prof.years_experience || undefined,
+            },
+            verified: !!prof.license_verified_at,
+            image: prof.image_url || '',
+            license_number: prof.license_number || undefined,
+            license_verified_at: prof.license_verified_at || undefined,
+            years_experience: prof.years_experience || undefined,
+          }));
 
         console.log(`[VerifiedExperts] Found ${activeExperts.length} verified experts for ${neighborhoodName}`);
         setExperts(activeExperts);
@@ -138,106 +140,17 @@ export function VerifiedExpertsSection({
       </p>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {experts.map((expert) => (
-          <ExpertCard 
+        {experts.map((expert, index) => (
+          <AgentBadge 
             key={expert.id} 
-            expert={expert} 
+            professional={expert}
             stateSlug={stateSlug}
             citySlug={citySlug}
+            rank={index + 1}
+            accentColor="primary"
           />
         ))}
       </div>
     </div>
-  );
-}
-
-function ExpertCard({ 
-  expert, 
-  stateSlug, 
-  citySlug 
-}: { 
-  expert: VerifiedExpert; 
-  stateSlug: string;
-  citySlug: string;
-}) {
-  const imageUrl = getValidImageUrl(expert.image_url);
-  // Use canonical URL format: /{state}/agents/{canonical_slug}
-  const profileUrl = expert.canonical_slug 
-    ? `/${stateSlug}/agents/${expert.canonical_slug}`
-    : null;
-
-  return (
-    <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-background hover:shadow-lg transition-shadow">
-      <CardContent className="p-4">
-        <div className="flex gap-4">
-          {/* Avatar */}
-          <div className="flex-shrink-0">
-            {imageUrl ? (
-              <img
-                src={imageUrl}
-                alt={expert.name}
-                className="w-16 h-16 rounded-full object-cover border-2 border-primary/30"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/30">
-                <span className="text-xl font-bold text-primary">
-                  {expert.name.charAt(0)}
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="font-semibold truncate">{expert.name}</h3>
-              <Badge variant="default" className="flex-shrink-0 text-xs">
-                <Award className="h-3 w-3 mr-1" />
-                Verified
-              </Badge>
-            </div>
-
-            {expert.company && (
-              <p className="text-sm text-muted-foreground truncate">{expert.company}</p>
-            )}
-
-            {/* Rating */}
-            {expert.review_stars_rating && expert.review_stars_rating > 0 && (
-              <div className="flex items-center gap-1 mt-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium">{expert.review_stars_rating.toFixed(1)}</span>
-                {expert.num_total_reviews && expert.num_total_reviews > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    ({expert.num_total_reviews} reviews)
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* Experience */}
-            {expert.years_experience && expert.years_experience > 0 && (
-              <p className="text-xs text-muted-foreground mt-1">
-                {expert.years_experience}+ years experience
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* View Profile - opens in new tab */}
-        {profileUrl && (
-          <div className="mt-4 pt-3 border-t border-border/50">
-            <a
-              href={profileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1 text-sm py-2 px-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors w-full"
-            >
-              View Profile
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </div>
-        )}
-      </CardContent>
-    </Card>
   );
 }
