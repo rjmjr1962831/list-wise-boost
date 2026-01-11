@@ -517,3 +517,6 @@ verify_jwt = false
 
 [functions.quote-neighborhood-cart]
 verify_jwt = false
+
+[functions.generate-neighborhood-writeup]
+verify_jwt = false
