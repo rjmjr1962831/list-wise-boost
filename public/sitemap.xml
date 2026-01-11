@@ -12,4 +12,8 @@
     <loc>https://www.top10lists.us/sitemap-questions.xml</loc>
     <lastmod>2026-01-11</lastmod>
   </sitemap>
+  <sitemap>
+    <loc>https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap</loc>
+    <lastmod>2026-01-11</lastmod>
+  </sitemap>
 </sitemapindex>
