@@ -128,9 +128,9 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
           </Badge>
         </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-          {/* Median Home Value */}
+        {/* Stats grid - 2x2 layout */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          {/* Row 1: Median Home Value | Median Household Income */}
           {neighborhood.median_home_value && (
             <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
               <Home className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -143,7 +143,6 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
             </div>
           )}
 
-          {/* Median Income */}
           {neighborhood.median_income && (
             <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
               <DollarSign className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -156,7 +155,7 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
             </div>
           )}
 
-          {/* ZIP Codes */}
+          {/* Row 2: ZIP Codes | About Neighborhood */}
           {neighborhood.zips && neighborhood.zips.length > 0 && (
             <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
               <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -169,44 +168,45 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
               </div>
             </div>
           )}
-        </div>
 
-        {/* About Section with Expander */}
-        {neighborhood.writeup_html && (
-          <Collapsible open={isAboutOpen} onOpenChange={setIsAboutOpen} className="mt-6">
-            <CollapsibleTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="w-full flex items-center justify-between p-3 rounded-lg bg-background/50 hover:bg-background/70"
-              >
-                <div className="flex items-center gap-2">
-                  <Info className="h-5 w-5 text-primary" />
-                  <span className="font-semibold text-foreground">About {neighborhood.neighborhood}</span>
+          {/* About Section - in grid */}
+          <Collapsible open={isAboutOpen} onOpenChange={setIsAboutOpen}>
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
+              <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-foreground">
+                    About {neighborhood.neighborhood}
+                  </h3>
+                  <CollapsibleTrigger asChild>
+                    <button className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
+                      {isAboutOpen ? 'less' : 'more'}
+                      {isAboutOpen ? (
+                        <ChevronUp className="h-4 w-4" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4" />
+                      )}
+                    </button>
+                  </CollapsibleTrigger>
                 </div>
-                {isAboutOpen ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              <div 
-                className="prose prose-sm max-w-none text-muted-foreground [&_p]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-medium [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1"
-                dangerouslySetInnerHTML={{ __html: neighborhood.writeup_html }}
-              />
+              </div>
+            </div>
+            <CollapsibleContent>
+              {neighborhood.writeup_html ? (
+                <div 
+                  className="prose prose-sm max-w-none text-muted-foreground p-3 pt-0 [&_p]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-medium [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: neighborhood.writeup_html }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground p-3 pt-0">
+                  {neighborhood.neighborhood} is a neighborhood in {neighborhood.city_area}, {neighborhood.state}.
+                  {neighborhood.tier === 'Luxury' && ' This is one of the most prestigious areas in the region.'}
+                  {neighborhood.tier === 'Prime' && ' This is a highly sought-after area with strong property values.'}
+                </p>
+              )}
             </CollapsibleContent>
           </Collapsible>
-        )}
-
-        {/* Location context - only show if no writeup */}
-        {!neighborhood.writeup_html && (
-          <p className="text-sm text-muted-foreground mt-4">
-            {neighborhood.neighborhood} is a neighborhood in {neighborhood.city_area}, {neighborhood.state}.
-            {neighborhood.tier === 'Luxury' && ' This is one of the most prestigious areas in the region.'}
-            {neighborhood.tier === 'Prime' && ' This is a highly sought-after area with strong property values.'}
-          </p>
-        )}
+        </div>
       </CardContent>
     </Card>
   );
