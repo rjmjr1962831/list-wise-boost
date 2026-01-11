@@ -176,11 +176,17 @@ const getCityCoordinates = (citySlug: string): { position: string; icbm: string 
   return coordinates[citySlug] || { position: '34.0489;-111.0937', icbm: '34.0489, -111.0937' }; // Default to Arizona center
 };
 
-interface DynamicCategoryListProps {
+export interface DynamicCategoryListProps {
   categorySlugOverride?: string;
+  neighborhoodSlug?: string;
+  neighborhoodName?: string;
 }
 
-export default function DynamicCategoryList({ categorySlugOverride }: DynamicCategoryListProps = {}) {
+export default function DynamicCategoryList({ 
+  categorySlugOverride,
+  neighborhoodSlug,
+  neighborhoodName
+}: DynamicCategoryListProps = {}) {
   const { stateSlug, citySlug, categorySlug, thirdSegment } = useParams<{ 
     stateSlug: string; 
     citySlug: string; 
