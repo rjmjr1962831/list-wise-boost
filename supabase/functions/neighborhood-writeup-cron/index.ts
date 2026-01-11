@@ -138,7 +138,8 @@ async function processNeighborhoods() {
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);
-  const BATCH_SIZE = 20;
+  const BATCH_SIZE = 30; // Fetch more to process concurrently
+  const CONCURRENCY = 10;
 
   // Get neighborhoods without writeups
   const { data: neighborhoods, error: fetchError } = await supabase
@@ -155,39 +156,59 @@ async function processNeighborhoods() {
     return;
   }
 
-  console.log(`[Cron] Processing ${neighborhoods.length} neighborhoods...`);
+  console.log(`[Cron] Processing ${neighborhoods.length} neighborhoods with ${CONCURRENCY} concurrency...`);
 
   let successful = 0;
   let failed = 0;
 
-  for (const neighborhood of neighborhoods) {
-    console.log(`[Cron] Processing: ${neighborhood.neighborhood}, ${neighborhood.city_area}`);
+  // Process in chunks of CONCURRENCY
+  for (let i = 0; i < neighborhoods.length; i += CONCURRENCY) {
+    const chunk = neighborhoods.slice(i, i + CONCURRENCY);
+    console.log(`[Cron] Processing chunk ${Math.floor(i / CONCURRENCY) + 1}: ${chunk.map(n => n.neighborhood).join(', ')}`);
     
-    const writeup = await generateWriteup(neighborhood, geminiApiKey, anthropicApiKey);
-    
-    if (writeup) {
-      const { error: updateError } = await supabase
-        .from('neighborhood_catalog')
-        .update({
-          writeup_html: writeup.narrative,
-          writeup_research: writeup.research,
-          writeup_generated_at: new Date().toISOString(),
-        })
-        .eq('id', neighborhood.id);
+    const results = await Promise.allSettled(
+      chunk.map(async (neighborhood) => {
+        console.log(`[Cron] Starting: ${neighborhood.neighborhood}, ${neighborhood.city_area}`);
+        
+        const writeup = await generateWriteup(neighborhood, geminiApiKey, anthropicApiKey);
+        
+        if (writeup) {
+          const { error: updateError } = await supabase
+            .from('neighborhood_catalog')
+            .update({
+              writeup_html: writeup.narrative,
+              writeup_research: writeup.research,
+              writeup_generated_at: new Date().toISOString(),
+            })
+            .eq('id', neighborhood.id);
 
-      if (updateError) {
-        console.error(`[Cron] Failed to save ${neighborhood.neighborhood}:`, updateError);
-        failed++;
-      } else {
-        console.log(`[Cron] ✓ Saved: ${neighborhood.neighborhood}`);
+          if (updateError) {
+            console.error(`[Cron] Failed to save ${neighborhood.neighborhood}:`, updateError);
+            throw new Error(`Save failed: ${updateError.message}`);
+          }
+          
+          console.log(`[Cron] ✓ Saved: ${neighborhood.neighborhood}`);
+          return neighborhood.neighborhood;
+        } else {
+          throw new Error(`Generation failed for ${neighborhood.neighborhood}`);
+        }
+      })
+    );
+
+    // Count results
+    for (const result of results) {
+      if (result.status === 'fulfilled') {
         successful++;
+      } else {
+        failed++;
+        console.error(`[Cron] Failed:`, result.reason);
       }
-    } else {
-      failed++;
     }
 
-    // Rate limiting: wait 1.5 seconds between requests
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Small delay between chunks to avoid rate limits
+    if (i + CONCURRENCY < neighborhoods.length) {
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
   }
 
   console.log(`[Cron] Batch complete: ${successful} success, ${failed} failed`);
