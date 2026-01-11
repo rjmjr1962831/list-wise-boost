@@ -2893,6 +2893,30 @@ export type Database = {
         }
         Relationships: []
       }
+      zip_adjacency: {
+        Row: {
+          adjacent_zip: string
+          created_at: string | null
+          distance_miles: number
+          id: string
+          zip_code: string
+        }
+        Insert: {
+          adjacent_zip: string
+          created_at?: string | null
+          distance_miles: number
+          id?: string
+          zip_code: string
+        }
+        Update: {
+          adjacent_zip?: string
+          created_at?: string | null
+          distance_miles?: number
+          id?: string
+          zip_code?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       professionals_public: {
