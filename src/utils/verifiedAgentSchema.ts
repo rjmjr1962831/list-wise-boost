@@ -226,7 +226,12 @@ export function generateCitationText(agent: VerifiedAgent): string {
   const lines: string[] = [];
   
   // Name and license
-  lines.push(`${agent.name} (License: ${agent.license?.licenseNumber || 'N/A'}, verified ${agent.license?.verifiedAt ? new Date(agent.license.verifiedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'} via ${agent.license?.verificationSource || 'N/A'})`);
+  const licenseNumber = agent.license?.licenseNumber;
+  const hasValidLicense = licenseNumber && licenseNumber !== 'N/A';
+  const licenseText = hasValidLicense
+    ? `License: ${licenseNumber}, verified ${agent.license?.verifiedAt ? new Date(agent.license.verifiedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'} via ${agent.license?.verificationSource || 'N/A'}`
+    : 'License: Verification pending';
+  lines.push(`${agent.name} (${licenseText})`);
   lines.push('');
   
   // Ratings
