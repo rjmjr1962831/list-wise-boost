@@ -135,6 +135,8 @@ const App = () => (
                 }>
                   <Routes>
                     <Route path="/" element={<Index />} />
+                    {/* Dedicated 404 route (used by pages that Navigate to /404) */}
+                    <Route path="/404" element={<NotFound />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/about/founder" element={<Founder />} />
                     <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
@@ -241,6 +243,11 @@ const App = () => (
                     <Route path="/az/:citySlug/:agentSlug" element={<AzMagicLinkRedirect />} />
                     {/* NEW: Canonical agent profile URL - /{state}/agents/{canonical_slug} */}
                     <Route path="/:stateSlug/agents/:canonicalSlug" element={<CanonicalAgentProfile />} />
+                    {/* Compatibility redirect: /{state}/{city}/agents/{canonical_slug} -> /{state}/agents/{canonical_slug} */}
+                    <Route
+                      path="/:stateSlug/:citySlug/agents/:canonicalSlug"
+                      element={<Navigate to="/:stateSlug/agents/:canonicalSlug" replace />}
+                    />
                     {/* Smart router to distinguish magic links from categories for any state */}
                     <Route path="/:stateSlug/:citySlug/:thirdSegment" element={<StateAgentOrCategoryRouter />} />
                     {/* 4-segment router: handles both neighborhood+category and category+agent */}
