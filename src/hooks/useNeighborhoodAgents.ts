@@ -12,23 +12,18 @@ interface UseNeighborhoodAgentsResult {
   loading: boolean;
   error: string | null;
   totalCount: number;
-  hasMore: boolean;
 }
 
 interface UseNeighborhoodAgentsParams {
   neighborhoodSlug: string;
   citySlug: string;
   stateSlug: string;
-  page?: number;
-  pageSize?: number;
 }
 
 export function useNeighborhoodAgents({
   neighborhoodSlug,
   citySlug,
-  stateSlug,
-  page = 1,
-  pageSize = 10
+  stateSlug
 }: UseNeighborhoodAgentsParams): UseNeighborhoodAgentsResult {
   const [agents, setAgents] = useState<NeighborhoodAgent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,18 +170,10 @@ export function useNeighborhoodAgents({
           return distA - distB;
         });
 
-        // Assign ranks after sorting
-        mappedAgents.forEach((agent, idx) => {
-          agent.rank = idx + 1;
-        });
-
-        // Step 7: Paginate
-        const startIdx = (page - 1) * pageSize;
-        const paginatedAgents = mappedAgents.slice(startIdx, startIdx + pageSize);
-
+        // Step 7: Return all agents (no pagination)
         setTotalCount(mappedAgents.length);
-        setAgents(paginatedAgents);
-        console.log(`[useNeighborhoodAgents] Returning ${paginatedAgents.length} agents (page ${page}/${Math.ceil(mappedAgents.length / pageSize)})`);
+        setAgents(mappedAgents);
+        console.log(`[useNeighborhoodAgents] Returning all ${mappedAgents.length} qualified agents`);
       } catch (err) {
         console.error('[useNeighborhoodAgents] Unexpected error:', err);
         setError('An unexpected error occurred');
@@ -198,13 +185,12 @@ export function useNeighborhoodAgents({
     if (neighborhoodSlug && citySlug) {
       fetchAgents();
     }
-  }, [neighborhoodSlug, citySlug, stateSlug, page, pageSize]);
+  }, [neighborhoodSlug, citySlug, stateSlug]);
 
   return {
     agents,
     loading,
     error,
-    totalCount,
-    hasMore: page * pageSize < totalCount
+    totalCount
   };
 }
