@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Search, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
@@ -11,18 +9,13 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { CityAutocomplete } from '@/components/CityAutocomplete';
+import { NeighborhoodAutocomplete } from '@/components/NeighborhoodAutocomplete';
 import arizonaCompleteData from '@/data/arizonaComplete.json';
-
-interface Neighborhood {
-  name: string;
-  zip_codes: string[];
-}
 
 interface ArizonaCity {
   city: string;
   population: number;
   region: string;
-  neighborhoods: Neighborhood[];
 }
 
 // Extract all cities from the new complete data structure
@@ -37,19 +30,15 @@ export const Top10SearchForm = () => {
   const navigate = useNavigate();
   const { trackEvent } = useGA4Tracking();
   const stateDropdownRef = useRef<HTMLDivElement>(null);
-  const cityDropdownRef = useRef<HTMLDivElement>(null);
   const [selectedState, setSelectedState] = useState('');
   const [stateInput, setStateInput] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
-  const [cityInput, setCityInput] = useState('');
   const [filteredCities, setFilteredCities] = useState<ArizonaCity[]>([]);
   const [filteredStates, setFilteredStates] = useState<string[]>(ALL_STATES);
-  const [cityOpen, setCityOpen] = useState(false);
   const [stateOpen, setStateOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [availableNeighborhoods, setAvailableNeighborhoods] = useState<Neighborhood[]>([]);
-  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<Set<string>>(new Set());
-  const [selectAllNeighborhoods, setSelectAllNeighborhoods] = useState(false);
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState('');
+  const [selectedNeighborhoodSlug, setSelectedNeighborhoodSlug] = useState('');
 
   useEffect(() => {
     // Update cities when state changes to Arizona
@@ -60,23 +49,15 @@ export const Top10SearchForm = () => {
       setFilteredCities([]);
     }
     setSelectedCity('');
-    setCityInput('');
+    // Clear neighborhood when state changes
+    setSelectedNeighborhood('');
+    setSelectedNeighborhoodSlug('');
   }, [selectedState]);
 
+  // Clear neighborhood when city changes
   useEffect(() => {
-    // Update neighborhoods when city changes
-    if (selectedCity) {
-      const city = arizonaCities.find(c => c.city === selectedCity);
-      if (city) {
-        setAvailableNeighborhoods(city.neighborhoods);
-        setSelectedNeighborhoods(new Set());
-        setSelectAllNeighborhoods(false);
-      }
-    } else {
-      setAvailableNeighborhoods([]);
-      setSelectedNeighborhoods(new Set());
-      setSelectAllNeighborhoods(false);
-    }
+    setSelectedNeighborhood('');
+    setSelectedNeighborhoodSlug('');
   }, [selectedCity]);
 
   useEffect(() => {
@@ -95,9 +76,6 @@ export const Top10SearchForm = () => {
       const target = event.target as Node;
       if (stateDropdownRef.current && !stateDropdownRef.current.contains(target)) {
         setStateOpen(false);
-      }
-      if (cityDropdownRef.current && !cityDropdownRef.current.contains(target)) {
-        setCityOpen(false);
       }
     };
 
@@ -123,7 +101,7 @@ export const Top10SearchForm = () => {
       trackEvent('search_form_submit', {
         state: selectedState,
         city: selectedCity,
-        neighborhoods: selectAllNeighborhoods ? 'all' : selectedNeighborhoods.size,
+        neighborhood: selectedNeighborhood || 'none',
         search_type: 'top10_search'
       } as any);
 
@@ -177,7 +155,12 @@ export const Top10SearchForm = () => {
 
       // If linked agents exist, navigate directly without import
       if (!linkedError && linkedProfs && linkedProfs.length > 0) {
-        const url = `/${cityData.state_slug}/${cityData.slug}/${categoryData.slug}`;
+        // Build URL with or without neighborhood
+        let url = `/${cityData.state_slug}/${cityData.slug}`;
+        if (selectedNeighborhoodSlug) {
+          url += `/${selectedNeighborhoodSlug}`;
+        }
+        url += `/${categoryData.slug}`;
         navigate(url);
         return;
       }
@@ -211,7 +194,11 @@ export const Top10SearchForm = () => {
       }
 
       // Navigate to the list page
-      const url = `/${cityData.state_slug}/${cityData.slug}/${categoryData.slug}`;
+      let url = `/${cityData.state_slug}/${cityData.slug}`;
+      if (selectedNeighborhoodSlug) {
+        url += `/${selectedNeighborhoodSlug}`;
+      }
+      url += `/${categoryData.slug}`;
       navigate(url);
     } catch (err: any) {
       console.error('Search error:', err);
@@ -220,47 +207,16 @@ export const Top10SearchForm = () => {
     }
   };
 
-  const handleCityInputChange = (value: string) => {
-    setCityInput(value);
+  const handleNeighborhoodChange = (neighborhood: string, slug: string) => {
+    setSelectedNeighborhood(neighborhood);
+    setSelectedNeighborhoodSlug(slug);
     
-    if (!selectedState) {
-      toast.info('Please select a state first');
-      return;
-    }
-    
-    setCityOpen(true);
-    
-    if (value) {
-      const filtered = arizonaCities
-        .filter(c => c.city.toLowerCase().includes(value.toLowerCase()))
-        .sort((a, b) => a.city.localeCompare(b.city));
-      setFilteredCities(filtered);
-    } else {
-      const sortedCities = [...arizonaCities].sort((a, b) => a.city.localeCompare(b.city));
-      setFilteredCities(sortedCities);
-    }
-  };
-
-  const handleToggleAllNeighborhoods = () => {
-    if (selectAllNeighborhoods) {
-      setSelectedNeighborhoods(new Set());
-      setSelectAllNeighborhoods(false);
-    } else {
-      const allNames = new Set(availableNeighborhoods.map(n => n.name));
-      setSelectedNeighborhoods(allNames);
-      setSelectAllNeighborhoods(true);
-    }
-  };
-
-  const handleToggleNeighborhood = (name: string) => {
-    const newSelected = new Set(selectedNeighborhoods);
-    if (newSelected.has(name)) {
-      newSelected.delete(name);
-    } else {
-      newSelected.add(name);
-    }
-    setSelectedNeighborhoods(newSelected);
-    setSelectAllNeighborhoods(newSelected.size === availableNeighborhoods.length);
+    trackEvent('search_neighborhood_select', {
+      state: selectedState,
+      city: selectedCity,
+      neighborhood: neighborhood,
+      search_type: 'top10_search'
+    } as any);
   };
 
   if (isSearching) {
@@ -275,13 +231,13 @@ export const Top10SearchForm = () => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl px-6 pt-2 pb-6 shadow-lg relative z-10">
+    <div className="w-full max-w-5xl mx-auto bg-card/50 backdrop-blur-sm border-2 border-primary/20 rounded-xl px-6 pt-2 pb-6 shadow-lg relative z-10">
       <div className="flex items-center gap-2 mb-1">
         <Search className="h-5 w-5 text-primary" />
         <h3 className="text-lg font-semibold">Find your top10 Real estate agents</h3>
       </div>
       
-      <div className="grid md:grid-cols-3 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {/* State Selector */}
         <div className={cn("relative", stateOpen && "mb-64 md:mb-0")} ref={stateDropdownRef}>
           <Input
@@ -336,7 +292,6 @@ export const Top10SearchForm = () => {
           value={selectedCity}
           onValueChange={(city) => {
             setSelectedCity(city);
-            setCityInput(city);
             
             trackEvent('search_city_select', {
               state: selectedState,
@@ -345,6 +300,16 @@ export const Top10SearchForm = () => {
             } as any);
           }}
           placeholder="Start typing the city..."
+        />
+
+        {/* Neighborhood Autocomplete */}
+        <NeighborhoodAutocomplete
+          state={selectedState}
+          cityArea={selectedCity}
+          value={selectedNeighborhood}
+          onValueChange={handleNeighborhoodChange}
+          placeholder="Neighborhood (optional)"
+          disabled={!selectedCity}
         />
 
         {/* Search Button */}
@@ -362,54 +327,6 @@ export const Top10SearchForm = () => {
           Find Top 10
         </Button>
       </div>
-
-      {/* Neighborhoods Section */}
-      {availableNeighborhoods.length > 0 && (
-        <div className="border-t pt-4">
-          <h4 className="text-sm font-semibold mb-3">Select Neighborhoods (Optional)</h4>
-          
-          {/* Select All Checkbox */}
-          <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-lg border mb-3">
-            <Checkbox
-              id="select-all-neighborhoods"
-              checked={selectAllNeighborhoods}
-              onCheckedChange={handleToggleAllNeighborhoods}
-              className="h-5 w-5"
-            />
-            <label
-              htmlFor="select-all-neighborhoods"
-              className="text-sm font-medium cursor-pointer flex-1"
-            >
-              Select All Neighborhoods
-            </label>
-          </div>
-
-          {/* Neighborhood List */}
-          <ScrollArea className="h-[200px] rounded-md border p-3">
-            <div className="space-y-2">
-              {availableNeighborhoods.map((neighborhood) => (
-                <div
-                  key={neighborhood.name}
-                  className="flex items-center space-x-3 p-2 hover:bg-muted/50 rounded-md transition-colors"
-                >
-                  <Checkbox
-                    id={neighborhood.name}
-                    checked={selectedNeighborhoods.has(neighborhood.name)}
-                    onCheckedChange={() => handleToggleNeighborhood(neighborhood.name)}
-                    className="h-4 w-4"
-                  />
-                  <label
-                    htmlFor={neighborhood.name}
-                    className="text-sm cursor-pointer flex-1"
-                  >
-                    {neighborhood.name}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
-      )}
     </div>
   );
 };
