@@ -520,3 +520,9 @@ verify_jwt = false
 
 [functions.generate-neighborhood-writeup]
 verify_jwt = false
+
+[functions.batch-neighborhood-writeups]
+verify_jwt = false
+
+[functions.neighborhood-writeup-cron]
+verify_jwt = false
