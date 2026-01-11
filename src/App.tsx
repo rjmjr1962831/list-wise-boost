@@ -36,6 +36,7 @@ const StateLanding = lazy(() => import("./pages/StateLanding"));
 const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
 const AlbuquerqueRedirect = lazy(() => import("./pages/AlbuquerqueRedirect"));
 const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCategoryRouter"));
+const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCategoryRouter"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const CRM = lazy(() => import("./pages/CRM"));
@@ -240,8 +241,8 @@ const App = () => (
                     <Route path="/:stateSlug/agents/:canonicalSlug" element={<CanonicalAgentProfile />} />
                     {/* Smart router to distinguish magic links from categories for any state */}
                     <Route path="/:stateSlug/:citySlug/:thirdSegment" element={<StateAgentOrCategoryRouter />} />
-                    {/* Agent profile with 4 params (legacy format) */}
-                    <Route path="/:stateSlug/:citySlug/:categorySlug/:agentSlug" element={<AgentProfile />} />
+                    {/* 4-segment router: handles both neighborhood+category and category+agent */}
+                    <Route path="/:stateSlug/:citySlug/:thirdSegment/:fourthSegment" element={<NeighborhoodCategoryRouter />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
                     {/* State landing page - must be after city routes */}
                     <Route path="/arizona" element={<StateLanding />} />
