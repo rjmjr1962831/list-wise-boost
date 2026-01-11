@@ -80,33 +80,22 @@ export function NeighborhoodAgentList({
 
   return (
     <div className="space-y-6">
-      {/* Header with count */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold">
-            Real Estate Agents Near {neighborhoodName}
-          </h2>
-          <span className="text-sm text-muted-foreground">
-            ({totalCount} agent{totalCount !== 1 ? 's' : ''})
-          </span>
-        </div>
-        {paidExpertCount > 0 && (
-          <span className="text-xs text-muted-foreground">
-            {paidExpertCount} verified expert{paidExpertCount !== 1 ? 's' : ''}
-          </span>
-        )}
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        <Users className="h-5 w-5 text-primary" />
+        <h2 className="text-xl font-bold">
+          Real Estate Agents Near {neighborhoodName}
+        </h2>
       </div>
 
       {/* Agent Grid */}
       <div className="grid gap-4 md:grid-cols-2">
-        {agents.map((agent, index) => (
+        {agents.map((agent) => (
           <AgentBadge
             key={agent.id}
             professional={agent}
             stateSlug={stateSlug}
             citySlug={citySlug}
-            rank={agent.rank}
             accentColor={agent.isPaidExpert ? "primary" : "turquoise"}
             isPaidExpert={agent.isPaidExpert}
           />
