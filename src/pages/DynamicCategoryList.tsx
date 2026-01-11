@@ -1421,53 +1421,56 @@ export default function DynamicCategoryList({
               />
             </>
           )}
-          <ProfessionalListLayout
-            key={`professionals-${allProfessionals.length}-${Date.now()}`}
-            metadata={metadata}
-            professionals={filteredProfessionals}
-            lastUpdated={lastUpdated}
-            rightAction={
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCityInfo(!showCityInfo)}
-                className="flex items-center gap-2"
-              >
-                {showCityInfo ? 'Hide' : 'More about'} {city.name}
-                <svg 
-                  className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
+          {/* Only show the old collapsible list for city pages, not neighborhood pages */}
+          {!neighborhoodSlug && (
+            <ProfessionalListLayout
+              key={`professionals-${allProfessionals.length}-${Date.now()}`}
+              metadata={metadata}
+              professionals={filteredProfessionals}
+              lastUpdated={lastUpdated}
+              rightAction={
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowCityInfo(!showCityInfo)}
+                  className="flex items-center gap-2"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </Button>
-            }
-            expandedContent={showCityInfo ? (
-              <div className="animate-in slide-in-from-top-2 duration-300">
-                <CityMarketOverview 
-                  citySlug={city.slug} 
-                  cityName={city.name} 
-                  stateName={city.state}
+                  {showCityInfo ? 'Hide' : 'More about'} {city.name}
+                  <svg 
+                    className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </Button>
+              }
+              expandedContent={showCityInfo ? (
+                <div className="animate-in slide-in-from-top-2 duration-300">
+                  <CityMarketOverview 
+                    citySlug={city.slug} 
+                    cityName={city.name} 
+                    stateName={city.state}
+                  />
+                </div>
+              ) : null}
+            >
+              {sections.map((section, index) => (
+                <CollapsibleListSection
+                  key={index}
+                  section={section}
+                  defaultOpen={true}
+                  schemaType="RealEstateAgent"
+                  market={formatCityName(city)}
+                  stateAbbr={metadata.location.stateAbbr}
+                  citySlug={city.slug}
+                  categorySlug={categorySlug}
+                  onContactClick={handleContactClick}
+                  quizCompleted={quizCompleted}
                 />
-              </div>
-            ) : null}
-          >
-            {sections.map((section, index) => (
-              <CollapsibleListSection
-                key={index}
-                section={section}
-                defaultOpen={true}
-                schemaType="RealEstateAgent"
-                market={formatCityName(city)}
-                stateAbbr={metadata.location.stateAbbr}
-                citySlug={city.slug}
-                categorySlug={categorySlug}
-                onContactClick={handleContactClick}
-                quizCompleted={quizCompleted}
-              />
-            ))}
-          </ProfessionalListLayout>
+              ))}
+            </ProfessionalListLayout>
+          )}
         </>
       )}
     </>
