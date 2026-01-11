@@ -77,11 +77,15 @@ export function LicenseCard({ license, brokerage }: LicenseCardProps) {
 
         {/* Verification Badge */}
         <div className="pt-2 border-t border-border/50">
-          <VerifiedBadge
-            verifiedAt={license.verifiedAt}
-            sourceName={license.verificationSource}
-            sourceUrl={license.verificationUrl}
-          />
+          {license.licenseNumber && license.licenseNumber !== 'N/A' ? (
+            <VerifiedBadge
+              verifiedAt={license.verifiedAt}
+              sourceName={license.verificationSource}
+              sourceUrl={license.verificationUrl}
+            />
+          ) : (
+            <span className="text-sm text-muted-foreground italic">Verification pending</span>
+          )}
         </div>
       </CardContent>
     </Card>
