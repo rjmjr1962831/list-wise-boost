@@ -526,3 +526,6 @@ verify_jwt = false
 
 [functions.neighborhood-writeup-cron]
 verify_jwt = false
+
+[functions.claude-admin-api]
+verify_jwt = false

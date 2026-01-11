@@ -80,12 +80,6 @@ export const AgentBadge = ({
       )}>
         <CardContent className="p-4">
           <div className="flex items-center gap-4">
-            {/* Rank Number */}
-            {rank && (
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                <span className="text-sm font-bold text-primary">#{rank}</span>
-              </div>
-            )}
             
             {/* Avatar */}
             <div className="relative flex-shrink-0">
