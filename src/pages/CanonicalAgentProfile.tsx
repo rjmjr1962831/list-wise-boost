@@ -194,7 +194,7 @@ export default function CanonicalAgentProfile() {
           .eq('state_slug', stateSlug)
           .eq('canonical_slug', canonicalSlug)
           .eq('active', true)
-          .single();
+          .maybeSingle();
 
         if (agentError || !agent) {
           console.log('[CanonicalAgentProfile] Agent not found:', { stateSlug, canonicalSlug, error: agentError });
