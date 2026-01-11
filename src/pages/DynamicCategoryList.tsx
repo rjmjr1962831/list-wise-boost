@@ -22,7 +22,7 @@ import { getCanonicalRankings } from '@/services/canonicalAgentService';
 import { getCityBySlug, formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
 import { CityMarketOverview } from '@/components/CityMarketOverview';
 import { NeighborhoodOverview } from '@/components/NeighborhoodOverview';
-import { VerifiedExpertsSection } from '@/components/VerifiedExpertsSection';
+import { NeighborhoodAgentList } from '@/components/NeighborhoodAgentList';
 import { DatasetSchema } from '@/components/seo/DatasetSchema';
 import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchema';
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
@@ -1341,7 +1341,7 @@ export default function DynamicCategoryList({
         </div>
       </div>
       
-      {/* Neighborhood Overview - only show when viewing a neighborhood page */}
+      {/* Neighborhood Overview and Agent List - only show when viewing a neighborhood page */}
       {neighborhoodSlug && (
         <div className="container mx-auto px-4 mt-6 space-y-6">
           <NeighborhoodOverview
@@ -1350,8 +1350,8 @@ export default function DynamicCategoryList({
             stateSlug={normalizedStateSlug}
           />
           
-          {/* Verified Experts Section - paid neighborhood specialists */}
-          <VerifiedExpertsSection
+          {/* ZIP Proximity Agent List - integrates paid experts + nearby agents */}
+          <NeighborhoodAgentList
             neighborhoodSlug={neighborhoodSlug}
             citySlug={citySlug || ''}
             stateSlug={normalizedStateSlug}

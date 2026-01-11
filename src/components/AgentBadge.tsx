@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, ShieldCheck, ExternalLink } from "lucide-react";
+import { Star, ShieldCheck, ExternalLink, Award } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Professional } from "@/types/professional";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
@@ -11,6 +11,8 @@ interface AgentBadgeProps {
   citySlug?: string;
   rank?: number;
   accentColor?: "primary" | "sunset-orange" | "terracotta" | "turquoise" | "cactus-green";
+  /** Whether this agent is a paid neighborhood expert */
+  isPaidExpert?: boolean;
 }
 
 export const AgentBadge = ({
@@ -18,7 +20,8 @@ export const AgentBadge = ({
   stateSlug,
   citySlug,
   rank,
-  accentColor = "primary"
+  accentColor = "primary",
+  isPaidExpert = false
 }: AgentBadgeProps) => {
   const isVerified = !!(professional.license_number || (professional as any).license_verified_at);
   
@@ -127,7 +130,15 @@ export const AgentBadge = ({
               )}
 
               {/* Rating and Experience */}
-              <div className="flex items-center gap-3 mt-1.5">
+              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                {/* Neighborhood Expert Badge - Only for paid experts */}
+                {isPaidExpert && (
+                  <Badge className="bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-100">
+                    <Award className="h-3 w-3 mr-1" />
+                    Neighborhood Expert
+                  </Badge>
+                )}
+                
                 {rating > 0 && (
                   <div className="flex items-center gap-1">
                     <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
