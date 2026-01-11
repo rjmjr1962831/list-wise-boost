@@ -161,8 +161,9 @@ function ExpertCard({
   citySlug: string;
 }) {
   const imageUrl = getValidImageUrl(expert.image_url);
+  // Use canonical URL format: /{state}/agents/{canonical_slug}
   const profileUrl = expert.canonical_slug 
-    ? `/${stateSlug}/${citySlug}/top10realestateagents/${expert.canonical_slug}`
+    ? `/${stateSlug}/agents/${expert.canonical_slug}`
     : null;
 
   return (
