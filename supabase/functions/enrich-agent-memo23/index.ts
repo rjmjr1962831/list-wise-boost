@@ -309,8 +309,8 @@ serve(async (req) => {
     // ============================================
     // PART 4: Populate agent_listings
     // ============================================
-    const forSaleListings = agentData.forSaleListings || [];
-    const forRentListings = agentData.forRentListings || [];
+    const forSaleListings = Array.isArray(agentData.forSaleListings) ? agentData.forSaleListings : [];
+    const forRentListings = Array.isArray(agentData.forRentListings) ? agentData.forRentListings : [];
     const allListings = [
       ...forSaleListings.map((l: any) => ({ ...l, listing_type: 'for_sale' })),
       ...forRentListings.map((l: any) => ({ ...l, listing_type: 'for_rent' }))
