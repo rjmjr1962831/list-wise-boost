@@ -338,7 +338,7 @@ export default function EditProfile() {
   };
 
   const startEditingBio = () => {
-    setBioEditValue(professional?.description || '');
+    setBioEditValue(professional?.description || professional?.get_to_know_me || '');
     setEditingBio(true);
   };
 
@@ -560,8 +560,8 @@ export default function EditProfile() {
                     </Button>
                   </div>
                 </div>
-              ) : professional?.description ? (
-                <BioPreview text={professional.description} />
+              ) : (professional?.description || professional?.get_to_know_me) ? (
+                <BioPreview text={professional.description || professional.get_to_know_me} />
               ) : (
                 <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground italic">
                   No bio available yet.
