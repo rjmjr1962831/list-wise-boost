@@ -1340,9 +1340,6 @@ export default function DynamicCategoryList({
               placeholder={`Search ${neighborhoodName || city.name} neighborhoods by name or ZIP code`}
               className="w-full"
             />
-            <p className="text-center text-sm text-muted-foreground mt-3">
-              Refine your search to specific neighborhoods or use a ZIP code
-            </p>
           </div>
         </div>
       </div>
