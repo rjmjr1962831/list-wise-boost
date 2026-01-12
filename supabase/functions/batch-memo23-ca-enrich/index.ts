@@ -141,14 +141,32 @@ async function enrichAgent(
       };
     }
 
-    // Extract rating and review count from Memo23 (for updating records)
+    // Extract rating and review count from Memo23
     const rating = agentData.ratings?.average || 0;
     const reviewCount = agentData.ratings?.count || 0;
 
-    console.log(`   ${agent.name}: ${rating}⭐ (${reviewCount} reviews) - Already prequalified by Exa`);
-    
-    // NOTE: Prequalification is now done in Exa step. We only process prequalified agents.
-    // We still update memo23_rating/reviews for data tracking, but don't filter here.
+    console.log(`   ${agent.name}: ${rating}⭐ (${reviewCount} reviews)`);
+
+    // Prequalification check: 4.8+ rating AND 20+ reviews
+    // Store data but only create professional record if qualified
+    if (rating < 4.8 || reviewCount < 20) {
+      await supabase.from('state_licenses').update({
+        zillow_scraped_at: new Date().toISOString(),
+        memo23_status: 'not_qualified',
+        memo23_rating: rating,
+        memo23_reviews: reviewCount
+      }).eq('id', agent.id);
+
+      return {
+        id: agent.id,
+        name: agent.name,
+        license_number: agent.license_number,
+        status: 'not_qualified',
+        rating,
+        reviews: reviewCount,
+        message: `Does not meet criteria: ${rating}⭐ / ${reviewCount} reviews`
+      };
+    }
 
     // Check for duplicates in professionals table
     const { data: existingPro } = await supabase
@@ -527,13 +545,12 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get ONLY CA agents that passed Exa prequalification and haven't been scraped by Memo23
+    // Get ALL CA agents with Zillow URLs that haven't been scraped by Memo23
     const { data: agents, error: fetchError } = await supabase
       .from('state_licenses')
-      .select('id, name, license_number, city, brokerage_name, zillow_url, exa_rating, exa_reviews')
+      .select('id, name, license_number, city, brokerage_name, zillow_url')
       .eq('state', 'CA')
       .not('zillow_url', 'is', null)
-      .eq('exa_prequalified', true)  // ONLY agents that passed Exa prequalification
       .is('zillow_scraped_at', null)  // Not yet scraped by Memo23
       .order('exa_searched_at', { ascending: true })
       .limit(limit);
@@ -544,14 +561,14 @@ serve(async (req) => {
 
     if (!agents || agents.length === 0) {
       return new Response(JSON.stringify({
-        message: 'No prequalified CA agents to process - all have been scraped or none passed Exa prequalification',
+        message: 'No CA agents to process - all have been scraped',
         processed: 0
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`📋 Found ${agents.length} PREQUALIFIED agents to enrich with Memo23`);
+    console.log(`📋 Found ${agents.length} agents to enrich with Memo23`);
 
     if (dryRun) {
       return new Response(JSON.stringify({
