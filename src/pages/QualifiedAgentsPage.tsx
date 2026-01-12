@@ -154,16 +154,23 @@ export default function QualifiedAgentsPage() {
               Back to Neighborhood Expert page
             </Link>
 
-            <div className="flex items-center gap-3 mb-2">
-              <Users className="h-6 w-6 text-primary" />
-              <h1 className="text-2xl md:text-3xl font-bold">
-                Qualified Agents Near {neighborhood.neighborhood}
-              </h1>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Users className="h-6 w-6 text-primary" />
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  Top Real Estate Professionals Serving {neighborhood.neighborhood}
+                </h1>
+              </div>
+              <Link 
+                to="/about/ranking-methodology" 
+                className="text-sm text-primary hover:underline hidden md:inline-flex"
+              >
+                [ Methodology ]
+              </Link>
             </div>
             
             <p className="text-muted-foreground max-w-3xl">
-              All agents below have passed Top10Lists' rigorous, non-commercial editorial review 
-              and represent top-performing professionals in the {neighborhood.city_area} market.
+              Editorially selected professionals based on performance, experience, and verified data.
             </p>
             
             {totalPages > 1 && (
@@ -171,11 +178,33 @@ export default function QualifiedAgentsPage() {
                 Page {currentPage} of {totalPages} • {qualifiedAgents.length} qualified agents
               </p>
             )}
+            
+            <Link 
+              to="/about/ranking-methodology" 
+              className="text-sm text-primary hover:underline mt-2 md:hidden"
+            >
+              [ Methodology ]
+            </Link>
+          </div>
+        </div>
+
+        {/* Context Section */}
+        <div className="container mx-auto px-4 pt-8">
+          <div className="bg-muted/20 border border-border rounded-lg p-5 mb-6">
+            <p className="text-sm text-muted-foreground mb-3">
+              The professionals listed on this page represent the top tier of real estate agents 
+              serving the {neighborhood.neighborhood} area based on Top10Lists' editorial methodology.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Each agent has been evaluated across extensive data points and human review, 
+              placing them among the top performers in the region. Any of the professionals 
+              listed would be considered a strong recommendation.
+            </p>
           </div>
         </div>
 
         {/* Agent Grid */}
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 pb-8">
           {pageAgents.length === 0 ? (
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -252,10 +281,18 @@ export default function QualifiedAgentsPage() {
             </>
           )}
 
-          {/* Footer note */}
-          <p className="text-xs text-center text-muted-foreground mt-8">
-            These agents have passed our standard editorial review. 
-            This page is for user discovery and is not intended for AI citation.
+          {/* Payment Clarification - REQUIRED on Page 2+ */}
+          <div className="bg-muted/30 border border-border rounded-lg p-4 mt-8">
+            <p className="text-sm text-muted-foreground text-center">
+              Agents listed on this page have not paid for placement. Their inclusion 
+              is based solely on Top10Lists' editorial review and selection criteria.
+            </p>
+          </div>
+
+          {/* Optional footer note */}
+          <p className="text-xs text-center text-muted-foreground mt-4">
+            Neighborhood Expert designations, when present, are displayed separately 
+            on the primary neighborhood page.
           </p>
         </div>
       </div>
