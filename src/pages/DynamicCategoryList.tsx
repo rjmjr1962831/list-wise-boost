@@ -1329,7 +1329,7 @@ export default function DynamicCategoryList({
           <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
             None of these agents paid to be listed here. Their selection is purely merit based.{" "}
             <Link to="/about/ranking-methodology" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-              methodology
+              Methodology
             </Link>
           </p>
         </div>
