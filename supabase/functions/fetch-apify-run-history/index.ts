@@ -183,8 +183,29 @@ serve(async (req) => {
       throw new Error("APIFY_API_TOKEN not configured");
     }
 
-    const { action, runId, datasetId, actorId, limit = 10, offset = 0, dryRun = true } = await req.json();
+    const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
 
+    const {
+      action,
+      runId,
+      datasetId,
+      actorId,
+      limit = 10,
+      offset = 0,
+      dryRun = true,
+      startRun = 0,
+      maxRuns = 20,
+    } = body as {
+      action?: string;
+      runId?: string;
+      datasetId?: string;
+      actorId?: string;
+      limit?: number;
+      offset?: number;
+      dryRun?: boolean;
+      startRun?: number;
+      maxRuns?: number;
+    };
     // Action 1: List ALL user's runs (can filter by actor)
     if (action === "list-runs") {
       // Use the APIFY_ACTOR_ID from secrets if available
@@ -563,10 +584,13 @@ serve(async (req) => {
       const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
       
-      const { startRun = 0, maxRuns = 20 } = await req.json().catch(() => ({}));
+      const startRunIndex = Number.isFinite(Number(startRun)) ? Number(startRun) : 0;
+      const maxRunsCount = Number.isFinite(Number(maxRuns)) ? Math.max(1, Number(maxRuns)) : 20;
+
       const actId = actorId || "memo23/apify-zillow-agents-cheerio";
-      console.log(`Fetching runs for actor: ${actId}, startRun: ${startRun}, maxRuns: ${maxRuns}`);
-      
+      console.log(
+        `Fetching runs for actor: ${actId}, startRun: ${startRunIndex}, maxRuns: ${maxRunsCount}`
+      );
       // Get all runs
       const runsUrl = `https://api.apify.com/v2/acts/${encodeURIComponent(actId)}/runs?token=${APIFY_API_TOKEN}&limit=300&desc=true`;
       const runsResponse = await fetch(runsUrl);
@@ -574,8 +598,10 @@ serve(async (req) => {
       const allRuns = runsData.data?.items?.filter((r: ApifyRun) => r.status === "SUCCEEDED") || [];
       
       // Take a batch of runs
-      const runs = allRuns.slice(startRun, startRun + maxRuns);
-      console.log(`Processing runs ${startRun} to ${startRun + runs.length} of ${allRuns.length} total`);
+      const runs = allRuns.slice(startRunIndex, startRunIndex + maxRunsCount);
+      console.log(
+        `Processing runs ${startRunIndex} to ${startRunIndex + runs.length} of ${allRuns.length} total`
+      );
       
       // Track all unique agents across all runs (by encodedZuid)
       const allAgentData = new Map<string, Memo23Agent>();
@@ -749,10 +775,13 @@ serve(async (req) => {
         success: true,
         dryRun,
         batch: {
-          startRun,
+          startRun: startRunIndex,
           processedRuns: runs.length,
           totalRuns: allRuns.length,
-          nextStartRun: startRun + runs.length < allRuns.length ? startRun + runs.length : null
+          nextStartRun:
+            startRunIndex + runs.length < allRuns.length
+              ? startRunIndex + runs.length
+              : null
         },
         summary: {
           totalItemsFetched,
@@ -764,8 +793,8 @@ serve(async (req) => {
         },
         matchedAgents: matchedAgents.slice(0, 100),
         message: dryRun 
-          ? `DRY RUN: Would update ${matched} professionals from runs ${startRun}-${startRun + runs.length}. Set dryRun: false to apply.`
-          : `Updated ${updated} professionals from runs ${startRun}-${startRun + runs.length}.`
+          ? `DRY RUN: Would update ${matched} professionals from runs ${startRunIndex}-${startRunIndex + runs.length}. Set dryRun: false to apply.`
+          : `Updated ${updated} professionals from runs ${startRunIndex}-${startRunIndex + runs.length}.`
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
