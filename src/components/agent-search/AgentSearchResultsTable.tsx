@@ -14,12 +14,16 @@ interface AgentSearchResultsTableProps {
   results: StateAgentSearchResult[];
   isLoading: boolean;
   onViewDetails: (agent: StateAgentSearchResult) => void;
+  onApprove: (agent: StateAgentSearchResult) => void;
+  onApply: (agent: StateAgentSearchResult) => void;
 }
 
 export function AgentSearchResultsTable({
   results,
   isLoading,
   onViewDetails,
+  onApprove,
+  onApply,
 }: AgentSearchResultsTableProps) {
   if (isLoading) {
     return (
@@ -31,7 +35,7 @@ export function AgentSearchResultsTable({
               <TableHead>Last Name</TableHead>
               <TableHead>Neighborhood Expert</TableHead>
               <TableHead>Listed</TableHead>
-              <TableHead className="w-[100px]">Details</TableHead>
+              <TableHead className="w-[140px]">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -41,7 +45,7 @@ export function AgentSearchResultsTable({
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-8" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                <TableCell><Skeleton className="h-8 w-14" /></TableCell>
+                <TableCell><Skeleton className="h-8 w-20" /></TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -67,7 +71,7 @@ export function AgentSearchResultsTable({
             <TableHead>Last Name</TableHead>
             <TableHead>Neighborhood Expert</TableHead>
             <TableHead>Listed</TableHead>
-            <TableHead className="w-[100px]">Details</TableHead>
+            <TableHead className="w-[140px]">Action</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -98,9 +102,26 @@ export function AgentSearchResultsTable({
                     <span className="text-muted-foreground">No</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="space-x-2">
+                  {agent.isListed ? (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => onApprove(agent)}
+                    >
+                      Approve
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onApply(agent)}
+                    >
+                      Apply
+                    </Button>
+                  )}
                   <Button
-                    variant="secondary"
+                    variant="ghost"
                     size="sm"
                     onClick={() => onViewDetails(agent)}
                   >

@@ -3222,6 +3222,8 @@ export type Database = {
           tier: string
         }[]
       }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
       start_warm_cache_cron: { Args: never; Returns: undefined }
       stop_warm_cache_cron: { Args: never; Returns: undefined }
       unaccent: { Args: { "": string }; Returns: string }

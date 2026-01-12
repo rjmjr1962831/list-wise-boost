@@ -17,6 +17,7 @@ export interface StateAgentSearchResult {
   stateSlug: string | null;
   canonicalSlug: string | null;
   imageUrl: string | null;
+  verificationToken: string | null;
 }
 
 interface UseStateAgentSearchReturn {
@@ -95,7 +96,8 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
             active,
             state_slug,
             canonical_slug,
-            image_url
+            image_url,
+            verification_token
           `)
           .ilike('name', `%${trimmedQuery}%`)
           .limit(50);
@@ -148,6 +150,7 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
             stateSlug: p.state_slug,
             canonicalSlug: p.canonical_slug,
             imageUrl: p.image_url,
+            verificationToken: p.verification_token,
           };
         });
 

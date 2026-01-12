@@ -535,3 +535,6 @@ verify_jwt = false
 
 [functions.export-active-agents]
 verify_jwt = false
+
+[functions.create-agent-application]
+verify_jwt = false
