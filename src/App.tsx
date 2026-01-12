@@ -111,6 +111,7 @@ const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods
 const NeighborhoodWriteups = lazy(() => import("./pages/admin/NeighborhoodWriteups"));
 const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
 const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
+const QualifiedAgentsPage = lazy(() => import("./pages/QualifiedAgentsPage"));
 
 // Visibility funnel pages
 const VisibilityCoveragePage = lazy(() => import("./pages/VisibilityCoveragePage"));
@@ -247,6 +248,8 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
                     {/* Legacy /az/ neighborhood+category format - redirect to full state name */}
                     <Route path="/az/:citySlug/:neighborhoodSlug/:categorySlug" element={<AzNeighborhoodRedirect />} />
+                    {/* Qualified Agents Page (Page 2+ of Expert-First Architecture) - noindex */}
+                    <Route path="/:stateSlug/:citySlug/:neighborhoodSlug/qualified-real-estate-agents" element={<QualifiedAgentsPage />} />
                     {/* Legacy /az/ magic link format - redirect to full state name with category */}
                     <Route path="/az/:citySlug/:agentSlug" element={<AzMagicLinkRedirect />} />
                     {/* NEW: Canonical agent profile URL - /{state}/agents/{canonical_slug} */}
