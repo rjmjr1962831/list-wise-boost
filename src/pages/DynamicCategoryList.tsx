@@ -28,7 +28,7 @@ import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchem
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
 import { Info } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
-import { LocationSearchBox } from '@/components/LocationSearchBox';
+import { DualSearchBox } from '@/components/DualSearchBox';
 
 interface City {
   id: string;
@@ -1334,10 +1334,11 @@ export default function DynamicCategoryList({
             </Link>
           </p>
           
-          {/* ZIP/Neighborhood Search Box */}
-          <div className="mt-8 max-w-2xl mx-auto">
-            <LocationSearchBox 
-              placeholder={`Search ${neighborhoodName || city.name} neighborhoods by name or ZIP code`}
+          {/* ZIP/Neighborhood + Agent Name Search */}
+          <div className="mt-8 max-w-3xl mx-auto">
+            <DualSearchBox 
+              locationPlaceholder={`Search ${neighborhoodName || city.name} neighborhoods by name or ZIP code`}
+              agentPlaceholder="Search agent name"
               className="w-full"
             />
           </div>
