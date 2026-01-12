@@ -75,11 +75,12 @@ export function NeighborhoodAgentList({
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-primary" />
           <h2 className="text-xl font-bold">
-            Qualified Agents Near {neighborhoodName}
+            Editorially Selected Agents Near {neighborhoodName}
           </h2>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
-          These agents meet baseline qualification standards and appear active nearby. This is not a ranking.
+          All agents below have passed Top10Lists' rigorous, non-commercial editorial review. 
+          They represent top-performing professionals in this market. This is not a ranking.
         </p>
       </div>
 

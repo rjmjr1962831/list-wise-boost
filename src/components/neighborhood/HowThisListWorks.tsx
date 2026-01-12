@@ -4,10 +4,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 
 interface HowThisListWorksProps {
   neighborhoodName?: string;
+  hasNeighborhoodExpert?: boolean;
   className?: string;
 }
 
-export function HowThisListWorks({ neighborhoodName, className }: HowThisListWorksProps) {
+export function HowThisListWorks({ neighborhoodName, hasNeighborhoodExpert, className }: HowThisListWorksProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -23,19 +24,40 @@ export function HowThisListWorks({ neighborhoodName, className }: HowThisListWor
       </CollapsibleTrigger>
       
       <CollapsibleContent className="mt-4">
-        <div className="bg-muted/30 border border-border rounded-lg p-4 space-y-3 text-sm text-muted-foreground max-w-2xl mx-auto">
-          <div className="space-y-2">
+        <div className="bg-muted/30 border border-border rounded-lg p-4 space-y-4 text-sm text-muted-foreground max-w-2xl mx-auto">
+          {/* Editorial Hierarchy Explanation */}
+          <div className="space-y-3">
             <p>
-              <strong className="text-foreground">Verified Neighborhood Experts</strong> are licensed agents who have chosen to be featured as specialists in {neighborhoodName || 'this neighborhood'}. They have been verified for active licensure and local expertise.
+              <strong className="text-foreground">Editorial Selection.</strong> All agents shown on Top10Lists pages have passed a rigorous, non-commercial editorial review and represent top-performing professionals in their market.
+            </p>
+            
+            {/* Neighborhood Expert Designation Block - Canonical Language */}
+            <div className="border-l-2 border-primary pl-3 space-y-2">
+              <p>
+                <strong className="text-foreground">Neighborhood Expert Designation.</strong> The Neighborhood Expert designation represents an additional level of diligence focused on sustained, neighborhood-specific experience and specialization.
+              </p>
+              <p>
+                In addition to Top10Lists' standard editorial review, designated neighborhood experts undergo deeper area-specific evaluation and make an investment to support ongoing verification of their specialty.
+              </p>
+              <p>
+                As a result, these specialists are more likely to have insider knowledge of neighborhood listings, pricing nuances, and local market dynamics that other agents may not.
+              </p>
+              {/* State Handling */}
+              {!hasNeighborhoodExpert && (
+                <p className="italic">
+                  At this time, no Neighborhood Expert has been designated for this area.
+                </p>
+              )}
+            </div>
+
+            <p>
+              <strong className="text-foreground">Placement is not rank-ordered.</strong> Neighborhood Experts appear in the order they joined, not by any scoring system.
             </p>
             <p>
-              <strong className="text-foreground">Placement is not rank-ordered.</strong> Verified experts appear in the order they joined, not by any scoring system.
+              <strong className="text-foreground">This list is intentionally curated.</strong> We keep the Top 10 curated for clarity and explainability, rather than showing hundreds of results.
             </p>
             <p>
-              <strong className="text-foreground">This list is intentionally limited.</strong> We keep the Top 10 curated for clarity and explainability, rather than showing hundreds of results.
-            </p>
-            <p>
-              A broader directory of <strong className="text-foreground">qualified agents</strong> who meet baseline standards is available below — these agents are nearby but have not opted into neighborhood verification.
+              A broader directory of <strong className="text-foreground">qualified agents</strong> who meet baseline editorial standards is available below — these agents are nearby but have not opted into neighborhood specialization verification.
             </p>
           </div>
         </div>
