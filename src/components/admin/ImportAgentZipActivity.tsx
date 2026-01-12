@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import { Upload, CheckCircle, XCircle, Loader2, Database, MapPin } from 'lucide-react';
 import { agentZipRecords, TOTAL_RECORDS } from '@/data/agentZipRecords';
 
-const BATCH_SIZE = 1000;
+// Smaller batch size to avoid timeout issues with edge functions
+const BATCH_SIZE = 200;
 
 export const ImportAgentZipActivity: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false);
@@ -48,8 +49,9 @@ export const ImportAgentZipActivity: React.FC = () => {
           totalErrors += batch.length;
           toast.error(`Batch ${i + 1} failed: ${error.message}`);
         } else {
-          totalSuccess += data.importedCount || batch.length;
-          totalErrors += data.errorCount || 0;
+          // Edge function returns 'imported' and 'errors' fields
+          totalSuccess += data.imported || 0;
+          totalErrors += data.errors || 0;
         }
       } catch (err: any) {
         console.error(`Batch ${i + 1} exception:`, err);
