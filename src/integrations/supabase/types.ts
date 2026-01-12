@@ -1382,6 +1382,66 @@ export type Database = {
         }
         Relationships: []
       }
+      cron_state: {
+        Row: {
+          completed_at: string | null
+          consecutive_errors: number | null
+          created_at: string
+          id: string
+          is_running: boolean
+          job_name: string
+          last_error: string | null
+          last_run_at: string | null
+          message: string | null
+          remaining_count: number | null
+          started_at: string | null
+          status: string | null
+          total_errors: number | null
+          total_found: number | null
+          total_not_found: number | null
+          total_processed: number | null
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          consecutive_errors?: number | null
+          created_at?: string
+          id?: string
+          is_running?: boolean
+          job_name: string
+          last_error?: string | null
+          last_run_at?: string | null
+          message?: string | null
+          remaining_count?: number | null
+          started_at?: string | null
+          status?: string | null
+          total_errors?: number | null
+          total_found?: number | null
+          total_not_found?: number | null
+          total_processed?: number | null
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          consecutive_errors?: number | null
+          created_at?: string
+          id?: string
+          is_running?: boolean
+          job_name?: string
+          last_error?: string | null
+          last_run_at?: string | null
+          message?: string | null
+          remaining_count?: number | null
+          started_at?: string | null
+          status?: string | null
+          total_errors?: number | null
+          total_found?: number | null
+          total_not_found?: number | null
+          total_processed?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dnc_sync_queue: {
         Row: {
           created_at: string | null
