@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { LocationSearchBox } from "@/components/LocationSearchBox";
+import { DualSearchBox } from "@/components/DualSearchBox";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { generateHomepageSchema } from "@/utils/homepageSchema";
@@ -170,9 +170,10 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8">
             No ads. No pay-to-play. Just the top 0.5% — verified.
           </p>
-          <div className="max-w-xl mx-auto mb-6">
-            <LocationSearchBox 
-              placeholder="Find top agents by neighborhood or ZIP code"
+          <div className="max-w-3xl mx-auto mb-6">
+            <DualSearchBox 
+              locationPlaceholder="Find by neighborhood or ZIP code"
+              agentPlaceholder="Search agent name"
               className="w-full"
             />
           </div>
@@ -204,9 +205,10 @@ const Index = () => {
                 Learn how we qualify agents →
               </Link>
             </p>
-            <div className="max-w-md mx-auto">
-              <LocationSearchBox 
-                placeholder="Search by neighborhood or ZIP code"
+            <div className="max-w-2xl mx-auto">
+              <DualSearchBox 
+                locationPlaceholder="Search by neighborhood or ZIP code"
+                agentPlaceholder="Search agent name"
                 className="w-full"
               />
               <p className="text-center text-sm text-muted-foreground mt-3">
