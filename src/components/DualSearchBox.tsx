@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { User, MapPin, ChevronDown } from 'lucide-react';
+import { User, MapPin } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useLocationSearch } from '@/hooks/useLocationSearch';
 import { useStateAgentSearch, StateAgentSearchResult } from '@/hooks/useStateAgentSearch';
@@ -7,15 +7,8 @@ import { AgentLookupModal } from '@/components/AgentLookupModal';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
-// US States list
-const US_STATES = [
-  { abbr: 'AZ', name: 'Arizona', slug: 'arizona' },
-  { abbr: 'CA', name: 'California', slug: 'california' },
-  { abbr: 'CO', name: 'Colorado', slug: 'colorado' },
-  { abbr: 'FL', name: 'Florida', slug: 'florida' },
-  { abbr: 'NV', name: 'Nevada', slug: 'nevada' },
-  { abbr: 'TX', name: 'Texas', slug: 'texas' },
-];
+// Fixed to Arizona only
+const FIXED_STATE = { abbr: 'AZ', name: 'Arizona', slug: 'arizona' };
 
 interface DualSearchBoxProps {
   locationPlaceholder?: string;
@@ -49,15 +42,12 @@ export const DualSearchBox = ({
     clearResults: clearLocationResults 
   } = useLocationSearch();
 
-  // Agent search state with state selector
-  const [selectedState, setSelectedState] = useState(defaultState);
-  const [showStateDropdown, setShowStateDropdown] = useState(false);
+  // Agent search state - fixed to Arizona
   const [agentValue, setAgentValue] = useState('');
   const [showAgentDropdown, setShowAgentDropdown] = useState(false);
   const [agentSelectedIndex, setAgentSelectedIndex] = useState(0);
   const agentInputRef = useRef<HTMLInputElement>(null);
   const agentDropdownRef = useRef<HTMLDivElement>(null);
-  const stateDropdownRef = useRef<HTMLDivElement>(null);
 
   const {
     results: agentResults,
@@ -69,8 +59,6 @@ export const DualSearchBox = ({
     clearResults: clearAgentResults,
   } = useStateAgentSearch();
 
-  // Get current state display
-  const currentStateDisplay = US_STATES.find(s => s.slug === selectedState)?.abbr || 'AZ';
 
   // Debounced location search
   useEffect(() => {
@@ -98,18 +86,18 @@ export const DualSearchBox = ({
     setHasLocationNavigatedWithArrows(false);
   }, [locationResults]);
 
-  // Debounced agent search - includes state
+  // Debounced agent search - fixed to Arizona
   useEffect(() => {
     const timer = setTimeout(() => {
       if (agentValue.trim().length >= 2) {
-        searchAgent(agentValue, selectedState);
+        searchAgent(agentValue, FIXED_STATE.slug);
       } else {
         clearAgentResults();
         setShowAgentDropdown(false);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [agentValue, selectedState, searchAgent, clearAgentResults]);
+  }, [agentValue, searchAgent, clearAgentResults]);
 
   // Auto-open agent dropdown when results arrive
   useEffect(() => {
@@ -127,9 +115,6 @@ export const DualSearchBox = ({
       }
       if (agentDropdownRef.current && !agentDropdownRef.current.contains(e.target as Node)) {
         setShowAgentDropdown(false);
-      }
-      if (stateDropdownRef.current && !stateDropdownRef.current.contains(e.target as Node)) {
-        setShowStateDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -194,7 +179,7 @@ export const DualSearchBox = ({
     if (e.key === 'Enter' && (!showAgentDropdown || agentResults.length === 0)) {
       e.preventDefault();
       setShowAgentDropdown(true);
-      searchAgent(agentValue, selectedState);
+      searchAgent(agentValue, FIXED_STATE.slug);
       return;
     }
 
@@ -328,42 +313,11 @@ export const DualSearchBox = ({
           )}
         </div>
 
-        {/* Agent Name Search with State Selector */}
+        {/* Agent Name Search with State Label */}
         <div className="relative flex gap-2" ref={agentDropdownRef}>
-          {/* State Selector */}
-          <div className="relative" ref={stateDropdownRef}>
-            <button
-              type="button"
-              onClick={() => setShowStateDropdown(!showStateDropdown)}
-              className="flex items-center gap-1 px-3 py-3 h-full bg-muted border border-border rounded-lg text-sm font-medium hover:bg-accent transition-colors min-w-[70px] justify-center"
-            >
-              {currentStateDisplay}
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </button>
-            
-            {showStateDropdown && (
-              <div className="absolute z-50 top-full mt-1 left-0 bg-background border border-border rounded-lg shadow-lg min-w-[140px]">
-                {US_STATES.map((state) => (
-                  <button
-                    key={state.slug}
-                    onClick={() => {
-                      setSelectedState(state.slug);
-                      setShowStateDropdown(false);
-                      // Re-search with new state if there's a query
-                      if (agentValue.trim().length >= 2) {
-                        searchAgent(agentValue, state.slug);
-                      }
-                    }}
-                    className={cn(
-                      "w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg",
-                      selectedState === state.slug && "bg-accent font-medium"
-                    )}
-                  >
-                    {state.abbr} - {state.name}
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Static State Label */}
+          <div className="flex items-center px-3 py-3 h-full bg-muted border border-border rounded-lg text-sm font-medium min-w-[50px] justify-center">
+            {FIXED_STATE.abbr}
           </div>
 
           {/* Agent Name Input */}
