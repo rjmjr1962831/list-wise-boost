@@ -105,12 +105,7 @@ export function CityAutocomplete({
                         value === city.city ? "opacity-100" : "opacity-0"
                       )}
                     />
-                    <div className="flex flex-col">
-                      <span>{city.city}</span>
-                      <span className="text-xs text-muted-foreground">
-                        Population: {city.population.toLocaleString()} • {city.region}
-                      </span>
-                    </div>
+                    <span>{city.city}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
