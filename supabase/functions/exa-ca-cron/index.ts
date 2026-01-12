@@ -5,6 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -76,54 +78,106 @@ Deno.serve(async (req) => {
       });
     }
 
-    console.log(`Running batch. Remaining: ${remaining}, Consecutive errors: ${cronState.consecutive_errors}`);
+    // Run 3 batches per minute (every ~20 seconds)
+    const batchesPerMinute = 3;
+    const delayBetweenBatches = 20000; // 20 seconds
+    
+    let totalProcessed = 0;
+    let totalFound = 0;
+    let totalNotFound = 0;
+    let totalErrors = 0;
+    let consecutiveErrors = cronState.consecutive_errors || 0;
 
-    // Call the exa-ca-zillow-search function
-    const { data: result, error } = await supabase.functions.invoke('exa-ca-zillow-search', {
-      body: { 
-        batch_size: 10, 
-        delay_ms: 1500 
+    console.log(`Starting ${batchesPerMinute} batches. Remaining: ${remaining}`);
+
+    for (let i = 0; i < batchesPerMinute; i++) {
+      // Check if still running (in case manually stopped)
+      if (i > 0) {
+        const { data: currentState } = await supabase
+          .from('cron_state')
+          .select('is_running')
+          .eq('job_name', 'exa-ca-zillow')
+          .single();
+        
+        if (!currentState?.is_running) {
+          console.log('Job was stopped during execution');
+          break;
+        }
       }
-    });
 
-    if (error) {
-      console.error('Error invoking exa-ca-zillow-search:', error);
-      await supabase.from('cron_state').update({
-        consecutive_errors: cronState.consecutive_errors + 1,
-        last_error: error.message,
-        last_run_at: new Date().toISOString()
-      }).eq('job_name', 'exa-ca-zillow');
+      console.log(`Running batch ${i + 1} of ${batchesPerMinute}`);
 
-      return new Response(JSON.stringify({ 
-        error: error.message,
-        consecutive_errors: cronState.consecutive_errors + 1 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      // Call the exa-ca-zillow-search function
+      const { data: result, error } = await supabase.functions.invoke('exa-ca-zillow-search', {
+        body: { 
+          batch_size: 10, 
+          delay_ms: 1500 
+        }
       });
+
+      if (error) {
+        console.error(`Batch ${i + 1} error:`, error);
+        consecutiveErrors++;
+        totalErrors++;
+        
+        if (consecutiveErrors >= 5) {
+          await supabase.from('cron_state').update({
+            is_running: false,
+            status: 'stopped_errors',
+            message: 'Stopped due to 5 consecutive errors',
+            last_error: error.message,
+            consecutive_errors: consecutiveErrors,
+            total_errors: (cronState.total_errors || 0) + totalErrors
+          }).eq('job_name', 'exa-ca-zillow');
+          break;
+        }
+      } else {
+        consecutiveErrors = 0; // Reset on success
+        const summary = result?.summary || {};
+        totalProcessed += summary.total || 0;
+        totalFound += summary.found || 0;
+        totalNotFound += summary.notFound || 0;
+        totalErrors += summary.errors || 0;
+        
+        console.log(`Batch ${i + 1} result: ${summary.found} found, ${summary.notFound} not found`);
+      }
+
+      // Wait 20 seconds before next batch (except after last one)
+      if (i < batchesPerMinute - 1) {
+        console.log(`Waiting ${delayBetweenBatches / 1000}s before next batch...`);
+        await sleep(delayBetweenBatches);
+      }
     }
 
-    const summary = result?.summary || {};
-    const hasErrors = summary.errors > 0;
+    // Get updated remaining count
+    const { count: newRemaining } = await supabase
+      .from('state_licenses')
+      .select('id', { count: 'exact', head: true })
+      .eq('state', 'CA')
+      .is('zillow_url', null)
+      .is('exa_searched_at', null);
 
-    // Update cron state
+    // Update cron state with results
     await supabase.from('cron_state').update({
-      consecutive_errors: hasErrors ? cronState.consecutive_errors + 1 : 0,
-      total_processed: cronState.total_processed + (summary.total || 0),
-      total_found: cronState.total_found + (summary.found || 0),
-      total_not_found: cronState.total_not_found + (summary.notFound || 0),
-      total_errors: cronState.total_errors + (summary.errors || 0),
+      consecutive_errors: consecutiveErrors,
+      total_processed: (cronState.total_processed || 0) + totalProcessed,
+      total_found: (cronState.total_found || 0) + totalFound,
+      total_not_found: (cronState.total_not_found || 0) + totalNotFound,
+      total_errors: (cronState.total_errors || 0) + totalErrors,
       last_run_at: new Date().toISOString(),
-      last_error: hasErrors ? `${summary.errors} errors in batch` : null,
-      remaining_count: result?.remaining || remaining
+      remaining_count: newRemaining
     }).eq('job_name', 'exa-ca-zillow');
 
-    console.log(`Batch complete: ${summary.found} found, ${summary.notFound} not found, ${summary.errors} errors. Remaining: ${result?.remaining}`);
+    console.log(`Minute complete: ${totalProcessed} processed, ${totalFound} found, ${newRemaining} remaining`);
 
     return new Response(JSON.stringify({
-      message: 'Batch processed',
-      summary,
-      remaining: result?.remaining,
+      message: 'Batches processed',
+      batches_run: batchesPerMinute,
+      processed: totalProcessed,
+      found: totalFound,
+      not_found: totalNotFound,
+      errors: totalErrors,
+      remaining: newRemaining,
       is_running: true
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
