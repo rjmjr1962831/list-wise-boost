@@ -532,3 +532,6 @@ verify_jwt = false
 
 [functions.generate-sitemap]
 verify_jwt = false
+
+[functions.export-active-agents]
+verify_jwt = false
