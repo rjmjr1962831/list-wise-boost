@@ -16,6 +16,7 @@ export const LocationSearchBox = ({
   const [inputValue, setInputValue] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [hasUserNavigatedWithArrows, setHasUserNavigatedWithArrows] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   
@@ -26,46 +27,60 @@ export const LocationSearchBox = ({
     const timer = setTimeout(() => {
       if (inputValue.trim().length >= 2) {
         search(inputValue);
-        setShowDropdown(true);
       } else {
         clearResults();
         setShowDropdown(false);
       }
     }, 300);
-
     return () => clearTimeout(timer);
   }, [inputValue]);
 
-  // Reset selected index when results change
+  // Auto-open dropdown when results arrive
+  useEffect(() => {
+    if (results.length > 0 && inputValue.trim().length >= 2) {
+      setShowDropdown(true);
+    }
+  }, [results, inputValue]);
+
+  // Reset selection when results change
   useEffect(() => {
     setSelectedIndex(0);
+    setHasUserNavigatedWithArrows(false);
   }, [results]);
 
-  // Keyboard navigation
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showDropdown || results.length === 0) {
-      if (e.key === 'Enter') {
-        handleSubmit(inputValue);
-      }
+  const handleKeyDown = async (e: React.KeyboardEvent) => {
+    // Enter when dropdown closed or no results
+    if (e.key === 'Enter' && (!showDropdown || results.length === 0)) {
+      e.preventDefault();
+      setShowDropdown(true);
+      await handleSubmit(inputValue);
       return;
     }
+
+    if (!showDropdown || results.length === 0) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
+        setHasUserNavigatedWithArrows(true);
         setSelectedIndex(prev => Math.min(prev + 1, results.length - 1));
         break;
       case 'ArrowUp':
         e.preventDefault();
+        setHasUserNavigatedWithArrows(true);
         setSelectedIndex(prev => Math.max(prev - 1, 0));
         break;
       case 'Enter':
         e.preventDefault();
-        if (results[selectedIndex]) {
-          navigateToNeighborhood(results[selectedIndex], selectedIndex + 1);
-          setShowDropdown(false);
-          setInputValue('');
+        // Only navigate if user selected with arrows OR single result
+        if (hasUserNavigatedWithArrows || results.length === 1) {
+          if (results[selectedIndex]) {
+            navigateToNeighborhood(results[selectedIndex], selectedIndex + 1);
+            setShowDropdown(false);
+            setInputValue('');
+          }
         }
+        // Otherwise keep dropdown open
         break;
       case 'Escape':
         setShowDropdown(false);
@@ -74,19 +89,16 @@ export const LocationSearchBox = ({
     }
   };
 
-  // Click outside to close
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
         setShowDropdown(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Scroll selected item into view
   useEffect(() => {
     const selectedElement = dropdownRef.current?.querySelector(`[data-index="${selectedIndex}"]`);
     if (selectedElement) {
@@ -119,7 +131,6 @@ export const LocationSearchBox = ({
         )}
       </div>
 
-      {/* Dropdown Results */}
       {showDropdown && (results.length > 0 || error) && (
         <div 
           id="search-results"
@@ -127,9 +138,7 @@ export const LocationSearchBox = ({
           role="listbox"
         >
           {error ? (
-            <div className="p-4 text-sm text-destructive">
-              {error}
-            </div>
+            <div className="p-4 text-sm text-destructive">{error}</div>
           ) : (
             results.map((result, index) => (
               <button
