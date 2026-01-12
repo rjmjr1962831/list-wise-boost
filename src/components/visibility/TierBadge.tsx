@@ -9,9 +9,9 @@ interface TierBadgeProps {
 }
 
 const tierConfig: Record<NeighborhoodTier, { bg: string; text: string; price: number }> = {
-  Main: { bg: 'bg-blue-500', text: 'text-white', price: 39 },
-  Prime: { bg: 'bg-purple-500', text: 'text-white', price: 69 },
-  Luxury: { bg: 'bg-amber-500', text: 'text-black', price: 99 },
+  Main: { bg: 'bg-blue-500', text: 'text-white', price: 25 },
+  Prime: { bg: 'bg-purple-500', text: 'text-white', price: 50 },
+  Luxury: { bg: 'bg-amber-500', text: 'text-black', price: 75 },
 };
 
 export function TierBadge({ tier, showPrice = false, size = 'sm' }: TierBadgeProps) {

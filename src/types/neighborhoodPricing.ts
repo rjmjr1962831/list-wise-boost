@@ -5,9 +5,9 @@ export type NeighborhoodTier = 'Main' | 'Prime' | 'Luxury';
 
 // Base tier prices (derived from pricing_configs table)
 export const NEIGHBORHOOD_TIER_PRICES: Record<NeighborhoodTier, number> = {
-  Main: 39,
-  Prime: 69,
-  Luxury: 99
+  Main: 25,
+  Prime: 50,
+  Luxury: 75
 };
 
 // Tier styling configuration
