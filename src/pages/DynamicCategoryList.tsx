@@ -1324,7 +1324,7 @@ export default function DynamicCategoryList({
       <div className="bg-gradient-to-b from-primary/5 to-background pt-8 pb-4">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center text-foreground">
-            Top 10 {category.plural_name} in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, {stateAbbrev}
+            Top Agents in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, {stateAbbrev}
           </h1>
           <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
             These are the top agents that do business near {neighborhoodName || city.name}. None of these agents paid to be listed here. Their selection is purely merit based.{" "}
