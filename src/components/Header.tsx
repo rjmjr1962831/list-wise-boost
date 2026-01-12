@@ -132,6 +132,9 @@ export const Header = () => {
             <Link to="/test" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Test Us
             </Link>
+            <Link to="/check-agent" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              Check an Agent
+            </Link>
             {isAdmin && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Admin
@@ -264,6 +267,13 @@ export const Header = () => {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Test Us
+                </Link>
+                <Link 
+                  to="/check-agent" 
+                  className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Check an Agent
                 </Link>
                 {isAdmin && (
                   <Link 

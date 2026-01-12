@@ -118,6 +118,9 @@ const VisibilityExpertisePage = lazy(() => import("./pages/VisibilityExpertisePa
 const VisibilityReviewPage = lazy(() => import("./pages/VisibilityReviewPage"));
 const VisibilitySuccessPage = lazy(() => import("./pages/VisibilitySuccessPage"));
 
+// Agent lookup page
+const AgentLookup = lazy(() => import("./pages/AgentLookup"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -179,6 +182,7 @@ const App = () => (
                     <Route path="/protocol-adopters" element={<ProtocolAdopters />} />
                     <Route path="/protocol-services" element={<ProtocolServices />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
+                    <Route path="/check-agent" element={<AgentLookup />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
                     
