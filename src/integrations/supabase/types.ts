@@ -808,6 +808,39 @@ export type Database = {
           },
         ]
       }
+      agent_zip_activity: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_verified_at: string | null
+          license_number: string
+          state: string
+          transaction_count: number
+          updated_at: string | null
+          zip_code: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          license_number: string
+          state: string
+          transaction_count?: number
+          updated_at?: string | null
+          zip_code: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_verified_at?: string | null
+          license_number?: string
+          state?: string
+          transaction_count?: number
+          updated_at?: string | null
+          zip_code?: string
+        }
+        Relationships: []
+      }
       appointment_types: {
         Row: {
           active: boolean | null
@@ -3813,6 +3846,29 @@ export type Database = {
       get_agent_active_zips: {
         Args: { p_professional_id: string }
         Returns: string[]
+      }
+      get_neighborhood_active_agents: {
+        Args: { p_neighborhood_id: string }
+        Returns: {
+          agent_name: string
+          canonical_slug: string
+          company: string
+          email: string
+          image_url: string
+          license_number: string
+          license_verified_at: string
+          neighborhood_transactions: number
+          num_total_reviews: number
+          phone: string
+          professional_id: string
+          review_stars_rating: number
+          specialty: string[]
+          state: string
+          synthesized_bio: string
+          transaction_zips: string[]
+          website: string
+          years_experience: number
+        }[]
       }
       has_role: {
         Args: {

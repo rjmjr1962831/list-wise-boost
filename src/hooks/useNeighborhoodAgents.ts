@@ -4,7 +4,8 @@ import { Professional } from '@/types/professional';
 
 interface NeighborhoodAgent extends Professional {
   isPaidExpert: boolean;
-  distanceMiles?: number;
+  neighborhoodTransactions?: number;
+  transactionZips?: string[];
 }
 
 interface UseNeighborhoodAgentsResult {
@@ -36,7 +37,7 @@ export function useNeighborhoodAgents({
       setError(null);
 
       try {
-        // Step 1: Get neighborhood from catalog to find primary ZIP
+        // Step 1: Get neighborhood from catalog
         const { data: neighborhood, error: neighborhoodError } = await supabase
           .from('neighborhood_catalog')
           .select('id, zips')
@@ -52,34 +53,9 @@ export function useNeighborhoodAgents({
           return;
         }
 
-        const primaryZip = neighborhood.zips?.[0];
-        if (!primaryZip) {
-          console.log('[useNeighborhoodAgents] No ZIP codes for neighborhood:', neighborhoodSlug);
-          setAgents([]);
-          setLoading(false);
-          return;
-        }
+        console.log(`[useNeighborhoodAgents] Found neighborhood: ${neighborhoodSlug} with ${neighborhood.zips?.length || 0} ZIPs`);
 
-        // Step 2: Get all adjacent ZIPs within 10 miles
-        const { data: adjacentZips, error: zipError } = await supabase
-          .from('zip_adjacency')
-          .select('adjacent_zip, distance_miles')
-          .eq('zip_code', primaryZip);
-
-        if (zipError) {
-          console.error('[useNeighborhoodAgents] Error fetching adjacent ZIPs:', zipError);
-        }
-
-        // Create a map of ZIP -> distance (primary ZIP = 0)
-        const zipDistanceMap: Record<string, number> = { [primaryZip]: 0 };
-        (adjacentZips || []).forEach(({ adjacent_zip, distance_miles }) => {
-          zipDistanceMap[adjacent_zip] = Number(distance_miles);
-        });
-
-        const allZips = Object.keys(zipDistanceMap);
-        console.log(`[useNeighborhoodAgents] Found ${allZips.length} ZIPs near ${neighborhoodSlug} (primary: ${primaryZip})`);
-
-        // Step 3: Get paid experts for this neighborhood
+        // Step 2: Get paid experts for this neighborhood
         const { data: subscriptions, error: subError } = await supabase
           .from('agent_neighborhood_subscriptions')
           .select('professional_id')
@@ -93,87 +69,67 @@ export function useNeighborhoodAgents({
         const paidExpertIds = new Set((subscriptions || []).map(s => s.professional_id));
         console.log(`[useNeighborhoodAgents] Found ${paidExpertIds.size} paid experts`);
 
-        // Step 4: Query professionals whose office ZIP is in our list
-        const { data: professionals, error: profsError } = await supabase
-          .from('professionals')
-          .select(`
-            id,
-            name,
-            company,
-            title,
-            image_url,
-            review_stars_rating,
-            num_total_reviews,
-            years_experience,
-            phone,
-            email,
-            website,
-            license_number,
-            synthesized_bio,
-            specialty,
-            canonical_slug,
-            active,
-            license_verified_at,
-            zip_code
-          `)
-          .eq('active', true)
-          .gte('review_stars_rating', 4.8)
-          .gte('num_total_reviews', 20)
-          .in('zip_code', allZips);
+        // Step 3: Call the transaction-based function
+        const { data: transactionAgents, error: rpcError } = await supabase.rpc(
+          'get_neighborhood_active_agents',
+          { p_neighborhood_id: neighborhood.id }
+        );
 
-        if (profsError) {
-          console.error('[useNeighborhoodAgents] Error fetching professionals:', profsError);
-          setError('Failed to load agents');
+        if (rpcError) {
+          console.error('[useNeighborhoodAgents] Error calling get_neighborhood_active_agents:', rpcError);
+          // Fall back to the old method if function fails
+          await fallbackToOldMethod(neighborhood, paidExpertIds, setAgents, setTotalCount);
           setLoading(false);
           return;
         }
 
-        console.log(`[useNeighborhoodAgents] Found ${professionals?.length || 0} agents in nearby ZIPs`);
+        console.log(`[useNeighborhoodAgents] Transaction-based query returned ${transactionAgents?.length || 0} agents`);
 
-        // Step 5: Map to NeighborhoodAgent with isPaidExpert and distance
-        const mappedAgents: NeighborhoodAgent[] = (professionals || []).map((prof: any) => ({
-          id: prof.id,
+        // Step 4: Map to NeighborhoodAgent
+        const mappedAgents: NeighborhoodAgent[] = (transactionAgents || []).map((agent: any) => ({
+          id: agent.professional_id,
           rank: 0,
-          name: prof.name,
-          company: prof.company || '',
-          rating: prof.review_stars_rating || 0,
-          reviews: prof.num_total_reviews || 0,
-          specialties: prof.specialty || [],
+          name: agent.agent_name || '',
+          company: agent.company || '',
+          rating: agent.review_stars_rating || 0,
+          reviews: agent.num_total_reviews || 0,
+          specialties: agent.specialty || [],
           address: '',
-          phone: prof.phone || '',
-          email: prof.email || '',
-          website: prof.website || '',
-          description: prof.synthesized_bio || '',
+          phone: agent.phone || '',
+          email: agent.email || '',
+          website: agent.website || '',
+          description: agent.synthesized_bio || '',
           stats: {
-            yearsExperience: prof.years_experience || undefined,
+            yearsExperience: agent.years_experience || undefined,
           },
-          verified: !!prof.license_verified_at,
-          image: prof.image_url || '',
-          license_number: prof.license_number || undefined,
-          license_verified_at: prof.license_verified_at || undefined,
-          years_experience: prof.years_experience || undefined,
-          canonical_slug: prof.canonical_slug,
-          // New fields
-          isPaidExpert: paidExpertIds.has(prof.id),
-          distanceMiles: zipDistanceMap[prof.zip_code] ?? undefined,
+          verified: !!agent.license_verified_at,
+          image: agent.image_url || '',
+          license_number: agent.license_number || undefined,
+          license_verified_at: agent.license_verified_at || undefined,
+          years_experience: agent.years_experience || undefined,
+          canonical_slug: agent.canonical_slug,
+          // Transaction-based fields
+          isPaidExpert: paidExpertIds.has(agent.professional_id),
+          neighborhoodTransactions: agent.neighborhood_transactions,
+          transactionZips: agent.transaction_zips,
         }));
 
-        // Step 6: Sort - Paid experts first, then by distance
+        // Step 5: Sort - Paid experts first, then by transaction count
         mappedAgents.sort((a, b) => {
           // Paid experts always come first
           if (a.isPaidExpert && !b.isPaidExpert) return -1;
           if (!a.isPaidExpert && b.isPaidExpert) return 1;
           
-          // Among same category, sort by distance (closer first)
-          const distA = a.distanceMiles ?? 999;
-          const distB = b.distanceMiles ?? 999;
-          return distA - distB;
+          // Among same category, sort by transaction count (more = higher)
+          const txA = a.neighborhoodTransactions ?? 0;
+          const txB = b.neighborhoodTransactions ?? 0;
+          return txB - txA;
         });
 
-        // Step 7: Return all agents (no pagination)
         setTotalCount(mappedAgents.length);
         setAgents(mappedAgents);
-        console.log(`[useNeighborhoodAgents] Returning all ${mappedAgents.length} qualified agents`);
+        console.log(`[useNeighborhoodAgents] Returning ${mappedAgents.length} agents sorted by verified transactions`);
+
       } catch (err) {
         console.error('[useNeighborhoodAgents] Unexpected error:', err);
         setError('An unexpected error occurred');
@@ -193,4 +149,103 @@ export function useNeighborhoodAgents({
     error,
     totalCount
   };
+}
+
+// Fallback to office-location based matching if transaction data not available
+async function fallbackToOldMethod(
+  neighborhood: { id: string; zips: string[] | null },
+  paidExpertIds: Set<string>,
+  setAgents: (agents: NeighborhoodAgent[]) => void,
+  setTotalCount: (count: number) => void
+) {
+  console.log('[useNeighborhoodAgents] Falling back to office-location method');
+  
+  const primaryZip = neighborhood.zips?.[0];
+  if (!primaryZip) {
+    console.log('[useNeighborhoodAgents] No ZIP codes for neighborhood');
+    setAgents([]);
+    return;
+  }
+
+  // Get adjacent ZIPs
+  const { data: adjacentZips } = await supabase
+    .from('zip_adjacency')
+    .select('adjacent_zip, distance_miles')
+    .eq('zip_code', primaryZip);
+
+  const zipDistanceMap: Record<string, number> = { [primaryZip]: 0 };
+  (adjacentZips || []).forEach(({ adjacent_zip, distance_miles }) => {
+    zipDistanceMap[adjacent_zip] = Number(distance_miles);
+  });
+
+  const allZips = Object.keys(zipDistanceMap);
+
+  // Query professionals by office ZIP
+  const { data: professionals, error: profsError } = await supabase
+    .from('professionals')
+    .select(`
+      id,
+      name,
+      company,
+      title,
+      image_url,
+      review_stars_rating,
+      num_total_reviews,
+      years_experience,
+      phone,
+      email,
+      website,
+      license_number,
+      synthesized_bio,
+      specialty,
+      canonical_slug,
+      active,
+      license_verified_at,
+      zip_code
+    `)
+    .eq('active', true)
+    .gte('review_stars_rating', 4.8)
+    .gte('num_total_reviews', 20)
+    .in('zip_code', allZips);
+
+  if (profsError) {
+    console.error('[useNeighborhoodAgents] Fallback query error:', profsError);
+    setAgents([]);
+    return;
+  }
+
+  const mappedAgents: NeighborhoodAgent[] = (professionals || []).map((prof: any) => ({
+    id: prof.id,
+    rank: 0,
+    name: prof.name,
+    company: prof.company || '',
+    rating: prof.review_stars_rating || 0,
+    reviews: prof.num_total_reviews || 0,
+    specialties: prof.specialty || [],
+    address: '',
+    phone: prof.phone || '',
+    email: prof.email || '',
+    website: prof.website || '',
+    description: prof.synthesized_bio || '',
+    stats: {
+      yearsExperience: prof.years_experience || undefined,
+    },
+    verified: !!prof.license_verified_at,
+    image: prof.image_url || '',
+    license_number: prof.license_number || undefined,
+    license_verified_at: prof.license_verified_at || undefined,
+    years_experience: prof.years_experience || undefined,
+    canonical_slug: prof.canonical_slug,
+    isPaidExpert: paidExpertIds.has(prof.id),
+  }));
+
+  mappedAgents.sort((a, b) => {
+    if (a.isPaidExpert && !b.isPaidExpert) return -1;
+    if (!a.isPaidExpert && b.isPaidExpert) return 1;
+    return (b.reviews || 0) - (a.reviews || 0);
+  });
+
+  setTotalCount(mappedAgents.length);
+  setAgents(mappedAgents);
+  console.log(`[useNeighborhoodAgents] Fallback: Returning ${mappedAgents.length} agents`);
 }
