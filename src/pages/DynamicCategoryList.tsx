@@ -1327,15 +1327,9 @@ export default function DynamicCategoryList({
             Top 10 {category.plural_name} in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, {stateAbbrev}
           </h1>
           <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
-            Invitation-only directory with multi-source verified rankings
-          </p>
-          
-          
-          {/* Methodology Snapshot */}
-          <p className="text-sm text-muted-foreground text-center mt-4 max-w-2xl mx-auto">
-            Agents listed below hold active Arizona licenses, have verified transaction history in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, and meet minimum review thresholds. Rankings are editorial — agents cannot pay for position or inclusion.{" "}
-            <Link to="/about/ranking-methodology" className="text-primary hover:underline">
-              Full methodology →
+            These are the top agents that do business near {neighborhoodName || city.name}. None of these agents paid to be listed here. Their selection is purely merit based.{" "}
+            <Link to="/about/ranking-methodology" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+              methodology
             </Link>
           </p>
         </div>
