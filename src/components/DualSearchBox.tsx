@@ -1,22 +1,37 @@
 import { useState, useRef, useEffect } from 'react';
-import { Search, User, MapPin } from 'lucide-react';
+import { User, MapPin, ChevronDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useLocationSearch } from '@/hooks/useLocationSearch';
-import { useAgentNameSearch, AgentSearchResult } from '@/hooks/useAgentNameSearch';
+import { useStateAgentSearch, StateAgentSearchResult } from '@/hooks/useStateAgentSearch';
 import { AgentLookupModal } from '@/components/AgentLookupModal';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+
+// US States list
+const US_STATES = [
+  { abbr: 'AZ', name: 'Arizona', slug: 'arizona' },
+  { abbr: 'CA', name: 'California', slug: 'california' },
+  { abbr: 'CO', name: 'Colorado', slug: 'colorado' },
+  { abbr: 'FL', name: 'Florida', slug: 'florida' },
+  { abbr: 'NV', name: 'Nevada', slug: 'nevada' },
+  { abbr: 'TX', name: 'Texas', slug: 'texas' },
+];
 
 interface DualSearchBoxProps {
   locationPlaceholder?: string;
   agentPlaceholder?: string;
   className?: string;
+  defaultState?: string;
 }
 
 export const DualSearchBox = ({ 
   locationPlaceholder = "Search by ZIP code or neighborhood",
   agentPlaceholder = "Search agent name",
-  className 
+  className,
+  defaultState = 'arizona'
 }: DualSearchBoxProps) => {
+  const navigate = useNavigate();
+  
   // Location search state
   const [locationValue, setLocationValue] = useState('');
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
@@ -34,12 +49,15 @@ export const DualSearchBox = ({
     clearResults: clearLocationResults 
   } = useLocationSearch();
 
-  // Agent search state
+  // Agent search state with state selector
+  const [selectedState, setSelectedState] = useState(defaultState);
+  const [showStateDropdown, setShowStateDropdown] = useState(false);
   const [agentValue, setAgentValue] = useState('');
   const [showAgentDropdown, setShowAgentDropdown] = useState(false);
   const [agentSelectedIndex, setAgentSelectedIndex] = useState(0);
   const agentInputRef = useRef<HTMLInputElement>(null);
   const agentDropdownRef = useRef<HTMLDivElement>(null);
+  const stateDropdownRef = useRef<HTMLDivElement>(null);
 
   const {
     results: agentResults,
@@ -48,9 +66,11 @@ export const DualSearchBox = ({
     selectedAgent,
     setSelectedAgent,
     search: searchAgent,
-    navigateToAgent,
     clearResults: clearAgentResults,
-  } = useAgentNameSearch();
+  } = useStateAgentSearch();
+
+  // Get current state display
+  const currentStateDisplay = US_STATES.find(s => s.slug === selectedState)?.abbr || 'AZ';
 
   // Debounced location search
   useEffect(() => {
@@ -78,18 +98,18 @@ export const DualSearchBox = ({
     setHasLocationNavigatedWithArrows(false);
   }, [locationResults]);
 
-  // Debounced agent search
+  // Debounced agent search - includes state
   useEffect(() => {
     const timer = setTimeout(() => {
       if (agentValue.trim().length >= 2) {
-        searchAgent(agentValue);
+        searchAgent(agentValue, selectedState);
       } else {
         clearAgentResults();
         setShowAgentDropdown(false);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [agentValue, searchAgent, clearAgentResults]);
+  }, [agentValue, selectedState, searchAgent, clearAgentResults]);
 
   // Auto-open agent dropdown when results arrive
   useEffect(() => {
@@ -107,6 +127,9 @@ export const DualSearchBox = ({
       }
       if (agentDropdownRef.current && !agentDropdownRef.current.contains(e.target as Node)) {
         setShowAgentDropdown(false);
+      }
+      if (stateDropdownRef.current && !stateDropdownRef.current.contains(e.target as Node)) {
+        setShowStateDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -171,7 +194,7 @@ export const DualSearchBox = ({
     if (e.key === 'Enter' && (!showAgentDropdown || agentResults.length === 0)) {
       e.preventDefault();
       setShowAgentDropdown(true);
-      searchAgent(agentValue);
+      searchAgent(agentValue, selectedState);
       return;
     }
 
@@ -199,15 +222,36 @@ export const DualSearchBox = ({
     }
   };
 
-  const handleAgentSelect = (agent: AgentSearchResult) => {
-    if (agent.canonical_slug && agent.state_slug) {
-      navigateToAgent(agent);
+  const handleAgentSelect = (agent: StateAgentSearchResult) => {
+    if (agent.canonicalSlug && agent.stateSlug) {
+      navigate(`/${agent.stateSlug}/agents/${agent.canonicalSlug}`);
     } else {
+      // For non-listed agents, open the modal
       setSelectedAgent(agent);
     }
     setShowAgentDropdown(false);
     setAgentValue('');
   };
+
+  // Convert StateAgentSearchResult to the format expected by AgentLookupModal
+  const modalAgent = selectedAgent ? {
+    id: selectedAgent.id,
+    name: selectedAgent.name,
+    company: selectedAgent.company,
+    years_experience: selectedAgent.yearsExperience,
+    review_stars_rating: selectedAgent.rating,
+    num_total_reviews: selectedAgent.reviewCount,
+    license_number: selectedAgent.licenseNumber,
+    license_status: selectedAgent.licenseStatus,
+    license_verified_at: null,
+    canonical_slug: selectedAgent.canonicalSlug,
+    state_slug: selectedAgent.stateSlug,
+    image_url: selectedAgent.imageUrl,
+    served_cities: null,
+    email: null,
+    phone: null,
+    website: null,
+  } : null;
 
   return (
     <>
@@ -284,9 +328,46 @@ export const DualSearchBox = ({
           )}
         </div>
 
-        {/* Agent Name Search */}
-        <div className="relative" ref={agentDropdownRef}>
-          <div className="relative">
+        {/* Agent Name Search with State Selector */}
+        <div className="relative flex gap-2" ref={agentDropdownRef}>
+          {/* State Selector */}
+          <div className="relative" ref={stateDropdownRef}>
+            <button
+              type="button"
+              onClick={() => setShowStateDropdown(!showStateDropdown)}
+              className="flex items-center gap-1 px-3 py-3 h-full bg-muted border border-border rounded-lg text-sm font-medium hover:bg-accent transition-colors min-w-[70px] justify-center"
+            >
+              {currentStateDisplay}
+              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+            </button>
+            
+            {showStateDropdown && (
+              <div className="absolute z-50 top-full mt-1 left-0 bg-background border border-border rounded-lg shadow-lg min-w-[140px]">
+                {US_STATES.map((state) => (
+                  <button
+                    key={state.slug}
+                    onClick={() => {
+                      setSelectedState(state.slug);
+                      setShowStateDropdown(false);
+                      // Re-search with new state if there's a query
+                      if (agentValue.trim().length >= 2) {
+                        searchAgent(agentValue, state.slug);
+                      }
+                    }}
+                    className={cn(
+                      "w-full text-left px-3 py-2 text-sm hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg",
+                      selectedState === state.slug && "bg-accent font-medium"
+                    )}
+                  >
+                    {state.abbr} - {state.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Agent Name Input */}
+          <div className="relative flex-1">
             <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
             <Input
               ref={agentInputRef}
@@ -312,7 +393,7 @@ export const DualSearchBox = ({
           {showAgentDropdown && (agentResults.length > 0 || agentError) && (
             <div 
               id="agent-results"
-              className="absolute z-50 w-full mt-2 bg-background border border-border rounded-lg shadow-lg max-h-96 overflow-y-auto"
+              className="absolute z-50 left-0 right-0 top-full mt-2 bg-background border border-border rounded-lg shadow-lg max-h-96 overflow-y-auto"
               role="listbox"
             >
               {agentError ? (
@@ -332,18 +413,28 @@ export const DualSearchBox = ({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{agent.name}</p>
+                        <p className="font-medium text-foreground truncate">
+                          {agent.firstName} {agent.lastName}
+                        </p>
                         <p className="text-sm text-muted-foreground truncate">
                           {agent.company && `${agent.company}`}
-                          {agent.company && agent.years_experience && ' • '}
-                          {agent.years_experience && `${agent.years_experience} yrs exp`}
+                          {agent.company && agent.yearsExperience && ' • '}
+                          {agent.yearsExperience && `${agent.yearsExperience} yrs`}
+                          {!agent.isListed && <span className="ml-2 text-xs text-muted-foreground/70">(Not Listed)</span>}
                         </p>
                       </div>
-                      {agent.review_stars_rating && (
-                        <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded whitespace-nowrap flex-shrink-0">
-                          ★ {agent.review_stars_rating.toFixed(1)}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {agent.isNeighborhoodExpert && (
+                          <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded whitespace-nowrap">
+                            Expert
+                          </span>
+                        )}
+                        {agent.rating && (
+                          <span className="px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded whitespace-nowrap">
+                            ★ {agent.rating.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </button>
                 ))
@@ -355,7 +446,7 @@ export const DualSearchBox = ({
 
       {/* Agent Lookup Modal */}
       <AgentLookupModal
-        agent={selectedAgent}
+        agent={modalAgent}
         open={!!selectedAgent}
         onOpenChange={(open) => !open && setSelectedAgent(null)}
       />
