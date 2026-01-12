@@ -130,10 +130,10 @@ export default function QualifiedAgentsPage() {
     <>
       <Helmet>
         {/* NOINDEX - This page is not for AI crawling */}
-        <title>Qualified Agents in {neighborhood.neighborhood}, {neighborhood.city_area} | Page {currentPage}</title>
+        <title>{`Qualified Agents in ${neighborhood?.neighborhood || 'Area'}, ${neighborhood?.city_area || 'City'} | Page ${currentPage}`}</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
-        <meta name="description" content={`Browse qualified real estate agents serving ${neighborhood.neighborhood}. Page ${currentPage} of ${totalPages}.`} />
+        <meta name="description" content={`Browse qualified real estate agents serving ${neighborhood?.neighborhood || 'this area'}. Page ${currentPage} of ${totalPages}.`} />
       </Helmet>
 
       <div className="min-h-screen bg-background">
