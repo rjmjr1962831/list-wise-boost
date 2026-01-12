@@ -82,7 +82,7 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
 
       try {
         // Query professionals - include ALL agents (not just active)
-        let queryBuilder = supabase
+        let profQueryBuilder = supabase
           .from('professionals')
           .select(`
             id,
@@ -100,20 +100,58 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
             verification_token
           `)
           .ilike('name', `%${trimmedQuery}%`)
-          .limit(50);
+          .limit(100);
 
         // Filter by state if provided
         if (stateSlug) {
-          queryBuilder = queryBuilder.eq('state_slug', stateSlug);
+          profQueryBuilder = profQueryBuilder.eq('state_slug', stateSlug);
         }
 
-        const { data: professionals, error: profError } = await queryBuilder;
+        // Query arizona_licenses for all licensed agents
+        const licenseQuery = supabase
+          .from('arizona_licenses')
+          .select(`
+            id,
+            first_name,
+            last_name,
+            license_number,
+            license_type,
+            employer_legal_name,
+            original_date
+          `)
+          .or(`first_name.ilike.%${trimmedQuery}%,last_name.ilike.%${trimmedQuery}%`)
+          .limit(200);
 
-        if (profError) {
-          throw profError;
+        // Run both queries in parallel
+        const [profResult, licenseResult] = await Promise.all([
+          profQueryBuilder,
+          licenseQuery
+        ]);
+
+        if (profResult.error) {
+          throw profResult.error;
         }
 
-        if (!professionals || professionals.length === 0) {
+        if (licenseResult.error) {
+          throw licenseResult.error;
+        }
+
+        const professionals = profResult.data || [];
+        const licenses = licenseResult.data || [];
+
+        // Create a map of license numbers that exist in professionals
+        const profLicenseNumbers = new Set(
+          professionals
+            .filter(p => p.license_number)
+            .map(p => p.license_number!.toUpperCase())
+        );
+
+        // Filter licenses to only include those NOT already in professionals
+        const newLicenses = licenses.filter(
+          l => !profLicenseNumbers.has(l.license_number.toUpperCase())
+        );
+
+        if (professionals.length === 0 && newLicenses.length === 0) {
           setResults([]);
           setIsSearching(false);
           return;
@@ -131,8 +169,8 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
 
         const expertIds = new Set(subscriptions?.map(s => s.professional_id) || []);
 
-        // Transform results
-        const transformedResults: StateAgentSearchResult[] = professionals.map(p => {
+        // Transform professionals results
+        const transformedProfessionals: StateAgentSearchResult[] = professionals.map(p => {
           const { firstName, lastName } = parseFirstLastName(p.name);
           return {
             id: p.id,
@@ -154,9 +192,42 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
           };
         });
 
+        // Transform license results (agents not in professionals table)
+        const transformedLicenses: StateAgentSearchResult[] = newLicenses.map(l => {
+          const fullName = `${l.first_name || ''} ${l.last_name || ''}`.trim();
+          // Calculate years experience from original_date
+          let yearsExp: number | null = null;
+          if (l.original_date) {
+            const origDate = new Date(l.original_date);
+            const now = new Date();
+            yearsExp = Math.floor((now.getTime() - origDate.getTime()) / (1000 * 60 * 60 * 24 * 365));
+          }
+          return {
+            id: l.id,
+            firstName: l.first_name || '',
+            lastName: l.last_name || '',
+            name: fullName,
+            company: l.employer_legal_name,
+            licenseNumber: l.license_number,
+            licenseStatus: 'active', // If in license table, assumed active
+            rating: null,
+            reviewCount: null,
+            yearsExperience: yearsExp,
+            isNeighborhoodExpert: false,
+            isListed: false,
+            stateSlug: 'arizona',
+            canonicalSlug: null,
+            imageUrl: null,
+            verificationToken: null,
+          };
+        });
+
+        // Combine both result sets
+        const allResults = [...transformedProfessionals, ...transformedLicenses];
+
         // Sort: Neighborhood Experts first, then Listed, then Not Listed
         // Within each group, sort alphabetically by last name then first name
-        transformedResults.sort((a, b) => {
+        allResults.sort((a, b) => {
           // Priority: Expert > Listed > Not Listed
           const getPriority = (agent: StateAgentSearchResult) => {
             if (agent.isNeighborhoodExpert) return 0;
@@ -173,7 +244,7 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
           return a.firstName.localeCompare(b.firstName);
         });
 
-        setResults(transformedResults);
+        setResults(allResults);
         setIsSearching(false);
       } catch (err: any) {
         if (err.name === 'AbortError') {
