@@ -67,7 +67,7 @@ export function NeighborhoodAutocomplete({
   }, []);
 
   const searchNeighborhoods = async (searchText: string) => {
-    if (!state || !cityArea) {
+    if (!state) {
       setNeighborhoods([]);
       return;
     }
@@ -78,17 +78,19 @@ export function NeighborhoodAutocomplete({
       const stateAbbr = stateAbbreviations[state] || state;
       
       // Query neighborhood_catalog with fuzzy matching
-      // Try exact city_area match first, then try broader matching
       let query = supabase
         .from('neighborhood_catalog')
-        .select('neighborhood, neighborhood_slug, tier')
+        .select('neighborhood, neighborhood_slug, tier, city_area')
         .eq('state', stateAbbr)
         .eq('is_active', true);
 
-      // Match city_area - try exact match or check if it's part of the metro
+      // If cityArea is provided, filter by it - but use flexible matching
       // city_area values are: "Phoenix", "Scottsdale", "Mesa", "Other Arizona"
-      query = query.ilike('city_area', `%${cityArea}%`);
+      if (cityArea) {
+        query = query.ilike('city_area', `%${cityArea}%`);
+      }
 
+      // Search by neighborhood name if searchText provided
       if (searchText) {
         query = query.ilike('neighborhood', `%${searchText}%`);
       }
