@@ -1327,7 +1327,7 @@ export default function DynamicCategoryList({
             Top Agents in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, {stateAbbrev}
           </h1>
           <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
-            These are the top agents that do business near {neighborhoodName || city.name}. None of these agents paid to be listed here. Their selection is purely merit based.{" "}
+            None of these agents paid to be listed here. Their selection is purely merit based.{" "}
             <Link to="/about/ranking-methodology" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
               methodology
             </Link>
