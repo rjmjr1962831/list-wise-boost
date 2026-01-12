@@ -557,7 +557,221 @@ serve(async (req) => {
       });
     }
 
-    throw new Error(`Unknown action: ${action}. Use 'list-runs', 'fetch-dataset', or 'import-all'`);
+    // Action: Import from ALL runs for an actor (with batch support)
+    if (action === "import-all-runs") {
+      const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+      const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+      
+      const { startRun = 0, maxRuns = 20 } = await req.json().catch(() => ({}));
+      const actId = actorId || "memo23/apify-zillow-agents-cheerio";
+      console.log(`Fetching runs for actor: ${actId}, startRun: ${startRun}, maxRuns: ${maxRuns}`);
+      
+      // Get all runs
+      const runsUrl = `https://api.apify.com/v2/acts/${encodeURIComponent(actId)}/runs?token=${APIFY_API_TOKEN}&limit=300&desc=true`;
+      const runsResponse = await fetch(runsUrl);
+      const runsData = await runsResponse.json();
+      const allRuns = runsData.data?.items?.filter((r: ApifyRun) => r.status === "SUCCEEDED") || [];
+      
+      // Take a batch of runs
+      const runs = allRuns.slice(startRun, startRun + maxRuns);
+      console.log(`Processing runs ${startRun} to ${startRun + runs.length} of ${allRuns.length} total`);
+      
+      // Track all unique agents across all runs (by encodedZuid)
+      const allAgentData = new Map<string, Memo23Agent>();
+      let totalItemsFetched = 0;
+      
+      for (const run of runs) {
+        const datasetId = run.defaultDatasetId;
+        if (!datasetId) continue;
+        
+        // Fetch all items from this dataset
+        let datasetOffset = 0;
+        const pageSize = 1000;
+        
+        while (true) {
+          const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items?token=${APIFY_API_TOKEN}&limit=${pageSize}&offset=${datasetOffset}`;
+          const datasetResponse = await fetch(datasetUrl);
+          const items: Memo23Agent[] = await datasetResponse.json();
+          
+          if (!items || items.length === 0) break;
+          
+          for (const item of items) {
+            if (item.encodedZuid) {
+              // Keep the most recent data for each agent
+              const existing = allAgentData.get(item.encodedZuid);
+              if (!existing) {
+                allAgentData.set(item.encodedZuid, item);
+              }
+            }
+          }
+          
+          totalItemsFetched += items.length;
+          datasetOffset += pageSize;
+          
+          if (items.length < pageSize) break;
+        }
+        
+        console.log(`Processed run ${run.id}, total unique agents: ${allAgentData.size}`);
+      }
+      
+      console.log(`Total items fetched: ${totalItemsFetched}, unique agents: ${allAgentData.size}`);
+      
+      // Now match and update
+      let matched = 0;
+      let notFound = 0;
+      let updated = 0;
+      let errors = 0;
+      const matchedAgents: Array<{ id: string; name: string; encodedZuid: string }> = [];
+      
+      for (const [encodedZuid, item] of allAgentData) {
+        // Extract all ZIP codes
+        const allZips = new Set<string>();
+        const salesByZip: Record<string, number> = {};
+        const listingsByZip: Record<string, number> = {};
+        
+        if (item.pastSales?.past_sales) {
+          for (const sale of item.pastSales.past_sales) {
+            const zipMatch = sale.city_state_zipcode?.match(/\d{5}/);
+            if (zipMatch) {
+              const zip = zipMatch[0];
+              allZips.add(zip);
+              salesByZip[zip] = (salesByZip[zip] || 0) + 1;
+            }
+          }
+        }
+        
+        if (item.forSaleListings?.listings) {
+          for (const listing of item.forSaleListings.listings) {
+            if (listing.address?.postalCode) {
+              const zip = listing.address.postalCode;
+              allZips.add(zip);
+              listingsByZip[zip] = (listingsByZip[zip] || 0) + 1;
+            }
+          }
+        }
+        
+        // Match by encoded_zuid
+        const { data: professional } = await supabase
+          .from("professionals")
+          .select("id, name, encoded_zuid")
+          .eq("encoded_zuid", encodedZuid)
+          .single();
+        
+        if (professional) {
+          matched++;
+          matchedAgents.push({
+            id: professional.id,
+            name: professional.name,
+            encodedZuid
+          });
+          
+          if (!dryRun) {
+            const updateData: Record<string, unknown> = {
+              raw_scraper_data: {
+                source: "memo23",
+                fetched_at: new Date().toISOString(),
+                ...item
+              },
+              encoded_zuid: item.encodedZuid,
+              screen_name: item.screenName,
+              in_canada: item.inCanada,
+              is_top_agent: item.isTopAgent,
+              profile_image_id: item.profileImageId,
+              business_name: item.businessName,
+              business_address: item.businessAddress,
+              phone_numbers: item.phoneNumbers,
+              email: item.email || undefined,
+              ratings: item.ratings,
+              review_stars_rating: item.ratings?.average,
+              num_total_reviews: item.ratings?.count,
+              agent_licenses: item.agentLicenses,
+              license_number: item.agentLicenses?.[0]?.text,
+              agent_sales_stats: item.agentSalesStats,
+              total_sales: item.agentSalesStats?.countAllTime || item.pastSales?.total,
+              current_listings: item.forSaleListings?.listing_count,
+              past_sales: item.pastSales,
+              profile_types: item.profileTypes,
+              profile_type_ids: item.profileTypeIds,
+              professional_information: item.professionalInformation,
+              get_to_know_me: item.getToKnowMe?.description,
+              headline: item.getToKnowMe?.title,
+              years_experience: item.getToKnowMe?.yearsInIndustry,
+              specialty: item.getToKnowMe?.specialties,
+              languages: item.getToKnowMe?.languages,
+              website: item.getToKnowMe?.websiteUrl,
+              social_facebook: item.getToKnowMe?.facebookUrl,
+              social_linkedin: item.getToKnowMe?.linkedInUrl,
+              social_twitter: item.getToKnowMe?.xUrl,
+              social_instagram: item.getToKnowMe?.instagramUrl,
+              reviews_data: {
+                zillow_reviews: item.reviewsData?.reviews,
+                review_filters: item.reviewsData?.filters,
+                fetched_at: new Date().toISOString()
+              },
+              team_display_information: item.teamDisplayInformation,
+              image_url: item.profilePhotoSrc,
+              zillow_profile_url: item.url,
+              service_areas: {
+                active_zips: Array.from(allZips),
+                sales_by_zip: salesByZip,
+                listings_by_zip: listingsByZip,
+                total_unique_zips: allZips.size,
+                analyzed_at: new Date().toISOString()
+              },
+              zillow_data_fetched_at: new Date().toISOString()
+            };
+            
+            Object.keys(updateData).forEach(key => {
+              if (updateData[key] === undefined) {
+                delete updateData[key];
+              }
+            });
+            
+            const { error } = await supabase
+              .from("professionals")
+              .update(updateData)
+              .eq("id", professional.id);
+            
+            if (error) {
+              console.error(`Error updating ${professional.name}:`, error);
+              errors++;
+            } else {
+              updated++;
+            }
+          }
+        } else {
+          notFound++;
+        }
+      }
+      
+      return new Response(JSON.stringify({ 
+        success: true,
+        dryRun,
+        batch: {
+          startRun,
+          processedRuns: runs.length,
+          totalRuns: allRuns.length,
+          nextStartRun: startRun + runs.length < allRuns.length ? startRun + runs.length : null
+        },
+        summary: {
+          totalItemsFetched,
+          uniqueAgents: allAgentData.size,
+          matched,
+          notFound,
+          updated: dryRun ? 0 : updated,
+          errors: dryRun ? 0 : errors
+        },
+        matchedAgents: matchedAgents.slice(0, 100),
+        message: dryRun 
+          ? `DRY RUN: Would update ${matched} professionals from runs ${startRun}-${startRun + runs.length}. Set dryRun: false to apply.`
+          : `Updated ${updated} professionals from runs ${startRun}-${startRun + runs.length}.`
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    throw new Error(`Unknown action: ${action}. Use 'list-runs', 'list-datasets', 'fetch-dataset', 'import-all', or 'import-all-runs'`);
 
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
