@@ -1,0 +1,203 @@
+Remember your knowledge - follow the project custom knowledge rules.
+
+I need to implement transaction-based neighborhood agent activity tracking to replace office radius guessing with verified transaction data.
+
+## Context
+
+We already have:
+- `neighborhood_catalog` table with a `zips` ARRAY column (1,054 Arizona neighborhoods already populated)
+- `state_licenses` table with agent data
+- 11,878 verified agent-ZIP transaction mappings to import
+
+## PART 1: Create agent_zip_activity Table
+
+Create table to track verified agent transactions by ZIP code (not office proximity):
+
+```sql
+CREATE TABLE IF NOT EXISTS agent_zip_activity (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    license_number TEXT NOT NULL,
+    state TEXT NOT NULL,
+    zip_code TEXT NOT NULL,
+    transaction_count INTEGER NOT NULL DEFAULT 1,
+    last_verified_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    
+    CONSTRAINT fk_state_license 
+        FOREIGN KEY (license_number, state) 
+        REFERENCES state_licenses(license_number, state)
+        ON DELETE CASCADE,
+    
+    CONSTRAINT unique_agent_zip 
+        UNIQUE (license_number, state, zip_code)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_zip_zip ON agent_zip_activity(zip_code);
+CREATE INDEX IF NOT EXISTS idx_agent_zip_license ON agent_zip_activity(license_number, state);
+CREATE INDEX IF NOT EXISTS idx_agent_zip_count ON agent_zip_activity(transaction_count DESC);
+CREATE INDEX IF NOT EXISTS idx_agent_zip_lookup ON agent_zip_activity(zip_code, transaction_count DESC);
+
+COMMENT ON TABLE agent_zip_activity IS 'Verified agent transaction activity by ZIP code - based on actual Zillow past sales data, not office location radius';
+```
+
+## PART 2: Create Database Function
+
+Function to get qualified agents with verified transactions in a neighborhood's ZIPs:
+
+```sql
+CREATE OR REPLACE FUNCTION get_neighborhood_active_agents(p_neighborhood_id UUID)
+RETURNS TABLE (
+    license_number TEXT,
+    state TEXT,
+    agent_name TEXT,
+    zillow_rating NUMERIC,
+    zillow_reviews INTEGER,
+    total_sales INTEGER,
+    sales_last_12_months INTEGER,
+    brokerage_name TEXT,
+    phone TEXT,
+    neighborhood_transactions INTEGER,
+    zip_codes TEXT[]
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        sl.license_number,
+        sl.state,
+        sl.name as agent_name,
+        sl.zillow_rating,
+        sl.zillow_reviews,
+        sl.total_sales,
+        sl.sales_last_12_months,
+        sl.brokerage_name,
+        sl.phone,
+        SUM(aza.transaction_count)::INTEGER as neighborhood_transactions,
+        array_agg(DISTINCT aza.zip_code ORDER BY aza.zip_code) as zip_codes
+    FROM agent_zip_activity aza
+    JOIN state_licenses sl 
+        ON aza.license_number = sl.license_number 
+        AND aza.state = sl.state
+    WHERE aza.zip_code = ANY(
+        SELECT unnest(zips) 
+        FROM neighborhood_catalog 
+        WHERE id = p_neighborhood_id
+    )
+    AND sl.zillow_rating >= 4.8
+    AND sl.zillow_reviews >= 20
+    GROUP BY 
+        sl.license_number, 
+        sl.state, 
+        sl.name,
+        sl.zillow_rating,
+        sl.zillow_reviews,
+        sl.total_sales,
+        sl.sales_last_12_months,
+        sl.brokerage_name,
+        sl.phone
+    HAVING SUM(aza.transaction_count) >= 1
+    ORDER BY neighborhood_transactions DESC, sl.zillow_reviews DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION get_neighborhood_active_agents IS 'Returns qualified agents with verified transactions in neighborhood ZIPs using neighborhood_catalog.zips array';
+```
+
+## PART 3: Create Bulk Import Edge Function
+
+Create `/supabase/functions/import-agent-zip-activity/index.ts`:
+
+```typescript
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { records } = await req.json();
+    
+    if (!records || !Array.isArray(records)) {
+      return new Response(
+        JSON.stringify({ error: 'records array required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Import in batches of 100
+    const batchSize = 100;
+    let imported = 0;
+    let errors = 0;
+
+    for (let i = 0; i < records.length; i += batchSize) {
+      const batch = records.slice(i, i + batchSize);
+      
+      const { error } = await supabase
+        .from('agent_zip_activity')
+        .upsert(batch, {
+          onConflict: 'license_number,state,zip_code'
+        });
+
+      if (error) {
+        console.error(`Batch ${i / batchSize + 1} error:`, error);
+        errors += batch.length;
+      } else {
+        imported += batch.length;
+      }
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        imported,
+        errors,
+        total: records.length
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
+```
+
+## PART 4: Update useNeighborhoodAgents Hook
+
+Modify `src/hooks/useNeighborhoodAgents.ts` to use transaction-based matching:
+
+```typescript
+// Replace the current query logic with:
+const { data: agents, error } = await supabase.rpc(
+  'get_neighborhood_active_agents',
+  { p_neighborhood_id: neighborhoodId }
+);
+```
+
+## Summary
+
+This implementation:
+1. Uses existing `neighborhood_catalog.zips` array (no new junction table)
+2. Creates `agent_zip_activity` table for verified transactions
+3. Provides function to query agents by neighborhood
+4. Includes edge function for bulk data import
+5. Updates frontend to use transaction-based matching
+
+**Competitive advantage:** Shows agents with verified transaction history in the neighborhood, not just nearby offices.
+
+**Data to import:** 11,878 agent-ZIP mappings from Zillow transaction history (use the edge function with JSON batches).
