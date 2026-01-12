@@ -16,8 +16,6 @@ export interface LocationSearchResult {
   match_score: number;
 }
 
-// State abbreviation to URL slug mapping
-// Uses existing pattern from stateSlugMapping.ts
 const STATE_MAPPING: Record<string, string> = {
   'AZ': 'arizona',
   'CA': 'california',
@@ -33,19 +31,16 @@ export const useLocationSearch = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const search = async (term: string) => {
+  const search = async (term: string): Promise<LocationSearchResult[]> => {
     if (!term || term.trim().length < 2) {
       setResults([]);
-      return;
+      return [];
     }
 
-    // Client-side ZIP validation
-    if (/^\d+$/.test(term)) {
-      if (term.length !== 5) {
-        setError('ZIP codes must be 5 digits');
-        setResults([]);
-        return;
-      }
+    if (/^\d+$/.test(term) && term.length !== 5) {
+      setError('ZIP codes must be 5 digits');
+      setResults([]);
+      return [];
     }
 
     setIsSearching(true);
@@ -58,70 +53,54 @@ export const useLocationSearch = () => {
       if (searchError) throw searchError;
 
       if (!data || data.length === 0) {
-        setError(term.match(/^\d{5}$/) 
+        const errorMsg = term.match(/^\d{5}$/) 
           ? `No neighborhoods found for ZIP ${term}`
-          : `No neighborhoods found matching "${term}"`
-        );
+          : `No neighborhoods found matching "${term}"`;
+        setError(errorMsg);
         setResults([]);
+        return [];
       } else {
-        // Cast the data to our expected type
-        const typedResults = data as LocationSearchResult[];
-        setResults(typedResults);
+        const typedData = data as LocationSearchResult[];
+        setResults(typedData);
         setError(null);
-        
-        // Track search analytics
-        const searchType = typedResults[0]?.search_type === 'zip' ? 'zip' : 'text';
-        trackSearch(searchType, typedResults.length, term);
+        trackSearch(typedData[0]?.search_type || 'text', typedData.length, term);
+        return typedData;
       }
     } catch (err) {
       console.error('Search error:', err);
       setError('Search failed. Please try again.');
       setResults([]);
+      return [];
     } finally {
       setIsSearching(false);
     }
   };
 
   const buildNeighborhoodUrl = (result: LocationSearchResult): string => {
-    // Map state abbreviation to URL slug (AZ to arizona)
     const state = STATE_MAPPING[result.state] || result.state.toLowerCase();
     const city = result.city_area_slug;
     const neighborhood = result.neighborhood_slug;
-    
-    // URL pattern: /{state}/{city}/{neighborhood}/top10realestateagents
-    // Example: /arizona/phoenix/arcadia/top10realestateagents
     return `/${state}/${city}/${neighborhood}/top10realestateagents`;
   };
 
   const navigateToNeighborhood = (result: LocationSearchResult, selectedRank?: number) => {
     const url = buildNeighborhoodUrl(result);
-    
-    // Track navigation analytics
     trackNavigation(result, selectedRank || results.indexOf(result) + 1);
-    
     navigate(url);
   };
 
-  const handleSubmit = (term: string) => {
-    if (results.length === 0) {
-      search(term);
-      return;
+  const handleSubmit = async (term: string) => {
+    let searchResults = results;
+    
+    if (searchResults.length === 0) {
+      searchResults = await search(term);
     }
 
-    // Auto-routing logic based on result count and search type
-    if (results.length === 1) {
-      // Single result: navigate directly (no dropdown needed)
-      navigateToNeighborhood(results[0], 1);
-    } else if (results.length <= 3 && results[0].search_type === 'zip') {
-      // ZIP with 2-3 results: navigate to primary (highest median_home_value)
-      const primary = results.find(r => r.is_primary) || results[0];
-      navigateToNeighborhood(primary, 1);
-    } else {
-      // 4+ results OR text search: user must choose from dropdown
-      // Dropdown stays open for user selection
-      // Example: ZIP 85018 returns 6 neighborhoods (show dropdown)
-      return;
+    // Auto-navigate ONLY for single result
+    if (searchResults.length === 1) {
+      navigateToNeighborhood(searchResults[0], 1);
     }
+    // For 2+ results, let dropdown stay open for user selection
   };
 
   const clearResults = () => {
@@ -129,7 +108,6 @@ export const useLocationSearch = () => {
     setError(null);
   };
 
-  // Analytics tracking functions
   const trackSearch = (searchType: 'zip' | 'text', resultCount: number, term: string) => {
     try {
       if (typeof window !== 'undefined' && (window as any).gtag) {
