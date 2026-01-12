@@ -143,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Step 3: Get base tier price
     const tierPrices = config.tier_prices as Record<string, number>;
-    let basePrice = tierPrices[tier] || tierPrices['Main'] || 39;
+    let basePrice = tierPrices[tier] || tierPrices['Main'] || 25;
 
     // Step 4: Apply time rules if effective_date <= now
     if (config.time_rules && Array.isArray(config.time_rules)) {
