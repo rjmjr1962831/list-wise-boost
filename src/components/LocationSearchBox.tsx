@@ -165,23 +165,11 @@ export const LocationSearchBox = ({
                       {result.city_area}, {result.state}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    {result.is_primary && (
-                      <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded whitespace-nowrap">
-                        Primary
-                      </span>
-                    )}
-                    {result.tier && (
-                      <span className={cn(
-                        "px-2 py-1 text-xs font-medium rounded whitespace-nowrap",
-                        result.tier === 'Luxury' && "bg-amber-500/10 text-amber-700",
-                        result.tier === 'Prime' && "bg-purple-500/10 text-purple-700",
-                        result.tier === 'Main' && "bg-blue-500/10 text-blue-700"
-                      )}>
-                        {result.tier}
-                      </span>
-                    )}
-                  </div>
+                  {result.is_primary && (
+                    <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded whitespace-nowrap flex-shrink-0">
+                      Primary
+                    </span>
+                  )}
                 </div>
               </button>
             ))
