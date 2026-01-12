@@ -17,19 +17,23 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Parse optional format parameter
-    let format = 'json';
+    // Parse optional parameters
+    let format: 'json' | 'csv' = 'json';
+    let filter: 'active' | 'qualified' | 'pipedrive_ready' = 'qualified';
+
     try {
       const body = await req.json();
-      format = body.format || 'json';
+      if (body?.format === 'csv') format = 'csv';
+      if (body?.filter === 'active' || body?.filter === 'qualified' || body?.filter === 'pipedrive_ready') {
+        filter = body.filter;
+      }
     } catch {
-      // No body or invalid JSON, use default format
+      // No body or invalid JSON, use defaults
     }
 
-    console.log(`Exporting qualified agents (4.8+ rating, 20+ reviews), format: ${format}`);
+    console.log(`Exporting agents, filter: ${filter}, format: ${format}`);
 
-    // Query professionals table for all qualified agents across all states
-    // Qualified = active, 4.8+ rating, 20+ reviews
+    // Query professionals table for agents across all states
     // Use pagination to get ALL results (Supabase default limit is 1000)
     const allData: any[] = [];
     const pageSize = 1000;
@@ -37,12 +41,23 @@ serve(async (req) => {
     let hasMore = true;
 
     while (hasMore) {
-      const { data, error } = await supabase
+      let query = supabase
         .from('professionals')
         .select('name, zuid, zillow_profile_url, state_slug, review_stars_rating, num_total_reviews')
-        .eq('active', true)
-        .gte('review_stars_rating', 4.8)
-        .gte('num_total_reviews', 20)
+        .eq('active', true);
+
+      if (filter !== 'active') {
+        query = query.gte('review_stars_rating', 4.8).gte('num_total_reviews', 20);
+      }
+
+      if (filter === 'pipedrive_ready') {
+        query = query
+          .not('email', 'is', null)
+          .neq('email', '')
+          .not('synthesized_bio', 'is', null);
+      }
+
+      const { data, error } = await query
         .order('name', { ascending: true })
         .range(offset, offset + pageSize - 1);
 
@@ -61,7 +76,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Found ${allData.length} qualified agents across all states`);
+    console.log(`Found ${allData.length} agents for filter: ${filter}`);
 
     // Split name into first_name and last_name for the export format requested
     const formattedData = allData.map((agent: any) => {
@@ -92,7 +107,7 @@ serve(async (req) => {
     
     if (format === 'csv') {
       // CSV format
-      const headers = ['first_name', 'last_name', 'zillow_uid', 'zillow_url'];
+      const headers = ['first_name', 'last_name', 'zillow_uid', 'zillow_url', 'state', 'rating', 'reviews'];
       const csvRows = [headers.join(',')];
       
       for (const row of formattedData) {
@@ -113,24 +128,29 @@ serve(async (req) => {
         headers: {
           ...corsHeaders,
           'Content-Type': 'text/csv',
-          'Content-Disposition': `attachment; filename="active_agents_${today}.csv"`,
+          'Content-Disposition': `attachment; filename="agents_${filter}_${today}.csv"`,
         },
       });
     }
 
     // Default: JSON format
-    const jsonContent = JSON.stringify({
-      exported_at: new Date().toISOString(),
-      total_count: formattedData.length,
-      agents: formattedData
-    }, null, 2);
+    const jsonContent = JSON.stringify(
+      {
+        exported_at: new Date().toISOString(),
+        filter,
+        total_count: formattedData.length,
+        agents: formattedData,
+      },
+      null,
+      2,
+    );
 
     return new Response(jsonContent, {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="active_agents_${today}.json"`,
-      },
+          'Content-Disposition': `attachment; filename="agents_${filter}_${today}.json"`,
+        },
     });
 
   } catch (error: unknown) {
