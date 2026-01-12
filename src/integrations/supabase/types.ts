@@ -192,6 +192,162 @@ export type Database = {
           },
         ]
       }
+      agent_licenses: {
+        Row: {
+          created_at: string | null
+          expiration_date: string | null
+          id: number
+          license_number: string
+          license_type: string | null
+          original_status: string | null
+          professional_id: string
+          state: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: number
+          license_number: string
+          license_type?: string | null
+          original_status?: string | null
+          professional_id: string
+          state: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expiration_date?: string | null
+          id?: number
+          license_number?: string
+          license_type?: string | null
+          original_status?: string | null
+          professional_id?: string
+          state?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_licenses_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_licenses_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_listings: {
+        Row: {
+          bathrooms: number | null
+          bedrooms: number | null
+          brokerage_name: string | null
+          city: string | null
+          created_at: string | null
+          has_open_house: boolean | null
+          has_vr_model: boolean | null
+          home_type: string | null
+          id: number
+          latitude: number | null
+          listing_type: string
+          listing_url: string | null
+          longitude: number | null
+          marketing_status: string | null
+          open_houses: string | null
+          price: number
+          price_currency: string | null
+          primary_photo_url: string | null
+          professional_id: string
+          scraped_at: string | null
+          state: string | null
+          status: string | null
+          street_address: string | null
+          updated_at: string | null
+          zillow_zpid: number
+          zip_code: string | null
+        }
+        Insert: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          brokerage_name?: string | null
+          city?: string | null
+          created_at?: string | null
+          has_open_house?: boolean | null
+          has_vr_model?: boolean | null
+          home_type?: string | null
+          id?: number
+          latitude?: number | null
+          listing_type: string
+          listing_url?: string | null
+          longitude?: number | null
+          marketing_status?: string | null
+          open_houses?: string | null
+          price: number
+          price_currency?: string | null
+          primary_photo_url?: string | null
+          professional_id: string
+          scraped_at?: string | null
+          state?: string | null
+          status?: string | null
+          street_address?: string | null
+          updated_at?: string | null
+          zillow_zpid: number
+          zip_code?: string | null
+        }
+        Update: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          brokerage_name?: string | null
+          city?: string | null
+          created_at?: string | null
+          has_open_house?: boolean | null
+          has_vr_model?: boolean | null
+          home_type?: string | null
+          id?: number
+          latitude?: number | null
+          listing_type?: string
+          listing_url?: string | null
+          longitude?: number | null
+          marketing_status?: string | null
+          open_houses?: string | null
+          price?: number
+          price_currency?: string | null
+          primary_photo_url?: string | null
+          professional_id?: string
+          scraped_at?: string | null
+          state?: string | null
+          status?: string | null
+          street_address?: string | null
+          updated_at?: string | null
+          zillow_zpid?: number
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_listings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_listings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_neighborhood_subscriptions: {
         Row: {
           config_version_used: string | null
@@ -293,6 +449,84 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: number
+          local_knowledge_score: number | null
+          negotiation_skills_score: number | null
+          process_expertise_score: number | null
+          professional_id: string
+          rating: number
+          rebuttal: string | null
+          responsiveness_score: number | null
+          review_date: string
+          reviewer_first_name: string | null
+          reviewer_last_name: string | null
+          reviewer_screen_name: string | null
+          reviewer_show_name: boolean | null
+          updated_at: string | null
+          work_description: string | null
+          zillow_review_id: number
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: number
+          local_knowledge_score?: number | null
+          negotiation_skills_score?: number | null
+          process_expertise_score?: number | null
+          professional_id: string
+          rating: number
+          rebuttal?: string | null
+          responsiveness_score?: number | null
+          review_date: string
+          reviewer_first_name?: string | null
+          reviewer_last_name?: string | null
+          reviewer_screen_name?: string | null
+          reviewer_show_name?: boolean | null
+          updated_at?: string | null
+          work_description?: string | null
+          zillow_review_id: number
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: number
+          local_knowledge_score?: number | null
+          negotiation_skills_score?: number | null
+          process_expertise_score?: number | null
+          professional_id?: string
+          rating?: number
+          rebuttal?: string | null
+          responsiveness_score?: number | null
+          review_date?: string
+          reviewer_first_name?: string | null
+          reviewer_last_name?: string | null
+          reviewer_screen_name?: string | null
+          reviewer_show_name?: boolean | null
+          updated_at?: string | null
+          work_description?: string | null
+          zillow_review_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_sessions: {
         Row: {
           created_at: string
@@ -367,6 +601,167 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      agent_team_members: {
+        Row: {
+          created_at: string | null
+          id: number
+          member_id: string
+          member_is_top_agent: boolean | null
+          member_name: string
+          member_photo_url: string | null
+          member_review_average: number | null
+          member_review_count: number | null
+          member_screen_name: string | null
+          member_zillow_zuid: string | null
+          team_lead_id: string
+          team_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          member_id: string
+          member_is_top_agent?: boolean | null
+          member_name: string
+          member_photo_url?: string | null
+          member_review_average?: number | null
+          member_review_count?: number | null
+          member_screen_name?: string | null
+          member_zillow_zuid?: string | null
+          team_lead_id: string
+          team_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          member_id?: string
+          member_is_top_agent?: boolean | null
+          member_name?: string
+          member_photo_url?: string | null
+          member_review_average?: number | null
+          member_review_count?: number | null
+          member_screen_name?: string | null
+          member_zillow_zuid?: string | null
+          team_lead_id?: string
+          team_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_team_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_team_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_team_members_team_lead_id_fkey"
+            columns: ["team_lead_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_team_members_team_lead_id_fkey"
+            columns: ["team_lead_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_transactions: {
+        Row: {
+          bathrooms: number | null
+          bedrooms: number | null
+          city: string | null
+          created_at: string | null
+          home_details_url: string | null
+          id: number
+          image_url: string | null
+          latitude: number | null
+          living_area_sqft: number | null
+          longitude: number | null
+          medium_image_url: string | null
+          price: number
+          professional_id: string
+          represented_list: Json
+          sold_date: string
+          state: string | null
+          street_address: string | null
+          updated_at: string | null
+          zillow_zpid: number
+          zip_code: string | null
+        }
+        Insert: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string | null
+          home_details_url?: string | null
+          id?: number
+          image_url?: string | null
+          latitude?: number | null
+          living_area_sqft?: number | null
+          longitude?: number | null
+          medium_image_url?: string | null
+          price: number
+          professional_id: string
+          represented_list?: Json
+          sold_date: string
+          state?: string | null
+          street_address?: string | null
+          updated_at?: string | null
+          zillow_zpid: number
+          zip_code?: string | null
+        }
+        Update: {
+          bathrooms?: number | null
+          bedrooms?: number | null
+          city?: string | null
+          created_at?: string | null
+          home_details_url?: string | null
+          id?: number
+          image_url?: string | null
+          latitude?: number | null
+          living_area_sqft?: number | null
+          longitude?: number | null
+          medium_image_url?: string | null
+          price?: number
+          professional_id?: string
+          represented_list?: Json
+          sold_date?: string
+          state?: string | null
+          street_address?: string | null
+          updated_at?: string | null
+          zillow_zpid?: number
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       agent_verification_codes: {
         Row: {
@@ -1929,16 +2324,23 @@ export type Database = {
       professionals: {
         Row: {
           active: boolean
+          active_for_rent_count: number | null
+          active_for_sale_count: number | null
           address: string | null
           agent_licenses: Json | null
           agent_sales_stats: Json | null
+          average_value_3yr: number | null
           awards_verified: Json | null
           badges: string[] | null
           business_address: Json | null
+          business_city: string | null
           business_name: string | null
+          business_state: string | null
+          business_zip: string | null
           canonical_slug: string | null
           card_created_at: string | null
           category_id: string
+          cell_phone: string | null
           certifications: Json | null
           certifications_verified: Json | null
           checkout_started_at: string | null
@@ -1970,6 +2372,7 @@ export type Database = {
           in_canada: boolean | null
           is_brand_builder: boolean | null
           is_premier_agent: boolean | null
+          is_team_lead: boolean | null
           is_top_agent: boolean | null
           languages: Json | null
           last_payment_at: string | null
@@ -1993,6 +2396,8 @@ export type Database = {
           phone_numbers: Json | null
           platform_reviews: Json | null
           press_mentions: Json | null
+          price_range_3yr_max: number | null
+          price_range_3yr_min: number | null
           professional_data: Json | null
           professional_information: Json | null
           profile_image_id: string | null
@@ -2009,6 +2414,8 @@ export type Database = {
           review_stars_rating: number | null
           reviews_data: Json | null
           reviews_text: string | null
+          sales_count_all_time: number | null
+          sales_count_last_year: number | null
           screen_name: string | null
           selection_rationale: string | null
           selection_rationale_generated_at: string | null
@@ -2024,9 +2431,11 @@ export type Database = {
           social_twitter: string | null
           specialty: string[] | null
           state_slug: string | null
+          stats_include_team: boolean | null
           subscription_status: string | null
           synthesized_bio: string | null
           team_display_information: Json | null
+          team_lead_zuid: string | null
           title: string | null
           total_sales: number | null
           type: string
@@ -2037,8 +2446,14 @@ export type Database = {
           website: string | null
           years_experience: number | null
           zillow_data_fetched_at: string | null
+          zillow_data_source: string | null
+          zillow_flag: number | null
+          zillow_last_scraped_at: string | null
+          zillow_member_since: string | null
           zillow_profile_url: string | null
           zillow_rank_captured_at: string | null
+          zillow_scrape_error: string | null
+          zillow_scrape_status: string | null
           zillow_search_city: string | null
           zillow_search_page: number | null
           zillow_search_position: number | null
@@ -2048,16 +2463,23 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          active_for_rent_count?: number | null
+          active_for_sale_count?: number | null
           address?: string | null
           agent_licenses?: Json | null
           agent_sales_stats?: Json | null
+          average_value_3yr?: number | null
           awards_verified?: Json | null
           badges?: string[] | null
           business_address?: Json | null
+          business_city?: string | null
           business_name?: string | null
+          business_state?: string | null
+          business_zip?: string | null
           canonical_slug?: string | null
           card_created_at?: string | null
           category_id: string
+          cell_phone?: string | null
           certifications?: Json | null
           certifications_verified?: Json | null
           checkout_started_at?: string | null
@@ -2089,6 +2511,7 @@ export type Database = {
           in_canada?: boolean | null
           is_brand_builder?: boolean | null
           is_premier_agent?: boolean | null
+          is_team_lead?: boolean | null
           is_top_agent?: boolean | null
           languages?: Json | null
           last_payment_at?: string | null
@@ -2112,6 +2535,8 @@ export type Database = {
           phone_numbers?: Json | null
           platform_reviews?: Json | null
           press_mentions?: Json | null
+          price_range_3yr_max?: number | null
+          price_range_3yr_min?: number | null
           professional_data?: Json | null
           professional_information?: Json | null
           profile_image_id?: string | null
@@ -2128,6 +2553,8 @@ export type Database = {
           review_stars_rating?: number | null
           reviews_data?: Json | null
           reviews_text?: string | null
+          sales_count_all_time?: number | null
+          sales_count_last_year?: number | null
           screen_name?: string | null
           selection_rationale?: string | null
           selection_rationale_generated_at?: string | null
@@ -2143,9 +2570,11 @@ export type Database = {
           social_twitter?: string | null
           specialty?: string[] | null
           state_slug?: string | null
+          stats_include_team?: boolean | null
           subscription_status?: string | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
+          team_lead_zuid?: string | null
           title?: string | null
           total_sales?: number | null
           type: string
@@ -2156,8 +2585,14 @@ export type Database = {
           website?: string | null
           years_experience?: number | null
           zillow_data_fetched_at?: string | null
+          zillow_data_source?: string | null
+          zillow_flag?: number | null
+          zillow_last_scraped_at?: string | null
+          zillow_member_since?: string | null
           zillow_profile_url?: string | null
           zillow_rank_captured_at?: string | null
+          zillow_scrape_error?: string | null
+          zillow_scrape_status?: string | null
           zillow_search_city?: string | null
           zillow_search_page?: number | null
           zillow_search_position?: number | null
@@ -2167,16 +2602,23 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          active_for_rent_count?: number | null
+          active_for_sale_count?: number | null
           address?: string | null
           agent_licenses?: Json | null
           agent_sales_stats?: Json | null
+          average_value_3yr?: number | null
           awards_verified?: Json | null
           badges?: string[] | null
           business_address?: Json | null
+          business_city?: string | null
           business_name?: string | null
+          business_state?: string | null
+          business_zip?: string | null
           canonical_slug?: string | null
           card_created_at?: string | null
           category_id?: string
+          cell_phone?: string | null
           certifications?: Json | null
           certifications_verified?: Json | null
           checkout_started_at?: string | null
@@ -2208,6 +2650,7 @@ export type Database = {
           in_canada?: boolean | null
           is_brand_builder?: boolean | null
           is_premier_agent?: boolean | null
+          is_team_lead?: boolean | null
           is_top_agent?: boolean | null
           languages?: Json | null
           last_payment_at?: string | null
@@ -2231,6 +2674,8 @@ export type Database = {
           phone_numbers?: Json | null
           platform_reviews?: Json | null
           press_mentions?: Json | null
+          price_range_3yr_max?: number | null
+          price_range_3yr_min?: number | null
           professional_data?: Json | null
           professional_information?: Json | null
           profile_image_id?: string | null
@@ -2247,6 +2692,8 @@ export type Database = {
           review_stars_rating?: number | null
           reviews_data?: Json | null
           reviews_text?: string | null
+          sales_count_all_time?: number | null
+          sales_count_last_year?: number | null
           screen_name?: string | null
           selection_rationale?: string | null
           selection_rationale_generated_at?: string | null
@@ -2262,9 +2709,11 @@ export type Database = {
           social_twitter?: string | null
           specialty?: string[] | null
           state_slug?: string | null
+          stats_include_team?: boolean | null
           subscription_status?: string | null
           synthesized_bio?: string | null
           team_display_information?: Json | null
+          team_lead_zuid?: string | null
           title?: string | null
           total_sales?: number | null
           type?: string
@@ -2275,8 +2724,14 @@ export type Database = {
           website?: string | null
           years_experience?: number | null
           zillow_data_fetched_at?: string | null
+          zillow_data_source?: string | null
+          zillow_flag?: number | null
+          zillow_last_scraped_at?: string | null
+          zillow_member_since?: string | null
           zillow_profile_url?: string | null
           zillow_rank_captured_at?: string | null
+          zillow_scrape_error?: string | null
+          zillow_scrape_status?: string | null
           zillow_search_city?: string | null
           zillow_search_page?: number | null
           zillow_search_position?: number | null
@@ -2926,6 +3381,34 @@ export type Database = {
       }
     }
     Views: {
+      agent_zip_activity_12mo: {
+        Row: {
+          avg_price: number | null
+          buyer_count: number | null
+          first_transaction: string | null
+          last_transaction: string | null
+          professional_id: string | null
+          seller_count: number | null
+          transaction_count: number | null
+          zip_code: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_transactions_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       professionals_public: {
         Row: {
           active: boolean | null
@@ -3175,6 +3658,32 @@ export type Database = {
           },
         ]
       }
+      team_performance: {
+        Row: {
+          avg_team_rating: number | null
+          team_lead_id: string | null
+          team_name: string | null
+          team_size: number | null
+          total_reviews: number | null
+          total_sales_last_year: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_team_members_team_lead_id_fkey"
+            columns: ["team_lead_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_team_members_team_lead_id_fkey"
+            columns: ["team_lead_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zip_neighborhood_lookup: {
         Row: {
           city_area: string | null
@@ -3199,11 +3708,19 @@ export type Database = {
         Returns: string
       }
       generate_short_code: { Args: never; Returns: string }
+      get_agent_active_zips: {
+        Args: { p_professional_id: string }
+        Returns: string[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_agent_active_in_zip: {
+        Args: { p_professional_id: string; p_zip_code: string }
         Returns: boolean
       }
       search_location: {

@@ -538,3 +538,6 @@ verify_jwt = false
 
 [functions.create-agent-application]
 verify_jwt = false
+
+[functions.enrich-agent-memo23]
+verify_jwt = false
