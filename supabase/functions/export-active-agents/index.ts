@@ -30,23 +30,41 @@ serve(async (req) => {
 
     // Query professionals table for all qualified agents across all states
     // Qualified = active, 4.8+ rating, 20+ reviews
-    const { data, error } = await supabase
-      .from('professionals')
-      .select('name, zuid, zillow_profile_url, state_slug, review_stars_rating, num_total_reviews')
-      .eq('active', true)
-      .gte('review_stars_rating', 4.8)
-      .gte('num_total_reviews', 20)
-      .order('name', { ascending: true });
+    // Use pagination to get ALL results (Supabase default limit is 1000)
+    const allData: any[] = [];
+    const pageSize = 1000;
+    let offset = 0;
+    let hasMore = true;
 
-    if (error) {
-      console.error('Database query error:', error);
-      throw new Error(`Database error: ${error.message}`);
+    while (hasMore) {
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('name, zuid, zillow_profile_url, state_slug, review_stars_rating, num_total_reviews')
+        .eq('active', true)
+        .gte('review_stars_rating', 4.8)
+        .gte('num_total_reviews', 20)
+        .order('name', { ascending: true })
+        .range(offset, offset + pageSize - 1);
+
+      if (error) {
+        console.error('Database query error:', error);
+        throw new Error(`Database error: ${error.message}`);
+      }
+
+      if (data && data.length > 0) {
+        allData.push(...data);
+        console.log(`Fetched ${data.length} agents (total: ${allData.length})`);
+        offset += pageSize;
+        hasMore = data.length === pageSize;
+      } else {
+        hasMore = false;
+      }
     }
 
-    console.log(`Found ${data?.length || 0} qualified agents across all states`);
+    console.log(`Found ${allData.length} qualified agents across all states`);
 
     // Split name into first_name and last_name for the export format requested
-    const formattedData = (data || []).map(agent => {
+    const formattedData = allData.map((agent: any) => {
       const nameParts = agent.name?.split(' ') || [];
       const firstName = nameParts[0] || '';
       const lastName = nameParts.slice(1).join(' ') || '';
@@ -63,7 +81,7 @@ serve(async (req) => {
     });
 
     // Sort by last_name, then first_name
-    formattedData.sort((a, b) => {
+    formattedData.sort((a: any, b: any) => {
       const lastNameCompare = (a.last_name || '').localeCompare(b.last_name || '');
       if (lastNameCompare !== 0) return lastNameCompare;
       return (a.first_name || '').localeCompare(b.first_name || '');
