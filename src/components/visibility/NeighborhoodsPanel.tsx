@@ -6,6 +6,8 @@ import { cn } from '@/lib/utils';
 import { TierBadge, getTierPrice } from './TierBadge';
 import { useNeighborhoodSearch } from '@/hooks/useNeighborhoodSearch';
 import { useNeighborhoodPricing } from '@/hooks/useNeighborhoodPricing';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import type { SelectedNeighborhood, NeighborhoodSuggestion } from '@/types/neighborhoodPricing';
 
 interface NeighborhoodsPanelProps {
@@ -25,6 +27,8 @@ export function NeighborhoodsPanel({
 }: NeighborhoodsPanelProps) {
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [isOpen, setIsOpen] = useState(false);
+  const [zipResults, setZipResults] = useState<NeighborhoodSuggestion[]>([]);
+  const [isSearchingZip, setIsSearchingZip] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
 
@@ -39,17 +43,74 @@ export function NeighborhoodsPanel({
 
   const { computePrice, isComputing } = useNeighborhoodPricing();
 
+  // Detect if query is a ZIP code
+  const isZipQuery = /^\d{5}$/.test(query.trim());
+
+  // Handle ZIP code search
+  useEffect(() => {
+    const searchZip = async () => {
+      if (!isZipQuery) {
+        setZipResults([]);
+        return;
+      }
+
+      setIsSearchingZip(true);
+      try {
+        const { data, error } = await supabase
+          .from('neighborhood_catalog')
+          .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, zips, lat, lon, median_home_value')
+          .contains('zips', [query.trim()])
+          .eq('is_active', true)
+          .eq('state', state)
+          .order('median_home_value', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          // Convert to NeighborhoodSuggestion format
+          const formatted: NeighborhoodSuggestion[] = data.map(n => ({
+            id: n.id,
+            neighborhood: n.neighborhood,
+            neighborhood_slug: n.neighborhood_slug,
+            city_area: n.city_area,
+            city_area_slug: n.city_area_slug,
+            state: n.state,
+            tier: n.tier as 'Main' | 'Prime' | 'Luxury',
+            zips: n.zips || [],
+            lat: n.lat,
+            lon: n.lon
+          }));
+          setZipResults(formatted);
+        } else {
+          setZipResults([]);
+          toast.info(`No neighborhoods found for ZIP ${query.trim()}`);
+        }
+      } catch (err) {
+        console.error('ZIP search error:', err);
+        setZipResults([]);
+      } finally {
+        setIsSearchingZip(false);
+      }
+    };
+
+    searchZip();
+  }, [query, isZipQuery, state]);
+
+  // Determine which results to show (ZIP results or name search results)
+  const displaySuggestions = isZipQuery ? zipResults : suggestions;
+  const isCurrentlySearching = isZipQuery ? isSearchingZip : isSearching;
+
   // Show dropdown when there are suggestions or searching
   useEffect(() => {
-    if (suggestions.length > 0 || isSearching || message) {
+    if (displaySuggestions.length > 0 || isCurrentlySearching || message) {
       setIsOpen(true);
     }
-  }, [suggestions, isSearching, message]);
+  }, [displaySuggestions, isCurrentlySearching, message]);
 
   // Reset highlight when suggestions change
   useEffect(() => {
     setHighlightIndex(-1);
-  }, [suggestions]);
+  }, [displaySuggestions]);
 
   const handleSelect = useCallback(
     async (suggestion: NeighborhoodSuggestion) => {
@@ -98,13 +159,13 @@ export function NeighborhoodsPanel({
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!isOpen || suggestions.length === 0) return;
+    if (!isOpen || displaySuggestions.length === 0) return;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         setHighlightIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
+          prev < displaySuggestions.length - 1 ? prev + 1 : prev
         );
         break;
       case 'ArrowUp':
@@ -113,8 +174,8 @@ export function NeighborhoodsPanel({
         break;
       case 'Enter':
         e.preventDefault();
-        if (highlightIndex >= 0 && highlightIndex < suggestions.length) {
-          handleSelect(suggestions[highlightIndex]);
+        if (highlightIndex >= 0 && highlightIndex < displaySuggestions.length) {
+          handleSelect(displaySuggestions[highlightIndex]);
         }
         break;
       case 'Escape':
@@ -160,29 +221,29 @@ export function NeighborhoodsPanel({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            onFocus={() => suggestions.length > 0 && setIsOpen(true)}
+            onFocus={() => displaySuggestions.length > 0 && setIsOpen(true)}
             className="pl-9"
           />
 
           {/* Dropdown */}
           {isOpen && (query.length >= 2 || message) && (
             <div className="absolute top-full left-0 right-0 mt-1 bg-popover border rounded-md shadow-lg z-50 max-h-64 overflow-hidden">
-              {isSearching && (
+              {isCurrentlySearching && (
                 <div className="p-3 text-sm text-muted-foreground">
-                  Searching...
+                  Searching{isZipQuery ? ` ZIP ${query}` : ''}...
                 </div>
               )}
 
-              {!isSearching && message && (
+              {!isCurrentlySearching && message && !isZipQuery && (
                 <div className="p-3 flex items-center gap-2 text-sm text-muted-foreground">
                   <AlertCircle className="w-4 h-4" />
                   {message}
                 </div>
               )}
 
-              {!isSearching && suggestions.length > 0 && (
+              {!isCurrentlySearching && displaySuggestions.length > 0 && (
                 <ul ref={listRef} className="max-h-64 overflow-y-auto">
-                  {suggestions.map((suggestion, index) => {
+                  {displaySuggestions.map((suggestion, index) => {
                     const isDuplicate = selectedNeighborhoods.some(
                       (n) => n.id === suggestion.id
                     );

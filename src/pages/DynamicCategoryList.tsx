@@ -28,6 +28,7 @@ import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchem
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
 import { Info } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
+import { LocationSearchBox } from '@/components/LocationSearchBox';
 
 interface City {
   id: string;
@@ -1332,6 +1333,17 @@ export default function DynamicCategoryList({
               Methodology
             </Link>
           </p>
+          
+          {/* ZIP/Neighborhood Search Box */}
+          <div className="mt-8 max-w-2xl mx-auto">
+            <LocationSearchBox 
+              placeholder={`Search ${neighborhoodName || city.name} neighborhoods by name or ZIP code`}
+              className="w-full"
+            />
+            <p className="text-center text-sm text-muted-foreground mt-3">
+              Refine your search to specific neighborhoods or use a ZIP code
+            </p>
+          </div>
         </div>
       </div>
       

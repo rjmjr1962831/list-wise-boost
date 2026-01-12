@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Top10SearchForm } from "@/components/Top10SearchForm";
+import { LocationSearchBox } from "@/components/LocationSearchBox";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { generateHomepageSchema } from "@/utils/homepageSchema";
@@ -171,7 +171,13 @@ const Index = () => {
             No ads. No pay-to-play. Just the top 0.5% — verified.
           </p>
           <div className="max-w-xl mx-auto mb-6">
-            <Top10SearchForm />
+            <LocationSearchBox 
+              placeholder="Find top agents by neighborhood or ZIP code"
+              className="w-full"
+            />
+            <p className="text-center text-sm text-muted-foreground mt-3">
+              Enter a neighborhood name or ZIP code to find top-rated agents
+            </p>
           </div>
           <FeaturedInBar variant="minimal" />
         </section>
@@ -202,7 +208,13 @@ const Index = () => {
               </Link>
             </p>
             <div className="max-w-md mx-auto">
-              <Top10SearchForm />
+              <LocationSearchBox 
+                placeholder="Search by neighborhood or ZIP code"
+                className="w-full"
+              />
+              <p className="text-center text-sm text-muted-foreground mt-3">
+                Find elite agents in your area
+              </p>
             </div>
           </div>
         </section>

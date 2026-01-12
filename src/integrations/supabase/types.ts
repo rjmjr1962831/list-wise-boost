@@ -247,6 +247,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "agent_neighborhood_subscriptions_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "zip_neighborhood_lookup"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "agent_neighborhood_subscriptions_professional_id_fkey"
             columns: ["professional_id"]
             isOneToOne: false
@@ -3168,6 +3175,21 @@ export type Database = {
           },
         ]
       }
+      zip_neighborhood_lookup: {
+        Row: {
+          city_area: string | null
+          city_area_slug: string | null
+          id: string | null
+          median_home_value: number | null
+          neighborhood: string | null
+          neighborhood_slug: string | null
+          state: string | null
+          tier: string | null
+          value_rank: number | null
+          zip_code: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_recent_reviews: { Args: { reviews_data: Json }; Returns: boolean }
@@ -3183,6 +3205,22 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_location: {
+        Args: { search_term: string }
+        Returns: {
+          city_area: string
+          city_area_slug: string
+          is_primary: boolean
+          match_score: number
+          median_home_value: number
+          neighborhood: string
+          neighborhood_id: string
+          neighborhood_slug: string
+          search_type: string
+          state: string
+          tier: string
+        }[]
       }
       start_warm_cache_cron: { Args: never; Returns: undefined }
       stop_warm_cache_cron: { Args: never; Returns: undefined }
