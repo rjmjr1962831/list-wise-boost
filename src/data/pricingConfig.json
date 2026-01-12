@@ -1,10 +1,10 @@
 {
-  "config_version": "2026-01-08",
+  "config_version": "2026-01-12",
   "currency": "USD",
   "tier_prices": {
-    "Main": 39,
-    "Prime": 69,
-    "Luxury": 99
+    "Main": 25,
+    "Prime": 50,
+    "Luxury": 75
   },
   "market_multipliers": [],
   "neighborhood_overrides": [],
