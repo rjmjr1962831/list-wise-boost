@@ -22,7 +22,11 @@ serve(async (req) => {
   }
 
   try {
-    const { batch_size = 50, offset = 0, dry_run = false } = await req.json().catch(() => ({}));
+    const { 
+      batch_size = 10, 
+      delay_ms = 1000, // 1 second between each request
+      dry_run = false 
+    } = await req.json().catch(() => ({}));
     
     const EXA_API_KEY = Deno.env.get('EXA_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -42,7 +46,7 @@ serve(async (req) => {
       .is('zillow_url', null)
       .is('exa_searched_at', null)
       .order('name')
-      .range(offset, offset + batch_size - 1);
+      .limit(batch_size);
 
     if (fetchError) {
       throw new Error(`Failed to fetch agents: ${fetchError.message}`);
@@ -52,13 +56,21 @@ serve(async (req) => {
       return new Response(JSON.stringify({ 
         message: 'No more CA agents to process',
         processed: 0,
-        offset 
+        remaining: 0
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`Processing ${agents.length} CA agents starting at offset ${offset}`);
+    // Get remaining count
+    const { count: remainingCount } = await supabase
+      .from('state_licenses')
+      .select('id', { count: 'exact', head: true })
+      .eq('state', 'CA')
+      .is('zillow_url', null)
+      .is('exa_searched_at', null);
+
+    console.log(`Processing ${agents.length} CA agents with ${delay_ms}ms delay between requests. ${remainingCount} remaining.`);
 
     const results: Array<{
       id: string;
@@ -69,12 +81,17 @@ serve(async (req) => {
       status: string;
     }> = [];
 
-    // Process each agent with Exa search (URL only - no content extraction)
-    for (const agent of agents) {
+    let found = 0;
+    let notFound = 0;
+    let errors = 0;
+
+    for (let i = 0; i < agents.length; i++) {
+      const agent = agents[i];
+      
       try {
         const searchQuery = `${agent.name} real estate agent California Zillow profile`;
         
-        console.log(`Searching Exa for: ${agent.name}`);
+        console.log(`[${i + 1}/${agents.length}] Searching Exa for: ${agent.name}`);
 
         const exaResponse = await fetch('https://api.exa.ai/search', {
           method: 'POST',
@@ -110,6 +127,13 @@ serve(async (req) => {
             exa_score: null,
             status: `exa_error: ${exaResponse.status}`,
           });
+          errors++;
+          
+          // If rate limited, wait longer
+          if (exaResponse.status === 429) {
+            console.log('Rate limited! Waiting 5 seconds...');
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          }
           continue;
         }
 
@@ -129,6 +153,7 @@ serve(async (req) => {
             exa_score: zillowProfile.score,
             status: 'found',
           });
+          found++;
 
           if (!dry_run) {
             await supabase.from('state_licenses').update({
@@ -147,6 +172,7 @@ serve(async (req) => {
             exa_score: null,
             status: 'no_zillow_profile_found',
           });
+          notFound++;
 
           if (!dry_run) {
             await supabase.from('state_licenses').update({
@@ -156,8 +182,10 @@ serve(async (req) => {
           }
         }
 
-        // Rate limit: 100ms between requests
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Delay between requests (except for the last one)
+        if (i < agents.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, delay_ms));
+        }
 
       } catch (agentError) {
         console.error(`Error processing ${agent.name}:`, agentError);
@@ -169,20 +197,18 @@ serve(async (req) => {
           exa_score: null,
           status: `error: ${agentError instanceof Error ? agentError.message : 'unknown'}`,
         });
+        errors++;
       }
     }
-
-    const found = results.filter(r => r.status === 'found').length;
-    const notFound = results.filter(r => r.status === 'no_zillow_profile_found').length;
-    const errors = results.filter(r => r.status.startsWith('error') || r.status.startsWith('exa_error')).length;
 
     console.log(`Batch complete: ${found} found, ${notFound} not found, ${errors} errors`);
 
     return new Response(JSON.stringify({
       message: `Processed ${results.length} CA agents`,
       dry_run,
-      offset,
-      next_offset: offset + batch_size,
+      batch_size,
+      delay_ms,
+      remaining: (remainingCount || 0) - results.length,
       summary: { found, notFound, errors, total: results.length },
       results,
     }), {
