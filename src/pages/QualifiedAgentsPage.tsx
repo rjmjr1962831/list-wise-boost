@@ -40,6 +40,11 @@ export default function QualifiedAgentsPage() {
   // Get page from URL params, default to 1
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
+  // Always scroll to top on page load or page change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [currentPage]);
+
   // Fetch neighborhood data
   useEffect(() => {
     const fetchNeighborhood = async () => {
