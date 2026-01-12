@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,7 +32,13 @@ const STATES = [
 
 export default function AgentLookup() {
   const navigate = useNavigate();
-  const [selectedState, setSelectedState] = useState('arizona');
+  const [searchParams] = useSearchParams();
+  
+  // Initialize from URL params
+  const initialQuery = searchParams.get('q') || '';
+  const initialState = searchParams.get('state') || 'arizona';
+  
+  const [selectedState, setSelectedState] = useState(initialState);
   const [applicationAgent, setApplicationAgent] = useState<StateAgentSearchResult | null>(null);
   
   const {
@@ -47,9 +53,18 @@ export default function AgentLookup() {
     clearResults,
   } = useStateAgentSearch();
 
+  // Initialize query from URL on mount
+  useEffect(() => {
+    if (initialQuery) {
+      setQuery(initialQuery);
+    }
+  }, [initialQuery, setQuery]);
+
   // Trigger search when query or state changes
   useEffect(() => {
-    search(query, selectedState);
+    if (query) {
+      search(query, selectedState);
+    }
   }, [query, selectedState, search]);
 
   const handleClearSearch = () => {
