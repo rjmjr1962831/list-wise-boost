@@ -125,10 +125,10 @@ export const DualSearchBox = ({
     }
   };
 
-  // Navigate to AgentLookup page with search query
+  // Navigate to Check Agent page with search query
   const handleAgentSearch = () => {
     if (agentValue.trim().length >= 2) {
-      navigate(`/agent-lookup?q=${encodeURIComponent(agentValue.trim())}&state=${FIXED_STATE.slug}`);
+      navigate(`/check-agent?q=${encodeURIComponent(agentValue.trim())}&state=${FIXED_STATE.slug}`);
     }
   };
 
