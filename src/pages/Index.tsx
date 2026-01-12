@@ -170,6 +170,12 @@ const Index = () => {
           <p className="text-xl text-muted-foreground mb-8">
             No ads. No pay-to-play. Just the top 0.5% — verified.
           </p>
+          <div className="max-w-xl mx-auto mb-6">
+            <LocationSearchBox 
+              placeholder="Find top agents by neighborhood or ZIP code"
+              className="w-full"
+            />
+          </div>
           <FeaturedInBar variant="minimal" />
         </section>
 
