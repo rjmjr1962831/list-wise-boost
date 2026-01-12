@@ -544,3 +544,6 @@ verify_jwt = false
 
 [functions.batch-memo23-ca-enrich]
 verify_jwt = false
+
+[functions.exa-ca-cron]
+verify_jwt = false
