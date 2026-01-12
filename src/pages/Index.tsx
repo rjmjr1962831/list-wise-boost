@@ -168,7 +168,7 @@ const Index = () => {
             Find a Top-Rated Real Estate Agent
           </h1>
           <p className="text-xl text-muted-foreground mb-8">
-            No ads. No pay-to-play. Just the top 0.5% — verified.
+            Based on performance, experience, and verified data.
           </p>
           <div className="max-w-3xl mx-auto mb-6">
             <DualSearchBox 
