@@ -185,24 +185,62 @@ serve(async (req) => {
 
     const { action, runId, datasetId, actorId, limit = 10, offset = 0, dryRun = true } = await req.json();
 
-    // Action 1: List runs for an actor
+    // Action 1: List ALL user's runs (can filter by actor)
     if (action === "list-runs") {
-      const actId = actorId || "memo23~zillow-scraper";
-      console.log(`Fetching runs for actor: ${actId}`);
+      // Use the APIFY_ACTOR_ID from secrets if available
+      const actId = actorId || Deno.env.get("APIFY_ACTOR_ID");
       
-      const runsUrl = `https://api.apify.com/v2/acts/${encodeURIComponent(actId)}/runs?token=${APIFY_API_TOKEN}&limit=${limit}&offset=${offset}&desc=true`;
+      // First, try to list user's runs directly
+      let runsUrl: string;
+      if (actId) {
+        // If actor ID provided, get runs for that specific actor
+        runsUrl = `https://api.apify.com/v2/acts/${encodeURIComponent(actId)}/runs?token=${APIFY_API_TOKEN}&limit=${limit}&offset=${offset}&desc=true`;
+      } else {
+        // Otherwise list all user's runs
+        runsUrl = `https://api.apify.com/v2/actor-runs?token=${APIFY_API_TOKEN}&limit=${limit}&offset=${offset}&desc=true`;
+      }
+      
+      console.log(`Fetching runs from: ${runsUrl.replace(APIFY_API_TOKEN, "***")}`);
       const runsResponse = await fetch(runsUrl);
       
       if (!runsResponse.ok) {
         const errorText = await runsResponse.text();
         console.error("Apify runs API error:", errorText);
-        throw new Error(`Failed to fetch runs: ${runsResponse.status}`);
+        
+        // Fallback: try listing all user runs if actor-specific failed
+        if (actId) {
+          console.log("Trying fallback: listing all user runs...");
+          const fallbackUrl = `https://api.apify.com/v2/actor-runs?token=${APIFY_API_TOKEN}&limit=${limit}&offset=${offset}&desc=true`;
+          const fallbackResponse = await fetch(fallbackUrl);
+          if (fallbackResponse.ok) {
+            const fallbackData = await fallbackResponse.json();
+            const runs = fallbackData.data?.items?.map((run: ApifyRun) => ({
+              id: run.id,
+              actId: run.actId,
+              status: run.status,
+              startedAt: run.startedAt,
+              finishedAt: run.finishedAt,
+              datasetId: run.defaultDatasetId,
+            })) || [];
+            return new Response(JSON.stringify({ 
+              success: true, 
+              note: "Listing all user runs (actor-specific lookup failed)",
+              runs,
+              total: fallbackData.data?.total || 0
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            });
+          }
+        }
+        
+        throw new Error(`Failed to fetch runs: ${runsResponse.status} - ${errorText}`);
       }
       
       const runsData = await runsResponse.json();
       
       const runs = runsData.data?.items?.map((run: ApifyRun) => ({
         id: run.id,
+        actId: run.actId,
         status: run.status,
         startedAt: run.startedAt,
         finishedAt: run.finishedAt,
@@ -213,6 +251,28 @@ serve(async (req) => {
         success: true, 
         runs,
         total: runsData.data?.total || 0
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Action: List user's datasets
+    if (action === "list-datasets") {
+      const datasetsUrl = `https://api.apify.com/v2/datasets?token=${APIFY_API_TOKEN}&limit=${limit}&offset=${offset}&desc=true`;
+      console.log(`Fetching datasets...`);
+      const datasetsResponse = await fetch(datasetsUrl);
+      
+      if (!datasetsResponse.ok) {
+        const errorText = await datasetsResponse.text();
+        throw new Error(`Failed to fetch datasets: ${datasetsResponse.status} - ${errorText}`);
+      }
+      
+      const datasetsData = await datasetsResponse.json();
+      
+      return new Response(JSON.stringify({ 
+        success: true, 
+        datasets: datasetsData.data?.items || [],
+        total: datasetsData.data?.total || 0
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
