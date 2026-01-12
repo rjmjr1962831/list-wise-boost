@@ -10,10 +10,70 @@ interface ExaSearchResult {
   title: string;
   url: string;
   score: number;
+  text?: string; // Content from the page
+  highlights?: string[]; // Highlighted excerpts
 }
 
 interface ExaResponse {
   results: ExaSearchResult[];
+}
+
+/**
+ * Extract rating and review count from Zillow page text/highlights
+ * Looks for patterns like "5.0 (123 reviews)" or "4.9 stars" etc.
+ */
+function extractRatingAndReviews(text: string | undefined, highlights: string[] | undefined): { rating: number | null; reviews: number | null } {
+  const content = [text || '', ...(highlights || [])].join(' ');
+  
+  let rating: number | null = null;
+  let reviews: number | null = null;
+  
+  // Pattern 1: "X.X (NNN reviews)" or "X.X stars (NNN reviews)"
+  const ratingReviewPattern = /(\d+\.?\d*)\s*(?:stars?)?\s*\((\d+)\s*reviews?\)/gi;
+  let match = ratingReviewPattern.exec(content);
+  if (match) {
+    rating = parseFloat(match[1]);
+    reviews = parseInt(match[2], 10);
+  }
+  
+  // Pattern 2: "X.X out of 5" or "X.X/5"
+  if (rating === null) {
+    const ratingOnlyPattern = /(\d+\.?\d*)\s*(?:out of|\/)\s*5/gi;
+    match = ratingOnlyPattern.exec(content);
+    if (match) {
+      rating = parseFloat(match[1]);
+    }
+  }
+  
+  // Pattern 3: Just "X.X stars" or "rated X.X"
+  if (rating === null) {
+    const starsPattern = /(?:rated|rating|stars?)\s*:?\s*(\d+\.?\d*)/gi;
+    match = starsPattern.exec(content);
+    if (match) {
+      rating = parseFloat(match[1]);
+    }
+  }
+  
+  // Pattern 4: "NNN reviews" standalone
+  if (reviews === null) {
+    const reviewsPattern = /(\d+)\s*reviews?/gi;
+    match = reviewsPattern.exec(content);
+    if (match) {
+      reviews = parseInt(match[1], 10);
+    }
+  }
+  
+  // Pattern 5: "NNN sales" as proxy if no reviews found
+  if (reviews === null) {
+    const salesPattern = /(\d+)\s*(?:recent\s+)?sales?/gi;
+    match = salesPattern.exec(content);
+    // Only use if it seems reasonable (not a price)
+    if (match && parseInt(match[1], 10) < 10000) {
+      // Don't set reviews from sales - just note it
+    }
+  }
+  
+  return { rating, reviews };
 }
 
 serve(async (req) => {
@@ -40,6 +100,7 @@ serve(async (req) => {
       .select('id, name, license_number, city, brokerage_name')
       .eq('state', 'CA')
       .is('zillow_url', null) // Only unprocessed
+      .is('exa_searched_at', null) // Not yet searched
       .order('name')
       .range(offset, offset + batch_size - 1);
 
@@ -65,6 +126,9 @@ serve(async (req) => {
       license_number: string;
       zillow_url: string | null;
       exa_score: number | null;
+      exa_rating: number | null;
+      exa_reviews: number | null;
+      prequalified: boolean;
       status: string;
     }> = [];
 
@@ -76,6 +140,7 @@ serve(async (req) => {
         
         console.log(`Searching Exa for: ${agent.name}`);
 
+        // Use contents to get text/highlights for rating extraction
         const exaResponse = await fetch('https://api.exa.ai/search', {
           method: 'POST',
           headers: {
@@ -88,18 +153,34 @@ serve(async (req) => {
             type: 'neural',
             useAutoprompt: true,
             includeDomains: ['zillow.com'],
+            contents: {
+              text: { maxCharacters: 2000 }, // Get page text for rating extraction
+              highlights: { numSentences: 5, highlightsPerUrl: 3 } // Get relevant highlights
+            }
           }),
         });
 
         if (!exaResponse.ok) {
           const errorText = await exaResponse.text();
           console.error(`Exa API error for ${agent.name}: ${exaResponse.status} - ${errorText}`);
+          
+          // Mark as searched with error
+          if (!dry_run) {
+            await supabase.from('state_licenses').update({
+              exa_searched_at: new Date().toISOString(),
+              exa_search_notes: `exa_error_${exaResponse.status}`,
+            }).eq('id', agent.id);
+          }
+          
           results.push({
             id: agent.id,
             name: agent.name,
             license_number: agent.license_number,
             zillow_url: null,
             exa_score: null,
+            exa_rating: null,
+            exa_reviews: null,
+            prequalified: false,
             status: `exa_error: ${exaResponse.status}`,
           });
           continue;
@@ -114,23 +195,38 @@ serve(async (req) => {
         );
 
         if (zillowProfile) {
+          // Extract rating and reviews from page content
+          const { rating, reviews } = extractRatingAndReviews(zillowProfile.text, zillowProfile.highlights);
+          
+          // Prequalification: 4.8+ rating AND 20+ reviews
+          const prequalified = (rating !== null && rating >= 4.8) && (reviews !== null && reviews >= 20);
+          
+          console.log(`   ${agent.name}: ${rating ?? '?'}⭐ (${reviews ?? '?'} reviews) - ${prequalified ? 'QUALIFIED' : 'not qualified'}`);
+          
           results.push({
             id: agent.id,
             name: agent.name,
             license_number: agent.license_number,
             zillow_url: zillowProfile.url,
             exa_score: zillowProfile.score,
-            status: 'found',
+            exa_rating: rating,
+            exa_reviews: reviews,
+            prequalified,
+            status: prequalified ? 'qualified' : 'not_qualified',
           });
 
-          // Update state_licenses with Zillow URL and test notation
+          // Update state_licenses with Zillow URL and prequalification data
           if (!dry_run) {
             const { error: updateError } = await supabase
               .from('state_licenses')
               .update({
                 zillow_url: zillowProfile.url,
-                exa_search_notes: 'exa_search_only_test',
                 exa_searched_at: new Date().toISOString(),
+                exa_score: zillowProfile.score,
+                exa_rating: rating,
+                exa_reviews: reviews,
+                exa_prequalified: prequalified,
+                exa_search_notes: prequalified ? 'prequalified_for_memo23' : 'found_but_not_qualified',
               })
               .eq('id', agent.id);
 
@@ -145,6 +241,9 @@ serve(async (req) => {
             license_number: agent.license_number,
             zillow_url: null,
             exa_score: null,
+            exa_rating: null,
+            exa_reviews: null,
+            prequalified: false,
             status: 'no_zillow_profile_found',
           });
 
@@ -153,8 +252,9 @@ serve(async (req) => {
             const { error: updateError } = await supabase
               .from('state_licenses')
               .update({
-                exa_search_notes: 'exa_search_only_test_no_result',
                 exa_searched_at: new Date().toISOString(),
+                exa_prequalified: false,
+                exa_search_notes: 'no_zillow_profile_found',
               })
               .eq('id', agent.id);
 
@@ -175,23 +275,27 @@ serve(async (req) => {
           license_number: agent.license_number,
           zillow_url: null,
           exa_score: null,
+          exa_rating: null,
+          exa_reviews: null,
+          prequalified: false,
           status: `error: ${agentError instanceof Error ? agentError.message : 'unknown'}`,
         });
       }
     }
 
-    const found = results.filter(r => r.status === 'found').length;
+    const qualified = results.filter(r => r.prequalified).length;
+    const notQualified = results.filter(r => r.status === 'not_qualified').length;
     const notFound = results.filter(r => r.status === 'no_zillow_profile_found').length;
     const errors = results.filter(r => r.status.startsWith('error') || r.status.startsWith('exa_error')).length;
 
-    console.log(`Batch complete: ${found} found, ${notFound} not found, ${errors} errors`);
+    console.log(`Batch complete: ${qualified} qualified, ${notQualified} not qualified, ${notFound} not found, ${errors} errors`);
 
     return new Response(JSON.stringify({
       message: `Processed ${results.length} CA agents`,
       dry_run,
       offset,
       next_offset: offset + batch_size,
-      summary: { found, notFound, errors, total: results.length },
+      summary: { qualified, notQualified, notFound, errors, total: results.length },
       results,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
