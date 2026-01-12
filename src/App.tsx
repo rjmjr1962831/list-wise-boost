@@ -109,6 +109,7 @@ const ProtocolAdopters = lazy(() => import("./pages/ProtocolAdopters"));
 const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
 const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods"));
 const NeighborhoodWriteups = lazy(() => import("./pages/admin/NeighborhoodWriteups"));
+const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
 const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 
 // Visibility funnel pages
@@ -151,6 +152,7 @@ const App = () => (
                     <Route path="/crm" element={<CRM />} />
                     <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />
                     <Route path="/admin/neighborhood-writeups" element={<NeighborhoodWriteups />} />
+                    <Route path="/admin/export-agents" element={<AdminExportAgents />} />
                     <Route path="/test-visibility-components" element={<TestVisibilityComponents />} />
                     {/* Visibility funnel */}
                     <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
