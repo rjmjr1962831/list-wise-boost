@@ -3119,10 +3119,15 @@ export type Database = {
           id: string
           license_number: string
           license_type: string | null
+          memo23_error: string | null
+          memo23_rating: number | null
+          memo23_reviews: number | null
+          memo23_status: string | null
           name: string
           phone: string | null
           price_range_max: number | null
           price_range_min: number | null
+          professional_id: string | null
           sales_last_12_months: number | null
           service_areas: string | null
           specialties: string | null
@@ -3151,10 +3156,15 @@ export type Database = {
           id?: string
           license_number: string
           license_type?: string | null
+          memo23_error?: string | null
+          memo23_rating?: number | null
+          memo23_reviews?: number | null
+          memo23_status?: string | null
           name: string
           phone?: string | null
           price_range_max?: number | null
           price_range_min?: number | null
+          professional_id?: string | null
           sales_last_12_months?: number | null
           service_areas?: string | null
           specialties?: string | null
@@ -3183,10 +3193,15 @@ export type Database = {
           id?: string
           license_number?: string
           license_type?: string | null
+          memo23_error?: string | null
+          memo23_rating?: number | null
+          memo23_reviews?: number | null
+          memo23_status?: string | null
           name?: string
           phone?: string | null
           price_range_max?: number | null
           price_range_min?: number | null
+          professional_id?: string | null
           sales_last_12_months?: number | null
           service_areas?: string | null
           specialties?: string | null
@@ -3203,7 +3218,22 @@ export type Database = {
           zillow_status?: string | null
           zillow_url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "state_licenses_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "state_licenses_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "professionals_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       unrecognized_neighborhoods: {
         Row: {
