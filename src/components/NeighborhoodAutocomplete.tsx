@@ -202,12 +202,7 @@ export function NeighborhoodAutocomplete({
                           value === n.neighborhood ? "opacity-100" : "opacity-0"
                         )}
                       />
-                      <div className="flex flex-col">
-                        <span>{n.neighborhood}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {n.tier} tier
-                        </span>
-                      </div>
+                      <span>{n.neighborhood}</span>
                     </CommandItem>
                   ))}
                 </CommandGroup>
