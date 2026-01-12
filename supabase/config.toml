@@ -541,3 +541,6 @@ verify_jwt = false
 
 [functions.enrich-agent-memo23]
 verify_jwt = false
+
+[functions.batch-memo23-ca-enrich]
+verify_jwt = false
