@@ -15,7 +15,9 @@ const corsHeaders = {
  * - Creates new professionals records (if they qualify: 4.8+ rating, 20+ reviews)
  * - Updates state_licenses with scrape results
  * 
- * Concurrency: 5 concurrent requests per project rules
+ * Now captures ALL fields from memo23 including:
+ * - agent_licenses, agent_transactions, agent_listings, agent_reviews, agent_team_members
+ * - All new professional fields (business_address, sales_stats, team info, etc.)
  */
 
 interface StateLicense {
@@ -36,6 +38,7 @@ interface EnrichmentResult {
   reviews?: number;
   message?: string;
   professionalId?: string;
+  tablesPopulated?: string[];
 }
 
 async function enrichAgent(
@@ -121,7 +124,6 @@ async function enrichAgent(
     }
 
     if (!agentData) {
-      // Update state_licenses with failure
       await supabase.from('state_licenses').update({
         zillow_scraped_at: new Date().toISOString(),
         memo23_status: 'no_data',
@@ -187,8 +189,7 @@ async function enrichAgent(
       };
     }
 
-    // Agent qualifies! Create professional record
-    // Get default category_id and city_id
+    // Agent qualifies! Create professional record with ALL memo23 fields
     const { data: category } = await supabase
       .from('categories')
       .select('id')
@@ -202,29 +203,34 @@ async function enrichAgent(
       .limit(1)
       .maybeSingle();
 
+    // Build comprehensive professional data with ALL memo23 fields
     const professionalData: Record<string, any> = {
       name: agentData.name || agent.name,
       license_number: agent.license_number,
       zillow_profile_url: agent.zillow_url,
       active: true,
+      type: 'individual',
       state_slug: 'california',
       category_id: category?.id,
       city_id: city?.id,
-      rank: 999, // Default rank for newly imported agents
+      rank: 999,
       review_stars_rating: rating,
       num_total_reviews: reviewCount,
       zillow_data_source: 'memo23',
+      zillow_data_fetched_at: new Date().toISOString(),
       zillow_last_scraped_at: new Date().toISOString(),
       zillow_scrape_status: 'success',
     };
 
-    // Populate additional fields from Memo23 data
+    // Basic fields
     if (agentData.screenName) professionalData.screen_name = agentData.screenName;
     if (agentData.encodedZuid) {
       professionalData.encoded_zuid = agentData.encodedZuid;
       professionalData.zuid = agentData.encodedZuid;
     }
     if (agentData.profilePhotoSrc) professionalData.image_url = agentData.profilePhotoSrc;
+
+    // Business info
     if (agentData.businessName) {
       professionalData.business_name = agentData.businessName;
       professionalData.company = agentData.businessName;
@@ -234,21 +240,62 @@ async function enrichAgent(
       professionalData.business_city = agentData.businessAddress.city || null;
       professionalData.business_state = agentData.businessAddress.state || null;
       professionalData.business_zip = agentData.businessAddress.postalCode || null;
+      if (agentData.businessAddress.postalCode) {
+        professionalData.zip_code = agentData.businessAddress.postalCode;
+      }
     }
-    if (agentData.phoneNumbers?.cell) {
-      professionalData.phone = agentData.phoneNumbers.cell;
-      professionalData.cell_phone = agentData.phoneNumbers.cell;
+
+    // Phone numbers
+    if (agentData.phoneNumbers) {
+      professionalData.phone_numbers = agentData.phoneNumbers;
+      if (agentData.phoneNumbers.cell) {
+        professionalData.phone = agentData.phoneNumbers.cell;
+        professionalData.cell_phone = agentData.phoneNumbers.cell;
+      }
     }
+
+    // Ratings
+    if (agentData.ratings) {
+      professionalData.ratings = agentData.ratings;
+    }
+
+    // Sales stats
     if (agentData.agentSalesStats) {
       professionalData.agent_sales_stats = agentData.agentSalesStats;
       professionalData.sales_count_all_time = agentData.agentSalesStats.countAllTime || null;
       professionalData.sales_count_last_year = agentData.agentSalesStats.countLastYear || null;
+      if (agentData.agentSalesStats.priceRange) {
+        professionalData.price_range_3yr_min = agentData.agentSalesStats.priceRange.min || null;
+        professionalData.price_range_3yr_max = agentData.agentSalesStats.priceRange.max || null;
+      }
+      if (agentData.agentSalesStats.averageValue) {
+        professionalData.average_value_3yr = agentData.agentSalesStats.averageValue || null;
+      }
+      professionalData.stats_include_team = agentData.agentSalesStats.includeTeam || false;
     }
+
+    // Team detection
+    if (agentData.teamDisplayInformation) {
+      professionalData.team_display_information = agentData.teamDisplayInformation;
+      if (agentData.teamDisplayInformation.teamLeadInfo?.children?.length > 0) {
+        professionalData.is_team_lead = true;
+      }
+      if (agentData.teamDisplayInformation.teamMemberInfo?.teamLead?.zuid) {
+        professionalData.team_lead_zuid = agentData.teamDisplayInformation.teamMemberInfo.teamLead.zuid;
+      }
+    }
+
+    // Licenses
     if (agentData.agentLicenses) {
       professionalData.agent_licenses = agentData.agentLicenses;
     }
-    if (agentData.ratings) {
-      professionalData.ratings = agentData.ratings;
+
+    // Active listings count
+    if (agentData.forSaleCount !== undefined) {
+      professionalData.active_for_sale_count = agentData.forSaleCount;
+    }
+    if (agentData.forRentCount !== undefined) {
+      professionalData.active_for_rent_count = agentData.forRentCount;
     }
 
     // Insert into professionals
@@ -276,8 +323,11 @@ async function enrichAgent(
     }
 
     const professionalId = newPro.id;
+    const tablesPopulated: string[] = ['professionals'];
 
-    // Populate agent_licenses table
+    // ============================================
+    // Populate agent_licenses
+    // ============================================
     if (agentData.agentLicenses && Array.isArray(agentData.agentLicenses)) {
       const licenses = agentData.agentLicenses.map((lic: any) => ({
         professional_id: professionalId,
@@ -289,29 +339,142 @@ async function enrichAgent(
       }));
 
       if (licenses.length > 0) {
-        await supabase.from('agent_licenses')
+        const { error } = await supabase.from('agent_licenses')
           .upsert(licenses, { onConflict: 'professional_id,license_number,state' });
+        if (!error) tablesPopulated.push('agent_licenses');
       }
     }
 
-    // Populate agent_reviews table
+    // ============================================
+    // Populate agent_transactions (past sales)
+    // ============================================
+    const pastSales = agentData.pastSales || agentData.past_sales || [];
+    if (Array.isArray(pastSales) && pastSales.length > 0) {
+      const transactions = pastSales
+        .filter((sale: any) => sale.zpid && sale.soldDate && sale.price)
+        .map((sale: any) => ({
+          professional_id: professionalId,
+          zillow_zpid: parseInt(sale.zpid, 10),
+          represented_list: JSON.stringify(sale.represented || ['buyer']),
+          sold_date: sale.soldDate,
+          price: parseInt(sale.price, 10),
+          street_address: sale.address?.streetAddress || null,
+          city: sale.address?.city || null,
+          state: sale.address?.state || null,
+          zip_code: sale.address?.zipcode || null,
+          bedrooms: sale.bedrooms || null,
+          bathrooms: sale.bathrooms || null,
+          living_area_sqft: sale.livingArea || null,
+          image_url: sale.imgSrc || null,
+          home_details_url: sale.detailUrl || null,
+          updated_at: new Date().toISOString()
+        }));
+
+      if (transactions.length > 0) {
+        const { error } = await supabase.from('agent_transactions')
+          .upsert(transactions, { onConflict: 'professional_id,zillow_zpid,sold_date' });
+        if (!error) tablesPopulated.push('agent_transactions');
+      }
+    }
+
+    // ============================================
+    // Populate agent_listings
+    // ============================================
+    const forSaleListings = Array.isArray(agentData.forSaleListings) ? agentData.forSaleListings : [];
+    const forRentListings = Array.isArray(agentData.forRentListings) ? agentData.forRentListings : [];
+    const allListings = [
+      ...forSaleListings.map((l: any) => ({ ...l, listing_type: 'for_sale' })),
+      ...forRentListings.map((l: any) => ({ ...l, listing_type: 'for_rent' }))
+    ];
+
+    if (allListings.length > 0) {
+      const listings = allListings
+        .filter((l: any) => l.zpid && l.price)
+        .map((l: any) => ({
+          professional_id: professionalId,
+          zillow_zpid: parseInt(l.zpid, 10),
+          listing_type: l.listing_type,
+          home_type: l.homeType || null,
+          status: l.homeStatus || null,
+          street_address: l.address?.streetAddress || null,
+          city: l.address?.city || null,
+          state: l.address?.state || null,
+          zip_code: l.address?.zipcode || null,
+          price: parseInt(l.price, 10),
+          bedrooms: l.bedrooms || null,
+          bathrooms: l.bathrooms || null,
+          primary_photo_url: l.imgSrc || null,
+          listing_url: l.detailUrl || null,
+          scraped_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }));
+
+      if (listings.length > 0) {
+        const { error } = await supabase.from('agent_listings')
+          .upsert(listings, { onConflict: 'zillow_zpid' });
+        if (!error) tablesPopulated.push('agent_listings');
+      }
+    }
+
+    // ============================================
+    // Populate agent_reviews
+    // ============================================
     const reviews = agentData.reviews || [];
     if (Array.isArray(reviews) && reviews.length > 0) {
       const reviewRecords = reviews
         .filter((r: any) => r.reviewId && r.rating && r.createDate)
-        .slice(0, 50) // Limit to 50 reviews
+        .slice(0, 100) // Limit to 100 reviews
         .map((r: any) => ({
           professional_id: professionalId,
           zillow_review_id: parseInt(r.reviewId, 10),
           rating: Math.min(5, Math.max(1, parseInt(r.rating, 10))),
           comment: r.reviewText || null,
+          work_description: r.description || null,
           review_date: r.createDate,
+          local_knowledge_score: r.subRatings?.localKnowledge || null,
+          process_expertise_score: r.subRatings?.processExpertise || null,
+          responsiveness_score: r.subRatings?.responsiveness || null,
+          negotiation_skills_score: r.subRatings?.negotiationSkills || null,
+          reviewer_screen_name: r.reviewer?.screenName || null,
+          reviewer_first_name: r.reviewer?.firstName || null,
+          reviewer_last_name: r.reviewer?.lastName || null,
+          reviewer_show_name: r.reviewer?.showName || null,
+          rebuttal: r.rebuttal || null,
           updated_at: new Date().toISOString()
         }));
 
       if (reviewRecords.length > 0) {
-        await supabase.from('agent_reviews')
+        const { error } = await supabase.from('agent_reviews')
           .upsert(reviewRecords, { onConflict: 'zillow_review_id' });
+        if (!error) tablesPopulated.push('agent_reviews');
+      }
+    }
+
+    // ============================================
+    // Populate agent_team_members
+    // ============================================
+    if (agentData.teamDisplayInformation?.teamLeadInfo?.children) {
+      const teamMembers = agentData.teamDisplayInformation.teamLeadInfo.children;
+      if (Array.isArray(teamMembers) && teamMembers.length > 0) {
+        const teamRecords = teamMembers.map((member: any) => ({
+          team_lead_id: professionalId,
+          member_id: professionalId, // Will need to link to actual member professional records later
+          team_name: agentData.teamDisplayInformation.teamLeadInfo.teamName || 'Unknown Team',
+          member_name: member.name || 'Unknown',
+          member_screen_name: member.screenName || null,
+          member_zillow_zuid: member.zuid || null,
+          member_photo_url: member.profilePhotoSrc || null,
+          member_review_count: member.ratings?.count || null,
+          member_review_average: member.ratings?.average || null,
+          member_is_top_agent: member.isTopAgent || false,
+          updated_at: new Date().toISOString()
+        }));
+
+        if (teamRecords.length > 0) {
+          const { error } = await supabase.from('agent_team_members')
+            .upsert(teamRecords, { onConflict: 'team_lead_id,member_id' });
+          if (!error) tablesPopulated.push('agent_team_members');
+        }
       }
     }
 
@@ -324,7 +487,7 @@ async function enrichAgent(
       professional_id: professionalId
     }).eq('id', agent.id);
 
-    console.log(`   ✅ Created professional: ${professionalId}`);
+    console.log(`   ✅ Created professional: ${professionalId} - Tables: ${tablesPopulated.join(', ')}`);
 
     return {
       id: agent.id,
@@ -334,7 +497,8 @@ async function enrichAgent(
       rating,
       reviews: reviewCount,
       professionalId,
-      message: 'Created professional record'
+      tablesPopulated,
+      message: `Created professional record with ${tablesPopulated.length} tables populated`
     };
 
   } catch (error) {
@@ -363,10 +527,16 @@ serve(async (req) => {
   }
 
   try {
-    const { limit = 50, concurrency = 5, dryRun = false } = await req.json();
+    const { 
+      limit = 50, 
+      concurrency = 5, 
+      dryRun = false,
+      sequential = false,  // NEW: Run one at a time with delay
+      delaySeconds = 5     // NEW: Delay between sequential runs
+    } = await req.json();
 
     console.log(`🚀 Starting batch Memo23 enrichment for CA agents`);
-    console.log(`   Limit: ${limit}, Concurrency: ${concurrency}, DryRun: ${dryRun}`);
+    console.log(`   Limit: ${limit}, Concurrency: ${concurrency}, Sequential: ${sequential}, Delay: ${delaySeconds}s, DryRun: ${dryRun}`);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -420,20 +590,39 @@ serve(async (req) => {
 
     const results: EnrichmentResult[] = [];
 
-    // Process in batches with concurrency
-    for (let i = 0; i < agents.length; i += concurrency) {
-      const batch = agents.slice(i, i + concurrency);
-      console.log(`\n📦 Processing batch ${Math.floor(i / concurrency) + 1} (${batch.length} agents)`);
+    if (sequential) {
+      // SEQUENTIAL MODE: One agent at a time with delay
+      console.log(`⏱️ Running in sequential mode: 1 agent every ${delaySeconds} seconds`);
+      
+      for (let i = 0; i < agents.length; i++) {
+        const agent = agents[i];
+        console.log(`\n📦 Processing agent ${i + 1}/${agents.length}: ${agent.name}`);
+        
+        const result = await enrichAgent(agent, supabase, apifyToken, proxyUrl);
+        results.push(result);
+        
+        // Wait between agents (except after the last one)
+        if (i < agents.length - 1) {
+          console.log(`   ⏳ Waiting ${delaySeconds} seconds before next agent...`);
+          await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000));
+        }
+      }
+    } else {
+      // BATCH MODE: Process in concurrent batches
+      for (let i = 0; i < agents.length; i += concurrency) {
+        const batch = agents.slice(i, i + concurrency);
+        console.log(`\n📦 Processing batch ${Math.floor(i / concurrency) + 1} (${batch.length} agents)`);
 
-      const batchResults = await Promise.all(
-        batch.map(agent => enrichAgent(agent, supabase, apifyToken, proxyUrl))
-      );
+        const batchResults = await Promise.all(
+          batch.map(agent => enrichAgent(agent, supabase, apifyToken, proxyUrl))
+        );
 
-      results.push(...batchResults);
+        results.push(...batchResults);
 
-      // Small delay between batches to avoid rate limits
-      if (i + concurrency < agents.length) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Small delay between batches to avoid rate limits
+        if (i + concurrency < agents.length) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
     }
 
@@ -443,7 +632,8 @@ serve(async (req) => {
       success: results.filter(r => r.status === 'success').length,
       notQualified: results.filter(r => r.status === 'not_qualified').length,
       duplicate: results.filter(r => r.status === 'duplicate').length,
-      failed: results.filter(r => r.status === 'failed').length
+      failed: results.filter(r => r.status === 'failed').length,
+      mode: sequential ? `sequential (${delaySeconds}s delay)` : `batch (concurrency: ${concurrency})`
     };
 
     console.log(`\n🎉 Batch complete!`);
