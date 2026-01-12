@@ -26,14 +26,16 @@ serve(async (req) => {
       // No body or invalid JSON, use default format
     }
 
-    console.log(`Exporting active agents with Zillow UIDs, format: ${format}`);
+    console.log(`Exporting qualified agents (4.8+ rating, 20+ reviews), format: ${format}`);
 
-    // Query professionals table for active agents with Zillow UIDs
+    // Query professionals table for all qualified agents across all states
+    // Qualified = active, 4.8+ rating, 20+ reviews
     const { data, error } = await supabase
       .from('professionals')
-      .select('name, zuid, zillow_profile_url')
+      .select('name, zuid, zillow_profile_url, state_slug, review_stars_rating, num_total_reviews')
       .eq('active', true)
-      .not('zuid', 'is', null)
+      .gte('review_stars_rating', 4.8)
+      .gte('num_total_reviews', 20)
       .order('name', { ascending: true });
 
     if (error) {
@@ -41,7 +43,7 @@ serve(async (req) => {
       throw new Error(`Database error: ${error.message}`);
     }
 
-    console.log(`Found ${data?.length || 0} active agents with Zillow UIDs`);
+    console.log(`Found ${data?.length || 0} qualified agents across all states`);
 
     // Split name into first_name and last_name for the export format requested
     const formattedData = (data || []).map(agent => {
@@ -53,7 +55,10 @@ serve(async (req) => {
         first_name: firstName,
         last_name: lastName,
         zillow_uid: agent.zuid,
-        zillow_url: agent.zillow_profile_url
+        zillow_url: agent.zillow_profile_url,
+        state: agent.state_slug,
+        rating: agent.review_stars_rating,
+        reviews: agent.num_total_reviews
       };
     });
 
