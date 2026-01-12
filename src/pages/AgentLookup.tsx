@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,9 +19,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { useStateAgentSearch } from '@/hooks/useStateAgentSearch';
+import { useStateAgentSearch, StateAgentSearchResult } from '@/hooks/useStateAgentSearch';
 import { AgentSearchResultsTable } from '@/components/agent-search/AgentSearchResultsTable';
 import { AgentDetailView } from '@/components/agent-search/AgentDetailView';
+import { AgentApplicationForm } from '@/components/agent-search/AgentApplicationForm';
 
 // Currently supported states
 const STATES = [
@@ -30,7 +31,10 @@ const STATES = [
 ];
 
 export default function AgentLookup() {
+  const navigate = useNavigate();
   const [selectedState, setSelectedState] = useState('arizona');
+  const [applicationAgent, setApplicationAgent] = useState<StateAgentSearchResult | null>(null);
+  
   const {
     query,
     setQuery,
@@ -50,6 +54,22 @@ export default function AgentLookup() {
 
   const handleClearSearch = () => {
     clearResults();
+  };
+
+  // Handle "Approve" - route to onboarding funnel with agent pre-selected
+  const handleApprove = (agent: StateAgentSearchResult) => {
+    // Navigate to profile page with verification token if available
+    if (agent.verificationToken) {
+      navigate(`/profile/${agent.verificationToken}/pricing`);
+    } else {
+      // Fallback: show agent detail with approve action
+      setSelectedAgent(agent);
+    }
+  };
+
+  // Handle "Apply" - open application form
+  const handleApply = (agent: StateAgentSearchResult) => {
+    setApplicationAgent(agent);
   };
 
   return (
@@ -147,6 +167,8 @@ export default function AgentLookup() {
             results={results}
             isLoading={isSearching}
             onViewDetails={setSelectedAgent}
+            onApprove={handleApprove}
+            onApply={handleApply}
           />
         )}
 
@@ -155,6 +177,13 @@ export default function AgentLookup() {
           agent={selectedAgent}
           open={!!selectedAgent}
           onOpenChange={(open) => !open && setSelectedAgent(null)}
+        />
+
+        {/* Application Form Modal */}
+        <AgentApplicationForm
+          agent={applicationAgent}
+          open={!!applicationAgent}
+          onOpenChange={(open) => !open && setApplicationAgent(null)}
         />
       </div>
     </>
