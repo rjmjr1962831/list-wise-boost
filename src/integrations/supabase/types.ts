@@ -3114,6 +3114,10 @@ export type Database = {
           city: string | null
           created_at: string | null
           email: string | null
+          exa_prequalified: boolean | null
+          exa_rating: number | null
+          exa_reviews: number | null
+          exa_score: number | null
           exa_search_notes: string | null
           exa_searched_at: string | null
           id: string
@@ -3151,6 +3155,10 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           email?: string | null
+          exa_prequalified?: boolean | null
+          exa_rating?: number | null
+          exa_reviews?: number | null
+          exa_score?: number | null
           exa_search_notes?: string | null
           exa_searched_at?: string | null
           id?: string
@@ -3188,6 +3196,10 @@ export type Database = {
           city?: string | null
           created_at?: string | null
           email?: string | null
+          exa_prequalified?: boolean | null
+          exa_rating?: number | null
+          exa_reviews?: number | null
+          exa_score?: number | null
           exa_search_notes?: string | null
           exa_searched_at?: string | null
           id?: string
