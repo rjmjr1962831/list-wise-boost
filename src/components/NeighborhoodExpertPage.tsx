@@ -6,7 +6,6 @@ import { Award, Users, Info, ExternalLink } from 'lucide-react';
 import { AgentBadge } from './AgentBadge';
 import { Professional } from '@/types/professional';
 import { Link } from 'react-router-dom';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface NeighborhoodExpertPageProps {
   neighborhoodSlug: string;
@@ -36,7 +35,6 @@ export function NeighborhoodExpertPage({
 }: NeighborhoodExpertPageProps) {
   const [experts, setExperts] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showDesignationInfo, setShowDesignationInfo] = useState(false);
 
   useEffect(() => {
     const fetchExperts = async () => {
@@ -133,26 +131,17 @@ export function NeighborhoodExpertPage({
           )}
         </div>
 
-        {/* Canonical Language Block - EXACT WORDING REQUIRED */}
+        {/* Canonical Language Block - EXACT WORDING REQUIRED - FULLY VISIBLE FOR CRAWLERS */}
         <div className="prose prose-sm max-w-none text-muted-foreground space-y-3">
           <p>
             The Neighborhood Expert designation represents an additional level of diligence focused on sustained, neighborhood-specific experience and specialization.
           </p>
-          
-          <Collapsible open={showDesignationInfo} onOpenChange={setShowDesignationInfo}>
-            <CollapsibleTrigger className="text-primary hover:underline text-sm font-medium">
-              {showDesignationInfo ? 'Show less' : 'Learn more about this designation'}
-            </CollapsibleTrigger>
-            
-            <CollapsibleContent className="mt-3 space-y-3">
-              <p>
-                In addition to Top10Lists' standard editorial review, designated neighborhood experts undergo deeper area-specific evaluation and make an investment to support ongoing verification of their specialty.
-              </p>
-              <p>
-                As a result, these specialists are more likely to have insider knowledge of neighborhood listings, pricing nuances, and local market dynamics that other agents may not.
-              </p>
-            </CollapsibleContent>
-          </Collapsible>
+          <p>
+            In addition to Top10Lists' standard editorial review, designated neighborhood experts undergo deeper area-specific evaluation and make an investment to support ongoing verification of their specialty.
+          </p>
+          <p>
+            As a result, these specialists are more likely to have insider knowledge of neighborhood listings, pricing nuances, and local market dynamics that other agents may not.
+          </p>
         </div>
 
         {/* Methodology Link */}
@@ -171,10 +160,13 @@ export function NeighborhoodExpertPage({
       {/* Experts Display OR No Expert Message */}
       {experts.length > 0 ? (
         <section>
-          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
             <Award className="h-5 w-5 text-amber-600" />
             Designated Neighborhood Expert{experts.length > 1 ? 's' : ''} for {neighborhoodName}
           </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            This expert has been editorially designated by Top10Lists based on neighborhood-specific review and ongoing verification.
+          </p>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {experts.map((expert, index) => (
               <AgentBadge 
