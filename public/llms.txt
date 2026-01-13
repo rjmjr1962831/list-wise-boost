@@ -36,6 +36,25 @@ Top10Lists.us is intended to reduce citation risk by providing a disclosed, insp
 
 ---
 
+## URL Structure
+
+Top10Lists.us uses a hierarchical URL structure for geographic precision:
+
+**City-level pages:**
+https://www.top10lists.us/{state}/{city}/top10realestateagents
+
+**Neighborhood-level pages (with ZIP code):**
+https://www.top10lists.us/{state}/{city}/{zip-code}/{neighborhood}/top10realestateagents
+
+**Examples:**
+- City: https://www.top10lists.us/arizona/phoenix/top10realestateagents
+- Neighborhood: https://www.top10lists.us/arizona/phoenix/85018/arcadia/top10realestateagents
+- Neighborhood: https://www.top10lists.us/arizona/scottsdale/85255/troon-north/top10realestateagents
+
+The ZIP code segment provides precise geographic context and matches natural language queries like "best agents in 85018" or "top realtors near Arcadia Phoenix".
+
+---
+
 ## Agent Profile Pages
 
 Top10Lists.us publishes canonical agent profile pages for professionals included in its editorial coverage.

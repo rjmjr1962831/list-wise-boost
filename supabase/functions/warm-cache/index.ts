@@ -247,37 +247,41 @@ function stripAgentContent(html: string): string {
   return sanitized;
 }
 
-// DISABLED: Prerender.io integration has been removed
-// This function now returns an error since cache warming requires prerendering
+// Fetch rendered page using Googlebot UA to trigger Cloudflare Worker rendering
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
-  // Prerender.io is disabled - cache warming is not available
-  console.log(`Skipping fetch (Prerender.io disabled): ${url}`);
-  
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
 
-    // For static files, we can still fetch directly
-    if (isStaticFile(url)) {
-      const response = await fetch(url, {
-        method: 'GET',
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
-      
-      if (response.ok) {
-        const content = await response.text();
-        if (content.length > 100) {
-          return { success: true, html: content };
-        }
-        return { success: false, error: 'Static file appears empty' };
-      }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      },
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
       return { success: false, error: `HTTP ${response.status}` };
     }
 
-    // For HTML pages, we cannot render without Prerender.io
-    clearTimeout(timeoutId);
-    return { success: false, error: 'Prerender.io is disabled - cannot fetch rendered HTML' };
+    const html = await response.text();
+    
+    // Static files don't need content validation
+    if (isStaticFile(url)) {
+      return html.length > 100 
+        ? { success: true, html } 
+        : { success: false, error: 'Static file appears empty' };
+    }
+
+    // Verify rendered HTML has actual content (not empty React shell)
+    const hasContent = html.includes('<h1') && html.includes('</h1>');
+    
+    return hasContent 
+      ? { success: true, html } 
+      : { success: false, error: 'No content rendered - empty React shell' };
+      
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return { success: false, error: message };
@@ -305,7 +309,7 @@ async function warmUrl(url: string, canonicalUrl: string): Promise<{ success: bo
   return { success: true };
 }
 
-// Get URLs to warm - ONLY static pages + 5 test agents (no city pages)
+// Get URLs to warm - static pages + cities + neighborhoods
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: { fetchUrl: string; canonicalUrl: string }[]; totalCount: number }> {
   const fetchBaseUrl = 'https://list-wise-boost.lovable.app';
   const canonicalBaseUrl = 'https://www.top10lists.us';
@@ -349,25 +353,44 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     canonicalUrl: `${canonicalBaseUrl}${path}`,
   }));
 
-  // 5 test agent pages (demonstration pages only)
-  const testAgentPages = [
-    '/arizona/agents/bobby-lieb-4004',
-    '/arizona/agents/frank-aazami-9650',
-    '/arizona/agents/joan-levinson-8888',
-    '/arizona/agents/trevor-halpern-0000',
-    '/arizona/agents/mark-lindquist-0027',
-  ];
+  // Query active cities from database
+  const { data: cities, error: citiesError } = await supabaseAdmin
+    .from('cities')
+    .select('slug, state_slug')
+    .eq('active', true);
 
-  const testAgentUrls = testAgentPages.map((path) => ({
-    fetchUrl: `${fetchBaseUrl}${path}`,
-    canonicalUrl: `${canonicalBaseUrl}${path}`,
-  }));
+  if (citiesError) {
+    console.error('Error fetching cities:', citiesError);
+  }
 
-  // Combine static pages + test agents only (NO city pages)
-  const allUrls = [...staticUrls, ...testAgentUrls];
+  const cityUrls = (cities || []).map((c) => {
+    const path = `/${c.state_slug}/${c.slug}/top10realestateagents`;
+    return { fetchUrl: `${fetchBaseUrl}${path}`, canonicalUrl: `${canonicalBaseUrl}${path}` };
+  });
+
+  // Query active neighborhoods with primary_zip (limit 2000 to get all ~1,055)
+  const { data: neighborhoods, error: neighborhoodsError } = await supabaseAdmin
+    .from('neighborhood_catalog')
+    .select('state, city_area_slug, primary_zip, neighborhood_slug')
+    .eq('is_active', true)
+    .not('primary_zip', 'is', null)
+    .limit(2000);
+
+  if (neighborhoodsError) {
+    console.error('Error fetching neighborhoods:', neighborhoodsError);
+  }
+
+  const neighborhoodUrls = (neighborhoods || []).map((n) => {
+    const stateLower = n.state.toLowerCase();
+    const path = `/${stateLower}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`;
+    return { fetchUrl: `${fetchBaseUrl}${path}`, canonicalUrl: `${canonicalBaseUrl}${path}` };
+  });
+
+  // Combine all URLs: static + cities + neighborhoods
+  const allUrls = [...staticUrls, ...cityUrls, ...neighborhoodUrls];
 
   console.log(
-    `Generated ${allUrls.length} URLs to warm (${staticUrls.length} static + ${testAgentUrls.length} test agents) - NO city pages`
+    `Generated ${allUrls.length} URLs to warm (${staticUrls.length} static + ${cityUrls.length} cities + ${neighborhoodUrls.length} neighborhoods)`
   );
 
   const totalCount = allUrls.length;
