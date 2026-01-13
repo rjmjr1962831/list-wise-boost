@@ -20,7 +20,7 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
 const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
-const SEQUENTIAL_DELAY_MS = 3000; // 3 seconds between each URL
+const SEQUENTIAL_DELAY_MS = 7000; // 7 seconds between each URL to avoid Cloudflare rate limits
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Send failure notification email via SMTP
@@ -357,7 +357,8 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
   const { data: cities, error: citiesError } = await supabaseAdmin
     .from('cities')
     .select('slug, state_slug')
-    .eq('active', true);
+    .eq('active', true)
+    .limit(5000); // Override default 1000 row limit
 
   if (citiesError) {
     console.error('Error fetching cities:', citiesError);
