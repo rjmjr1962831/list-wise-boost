@@ -47,6 +47,17 @@ const ZILLOW_AGENT_SCHEMA = {
   required: ["name"]
 };
 
+// Normalize Zillow URL to prevent duplicates from URL variations
+function normalizeZillowUrl(url: string): string {
+  if (!url) return '';
+  return url
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/$/, '')
+    .replace(/\?.*$/, ''); // Remove query params
+}
+
 // Send failure notification email
 async function sendPipelineFailureEmail(
   state: string,
@@ -313,22 +324,23 @@ async function processAgent(
   categoryId: string,
   supabase: any,
   exaApiKey: string,
-  firecrawlApiKey: string
+  firecrawlApiKey: string,
+  existingLicenses: Set<string>,
+  existingZillowUrls: Set<string>,
+  batchLicenses: Set<string>,
+  batchZillowUrls: Set<string>
 ): Promise<AgentResult> {
   const { name, license_number, city } = agent;
   
   try {
-    // 1. Check for duplicate by license number first
-    const { data: existingByLicense } = await supabase
-      .from('professionals')
-      .select('id, zillow_profile_url')
-      .eq('license_number', license_number)
-      .maybeSingle();
-
-    if (existingByLicense) {
-      console.log(`[${name}] Duplicate by license number`);
+    // 1. Check for duplicate by license number FIRST (in-memory check)
+    if (existingLicenses.has(license_number) || batchLicenses.has(license_number)) {
+      console.log(`[${name}] Duplicate by license number (in-memory)`);
       return { name, licenseNumber: license_number, city, status: 'duplicate' };
     }
+    
+    // Mark this license as being processed in this batch
+    batchLicenses.add(license_number);
 
     // 2. STEP 1: Use EXA to find Zillow URL and get prequalification data
     const exaResult = await searchZillowWithExa(name, city, stateAbbr, exaApiKey);
@@ -345,17 +357,15 @@ async function processAgent(
     // 3. Check qualification from Exa data: 4.8+ stars and 20+ reviews
     const isQualified = (exaRating ?? 0) >= 4.8 && (exaReviewCount ?? 0) >= 20;
     
-    // 4. Check duplicate by Zillow URL
-    const { data: existingByZillow } = await supabase
-      .from('professionals')
-      .select('id')
-      .eq('zillow_profile_url', zillowUrl)
-      .maybeSingle();
-
-    if (existingByZillow) {
-      console.log(`[${name}] Duplicate by Zillow URL`);
+    // 4. Check duplicate by Zillow URL (in-memory with normalization)
+    const normalizedUrl = normalizeZillowUrl(zillowUrl);
+    if (existingZillowUrls.has(normalizedUrl) || batchZillowUrls.has(normalizedUrl)) {
+      console.log(`[${name}] Duplicate by Zillow URL (in-memory): ${normalizedUrl}`);
       return { name, licenseNumber: license_number, city, status: 'duplicate', zillowUrl, rating: exaRating, reviewCount: exaReviewCount };
     }
+    
+    // Mark this Zillow URL as being processed in this batch
+    batchZillowUrls.add(normalizedUrl);
 
     // 5. STEP 2: If qualified, use FIRECRAWL to enrich with full profile data
     let fullData: any = {};
@@ -597,7 +607,7 @@ serve(async (req) => {
       stateAbbr = 'CA', 
       startIndex = 0, 
       batchSize = 50,
-      concurrency = 100, // Firecrawl upgraded plan supports 100 concurrent requests
+      concurrency = 5, // Reduced to 5 to prevent race conditions causing duplicates
       maxAgents = 10000 // Max agents to process
     } = await req.json();
 
@@ -661,6 +671,31 @@ serve(async (req) => {
 
     console.log(`Fetched ${licenses.length} licenses to process`);
 
+    // PRE-LOAD existing license numbers and Zillow URLs into Sets for O(1) duplicate checking
+    console.log(`Loading existing professionals for duplicate detection...`);
+    
+    const existingLicenses = new Set<string>();
+    const existingZillowUrls = new Set<string>();
+    
+    // Fetch all existing license numbers
+    const { data: existingProfessionals } = await supabase
+      .from('professionals')
+      .select('license_number, zillow_profile_url')
+      .not('license_number', 'is', null);
+    
+    if (existingProfessionals) {
+      for (const p of existingProfessionals) {
+        if (p.license_number) existingLicenses.add(p.license_number);
+        if (p.zillow_profile_url) existingZillowUrls.add(normalizeZillowUrl(p.zillow_profile_url));
+      }
+    }
+    
+    console.log(`Pre-loaded ${existingLicenses.size} license numbers and ${existingZillowUrls.size} Zillow URLs for dedup`);
+    
+    // Track licenses/URLs added within this run to prevent intra-batch duplicates
+    const batchLicenses = new Set<string>();
+    const batchZillowUrls = new Set<string>();
+
     const stats: ProcessingStats = {
       processed: 0,
       qualified: 0,
@@ -681,7 +716,10 @@ serve(async (req) => {
         console.log(`\nProcessing batch ${Math.floor(i/concurrency) + 1}: agents ${i+1}-${Math.min(i+concurrency, licenses.length)} (index ${currentIndex})`);
 
         const batchResults = await Promise.all(
-          batch.map(agent => processAgent(agent, state, stateAbbr, category.id, supabase, exaApiKey, firecrawlApiKey))
+          batch.map(agent => processAgent(
+            agent, state, stateAbbr, category.id, supabase, exaApiKey, firecrawlApiKey,
+            existingLicenses, existingZillowUrls, batchLicenses, batchZillowUrls
+          ))
         );
 
         for (const result of batchResults) {
