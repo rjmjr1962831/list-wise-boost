@@ -16,6 +16,17 @@ interface ExaResponse {
   results: ExaSearchResult[];
 }
 
+// Normalize Zillow URL to prevent duplicates from URL variations
+function normalizeZillowUrl(url: string): string {
+  if (!url) return '';
+  return url
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/$/, '')
+    .replace(/\?.*$/, ''); // Remove query params
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -38,7 +49,26 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // PRE-LOAD: Get all Zillow URLs already assigned in state_licenses to prevent duplicates
+    const { data: existingZillowData } = await supabase
+      .from('state_licenses')
+      .select('zillow_url')
+      .eq('state', 'CA')
+      .not('zillow_url', 'is', null);
+    
+    const existingZillowUrls = new Set<string>(
+      (existingZillowData || [])
+        .map(r => normalizeZillowUrl(r.zillow_url))
+        .filter(Boolean)
+    );
+    
+    // Track URLs assigned in this batch to prevent duplicates within same batch
+    const batchZillowUrls = new Set<string>();
+    
+    console.log(`Pre-loaded ${existingZillowUrls.size} existing Zillow URLs for deduplication`);
+
     // Get CA agents from state_licenses that haven't been processed yet
+    // Use DISTINCT ON name to avoid processing duplicate names
     const { data: agents, error: fetchError } = await supabase
       .from('state_licenses')
       .select('id, name, license_number, city, brokerage_name')
@@ -84,6 +114,7 @@ serve(async (req) => {
     let found = 0;
     let notFound = 0;
     let errors = 0;
+    let duplicates = 0;
 
     for (let i = 0; i < agents.length; i++) {
       const agent = agents[i];
@@ -145,23 +176,50 @@ serve(async (req) => {
         );
 
         if (zillowProfile) {
-          results.push({
-            id: agent.id,
-            name: agent.name,
-            license_number: agent.license_number,
-            zillow_url: zillowProfile.url,
-            exa_score: zillowProfile.score,
-            status: 'found',
-          });
-          found++;
-
-          if (!dry_run) {
-            await supabase.from('state_licenses').update({
+          const normalizedUrl = normalizeZillowUrl(zillowProfile.url);
+          
+          // CHECK FOR DUPLICATE: Has this Zillow URL already been assigned?
+          if (existingZillowUrls.has(normalizedUrl) || batchZillowUrls.has(normalizedUrl)) {
+            console.log(`[${agent.name}] DUPLICATE Zillow URL detected, skipping: ${normalizedUrl}`);
+            results.push({
+              id: agent.id,
+              name: agent.name,
+              license_number: agent.license_number,
               zillow_url: zillowProfile.url,
-              exa_searched_at: new Date().toISOString(),
               exa_score: zillowProfile.score,
-              exa_search_notes: 'zillow_found',
-            }).eq('id', agent.id);
+              status: 'duplicate_zillow_url',
+            });
+            duplicates++;
+            
+            if (!dry_run) {
+              await supabase.from('state_licenses').update({
+                exa_searched_at: new Date().toISOString(),
+                exa_score: zillowProfile.score,
+                exa_search_notes: 'duplicate_zillow_url',
+              }).eq('id', agent.id);
+            }
+          } else {
+            // Not a duplicate - assign the URL
+            batchZillowUrls.add(normalizedUrl);
+            
+            results.push({
+              id: agent.id,
+              name: agent.name,
+              license_number: agent.license_number,
+              zillow_url: zillowProfile.url,
+              exa_score: zillowProfile.score,
+              status: 'found',
+            });
+            found++;
+
+            if (!dry_run) {
+              await supabase.from('state_licenses').update({
+                zillow_url: zillowProfile.url,
+                exa_searched_at: new Date().toISOString(),
+                exa_score: zillowProfile.score,
+                exa_search_notes: 'zillow_found',
+              }).eq('id', agent.id);
+            }
           }
         } else {
           results.push({
@@ -201,7 +259,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Batch complete: ${found} found, ${notFound} not found, ${errors} errors`);
+    console.log(`Batch complete: ${found} found, ${notFound} not found, ${duplicates} duplicates, ${errors} errors`);
 
     return new Response(JSON.stringify({
       message: `Processed ${results.length} CA agents`,
@@ -209,7 +267,7 @@ serve(async (req) => {
       batch_size,
       delay_ms,
       remaining: (remainingCount || 0) - results.length,
-      summary: { found, notFound, errors, total: results.length },
+      summary: { found, notFound, duplicates, errors, total: results.length },
       results,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
