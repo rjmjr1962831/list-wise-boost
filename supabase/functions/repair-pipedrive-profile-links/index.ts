@@ -13,7 +13,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-const DELAY_MS = 100;
+const DELAY_MS = 50; // Faster since we're not searching
+const BATCH_SIZE = 1000;
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -31,18 +32,6 @@ async function getFieldMapping(): Promise<Record<string, string>> {
     mapping[row.field_name] = row.pipedrive_key;
   }
   return mapping;
-}
-
-async function searchPersonByEmail(email: string): Promise<number | null> {
-  const url = `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/persons/search?term=${encodeURIComponent(email)}&fields=emails&api_token=${PIPEDRIVE_API_TOKEN}`;
-
-  const response = await fetch(url);
-  const data = await response.json();
-
-  if (data.success && data.data?.length > 0) {
-    return data.data[0].id;
-  }
-  return null;
 }
 
 async function updateProfileLink(
@@ -67,8 +56,6 @@ async function updateProfileLink(
   if (!data.success) {
     throw new Error(`Failed to update person ${personId}: ${JSON.stringify(data)}`);
   }
-
-  console.log(`✅ Updated profile_link for person ${personId}: ${profileLink}`);
 }
 
 serve(async (req) => {
@@ -90,69 +77,106 @@ serve(async (req) => {
 
     console.log(`📋 Using Pipedrive field key: ${profileLinkFieldKey} for profile_link`);
 
-    // Get ALL active and qualified professionals with profile_link and email
-    // Qualified = 4.8+ rating AND 20+ reviews (per project requirements)
-    const { data: professionals, error } = await supabase
-      .from("professionals")
-      .select("id, name, email, profile_link, review_stars_rating, num_total_reviews")
-      .not("profile_link", "is", null)
-      .not("email", "is", null)
-      .eq("active", true)
-      .gte("review_stars_rating", 4.8)
-      .gte("num_total_reviews", 20);
-
-    if (error) throw error;
-
-    if (!professionals || professionals.length === 0) {
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          message: "No professionals with profile_link found", 
-          updated: 0 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    console.log(`📊 Found ${professionals.length} professionals to process...`);
-
-    const results = { updated: 0, errors: 0, skipped: 0 };
+    const results = { updated: 0, errors: 0, skipped: 0, total: 0 };
     const errorDetails: string[] = [];
+    let offset = 0;
+    let hasMore = true;
 
-    for (const professional of professionals) {
-      try {
-        // Search for person in Pipedrive by email
-        const personId = await searchPersonByEmail(professional.email);
+    // Paginate through ALL active qualified professionals who have a pipedrive_person_id
+    while (hasMore) {
+      // Join professionals with pipedrive_sync_state to get the person ID directly
+      const { data: syncRecords, error } = await supabase
+        .from("pipedrive_sync_state")
+        .select(`
+          pipedrive_person_id,
+          professional:professionals!inner(
+            id,
+            name,
+            profile_link,
+            active,
+            review_stars_rating,
+            num_total_reviews
+          )
+        `)
+        .not("pipedrive_person_id", "is", null)
+        .range(offset, offset + BATCH_SIZE - 1);
 
+      if (error) throw error;
+
+      if (!syncRecords || syncRecords.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      console.log(`📊 Processing batch ${offset / BATCH_SIZE + 1}: ${syncRecords.length} records...`);
+
+      for (const record of syncRecords) {
+        const professional = record.professional as any;
+        const personId = record.pipedrive_person_id;
+
+        results.total++;
+
+        // Skip if no pipedrive_person_id
         if (!personId) {
-          console.warn(`⚠️ Skipping ${professional.name}: not found in Pipedrive`);
           results.skipped++;
           continue;
         }
 
-        // Ensure profile_link uses www domain (per project requirements)
-        let normalizedLink = professional.profile_link;
-        if (normalizedLink && normalizedLink.includes('https://top10lists.us/')) {
-          normalizedLink = normalizedLink.replace('https://top10lists.us/', 'https://www.top10lists.us/');
+        // Skip if not active or doesn't meet qualifications
+        if (!professional.active || 
+            professional.review_stars_rating < 4.8 || 
+            professional.num_total_reviews < 20) {
+          results.skipped++;
+          continue;
         }
 
-        if (dryRun) {
-          console.log(`[DRY RUN] Would update person ${personId} (${professional.name}) with profile_link: ${normalizedLink}`);
-          results.updated++;
-        } else {
-          await updateProfileLink(personId, normalizedLink, profileLinkFieldKey);
-          results.updated++;
+        // Skip if no profile_link
+        if (!professional.profile_link) {
+          results.skipped++;
+          continue;
         }
 
-        // Rate limit delay
-        await delay(DELAY_MS);
-      } catch (error) {
-        console.error(`❌ Error updating ${professional.name}:`, error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        results.errors++;
-        errorDetails.push(`${professional.name}: ${errorMessage}`);
+        try {
+          // Ensure profile_link uses www domain (per project requirements)
+          let normalizedLink = professional.profile_link;
+          if (normalizedLink && normalizedLink.includes('https://top10lists.us/')) {
+            normalizedLink = normalizedLink.replace('https://top10lists.us/', 'https://www.top10lists.us/');
+          }
+
+          if (dryRun) {
+            console.log(`[DRY RUN] Would update person ${personId} (${professional.name}) with profile_link: ${normalizedLink}`);
+            results.updated++;
+          } else {
+            await updateProfileLink(personId, normalizedLink, profileLinkFieldKey);
+            results.updated++;
+            
+            // Log progress every 100 updates
+            if (results.updated % 100 === 0) {
+              console.log(`✅ Progress: ${results.updated} updated...`);
+            }
+          }
+
+          // Rate limit delay
+          await delay(DELAY_MS);
+        } catch (error) {
+          console.error(`❌ Error updating ${professional.name}:`, error);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          results.errors++;
+          if (errorDetails.length < 20) {
+            errorDetails.push(`${professional.name}: ${errorMessage}`);
+          }
+        }
+      }
+
+      // Check if we got a full batch (meaning there might be more)
+      if (syncRecords.length < BATCH_SIZE) {
+        hasMore = false;
+      } else {
+        offset += BATCH_SIZE;
       }
     }
+
+    console.log(`🏁 Completed: ${results.updated} updated, ${results.skipped} skipped, ${results.errors} errors out of ${results.total} total`);
 
     return new Response(
       JSON.stringify({
