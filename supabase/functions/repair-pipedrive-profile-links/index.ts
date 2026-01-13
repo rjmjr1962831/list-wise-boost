@@ -78,7 +78,6 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const limit = body.limit || 100;
     const dryRun = body.dry_run || false;
 
     // Get field mapping for profile_link
@@ -91,14 +90,16 @@ serve(async (req) => {
 
     console.log(`📋 Using Pipedrive field key: ${profileLinkFieldKey} for profile_link`);
 
-    // Get professionals with profile_link and email
+    // Get ALL active and qualified professionals with profile_link and email
+    // Qualified = 4.8+ rating AND 20+ reviews (per project requirements)
     const { data: professionals, error } = await supabase
       .from("professionals")
-      .select("id, name, email, profile_link")
+      .select("id, name, email, profile_link, review_stars_rating, num_total_reviews")
       .not("profile_link", "is", null)
       .not("email", "is", null)
       .eq("active", true)
-      .limit(limit);
+      .gte("review_stars_rating", 4.8)
+      .gte("num_total_reviews", 20);
 
     if (error) throw error;
 
