@@ -84,11 +84,12 @@ export default function AreYouAnAgent() {
   };
 
   const handleReviewProfile = () => {
-    if (foundAgent?.short_code) {
-      navigate(`/p/${foundAgent.short_code}`);
-    } else if (foundAgent?.id) {
-      navigate(`/profile/${foundAgent.id}`);
+    // Store professional context and navigate to visibility funnel
+    if (foundAgent?.id) {
+      sessionStorage.setItem('visibility_professional_id', foundAgent.id);
+      sessionStorage.setItem('visibility_professional_token', foundAgent.id);
     }
+    navigate('/visibility/coverage');
   };
 
   const requirements = [

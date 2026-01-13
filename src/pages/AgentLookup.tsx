@@ -71,15 +71,17 @@ export default function AgentLookup() {
     clearResults();
   };
 
-  // Handle "Approve" - route to onboarding funnel with agent pre-selected
+  // Handle "Approve" - route to new visibility funnel with agent pre-selected
   const handleApprove = (agent: StateAgentSearchResult) => {
-    // Navigate to profile page with verification token if available
-    if (agent.verificationToken) {
-      navigate(`/profile/${agent.verificationToken}/pricing`);
-    } else {
-      // Fallback: show agent detail with approve action
-      setSelectedAgent(agent);
+    // Store professional context for visibility funnel
+    if (agent.id) {
+      sessionStorage.setItem('visibility_professional_id', agent.id);
     }
+    if (agent.verificationToken) {
+      sessionStorage.setItem('visibility_professional_token', agent.verificationToken);
+    }
+    // Navigate to new visibility funnel
+    navigate('/visibility/coverage');
   };
 
   // Handle "Apply" - open application form
