@@ -7,10 +7,12 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Check, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, Check, CheckCircle, Clock, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import ImageUploadModal from '@/components/profile/ImageUploadModal';
 
 // Bio Preview component with ...more expander - converts HTML to plain text with paragraph breaks
 const BioPreview = ({ text }: { text: string }) => {
@@ -145,6 +147,7 @@ export default function EditProfile() {
   const [bioLastEdited, setBioLastEdited] = useState<string | null>(null);
   const [bioEditedByAgent, setBioEditedByAgent] = useState(false);
   const [savingBio, setSavingBio] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
   
   // Form state - only agent-authored editable fields (no review required)
   const [formData, setFormData] = useState({
@@ -342,6 +345,28 @@ export default function EditProfile() {
     setEditingBio(true);
   };
 
+  const handleSavePhoto = async (imageUrl: string) => {
+    if (!professional?.id) return;
+    
+    const { error } = await supabase
+      .from('professionals')
+      .update({ image_url: imageUrl })
+      .eq('id', professional.id);
+    
+    if (error) throw error;
+    
+    setProfessional((prev: any) => ({ ...prev, image_url: imageUrl }));
+  };
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -430,6 +455,45 @@ export default function EditProfile() {
         <Card className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
             
+            {/* SECTION: PROFILE PHOTO */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Your Photo</h2>
+              <p className="text-sm text-muted-foreground">
+                Your profile photo helps clients recognize and connect with you.
+              </p>
+              <div className="flex items-center gap-6">
+                <div className="relative">
+                  <Avatar className="h-24 w-24 border-2 border-border">
+                    <AvatarImage src={professional?.image_url} alt={professional?.name} />
+                    <AvatarFallback className="text-xl font-bold bg-primary/10 text-primary">
+                      {professional?.name ? getInitials(professional.name) : '?'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <button
+                    type="button"
+                    onClick={() => setImageModalOpen(true)}
+                    className="absolute -bottom-1 -right-1 p-1.5 bg-primary text-primary-foreground rounded-full shadow-md hover:bg-primary/90 transition-colors"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="flex-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setImageModalOpen(true)}
+                  >
+                    Upload New Photo
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    JPG, PNG, or WebP. Max 5MB.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+
             {/* SECTION 1: APPROVED CHANGES (Read-Only) */}
             {hasApprovedChanges && (
               <div className="space-y-4">
@@ -667,6 +731,18 @@ export default function EditProfile() {
         </Card>
       </div>
       </div>
+
+      {/* Image Upload Modal */}
+      {professional && (
+        <ImageUploadModal
+          open={imageModalOpen}
+          onClose={() => setImageModalOpen(false)}
+          onSave={handleSavePhoto}
+          fieldLabel="Profile Photo"
+          currentImageUrl={professional.image_url}
+          professionalId={professional.id}
+        />
+      )}
     </>
   );
 }
