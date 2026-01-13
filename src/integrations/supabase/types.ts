@@ -3895,6 +3895,7 @@ export type Database = {
           neighborhood: string
           neighborhood_id: string
           neighborhood_slug: string
+          primary_zip: string
           search_type: string
           state: string
           tier: string
