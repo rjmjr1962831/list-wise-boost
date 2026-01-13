@@ -416,7 +416,7 @@ export default function PricingInterstitial() {
                 <div className="flex items-start gap-2">
                   <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                   <p className="text-sm text-muted-foreground">
-                    <strong>Eligibility does not guarantee AI recommendations.</strong> AI systems determine which sources to cite based on their own criteria. You're charged monthly—not upfront. After your 3-month commitment, you can cancel anytime.
+                    <strong>Eligibility does not guarantee AI citation.</strong> AI systems determine which sources to cite based on their own criteria. You're charged monthly—not upfront. After your 3-month commitment, you can cancel anytime.
                   </p>
                 </div>
               </div>
