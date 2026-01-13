@@ -37,6 +37,7 @@ const CityComingSoon = lazy(() => import("./pages/CityComingSoon"));
 const AlbuquerqueRedirect = lazy(() => import("./pages/AlbuquerqueRedirect"));
 const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCategoryRouter"));
 const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCategoryRouter"));
+const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZipCategoryRouter"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const CRM = lazy(() => import("./pages/CRM"));
@@ -248,7 +249,11 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/best-real-estate-agents" element={<QALandingPage />} />
                     {/* Legacy /az/ neighborhood+category format - redirect to full state name */}
                     <Route path="/az/:citySlug/:neighborhoodSlug/:categorySlug" element={<AzNeighborhoodRedirect />} />
-                    {/* Qualified Agents Page (Page 2+ of Expert-First Architecture) - noindex */}
+                    {/* 5-segment: neighborhood with ZIP - new canonical format */}
+                    <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/:categorySlug" element={<NeighborhoodZipCategoryRouter />} />
+                    {/* 5-segment: qualified agents page with ZIP */}
+                    <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/qualified-real-estate-agents" element={<QualifiedAgentsPage />} />
+                    {/* Qualified Agents Page (Page 2+ of Expert-First Architecture) - legacy 4-segment format */}
                     <Route path="/:stateSlug/:citySlug/:neighborhoodSlug/qualified-real-estate-agents" element={<QualifiedAgentsPage />} />
                     {/* Legacy /az/ magic link format - redirect to full state name with category */}
                     <Route path="/az/:citySlug/:agentSlug" element={<AzMagicLinkRedirect />} />

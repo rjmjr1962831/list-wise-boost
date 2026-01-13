@@ -28,9 +28,10 @@ interface NeighborhoodData {
  * - Accessible via navigation from Page 1
  */
 export default function QualifiedAgentsPage() {
-  const { stateSlug, citySlug, neighborhoodSlug } = useParams<{
+  const { stateSlug, citySlug, zipCode, neighborhoodSlug } = useParams<{
     stateSlug: string;
     citySlug: string;
+    zipCode?: string;
     neighborhoodSlug: string;
   }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -129,7 +130,10 @@ export default function QualifiedAgentsPage() {
     );
   }
 
-  const expertPageUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
+  // Build expert page URL - use ZIP if available
+  const expertPageUrl = zipCode 
+    ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/top10realestateagents`
+    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
 
   return (
     <>
