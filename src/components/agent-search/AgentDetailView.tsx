@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -13,9 +14,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ChevronDown, Star, MessageSquare, Clock } from 'lucide-react';
+import { ChevronDown, Star, MessageSquare, Clock, ExternalLink } from 'lucide-react';
 import { StateAgentSearchResult } from '@/hooks/useStateAgentSearch';
 import { cn } from '@/lib/utils';
+import { generateCanonicalAgentUrl } from '@/utils/routeHelpers';
 
 interface AgentDetailViewProps {
   agent: StateAgentSearchResult | null;
@@ -51,27 +53,56 @@ export function AgentDetailView({ agent, open, onOpenChange }: AgentDetailViewPr
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Header with Avatar */}
-          <div className="flex items-start gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={agent.imageUrl || undefined} alt={agent.name} />
-              <AvatarFallback className="text-lg bg-primary/10">
-                {getInitials(agent.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-semibold truncate">{agent.name}</h2>
-              {agent.company && (
-                <p className="text-muted-foreground truncate">{agent.company}</p>
-              )}
-              {agent.licenseNumber && (
-                <p className="text-sm text-muted-foreground">
-                  License: {agent.licenseNumber}
-                  {agent.licenseStatus && ` (${agent.licenseStatus})`}
-                </p>
-              )}
+          {/* Header with Avatar - Clickable to profile */}
+          {agent.stateSlug && agent.canonicalSlug ? (
+            <Link 
+              to={generateCanonicalAgentUrl(agent.stateSlug, agent.canonicalSlug)}
+              className="flex items-start gap-4 group p-2 -m-2 rounded-lg hover:bg-accent/50 transition-colors"
+            >
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={agent.imageUrl || undefined} alt={agent.name} />
+                <AvatarFallback className="text-lg bg-primary/10">
+                  {getInitials(agent.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl font-semibold truncate group-hover:text-primary transition-colors">{agent.name}</h2>
+                  <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                </div>
+                {agent.company && (
+                  <p className="text-muted-foreground truncate">{agent.company}</p>
+                )}
+                {agent.licenseNumber && (
+                  <p className="text-sm text-muted-foreground">
+                    License: {agent.licenseNumber}
+                    {agent.licenseStatus && ` (${agent.licenseStatus})`}
+                  </p>
+                )}
+              </div>
+            </Link>
+          ) : (
+            <div className="flex items-start gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={agent.imageUrl || undefined} alt={agent.name} />
+                <AvatarFallback className="text-lg bg-primary/10">
+                  {getInitials(agent.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl font-semibold truncate">{agent.name}</h2>
+                {agent.company && (
+                  <p className="text-muted-foreground truncate">{agent.company}</p>
+                )}
+                {agent.licenseNumber && (
+                  <p className="text-sm text-muted-foreground">
+                    License: {agent.licenseNumber}
+                    {agent.licenseStatus && ` (${agent.licenseStatus})`}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Stats Row */}
           <div className="flex items-center gap-6 text-sm">
