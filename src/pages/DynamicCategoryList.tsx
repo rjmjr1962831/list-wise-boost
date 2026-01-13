@@ -1139,13 +1139,22 @@ export default function DynamicCategoryList({
     title: pageTitle,
     description: pageDescription,
     breadcrumbs: neighborhoodSlug
-      ? [
-          { name: 'Home', path: '/' },
-          { name: city.state, path: `/${city.state_slug}` },
-          { name: city.name, path: `/${city.state_slug}/${city.slug}` },
-          { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodSlug}` },
-          { name: `Top 10 ${category.plural_name}` }
-        ]
+      ? (neighborhoodZipCode
+        ? [
+            { name: 'Home', path: '/' },
+            { name: city.state, path: `/${city.state_slug}` },
+            { name: city.name, path: `/${city.state_slug}/${city.slug}` },
+            { name: neighborhoodZipCode, path: `/${city.state_slug}/${city.slug}/${neighborhoodZipCode}` },
+            { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}` },
+            { name: `Top 10 ${category.plural_name}` }
+          ]
+        : [
+            { name: 'Home', path: '/' },
+            { name: city.state, path: `/${city.state_slug}` },
+            { name: city.name, path: `/${city.state_slug}/${city.slug}` },
+            { name: neighborhoodName || neighborhoodSlug, path: `/${city.state_slug}/${city.slug}/${neighborhoodSlug}` },
+            { name: `Top 10 ${category.plural_name}` }
+          ])
       : [
           { name: 'Home', path: '/' },
           { name: city.state, path: `/${city.state_slug}` },
@@ -1196,7 +1205,11 @@ export default function DynamicCategoryList({
     slug: city.slug,
     agents: agentDataArray,
     dateModified: lastUpdated,
-    totalAgentsInCity: 500 // Approximate number of licensed agents in city
+    totalAgentsInCity: 500, // Approximate number of licensed agents in city
+    // Include neighborhood data for 5-segment URL breadcrumbs
+    neighborhoodName: neighborhoodName,
+    neighborhoodSlug: neighborhoodSlug,
+    neighborhoodZipCode: neighborhoodZipCode
   };
   
   // Get all schemas: Place, Service, ItemList, FAQ, Breadcrumb (no individual agent names)
@@ -1362,6 +1375,7 @@ export default function DynamicCategoryList({
             citySlug={citySlug || ''}
             stateSlug={normalizedStateSlug}
             neighborhoodName={neighborhoodName || ''}
+            primaryZip={neighborhoodZipCode}
           />
         </div>
       )}

@@ -39,6 +39,7 @@ export const Top10SearchForm = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [selectedNeighborhood, setSelectedNeighborhood] = useState('');
   const [selectedNeighborhoodSlug, setSelectedNeighborhoodSlug] = useState('');
+  const [selectedNeighborhoodZip, setSelectedNeighborhoodZip] = useState('');
 
   useEffect(() => {
     // Update cities when state changes to Arizona
@@ -58,6 +59,7 @@ export const Top10SearchForm = () => {
   useEffect(() => {
     setSelectedNeighborhood('');
     setSelectedNeighborhoodSlug('');
+    setSelectedNeighborhoodZip('');
   }, [selectedCity]);
 
   useEffect(() => {
@@ -155,9 +157,11 @@ export const Top10SearchForm = () => {
 
       // If linked agents exist, navigate directly without import
       if (!linkedError && linkedProfs && linkedProfs.length > 0) {
-        // Build URL with or without neighborhood
+        // Build URL with neighborhood and ZIP when available (5-segment canonical format)
         let url = `/${cityData.state_slug}/${cityData.slug}`;
-        if (selectedNeighborhoodSlug) {
+        if (selectedNeighborhoodSlug && selectedNeighborhoodZip) {
+          url += `/${selectedNeighborhoodZip}/${selectedNeighborhoodSlug}`;
+        } else if (selectedNeighborhoodSlug) {
           url += `/${selectedNeighborhoodSlug}`;
         }
         url += `/${categoryData.slug}`;
@@ -193,9 +197,11 @@ export const Top10SearchForm = () => {
         }
       }
 
-      // Navigate to the list page
+      // Navigate to the list page with 5-segment URL when ZIP available
       let url = `/${cityData.state_slug}/${cityData.slug}`;
-      if (selectedNeighborhoodSlug) {
+      if (selectedNeighborhoodSlug && selectedNeighborhoodZip) {
+        url += `/${selectedNeighborhoodZip}/${selectedNeighborhoodSlug}`;
+      } else if (selectedNeighborhoodSlug) {
         url += `/${selectedNeighborhoodSlug}`;
       }
       url += `/${categoryData.slug}`;
@@ -207,14 +213,16 @@ export const Top10SearchForm = () => {
     }
   };
 
-  const handleNeighborhoodChange = (neighborhood: string, slug: string) => {
+  const handleNeighborhoodChange = (neighborhood: string, slug: string, primaryZip: string | null) => {
     setSelectedNeighborhood(neighborhood);
     setSelectedNeighborhoodSlug(slug);
+    setSelectedNeighborhoodZip(primaryZip || '');
     
     trackEvent('search_neighborhood_select', {
       state: selectedState,
       city: selectedCity,
       neighborhood: neighborhood,
+      primary_zip: primaryZip || '',
       search_type: 'top10_search'
     } as any);
   };

@@ -13,6 +13,7 @@ interface VerifiedExpertsSectionProps {
   citySlug: string;
   stateSlug: string;
   neighborhoodName: string;
+  primaryZip?: string;
   onFocusAgentSearch?: () => void;
 }
 
@@ -21,6 +22,7 @@ export function VerifiedExpertsSection({
   citySlug, 
   stateSlug,
   neighborhoodName,
+  primaryZip,
   onFocusAgentSearch
 }: VerifiedExpertsSectionProps) {
   const [experts, setExperts] = useState<Professional[]>([]);
@@ -175,7 +177,10 @@ export function VerifiedExpertsSection({
               Check an agent by name
             </Button>
             <Button variant="secondary" size="sm" asChild>
-              <Link to={`/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`}>
+              <Link to={primaryZip 
+                ? `/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/qualified-real-estate-agents`
+                : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`
+              }>
                 <Users className="h-4 w-4 mr-2" />
                 View qualified agents near {neighborhoodName}
               </Link>

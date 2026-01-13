@@ -10,6 +10,7 @@ interface NeighborhoodAgentListProps {
   citySlug: string;
   stateSlug: string;
   neighborhoodName: string;
+  primaryZip?: string;
   maxAgents?: number;
 }
 
@@ -20,6 +21,7 @@ export function NeighborhoodAgentList({
   citySlug,
   stateSlug,
   neighborhoodName,
+  primaryZip,
   maxAgents = MAX_PREVIEW_AGENTS
 }: NeighborhoodAgentListProps) {
   const { agents, loading, error, totalCount } = useNeighborhoodAgents({
@@ -103,10 +105,13 @@ export function NeighborhoodAgentList({
         Sorted by office proximity by default. Filters available on the full list.
       </p>
 
-      {/* CTA to full qualified agents page */}
+      {/* CTA to full qualified agents page with 5-segment URL when ZIP available */}
       <div className="flex justify-center pt-2">
         <Button asChild variant="default" size="lg">
-          <Link to={`/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`}>
+          <Link to={primaryZip
+            ? `/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/qualified-real-estate-agents`
+            : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`
+          }>
             Continue to all qualified agents
             <ArrowRight className="h-4 w-4 ml-2" />
           </Link>

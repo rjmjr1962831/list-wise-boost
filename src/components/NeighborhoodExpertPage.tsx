@@ -12,6 +12,7 @@ interface NeighborhoodExpertPageProps {
   citySlug: string;
   stateSlug: string;
   neighborhoodName: string;
+  primaryZip?: string;
 }
 
 /**
@@ -31,7 +32,8 @@ export function NeighborhoodExpertPage({
   neighborhoodSlug, 
   citySlug, 
   stateSlug,
-  neighborhoodName
+  neighborhoodName,
+  primaryZip
 }: NeighborhoodExpertPageProps) {
   const [experts, setExperts] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
@@ -105,7 +107,10 @@ export function NeighborhoodExpertPage({
     fetchExperts();
   }, [neighborhoodSlug, citySlug, neighborhoodName]);
 
-  const qualifiedAgentsUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
+  // Build qualified agents URL with ZIP when available (5-segment canonical format)
+  const qualifiedAgentsUrl = primaryZip
+    ? `/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/qualified-real-estate-agents`
+    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
   if (loading) {
     return (

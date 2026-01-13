@@ -14,6 +14,7 @@ export interface LocationSearchResult {
   median_home_value: number;
   is_primary: boolean;
   match_score: number;
+  primary_zip: string | null;
 }
 
 const STATE_MAPPING: Record<string, string> = {
@@ -80,6 +81,13 @@ export const useLocationSearch = () => {
     const state = STATE_MAPPING[result.state] || result.state.toLowerCase();
     const city = result.city_area_slug;
     const neighborhood = result.neighborhood_slug;
+    const zip = result.primary_zip;
+    
+    // Use 5-segment URL with ZIP when available
+    if (zip) {
+      return `/${state}/${city}/${zip}/${neighborhood}/top10realestateagents`;
+    }
+    // Fallback to 4-segment (will trigger redirect to canonical 5-segment URL)
     return `/${state}/${city}/${neighborhood}/top10realestateagents`;
   };
 

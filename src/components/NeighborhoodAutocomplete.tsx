@@ -9,13 +9,14 @@ interface NeighborhoodResult {
   neighborhood: string;
   neighborhood_slug: string;
   tier: string;
+  primary_zip: string | null;
 }
 
 interface NeighborhoodAutocompleteProps {
   state: string;
   cityArea: string;
   value: string;
-  onValueChange: (neighborhood: string, slug: string) => void;
+  onValueChange: (neighborhood: string, slug: string, primaryZip: string | null) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -89,7 +90,7 @@ export function NeighborhoodAutocomplete({
       // Query neighborhood_catalog with fuzzy matching
       let query = supabase
         .from('neighborhood_catalog')
-        .select('neighborhood, neighborhood_slug, tier, city_area')
+        .select('neighborhood, neighborhood_slug, tier, city_area, primary_zip')
         .eq('state', stateAbbr)
         .eq('is_active', true);
 
@@ -139,9 +140,9 @@ export function NeighborhoodAutocomplete({
     }, 200);
   };
 
-  const handleSelectNeighborhood = (neighborhood: string, slug: string) => {
+  const handleSelectNeighborhood = (neighborhood: string, slug: string, primaryZip: string | null) => {
     setInputValue(neighborhood);
-    onValueChange(neighborhood, slug);
+    onValueChange(neighborhood, slug, primaryZip);
     setOpen(false);
   };
 
@@ -193,7 +194,7 @@ export function NeighborhoodAutocomplete({
                     <CommandItem
                       key={n.neighborhood_slug}
                       value={n.neighborhood}
-                      onSelect={() => handleSelectNeighborhood(n.neighborhood, n.neighborhood_slug)}
+                      onSelect={() => handleSelectNeighborhood(n.neighborhood, n.neighborhood_slug, n.primary_zip)}
                       className="cursor-pointer"
                     >
                       <Check
