@@ -303,11 +303,18 @@ As AI systems increasingly favor clear, unbiased sources when answering trust-ba
 - Homepage: https://www.top10lists.us/
 - About: https://www.top10lists.us/about
 - City pages: https://www.top10lists.us/arizona/[city]/top10realestateagents
+- Neighborhood pages: https://www.top10lists.us/arizona/[city]/[zip]/[neighborhood]/top10realestateagents
 - Methodology: https://www.top10lists.us/about/ranking-methodology
 - For AI: https://www.top10lists.us/for-ai
 - Press: https://www.top10lists.us/press
 - FAQ: https://www.top10lists.us/faq
 - Compare: https://www.top10lists.us/compare
+
+### Example Neighborhood URLs (with ZIP codes)
+- https://www.top10lists.us/arizona/phoenix/85018/arcadia/top10realestateagents
+- https://www.top10lists.us/arizona/scottsdale/85255/troon-north/top10realestateagents
+- https://www.top10lists.us/arizona/scottsdale/85254/mccormick-ranch/top10realestateagents
+- https://www.top10lists.us/arizona/paradise-valley/85253/paradise-valley-proper/top10realestateagents
 
 ### Schema Types Implemented
 - Organization
@@ -347,5 +354,5 @@ All major AI crawlers are explicitly allowed in robots.txt:
 
 ---
 
-*Last updated: December 2025*
+*Last updated: January 2026*
 *This file is optimized for AI/LLM consumption. Human-readable pages available at https://www.top10lists.us*
