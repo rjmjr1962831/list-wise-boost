@@ -85,6 +85,7 @@ serve(async (req) => {
     // Paginate through ALL active qualified professionals who have a pipedrive_person_id
     while (hasMore) {
       // Join professionals with pipedrive_sync_state to get the person ID directly
+      // Per project knowledge: Sync Criteria requires email IS NOT NULL and email != ''
       const { data: syncRecords, error } = await supabase
         .from("pipedrive_sync_state")
         .select(`
@@ -92,6 +93,7 @@ serve(async (req) => {
           professional:professionals!inner(
             id,
             name,
+            email,
             profile_link,
             active,
             review_stars_rating,
@@ -122,10 +124,12 @@ serve(async (req) => {
           continue;
         }
 
-        // Skip if not active or doesn't meet qualifications
+        // Skip if not active or doesn't meet qualifications (per project knowledge Sync Criteria)
+        // Required: active=true, 4.8+ rating, 20+ reviews, email not null/empty
         if (!professional.active || 
             professional.review_stars_rating < 4.8 || 
-            professional.num_total_reviews < 20) {
+            professional.num_total_reviews < 20 ||
+            !professional.email || professional.email.trim() === '') {
           results.skipped++;
           continue;
         }
