@@ -3,6 +3,17 @@
 
 Remember your knowledge – follow the project custom knowledge rules.
 
+---
+
+## Governance Framework
+This document is part of the Top10Lists governance framework.
+For complete documentation and conflict resolution, see: `src/data/governance/GOVERNANCE_INDEX.md`
+
+Conflict resolution priority places this document below compliance enforcement.
+If any content here conflicts with governance files, defer to the stricter rule.
+
+---
+
 This document contains:
 1. The authoritative Lovable master prompt enforcing expert-first architecture
 2. Canonical copy templates for Page 1 (Neighborhood Expert page)

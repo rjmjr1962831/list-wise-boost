@@ -5,9 +5,9 @@
     "@id": "https://www.top10lists.us/#organization",
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
-    "description": "An invitation-only real estate directory engineered for AI recommendation accuracy, as featured on Business Insider.",
+    "description": "An invitation-only real estate directory structured for AI citation and retrieval, as featured on Business Insider.",
     "foundingDate": "2024",
-    "dateModified": "2026-01-05",
+    "dateModified": "2026-01-13",
     "areaServed": {
       "@type": "State",
       "name": "Arizona"
