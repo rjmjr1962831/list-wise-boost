@@ -62,7 +62,7 @@ export function HowItWorks() {
         <div className="flex items-start gap-2">
           <Info className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-sm text-muted-foreground">
-            AI systems determine which sources to cite based on their own criteria. Visibility options expand your presence but do not control AI recommendation behavior.
+            AI systems determine which sources to cite based on their own criteria. Visibility options expand your presence but do not control AI citation behavior.
           </p>
         </div>
       </div>

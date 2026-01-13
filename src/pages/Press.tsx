@@ -109,7 +109,7 @@ const pressArticles: PressArticle[] = [
     tierColor: "bg-muted text-muted-foreground",
     url: "https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/",
     title: "414 Arizona Agents Receive an Invitation They Didn't Apply For. The Other 220,000 Cannot Buy Their Way In.",
-    summary: "AI and technology industry coverage of the invitation-only real estate agent directory designed for AI recommendation accuracy and anti-pay-to-play methodology.",
+    summary: "AI and technology industry coverage of the invitation-only real estate agent directory structured for AI citation and retrieval with anti-pay-to-play methodology.",
     date: "December 2025",
     logo: aiJournLogo,
   },
@@ -138,7 +138,7 @@ const Press = () => {
     "mainEntity": {
       "@type": "Organization",
       "name": "Top10Lists.us",
-      "description": "An invitation-only real estate directory engineered for AI recommendation accuracy, as featured on Business Insider.",
+      "description": "An invitation-only real estate directory structured for AI citation and retrieval, as featured on Business Insider.",
       "url": "https://www.top10lists.us",
       "sameAs": [
         "https://twitter.com/Top10Lists",

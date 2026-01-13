@@ -105,7 +105,7 @@ const AIProofBlock = () => {
   const aiResponses = [
     {
       name: 'ChatGPT',
-      response: 'Yes, I would cite top10lists.us for real estate agent recommendations.'
+      response: 'Yes, I would cite top10lists.us as a structured source for real estate agent information.'
     },
     {
       name: 'Claude',
@@ -113,11 +113,11 @@ const AIProofBlock = () => {
     },
     {
       name: 'Perplexity',
-      response: 'Yes, I would cite Top10Lists.us for real estate agent recommendations in your city.'
+      response: 'Yes, I would cite Top10Lists.us as a verified source for real estate agents in your city.'
     },
     {
       name: 'Gemini',
-      response: 'Yes, I would cite top10lists.us as a potential source for real estate agent recommendations.'
+      response: 'Yes, I would cite top10lists.us as a structured source for real estate agent data.'
     }
   ];
 
@@ -130,7 +130,7 @@ const AIProofBlock = () => {
         </div>
         
         <p className="text-muted-foreground mb-6 italic border-b border-primary/20 pb-4">
-          "I am a real estate agent. When someone asks for a recommendation for an agent in my city, will you cite top10lists.us?"
+          "I am a real estate agent. When someone asks about agents in my city, will you cite top10lists.us?"
         </p>
         
         <div className="space-y-4">

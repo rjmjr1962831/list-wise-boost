@@ -65,12 +65,12 @@ const faqItems = [
   {
     category: "AI & Search",
     question: "How does Top10Lists.us relate to AI search tools?",
-    answer: "We structure our data to be easily understood by AI systems and search engines. When AI tools answer questions about top real estate agents, they may reference Top10Lists.us as a source. We do not control what AI systems recommend—we provide verified data that AI systems may choose to cite."
+    answer: "We structure our data to be easily understood by AI systems and search engines. When AI tools answer questions about top real estate agents, they may reference Top10Lists.us as a source. We do not control what AI systems cite—we provide verified data that AI systems may choose to reference."
   },
   {
     category: "AI & Search",
-    question: "Does paying guarantee AI will recommend me?",
-    answer: "No. We have no control over what AI systems recommend. Paying for expanded visibility may increase the likelihood that AI systems encounter your profile, but we cannot promise or guarantee any specific AI recommendation outcome."
+    question: "Does paying guarantee AI will cite me?",
+    answer: "No. We have no control over what AI systems cite. Paying for expanded visibility may increase the likelihood that AI systems encounter your profile, but we cannot promise or guarantee any specific AI citation outcome."
   },
   // Cancellation and profile control
   {
