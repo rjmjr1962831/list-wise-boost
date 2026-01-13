@@ -166,8 +166,14 @@ export default function AccuracyReview() {
 
       trackEvent(FUNNEL_EVENTS.ACCURACY_CONFIRMED);
       
-      // Navigate to Step 2 (the streamlined onboarding/edit page)
-      navigate(`/profile/${token}/edit`);
+      // Store professional context for visibility funnel
+      sessionStorage.setItem('visibility_professional_id', professional.id);
+      if (token) {
+        sessionStorage.setItem('visibility_professional_token', token);
+      }
+      
+      // Navigate to new visibility funnel
+      navigate('/visibility/coverage');
     } catch (err) {
       console.error('Error confirming accuracy:', err);
       toast({

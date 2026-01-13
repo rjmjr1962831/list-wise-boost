@@ -22,7 +22,14 @@ export function UpsellSection({ professional, subscriptionCount }: UpsellSection
   const verificationToken = professional.verification_token || professional.id;
   
   const handleAddCities = () => {
-    navigate(`/profile/${verificationToken}/pricing`);
+    // Store professional context and navigate to visibility funnel
+    if (professional.id) {
+      sessionStorage.setItem('visibility_professional_id', professional.id);
+    }
+    if (verificationToken) {
+      sessionStorage.setItem('visibility_professional_token', verificationToken);
+    }
+    navigate('/visibility/coverage');
   };
 
   const handleViewProfile = () => {

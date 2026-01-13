@@ -192,7 +192,7 @@ const App = () => (
                     <Route path="/join" element={<AgentLanding />} />
                     <Route path="/agent-setup" element={<AgentSetup />} />
                     <Route path="/agent/dashboard" element={<AgentDashboard />} />
-                    <Route path="/dashboard" element={<LegacyAgentDashboard />} />
+                    <Route path="/dashboard" element={<Navigate to="/agent/dashboard" replace />} />
                     <Route path="/agent-login" element={<AgentLogin />} />
                     <Route path="/agent/login" element={<AgentLoginRequest />} />
                     <Route path="/agent/verify" element={<AgentCodeVerify />} />

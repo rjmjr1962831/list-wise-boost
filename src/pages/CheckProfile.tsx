@@ -225,7 +225,15 @@ export default function CheckProfile() {
               <Button 
                 size="lg"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg font-semibold px-8"
-                onClick={() => navigate(`/profile/${foundToken}/fields`)}
+                onClick={() => {
+                  if (foundProfessional?.id) {
+                    sessionStorage.setItem('visibility_professional_id', foundProfessional.id);
+                  }
+                  if (foundToken) {
+                    sessionStorage.setItem('visibility_professional_token', foundToken);
+                  }
+                  navigate('/visibility/coverage');
+                }}
               >
                 <Edit className="mr-2 h-4 w-4" />
                 Approve or Edit
@@ -258,7 +266,15 @@ export default function CheckProfile() {
                   variant="outline"
                   size="lg"
                   className="shrink-0"
-                  onClick={() => navigate(`/profile/${foundToken}/edit`)}
+                  onClick={() => {
+                    if (foundProfessional?.id) {
+                      sessionStorage.setItem('visibility_professional_id', foundProfessional.id);
+                    }
+                    if (foundToken) {
+                      sessionStorage.setItem('visibility_professional_token', foundToken);
+                    }
+                    navigate('/visibility/coverage');
+                  }}
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Profile
@@ -281,7 +297,15 @@ export default function CheckProfile() {
                 </p>
                 <Button 
                   size="lg"
-                  onClick={() => navigate(`/profile/${foundToken}/fields`)}
+                  onClick={() => {
+                    if (foundProfessional?.id) {
+                      sessionStorage.setItem('visibility_professional_id', foundProfessional.id);
+                    }
+                    if (foundToken) {
+                      sessionStorage.setItem('visibility_professional_token', foundToken);
+                    }
+                    navigate('/visibility/coverage');
+                  }}
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   Review & Edit Profile

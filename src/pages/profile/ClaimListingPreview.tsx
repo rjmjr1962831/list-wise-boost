@@ -169,8 +169,11 @@ export default function ClaimListingPreview() {
   }, [token]);
 
   const handleFinish = () => {
-    // Navigate to success page
-    navigate(`/profile/${profileId}/success`);
+    // Store professional context and navigate to visibility funnel
+    if (profileId) {
+      sessionStorage.setItem('visibility_professional_token', profileId);
+    }
+    navigate('/visibility/coverage');
   };
 
   const handleContinueEditing = () => {

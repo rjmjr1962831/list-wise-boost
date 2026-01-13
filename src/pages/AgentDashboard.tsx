@@ -419,21 +419,36 @@ export default function AgentDashboard() {
   };
 
   const handleEditProfile = () => {
-    if (verificationToken) {
-      navigate(`/profile/${verificationToken}/fields`);
+    // Store professional context and navigate to new dashboard
+    if (professionalId) {
+      sessionStorage.setItem('visibility_professional_id', professionalId);
     }
+    if (verificationToken) {
+      sessionStorage.setItem('visibility_professional_token', verificationToken);
+    }
+    navigate('/agent/dashboard');
   };
 
   const handleUpgradePackage = () => {
-    if (verificationToken) {
-      navigate(`/profile/${verificationToken}/pricing`);
+    // Store professional context and navigate to visibility funnel
+    if (professionalId) {
+      sessionStorage.setItem('visibility_professional_id', professionalId);
     }
+    if (verificationToken) {
+      sessionStorage.setItem('visibility_professional_token', verificationToken);
+    }
+    navigate('/visibility/coverage');
   };
 
   const handleChangeFreeCity = () => {
-    if (verificationToken) {
-      navigate(`/profile/${verificationToken}/select-free-city`);
+    // Navigate to visibility funnel for city selection
+    if (professionalId) {
+      sessionStorage.setItem('visibility_professional_id', professionalId);
     }
+    if (verificationToken) {
+      sessionStorage.setItem('visibility_professional_token', verificationToken);
+    }
+    navigate('/visibility/coverage');
   };
 
   if (loading) {
