@@ -183,7 +183,7 @@ const Index = () => {
         {/* Section 2: Social Proof */}
         <section className="container mx-auto px-4 py-8">
           <blockquote className="text-lg md:text-xl text-muted-foreground italic text-center max-w-2xl mx-auto">
-            "Top10Lists got me into AI recommendations based on my actual track record, not my ad spend. That's the future."
+            "Top10Lists got me cited by AI based on my actual track record, not my ad spend. That's the future."
           </blockquote>
           <p className="text-center text-sm text-muted-foreground mt-2">
             — Mark Beauvais, Scottsdale Broker

@@ -15,7 +15,7 @@ const faqItems = [
     answer: "Top10Lists.us uses a weighted algorithm analyzing five factors from third-party verified sources: Review Rating (25%), Community Involvement (25%), Number of Reviews (20%), Transaction History (20%), and Education & Credentials (10%). Data comes exclusively from MLS records, Google and Zillow reviews, nonprofit records, and state licensing boards. Agents cannot pay for position or apply for inclusion."
   },
   {
-    question: "Can I trust these recommendations?",
+    question: "Can I trust these rankings?",
     answer: "Yes. Unlike directories where anyone can pay to appear, every agent on Top10Lists.us qualified through verified performance data—reviews, ratings, licensing, and community involvement. No one can buy their way onto this list without meeting our standards first. Ranking position is determined by methodology, not budget."
   },
   {
