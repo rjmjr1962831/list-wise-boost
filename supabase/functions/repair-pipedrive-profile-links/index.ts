@@ -129,11 +129,17 @@ serve(async (req) => {
           continue;
         }
 
+        // Ensure profile_link uses www domain (per project requirements)
+        let normalizedLink = professional.profile_link;
+        if (normalizedLink && normalizedLink.includes('https://top10lists.us/')) {
+          normalizedLink = normalizedLink.replace('https://top10lists.us/', 'https://www.top10lists.us/');
+        }
+
         if (dryRun) {
-          console.log(`[DRY RUN] Would update person ${personId} (${professional.name}) with profile_link: ${professional.profile_link}`);
+          console.log(`[DRY RUN] Would update person ${personId} (${professional.name}) with profile_link: ${normalizedLink}`);
           results.updated++;
         } else {
-          await updateProfileLink(personId, professional.profile_link, profileLinkFieldKey);
+          await updateProfileLink(personId, normalizedLink, profileLinkFieldKey);
           results.updated++;
         }
 
