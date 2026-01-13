@@ -1816,6 +1816,7 @@ export type Database = {
           median_income: number | null
           neighborhood: string
           neighborhood_slug: string
+          primary_zip: string | null
           score: number | null
           state: string
           tier: string
@@ -1840,6 +1841,7 @@ export type Database = {
           median_income?: number | null
           neighborhood: string
           neighborhood_slug: string
+          primary_zip?: string | null
           score?: number | null
           state: string
           tier: string
@@ -1864,6 +1866,7 @@ export type Database = {
           median_income?: number | null
           neighborhood?: string
           neighborhood_slug?: string
+          primary_zip?: string | null
           score?: number | null
           state?: string
           tier?: string

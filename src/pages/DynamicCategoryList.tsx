@@ -183,12 +183,14 @@ export interface DynamicCategoryListProps {
   categorySlugOverride?: string;
   neighborhoodSlug?: string;
   neighborhoodName?: string;
+  neighborhoodZipCode?: string;
 }
 
 export default function DynamicCategoryList({ 
   categorySlugOverride,
   neighborhoodSlug,
-  neighborhoodName
+  neighborhoodName,
+  neighborhoodZipCode
 }: DynamicCategoryListProps = {}) {
   const { stateSlug, citySlug, categorySlug, thirdSegment } = useParams<{ 
     stateSlug: string; 
@@ -1164,12 +1166,12 @@ export default function DynamicCategoryList({
 
   // Get city coordinates for geo tags
   const cityCoords = getCityCoordinates(city.slug);
-  // Canonical URL includes neighborhood if present
-  const canonicalUrl = neighborhoodSlug
-    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodSlug}/${category.slug}`
+  // Canonical URL includes neighborhood and ZIP if present
+  const canonicalUrl = neighborhoodSlug && neighborhoodZipCode
+    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}/${category.slug}`
     : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
-  const pageUrl = neighborhoodSlug
-    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodSlug}/${category.slug}`
+  const pageUrl = neighborhoodSlug && neighborhoodZipCode
+    ? `https://www.top10lists.us/${city.state_slug}/${city.slug}/${neighborhoodZipCode}/${neighborhoodSlug}/${category.slug}`
     : `https://www.top10lists.us/${city.state_slug}/${city.slug}/${category.slug}`;
   const ogImageUrl = `https://www.top10lists.us/og-${city.slug}.png`;
   

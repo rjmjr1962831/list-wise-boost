@@ -52,9 +52,10 @@ serve(async (req) => {
         .order('slug'),
       supabase
         .from('neighborhood_catalog')
-        .select('neighborhood_slug, city_area_slug, state')
+        .select('neighborhood_slug, city_area_slug, state, primary_zip')
         .eq('is_active', true)
         .eq('state', 'AZ')
+        .not('primary_zip', 'is', null)
         .order('neighborhood_slug')
     ]);
 
@@ -90,10 +91,11 @@ serve(async (req) => {
       xml += '  </url>\n';
     }
 
-    // Add neighborhood pages (priority 0.7)
+    // Add neighborhood pages with ZIP (priority 0.7) - new 5-segment format
     for (const neighborhood of neighborhoods) {
       const stateSlug = stateSlugMap[neighborhood.state] || 'arizona';
-      const url = `${baseUrl}/${stateSlug}/${neighborhood.city_area_slug}/${neighborhood.neighborhood_slug}/top10realestateagents`;
+      // Use primary_zip in the URL for canonical 5-segment format
+      const url = `${baseUrl}/${stateSlug}/${neighborhood.city_area_slug}/${neighborhood.primary_zip}/${neighborhood.neighborhood_slug}/top10realestateagents`;
       
       xml += '  <url>\n';
       xml += `    <loc>${url}</loc>\n`;
