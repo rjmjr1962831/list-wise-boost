@@ -118,7 +118,7 @@ export default function FreeCityConfirmation() {
                 </h1>
                 
                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
-                  Your profile will appear in a round-robin format with other qualified agents when someone asks for a recommendation.
+                  Your profile will appear in a round-robin format with other qualified agents, structured for AI citation and retrieval.
                 </p>
               </div>
 

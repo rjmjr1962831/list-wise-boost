@@ -130,7 +130,7 @@ export default function HowItWorksPage() {
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>• <strong className="text-foreground">Guaranteed placement</strong> - always visible</li>
                     <li>• Available in all cities including premium markets</li>
-                    <li>• Priority visibility in AI recommendations</li>
+                    <li>• Structured for AI citation and retrieval</li>
                     <li>• 24-month price lock guarantee</li>
                   </ul>
                 </div>

@@ -130,7 +130,7 @@ export default function FunnelIntro() {
     <>
       <Helmet>
         <title>Welcome to Top10Lists | The AI-First Agent Directory</title>
-        <meta name="description" content="Join the invitation-only agent directory optimized for AI recommendations." />
+        <meta name="description" content="Join the invitation-only agent directory structured for AI citation and retrieval." />
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
