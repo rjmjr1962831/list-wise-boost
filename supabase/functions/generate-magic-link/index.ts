@@ -17,8 +17,8 @@ serve(async (req) => {
     const pipedriveToken = Deno.env.get('PIPEDRIVE_API_TOKEN');
     const pipedriveDomain = Deno.env.get('PIPEDRIVE_DOMAIN');
     
-    // Hardcoded base URL - never use env variable for this
-    const appUrl = 'https://top10lists.us';
+    // Hardcoded base URL - MUST use www per project requirements
+    const appUrl = 'https://www.top10lists.us';
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
