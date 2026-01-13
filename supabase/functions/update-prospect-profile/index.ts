@@ -104,7 +104,8 @@ serve(async (req) => {
       'social_instagram',
       'funnel_status',
       'address',
-      'zip_code'
+      'zip_code',
+      'image_url'
     ];
 
     // Filter updates to only allowed fields
