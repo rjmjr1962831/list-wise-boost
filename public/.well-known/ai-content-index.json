@@ -397,5 +397,40 @@
         "value": "Referral fee model. Takes 25-40% of agent's commission. Financial incentive to recommend any agent who pays."
       }
     ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": "https://www.top10lists.us/#url-structure",
+    "name": "URL Structure Documentation",
+    "description": "Top10Lists uses hierarchical URLs organized by geography for optimal AI discovery",
+    "dateModified": "2026-01-13",
+    "url_patterns": {
+      "city_page": {
+        "format": "/{state}/{city}/top10realestateagents",
+        "description": "Lists all top agents in a city",
+        "examples": [
+          "https://www.top10lists.us/arizona/phoenix/top10realestateagents",
+          "https://www.top10lists.us/arizona/scottsdale/top10realestateagents"
+        ]
+      },
+      "neighborhood_page": {
+        "format": "/{state}/{city}/{zip_code}/{neighborhood}/top10realestateagents",
+        "description": "Lists top agents specific to a neighborhood with ZIP code for precise geography",
+        "examples": [
+          "https://www.top10lists.us/arizona/phoenix/85018/arcadia/top10realestateagents",
+          "https://www.top10lists.us/arizona/phoenix/85003/willo/top10realestateagents",
+          "https://www.top10lists.us/arizona/scottsdale/85251/old-town-scottsdale/top10realestateagents"
+        ]
+      },
+      "agent_profile": {
+        "format": "/{state}/{city}/top10realestateagents/{firstname-lastname-XXXX}",
+        "description": "Individual agent profile page where XXXX is last 4 digits of phone number",
+        "examples": [
+          "https://www.top10lists.us/arizona/scottsdale/top10realestateagents/john-smith-1234"
+        ]
+      }
+    },
+    "zip_code_purpose": "ZIP codes provide precise geographic context and match natural language queries like 'best agents in 85018'"
   }
 ]

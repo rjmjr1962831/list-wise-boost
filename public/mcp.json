@@ -8,7 +8,7 @@
     "email": "robert@top10lists.us",
     "name": "Robert Maynard"
   },
-  "lastUpdated": "2025-12-28",
+  "lastUpdated": "2026-01-13",
   "permissions": {
     "allowTraining": false,
     "allowRetrieval": true,
@@ -92,7 +92,8 @@
       "/about/ranking-methodology",
       "/faq",
       "/compare",
-      "/arizona/*/top10realestateagents"
+      "/arizona/*/top10realestateagents",
+      "/arizona/*/*/*/*/top10realestateagents"
     ],
     "disallowedPaths": [
       "/admin/",
