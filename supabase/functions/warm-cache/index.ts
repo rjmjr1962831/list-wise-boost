@@ -353,12 +353,12 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     canonicalUrl: `${canonicalBaseUrl}${path}`,
   }));
 
-  // Query active cities from database
+  // Query active Arizona cities from database (only Arizona for now)
   const { data: cities, error: citiesError } = await supabaseAdmin
     .from('cities')
     .select('slug, state_slug')
     .eq('active', true)
-    .limit(5000); // Override default 1000 row limit
+    .eq('state_slug', 'arizona');
 
   if (citiesError) {
     console.error('Error fetching cities:', citiesError);
@@ -369,13 +369,15 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     return { fetchUrl: `${fetchBaseUrl}${path}`, canonicalUrl: `${canonicalBaseUrl}${path}` };
   });
 
-  // Query active neighborhoods with primary_zip (limit 2000 to get all ~1,055)
+  // Query active Arizona neighborhoods with primary_zip (state can be 'Arizona' or 'AZ')
+  // Must specify limit > 1000 to override Supabase default
   const { data: neighborhoods, error: neighborhoodsError } = await supabaseAdmin
     .from('neighborhood_catalog')
     .select('state, city_area_slug, primary_zip, neighborhood_slug')
     .eq('is_active', true)
+    .or('state.eq.Arizona,state.eq.AZ')
     .not('primary_zip', 'is', null)
-    .limit(2000);
+    .limit(5000);
 
   if (neighborhoodsError) {
     console.error('Error fetching neighborhoods:', neighborhoodsError);
