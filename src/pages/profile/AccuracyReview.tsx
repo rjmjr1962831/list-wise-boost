@@ -166,14 +166,17 @@ export default function AccuracyReview() {
 
       trackEvent(FUNNEL_EVENTS.ACCURACY_CONFIRMED);
       
+      // Use professional's verification_token if available, fallback to URL token
+      const navToken = professional.verification_token || token;
+      
       // Store professional context for funnel continuity
       sessionStorage.setItem('visibility_professional_id', professional.id);
-      if (token) {
-        sessionStorage.setItem('visibility_professional_token', token);
+      if (navToken) {
+        sessionStorage.setItem('visibility_professional_token', navToken);
       }
       
       // Navigate to edit profile page (step 2 of funnel)
-      navigate(`/profile/${token}/edit`);
+      navigate(`/profile/${navToken}/edit`);
     } catch (err) {
       console.error('Error confirming accuracy:', err);
       toast({
