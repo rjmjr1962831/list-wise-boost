@@ -20,16 +20,22 @@ serve(async (req) => {
 
     console.log('Generating verification links for:', { cityId, categoryId, regenerate });
 
-    // Build query - select ALL fields
+    // Build query - select ALL fields, limit 5000 to override default 1000
     let query = supabase
       .from('professionals')
       .select('*')
-      .eq('active', true);
+      .eq('active', true)
+      .gte('review_stars_rating', 4.8)
+      .gte('num_total_reviews', 20)
+      .is('verification_token', null) // Only get agents missing tokens
+      .limit(5000);
 
     if (cityId) query = query.eq('city_id', cityId);
     if (categoryId) query = query.eq('category_id', categoryId);
 
     const { data: agents, error: fetchError } = await query;
+    
+    console.log(`Found ${agents?.length || 0} agents needing tokens`);
 
     if (fetchError) throw fetchError;
 
