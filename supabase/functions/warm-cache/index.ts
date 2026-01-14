@@ -311,7 +311,7 @@ async function warmUrl(url: string, canonicalUrl: string): Promise<{ success: bo
 
 // Get URLs to warm - static pages + cities + neighborhoods
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: { fetchUrl: string; canonicalUrl: string }[]; totalCount: number }> {
-  const fetchBaseUrl = 'https://list-wise-boost.lovable.app';
+  const fetchBaseUrl = 'https://www.top10lists.us';
   const canonicalBaseUrl = 'https://www.top10lists.us';
 
   // Static crawlable pages (React pages only - Worker skips .txt, .json, .xml files)
