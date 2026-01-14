@@ -21,7 +21,92 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
 const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
 const SEQUENTIAL_DELAY_MS = 7000; // 7 seconds between each URL to avoid Cloudflare rate limits
+const HEARTBEAT_INTERVAL_MS = 60000; // Update progress every 60 seconds
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+// Track job progress in cron_state table
+async function updateJobProgress(status: string, message: string, processed: number, total: number, errors: number): Promise<void> {
+  try {
+    const { error } = await supabaseAdmin
+      .from('cron_state')
+      .upsert({
+        job_name: 'warm-cache',
+        is_running: status === 'running',
+        status,
+        message,
+        total_processed: processed,
+        total_found: total,
+        total_errors: errors,
+        updated_at: new Date().toISOString(),
+        last_run_at: status === 'running' ? undefined : new Date().toISOString(),
+        completed_at: status === 'completed' || status === 'failed' ? new Date().toISOString() : null,
+      }, { onConflict: 'job_name' });
+    
+    if (error) {
+      console.error('Failed to update job progress:', error);
+    }
+  } catch (err) {
+    console.error('Error updating job progress:', err);
+  }
+}
+
+// Send email when job stops prematurely
+async function sendPrematureStopEmail(processed: number, total: number, lastUrl: string, errorMessage?: string): Promise<void> {
+  if (!SMTP_USERNAME || !SMTP_PASSWORD || !SMTP_FROM_EMAIL) {
+    console.error('SMTP credentials not configured, cannot send premature stop email');
+    return;
+  }
+
+  try {
+    const client = new SMTPClient({
+      connection: {
+        hostname: SMTP_HOST,
+        port: SMTP_PORT,
+        tls: true,
+        auth: {
+          username: SMTP_USERNAME,
+          password: SMTP_PASSWORD,
+        },
+      },
+    });
+
+    const timestamp = new Date().toISOString();
+    const baseUrl = SUPABASE_URL;
+    
+    await client.send({
+      from: SMTP_FROM_EMAIL,
+      to: ADMIN_EMAIL,
+      subject: `⚠️ Cache Warming Stopped Prematurely - ${processed}/${total} completed`,
+      html: `
+        <h1>⚠️ Cache Warming Stopped Early</h1>
+        <p><strong>Time:</strong> ${timestamp}</p>
+        <p><strong>Progress:</strong> ${processed} of ${total} URLs processed (${Math.round(processed/total*100)}%)</p>
+        <p><strong>Last URL processed:</strong> ${lastUrl}</p>
+        ${errorMessage ? `<p><strong>Error:</strong> ${errorMessage}</p>` : '<p><strong>Reason:</strong> Edge function likely timed out or crashed</p>'}
+        <hr />
+        <h2>🔧 Quick Actions</h2>
+        <p>Click to resume or restart:</p>
+        <table cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            <td style="padding: 8px;">
+              <a href="${baseUrl}/functions/v1/warm-cache" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🔄 Restart Warm Cache</a>
+            </td>
+            <td style="padding: 8px;">
+              <a href="${baseUrl}/functions/v1/check-cache-health" style="display: inline-block; padding: 12px 24px; background: #6b7280; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🏥 Run Health Check</a>
+            </td>
+          </tr>
+        </table>
+        <hr />
+        <p style="color: #666; font-size: 12px;">Check edge function logs for more details.</p>
+      `,
+    });
+    
+    await client.close();
+    console.log('📧 Premature stop notification email sent to', ADMIN_EMAIL);
+  } catch (emailError) {
+    console.error('Failed to send premature stop email:', emailError);
+  }
+}
 
 // Send failure notification email via SMTP
 async function sendFailureEmail(result: WarmResult, errorMessage?: string): Promise<void> {
@@ -463,6 +548,24 @@ serve(async (req) => {
     
     console.log(`🔥 Starting cache warming for ${urls.length} URLs (batch ${offset}-${nextOffset} of ${totalCount})...`);
 
+    // Track progress for premature stop detection
+    let lastProcessedUrl = '';
+    let lastHeartbeat = Date.now();
+    
+    // Register shutdown handler to email if stopped prematurely
+    const shutdownHandler = async () => {
+      console.log('⚠️ Function shutting down, checking if job completed...');
+      // Only send email if we didn't finish
+      if (result.warmed + result.failed < urls.length) {
+        await sendPrematureStopEmail(result.warmed + result.failed, totalCount, lastProcessedUrl, 'Edge function shutdown');
+        await updateJobProgress('stopped', `Stopped at ${result.warmed + result.failed}/${totalCount}`, result.warmed + result.failed, totalCount, result.failed);
+      }
+    };
+    addEventListener('beforeunload', shutdownHandler);
+    
+    // Update initial job status
+    await updateJobProgress('running', `Starting: 0/${totalCount}`, 0, totalCount, 0);
+
     const result: WarmResult = {
       success: true,
       total: totalCount,
@@ -476,6 +579,7 @@ serve(async (req) => {
     // Step 1: Purge all URLs from KV before warming (only on first batch)
     if (offset === 0) {
       console.log(`🗑️ Purging ${urls.length} URLs from KV before warming...`);
+      await updateJobProgress('running', `Purging KV cache...`, 0, totalCount, 0);
       let purged = 0;
       for (const { canonicalUrl } of urls) {
         const cacheKey = urlToCacheKey(canonicalUrl);
@@ -485,9 +589,10 @@ serve(async (req) => {
       console.log(`✓ Purged ${purged}/${urls.length} KV entries`);
     }
 
-    // Step 2: Process URLs sequentially with 3-second intervals
+    // Step 2: Process URLs sequentially with delays
     for (let i = 0; i < urls.length; i++) {
       const { fetchUrl, canonicalUrl } = urls[i];
+      lastProcessedUrl = canonicalUrl;
       console.log(`[${i + 1}/${urls.length}] Warming: ${canonicalUrl} (from ${fetchUrl})`);
       
       const warmResult = await warmUrl(fetchUrl, canonicalUrl);
@@ -500,7 +605,15 @@ serve(async (req) => {
         console.error(`  ✗ Failed: ${warmResult.error}`);
       }
       
-      // 3-second delay between each URL (except after the last one)
+      // Update progress periodically (every 60 seconds)
+      if (Date.now() - lastHeartbeat > HEARTBEAT_INTERVAL_MS) {
+        const processed = result.warmed + result.failed;
+        await updateJobProgress('running', `Processing: ${processed}/${totalCount} (${result.failed} errors)`, processed, totalCount, result.failed);
+        lastHeartbeat = Date.now();
+        console.log(`📊 Progress update: ${processed}/${totalCount}`);
+      }
+      
+      // Delay between URLs (except after the last one)
       if (i < urls.length - 1) {
         console.log(`  ⏱️ Waiting ${SEQUENTIAL_DELAY_MS / 1000}s before next URL...`);
         await new Promise(resolve => setTimeout(resolve, SEQUENTIAL_DELAY_MS));
@@ -508,6 +621,10 @@ serve(async (req) => {
     }
 
     console.log(`✅ Cache warming complete: ${result.warmed}/${result.total} successful, ${result.failed} failed`);
+    
+    // Job completed successfully - update status
+    const finalStatus = result.failed > 0 ? 'completed_with_errors' : 'completed';
+    await updateJobProgress(finalStatus, `Done: ${result.warmed}/${result.total} warmed, ${result.failed} failed`, result.warmed, result.total, result.failed);
 
     // Send failure email if any URLs failed
     if (result.failed > 0) {
@@ -548,6 +665,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Cache warming error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    
+    // Update job status as failed
+    await updateJobProgress('failed', errorMessage, 0, 0, 1);
     
     // Send failure email for catastrophic errors
     await sendFailureEmail(
