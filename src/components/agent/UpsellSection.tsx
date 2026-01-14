@@ -21,15 +21,15 @@ export function UpsellSection({ professional, subscriptionCount }: UpsellSection
   
   const verificationToken = professional.verification_token || professional.id;
   
-  const handleAddCities = () => {
-    // Store professional context and navigate to visibility funnel
+  const handleAddNeighborhoods = () => {
+    // Store professional context and navigate to neighborhood selection
     if (professional.id) {
       sessionStorage.setItem('visibility_professional_id', professional.id);
     }
     if (verificationToken) {
       sessionStorage.setItem('visibility_professional_token', verificationToken);
     }
-    navigate('/visibility/coverage');
+    navigate('/visibility/expertise');
   };
 
   const handleViewProfile = () => {
@@ -68,7 +68,7 @@ export function UpsellSection({ professional, subscriptionCount }: UpsellSection
           {/* Add Cities Card */}
           <div 
             className="p-4 border rounded-lg bg-background hover:border-primary/50 transition-colors cursor-pointer group"
-            onClick={handleAddCities}
+            onClick={handleAddNeighborhoods}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -91,7 +91,7 @@ export function UpsellSection({ professional, subscriptionCount }: UpsellSection
           {/* Annual Savings Card */}
           <div 
             className="p-4 border rounded-lg bg-background hover:border-primary/50 transition-colors cursor-pointer group"
-            onClick={handleAddCities}
+            onClick={handleAddNeighborhoods}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
