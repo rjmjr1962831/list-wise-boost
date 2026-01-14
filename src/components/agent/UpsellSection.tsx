@@ -22,14 +22,15 @@ export function UpsellSection({ professional, subscriptionCount }: UpsellSection
   const verificationToken = professional.verification_token || professional.id;
   
   const handleAddNeighborhoods = () => {
-    // Store professional context and navigate to neighborhood selection
+    // Store professional context and navigate to coverage selection first
+    // (coverage → expertise → review → payment is the correct flow)
     if (professional.id) {
       sessionStorage.setItem('visibility_professional_id', professional.id);
     }
     if (verificationToken) {
       sessionStorage.setItem('visibility_professional_token', verificationToken);
     }
-    navigate('/visibility/expertise');
+    navigate('/visibility/coverage');
   };
 
   const handleViewProfile = () => {
