@@ -16,9 +16,9 @@ serve(async (req) => {
   }
 
   try {
-    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
-    if (!ANTHROPIC_API_KEY) {
-      throw new Error('ANTHROPIC_API_KEY is not configured');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     const { message, history, systemContext } = await req.json();
@@ -29,8 +29,10 @@ serve(async (req) => {
 
     console.log('Chatbot request:', { message, historyLength: history?.length || 0 });
 
-    // Build conversation for Claude
-    const messages: { role: string; content: string }[] = [];
+    // Build conversation messages in OpenAI format
+    const messages: { role: string; content: string }[] = [
+      { role: 'system', content: systemContext || 'You are a helpful assistant.' }
+    ];
 
     // Add conversation history
     if (history && Array.isArray(history)) {
@@ -48,32 +50,51 @@ serve(async (req) => {
       content: message
     });
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 500,
-        system: systemContext || 'You are a helpful assistant.',
-        messages: messages
+        model: 'google/gemini-3-flash-preview',
+        messages: messages,
+        max_tokens: 800
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Claude API error:', response.status, errorText);
-      throw new Error(`Claude API error: ${response.status}`);
+      console.error('Lovable AI Gateway error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Rate limit exceeded',
+            response: "I'm getting a lot of questions right now. Please try again in a moment or call us at (602) 758-9600."
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ 
+            error: 'Payment required',
+            response: "I apologize, but I'm temporarily unavailable. Please call us at (602) 758-9600 for immediate assistance."
+          }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      throw new Error(`AI Gateway error: ${response.status}`);
     }
 
     const data = await response.json();
-    const assistantResponse = data.content?.[0]?.text;
+    const assistantResponse = data.choices?.[0]?.message?.content;
 
     if (!assistantResponse) {
-      throw new Error('No response from Claude');
+      throw new Error('No response from AI');
     }
 
     console.log('Chatbot response generated successfully');
