@@ -394,9 +394,9 @@ export default function EditProfile() {
         description: 'Your information has been saved successfully.'
       });
 
-      // Store professional context and navigate to visibility funnel
+      // Store professional context and navigate to preview/accept page (step 3 of funnel)
       sessionStorage.setItem('visibility_professional_token', token);
-      navigate('/visibility/coverage');
+      navigate(`/profile/${token}/preview`);
     } catch (err: any) {
       console.error('Error saving profile:', err);
       toast({
