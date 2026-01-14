@@ -394,9 +394,14 @@ export default function EditProfile() {
         description: 'Your information has been saved successfully.'
       });
 
+      // Use professional's verification_token if available, fallback to URL token
+      const navToken = professional?.verification_token || token;
+      
       // Store professional context and navigate to preview/accept page (step 3 of funnel)
-      sessionStorage.setItem('visibility_professional_token', token);
-      navigate(`/profile/${token}/preview`);
+      if (navToken) {
+        sessionStorage.setItem('visibility_professional_token', navToken);
+      }
+      navigate(`/profile/${navToken}/preview`);
     } catch (err: any) {
       console.error('Error saving profile:', err);
       toast({
