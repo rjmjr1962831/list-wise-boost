@@ -139,8 +139,15 @@ const AgentCodeVerify = () => {
         description: "You've been logged in successfully.",
       });
 
-      // Navigate to dashboard
-      navigate(data.redirectUrl || "/agent/dashboard");
+      // Check for visibility return URL first (from funnel flow)
+      const visibilityReturnUrl = sessionStorage.getItem('visibility_return_url');
+      if (visibilityReturnUrl) {
+        sessionStorage.removeItem('visibility_return_url');
+        navigate(visibilityReturnUrl);
+      } else {
+        // Navigate to dashboard or server-provided redirect
+        navigate(data.redirectUrl || "/agent/dashboard");
+      }
 
     } catch (error) {
       console.error("Unexpected error:", error);
