@@ -26,13 +26,9 @@ const ShortLinkRedirect = () => {
         return;
       }
 
-      // Store professional context and redirect to visibility funnel
+      // Redirect to profile page with verification token
       const token = data.verification_token || data.id;
-      sessionStorage.setItem('visibility_professional_id', data.id);
-      if (token) {
-        sessionStorage.setItem('visibility_professional_token', token);
-      }
-      navigate('/visibility/coverage', { replace: true });
+      navigate(`/profile/${token}`, { replace: true });
     };
 
     lookupAndRedirect();
