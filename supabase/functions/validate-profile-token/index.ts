@@ -24,36 +24,51 @@ serve(async (req) => {
 
     console.log('🔍 Validating token:', token.substring(0, 8) + '...');
 
-    // Check if token is UUID format (professional ID) or verification token
+    // Check if token is UUID format (could be professional ID OR a UUID-shaped verification token)
     const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token);
 
-    // Build query based on token format
-    let query = supabase
-      .from('professionals')
-      .select(`
-        *,
-        cities:city_id (
-          id,
-          name,
-          slug,
-          state,
-          state_slug
-        ),
-        categories:category_id (
-          id,
-          name,
-          slug,
-          plural_name
-        )
-      `);
+    // Base select used for both lookups
+    const baseQuery = () =>
+      supabase
+        .from('professionals')
+        .select(`
+          *,
+          cities:city_id (
+            id,
+            name,
+            slug,
+            state,
+            state_slug
+          ),
+          categories:category_id (
+            id,
+            name,
+            slug,
+            plural_name
+          )
+        `);
+
+    // Lookup logic:
+    // 1) If UUID-shaped: try by id first, then fall back to verification_token
+    // 2) Otherwise: allow partial match on verification_token
+    let professional: any = null;
+    let fetchError: any = null;
 
     if (isUUID) {
-      query = query.eq('id', token);
-    } else {
-      query = query.ilike('verification_token', `%${token}%`);
-    }
+      const byId = await baseQuery().eq('id', token).maybeSingle();
+      professional = byId.data;
+      fetchError = byId.error;
 
-    const { data: professional, error: fetchError } = await query.maybeSingle();
+      if (!professional && !fetchError) {
+        const byTokenExact = await baseQuery().eq('verification_token', token).maybeSingle();
+        professional = byTokenExact.data;
+        fetchError = byTokenExact.error;
+      }
+    } else {
+      const byTokenFuzzy = await baseQuery().ilike('verification_token', `%${token}%`).maybeSingle();
+      professional = byTokenFuzzy.data;
+      fetchError = byTokenFuzzy.error;
+    }
 
     if (fetchError || !professional) {
       console.error('❌ Invalid token');
