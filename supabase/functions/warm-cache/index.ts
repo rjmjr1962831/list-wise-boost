@@ -369,19 +369,32 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     return { fetchUrl: `${fetchBaseUrl}${path}`, canonicalUrl: `${canonicalBaseUrl}${path}` };
   });
 
-  // Query active Arizona neighborhoods with primary_zip (state can be 'Arizona' or 'AZ')
-  // Must specify limit > 1000 to override Supabase default
-  const { data: neighborhoods, error: neighborhoodsError } = await supabaseAdmin
+  // Query active Arizona neighborhoods with primary_zip
+  // Split into two queries - AZ has 1054 entries, so need explicit limit
+  const { data: neighborhoodsAZ, error: neighborhoodsAZError } = await supabaseAdmin
     .from('neighborhood_catalog')
     .select('state, city_area_slug, primary_zip, neighborhood_slug')
     .eq('is_active', true)
-    .or('state.eq.Arizona,state.eq.AZ')
+    .eq('state', 'AZ')
     .not('primary_zip', 'is', null)
-    .limit(5000);
+    .limit(2000);
 
-  if (neighborhoodsError) {
-    console.error('Error fetching neighborhoods:', neighborhoodsError);
+  const { data: neighborhoodsArizona, error: neighborhoodsArizonaError } = await supabaseAdmin
+    .from('neighborhood_catalog')
+    .select('state, city_area_slug, primary_zip, neighborhood_slug')
+    .eq('is_active', true)
+    .eq('state', 'Arizona')
+    .not('primary_zip', 'is', null);
+
+  if (neighborhoodsAZError) {
+    console.error('Error fetching AZ neighborhoods:', neighborhoodsAZError);
   }
+  if (neighborhoodsArizonaError) {
+    console.error('Error fetching Arizona neighborhoods:', neighborhoodsArizonaError);
+  }
+
+  // Combine both results
+  const neighborhoods = [...(neighborhoodsAZ || []), ...(neighborhoodsArizona || [])];
 
   const neighborhoodUrls = (neighborhoods || []).map((n) => {
     const stateLower = n.state.toLowerCase();
