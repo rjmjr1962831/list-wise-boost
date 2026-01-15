@@ -333,15 +333,82 @@ function stripAgentContent(html: string): string {
 }
 
 // Fetch rendered page using Googlebot UA to trigger Cloudflare Worker rendering
+// Validate that page content matches expected content (not just homepage defaults)
+function validatePageContent(html: string, path: string): { valid: boolean; reason?: string } {
+  // Extract title and H1 for logging
+  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
+  const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
+  const title = titleMatch ? titleMatch[1].trim() : '(no title)';
+  const h1 = h1Match ? h1Match[1].trim() : '(no h1)';
+  
+  console.log(`    Content check for ${path}: title="${title}", h1="${h1}"`);
+  
+  // Homepage is always valid if it has content
+  if (path === '/' || path === '') {
+    return { valid: html.includes('<h1'), reason: undefined };
+  }
+  
+  // Non-homepage pages should NOT have homepage default title
+  const homepageDefaultTitle = 'Top 10 Real Estate Agents | Top10Lists.us';
+  if (title === homepageDefaultTitle) {
+    return { valid: false, reason: `Page has homepage title instead of page-specific title` };
+  }
+  
+  // Specific page validations
+  const pathLower = path.toLowerCase();
+  
+  if (pathLower === '/faq') {
+    const hasFaqContent = html.includes('Frequently Asked') || html.includes('FAQ');
+    if (!hasFaqContent) {
+      return { valid: false, reason: 'FAQ page missing FAQ content' };
+    }
+  }
+  
+  if (pathLower === '/about') {
+    const hasAboutContent = html.includes('About') || html.includes('about');
+    if (!hasAboutContent) {
+      return { valid: false, reason: 'About page missing about content' };
+    }
+  }
+  
+  if (pathLower === '/methodology') {
+    const hasMethodologyContent = html.includes('Methodology') || html.includes('methodology');
+    if (!hasMethodologyContent) {
+      return { valid: false, reason: 'Methodology page missing methodology content' };
+    }
+  }
+  
+  // State/city pages should have location in content
+  if (pathLower.startsWith('/arizona/')) {
+    const hasArizonaContent = html.includes('Arizona') || html.includes('arizona');
+    if (!hasArizonaContent) {
+      return { valid: false, reason: 'Arizona page missing Arizona content' };
+    }
+  }
+  
+  return { valid: true };
+}
+
+// Fetch rendered page from Lovable origin directly (bypasses Cloudflare cache)
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
   try {
+    // Parse the URL to get the path
+    const urlObj = new URL(url);
+    const path = urlObj.pathname;
+    
+    // Fetch from Lovable origin directly, NOT from www.top10lists.us (which would return cached content)
+    const originUrl = `https://9cdb9be2-e152-4f82-8510-b202c71869c2.lovableproject.com${path}`;
+    
+    console.log(`    Fetching from origin: ${originUrl}`);
+    
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
 
-    const response = await fetch(url, {
+    const response = await fetch(originUrl, {
       method: 'GET',
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+        'Host': 'www.top10lists.us', // Tell React to render with correct canonical URLs
       },
       signal: controller.signal,
     });
@@ -351,7 +418,11 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
       return { success: false, error: `HTTP ${response.status}` };
     }
 
-    const html = await response.text();
+    let html = await response.text();
+    
+    // Replace any Lovable origin URLs with www.top10lists.us in the HTML
+    html = html.replace(/https:\/\/9cdb9be2-e152-4f82-8510-b202c71869c2\.lovableproject\.com/g, 'https://www.top10lists.us');
+    html = html.replace(/https:\/\/id-preview--9cdb9be2-e152-4f82-8510-b202c71869c2\.lovable\.app/g, 'https://www.top10lists.us');
     
     // Static files don't need content validation
     if (isStaticFile(url)) {
@@ -361,11 +432,18 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
     }
 
     // Verify rendered HTML has actual content (not empty React shell)
-    const hasContent = html.includes('<h1') && html.includes('</h1>');
+    const hasH1 = html.includes('<h1') && html.includes('</h1>');
+    if (!hasH1) {
+      return { success: false, error: 'No content rendered - empty React shell' };
+    }
     
-    return hasContent 
-      ? { success: true, html } 
-      : { success: false, error: 'No content rendered - empty React shell' };
+    // Validate that page content matches expected content
+    const validation = validatePageContent(html, path);
+    if (!validation.valid) {
+      return { success: false, error: validation.reason || 'Content validation failed' };
+    }
+    
+    return { success: true, html };
       
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
