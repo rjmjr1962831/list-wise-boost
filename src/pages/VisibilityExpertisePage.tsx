@@ -195,7 +195,7 @@ export default function VisibilityExpertisePage() {
           <h1 className="text-2xl font-bold">Do you want to highlight neighborhood expertise?</h1>
           <div className="text-muted-foreground mt-3 space-y-3">
             <p>
-              This is the only paid option on our list. It allows you to highlight specific neighborhoods where you have verified experience.
+              This is the only paid option on our list. It allows you to highlight specific neighborhoods where you have verified experience. This substantially increases the likelihood that you will be cited directly by AI.
             </p>
             <p>
               Once approved, your profile and credentials will appear when users search or browse those neighborhoods. If we cannot verify your expertise, we will refund any payment you have made.
