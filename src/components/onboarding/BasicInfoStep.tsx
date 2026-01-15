@@ -377,11 +377,6 @@ export function BasicInfoStep({ data, updateData, onNext, onBack }: BasicInfoSte
               <SelectContent>
                 <SelectItem value="Arizona|AZ">Arizona</SelectItem>
                 <SelectItem value="California|CA">California</SelectItem>
-                <SelectItem value="Texas|TX">Texas</SelectItem>
-                <SelectItem value="Florida|FL">Florida</SelectItem>
-                <SelectItem value="New York|NY">New York</SelectItem>
-                <SelectItem value="Nevada|NV">Nevada</SelectItem>
-                <SelectItem value="Colorado|CO">Colorado</SelectItem>
               </SelectContent>
             </Select>
             {errors.state && (

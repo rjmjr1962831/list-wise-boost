@@ -28,7 +28,7 @@ const decemberUpdates: UpdateEntry[] = [
     title: "California Integration",
     items: [
       "California agent database integrated (299,447 active licenses)",
-      "Six states now covered: Arizona, California, Texas, Florida, New York, Colorado"
+      "Two states now covered: Arizona and California"
     ],
     type: "expansion"
   },

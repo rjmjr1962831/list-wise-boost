@@ -105,7 +105,7 @@ const Founder = () => {
           </p>
 
           <p>
-            The platform currently covers Arizona, California, Texas, Florida, New York, and Colorado, with nationwide expansion underway.
+            The platform currently covers Arizona and California, with nationwide expansion planned.
           </p>
         </div>
       </section>

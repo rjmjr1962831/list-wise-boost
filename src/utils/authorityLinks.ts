@@ -56,12 +56,6 @@ function getProperStateAbbr(stateAbbr: string, stateName: string): string {
   const stateMap: Record<string, string> = {
     'arizona': 'AZ',
     'california': 'CA',
-    'texas': 'TX',
-    'florida': 'FL',
-    'nevada': 'NV',
-    'colorado': 'CO',
-    'new mexico': 'NM',
-    'utah': 'UT',
   };
   
   const normalized = (stateAbbr || stateName).toLowerCase().trim();

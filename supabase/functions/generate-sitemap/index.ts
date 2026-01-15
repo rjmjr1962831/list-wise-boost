@@ -10,14 +10,6 @@ const corsHeaders = {
 const stateSlugMap: Record<string, string> = {
   'AZ': 'arizona',
   'CA': 'california',
-  'TX': 'texas',
-  'FL': 'florida',
-  'NY': 'new-york',
-  'CO': 'colorado',
-  'NV': 'nevada',
-  'WA': 'washington',
-  'OR': 'oregon',
-  'UT': 'utah',
 };
 
 // Get today's date in YYYY-MM-DD format
