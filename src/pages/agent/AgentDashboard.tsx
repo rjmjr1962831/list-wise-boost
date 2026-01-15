@@ -128,6 +128,20 @@ export default function AgentDashboard() {
     navigate("/agent/login");
   };
 
+  const handleUpgrade = () => {
+    // Store professional context for the purchase flow
+    if (professional?.id) {
+      sessionStorage.setItem("visibility_professional_id", professional.id);
+    }
+
+    const verificationToken = professional?.verification_token || professional?.id;
+    if (verificationToken) {
+      sessionStorage.setItem("visibility_professional_token", verificationToken);
+    }
+
+    navigate("/visibility/expertise");
+  };
+
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -232,7 +246,11 @@ export default function AgentDashboard() {
                 <CreditCard className="h-4 w-4" />
                 <span className="hidden sm:inline">Billing</span>
               </TabsTrigger>
-              <TabsTrigger value="upgrade" className="flex items-center gap-2">
+              <TabsTrigger
+                value="upgrade"
+                className="flex items-center gap-2"
+                onClick={handleUpgrade}
+              >
                 <TrendingUp className="h-4 w-4" />
                 <span className="hidden sm:inline">Upgrade</span>
               </TabsTrigger>
