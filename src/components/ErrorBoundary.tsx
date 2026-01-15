@@ -12,10 +12,34 @@ export class ErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
+  // Check if error is a chunk loading error (expected during deployments)
+  isChunkLoadError = (error: Error): boolean => {
+    const message = error.message || '';
+    return (
+      message.includes('Failed to fetch dynamically imported module') ||
+      message.includes('Loading chunk') ||
+      message.includes('ChunkLoadError') ||
+      message.includes('Loading CSS chunk')
+    );
+  };
+
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     console.error("ErrorBoundary caught an error:", error, info);
     
-    // Send email alert automatically
+    // Don't send alerts for chunk loading errors - they're expected during deployments
+    // and are already handled by the reload logic in main.tsx
+    if (this.isChunkLoadError(error)) {
+      console.log("Chunk loading error detected - skipping alert (handled by reload logic)");
+      // Trigger a page reload to get fresh chunks
+      const hasReloaded = sessionStorage.getItem('chunk-reload');
+      if (!hasReloaded) {
+        sessionStorage.setItem('chunk-reload', 'true');
+        window.location.reload();
+      }
+      return;
+    }
+    
+    // Send email alert automatically for real errors
     if (!this.state.alertSent) {
       this.sendErrorAlert(error, info);
     }
