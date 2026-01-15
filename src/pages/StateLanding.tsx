@@ -58,7 +58,7 @@ export default function StateLanding() {
       <Helmet>
         <title>Real Estate Agent Recommendations in Arizona | Top10Lists.us</title>
         <meta name="description" content="Top10Lists.us recommends real estate agents serving Arizona cities including Phoenix, Scottsdale, Tucson, and Mesa. Recommendations are surfaced through our centralized discovery experience." />
-        <link rel="canonical" href="https://top10lists.us/arizona" />
+        <link rel="canonical" href="https://www.top10lists.us/arizona" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
