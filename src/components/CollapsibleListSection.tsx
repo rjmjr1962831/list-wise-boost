@@ -15,7 +15,7 @@ interface CollapsibleListSectionProps {
   defaultOpen?: boolean;
   schemaType?: string;
   market?: string;
-  stateAbbr?: string;
+  stateSlug?: string; // Full state slug (e.g., "arizona"), NOT abbreviation
   citySlug?: string;
   categorySlug?: string;
   onContactClick?: (professional: Professional) => void;
@@ -27,7 +27,7 @@ export const CollapsibleListSection = ({
   defaultOpen = false,
   schemaType = "Person",
   market = "",
-  stateAbbr,
+  stateSlug,
   citySlug,
   categorySlug,
   onContactClick,
@@ -86,7 +86,7 @@ export const CollapsibleListSection = ({
           <div key={`${section.title}-${professional.rank}-${professional.id}`} id={`agent-${professional.id}`}>
             <AgentBadge 
               professional={professional}
-              stateSlug={stateAbbr?.toLowerCase() === 'az' ? 'arizona' : stateAbbr?.toLowerCase() || 'arizona'}
+              stateSlug={stateSlug || 'arizona'}
               citySlug={citySlug}
               rank={index + 1}
               accentColor={section.accentColor}
