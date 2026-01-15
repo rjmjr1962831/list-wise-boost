@@ -47,37 +47,85 @@ export default function VisibilityReviewPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Get authenticated user and their professional ID
+  // Get professional ID - from sessionStorage (funnel flow) or authenticated user
   useEffect(() => {
-    async function loadAuth() {
+    async function loadProfessionalContext() {
       try {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        
-        if (error || !user) {
-          toast({
-            title: 'Authentication required',
-            description: 'Please sign in to continue.',
-            variant: 'destructive',
-          });
-          // Store return URL for post-login redirect
-          sessionStorage.setItem('visibility_return_url', '/visibility/review');
-          navigate('/agent/login');
-          return;
+        // First, check if we have a professional ID from the funnel flow (sessionStorage)
+        const storedProfessionalId = sessionStorage.getItem('visibility_professional_id');
+        const storedProfessionalToken = sessionStorage.getItem('visibility_professional_token');
+
+        if (storedProfessionalId) {
+          // Verify this professional exists and get their email
+          const { data: professional } = await supabase
+            .from('professionals')
+            .select('id, email')
+            .eq('id', storedProfessionalId)
+            .single();
+
+          if (professional) {
+            setProfessionalId(professional.id);
+            setUserEmail(professional.email ?? null);
+            setIsLoadingAuth(false);
+            return;
+          }
         }
 
-        setUserEmail(user.email ?? null);
+        // If we have a token but no ID, look up by token
+        if (storedProfessionalToken) {
+          const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(storedProfessionalToken);
+          
+          let professional = null;
+          
+          if (isUUID) {
+            // Try by ID first
+            const { data } = await supabase
+              .from('professionals')
+              .select('id, email')
+              .eq('id', storedProfessionalToken)
+              .single();
+            professional = data;
+          }
+          
+          if (!professional) {
+            // Try by verification_token
+            const { data } = await supabase
+              .from('professionals')
+              .select('id, email')
+              .eq('verification_token', storedProfessionalToken)
+              .single();
+            professional = data;
+          }
 
-        // Look up professional by email
-        const { data: professional } = await supabase
-          .from('professionals')
-          .select('id')
-          .eq('email', user.email)
-          .eq('active', true)
-          .single();
+          if (professional) {
+            setProfessionalId(professional.id);
+            setUserEmail(professional.email ?? null);
+            sessionStorage.setItem('visibility_professional_id', professional.id);
+            setIsLoadingAuth(false);
+            return;
+          }
+        }
 
-        if (professional) {
-          setProfessionalId(professional.id);
-        } else {
+        // Fallback: check if user is authenticated via Supabase auth
+        const { data: { user }, error } = await supabase.auth.getUser();
+        
+        if (!error && user?.email) {
+          setUserEmail(user.email);
+
+          // Look up professional by email
+          const { data: professional } = await supabase
+            .from('professionals')
+            .select('id')
+            .eq('email', user.email)
+            .eq('active', true)
+            .single();
+
+          if (professional) {
+            setProfessionalId(professional.id);
+            setIsLoadingAuth(false);
+            return;
+          }
+
           // Check if user is admin - allow them to proceed with test professional
           const { data: adminRole } = await supabase
             .from('user_roles')
@@ -90,24 +138,32 @@ export default function VisibilityReviewPage() {
             // Use test professional (Robert Maynard) for admin testing
             setProfessionalId('20e0b7f2-5652-424a-9d46-ba74a19cd9a8');
             console.log('Admin bypass: using test professional ID');
-          } else {
-            toast({
-              title: 'Profile not found',
-              description: 'No active professional profile found for your account.',
-              variant: 'destructive',
-            });
-            navigate('/');
+            setIsLoadingAuth(false);
             return;
           }
         }
+
+        // No professional context found - redirect to start
+        toast({
+          title: 'Session expired',
+          description: 'Please start the process again from your profile.',
+          variant: 'destructive',
+        });
+        navigate('/');
       } catch (e) {
-        console.error('Error loading auth:', e);
+        console.error('Error loading professional context:', e);
+        toast({
+          title: 'Error',
+          description: 'Failed to load your profile. Please try again.',
+          variant: 'destructive',
+        });
+        navigate('/');
       } finally {
         setIsLoadingAuth(false);
       }
     }
 
-    loadAuth();
+    loadProfessionalContext();
   }, [navigate, toast]);
 
   // Load selection from sessionStorage
