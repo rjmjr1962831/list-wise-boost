@@ -98,13 +98,23 @@
       if (parts.length >= 3) {
         var stateSlug = parts[0].toLowerCase();
         var citySlug = parts[1];
-        var pageType = parts[2];
         var stateName = states[stateSlug] || toTitleCase(stateSlug);
         var cityName = toTitleCase(citySlug);
         
+        // Handle 5-segment neighborhood URLs: /state/city/zip/neighborhood/category
+        // Handle 3-segment city URLs: /state/city/category
+        var pageType = parts.length === 5 ? parts[4] : parts[2];
+        var neighborhoodSlug = parts.length === 5 ? parts[3] : null;
+        var neighborhoodName = neighborhoodSlug ? toTitleCase(neighborhoodSlug) : null;
+        
         if (pageType === 'top10realestateagents') {
-          title = 'Top 10 Real Estate Agents in ' + cityName + ', ' + stateName + ' | Top10Lists.us';
-          desc = 'Find the top 10 real estate agents in ' + cityName + ', ' + stateName + '. Merit-based rankings with verified reviews, community involvement, and no paid placements.';
+          if (neighborhoodName) {
+            title = 'Top 10 Real Estate Agents in ' + neighborhoodName + ', ' + cityName + ', ' + stateName + ' | Top10Lists.us';
+            desc = 'Find the top 10 real estate agents in ' + neighborhoodName + ', ' + cityName + '. Merit-based rankings with verified reviews and no paid placements.';
+          } else {
+            title = 'Top 10 Real Estate Agents in ' + cityName + ', ' + stateName + ' | Top10Lists.us';
+            desc = 'Find the top 10 real estate agents in ' + cityName + ', ' + stateName + '. Merit-based rankings with verified reviews, community involvement, and no paid placements.';
+          }
         } else if (pageType === 'best-real-estate-agents') {
           title = 'Best Real Estate Agents in ' + cityName + ', ' + stateName + ' | Top10Lists.us';
           desc = 'Best real estate agents in ' + cityName + ', ' + stateName + ' ranked by reviews, community involvement, and verified credentials. No paid placements.';
