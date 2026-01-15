@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Navigate, useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { normalizeStateSlug } from '@/utils/stateSlugMapping';
+import { normalizeStateSlug, getStateAbbreviation } from '@/utils/stateSlugMapping';
 import { ProfessionalListLayout } from '@/components/ProfessionalListLayout';
 import { CollapsibleListSection } from '@/components/CollapsibleListSection';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
@@ -1164,7 +1164,8 @@ export default function DynamicCategoryList({
     location: {
       city: city.name,
       state: city.state,
-      stateAbbr: city.state_slug.toUpperCase().slice(0, 2)
+      // IMPORTANT: derive true state abbreviation (AZ for Arizona) instead of slicing state_slug
+      stateAbbr: (getStateAbbreviation(city.state_slug)?.toUpperCase()) || city.state_slug.toUpperCase().slice(0, 2)
     },
     profession: {
       singular: category.name,
