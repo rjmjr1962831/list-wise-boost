@@ -23,12 +23,12 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!deepseekApiKey) {
-      console.error('DEEPSEEK_API_KEY not configured');
+    if (!lovableApiKey) {
+      console.error('LOVABLE_API_KEY not configured');
       return new Response(
-        JSON.stringify({ error: 'DeepSeek API key not configured' }),
+        JSON.stringify({ error: 'Lovable API key not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -55,7 +55,7 @@ serve(async (req) => {
     const exaResults = rawData?.exa_results || rawData?.searchResults || [];
 
     if (!exaResults || exaResults.length === 0) {
-      console.log(`No Exa results found for ${professional.name}, skipping DeepSeek analysis`);
+      console.log(`No Exa results found for ${professional.name}, skipping analysis`);
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -66,9 +66,9 @@ serve(async (req) => {
       );
     }
 
-    console.log(`🤖 [DeepSeek] Analyzing ${exaResults.length} results for ${professional.name}...`);
+    console.log(`🤖 [Gemini] Analyzing ${exaResults.length} results for ${professional.name}...`);
 
-    // Prepare content for DeepSeek analysis
+    // Prepare content for analysis
     const searchContent = exaResults.map((r: any, i: number) => 
       `[${i + 1}] ${r.title || 'Untitled'}\nURL: ${r.url}\n${r.text || r.snippet || ''}`
     ).join('\n\n---\n\n');
@@ -101,53 +101,68 @@ Return a JSON object with this structure:
 
 Return ONLY the JSON object, no other text.`;
 
-    // Call DeepSeek API
-    const deepseekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    // Call Lovable AI Gateway
+    const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${deepseekApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'google/gemini-3-flash-preview',
         messages: [
           { role: 'system', content: 'You are a precise data extraction assistant. Return only valid JSON.' },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.1,
-        max_tokens: 2000,
       }),
     });
 
-    if (!deepseekResponse.ok) {
-      const errorText = await deepseekResponse.text();
-      console.error('DeepSeek API error:', errorText);
+    if (!aiResponse.ok) {
+      const errorText = await aiResponse.text();
+      console.error('Lovable AI error:', aiResponse.status, errorText);
+      
+      if (aiResponse.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (aiResponse.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'AI credits exhausted. Please add credits.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       return new Response(
-        JSON.stringify({ error: 'DeepSeek API error', details: errorText }),
+        JSON.stringify({ error: 'AI API error', details: errorText }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const deepseekData = await deepseekResponse.json();
-    const responseContent = deepseekData.choices?.[0]?.message?.content || '';
+    const aiData = await aiResponse.json();
+    const responseContent = aiData.choices?.[0]?.message?.content || '';
 
-    console.log(`📝 [DeepSeek] Raw response length: ${responseContent.length}`);
+    console.log(`📝 [Gemini] Raw response length: ${responseContent.length}`);
 
     // Parse the JSON response
     let extractedData: any = { press_mentions: [] };
     try {
-      // Try to extract JSON from the response
-      const jsonMatch = responseContent.match(/\{[\s\S]*\}/);
+      // Handle potential markdown code blocks
+      const jsonMatch = responseContent.match(/```json\s*([\s\S]*?)\s*```/) || 
+                        responseContent.match(/```\s*([\s\S]*?)\s*```/) ||
+                        responseContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        extractedData = JSON.parse(jsonMatch[0]);
+        const jsonStr = jsonMatch[1] || jsonMatch[0];
+        extractedData = JSON.parse(jsonStr);
       }
     } catch (parseError) {
-      console.error('Failed to parse DeepSeek response:', parseError);
+      console.error('Failed to parse AI response:', parseError);
       console.log('Raw response:', responseContent.slice(0, 500));
     }
 
     const pressMentions = extractedData.press_mentions || [];
-    console.log(`✅ [DeepSeek] Extracted ${pressMentions.length} press mentions for ${professional.name}`);
+    console.log(`✅ [Gemini] Extracted ${pressMentions.length} press mentions for ${professional.name}`);
 
     // Merge with existing press mentions (if any)
     const existingMentions = Array.isArray(professional.press_mentions) ? professional.press_mentions : [];
@@ -163,9 +178,9 @@ Return ONLY the JSON object, no other text.`;
         press_mentions: mergedMentions,
         data_sources_log: {
           ...(professional.raw_scraper_data?.data_sources_log || {}),
-          deepseek_analyzed_at: new Date().toISOString(),
-          deepseek_mentions_found: pressMentions.length,
-          deepseek_confidence: extractedData.confidence_notes
+          gemini_analyzed_at: new Date().toISOString(),
+          gemini_mentions_found: pressMentions.length,
+          gemini_confidence: extractedData.confidence_notes
         }
       })
       .eq('id', professionalId);
@@ -191,7 +206,7 @@ Return ONLY the JSON object, no other text.`;
     );
 
   } catch (error: any) {
-    console.error('analyze-press-deepseek error:', error);
+    console.error('analyze-press error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
