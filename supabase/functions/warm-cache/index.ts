@@ -332,83 +332,75 @@ function stripAgentContent(html: string): string {
   return sanitized;
 }
 
-// Fetch rendered page using Googlebot UA to trigger Cloudflare Worker rendering
 // Validate that page content matches expected content (not just homepage defaults)
-function validatePageContent(html: string, path: string): { valid: boolean; reason?: string } {
-  // Extract title and H1 for logging
-  const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-  const h1Match = html.match(/<h1[^>]*>([^<]+)<\/h1>/i);
-  const title = titleMatch ? titleMatch[1].trim() : '(no title)';
-  const h1 = h1Match ? h1Match[1].trim() : '(no h1)';
+function validatePageContent(url: string, html: string): { success: boolean; reason?: string } {
+  const urlPath = new URL(url).pathname;
   
-  console.log(`    Content check for ${path}: title="${title}", h1="${h1}"`);
-  
+  // Check for presence of H1 tag
+  if (!html.includes('<h1')) {
+    return { success: false, reason: 'No <h1> tag found' };
+  }
+
   // Homepage is always valid if it has content
-  if (path === '/' || path === '') {
-    return { valid: html.includes('<h1'), reason: undefined };
+  if (urlPath === '/' || urlPath === '') {
+    return { success: true };
   }
+
+  // Extract and log title/H1 for debugging
+  const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
+  const h1Match = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
+  const pageTitle = titleMatch ? titleMatch[1] : 'NO TITLE';
+  const pageH1 = h1Match ? h1Match[1].replace(/<[^>]+>/g, '') : 'NO H1';
   
-  // Non-homepage pages should NOT have homepage default title
-  const homepageDefaultTitle = 'Top 10 Real Estate Agents | Top10Lists.us';
-  if (title === homepageDefaultTitle) {
-    return { valid: false, reason: `Page has homepage title instead of page-specific title` };
+  console.log(`    Page: ${urlPath} | Title: ${pageTitle} | H1: ${pageH1}`);
+
+  // Reject non-homepage pages showing homepage default content
+  const hasDefaultTitle = html.includes('Top 10 Real Estate Agents | Top10Lists.us');
+  const hasDefaultH1 = html.includes('Find the Top 10 Real Estate Agents in Your City');
+  
+  if (urlPath !== '/' && hasDefaultTitle && hasDefaultH1) {
+    return { 
+      success: false, 
+      reason: `Page showing default homepage content instead of page-specific content` 
+    };
   }
-  
-  // Specific page validations
-  const pathLower = path.toLowerCase();
-  
-  if (pathLower === '/faq') {
-    const hasFaqContent = html.includes('Frequently Asked') || html.includes('FAQ');
-    if (!hasFaqContent) {
-      return { valid: false, reason: 'FAQ page missing FAQ content' };
+
+  // Page-specific validations
+  const validations: Record<string, () => boolean> = {
+    '/faq': () => html.toLowerCase().includes('faq') || html.toLowerCase().includes('frequently asked'),
+    '/about': () => html.toLowerCase().includes('about'),
+    '/about/ranking-methodology': () => html.toLowerCase().includes('methodology'),
+    '/compare': () => html.toLowerCase().includes('zillow') || html.toLowerCase().includes('comparison'),
+    '/for-ai': () => html.toLowerCase().includes('ai systems'),
+    '/ai-liability': () => html.toLowerCase().includes('liability'),
+  };
+
+  for (const [path, validator] of Object.entries(validations)) {
+    if (urlPath.includes(path) && !validator()) {
+      return { success: false, reason: `Path ${path} missing expected content` };
     }
   }
-  
-  if (pathLower === '/about') {
-    const hasAboutContent = html.includes('About') || html.includes('about');
-    if (!hasAboutContent) {
-      return { valid: false, reason: 'About page missing about content' };
-    }
-  }
-  
-  if (pathLower === '/methodology') {
-    const hasMethodologyContent = html.includes('Methodology') || html.includes('methodology');
-    if (!hasMethodologyContent) {
-      return { valid: false, reason: 'Methodology page missing methodology content' };
-    }
-  }
-  
-  // State/city pages should have location in content
-  if (pathLower.startsWith('/arizona/')) {
-    const hasArizonaContent = html.includes('Arizona') || html.includes('arizona');
-    if (!hasArizonaContent) {
-      return { valid: false, reason: 'Arizona page missing Arizona content' };
-    }
-  }
-  
-  return { valid: true };
+
+  return { success: true };
 }
 
-// Fetch rendered page from Lovable origin directly (bypasses Cloudflare cache)
+// Fetch rendered page from Cloudflare Worker using X-Cache-Warming header
+// This triggers browser rendering for proper JS execution and correct meta tags
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
   try {
-    // Parse the URL to get the path
-    const urlObj = new URL(url);
-    const path = urlObj.pathname;
-    
-    // Fetch from Lovable origin directly, NOT from www.top10lists.us (which would return cached content)
-    const originUrl = `https://9cdb9be2-e152-4f82-8510-b202c71869c2.lovableproject.com${path}`;
-    
-    console.log(`    Fetching from origin: ${originUrl}`);
+    console.log(`    Requesting browser-rendered HTML for: ${url}`);
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
 
-    const response = await fetch(originUrl, {
+    // Request from www.top10lists.us with X-Cache-Warming header
+    // This tells Cloudflare Worker to force fresh browser render
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-        'Host': 'www.top10lists.us', // Tell React to render with correct canonical URLs
+        'X-Cache-Warming': 'true', // Triggers fresh browser render in Cloudflare Worker
+        'Cache-Control': 'no-cache',
       },
       signal: controller.signal,
     });
@@ -418,11 +410,13 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
       return { success: false, error: `HTTP ${response.status}` };
     }
 
-    let html = await response.text();
-    
-    // Replace any Lovable origin URLs with www.top10lists.us in the HTML
-    html = html.replace(/https:\/\/9cdb9be2-e152-4f82-8510-b202c71869c2\.lovableproject\.com/g, 'https://www.top10lists.us');
-    html = html.replace(/https:\/\/id-preview--9cdb9be2-e152-4f82-8510-b202c71869c2\.lovable\.app/g, 'https://www.top10lists.us');
+    // Check if response came from Cloudflare Worker browser rendering
+    const renderedBy = response.headers.get('X-Rendered-By');
+    if (renderedBy) {
+      console.log(`    Rendered by: ${renderedBy}`);
+    }
+
+    const html = await response.text();
     
     // Static files don't need content validation
     if (isStaticFile(url)) {
@@ -431,18 +425,14 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
         : { success: false, error: 'Static file appears empty' };
     }
 
-    // Verify rendered HTML has actual content (not empty React shell)
-    const hasH1 = html.includes('<h1') && html.includes('</h1>');
-    if (!hasH1) {
-      return { success: false, error: 'No content rendered - empty React shell' };
-    }
-    
     // Validate that page content matches expected content
-    const validation = validatePageContent(html, path);
-    if (!validation.valid) {
+    const validation = validatePageContent(url, html);
+    if (!validation.success) {
+      console.warn(`    Validation failed: ${validation.reason}`);
       return { success: false, error: validation.reason || 'Content validation failed' };
     }
-    
+
+    console.log(`    Successfully fetched and validated: ${url}`);
     return { success: true, html };
       
   } catch (error) {
