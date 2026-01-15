@@ -220,12 +220,7 @@ export default function AccuracyReview() {
   const getStateAuthority = (stateSlug: string | null): string => {
     const stateNames: Record<string, string> = {
       'arizona': 'Arizona',
-      'california': 'California',
-      'texas': 'Texas',
-      'new-mexico': 'New Mexico',
-      'nevada': 'Nevada',
-      'colorado': 'Colorado',
-      'utah': 'Utah'
+      'california': 'California'
     };
     return stateSlug ? (stateNames[stateSlug] || stateSlug) : 'Unknown';
   };

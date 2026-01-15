@@ -24,14 +24,6 @@ function normalizeState(state: string | null | undefined): string {
   const stateMap: Record<string, string> = {
     'AZ': 'Arizona',
     'CA': 'California',
-    'CO': 'Colorado',
-    'FL': 'Florida',
-    'NJ': 'New Jersey',
-    'NM': 'New Mexico',
-    'NV': 'Nevada',
-    'NY': 'New York',
-    'OH': 'Ohio',
-    'TX': 'Texas',
   };
   const upperState = state.trim().toUpperCase();
   return stateMap[upperState] || state;
