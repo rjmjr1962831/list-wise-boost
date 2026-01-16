@@ -799,6 +799,92 @@ serve(async (req) => {
       );
     }
 
+    // ============ NEW: POST action=upsert-cities ============
+    if (req.method === 'POST' && action === 'upsert-cities') {
+      const body = await req.json();
+      const { cities } = body;
+
+      if (!cities || !Array.isArray(cities) || cities.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'cities array is required and must not be empty' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`enrichment-api - Upserting ${cities.length} cities`);
+
+      const results: { slug: string; success: boolean; action: string; error?: string }[] = [];
+      let inserted = 0;
+      let updated = 0;
+      let failed = 0;
+
+      for (const city of cities) {
+        const { name, state, state_slug, slug, active } = city;
+
+        if (!name || !state || !state_slug || !slug) {
+          results.push({ slug: slug || 'unknown', success: false, action: 'skipped', error: 'Missing required fields (name, state, state_slug, slug)' });
+          failed++;
+          continue;
+        }
+
+        // Check if city exists
+        const { data: existing, error: checkError } = await supabase
+          .from('cities')
+          .select('id')
+          .eq('slug', slug)
+          .eq('state_slug', state_slug)
+          .maybeSingle();
+
+        if (checkError) {
+          results.push({ slug, success: false, action: 'error', error: checkError.message });
+          failed++;
+          continue;
+        }
+
+        if (existing) {
+          // Update existing city
+          const { error: updateError } = await supabase
+            .from('cities')
+            .update({ name, state, active: active ?? true, updated_at: new Date().toISOString() })
+            .eq('id', existing.id);
+
+          if (updateError) {
+            results.push({ slug, success: false, action: 'update_failed', error: updateError.message });
+            failed++;
+          } else {
+            results.push({ slug, success: true, action: 'updated' });
+            updated++;
+          }
+        } else {
+          // Insert new city
+          const { error: insertError } = await supabase
+            .from('cities')
+            .insert({ name, state, state_slug, slug, active: active ?? true });
+
+          if (insertError) {
+            results.push({ slug, success: false, action: 'insert_failed', error: insertError.message });
+            failed++;
+          } else {
+            results.push({ slug, success: true, action: 'inserted' });
+            inserted++;
+          }
+        }
+      }
+
+      console.log(`enrichment-api - Upsert cities complete: ${inserted} inserted, ${updated} updated, ${failed} failed`);
+
+      return new Response(
+        JSON.stringify({
+          processed: cities.length,
+          inserted,
+          updated,
+          failed,
+          results
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Invalid action - show all available actions
     return new Response(
       JSON.stringify({ 
@@ -816,6 +902,8 @@ serve(async (req) => {
           update: 'POST ?action=update - Update professional (body: {professional_id, ...fields})',
           update_license: 'POST ?action=update_license - Update license with Zillow data',
           'bulk-update': 'POST ?action=bulk-update - Bulk update professionals (body: {updates: [{id, ...fields}, ...]})',
+          // City management
+          'upsert-cities': 'POST ?action=upsert-cities - Upsert cities (body: {cities: [{name, state, state_slug, slug, active}]})',
           // Promotion
           promote_to_professional: 'POST ?action=promote_to_professional - Promote qualified license (body: {license_id})',
           // Custom query
