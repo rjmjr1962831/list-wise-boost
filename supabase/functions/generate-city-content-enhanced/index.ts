@@ -69,6 +69,7 @@ Return a JSON object with these exact fields:
   "marketStats": {
     "population": <number - estimated population, e.g. 245000>,
     "medianHomePrice": <number - estimated median home price in dollars, e.g. 425000>,
+    "medianRent": <number - estimated median monthly rent from Census ACS data, e.g. 1850>,
     "medianHouseholdIncome": <number - estimated median household income, e.g. 72000>,
     "daysOnMarket": <number - estimated average days on market, e.g. 28>,
     "pricePerSqFt": <number - estimated price per square foot, e.g. 285>,
@@ -76,7 +77,8 @@ Return a JSON object with these exact fields:
     "inventoryLevel": "<string - 'Low', 'Moderate', or 'High'>",
     "marketType": "<string - 'Seller's Market', 'Buyer's Market', or 'Balanced'>",
     "averageHomeSize": <number - average home size in sqft, e.g. 1850>,
-    "homeownershipRate": <number - as decimal, e.g. 0.68 for 68%>
+    "homeownershipRate": <number - as decimal, e.g. 0.68 for 68%>,
+    "rentToIncomeRatio": <number - median rent as percentage of median income, e.g. 0.28 for 28%>
   },
   
   "overview": "2-3 compelling sentences capturing ${cityName}'s unique character and appeal. What's the vibe? What's it known for?",
@@ -120,7 +122,7 @@ Write like a knowledgeable local real estate expert. Provide realistic market es
         messages: [
           { 
             role: 'system', 
-            content: `You are a real estate market analyst specializing in ${stateName}. Provide factual, specific information about cities. For market statistics, provide realistic estimates based on your knowledge of real estate markets, city demographics, and regional economics. Always return valid JSON.` 
+            content: `You are a real estate market analyst specializing in ${stateName}. Provide factual, specific information about cities. For market statistics, provide realistic estimates based on your knowledge of real estate markets, city demographics, regional economics, and Census ACS data (median rent, household income, homeownership rates). Always return valid JSON.` 
           },
           { role: 'user', content: prompt }
         ],
@@ -172,12 +174,14 @@ Write like a knowledgeable local real estate expert. Provide realistic market es
     const stats = generatedContent.marketStats;
     stats.population = Number(stats.population) || 50000;
     stats.medianHomePrice = Number(stats.medianHomePrice) || 350000;
+    stats.medianRent = Number(stats.medianRent) || 1500;
     stats.medianHouseholdIncome = Number(stats.medianHouseholdIncome) || 65000;
     stats.daysOnMarket = Number(stats.daysOnMarket) || 30;
     stats.pricePerSqFt = Number(stats.pricePerSqFt) || 200;
     stats.yearOverYearChange = Number(stats.yearOverYearChange) || 0.03;
     stats.averageHomeSize = Number(stats.averageHomeSize) || 1800;
     stats.homeownershipRate = Number(stats.homeownershipRate) || 0.65;
+    stats.rentToIncomeRatio = Number(stats.rentToIncomeRatio) || 0.28;
 
     // Add metadata
     generatedContent.metadata = {
