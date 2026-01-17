@@ -3,6 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { getCityMarketData, getDefaultCityMarketData, CityMarketData } from '@/data/arizonaCityMarketData';
 import { getCityBySlug } from '@/data/arizonaCityPricing';
 
+interface MarketStats {
+  population?: number;
+  medianHomePrice?: number;
+  medianRent?: number;
+  medianHouseholdIncome?: number;
+  daysOnMarket?: number;
+  pricePerSqFt?: number;
+  yearOverYearChange?: number;
+  inventoryLevel?: string;
+  marketType?: string;
+  averageHomeSize?: number;
+  homeownershipRate?: number;
+  rentToIncomeRatio?: number;
+  rentalVacancyRate?: number;
+  pctRenterOccupied?: number;
+}
+
 interface GeneratedCityContent {
   overview: string;
   highlights: string[];
@@ -13,6 +30,7 @@ interface GeneratedCityContent {
   pointsOfInterest?: string[];
   localCulture?: string;
   bestKeptSecret?: string;
+  marketStats?: MarketStats;
 }
 
 export function useCityMarketContent(citySlug: string, cityName: string) {
@@ -60,10 +78,40 @@ export function useCityMarketContent(citySlug: string, cityName: string) {
       localCulture: generatedContent.localCulture,
       bestKeptSecret: generatedContent.bestKeptSecret,
     }),
+    // Override static stats with enriched marketStats if available
+    ...(generatedContent?.marketStats && {
+      medianHomePrice: generatedContent.marketStats.medianHomePrice,
+      medianHouseholdIncome: generatedContent.marketStats.medianHouseholdIncome,
+      population: generatedContent.marketStats.population,
+      daysOnMarket: generatedContent.marketStats.daysOnMarket,
+      pricePerSqFt: generatedContent.marketStats.pricePerSqFt,
+      yearOverYearChange: generatedContent.marketStats.yearOverYearChange,
+      inventoryLevel: generatedContent.marketStats.inventoryLevel,
+      marketType: generatedContent.marketStats.marketType,
+      averageHomeSize: generatedContent.marketStats.averageHomeSize,
+      homeownershipRate: generatedContent.marketStats.homeownershipRate,
+      rentToIncomeRatio: generatedContent.marketStats.rentToIncomeRatio,
+      medianRent: generatedContent.marketStats.medianRent,
+      rentalVacancyRate: generatedContent.marketStats.rentalVacancyRate,
+      pctRenterOccupied: generatedContent.marketStats.pctRenterOccupied,
+    }),
   } : generatedContent ? {
     slug: citySlug,
     name: cityName,
-    medianHomePrice: cityPricing?.medianHomePrice,
+    medianHomePrice: generatedContent.marketStats?.medianHomePrice ?? cityPricing?.medianHomePrice,
+    medianHouseholdIncome: generatedContent.marketStats?.medianHouseholdIncome,
+    population: generatedContent.marketStats?.population,
+    daysOnMarket: generatedContent.marketStats?.daysOnMarket,
+    pricePerSqFt: generatedContent.marketStats?.pricePerSqFt,
+    yearOverYearChange: generatedContent.marketStats?.yearOverYearChange,
+    inventoryLevel: generatedContent.marketStats?.inventoryLevel,
+    marketType: generatedContent.marketStats?.marketType,
+    averageHomeSize: generatedContent.marketStats?.averageHomeSize,
+    homeownershipRate: generatedContent.marketStats?.homeownershipRate,
+    rentToIncomeRatio: generatedContent.marketStats?.rentToIncomeRatio,
+    medianRent: generatedContent.marketStats?.medianRent,
+    rentalVacancyRate: generatedContent.marketStats?.rentalVacancyRate,
+    pctRenterOccupied: generatedContent.marketStats?.pctRenterOccupied,
     overview: generatedContent.overview,
     highlights: generatedContent.highlights,
     neighborhoodTypes: generatedContent.neighborhoodTypes,

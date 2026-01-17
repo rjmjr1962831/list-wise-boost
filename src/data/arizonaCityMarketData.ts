@@ -11,6 +11,17 @@ export interface CityMarketData {
   pricePerSqFt?: number;
   homeAppreciation1Yr?: number;
   daysOnMarket?: number;
+  // New enriched market stats
+  yearOverYearChange?: number;
+  inventoryLevel?: string;
+  marketType?: string;
+  averageHomeSize?: number;
+  homeownershipRate?: number;
+  rentToIncomeRatio?: number;
+  medianRent?: number;
+  rentalVacancyRate?: number;
+  pctRenterOccupied?: number;
+  // Narrative content
   overview: string;
   highlights: string[];
   neighborhoodTypes: string[];
