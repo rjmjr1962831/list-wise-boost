@@ -135,15 +135,7 @@ export default function CityLanding() {
   const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
   const cameFromList = location.state?.fromList || document.referrer.includes(listUrl);
 
-  const cityName = formatCityName({ name: city.name, state: city.state, slug: city.slug, stateSlug: city.state_slug } as any);
-  const canonicalUrl = `https://www.top10lists.us/${normalizedStateSlug}/${city.slug}`;
-
-
-  // Determine if user came from the list page
-  const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
-  const cameFromList = location.state?.fromList || document.referrer.includes(listUrl);
-
-  const cityName = formatCityName(city);
+  const cityName = `${city.name}, ${city.state}`;
   const canonicalUrl = `https://www.top10lists.us/${normalizedStateSlug}/${city.slug}`;
 
   return (
