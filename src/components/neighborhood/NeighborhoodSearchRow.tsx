@@ -219,7 +219,10 @@ export function NeighborhoodSearchRow({
               ) : (
                 locationResults.map((result, index) => (
                   <button
-                    key={result.neighborhood_id}
+                    key={result.result_type === 'city'
+                      ? `city-${result.city_id ?? result.city_area_slug}`
+                      : `neighborhood-${result.city_area_slug}-${result.neighborhood_slug}-${result.primary_zip ?? ''}`
+                    }
                     onClick={() => {
                       navigateToNeighborhood(result, index + 1);
                       setShowLocationDropdown(false);

@@ -182,7 +182,10 @@ export const DualSearchBox = ({
             ) : (
               locationResults.map((result, index) => (
                 <button
-                  key={`${result.result_type}-${result.neighborhood_id}`}
+                  key={result.result_type === 'city'
+                    ? `city-${result.city_id ?? result.city_area_slug}`
+                    : `neighborhood-${result.city_area_slug}-${result.neighborhood_slug}-${result.primary_zip ?? ''}`
+                  }
                   data-location-index={index}
                   onClick={() => {
                     navigateToResult(result, index + 1);
