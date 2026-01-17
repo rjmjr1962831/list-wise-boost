@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 export interface LocationSearchResult {
   search_type: 'zip' | 'text';
+  result_type: 'neighborhood' | 'city';
   neighborhood_id: string;
   neighborhood: string;
   neighborhood_slug: string;
@@ -15,11 +16,14 @@ export interface LocationSearchResult {
   is_primary: boolean;
   match_score: number;
   primary_zip: string | null;
+  city_id: string | null;
 }
 
 const STATE_MAPPING: Record<string, string> = {
   'AZ': 'arizona',
+  'Arizona': 'arizona',
   'CA': 'california',
+  'California': 'california',
   'TX': 'texas',
   'FL': 'florida',
   'NY': 'new-york',
@@ -56,7 +60,7 @@ export const useLocationSearch = () => {
       if (!data || data.length === 0) {
         const errorMsg = term.match(/^\d{5}$/) 
           ? `No neighborhoods found for ZIP ${term}`
-          : `No neighborhoods found matching "${term}"`;
+          : `No results found matching "${term}"`;
         setError(errorMsg);
         setResults([]);
         return [];
@@ -77,8 +81,15 @@ export const useLocationSearch = () => {
     }
   };
 
-  const buildNeighborhoodUrl = (result: LocationSearchResult): string => {
+  const buildUrl = (result: LocationSearchResult): string => {
     const state = STATE_MAPPING[result.state] || result.state.toLowerCase();
+    
+    // City result - navigate to city landing page
+    if (result.result_type === 'city') {
+      return `/${state}/${result.city_area_slug}`;
+    }
+    
+    // Neighborhood result
     const city = result.city_area_slug;
     const neighborhood = result.neighborhood_slug;
     const zip = result.primary_zip;
@@ -91,11 +102,15 @@ export const useLocationSearch = () => {
     return `/${state}/${city}/${neighborhood}/top10realestateagents`;
   };
 
-  const navigateToNeighborhood = (result: LocationSearchResult, selectedRank?: number) => {
-    const url = buildNeighborhoodUrl(result);
+  const navigateToResult = (result: LocationSearchResult, selectedRank?: number) => {
+    const url = buildUrl(result);
     trackNavigation(result, selectedRank || results.indexOf(result) + 1);
     navigate(url);
   };
+
+  // Keep backward compatibility
+  const navigateToNeighborhood = navigateToResult;
+  const buildNeighborhoodUrl = buildUrl;
 
   const handleSubmit = async (term: string) => {
     let searchResults = results;
@@ -106,7 +121,7 @@ export const useLocationSearch = () => {
 
     // Auto-navigate ONLY for single result
     if (searchResults.length === 1) {
-      navigateToNeighborhood(searchResults[0], 1);
+      navigateToResult(searchResults[0], 1);
     }
     // For 2+ results, let dropdown stay open for user selection
   };
@@ -134,7 +149,8 @@ export const useLocationSearch = () => {
   const trackNavigation = (result: LocationSearchResult, selectedRank: number) => {
     try {
       if (typeof window !== 'undefined' && (window as any).gtag) {
-        (window as any).gtag('event', 'neighborhood_selected', {
+        (window as any).gtag('event', 'location_selected', {
+          result_type: result.result_type,
           neighborhood: result.neighborhood,
           city_area: result.city_area,
           state: result.state,
@@ -154,9 +170,11 @@ export const useLocationSearch = () => {
     isSearching,
     error,
     search,
+    navigateToResult,
     navigateToNeighborhood,
     handleSubmit,
     clearResults,
+    buildUrl,
     buildNeighborhoodUrl
   };
 };
