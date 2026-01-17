@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Download } from "lucide-react";
+import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
@@ -27,7 +27,6 @@ import { WarmCacheCronManager } from '@/components/admin/WarmCacheCronManager';
 import { RecentEnrichmentLinks } from '@/components/admin/RecentEnrichmentLinks';
 import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
 import { ImportAgentZipActivity } from '@/components/admin/ImportAgentZipActivity';
-import { AgentWebsiteExporter } from '@/components/admin/AgentWebsiteExporter';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -213,10 +212,6 @@ const AdminDashboard = () => {
               <MapPin className="mr-2 h-4 w-4" />
               ZIP Activity
             </TabsTrigger>
-            <TabsTrigger value="exports">
-              <Download className="mr-2 h-4 w-4" />
-              Exports
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="pipedrive-sync" className="space-y-4">
@@ -262,10 +257,6 @@ const AdminDashboard = () => {
 
           <TabsContent value="zip-activity" className="space-y-4">
             <ImportAgentZipActivity />
-          </TabsContent>
-
-          <TabsContent value="exports" className="space-y-4">
-            <AgentWebsiteExporter />
           </TabsContent>
         </Tabs>
       </div>
