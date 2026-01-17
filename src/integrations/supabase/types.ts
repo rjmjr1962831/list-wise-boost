@@ -3890,15 +3890,12 @@ export type Database = {
           city_area: string
           city_area_slug: string
           city_id: string
-          is_primary: boolean
           match_score: number
           median_home_value: number
           neighborhood: string
-          neighborhood_id: string
           neighborhood_slug: string
           primary_zip: string
           result_type: string
-          search_type: string
           state: string
           tier: string
         }[]
