@@ -125,35 +125,39 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
       )}
 
       {/* City Highlights */}
-      <section className="max-w-4xl mx-auto mb-10">
-        <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-primary" />
-          Why People Move to {cityName}
-        </h3>
-        <ul className="grid md:grid-cols-2 gap-3">
-          {marketData.highlights.map((highlight, index) => (
-            <li key={index} className="flex items-start gap-2 text-foreground/80">
-              <span className="text-primary mt-1">•</span>
-              <span dangerouslySetInnerHTML={{ __html: highlight }} />
-            </li>
-          ))}
-        </ul>
-      </section>
+      {marketData.highlights && marketData.highlights.length > 0 && (
+        <section className="max-w-4xl mx-auto mb-10">
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Why People Move to {cityName}
+          </h3>
+          <ul className="grid md:grid-cols-2 gap-3">
+            {marketData.highlights.map((highlight, index) => (
+              <li key={index} className="flex items-start gap-2 text-foreground/80">
+                <span className="text-primary mt-1">•</span>
+                <span dangerouslySetInnerHTML={{ __html: highlight }} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Housing Types */}
-      <section className="max-w-4xl mx-auto mb-10">
-        <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Building2 className="h-5 w-5 text-primary" />
-          Neighborhoods in {cityName}
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {marketData.neighborhoodTypes.map((type, index) => (
-            <span key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-              {type}
-            </span>
-          ))}
-        </div>
-      </section>
+      {marketData.neighborhoodTypes && marketData.neighborhoodTypes.length > 0 && (
+        <section className="max-w-4xl mx-auto mb-10">
+          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-primary" />
+            Neighborhoods in {cityName}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {marketData.neighborhoodTypes.map((type, index) => (
+              <span key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                {type}
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Buyer Profile */}
       <section className="max-w-4xl mx-auto mb-10">
