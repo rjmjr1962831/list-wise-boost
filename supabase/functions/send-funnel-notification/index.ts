@@ -171,6 +171,57 @@ serve(async (req) => {
           </p>
         </div>
       `;
+    } else if (event_type === 'accuracy_confirmed') {
+      subject = `✅ Agent Confirmed Accuracy: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #16a34a; margin-bottom: 20px;">✅ Agent Confirmed Profile Accuracy</h2>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            This agent confirmed their profile information is accurate. They may proceed to approval or pricing.
+          </p>
+        </div>
+      `;
+    } else if (event_type === 'profile_edited') {
+      subject = `📝 Agent Edited Profile: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #2563eb; margin-bottom: 20px;">📝 Agent Made Profile Edits</h2>
+          <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            This agent submitted profile edits. Check the Field Change Requests in admin.
+          </p>
+        </div>
+      `;
+    } else if (event_type === 'profile_approved') {
+      subject = `🎉 Agent APPROVED Profile: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #7c3aed; margin-bottom: 20px;">🎉 Agent Approved Their Profile!</h2>
+          <div style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            <strong>Key milestone!</strong> This agent has approved their profile and may proceed to pricing.
+          </p>
+        </div>
+      `;
     } else {
       subject = `Agent Funnel Event: ${event_type}`;
       html = `
