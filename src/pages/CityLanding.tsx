@@ -1,16 +1,25 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
-import { MapPin, Search, ArrowLeft, Users } from "lucide-react";
+import { MapPin, Search, ArrowLeft, Users, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CityMarketOverview } from "@/components/CityMarketOverview";
-import { getCityBySlug, getCitiesByState } from "@/data/cities";
 import { formatCityName } from "@/utils/routeHelpers";
 import { normalizeStateSlug } from "@/utils/stateSlugMapping";
+
+type CityRow = {
+  id: string;
+  name: string;
+  slug: string;
+  state: string;
+  state_slug: string;
+};
 
 export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
@@ -35,47 +44,100 @@ export default function CityLanding() {
 
   // Normalize state slug - redirect if using abbreviation (e.g., /az/ -> /arizona/)
   const stateNormalized = stateSlug ? normalizeStateSlug(stateSlug) : null;
-  
-  // If state slug is an abbreviation, redirect to canonical full name URL
-  // This must be AFTER all hooks
-  if (stateSlug && stateNormalized?.needsRedirect) {
-    const newPath = `/${stateNormalized.normalized}/${citySlug}`;
-    console.log(`[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${stateNormalized.normalized}/`);
-    return <Navigate to={newPath} replace />;
-  }
-  
-  // Use normalized state slug
-  const normalizedStateSlug = stateNormalized?.normalized || stateSlug || '';
-  
+  const normalizedStateSlug = stateNormalized?.normalized || stateSlug || "";
+  const needsStateRedirect = !!(stateSlug && stateNormalized?.needsRedirect);
+
   // Redirect to coming soon page unless Arizona, California, or Albuquerque (New Mexico)
   const stateSlugLower = normalizedStateSlug.toLowerCase();
-  const citySlugLower = (citySlug || '').toLowerCase();
+  const citySlugLower = (citySlug || "").toLowerCase();
   const isAllowed =
-    stateSlugLower === 'arizona' ||
-    stateSlugLower === 'california' ||
-    ((stateSlugLower === 'new-mexico') && citySlugLower === 'albuquerque');
+    stateSlugLower === "arizona" ||
+    stateSlugLower === "california" ||
+    (stateSlugLower === "new-mexico" && citySlugLower === "albuquerque");
+
+  const { data: city, isLoading: isCityLoading } = useQuery({
+    queryKey: ["city-row", normalizedStateSlug, citySlugLower],
+    queryFn: async (): Promise<CityRow | null> => {
+      if (!normalizedStateSlug || !citySlugLower) return null;
+
+      const { data, error } = await supabase
+        .from("cities")
+        .select("id,name,slug,state,state_slug")
+        .eq("state_slug", normalizedStateSlug.toLowerCase())
+        .eq("slug", citySlugLower)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data ?? null;
+    },
+    enabled: !!normalizedStateSlug && !!citySlugLower && !needsStateRedirect && isAllowed,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  const { data: stateCities = [] } = useQuery({
+    queryKey: ["cities-by-state", normalizedStateSlug, searchQuery],
+    queryFn: async (): Promise<CityRow[]> => {
+      if (!normalizedStateSlug) return [];
+
+      let query = supabase
+        .from("cities")
+        .select("id,name,slug,state,state_slug")
+        .eq("state_slug", normalizedStateSlug.toLowerCase())
+        .order("name", { ascending: true })
+        .limit(50);
+
+      if (searchQuery.trim()) {
+        query = query.ilike("name", `%${searchQuery.trim()}%`);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return (data ?? []).filter((c) => c.slug !== citySlugLower);
+    },
+    enabled: !!normalizedStateSlug && !needsStateRedirect,
+    staleTime: 1000 * 60 * 10,
+  });
+
+  // If state slug is an abbreviation, redirect to canonical full name URL
+  // This must be AFTER all hooks
+  if (needsStateRedirect) {
+    const newPath = `/${normalizedStateSlug}/${citySlug}`;
+    console.log(
+      `[StateSlugRedirect] Redirecting from /${stateSlug}/ to /${normalizedStateSlug}/`
+    );
+    return <Navigate to={newPath} replace />;
+  }
 
   if (stateSlug && !isAllowed) {
     return <Navigate to={`/coming-soon/${normalizedStateSlug}/${citySlug}`} replace />;
   }
 
-  const city = getCityBySlug(citySlug || "", normalizedStateSlug);
-  
-  // Must check city exists before accessing properties
+  if (isCityLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (!city) {
     return <Navigate to="/404" replace />;
   }
 
-  // Get cities for the dialog (same state as current page)
-  const stateCities = getCitiesByState(normalizedStateSlug).filter(c =>
-    c.slug !== citySlug && c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleCitySelect = (selectedCity: typeof stateCities[0]) => {
+  const handleCitySelect = (selectedCity: CityRow) => {
     setDialogOpen(false);
     setSearchQuery("");
     navigate(`/${normalizedStateSlug}/${selectedCity.slug}`);
   };
+
+  // Determine if user came from the list page
+  const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
+  const cameFromList = location.state?.fromList || document.referrer.includes(listUrl);
+
+  const cityName = formatCityName({ name: city.name, state: city.state, slug: city.slug, stateSlug: city.state_slug } as any);
+  const canonicalUrl = `https://www.top10lists.us/${normalizedStateSlug}/${city.slug}`;
+
 
   // Determine if user came from the list page
   const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
