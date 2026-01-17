@@ -14,6 +14,11 @@ interface DualSearchBoxProps {
   className?: string;
 }
 
+const getResultTypeLabel = (result: { result_type: string; tier?: string }) => {
+  if (result.result_type === 'city') return 'City';
+  return 'Neighborhood';
+};
+
 export const DualSearchBox = ({ 
   locationPlaceholder = "Search by ZIP code or neighborhood",
   agentPlaceholder = "Search agent name",
@@ -34,7 +39,7 @@ export const DualSearchBox = ({
     isSearching: isLocationSearching, 
     error: locationError, 
     search: searchLocation, 
-    navigateToNeighborhood, 
+    navigateToResult, 
     clearResults: clearLocationResults 
   } = useLocationSearch();
 
@@ -112,7 +117,7 @@ export const DualSearchBox = ({
         e.preventDefault();
         if (hasLocationNavigatedWithArrows || locationResults.length === 1) {
           if (locationResults[locationSelectedIndex]) {
-            navigateToNeighborhood(locationResults[locationSelectedIndex], locationSelectedIndex + 1);
+            navigateToResult(locationResults[locationSelectedIndex], locationSelectedIndex + 1);
             setShowLocationDropdown(false);
             setLocationValue('');
           }
@@ -152,9 +157,9 @@ export const DualSearchBox = ({
             onChange={(e) => setLocationValue(e.target.value)}
             onKeyDown={handleLocationKeyDown}
             onFocus={() => locationResults.length > 0 && setShowLocationDropdown(true)}
-            placeholder={locationPlaceholder}
+            placeholder="Search city, ZIP, or neighborhood"
             className="pl-12 pr-4 py-6 text-lg"
-            aria-label="Search by ZIP code or neighborhood"
+            aria-label="Search by city, ZIP code, or neighborhood"
             aria-autocomplete="list"
             aria-controls="location-results"
             aria-expanded={showLocationDropdown}
@@ -177,10 +182,10 @@ export const DualSearchBox = ({
             ) : (
               locationResults.map((result, index) => (
                 <button
-                  key={result.neighborhood_id}
+                  key={`${result.result_type}-${result.neighborhood_id}`}
                   data-location-index={index}
                   onClick={() => {
-                    navigateToNeighborhood(result, index + 1);
+                    navigateToResult(result, index + 1);
                     setShowLocationDropdown(false);
                     setLocationValue('');
                   }}
@@ -196,15 +201,25 @@ export const DualSearchBox = ({
                       <p className="font-medium text-foreground truncate">
                         {result.neighborhood}
                       </p>
-                      <p className="text-sm text-muted-foreground truncate">
-                        {result.city_area}, {result.state}
-                      </p>
+                      {result.result_type === 'neighborhood' && (
+                        <p className="text-sm text-muted-foreground truncate">
+                          {result.city_area}, {result.state}
+                        </p>
+                      )}
+                      {result.result_type === 'city' && (
+                        <p className="text-sm text-muted-foreground truncate">
+                          {result.state}
+                        </p>
+                      )}
                     </div>
-                    {result.is_primary && (
-                      <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded whitespace-nowrap flex-shrink-0">
-                        Primary
-                      </span>
-                    )}
+                    <span className={cn(
+                      "px-2 py-1 text-xs font-medium rounded whitespace-nowrap flex-shrink-0",
+                      result.result_type === 'city' 
+                        ? "bg-secondary text-secondary-foreground" 
+                        : "bg-primary/10 text-primary"
+                    )}>
+                      {getResultTypeLabel(result)}
+                    </span>
                   </div>
                 </button>
               ))
