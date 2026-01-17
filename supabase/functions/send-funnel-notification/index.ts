@@ -33,7 +33,53 @@ serve(async (req) => {
       timeStyle: 'short'
     });
 
-    if (event_type === 'profile_edit_viewed') {
+    if (event_type === 'funnel_started') {
+      subject = `🟢 Agent Clicked Into Funnel: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #16a34a; margin-bottom: 20px;">🚀 Agent Started Funnel</h2>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            This agent just clicked a magic link and entered the funnel. They will see their profile for review.
+          </p>
+          <p style="margin-top: 20px; color: #333;">
+            Robert Maynard<br>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+          </p>
+        </div>
+      `;
+    } else if (event_type === 'accuracy_review_viewed') {
+      subject = `🔵 Agent Viewing Accuracy Review: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #2563eb; margin-bottom: 20px;">Agent Reviewing Their Profile</h2>
+          <div style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            This agent is reviewing their profile accuracy. They may approve or request corrections.
+          </p>
+          <p style="margin-top: 20px; color: #333;">
+            Robert Maynard<br>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+          </p>
+        </div>
+      `;
+    } else if (event_type === 'profile_edit_viewed') {
       subject = `🔵 Agent Viewing Edit Page: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -70,6 +116,52 @@ serve(async (req) => {
           ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
             <strong>Hot lead!</strong> This agent is considering premium placement. Follow up may increase conversion.
+          </p>
+          <p style="margin-top: 20px; color: #333;">
+            Robert Maynard<br>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+          </p>
+        </div>
+      `;
+    } else if (event_type === 'checkout_started') {
+      subject = `🔥 Agent Started Checkout: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #dc2626; margin-bottom: 20px;">🔥 Agent Starting Checkout!</h2>
+          <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            <strong>VERY HOT LEAD!</strong> This agent is entering payment info. Watch for completion or abandonment.
+          </p>
+          <p style="margin-top: 20px; color: #333;">
+            Robert Maynard<br>
+            <em>Founder</em><br><br>
+            Give me a call if I can help you:<br>
+            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+          </p>
+        </div>
+      `;
+    } else if (event_type === 'checkout_completed') {
+      subject = `💰 Agent Completed Purchase: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2 style="color: #16a34a; margin-bottom: 20px;">💰 Purchase Complete!</h2>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            <strong>New paying customer!</strong> Welcome them and ensure their listing is live.
           </p>
           <p style="margin-top: 20px; color: #333;">
             Robert Maynard<br>
