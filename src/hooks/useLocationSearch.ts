@@ -59,7 +59,7 @@ export const useLocationSearch = () => {
 
       if (!data || data.length === 0) {
         const errorMsg = term.match(/^\d{5}$/) 
-          ? `No neighborhoods found for ZIP ${term}`
+          ? `No listings in ZIP ${term} yet. Try a city or neighborhood name.`
           : `No results found matching "${term}"`;
         setError(errorMsg);
         setResults([]);
