@@ -885,6 +885,101 @@ serve(async (req) => {
       );
     }
 
+    // ============ NEW: POST action=upsert-marketing-content ============
+    if (req.method === 'POST' && action === 'upsert-marketing-content') {
+      const body = await req.json();
+      const { records } = body;
+
+      if (!records || !Array.isArray(records) || records.length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'records array is required and must not be empty' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`enrichment-api - Upserting ${records.length} marketing_content records`);
+
+      let inserted = 0;
+      let updated = 0;
+      let failed = 0;
+      const errors: { page: string; section: string; key: string; error: string }[] = [];
+
+      for (const record of records) {
+        const { page, section, key, type, value } = record;
+
+        if (!page || !section || !key) {
+          errors.push({ page: page || 'unknown', section: section || 'unknown', key: key || 'unknown', error: 'Missing required fields (page, section, key)' });
+          failed++;
+          continue;
+        }
+
+        // Check if record exists using page + section + key as composite key
+        const { data: existing, error: checkError } = await supabase
+          .from('marketing_content')
+          .select('id')
+          .eq('page', page)
+          .eq('section', section)
+          .eq('key', key)
+          .maybeSingle();
+
+        if (checkError) {
+          errors.push({ page, section, key, error: checkError.message });
+          failed++;
+          continue;
+        }
+
+        if (existing) {
+          // Update existing record
+          const { error: updateError } = await supabase
+            .from('marketing_content')
+            .update({ 
+              type: type || 'json', 
+              value: typeof value === 'string' ? value : JSON.stringify(value),
+              updated_at: new Date().toISOString() 
+            })
+            .eq('id', existing.id);
+
+          if (updateError) {
+            errors.push({ page, section, key, error: updateError.message });
+            failed++;
+          } else {
+            updated++;
+          }
+        } else {
+          // Insert new record
+          const { error: insertError } = await supabase
+            .from('marketing_content')
+            .insert({ 
+              page, 
+              section, 
+              key, 
+              type: type || 'json', 
+              value: typeof value === 'string' ? value : JSON.stringify(value)
+            });
+
+          if (insertError) {
+            errors.push({ page, section, key, error: insertError.message });
+            failed++;
+          } else {
+            inserted++;
+          }
+        }
+      }
+
+      console.log(`enrichment-api - Upsert marketing_content complete: ${inserted} inserted, ${updated} updated, ${failed} failed`);
+
+      return new Response(
+        JSON.stringify({
+          processed: records.length,
+          inserted,
+          updated,
+          failed,
+          errors: errors.length > 0 ? errors : undefined
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Invalid action - show all available actions
     return new Response(
       JSON.stringify({ 
@@ -904,6 +999,8 @@ serve(async (req) => {
           'bulk-update': 'POST ?action=bulk-update - Bulk update professionals (body: {updates: [{id, ...fields}, ...]})',
           // City management
           'upsert-cities': 'POST ?action=upsert-cities - Upsert cities (body: {cities: [{name, state, state_slug, slug, active}]})',
+          // Marketing content
+          'upsert-marketing-content': 'POST ?action=upsert-marketing-content - Upsert marketing content (body: {records: [{page, section, key, type, value}]})',
           // Promotion
           promote_to_professional: 'POST ?action=promote_to_professional - Promote qualified license (body: {license_id})',
           // Custom query
