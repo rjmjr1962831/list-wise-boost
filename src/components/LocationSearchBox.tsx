@@ -142,7 +142,10 @@ export const LocationSearchBox = ({
           ) : (
             results.map((result, index) => (
               <button
-                key={result.neighborhood_id}
+                key={result.result_type === 'city'
+                  ? `city-${result.city_id ?? result.city_area_slug}`
+                  : `neighborhood-${result.city_area_slug}-${result.neighborhood_slug}-${result.primary_zip ?? ''}`
+                }
                 data-index={index}
                 onClick={() => {
                   navigateToNeighborhood(result, index + 1);
@@ -165,11 +168,6 @@ export const LocationSearchBox = ({
                       {result.city_area}, {result.state}
                     </p>
                   </div>
-                  {result.is_primary && (
-                    <span className="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded whitespace-nowrap flex-shrink-0">
-                      Primary
-                    </span>
-                  )}
                 </div>
               </button>
             ))
