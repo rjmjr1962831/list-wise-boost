@@ -7,7 +7,8 @@ import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountB
 import { useCityMarketContent } from '@/hooks/useCityMarketContent';
 import { 
   Home, TrendingUp, Users, Building2, DollarSign, Clock, Sparkles, 
-  History, MapPin, Heart, Lightbulb, Coffee 
+  History, MapPin, Heart, Lightbulb, Coffee, Ruler, PercentIcon, 
+  BarChart3, ShoppingCart, Square, Key
 } from 'lucide-react';
 
 interface CityMarketOverviewProps {
@@ -39,8 +40,8 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
           dangerouslySetInnerHTML={{ __html: marketData.overview }}
         />
         
-        {/* Key Market Statistics */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        {/* Key Market Statistics - Row 1 */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
           {marketData.medianHomePrice && (
             <div className="bg-muted/30 rounded-lg p-4 text-center">
               <Home className="h-5 w-5 mx-auto mb-2 text-primary" />
@@ -67,6 +68,54 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
               <Clock className="h-5 w-5 mx-auto mb-2 text-primary" />
               <div className="text-lg font-semibold text-foreground">{marketData.daysOnMarket} days</div>
               <div className="text-xs text-muted-foreground">Avg. Days on Market</div>
+            </div>
+          )}
+        </div>
+
+        {/* Key Market Statistics - Row 2 */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          {marketData.pricePerSqFt && (
+            <div className="bg-muted/30 rounded-lg p-4 text-center">
+              <Ruler className="h-5 w-5 mx-auto mb-2 text-primary" />
+              <div className="text-lg font-semibold text-foreground">${marketData.pricePerSqFt}</div>
+              <div className="text-xs text-muted-foreground">Price per Sq Ft</div>
+            </div>
+          )}
+          {marketData.yearOverYearChange !== undefined && marketData.yearOverYearChange !== null && (
+            <div className="bg-muted/30 rounded-lg p-4 text-center">
+              <TrendingUp className="h-5 w-5 mx-auto mb-2 text-primary" />
+              <div className="text-lg font-semibold text-foreground">
+                {marketData.yearOverYearChange > 0 ? '+' : ''}{(marketData.yearOverYearChange * 100).toFixed(1)}%
+              </div>
+              <div className="text-xs text-muted-foreground">YoY Price Change</div>
+            </div>
+          )}
+          {marketData.inventoryLevel && (
+            <div className="bg-muted/30 rounded-lg p-4 text-center">
+              <BarChart3 className="h-5 w-5 mx-auto mb-2 text-primary" />
+              <div className="text-lg font-semibold text-foreground">{marketData.inventoryLevel}</div>
+              <div className="text-xs text-muted-foreground">Inventory Level</div>
+            </div>
+          )}
+          {marketData.marketType && (
+            <div className="bg-muted/30 rounded-lg p-4 text-center">
+              <ShoppingCart className="h-5 w-5 mx-auto mb-2 text-primary" />
+              <div className="text-lg font-semibold text-foreground">{marketData.marketType}</div>
+              <div className="text-xs text-muted-foreground">Market Type</div>
+            </div>
+          )}
+          {marketData.averageHomeSize && (
+            <div className="bg-muted/30 rounded-lg p-4 text-center">
+              <Square className="h-5 w-5 mx-auto mb-2 text-primary" />
+              <div className="text-lg font-semibold text-foreground">{marketData.averageHomeSize.toLocaleString()} sqft</div>
+              <div className="text-xs text-muted-foreground">Avg Home Size</div>
+            </div>
+          )}
+          {marketData.homeownershipRate !== undefined && marketData.homeownershipRate !== null && (
+            <div className="bg-muted/30 rounded-lg p-4 text-center">
+              <Key className="h-5 w-5 mx-auto mb-2 text-primary" />
+              <div className="text-lg font-semibold text-foreground">{(marketData.homeownershipRate * 100).toFixed(1)}%</div>
+              <div className="text-xs text-muted-foreground">Homeownership Rate</div>
             </div>
           )}
         </div>
