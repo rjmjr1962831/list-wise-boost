@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Award, Users, Info, ExternalLink } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { AgentBadge } from './AgentBadge';
 import { Professional } from '@/types/professional';
 import { Link } from 'react-router-dom';
@@ -123,55 +121,18 @@ export function NeighborhoodExpertPage({
   }
 
   return (
-    <div className="space-y-8">
-      {/* Neighborhood Expert Designation Block - ALWAYS VISIBLE */}
-      <section className="bg-gradient-to-br from-amber-50/50 to-background border border-amber-200/50 rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Award className="h-7 w-7 text-amber-600" />
-          <h2 className="text-2xl font-bold text-foreground">Neighborhood Expert Designation</h2>
-          {experts.length > 0 && (
-            <Badge className="bg-amber-100 text-amber-800 border-amber-300">
-              {experts.length} Expert{experts.length !== 1 ? 's' : ''}
-            </Badge>
-          )}
-        </div>
-
-        {/* Canonical Language Block - EXACT WORDING REQUIRED - FULLY VISIBLE FOR CRAWLERS */}
-        <div className="prose prose-sm max-w-none text-muted-foreground space-y-3">
-          <p>
-            The Neighborhood Expert designation represents an additional level of diligence focused on sustained, neighborhood-specific experience and specialization.
-          </p>
-          <p>
-            In addition to Top10Lists' standard editorial review, designated neighborhood experts undergo deeper area-specific evaluation and make an investment to support ongoing verification of their specialty.
-          </p>
-          <p>
-            As a result, these specialists are more likely to have insider knowledge of neighborhood listings, pricing nuances, and local market dynamics that other agents may not.
-          </p>
-        </div>
-
-        {/* Methodology Link */}
-        <div className="mt-4 pt-4 border-t border-border/50">
-          <Link 
-            to="/about/ranking-methodology" 
-            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
-          >
-            <Info className="h-4 w-4" />
-            View our ranking methodology
-            <ExternalLink className="h-3 w-3" />
-          </Link>
-        </div>
-      </section>
-
+    <div className="space-y-6">
       {/* Experts Display OR No Expert Message */}
       {experts.length > 0 ? (
         <section>
-          <h3 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <Award className="h-5 w-5 text-amber-600" />
-            Designated Neighborhood Expert{experts.length > 1 ? 's' : ''} for {neighborhoodName}
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            This expert has been editorially designated by Top10Lists based on neighborhood-specific review and ongoing verification.
-          </p>
+          <div className="flex items-baseline gap-3 mb-4">
+            <h2 className="text-lg font-semibold text-foreground">
+              Neighborhood Expert{experts.length > 1 ? 's' : ''}: {neighborhoodName}
+            </h2>
+            <span className="text-sm text-muted-foreground">
+              ({experts.length} designated)
+            </span>
+          </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {experts.map((expert, index) => (
               <AgentBadge 
@@ -187,32 +148,44 @@ export function NeighborhoodExpertPage({
           </div>
         </section>
       ) : (
-        <section className="bg-muted/30 border border-dashed border-border rounded-xl p-8 text-center">
-          <Award className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-lg font-medium text-foreground mb-2">
-            At this time, no Neighborhood Expert has been designated for this area.
-          </p>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto">
-            All agents on the following pages have passed Top10Lists' rigorous, non-commercial editorial review and represent top-performing professionals in this market.
+        <section className="py-4">
+          <p className="text-sm text-muted-foreground">
+            No Neighborhood Expert currently designated for {neighborhoodName}.
           </p>
         </section>
       )}
 
-      {/* Navigation to Qualified Agents (Page 2+) */}
-      <section className="bg-background border border-border rounded-xl p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <Users className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Additional Qualified Agents</h3>
-        </div>
-        <p className="text-sm text-muted-foreground mb-4">
-          Browse agents who have passed our standard editorial review and serve the {neighborhoodName} area.
-        </p>
-        <Button asChild>
-          <Link to={qualifiedAgentsUrl}>
-            View additional qualified agents serving this area
+      {/* Neighborhood Expert Explanation - Compact, factual */}
+      <details className="group text-sm">
+        <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors list-none flex items-center gap-1">
+          <span>What is a Neighborhood Expert?</span>
+          <ChevronDown className="h-3 w-3 group-open:rotate-180 transition-transform" />
+        </summary>
+        <div className="mt-3 pl-0 text-muted-foreground space-y-2 max-w-2xl">
+          <p>
+            The Neighborhood Expert designation represents additional diligence focused on sustained, neighborhood-specific experience.
+          </p>
+          <p>
+            Designated experts undergo deeper area-specific evaluation and make an investment to support ongoing verification.
+          </p>
+          <Link 
+            to="/about/ranking-methodology" 
+            className="inline-block text-primary hover:underline mt-1"
+          >
+            View methodology
           </Link>
-        </Button>
-      </section>
+        </div>
+      </details>
+
+      {/* Navigation to Qualified Agents - Simple link, not a card */}
+      <div className="pt-4 border-t border-border">
+        <Link 
+          to={qualifiedAgentsUrl}
+          className="text-primary hover:underline text-sm"
+        >
+          View all qualified agents serving {neighborhoodName} →
+        </Link>
+      </div>
     </div>
   );
 }

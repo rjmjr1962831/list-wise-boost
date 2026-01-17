@@ -113,101 +113,75 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
   }
 
   return (
-    <Card className="mb-8 border-primary/20 bg-gradient-to-br from-card to-card/80">
-      <CardContent className="p-6">
-        {/* Header with neighborhood name and tier badge */}
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-semibold text-foreground">
-              {neighborhood.neighborhood}
-            </h2>
-          </div>
-          <Badge variant={getTierBadgeVariant(neighborhood.tier)}>
+    <div className="mb-6">
+      {/* Neighborhood Facts Bar - Clean horizontal layout */}
+      <div className="flex flex-wrap items-center gap-x-8 gap-y-2 py-4 border-b border-border">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Neighborhood:</span>
+          <span className="font-medium text-foreground">{neighborhood.neighborhood}</span>
+          <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
             {getTierDisplayName(neighborhood.tier)}
-          </Badge>
+          </span>
         </div>
+        
+        {neighborhood.median_home_value && (
+          <div>
+            <span className="text-sm text-muted-foreground">Median Home: </span>
+            <span className="font-medium text-foreground">{formatCurrency(neighborhood.median_home_value)}</span>
+          </div>
+        )}
 
-        {/* Stats grid - 2x2 layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-          {/* Row 1: Median Home Value | Median Household Income */}
-          {neighborhood.median_home_value && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-              <Home className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-sm text-muted-foreground">Median Home Value</p>
-                <p className="text-lg font-semibold text-foreground">
-                  {formatCurrency(neighborhood.median_home_value)}
-                </p>
-              </div>
-            </div>
-          )}
+        {neighborhood.median_income && (
+          <div>
+            <span className="text-sm text-muted-foreground">Median Income: </span>
+            <span className="font-medium text-foreground">{formatCurrency(neighborhood.median_income)}</span>
+          </div>
+        )}
 
-          {neighborhood.median_income && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-              <DollarSign className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-sm text-muted-foreground">Median Household Income</p>
-                <p className="text-lg font-semibold text-foreground">
-                  {formatCurrency(neighborhood.median_income)}
-                </p>
-              </div>
-            </div>
-          )}
+        {neighborhood.zips && neighborhood.zips.length > 0 && (
+          <div>
+            <span className="text-sm text-muted-foreground">ZIP: </span>
+            <span className="font-medium text-foreground">
+              {neighborhood.zips.slice(0, 3).join(', ')}
+              {neighborhood.zips.length > 3 && ` +${neighborhood.zips.length - 3}`}
+            </span>
+          </div>
+        )}
+      </div>
 
-          {/* Row 2: ZIP Codes | About Neighborhood */}
-          {neighborhood.zips && neighborhood.zips.length > 0 && (
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-              <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div>
-                <p className="text-sm text-muted-foreground">ZIP Codes</p>
-                <p className="text-lg font-semibold text-foreground">
-                  {neighborhood.zips.slice(0, 3).join(', ')}
-                  {neighborhood.zips.length > 3 && ` +${neighborhood.zips.length - 3} more`}
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* About Section - in grid */}
-          <Collapsible open={isAboutOpen} onOpenChange={setIsAboutOpen}>
-            <div className="flex items-start gap-3 p-3 rounded-lg bg-background/50">
-              <Info className="h-5 w-5 text-muted-foreground mt-0.5" />
-              <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-foreground">
-                    About {neighborhood.neighborhood}
-                  </h3>
-                  <CollapsibleTrigger asChild>
-                    <button className="text-sm text-primary hover:text-primary/80 font-medium flex items-center gap-1">
-                      {isAboutOpen ? 'less' : 'more'}
-                      {isAboutOpen ? (
-                        <ChevronUp className="h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4" />
-                      )}
-                    </button>
-                  </CollapsibleTrigger>
-                </div>
-              </div>
-            </div>
-            <CollapsibleContent>
+      {/* About Section - Separate, clean collapsible */}
+      {(neighborhood.writeup_html || neighborhood.tier) && (
+        <Collapsible open={isAboutOpen} onOpenChange={setIsAboutOpen}>
+          <div className="py-3 border-b border-border">
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <span>About {neighborhood.neighborhood}</span>
+                {isAboutOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent>
+            <div className="py-4">
               {neighborhood.writeup_html ? (
                 <div 
-                  className="prose prose-sm max-w-none text-muted-foreground p-3 pt-0 [&_p]:mb-3 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-base [&_h3]:font-medium [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1"
+                  className="prose prose-sm max-w-none text-muted-foreground [&_p]:mb-3 [&_h2]:text-base [&_h2]:font-semibold [&_h2]:text-foreground [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-sm [&_h3]:font-medium [&_h3]:text-foreground [&_h3]:mt-3 [&_h3]:mb-2 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_li]:mb-1"
                   dangerouslySetInnerHTML={{ __html: neighborhood.writeup_html }}
                 />
               ) : (
-                <p className="text-sm text-muted-foreground p-3 pt-0">
+                <p className="text-sm text-muted-foreground">
                   {neighborhood.neighborhood} is a neighborhood in {neighborhood.city_area}, {neighborhood.state}.
                   {neighborhood.tier === 'Luxury' && ' This is one of the most prestigious areas in the region.'}
                   {neighborhood.tier === 'Prime' && ' This is a highly sought-after area with strong property values.'}
                 </p>
               )}
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
+      )}
+    </div>
   );
 }

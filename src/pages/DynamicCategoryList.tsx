@@ -1338,23 +1338,22 @@ export default function DynamicCategoryList({
       />
       
       {/* SEO H1 - Visible heading for search engine compliance */}
-      <div className="bg-gradient-to-b from-primary/5 to-background pt-8 pb-4">
+      <div className="bg-background pt-6 pb-4 border-b border-border">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-center text-foreground">
-            Top Agents in {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, {stateAbbrev}
-          </h1>
-          <p className="text-center text-muted-foreground mt-3 max-w-2xl mx-auto">
-            None of these agents paid to be listed here. Their selection is purely merit based.{" "}
-            <Link to="/about/ranking-methodology" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-              Methodology
-            </Link>
-          </p>
+          <div className="flex flex-col md:flex-row md:items-baseline md:justify-between gap-2">
+            <h1 className="text-2xl md:text-3xl font-semibold text-foreground">
+              Top Agents: {neighborhoodName ? `${neighborhoodName}, ` : ''}{city.name}, {stateAbbrev}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              Merit-based selection · <Link to="/about/ranking-methodology" className="text-primary hover:underline">Methodology</Link>
+            </p>
+          </div>
           
-          {/* ZIP/Neighborhood + Agent Name Search */}
-          <div className="mt-8 max-w-3xl mx-auto">
+          {/* Search - Compact */}
+          <div className="mt-4 max-w-2xl">
             <DualSearchBox 
-              locationPlaceholder={`Search ${neighborhoodName || city.name} neighborhoods by name or ZIP code`}
-              agentPlaceholder="Search agent name"
+              locationPlaceholder={`Search neighborhoods or ZIP`}
+              agentPlaceholder="Agent name"
               className="w-full"
             />
           </div>
