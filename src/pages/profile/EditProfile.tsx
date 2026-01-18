@@ -459,7 +459,7 @@ export default function EditProfile() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            Review & Edit
+            Review and Edit
           </h1>
         </div>
 
@@ -471,7 +471,7 @@ export default function EditProfile() {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Photo</h2>
               <p className="text-sm text-muted-foreground">
-                Your profile photo helps clients recognize and connect with you.
+                Your profile photo helps clients recognize and connect with you. Use a clear, professional headshot.
               </p>
               <div className="flex items-center gap-6">
                 <div className="relative">
@@ -531,10 +531,10 @@ export default function EditProfile() {
             {/* SECTION 2: CHANGES UNDER REVIEW (Read-Only) */}
             {hasPendingReviews && (
               <div className="space-y-4">
-                <h2 className="text-xl font-semibold text-foreground">Changes Under Review</h2>
-                <p className="text-sm text-muted-foreground">
-                  The following requests are still under review. No action is required at this time.
-                </p>
+              <h2 className="text-xl font-semibold text-foreground">Changes Under Review</h2>
+              <p className="text-sm text-muted-foreground">
+                The following updates are currently under editorial review. No action is required from you.
+              </p>
                 <div className="bg-muted/50 rounded-lg p-4 space-y-1">
                   {pendingReviews.map((review, index) => (
                     <UnderReviewFieldRow
@@ -559,9 +559,12 @@ export default function EditProfile() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                This narrative was written by Top10Lists.us based on all available sources and editorial review. If you believe any part is inaccurate, you may{' '}
+                This narrative was written by Top10Lists.us using verified public data and editorial review. It represents how your career is summarized for AI systems and the public.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                If any part is inaccurate or incomplete, you may{' '}
                 <span
-                  onClick={() => navigate(`/profile/${token}`)}
+                  onClick={() => navigate(`/profile/${token}/review`)}
                   className="text-primary cursor-pointer hover:underline font-medium"
                 >
                   request a review
@@ -580,12 +583,15 @@ export default function EditProfile() {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Bio</h2>
               <p className="text-sm text-muted-foreground">
-                This is your statement to the public. We suggest you write it in the first person.{' '}
+                This is your own voice, written by you. We recommend writing in the first person.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This section does not affect ranking or eligibility.{' '}
                 <span
                   onClick={startEditingBio}
                   className="text-primary cursor-pointer hover:underline font-medium"
                 >
-                  Edit
+                  Edit bio
                 </span>
               </p>
               {bioLastEdited && (
