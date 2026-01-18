@@ -357,7 +357,7 @@ export default function FunnelIntro() {
               Your Profile Is Live. Make Sure It Is Right.
             </h2>
             <p className="text-lg text-muted-foreground mb-4">
-              Databases make mistakes. Details get outdated. We have built your profile from public data, but we want you to verify it.
+              Databases make mistakes. Details get outdated. We have built your profile from all available data, but we want you to verify it.
             </p>
             <p className="text-lg font-medium text-primary mb-6">
               Once AI learns something wrong about you, it repeats it. Let us get it right the first time.

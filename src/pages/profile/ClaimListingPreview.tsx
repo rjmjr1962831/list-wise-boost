@@ -336,7 +336,7 @@ export default function ClaimListingPreview() {
                             <h3 className="font-semibold text-lg">Top10Lists.us Editorial Review</h3>
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            Written by Top10Lists.us based on public and private sources and editorial review.
+                            Written by Top10Lists.us based on all available sources and editorial review.
                           </p>
                         </div>
                         <CollapsibleTrigger asChild>

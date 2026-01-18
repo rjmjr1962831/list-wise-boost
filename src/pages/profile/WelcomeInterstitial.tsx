@@ -106,7 +106,7 @@ export default function WelcomeInterstitial() {
                   <div>
                     <p className="font-semibold text-foreground">AI-Optimized Profile</p>
                     <p className="text-sm text-muted-foreground">
-                      We've created your listing using data from public and private sources
+                      We've created your listing using data from all available sources
                     </p>
                   </div>
                 </div>

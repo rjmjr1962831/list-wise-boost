@@ -304,7 +304,7 @@ export default function AccuracyReview() {
                 </div>
               </div>
               <p className="text-xs text-muted-foreground pt-2 border-t">
-                If no action is taken, this profile remains published as shown based on public data.
+                If no action is taken, this profile remains published as shown based on all available data.
               </p>
             </CardContent>
           </Card>
@@ -314,7 +314,7 @@ export default function AccuracyReview() {
             <CardHeader>
               <CardTitle className="text-lg">Verified Profile Information</CardTitle>
               <p className="text-sm text-muted-foreground">
-                The following fields are displayed as currently published. Each item reflects publicly available information.
+                The following fields are displayed as currently published. Each item reflects all available information.
               </p>
             </CardHeader>
             <CardContent className="pt-0">
@@ -458,7 +458,7 @@ export default function AccuracyReview() {
 
           {/* Disclosure Footer */}
           <p className="text-xs text-center text-muted-foreground pt-4 border-t">
-            If you proceed without requesting corrections, this profile will remain published as-is using public and private sources.
+            If you proceed without requesting corrections, this profile will remain published as-is using all available sources.
           </p>
         </div>
       </div>
