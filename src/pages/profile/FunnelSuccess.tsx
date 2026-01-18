@@ -74,6 +74,9 @@ export default function FunnelSuccess() {
         <div className="container mx-auto px-4 py-12">
           <div className="max-w-2xl mx-auto">
             
+            {/* Step indicator */}
+            <p className="text-sm font-medium text-primary mb-4">Step 5 of 5</p>
+            
             {/* Confirmation Section */}
             <div className="text-center mb-10">
               <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/10 mb-6">
