@@ -215,7 +215,7 @@ export default function FunnelStep0() {
               Agent websites, blog posts, keyword optimized pages, and advertising driven platforms are self-reported by design, which makes them difficult for AI systems to trust when recommending individual professionals.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              As a result, AI models increasingly avoid naming agents from those sources. Instead, they defer the question or send users to do their own research.
+              As a result, AI models increasingly avoid naming agents from those sources. Instead, they defer the question or send users to do their own research. Like MLS and AZDRE.
             </p>
             <p className="text-gray-700 leading-relaxed">
               Top10Lists.us was built for this exact gap. Your profile, once verified, becomes part of a structured, transparent source that AI systems can reference directly when asked for a referral.
