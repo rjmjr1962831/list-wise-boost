@@ -58,10 +58,9 @@ serve(async (req) => {
 
     if (!professional) {
       console.log("[send-agent-verification-code] No active professional found for email");
-      // Return generic success for security - never reveal if email exists
       return new Response(
-        JSON.stringify({ success: true, message: "If this email is registered, you'll receive a code shortly" }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: "email_not_found", message: "This email address is not associated with any agent profile." }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
