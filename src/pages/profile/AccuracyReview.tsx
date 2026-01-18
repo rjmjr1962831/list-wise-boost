@@ -268,7 +268,7 @@ export default function AccuracyReview() {
           {/* Header */}
           <div className="text-center space-y-2">
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Step 1 of 3
+              Step 1 of 3 (1 minute)
             </p>
           </div>
 
