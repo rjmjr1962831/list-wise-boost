@@ -40,10 +40,6 @@ export default function VisibilitySuccessPage() {
       </Helmet>
 
       <div className="container max-w-2xl mx-auto px-4 py-8">
-        {/* Progress indicator - all steps complete */}
-        <div className="mb-8">
-          <CoverageProgress current="payment" />
-        </div>
 
         {/* Success content */}
         <div className="text-center py-12">

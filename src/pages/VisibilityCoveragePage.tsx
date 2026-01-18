@@ -230,10 +230,6 @@ export default function VisibilityCoveragePage() {
       </Helmet>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">
-        {/* Progress indicator */}
-        <div className="mb-8">
-          <CoverageProgress current="coverage" />
-        </div>
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Select Your Coverage Areas</h1>
