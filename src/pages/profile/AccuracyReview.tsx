@@ -418,6 +418,16 @@ export default function AccuracyReview() {
                   source="Public website"
                   onRequestCorrection={() => handleRequestCorrection('Website', professional.website)}
                   isLink={true}
+                  editable={true}
+                  onSave={async (newValue: string) => {
+                    const { error } = await supabase
+                      .from('professionals')
+                      .update({ website: newValue })
+                      .eq('id', professional.id);
+                    if (error) throw error;
+                    setProfessional(prev => prev ? { ...prev, website: newValue } : null);
+                    toast({ title: 'Website updated', description: 'Your website has been saved.' });
+                  }}
                 />
               </div>
             </CardContent>
