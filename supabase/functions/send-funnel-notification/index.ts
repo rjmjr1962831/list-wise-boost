@@ -15,7 +15,9 @@ const PIPEDRIVE_ACTIVITY_EVENTS = [
   'profile_approved', 
   'pricing_viewed',
   'checkout_started',
-  'checkout_completed'
+  'checkout_completed',
+  'cities_selected',
+  'neighborhoods_selected'
 ];
 
 serve(async (req) => {
@@ -28,7 +30,7 @@ serve(async (req) => {
     const PIPEDRIVE_API_TOKEN = Deno.env.get('PIPEDRIVE_API_TOKEN');
     const PIPEDRIVE_DOMAIN = Deno.env.get('PIPEDRIVE_DOMAIN') || 'top10lists';
 
-    const { event_type, agent_name, agent_email, agent_id, city_name, profile_link } = await req.json();
+    const { event_type, agent_name, agent_email, agent_id, city_name, profile_link, cities_selected, neighborhoods_selected } = await req.json();
 
     if (!event_type) {
       throw new Error('event_type is required');
@@ -306,6 +308,19 @@ serve(async (req) => {
             case 'checkout_completed':
               activitySubject = `💰 PURCHASE COMPLETED`;
               activityNote = `Agent ${agent_name} has completed their purchase!\n\nTime: ${timestamp}\nCity: ${city_name || 'N/A'}\nProfile: ${profile_link || 'N/A'}\n\nNew paying customer - ensure listing is live.`;
+              break;
+            case 'cities_selected':
+              const cityNames = cities_selected?.names?.join(', ') || 'Unknown';
+              const cityCount = cities_selected?.count || 0;
+              activitySubject = `🗺️ Selected ${cityCount} Cities`;
+              activityNote = `Agent ${agent_name} selected cities for coverage.\n\nCities (${cityCount}): ${cityNames}\n\nTime: ${timestamp}\nProfile: ${profile_link || 'N/A'}\n\nThis is the first step in the visibility funnel.`;
+              break;
+            case 'neighborhoods_selected':
+              const neighborhoodNames = neighborhoods_selected?.names?.join(', ') || 'Unknown';
+              const neighborhoodCount = neighborhoods_selected?.count || 0;
+              const monthlyTotal = neighborhoods_selected?.monthly_total || 0;
+              activitySubject = `📍 Selected ${neighborhoodCount} Neighborhoods ($${monthlyTotal}/mo)`;
+              activityNote = `Agent ${agent_name} selected neighborhood expertise areas.\n\nNeighborhoods (${neighborhoodCount}): ${neighborhoodNames}\nMonthly Total: $${monthlyTotal}\n\nTime: ${timestamp}\nProfile: ${profile_link || 'N/A'}\n\nHOT LEAD - Agent is considering paid placement.`;
               break;
           }
           
