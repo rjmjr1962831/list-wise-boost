@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ImageUploadModal from '@/components/profile/ImageUploadModal';
 import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
+import { EditableFieldRow } from '@/components/profile/EditableFieldRow';
 
 // Bio Preview component with ...more expander - converts HTML to plain text with paragraph breaks
 const BioPreview = ({ text }: { text: string }) => {
@@ -645,7 +646,7 @@ export default function EditProfile() {
             </div>
 
             {/* SECTION 3: OPTIONAL ADDITIONS (Editable — Agent Source of Truth) */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-semibold text-foreground">Optional Additions</h2>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -653,67 +654,51 @@ export default function EditProfile() {
                 </p>
               </div>
 
-              {/* Professional Headline */}
-              <div>
-                <Label htmlFor="headline">Professional Headline</Label>
-                <p className="text-xs text-muted-foreground mb-1">
-                  A short descriptor shown near your name (e.g., "Luxury Residential Specialist").
-                </p>
-                <Input
-                  id="headline"
-                  placeholder="e.g., Luxury Residential Specialist"
+              <div className="divide-y divide-border">
+                {/* Professional Headline */}
+                <EditableFieldRow
+                  label="Professional Headline"
                   value={formData.headline}
-                  onChange={(e) => handleInputChange('headline', e.target.value)}
+                  placeholder="e.g., Luxury Residential Specialist"
+                  note="A short descriptor shown near your name."
+                  onSave={(val) => handleInputChange('headline', val)}
                 />
-              </div>
 
-              {/* Website */}
-              <div>
-                <Label htmlFor="website">Website</Label>
-                <Input
-                  id="website"
-                  type="url"
-                  placeholder="https://yourwebsite.com"
+                {/* Website */}
+                <EditableFieldRow
+                  label="Website"
                   value={formData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
+                  placeholder="https://yourwebsite.com"
+                  isLink
+                  onSave={(val) => handleInputChange('website', val)}
                 />
-              </div>
 
-              {/* Social Links */}
-              <div className="space-y-4">
-                <Label>Social Links</Label>
-                <div className="grid gap-4">
-                  <div>
-                    <Label htmlFor="social_linkedin" className="text-xs text-muted-foreground">LinkedIn</Label>
-                    <Input
-                      id="social_linkedin"
-                      type="url"
-                      placeholder="https://linkedin.com/in/yourprofile"
-                      value={formData.social_linkedin}
-                      onChange={(e) => handleInputChange('social_linkedin', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="social_facebook" className="text-xs text-muted-foreground">Facebook</Label>
-                    <Input
-                      id="social_facebook"
-                      type="url"
-                      placeholder="https://facebook.com/yourpage"
-                      value={formData.social_facebook}
-                      onChange={(e) => handleInputChange('social_facebook', e.target.value)}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="social_instagram" className="text-xs text-muted-foreground">Instagram</Label>
-                    <Input
-                      id="social_instagram"
-                      type="url"
-                      placeholder="https://instagram.com/yourprofile"
-                      value={formData.social_instagram}
-                      onChange={(e) => handleInputChange('social_instagram', e.target.value)}
-                    />
-                  </div>
-                </div>
+                {/* LinkedIn */}
+                <EditableFieldRow
+                  label="LinkedIn"
+                  value={formData.social_linkedin}
+                  placeholder="https://linkedin.com/in/yourprofile"
+                  isLink
+                  onSave={(val) => handleInputChange('social_linkedin', val)}
+                />
+
+                {/* Facebook */}
+                <EditableFieldRow
+                  label="Facebook"
+                  value={formData.social_facebook}
+                  placeholder="https://facebook.com/yourpage"
+                  isLink
+                  onSave={(val) => handleInputChange('social_facebook', val)}
+                />
+
+                {/* Instagram */}
+                <EditableFieldRow
+                  label="Instagram"
+                  value={formData.social_instagram}
+                  placeholder="https://instagram.com/yourprofile"
+                  isLink
+                  onSave={(val) => handleInputChange('social_instagram', val)}
+                />
               </div>
             </div>
 
