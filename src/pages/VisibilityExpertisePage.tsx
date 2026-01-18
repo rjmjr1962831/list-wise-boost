@@ -222,7 +222,10 @@ export default function VisibilityExpertisePage() {
         <div className="mb-4">
           <h1 className="text-2xl font-bold">Do you want to highlight neighborhood expertise?</h1>
           <p className="text-muted-foreground mt-2">
-            Neighborhood coverage is more precise than city coverage and is limited to a small number of professionals per area.
+            Neighborhood selection increases the likelihood you are named by AI systems for location-specific searches.
+          </p>
+          <p className="text-muted-foreground mt-2">
+            AI associates agents with places. Selecting neighborhoods creates a clear signal connecting your profile to those areas, improving how often your name is cited when users ask for local recommendations.
           </p>
           
           <Collapsible className="mt-3">
