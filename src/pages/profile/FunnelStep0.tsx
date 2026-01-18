@@ -181,7 +181,7 @@ export default function FunnelStep0() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">What you will do next</h2>
             <ol className="space-y-2 text-gray-700">
-              <li><span className="font-semibold">1. Edit your profile.</span> Review what we've gathered from public and private sources. Correct errors. Add context.</li>
+              <li><span className="font-semibold">1. Edit your profile.</span> Review information gathered from all available sources. Correct errors. Add context.</li>
               <li><span className="font-semibold">2. Verify your identity.</span> Confirm you are the agent associated with this license.</li>
               <li><span className="font-semibold">3. Select city bundles.</span> Choose which Arizona metro areas you want to appear in.</li>
               <li><span className="font-semibold">4. Select neighborhoods.</span> Choose specific neighborhoods within those cities.</li>
@@ -194,7 +194,7 @@ export default function FunnelStep0() {
             <ul className="space-y-2 text-gray-700">
               <li>• <span className="font-medium">No account required.</span> There is no username or password. Access is via secure, one-time links.</li>
               <li>• <span className="font-medium">No payment required.</span> You can complete the review and verification at no cost. Paid options are offered later, and are clearly labeled.</li>
-              <li>• <span className="font-medium">No impact on eligibility.</span> Whether you complete this flow or not, your qualification status is not affected. If you do nothing, your profile may be published using only public data.</li>
+              <li>• <span className="font-medium">No impact on eligibility.</span> Whether you complete this flow or not, your qualification status is not affected. If you do nothing, your profile may be published using all available data.</li>
             </ul>
           </section>
 

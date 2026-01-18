@@ -89,7 +89,7 @@ export default function FunnelSuccess() {
                 Your Top10Lists.us profile is now live and visible to consumers searching for top agents in {cityName}.
               </p>
               <p className="text-sm text-muted-foreground max-w-lg mx-auto">
-                Your inclusion and editorial review are based on merit and public and private sources. Rankings and inclusion are never sold.
+                Your inclusion and editorial review are based on merit and all available sources. Rankings and inclusion are never sold.
               </p>
             </div>
 
