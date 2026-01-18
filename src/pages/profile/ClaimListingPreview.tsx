@@ -237,11 +237,11 @@ export default function ClaimListingPreview() {
             <div className="text-center mb-8">
               <p className="text-sm font-medium text-primary mb-2">Step 4 of 5 (2 minutes)</p>
               <h1 className="text-3xl md:text-4xl font-bold mb-3">
-                Preview Your Public Profile
+                Your Public Profile
               </h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                This is how your profile appears to consumers on Top10Lists.us. 
-                You can continue editing at any time.
+                This is how your profile currently appears to consumers and AI systems on Top10Lists.us. 
+                You may continue editing at any time.
               </p>
             </div>
 
@@ -289,7 +289,7 @@ export default function ClaimListingPreview() {
 
                 {/* Section 1: Key Credentials & Metrics */}
                 <div className="p-6 border-b">
-                  <h3 className="font-semibold text-lg mb-4">Key Credentials & Metrics</h3>
+                  <h3 className="font-semibold text-lg mb-4">Key Credentials and Metrics</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {professional.license_number && (
                       <div className="text-center p-3 bg-muted/50 rounded-lg">
@@ -336,7 +336,7 @@ export default function ClaimListingPreview() {
                             <h3 className="font-semibold text-lg">Top10Lists.us Editorial Review</h3>
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            Written by Top10Lists.us based on all available sources and editorial review.
+                            Written by Top10Lists.us using verified public data and editorial review. This summary represents how your professional background is presented to consumers and AI systems.
                           </p>
                         </div>
                         <CollapsibleTrigger asChild>
@@ -389,7 +389,7 @@ export default function ClaimListingPreview() {
                   <div className="p-6 border-b">
                     <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
                       <Award className="h-5 w-5 text-primary" />
-                      Notable Achievements & Awards
+                      Notable Achievements and Coverage
                     </h3>
                     <div className="space-y-3">
                       {(professional.notable_achievements as NotableAchievement[])
@@ -503,7 +503,7 @@ export default function ClaimListingPreview() {
 
                 {/* Section 9: Contact & Online Presence */}
                 <div className="p-6 border-b">
-                  <h3 className="font-semibold text-lg mb-4">Contact & Online Presence</h3>
+                  <h3 className="font-semibold text-lg mb-4">Contact and Online Presence</h3>
                   <div className="space-y-3">
                     {professional.website && (
                       <a 
@@ -611,7 +611,7 @@ export default function ClaimListingPreview() {
 
             {/* Info Note */}
             <p className="text-center text-sm text-muted-foreground mt-6">
-              Your profile is now visible to consumers searching for top agents in your area.
+              Your profile is visible to consumers searching for top agents in your selected areas.
             </p>
           </div>
         </div>
