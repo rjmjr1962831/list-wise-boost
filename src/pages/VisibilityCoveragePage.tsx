@@ -259,7 +259,7 @@ export default function VisibilityCoveragePage() {
             disabled={!hasSelections}
             onClick={handleContinue}
           >
-            Continue to Expertise
+            Select Neighborhoods
             <ArrowRight className="w-4 h-4 ml-2" />
           </Button>
         </div>
