@@ -11,7 +11,8 @@ const KNOWN_TABLES = [
   'professionals', 'cities', 'categories', 'state_licenses', 'arizona_licenses',
   'professional_cities', 'agent_city_subscriptions', 'arizona_city_pricing',
   'canonical_city_rankings', 'pipedrive_sync_queue', 'pipedrive_sync_state',
-  'contacts', 'appointments', 'enrichment_queue', 'funnel_events'
+  'contacts', 'appointments', 'enrichment_queue', 'funnel_events',
+  'neighborhood_catalog'
 ];
 
 serve(async (req) => {
@@ -980,6 +981,214 @@ serve(async (req) => {
       );
     }
 
+    // ============ NEW: GET action=fetch-neighborhoods ============
+    if (req.method === 'GET' && action === 'fetch-neighborhoods') {
+      const limit = parseInt(url.searchParams.get('limit') || '100');
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+      
+      console.log(`enrichment-api - Fetching neighborhoods (limit=${limit}, offset=${offset})`);
+      
+      const { data, error } = await supabase
+        .from('neighborhood_catalog')
+        .select('id, neighborhood, neighborhood_slug, city_area, lat, lon, tier, nearby_neighborhoods')
+        .eq('is_active', true)
+        .order('id')
+        .range(offset, offset + limit - 1);
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ data, count: data?.length || 0, offset, limit }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============ NEW: POST action=update-neighborhood ============
+    if (req.method === 'POST' && action === 'update-neighborhood') {
+      const body = await req.json();
+      const { id, ...fields } = body;
+      
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'id is required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log(`enrichment-api - Updating neighborhood ${id}`);
+
+      const { data, error } = await supabase
+        .from('neighborhood_catalog')
+        .update(fields)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true, data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============ NEW: POST action=bulk-update-neighborhoods ============
+    if (req.method === 'POST' && action === 'bulk-update-neighborhoods') {
+      const body = await req.json();
+      const { updates } = body;
+      
+      if (!Array.isArray(updates)) {
+        return new Response(JSON.stringify({ error: 'updates must be an array' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log(`enrichment-api - Bulk updating ${updates.length} neighborhoods`);
+
+      const results = {
+        total: updates.length,
+        success: 0,
+        failed: 0,
+        errors: [] as string[],
+      };
+
+      // Process in batches of 50 to avoid timeouts
+      const batchSize = 50;
+      for (let i = 0; i < updates.length; i += batchSize) {
+        const batch = updates.slice(i, i + batchSize);
+        
+        for (const update of batch) {
+          const { id, ...fields } = update;
+          
+          if (!id) {
+            results.failed++;
+            results.errors.push(`Missing id in update`);
+            continue;
+          }
+
+          const { error } = await supabase
+            .from('neighborhood_catalog')
+            .update(fields)
+            .eq('id', id);
+
+          if (error) {
+            results.failed++;
+            results.errors.push(`${id}: ${error.message}`);
+          } else {
+            results.success++;
+          }
+        }
+      }
+
+      console.log(`enrichment-api - Bulk update complete: ${results.success} succeeded, ${results.failed} failed`);
+
+      return new Response(JSON.stringify(results), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ============ NEW: POST action=recompute-nearby ============
+    if (req.method === 'POST' && action === 'recompute-nearby') {
+      const body = await req.json();
+      const { id } = body;
+      
+      if (!id) {
+        return new Response(JSON.stringify({ error: 'id is required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log(`enrichment-api - Recomputing nearby neighborhoods for ${id}`);
+
+      // Get the target neighborhood
+      const { data: target, error: targetError } = await supabase
+        .from('neighborhood_catalog')
+        .select('id, lat, lon')
+        .eq('id', id)
+        .single();
+
+      if (targetError || !target) {
+        return new Response(JSON.stringify({ error: 'Neighborhood not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Get all active neighborhoods
+      const { data: allNeighborhoods, error: allError } = await supabase
+        .from('neighborhood_catalog')
+        .select('id, neighborhood, neighborhood_slug, city_area, lat, lon, tier')
+        .eq('is_active', true);
+
+      if (allError) {
+        return new Response(JSON.stringify({ error: allError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Haversine formula to calculate distance in miles
+      const haversine = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+        const R = 3959; // Earth's radius in miles
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c;
+      };
+
+      // Find nearby neighborhoods within 2 miles
+      const nearby = (allNeighborhoods || [])
+        .filter(n => n.id !== id && n.lat && n.lon)
+        .map(n => ({
+          id: n.id,
+          slug: n.neighborhood_slug,
+          name: n.neighborhood,
+          tier: n.tier,
+          city_area: n.city_area,
+          distance_miles: Math.round(haversine(target.lat, target.lon, n.lat!, n.lon!) * 100) / 100
+        }))
+        .filter(n => n.distance_miles <= 2.0)
+        .sort((a, b) => a.distance_miles - b.distance_miles)
+        .slice(0, 6);
+
+      // Update the neighborhood
+      const { error: updateError } = await supabase
+        .from('neighborhood_catalog')
+        .update({ nearby_neighborhoods: nearby })
+        .eq('id', id);
+
+      if (updateError) {
+        return new Response(JSON.stringify({ error: updateError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log(`enrichment-api - Found ${nearby.length} nearby neighborhoods for ${id}`);
+
+      return new Response(JSON.stringify({ 
+        success: true, 
+        neighborhood_id: id,
+        nearby_count: nearby.length,
+        nearby_neighborhoods: nearby
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Invalid action - show all available actions
     return new Response(
       JSON.stringify({ 
@@ -1001,6 +1210,11 @@ serve(async (req) => {
           'upsert-cities': 'POST ?action=upsert-cities - Upsert cities (body: {cities: [{name, state, state_slug, slug, active}]})',
           // Marketing content
           'upsert-marketing-content': 'POST ?action=upsert-marketing-content - Upsert marketing content (body: {records: [{page, section, key, type, value}]})',
+          // Neighborhood actions
+          'fetch-neighborhoods': 'GET ?action=fetch-neighborhoods&limit=100&offset=0 - Fetch active neighborhoods',
+          'update-neighborhood': 'POST ?action=update-neighborhood - Update single neighborhood (body: {id, ...fields})',
+          'bulk-update-neighborhoods': 'POST ?action=bulk-update-neighborhoods - Bulk update neighborhoods (body: {updates: [{id, nearby_neighborhoods}, ...]})',
+          'recompute-nearby': 'POST ?action=recompute-nearby - Recompute nearby neighborhoods for a single neighborhood (body: {id})',
           // Promotion
           promote_to_professional: 'POST ?action=promote_to_professional - Promote qualified license (body: {license_id})',
           // Custom query

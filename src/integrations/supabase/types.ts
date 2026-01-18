@@ -1814,6 +1814,7 @@ export type Database = {
           lon: number | null
           median_home_value: number | null
           median_income: number | null
+          nearby_neighborhoods: Json | null
           neighborhood: string
           neighborhood_slug: string
           primary_zip: string | null
@@ -1839,6 +1840,7 @@ export type Database = {
           lon?: number | null
           median_home_value?: number | null
           median_income?: number | null
+          nearby_neighborhoods?: Json | null
           neighborhood: string
           neighborhood_slug: string
           primary_zip?: string | null
@@ -1864,6 +1866,7 @@ export type Database = {
           lon?: number | null
           median_home_value?: number | null
           median_income?: number | null
+          nearby_neighborhoods?: Json | null
           neighborhood?: string
           neighborhood_slug?: string
           primary_zip?: string | null
