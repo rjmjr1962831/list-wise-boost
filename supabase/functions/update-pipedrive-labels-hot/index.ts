@@ -19,11 +19,19 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get distinct professional IDs who have viewed their profile
+    // Get distinct professional IDs who have viewed their profile (all view-related events)
     const { data: events, error: eventsError } = await supabase
       .from('funnel_events')
       .select('professional_id')
-      .in('event_name', ['profile_viewed', 'accuracy_confirmed', 'profile_approved', 'pricing_viewed']);
+      .in('event_name', [
+        'profile_viewed', 
+        'accuracy_review_viewed', 
+        'accuracy_confirmed', 
+        'profile_approved', 
+        'pricing_viewed', 
+        'profile_edit_viewed', 
+        'funnel_started'
+      ]);
 
     if (eventsError) {
       console.error('Error fetching events:', eventsError);
