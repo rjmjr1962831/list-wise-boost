@@ -193,10 +193,23 @@ export default function FunnelStep0() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">Why this matters now</h2>
             <p className="text-gray-700 leading-relaxed">
-              Consumer search behavior is shifting. AI assistants are increasingly used to answer questions like <em>"Who is the best real estate agent in Paradise Valley?"</em> or <em>"Find me a top-rated agent in Scottsdale who speaks Spanish."</em>
+              Consumer search behavior is shifting. AI assistants are increasingly used to answer questions like:
+            </p>
+            <ul className="text-gray-700 leading-relaxed pl-4 space-y-1">
+              <li><em>Who is the best real estate agent in Paradise Valley?</em></li>
+              <li><em>Find me a top rated agent in Scottsdale who speaks Spanish.</em></li>
+            </ul>
+            <p className="text-gray-700 leading-relaxed">
+              AI systems do not browse the web or rank websites. They select a small number of professionals they can confidently name and defend as answers.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              Top10Lists.us is built to be cited by AI systems. Your profile, once verified, becomes part of a structured, transparent source that AI can reference directly.
+              Agent websites, blog posts, keyword optimized pages, and advertising driven platforms are self-reported by design, which makes them difficult for AI systems to trust when recommending individual professionals.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              As a result, AI models increasingly avoid naming agents from those sources. Instead, they defer the question or send users to do their own research.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Top10Lists.us was built for this exact gap. Your profile, once verified, becomes part of a structured, transparent source that AI systems can reference directly when asked for a referral.
             </p>
           </section>
 
