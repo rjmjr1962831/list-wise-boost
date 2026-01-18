@@ -176,10 +176,6 @@ export function Chatbot() {
 
   // Hide chatbot on funnel pages - support is via phone only
   const isFunnelPage = location.pathname.startsWith('/profile/') || location.pathname.startsWith('/visibility/');
-  
-  if (isFunnelPage) {
-    return null;
-  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -262,6 +258,10 @@ export function Chatbot() {
       sendMessage();
     }
   };
+
+  if (isFunnelPage) {
+    return null;
+  }
 
   return (
     <>
