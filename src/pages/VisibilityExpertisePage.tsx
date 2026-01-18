@@ -224,10 +224,6 @@ export default function VisibilityExpertisePage() {
       </Helmet>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">
-        {/* Progress indicator */}
-        <div className="mb-8">
-          <CoverageProgress current="expertise" />
-        </div>
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Do you want to highlight neighborhood expertise?</h1>

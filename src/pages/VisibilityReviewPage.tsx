@@ -376,10 +376,6 @@ export default function VisibilityReviewPage() {
       </Helmet>
 
       <div className="container max-w-3xl mx-auto px-4 py-8">
-        {/* Progress indicator */}
-        <div className="mb-8">
-          <CoverageProgress current="review" />
-        </div>
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Review Your Coverage</h1>
