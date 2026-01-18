@@ -86,7 +86,13 @@ serve(async (req) => {
 
     const results: { personId: number; name: string; success: boolean; error?: string }[] = [];
 
-    // Update each person's label to Hot (17)
+    // Pipedrive Label IDs (verified 2026-01-18):
+    // 14 = Customer (green)
+    // 15 = Hot lead (red) - agent approved profile or high-intent engagement
+    // 16 = Warm lead (yellow) - active professional, default
+    // 17 = Cold lead (blue) - default Pipedrive state
+    
+    // Update each person's label to Hot (15)
     for (const [personId, info] of uniquePersonIds) {
       try {
         const response = await fetch(
@@ -95,7 +101,7 @@ serve(async (req) => {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              label_ids: [17] // Hot lead
+              label_ids: [15] // Hot lead (red)
             })
           }
         );

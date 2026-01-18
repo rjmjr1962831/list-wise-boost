@@ -339,16 +339,18 @@ serve(async (req) => {
     // Find or create organization (uses cache)
     const orgId = await findOrCreateOrganization(syncData.company);
 
-    // Determine lead label based on funnel status
-    // Warm lead (ID 16) = default for active professionals
-    // Hot lead (ID 17) = agent has approved their profile
+    // Pipedrive Label IDs (verified 2026-01-18):
+    // 14 = Customer (green)
+    // 15 = Hot lead (red) - agent approved profile or high-intent engagement
+    // 16 = Warm lead (yellow) - active professional, default
+    // 17 = Cold lead (blue) - default Pipedrive state
     const getLeadLabelId = () => {
       if (!professional.active) return undefined;
       // If funnel_status is 'approved' or 'completed', they're a hot lead
       if (professional.funnel_status === 'approved' || professional.funnel_status === 'completed') {
-        return [17]; // Hot lead
+        return [15]; // Hot lead (red)
       }
-      return [16]; // Warm lead (default)
+      return [16]; // Warm lead (yellow)
     };
 
     // Build person data for Pipedrive
