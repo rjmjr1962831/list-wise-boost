@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { MapPin, Home, DollarSign, Building2, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { Button } from '@/components/ui/button';
+import { NearbyNeighborhoods } from '@/components/neighborhoods/NearbyNeighborhoods';
+
+interface NearbyNeighborhood {
+  id: string;
+  slug: string;
+  name: string;
+  tier: "Main" | "Prime" | "Luxury";
+  city_area: string;
+  distance_miles: number;
+}
 
 interface NeighborhoodData {
   id: string;
@@ -20,6 +28,7 @@ interface NeighborhoodData {
   lat: number | null;
   lon: number | null;
   writeup_html: string | null;
+  nearby_neighborhoods: NearbyNeighborhood[] | null;
 }
 
 interface NeighborhoodOverviewProps {
@@ -85,7 +94,12 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
         if (error) {
           console.error('[NeighborhoodOverview] Error fetching neighborhood:', error);
         } else if (data) {
-          setNeighborhood(data);
+          // Cast nearby_neighborhoods from JSON to typed array
+          const typedData: NeighborhoodData = {
+            ...data,
+            nearby_neighborhoods: (data.nearby_neighborhoods as unknown) as NearbyNeighborhood[] | null,
+          };
+          setNeighborhood(typedData);
         }
       } catch (err) {
         console.error('[NeighborhoodOverview] Exception:', err);
@@ -181,6 +195,15 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
             </div>
           </CollapsibleContent>
         </Collapsible>
+      )}
+
+      {/* Nearby Neighborhoods Section */}
+      {neighborhood.nearby_neighborhoods && neighborhood.nearby_neighborhoods.length > 0 && (
+        <NearbyNeighborhoods
+          neighborhoods={neighborhood.nearby_neighborhoods}
+          currentState={stateSlug}
+          currentCity={citySlug}
+        />
       )}
     </div>
   );
