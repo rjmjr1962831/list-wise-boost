@@ -38,6 +38,10 @@ export function useFunnelTracking(token: string | undefined) {
 
 // Event name constants for consistency
 export const FUNNEL_EVENTS = {
+  // Step 0 events
+  STEP0_VIEWED: 'step0_viewed',
+  STEP0_COMPLETED: 'step0_completed',
+  
   // Magic link / entry events
   MAGIC_LINK_CLICKED: 'magic_link_clicked',
   FUNNEL_STARTED: 'funnel_started',
