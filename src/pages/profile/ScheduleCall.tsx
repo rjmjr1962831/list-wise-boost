@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,6 +9,7 @@ import { Calendar, Phone, Mail, CheckCircle2 } from 'lucide-react';
 export default function ScheduleCall() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
+  const hasTrackedView = useRef(false);
 
   // Pipedrive Scheduler URL - Replace with actual URL from Pipedrive
   const SCHEDULER_URL = 'https://pipedrive.com/scheduler/YOUR_SCHEDULER_ID';
@@ -18,7 +19,8 @@ export default function ScheduleCall() {
   }, []);
 
   useEffect(() => {
-    if (token) {
+    if (token && !hasTrackedView.current) {
+      hasTrackedView.current = true;
       // Track schedule view
       supabase.functions.invoke('track-profile-event', {
         body: { token, event_name: 'schedule_viewed' }

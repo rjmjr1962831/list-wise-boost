@@ -4,30 +4,50 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-// Helper function to call Pipedrive API with retry on rate limit
+// Throttle windows by event type (in seconds)
+const THROTTLE_WINDOWS: Record<string, number> = {
+  profile_edit_viewed: 60,      // User might refresh page
+  profile_approved: 86400,      // 24 hours - should never fire twice
+  checkout_completed: 86400,    // 24 hours
+  profile_fields_submitted: 300, // 5 minutes
+  pricing_viewed: 60,           // 1 minute
+  accuracy_review_viewed: 60,   // 1 minute
+  welcome_viewed: 60,           // 1 minute
+  schedule_viewed: 60,          // 1 minute
+  default: 30
+};
+
+const getThrottleWindow = (eventType: string): number => {
+  return THROTTLE_WINDOWS[eventType] || THROTTLE_WINDOWS.default;
+};
+
+// Helper function to call Pipedrive API with retry on rate limit (returns null on rate limit instead of throwing)
 async function fetchWithRetry(
   url: string, 
   options: RequestInit, 
   maxRetries = 3,
   initialDelay = 600
-): Promise<Response> {
-  let lastError: Error | null = null;
-  
+): Promise<Response | null> {
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const response = await fetch(url, options);
     
     // If rate limited (429), wait and retry
     if (response.status === 429) {
-      const delay = initialDelay * Math.pow(2, attempt); // 600ms, 1200ms, 2400ms
-      console.log(`⏳ Pipedrive rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      continue;
+      if (attempt < maxRetries - 1) {
+        const delay = initialDelay * Math.pow(2, attempt); // 600ms, 1200ms, 2400ms
+        console.log(`⏳ Pipedrive rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        continue;
+      }
+      // On final attempt, return null instead of throwing
+      console.log(`[rate-limited] Pipedrive rate limit exceeded after ${maxRetries} attempts`);
+      return null;
     }
     
     return response;
   }
   
-  throw new Error('Too many requests. You can only make 2 requests per second. See rate limit response headers for more information. Or contact support to increase rate limit.');
+  return null;
 }
 
 const corsHeaders = {
@@ -51,6 +71,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Initialize Supabase client early for throttling
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
   try {
     const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
     const PIPEDRIVE_API_TOKEN = Deno.env.get('PIPEDRIVE_API_TOKEN');
@@ -60,6 +85,41 @@ serve(async (req) => {
 
     if (!event_type) {
       throw new Error('event_type is required');
+    }
+
+    // Server-side throttling: Check if this event was fired recently
+    if (agent_id) {
+      const throttleKey = `funnel:${agent_id}:${event_type}`;
+      const throttleWindow = getThrottleWindow(event_type);
+
+      const { data: existingThrottle } = await supabase
+        .from("activity_throttle")
+        .select("last_logged_at")
+        .eq("throttle_key", throttleKey)
+        .maybeSingle();
+
+      if (existingThrottle) {
+        const lastLogged = new Date(existingThrottle.last_logged_at);
+        const secondsAgo = (Date.now() - lastLogged.getTime()) / 1000;
+
+        if (secondsAgo < throttleWindow) {
+          console.log(`[throttled] ${event_type} for ${agent_id}, last fired ${secondsAgo.toFixed(1)}s ago`);
+          return new Response(
+            JSON.stringify({ success: true, skipped: true, reason: "throttled" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+
+      // Update throttle timestamp (upsert)
+      await supabase
+        .from("activity_throttle")
+        .upsert({
+          throttle_key: throttleKey,
+          last_logged_at: new Date().toISOString()
+        }, {
+          onConflict: "throttle_key"
+        });
     }
 
     console.log(`📧 Sending funnel notification: ${event_type} for ${agent_name || 'unknown'}`);
@@ -275,30 +335,33 @@ serve(async (req) => {
       `;
     }
 
-    // Send email notification
-    const { error } = await resend.emails.send({
-      from: 'Robert from Top10lists <hello@top10lists.us>',
-      replyTo: 'robert@top10lists.us',
-      to: [ADMIN_EMAIL],
-      subject,
-      html,
-    });
+    // Send email notification with graceful error handling
+    let emailSent = false;
+    try {
+      const { error } = await resend.emails.send({
+        from: 'Robert from Top10lists <hello@top10lists.us>',
+        replyTo: 'robert@top10lists.us',
+        to: [ADMIN_EMAIL],
+        subject,
+        html,
+      });
 
-    if (error) {
-      throw new Error(error.message);
+      if (error) {
+        console.error(`[email-error] ${event_type}: ${error.message}`);
+        // Continue - don't throw, email failure is non-fatal
+      } else {
+        emailSent = true;
+        console.log(`✅ Funnel notification sent: ${event_type}`);
+      }
+    } catch (emailError) {
+      console.error(`[email-error] ${event_type}:`, emailError);
+      // Continue - don't throw, email failure is non-fatal
     }
-
-    console.log(`✅ Funnel notification sent: ${event_type}`);
 
     // Create Pipedrive activity for key events
     if (PIPEDRIVE_ACTIVITY_EVENTS.includes(event_type) && agent_id && PIPEDRIVE_API_TOKEN) {
       try {
         console.log(`📊 Creating Pipedrive activity for ${event_type}...`);
-        
-        // Initialize Supabase client
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-        const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-        const supabase = createClient(supabaseUrl, supabaseKey);
         
         // Look up Pipedrive person ID
         const { data: syncState } = await supabase
@@ -372,12 +435,17 @@ serve(async (req) => {
             }
           );
           
-          const result = await response.json();
-          
-          if (response.ok && result.success) {
-            console.log(`✅ Pipedrive activity created: ${result.data?.id}`);
+          // Handle rate limit (fetchWithRetry returns null)
+          if (!response) {
+            console.log(`[rate-limited] Pipedrive activity for ${event_type}`);
           } else {
-            console.error('⚠️ Pipedrive API error (non-fatal):', result);
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+              console.log(`✅ Pipedrive activity created: ${result.data?.id}`);
+            } else {
+              console.error('⚠️ Pipedrive API error (non-fatal):', result);
+            }
           }
         } else {
           console.log(`⚠️ No Pipedrive person ID found for agent ${agent_id}`);

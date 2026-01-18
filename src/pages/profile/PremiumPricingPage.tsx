@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Badge } from '@/components/ui/badge';
@@ -41,6 +41,7 @@ export default function PremiumPricingPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+  const hasTrackedView = useRef(false);
   
   const calculator = usePricingCalculator();
 
@@ -94,30 +95,33 @@ export default function PremiumPricingPage() {
 
         setProfessional(data);
         
-        // Track pricing page viewed
-        trackFunnelEvent(FUNNEL_EVENTS.PRICING_VIEWED, { 
-          professional_id: data.id 
-        });
-        
-        // Send email notification that agent is viewing pricing
-        supabase.functions.invoke('send-funnel-notification', {
-          body: {
-            event_type: 'pricing_viewed',
-            agent_name: data.name,
-            agent_email: data.email,
-            agent_id: data.id,
-            city_name: (data as any).cities?.name,
-            profile_link: `https://top10lists.us/profile/${token}`
-          }
-        }).catch(err => console.error('Failed to send funnel notification:', err));
-        
-        // Update checkout_started_at timestamp
-        supabase
-          .from('professionals')
-          .update({ checkout_started_at: new Date().toISOString() })
-          .eq('id', data.id)
-          .then(() => {});
+        // Track pricing page viewed (guard against double-fire)
+        if (!hasTrackedView.current) {
+          hasTrackedView.current = true;
           
+          trackFunnelEvent(FUNNEL_EVENTS.PRICING_VIEWED, { 
+            professional_id: data.id 
+          });
+          
+          // Send email notification that agent is viewing pricing
+          supabase.functions.invoke('send-funnel-notification', {
+            body: {
+              event_type: 'pricing_viewed',
+              agent_name: data.name,
+              agent_email: data.email,
+              agent_id: data.id,
+              city_name: (data as any).cities?.name,
+              profile_link: `https://top10lists.us/profile/${token}`
+            }
+          }).catch(err => console.error('Failed to send funnel notification:', err));
+          
+          // Update checkout_started_at timestamp
+          supabase
+            .from('professionals')
+            .update({ checkout_started_at: new Date().toISOString() })
+            .eq('id', data.id)
+            .then(() => {});
+        }
       } catch (err) {
         console.error('Error fetching professional:', err);
         toast.error('Something went wrong');

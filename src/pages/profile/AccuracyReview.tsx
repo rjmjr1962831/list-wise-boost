@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,6 +73,7 @@ export default function AccuracyReview() {
   // Modal state
   const [correctionModalOpen, setCorrectionModalOpen] = useState(false);
   const [selectedField, setSelectedField] = useState<{ name: string; value: string | null }>({ name: '', value: null });
+  const hasTrackedView = useRef(false);
 
   useEffect(() => {
     const fetchProfessional = async () => {
@@ -122,8 +123,12 @@ export default function AccuracyReview() {
         }
 
         setProfessional(data as unknown as ProfessionalData);
-        trackEvent(FUNNEL_EVENTS.ACCURACY_REVIEW_VIEWED);
         
+        // Track view (guard against double-fire)
+        if (!hasTrackedView.current) {
+          hasTrackedView.current = true;
+          trackEvent(FUNNEL_EVENTS.ACCURACY_REVIEW_VIEWED);
+        }
         // Update funnel status
         await supabase
           .from('professionals')

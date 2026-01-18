@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
@@ -148,7 +148,7 @@ export default function EditProfile() {
   const [bioEditedByAgent, setBioEditedByAgent] = useState(false);
   const [savingBio, setSavingBio] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
-  
+  const hasTrackedView = useRef(false);
   // Form state - only agent-authored editable fields (no review required)
   const [formData, setFormData] = useState({
     headline: '',
@@ -254,22 +254,26 @@ export default function EditProfile() {
           }
         }
 
-        // Track edit view
-        supabase.functions.invoke('track-profile-event', {
-          body: { token, event_name: 'profile_edit_viewed' }
-        });
-        
-        // Send email notification
-        supabase.functions.invoke('send-funnel-notification', {
-          body: {
-            event_type: 'profile_edit_viewed',
-            agent_name: prof.name,
-            agent_email: prof.email,
-            agent_id: prof.id,
-            city_name: prof.cities?.name,
-            profile_link: prof.profile_link
-          }
-        }).catch(err => console.error('Failed to send funnel notification:', err));
+        // Track edit view (guard against double-fire)
+        if (!hasTrackedView.current) {
+          hasTrackedView.current = true;
+          
+          supabase.functions.invoke('track-profile-event', {
+            body: { token, event_name: 'profile_edit_viewed' }
+          });
+          
+          // Send email notification
+          supabase.functions.invoke('send-funnel-notification', {
+            body: {
+              event_type: 'profile_edit_viewed',
+              agent_name: prof.name,
+              agent_email: prof.email,
+              agent_id: prof.id,
+              city_name: prof.cities?.name,
+              profile_link: prof.profile_link
+            }
+          }).catch(err => console.error('Failed to send funnel notification:', err));
+        }
       } catch (err) {
         console.error('Error loading profile:', err);
         toast({
