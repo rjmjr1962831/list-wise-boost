@@ -309,12 +309,15 @@ export default function AccuracyReview() {
             </CardContent>
           </Card>
 
-          {/* Verified Profile Information */}
+          {/* Published Profile Information */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Verified Profile Information</CardTitle>
+              <CardTitle className="text-lg">Published Profile Information</CardTitle>
               <p className="text-sm text-muted-foreground">
-                The following fields are displayed as currently published. Each item reflects all available information.
+                The following information is already published and reflects the best available data from verified sources.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Review each item below. If something is incorrect or incomplete, request a correction.
               </p>
             </CardHeader>
             <CardContent className="pt-0">
@@ -458,7 +461,7 @@ export default function AccuracyReview() {
 
           {/* Disclosure Footer */}
           <p className="text-xs text-center text-muted-foreground pt-4 border-t">
-            If you proceed without requesting corrections, this profile will remain published as-is using all available sources.
+            If you proceed without requesting corrections, your profile will remain published as-is using verified public and professional sources.
           </p>
         </div>
       </div>
