@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ export default function PricingInterstitial() {
   const [loading, setLoading] = useState(true);
   const [tiers, setTiers] = useState<NeighborhoodTierSummary[]>([]);
   const [isAnnual, setIsAnnual] = useState(true);
+  const hasTrackedView = useRef(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -94,10 +95,13 @@ export default function PricingInterstitial() {
 
         setTiers(sortedTiers);
 
-        // Track pricing view
-        supabase.functions.invoke('track-profile-event', {
-          body: { token, event_name: 'pricing_viewed' }
-        });
+        // Track pricing view (guard against double-fire)
+        if (!hasTrackedView.current) {
+          hasTrackedView.current = true;
+          supabase.functions.invoke('track-profile-event', {
+            body: { token, event_name: 'pricing_viewed' }
+          });
+        }
       } catch (err) {
         console.error('Error loading pricing:', err);
         toast({
