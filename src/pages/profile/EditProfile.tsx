@@ -464,9 +464,6 @@ export default function EditProfile() {
             {/* SECTION: PROFILE PHOTO */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Your Photo</h2>
-              <p className="text-sm text-muted-foreground">
-                Your profile photo helps clients recognize and connect with you. Use a clear, professional headshot.
-              </p>
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <Avatar className="h-24 w-24 border-2 border-border">
