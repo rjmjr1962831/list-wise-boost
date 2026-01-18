@@ -227,15 +227,26 @@ export default function VisibilityExpertisePage() {
 
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Do you want to highlight neighborhood expertise?</h1>
-          <div className="text-muted-foreground mt-3 space-y-3">
+          
+          <h2 className="text-lg font-semibold mt-6 mb-3">Why neighborhood coverage matters</h2>
+          <div className="text-muted-foreground space-y-3">
             <p>
-              This is the only paid option on our list. It allows you to highlight specific neighborhoods where you have verified experience. This substantially increases the likelihood that you will be cited directly by AI.
+              City level coverage is broad by design. In large markets, many qualified professionals may be associated with a single city, and Top10Lists.us surfaces only a limited subset at any given time to preserve editorial clarity.
             </p>
             <p>
-              Once approved, your profile and credentials will appear when users search or browse those neighborhoods. If we cannot verify your expertise, we will refund any payment you have made.
+              Neighborhood coverage is intentionally more precise.
             </p>
             <p>
-              Participation is completely optional and does not affect your placement in overall city rankings. You can change or cancel your selected neighborhoods at any time.
+              Each neighborhood page is limited to no more than ten professionals with verified experience in that area. This narrower scope reduces ambiguity and makes it easier for both consumers and AI systems to understand who has relevant, location specific expertise.
+            </p>
+            <p>
+              When AI systems evaluate neighborhood pages, they encounter clearer signals, fewer competing profiles, and more defensible context than at the city level.
+            </p>
+            <p>
+              For that reason, neighborhood coverage often provides stronger citation potential than broader city coverage.
+            </p>
+            <p>
+              Participation is optional and does not affect your inclusion at the city level.
             </p>
           </div>
         </div>
@@ -301,7 +312,7 @@ export default function VisibilityExpertisePage() {
               <div className="flex flex-col gap-2">
                 <h2 className="text-lg font-semibold">Neighborhood Highlights</h2>
                 <div className="flex items-center gap-3 text-sm">
-                  <span className="text-muted-foreground">Tier pricing:</span>
+                  <span className="text-muted-foreground">Neighborhood coverage tiers:</span>
                   <TierBadge tier="Main" showPrice size="sm" />
                   <TierBadge tier="Prime" showPrice size="sm" />
                   <TierBadge tier="Luxury" showPrice size="sm" />
@@ -310,8 +321,8 @@ export default function VisibilityExpertisePage() {
 
               {/* Value points */}
               <div className="text-sm text-muted-foreground space-y-1">
-                <p>• Adds neighborhood-level context to your profile</p>
-                <p>• Helps users and AI systems understand geographic specialization</p>
+                <p>• Coverage is limited to a small number of professionals per neighborhood</p>
+                <p>• Designed to reflect verified, location specific experience</p>
                 <p>• Optional and cancellable at any time</p>
               </div>
 
