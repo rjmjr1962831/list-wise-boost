@@ -226,10 +226,10 @@ export default function FunnelStep0() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">Why Top10Lists.us exists</h2>
             <p className="text-gray-700 leading-relaxed">
-              Top10Lists.us is not a directory. It is not a lead generation platform. It is not affiliated with any brokerage, MLS, or advertising network.
+              We exist to ensure you do not lose inbound clients as AI systems turn away from legacy lead platforms and begin naming individual agents they trust.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              It is an independent, editorial publication that identifies and profiles the top-performing real estate professionals in each market. Rankings are based on verified credentials, transaction history, and reputation signals. No agent can pay to be included or to improve their rank.
+              We never gate contact information, capture the prospect, or insert ourselves into the transaction. Our role is to make sure AI can confidently recommend you and send clients directly to you, without interference.
             </p>
           </section>
 
