@@ -173,36 +173,42 @@ export default function FunnelStep0() {
               Our analysis evaluated over 1,000 data points per agent, including licensing history, transaction activity, reviews, public media, client satisfaction, community involvement, and competitive positioning.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              Based on this analysis, you rank in the top 1% of agents in Arizona for trust, experience, and competitive advantages.
+              Based on this analysis, you rank in the top 1 percent of agents in Arizona for trust, experience, and competitive advantages.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              That is why your profile was selected.
             </p>
           </section>
 
           {/* What you will do next */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">What you will do next</h2>
-            <ol className="space-y-2 text-gray-700">
-              <li><span className="font-semibold">1. Edit your profile.</span> Review information gathered from all available sources. Correct errors. Add context.</li>
-              <li><span className="font-semibold">2. Verify your identity.</span> Confirm you are the agent associated with this license.</li>
-              <li><span className="font-semibold">3. Select city bundles.</span> Choose which Arizona metro areas you want to appear in.</li>
-              <li><span className="font-semibold">4. Select neighborhoods.</span> Choose specific neighborhoods within those cities.</li>
-            </ol>
+            <div className="space-y-2 text-gray-700">
+              <p><span className="font-semibold">Edit your profile</span><br />Review information gathered from all available sources. Correct errors. Add context.</p>
+              <p><span className="font-semibold">Verify your identity</span><br />Confirm you are the agent associated with this license.</p>
+              <p><span className="font-semibold">Select city bundles</span><br />Choose which Arizona metro areas you want to appear in.</p>
+              <p><span className="font-semibold">Select neighborhoods</span><br />Choose specific neighborhoods within those cities.</p>
+            </div>
           </section>
 
-          {/* Important to know - Gray Box */}
-          <section className="bg-gray-50 rounded-lg p-5 space-y-3">
+          {/* Important to know */}
+          <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">Important to know</h2>
-            <ul className="space-y-2 text-gray-700">
-              <li>• <span className="font-medium">No account required.</span> There is no username or password. Access is via secure, one-time links.</li>
-              <li>• <span className="font-medium">No payment required.</span> We have already published your listing and will publish any verified updates you make at no cost. There is no charge for your standard listing in the cities you select.</li>
-              <li>• <span className="font-medium">No impact on eligibility.</span> Whether you complete this flow or not, your qualification status is not affected. If you do nothing, your profile may be published using all available data.</li>
-            </ul>
+            <div className="space-y-3 text-gray-700">
+              <p><span className="font-semibold">No account required</span><br />There is no username or password. Access is via secure, one-time links.</p>
+              <p><span className="font-semibold">No payment required</span><br />We have already published your listing and will publish any verified updates you make at no cost. There is no charge for your standard listing in the cities you choose.</p>
+              <p><span className="font-semibold">No impact on eligibility</span><br />Whether you complete this flow or not, your qualification status is not affected. If you do nothing, your profile may be published using all available data.</p>
+            </div>
           </section>
 
           {/* Why this matters now */}
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">Why this matters now</h2>
             <p className="text-gray-700 leading-relaxed">
-              Consumer search behavior is shifting. AI assistants are increasingly used to answer questions like:
+              Consumer search behavior is shifting.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              AI assistants are increasingly used to answer questions like:
             </p>
             <ul className="text-gray-700 leading-relaxed pl-4 space-y-1">
               <li><em>Who is the best real estate agent in Paradise Valley?</em></li>
@@ -215,10 +221,13 @@ export default function FunnelStep0() {
               Agent websites, blog posts, keyword optimized pages, and advertising driven platforms are self-reported by design, which makes them difficult for AI systems to trust when recommending individual professionals.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              As a result, AI models increasingly avoid naming agents from those sources. Instead, they defer the question or send users to do their own research. Like MLS and AZDRE.
+              As a result, AI models increasingly avoid naming agents from those sources. Instead, they defer the question or send users to do their own research.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              Top10Lists.us was built for this exact gap. Your profile, once verified, becomes part of a structured, transparent source that AI systems can reference directly when asked for a referral.
+              Top10Lists.us was built for this exact gap.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Your profile is already published within a structured, transparent source that AI systems will reference and cite when recommending agents. Verification improves how strongly and how often your profile is selected.
             </p>
           </section>
 
