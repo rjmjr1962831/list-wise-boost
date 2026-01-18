@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MessageCircle, X, Send, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -163,6 +164,7 @@ Example: "Visit top10lists.us/arizona/phoenix/top10realestateagents to see top a
 For support: (602) 758-9600`;
 
 export function Chatbot() {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -171,6 +173,13 @@ export function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { trackEvent } = useGA4Tracking();
+
+  // Hide chatbot on funnel pages - support is via phone only
+  const isFunnelPage = location.pathname.startsWith('/profile/') || location.pathname.startsWith('/visibility/');
+  
+  if (isFunnelPage) {
+    return null;
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
