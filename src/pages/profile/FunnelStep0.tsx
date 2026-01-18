@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, Phone } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 
 interface ProfessionalData {
@@ -233,14 +233,14 @@ export default function FunnelStep0() {
 
         </main>
 
-        {/* Fixed Contact Pill - Desktop Only */}
+        {/* Fixed Contact Element - Vertical Text */}
         <a
           href="tel:+16027589600"
-          className="hidden md:flex fixed right-4 top-1/2 -translate-y-1/2 flex-col items-center gap-1 bg-gray-800 text-white px-3 py-4 rounded-full shadow-lg hover:bg-gray-900 transition-colors text-xs"
+          className="fixed right-0 top-1/2 -translate-y-1/2 bg-gray-100 text-gray-600 px-2 py-3 text-xs leading-tight"
+          style={{ writingMode: 'vertical-rl', transform: 'translateY(-50%) rotate(180deg)' }}
         >
-          <Phone className="h-4 w-4" />
-          <span className="writing-mode-vertical text-[10px] leading-tight">Call to discuss</span>
-          <span className="writing-mode-vertical text-[10px] font-medium leading-tight">(602) 758-9600</span>
+          <span className="block">Questions?</span>
+          <span className="block">(602) 758-9600</span>
         </a>
       </div>
     </>
