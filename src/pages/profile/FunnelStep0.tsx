@@ -181,7 +181,7 @@ export default function FunnelStep0() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">What you will do next</h2>
             <ol className="space-y-2 text-gray-700">
-              <li><span className="font-semibold">1. Edit your profile.</span> Review what we've gathered from public sources. Correct errors. Add context.</li>
+              <li><span className="font-semibold">1. Edit your profile.</span> Review what we've gathered from public and private sources. Correct errors. Add context.</li>
               <li><span className="font-semibold">2. Verify your identity.</span> Confirm you are the agent associated with this license.</li>
               <li><span className="font-semibold">3. Select city bundles.</span> Choose which Arizona metro areas you want to appear in.</li>
               <li><span className="font-semibold">4. Select neighborhoods.</span> Choose specific neighborhoods within those cities.</li>

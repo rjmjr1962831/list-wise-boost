@@ -458,7 +458,7 @@ export default function AccuracyReview() {
 
           {/* Disclosure Footer */}
           <p className="text-xs text-center text-muted-foreground pt-4 border-t">
-            If you proceed without requesting corrections, this profile will remain published as-is using publicly available data.
+            If you proceed without requesting corrections, this profile will remain published as-is using public and private sources.
           </p>
         </div>
       </div>
