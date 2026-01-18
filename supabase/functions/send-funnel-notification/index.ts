@@ -4,6 +4,32 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+// Helper function to call Pipedrive API with retry on rate limit
+async function fetchWithRetry(
+  url: string, 
+  options: RequestInit, 
+  maxRetries = 3,
+  initialDelay = 600
+): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const response = await fetch(url, options);
+    
+    // If rate limited (429), wait and retry
+    if (response.status === 429) {
+      const delay = initialDelay * Math.pow(2, attempt); // 600ms, 1200ms, 2400ms
+      console.log(`⏳ Pipedrive rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      continue;
+    }
+    
+    return response;
+  }
+  
+  throw new Error('Too many requests. You can only make 2 requests per second. See rate limit response headers for more information. Or contact support to increase rate limit.');
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -337,7 +363,7 @@ serve(async (req) => {
           
           console.log('📤 Creating Pipedrive activity:', activityData);
           
-          const response = await fetch(
+          const response = await fetchWithRetry(
             `https://${PIPEDRIVE_DOMAIN}.pipedrive.com/api/v2/activities?api_token=${PIPEDRIVE_API_TOKEN}`,
             {
               method: 'POST',
