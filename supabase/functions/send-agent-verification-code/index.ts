@@ -164,6 +164,7 @@ serve(async (req) => {
     const smtpPassword = Deno.env.get("SMTP_PASSWORD");
     const smtpFromEmail = Deno.env.get("SMTP_FROM_EMAIL") || smtpUsername;
     const smtpPort = parseInt(Deno.env.get("SMTP_PORT") || "587", 10);
+    const smtpHost = Deno.env.get("SMTP_HOST") || "mail.privateemail.com";
 
     if (!smtpUsername || !smtpPassword) {
       console.error("[send-agent-verification-code] SMTP credentials not configured");
@@ -175,11 +176,14 @@ serve(async (req) => {
 
     console.log(`[send-agent-verification-code] Sending email via SMTP to ${professional.email}`);
 
+    // Namecheap PrivateEmail uses STARTTLS on 587 (tls=false). Port 465 is implicit TLS.
+    const useImplicitTls = smtpPort === 465;
+
     const client = new SMTPClient({
       connection: {
-        hostname: "mail.privateemail.com",
+        hostname: smtpHost,
         port: smtpPort,
-        tls: true,
+        tls: useImplicitTls,
         auth: {
           username: smtpUsername,
           password: smtpPassword,
@@ -195,15 +199,18 @@ serve(async (req) => {
         content: `Hi ${firstName}, your verification code is: ${code}. This code expires in 10 minutes.`,
         html: emailHtml,
       });
-
-      await client.close();
     } catch (emailError) {
       console.error("[send-agent-verification-code] SMTP send error:", emailError);
-      await client.close();
       return new Response(
         JSON.stringify({ success: false, error: "Failed to send verification email" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    } finally {
+      try {
+        await client.close();
+      } catch (closeError) {
+        console.warn("[send-agent-verification-code] SMTP close error:", closeError);
+      }
     }
 
     console.log(`[send-agent-verification-code] Successfully sent code to professional: ${professional.id}`);
