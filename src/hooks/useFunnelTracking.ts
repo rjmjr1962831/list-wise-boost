@@ -60,6 +60,10 @@ export const FUNNEL_EVENTS = {
   PROFILE_EDITED: 'profile_edited',
   PROFILE_APPROVED: 'profile_approved',
   
+  // Visibility funnel - coverage & expertise
+  CITIES_SELECTED: 'cities_selected',
+  NEIGHBORHOODS_SELECTED: 'neighborhoods_selected',
+  
   // Pricing events
   PRICING_VIEWED: 'pricing_viewed',
   PACKAGE_SELECTED: 'package_selected',

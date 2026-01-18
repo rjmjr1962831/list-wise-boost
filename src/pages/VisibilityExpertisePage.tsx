@@ -14,6 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
+import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 
 const STORAGE_KEY = 'visibility_selection';
 const STORAGE_EXPIRY_HOURS = 24;
@@ -37,6 +38,10 @@ export default function VisibilityExpertisePage() {
   const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
   const [isFooterExpanded, setIsFooterExpanded] = useState(false);
   const [isAddingNeighborhood, setIsAddingNeighborhood] = useState(false);
+
+  // Get professional token for tracking
+  const professionalToken = sessionStorage.getItem('visibility_professional_token') || undefined;
+  const { trackEvent } = useFunnelTracking(professionalToken);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -159,6 +164,19 @@ export default function VisibilityExpertisePage() {
       savedAt: new Date().toISOString(),
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
+
+    // Track neighborhoods selected event for Pipedrive (only if neighborhoods selected)
+    if (selectedNeighborhoods.length > 0) {
+      const neighborhoodNames = selectedNeighborhoods.map(n => n.neighborhood);
+      const monthlyTotal = selectedNeighborhoods.reduce((sum, n) => sum + n.price_monthly, 0);
+      
+      trackEvent(FUNNEL_EVENTS.NEIGHBORHOODS_SELECTED, {
+        neighborhood_count: selectedNeighborhoods.length,
+        neighborhood_names: neighborhoodNames.join(', '),
+        monthly_total: monthlyTotal,
+      });
+    }
+
     navigate('/visibility/review');
   };
 

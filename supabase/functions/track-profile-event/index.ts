@@ -19,6 +19,8 @@ const NOTIFICATION_EVENTS = [
   'pricing_viewed',
   'checkout_started',
   'checkout_completed',
+  'cities_selected',
+  'neighborhoods_selected',
 ];
 
 serve(async (req) => {
@@ -106,20 +108,40 @@ serve(async (req) => {
           notificationEventType = 'funnel_started';
         }
         
+        // Build notification payload
+        const notificationPayload: Record<string, any> = {
+          event_type: notificationEventType,
+          agent_name: professional.name,
+          agent_email: professional.email,
+          agent_id: professional.id,
+          city_name: professional.business_city,
+          profile_link: `https://www.top10lists.us/profile/${token}`,
+        };
+
+        // Add cities data for cities_selected event
+        if (event_name === 'cities_selected' && event_data) {
+          notificationPayload.cities_selected = {
+            count: event_data.city_count || 0,
+            names: event_data.city_names ? event_data.city_names.split(', ') : [],
+          };
+        }
+
+        // Add neighborhoods data for neighborhoods_selected event
+        if (event_name === 'neighborhoods_selected' && event_data) {
+          notificationPayload.neighborhoods_selected = {
+            count: event_data.neighborhood_count || 0,
+            names: event_data.neighborhood_names ? event_data.neighborhood_names.split(', ') : [],
+            monthly_total: event_data.monthly_total || 0,
+          };
+        }
+
         const notificationResponse = await fetch(`${supabaseUrl}/functions/v1/send-funnel-notification`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${supabaseKey}`,
           },
-          body: JSON.stringify({
-            event_type: notificationEventType,
-            agent_name: professional.name,
-            agent_email: professional.email,
-            agent_id: professional.id,
-            city_name: professional.business_city,
-            profile_link: `https://www.top10lists.us/profile/${token}`,
-          }),
+          body: JSON.stringify(notificationPayload),
         });
 
         const notificationResult = await notificationResponse.json();

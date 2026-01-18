@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Loader2, ArrowRight } from 'lucide-react';
@@ -8,6 +8,7 @@ import { BundlesPanel, type CityBundle } from '@/components/visibility/BundlesPa
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
+import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 
 const STORAGE_KEY = 'visibility_selection';
 const STORAGE_EXPIRY_HOURS = 24;
@@ -40,6 +41,10 @@ export default function VisibilityCoveragePage() {
   const [bundles, setBundles] = useState<CityBundle[]>([]);
   const [selectedCityIds, setSelectedCityIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
+
+  // Get professional token for tracking
+  const professionalToken = sessionStorage.getItem('visibility_professional_token') || undefined;
+  const { trackEvent } = useFunnelTracking(professionalToken);
 
   // Gate: require professional context from profile funnel
   useEffect(() => {
@@ -191,6 +196,16 @@ export default function VisibilityCoveragePage() {
       savedAt: new Date().toISOString(),
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
+
+    // Track cities selected event for Pipedrive
+    const selectedCityNames = Array.from(selectedCityIds)
+      .map(id => cities.find(c => c.id === id)?.name)
+      .filter((name): name is string => !!name);
+    
+    trackEvent(FUNNEL_EVENTS.CITIES_SELECTED, {
+      city_count: selectedCityIds.size,
+      city_names: selectedCityNames.join(', '),
+    });
     
     navigate('/visibility/expertise');
   };
