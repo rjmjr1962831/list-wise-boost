@@ -158,7 +158,13 @@ export default function FunnelStep0() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-gray-900">Why you are here</h2>
             <p className="text-gray-700 leading-relaxed">
-              You are one of approximately 800 Arizona-based agents who qualified for inclusion in Top10Lists.us after analysis of over 200,000 licensed professionals. This message confirms your eligibility and invites you to review and refine your profile before it becomes part of the public directory.
+              We analyzed the professional qualifications of more than 200,000 licensed real estate agents in Arizona.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Our analysis evaluated over 1,000 data points per agent, including licensing history, transaction activity, reviews, public media, client satisfaction, community involvement, and competitive positioning.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Based on this analysis, you rank in the top 1 percent of agents in Arizona for trust, experience, and competitive advantages.
             </p>
           </section>
 
