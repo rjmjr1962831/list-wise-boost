@@ -11,6 +11,7 @@ import {
   Eye,
   Shield
 } from 'lucide-react';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
 export default function FunnelSuccess() {
   const { token } = useParams<{ token: string }>();
@@ -185,6 +186,8 @@ export default function FunnelSuccess() {
           </div>
         </div>
       </div>
+
+      <FunnelPhoneSupport />
     </>
   );
 }

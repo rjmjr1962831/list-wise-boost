@@ -25,6 +25,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
 interface NotableAchievement {
   title: string;
@@ -615,6 +616,8 @@ export default function ClaimListingPreview() {
           </div>
         </div>
       </div>
+
+      <FunnelPhoneSupport />
     </>
   );
 }

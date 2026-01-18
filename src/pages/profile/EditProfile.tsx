@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ImageUploadModal from '@/components/profile/ImageUploadModal';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
 // Bio Preview component with ...more expander - converts HTML to plain text with paragraph breaks
 const BioPreview = ({ text }: { text: string }) => {
@@ -754,6 +755,8 @@ export default function EditProfile() {
           professionalId={professional.id}
         />
       )}
+
+      <FunnelPhoneSupport />
     </>
   );
 }

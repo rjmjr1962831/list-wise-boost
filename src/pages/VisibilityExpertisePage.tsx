@@ -15,6 +15,7 @@ import {
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
 const STORAGE_KEY = 'visibility_selection';
 const STORAGE_EXPIRY_HOURS = 24;
@@ -533,6 +534,8 @@ export default function VisibilityExpertisePage() {
         {/* Spacer for mobile footer */}
         {isMobile && <div className="h-28" />}
       </div>
+
+      <FunnelPhoneSupport />
     </>
   );
 }

@@ -9,6 +9,7 @@ import { VerifiedFieldRow } from '@/components/profile/VerifiedFieldRow';
 import FieldReviewRequestModal from '@/components/profile/FieldReviewRequestModal';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { useToast } from '@/hooks/use-toast';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
 interface PressMention {
   title: string;
@@ -463,6 +464,8 @@ export default function AccuracyReview() {
         professionalEmail={professional.email || undefined}
         currentValue={selectedField.value || undefined}
       />
+
+      <FunnelPhoneSupport />
     </>
   );
 }
