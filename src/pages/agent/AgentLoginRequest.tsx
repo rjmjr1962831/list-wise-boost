@@ -73,6 +73,12 @@ const AgentLoginRequest = () => {
             description: "Please wait a while before requesting another code.",
             variant: "destructive",
           });
+        } else if (error.message?.includes("404") || error.message?.includes("email_not_found")) {
+          toast({
+            title: "Email not found",
+            description: "This email address is not associated with any agent profile.",
+            variant: "destructive",
+          });
         } else {
           toast({
             title: "Error",
