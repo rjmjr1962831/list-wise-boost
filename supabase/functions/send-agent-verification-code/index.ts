@@ -1,8 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -123,7 +121,7 @@ serve(async (req) => {
     // Extract first name
     const firstName = professional.name?.split(" ")[0] || "there";
 
-    // Send email via Resend
+    // Build email HTML
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -161,16 +159,47 @@ serve(async (req) => {
       </html>
     `;
 
-    const { error: emailError } = await resend.emails.send({
-      from: "Robert from Top10lists <robert@top10lists.us>",
-      replyTo: "robert@top10lists.us",
-      to: [professional.email],
-      subject: `Your verification code - ${code}`,
-      html: emailHtml,
+    // Send email via SMTP (privateemail.com)
+    const smtpUsername = Deno.env.get("SMTP_USERNAME");
+    const smtpPassword = Deno.env.get("SMTP_PASSWORD");
+    const smtpFromEmail = Deno.env.get("SMTP_FROM_EMAIL") || smtpUsername;
+    const smtpPort = parseInt(Deno.env.get("SMTP_PORT") || "587", 10);
+
+    if (!smtpUsername || !smtpPassword) {
+      console.error("[send-agent-verification-code] SMTP credentials not configured");
+      return new Response(
+        JSON.stringify({ success: false, error: "Email service not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[send-agent-verification-code] Sending email via SMTP to ${professional.email}`);
+
+    const client = new SMTPClient({
+      connection: {
+        hostname: "mail.privateemail.com",
+        port: smtpPort,
+        tls: true,
+        auth: {
+          username: smtpUsername,
+          password: smtpPassword,
+        },
+      },
     });
 
-    if (emailError) {
-      console.error("[send-agent-verification-code] Email send error:", emailError);
+    try {
+      await client.send({
+        from: smtpFromEmail!,
+        to: professional.email,
+        subject: `Your verification code - ${code}`,
+        content: `Hi ${firstName}, your verification code is: ${code}. This code expires in 10 minutes.`,
+        html: emailHtml,
+      });
+
+      await client.close();
+    } catch (emailError) {
+      console.error("[send-agent-verification-code] SMTP send error:", emailError);
+      await client.close();
       return new Response(
         JSON.stringify({ success: false, error: "Failed to send verification email" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
