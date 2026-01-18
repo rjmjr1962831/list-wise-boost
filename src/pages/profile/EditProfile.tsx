@@ -456,12 +456,6 @@ export default function EditProfile() {
           </div>
         </div>
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground">
-            Review and Edit
-          </h1>
-        </div>
 
         {/* Form */}
         <Card className="p-8">
