@@ -173,7 +173,7 @@ export default function FunnelStep0() {
               Our analysis evaluated over 1,000 data points per agent, including licensing history, transaction activity, reviews, public media, client satisfaction, community involvement, and competitive positioning.
             </p>
             <p className="text-gray-700 leading-relaxed">
-              Based on this analysis, you rank in the top 1 percent of agents in Arizona for trust, experience, and competitive advantages.
+              Based on this analysis, you rank in the top 1% of agents in Arizona for trust, experience, and competitive advantages.
             </p>
           </section>
 
