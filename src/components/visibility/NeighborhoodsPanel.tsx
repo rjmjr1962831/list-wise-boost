@@ -16,6 +16,7 @@ interface NeighborhoodsPanelProps {
   selectedNeighborhoods: SelectedNeighborhood[];
   onAdd: (neighborhood: SelectedNeighborhood) => void;
   onRemove: (neighborhoodId: string) => void;
+  onPendingChange?: (isPending: boolean) => void;
   pricingConfigVersion?: string;
 }
 
@@ -24,6 +25,7 @@ export function NeighborhoodsPanel({
   selectedNeighborhoods,
   onAdd,
   onRemove,
+  onPendingChange,
 }: NeighborhoodsPanelProps) {
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [isOpen, setIsOpen] = useState(false);
@@ -119,6 +121,10 @@ export function NeighborhoodsPanel({
         return;
       }
 
+      // Signal pending IMMEDIATELY before async work
+      onPendingChange?.(true);
+      toast.loading(`Adding ${suggestion.neighborhood}...`, { id: 'adding-neighborhood' });
+
       try {
         // Get price from server
         const priceResponse = await computePrice(suggestion.id);
@@ -134,11 +140,12 @@ export function NeighborhoodsPanel({
         };
 
         onAdd(selected);
-        setQuery('');
-        clearSuggestions();
-        setIsOpen(false);
+        toast.dismiss('adding-neighborhood');
+        toast.success(`Added ${suggestion.neighborhood}`);
       } catch (error) {
         console.error('Error getting price:', error);
+        toast.dismiss('adding-neighborhood');
+        toast.error(`Failed to add ${suggestion.neighborhood}`);
         // Fallback to tier price
         const selected: SelectedNeighborhood = {
           id: suggestion.id,
@@ -150,12 +157,14 @@ export function NeighborhoodsPanel({
           price_source: 'tier_prices',
         };
         onAdd(selected);
+      } finally {
+        onPendingChange?.(false);
         setQuery('');
         clearSuggestions();
         setIsOpen(false);
       }
     },
-    [selectedNeighborhoods, onAdd, setQuery, clearSuggestions, computePrice]
+    [selectedNeighborhoods, onAdd, setQuery, clearSuggestions, computePrice, onPendingChange]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

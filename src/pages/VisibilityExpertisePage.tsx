@@ -36,6 +36,7 @@ export default function VisibilityExpertisePage() {
   const [isMobile, setIsMobile] = useState(false);
   const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
   const [isFooterExpanded, setIsFooterExpanded] = useState(false);
+  const [isAddingNeighborhood, setIsAddingNeighborhood] = useState(false);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -117,19 +118,37 @@ export default function VisibilityExpertisePage() {
     loadSelection();
   }, [navigate, toast]);
 
-  // Handle neighborhood add
+  // Handle neighborhood add with immediate persistence
   const handleAddNeighborhood = (neighborhood: SelectedNeighborhood) => {
     console.log('[VisibilityExpertisePage] handleAddNeighborhood called:', neighborhood);
     setSelectedNeighborhoods(prev => {
       const next = [...prev, neighborhood];
       console.log('[VisibilityExpertisePage] New selectedNeighborhoods:', next);
+      // Immediately persist to sessionStorage
+      const selection: StoredSelection = {
+        selectedCityIds,
+        selectedNeighborhoods: next,
+        savedAt: new Date().toISOString(),
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
+      console.log('[VisibilityExpertisePage] Persisted to sessionStorage:', selection);
       return next;
     });
   };
 
-  // Handle neighborhood remove
+  // Handle neighborhood remove with immediate persistence
   const handleRemoveNeighborhood = (neighborhoodId: string) => {
-    setSelectedNeighborhoods(prev => prev.filter(n => n.id !== neighborhoodId));
+    setSelectedNeighborhoods(prev => {
+      const next = prev.filter(n => n.id !== neighborhoodId);
+      // Immediately persist to sessionStorage
+      const selection: StoredSelection = {
+        selectedCityIds,
+        selectedNeighborhoods: next,
+        savedAt: new Date().toISOString(),
+      };
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
+      return next;
+    });
   };
 
   // Handle continue to review
@@ -287,6 +306,7 @@ export default function VisibilityExpertisePage() {
                 selectedNeighborhoods={selectedNeighborhoods}
                 onAdd={handleAddNeighborhood}
                 onRemove={handleRemoveNeighborhood}
+                onPendingChange={setIsAddingNeighborhood}
               />
 
               {/* Continue button - always visible */}
@@ -300,8 +320,12 @@ export default function VisibilityExpertisePage() {
                   </p>
                 </div>
                 <div className="w-full sm:w-auto">
-                  <Button onClick={handleContinue} className="w-full sm:w-auto">
-                    Continue to Review
+                  <Button 
+                    onClick={handleContinue} 
+                    disabled={isAddingNeighborhood}
+                    className="w-full sm:w-auto"
+                  >
+                    {isAddingNeighborhood ? 'Adding...' : 'Continue to Review'}
                   </Button>
                 </div>
               </div>
@@ -362,8 +386,9 @@ export default function VisibilityExpertisePage() {
                   <Button
                     className="w-full"
                     onClick={handleContinue}
+                    disabled={isAddingNeighborhood}
                   >
-                    Review & Continue
+                    {isAddingNeighborhood ? 'Adding...' : 'Review & Continue'}
                   </Button>
                   
                   <button
@@ -464,12 +489,13 @@ export default function VisibilityExpertisePage() {
                 </div>
                 <Button
                   size="sm"
+                  disabled={isAddingNeighborhood}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleContinue();
                   }}
                 >
-                  Review
+                  {isAddingNeighborhood ? 'Adding...' : 'Review'}
                 </Button>
               </div>
 
