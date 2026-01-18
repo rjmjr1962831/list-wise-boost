@@ -233,11 +233,23 @@ export default function FunnelStep0() {
             </p>
           </section>
 
-          {/* Why accuracy is critical */}
+          {/* Why this is critical now */}
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900">Why accuracy is critical</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Why this is critical now</h2>
             <p className="text-gray-700 leading-relaxed">
-              AI systems reward consistency. If your name, license number, or brokerage affiliation differs across sources, it weakens your profile's credibility. By verifying your information here, you help ensure that AI models see a clear, consistent signal about who you are and what you do.
+              We have invested heavily in building an architecture and data model that allows AI systems to cite individual agents with confidence. This is something agent websites and pay-to-play platforms cannot do.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              Right now, there is no other site in the real estate industry with comparable data sourcing, verification standards, or citation-ready structure. That is why we are consistently told we are two to three years ahead of any competitor.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              AI systems learn citation patterns over time. Once they consistently trust a source, that preference compounds.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              By verifying your profile now, you help ensure your name is associated with a trusted source before citation patterns fully harden.
+            </p>
+            <p className="text-gray-700 leading-relaxed">
+              In two years, this will not be an opportunity. It will be the default.
             </p>
           </section>
 
