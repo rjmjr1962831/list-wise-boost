@@ -264,58 +264,7 @@ export default function VisibilityExpertisePage() {
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left column - Main content */}
           <div className="flex-1 space-y-6">
-            {/* Coverage Summary (Collapsible) */}
-            <Collapsible open={isCitiesExpanded} onOpenChange={setIsCitiesExpanded}>
-              <div className="rounded-lg border bg-card">
-                <CollapsibleTrigger asChild>
-                  <div className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div>
-                        <h3 className="font-semibold">Your Coverage</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {cityCount} cities selected
-                        </p>
-                      </div>
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
-                        Free
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditCoverage();
-                        }}
-                      >
-                        <Pencil className="w-4 h-4 mr-1" />
-                        Edit
-                      </Button>
-                      {isCitiesExpanded ? (
-                        <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                      )}
-                    </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="px-4 pb-4 border-t pt-4">
-                    <div className="flex flex-wrap gap-1">
-                      {cityList.map((name) => (
-                        <span
-                          key={name}
-                          className="text-xs bg-muted px-2 py-1 rounded"
-                        >
-                          {name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </CollapsibleContent>
-              </div>
-            </Collapsible>
+
 
             {/* Neighborhood Highlights Section */}
             <div className="space-y-4">
