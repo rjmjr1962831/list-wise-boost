@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { Loader2, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { Loader2, ChevronDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { CoverageProgress } from '@/components/visibility/CoverageProgress';
 import { NeighborhoodsPanel } from '@/components/visibility/NeighborhoodsPanel';
@@ -36,7 +36,6 @@ export default function VisibilityExpertisePage() {
   const [cityNames, setCityNames] = useState<Map<string, string>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
-  const [isCitiesExpanded, setIsCitiesExpanded] = useState(false);
   const [isFooterExpanded, setIsFooterExpanded] = useState(false);
   const [isAddingNeighborhood, setIsAddingNeighborhood] = useState(false);
 
@@ -191,11 +190,6 @@ export default function VisibilityExpertisePage() {
     };
     sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
     navigate('/visibility/review');
-  };
-
-  // Handle edit coverage
-  const handleEditCoverage = () => {
-    navigate('/visibility/coverage');
   };
 
   // Calculate totals
