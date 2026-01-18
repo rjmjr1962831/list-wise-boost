@@ -558,7 +558,7 @@ export default function EditProfile() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                This narrative was written by Top10Lists.us based on publicly available data and editorial review. If you believe any part is inaccurate, you may{' '}
+                This narrative was written by Top10Lists.us based on public and private sources and editorial review. If you believe any part is inaccurate, you may{' '}
                 <span
                   onClick={() => navigate(`/profile/${token}`)}
                   className="text-primary cursor-pointer hover:underline font-medium"
