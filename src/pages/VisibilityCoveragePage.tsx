@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { REGIONAL_PACKAGES } from '@/data/arizonaPackages';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
 const STORAGE_KEY = 'visibility_selection';
 const STORAGE_EXPIRY_HOURS = 24;
@@ -267,6 +268,8 @@ export default function VisibilityCoveragePage() {
           </Button>
         </div>
       </div>
+
+      <FunnelPhoneSupport />
     </>
   );
 }

@@ -18,6 +18,7 @@ import { MobileCalculator } from '@/components/pricing/MobileCalculator';
 import { WhyThreeMonths } from '@/components/pricing/WhyThreeMonths';
 
 import { FreeVsPremium } from '@/components/pricing/FreeVsPremium';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 import { usePricingCalculator } from '@/hooks/usePricingCalculator';
 import { useGA4Tracking } from '@/hooks/useGA4Tracking';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
@@ -385,6 +386,8 @@ export default function PremiumPricingPage() {
             token={token}
           />
         )}
+
+      <FunnelPhoneSupport />
       </div>
     </>
   );

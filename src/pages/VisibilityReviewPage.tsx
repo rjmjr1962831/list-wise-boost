@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
 const STORAGE_KEY = 'visibility_selection';
 const STORAGE_EXPIRY_HOURS = 24;
@@ -539,6 +540,8 @@ export default function VisibilityReviewPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <FunnelPhoneSupport />
     </>
   );
 }
