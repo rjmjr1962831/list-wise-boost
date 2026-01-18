@@ -13,6 +13,9 @@ interface ProfessionalData {
   verification_token: string | null;
 }
 
+// Maynard test profile - never track step0_completed so funnel always starts fresh
+const TEST_PROFILE_ID = '20e0b7f2-5652-424a-9d46-ba74a19cd9a8';
+
 export default function FunnelStep0() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
@@ -48,18 +51,21 @@ export default function FunnelStep0() {
         setProfessional(prof);
 
         // Check if user already completed Step 0 - redirect to AccuracyReview
-        const { data: existingEvent } = await supabase
-          .from('funnel_events')
-          .select('id')
-          .eq('professional_id', prof.id)
-          .eq('event_name', 'step0_completed')
-          .limit(1)
-          .maybeSingle();
+        // Skip this check for Maynard test profile so funnel always starts at Step 0
+        if (prof.id !== TEST_PROFILE_ID) {
+          const { data: existingEvent } = await supabase
+            .from('funnel_events')
+            .select('id')
+            .eq('professional_id', prof.id)
+            .eq('event_name', 'step0_completed')
+            .limit(1)
+            .maybeSingle();
 
-        if (existingEvent) {
-          // Returning user - go to Step 1 (AccuracyReview)
-          navigate(`/profile/${token}/review`, { replace: true });
-          return;
+          if (existingEvent) {
+            // Returning user - go to Step 1 (AccuracyReview)
+            navigate(`/profile/${token}/review`, { replace: true });
+            return;
+          }
         }
 
         // Track step0_viewed (guard against double-fire)
@@ -84,8 +90,10 @@ export default function FunnelStep0() {
     
     setNavigating(true);
     
-    // Track step0_completed
-    await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
+    // Track step0_completed (skip for Maynard test profile so it always starts fresh)
+    if (professional.id !== TEST_PROFILE_ID) {
+      await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
+    }
     
     // Navigate to Step 1 (AccuracyReview)
     navigate(`/profile/${token}/review`);
