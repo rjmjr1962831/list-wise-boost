@@ -193,7 +193,7 @@ export default function FunnelStep0() {
             <h2 className="text-lg font-semibold text-gray-900">Important to know</h2>
             <ul className="space-y-2 text-gray-700">
               <li>• <span className="font-medium">No account required.</span> There is no username or password. Access is via secure, one-time links.</li>
-              <li>• <span className="font-medium">No payment required.</span> You can complete the review and verification at no cost. Paid options are offered later, and are clearly labeled.</li>
+              <li>• <span className="font-medium">No payment required.</span> We have already published your listing and will publish any verified updates you make at no cost. There is no charge for your standard listing in the cities you select.</li>
               <li>• <span className="font-medium">No impact on eligibility.</span> Whether you complete this flow or not, your qualification status is not affected. If you do nothing, your profile may be published using all available data.</li>
             </ul>
           </section>
