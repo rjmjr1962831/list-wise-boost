@@ -448,7 +448,7 @@ export default function EditProfile() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground">Step 2 of 3</span>
+            <span className="text-sm font-medium text-foreground">Step 2 of 3 (2 minutes)</span>
             <span className="text-sm text-muted-foreground">Review & Edit</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
