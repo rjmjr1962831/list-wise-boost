@@ -151,7 +151,7 @@ export default function FunnelStep0() {
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 mb-2">Hello {firstName}</h1>
             <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-              Step 0: Introduction and Context
+              Step 1 of 5: Introduction and Context
             </p>
           </div>
 
