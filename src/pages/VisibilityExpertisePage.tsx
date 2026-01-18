@@ -225,30 +225,40 @@ export default function VisibilityExpertisePage() {
 
       <div className="container max-w-7xl mx-auto px-4 py-8">
 
-        <div className="mb-6">
+        <div className="mb-4">
           <h1 className="text-2xl font-bold">Do you want to highlight neighborhood expertise?</h1>
+          <p className="text-muted-foreground mt-2">
+            Neighborhood coverage is more precise than city coverage and is limited to a small number of professionals per area.
+          </p>
           
-          <h2 className="text-lg font-semibold mt-6 mb-3">Why neighborhood coverage matters</h2>
-          <div className="text-muted-foreground space-y-3">
-            <p>
-              City level coverage is broad by design. In large markets, many qualified professionals may be associated with a single city, and Top10Lists.us surfaces only a limited subset at any given time to preserve editorial clarity.
-            </p>
-            <p>
-              Neighborhood coverage is intentionally more precise.
-            </p>
-            <p>
-              Each neighborhood page is limited to no more than ten professionals with verified experience in that area. This narrower scope reduces ambiguity and makes it easier for both consumers and AI systems to understand who has relevant, location specific expertise.
-            </p>
-            <p>
-              When AI systems evaluate neighborhood pages, they encounter clearer signals, fewer competing profiles, and more defensible context than at the city level.
-            </p>
-            <p>
-              For that reason, neighborhood coverage often provides stronger citation potential than broader city coverage.
-            </p>
-            <p>
-              Participation is optional and does not affect your inclusion at the city level.
-            </p>
-          </div>
+          <Collapsible className="mt-3">
+            <CollapsibleTrigger className="flex items-center gap-2 text-sm text-primary hover:underline cursor-pointer">
+              <ChevronDown className="h-4 w-4" />
+              Show explanation
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              <div className="text-muted-foreground space-y-3 text-sm border-l-2 border-muted pl-4">
+                <p>
+                  City level coverage is broad by design. In large markets, many qualified professionals may be associated with a single city, and Top10Lists.us surfaces only a limited subset at any given time to preserve editorial clarity.
+                </p>
+                <p>
+                  Neighborhood coverage is intentionally more precise.
+                </p>
+                <p>
+                  Each neighborhood page is limited to no more than ten professionals with verified experience in that area. This narrower scope reduces ambiguity and makes it easier for both consumers and AI systems to understand who has relevant, location specific expertise.
+                </p>
+                <p>
+                  When AI systems evaluate neighborhood pages, they encounter clearer signals, fewer competing profiles, and more defensible context than at the city level.
+                </p>
+                <p>
+                  For that reason, neighborhood coverage often provides stronger citation potential than broader city coverage.
+                </p>
+                <p>
+                  Participation is optional and does not affect your inclusion at the city level.
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
