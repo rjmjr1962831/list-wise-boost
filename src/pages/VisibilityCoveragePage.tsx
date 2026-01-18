@@ -134,11 +134,38 @@ export default function VisibilityCoveragePage() {
     loadCities();
   }, [toast]);
 
-  // Handle bundle add
+  const persistSelection = (nextCityIds: Set<string>) => {
+    // Preserve any neighborhoods already selected in later steps
+    let existingNeighborhoods: StoredSelection['selectedNeighborhoods'] = [];
+    let skippedExpertise: StoredSelection['skippedExpertise'] = undefined;
+
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed: StoredSelection = JSON.parse(stored);
+        existingNeighborhoods = parsed.selectedNeighborhoods || [];
+        skippedExpertise = parsed.skippedExpertise;
+      }
+    } catch (e) {
+      console.error('Error loading existing selection:', e);
+    }
+
+    const selection: StoredSelection = {
+      selectedCityIds: Array.from(nextCityIds),
+      selectedNeighborhoods: existingNeighborhoods,
+      ...(skippedExpertise ? { skippedExpertise } : {}),
+      savedAt: new Date().toISOString(),
+    };
+
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(selection));
+  };
+
+  // Handle bundle add (persist immediately so selections survive refresh/back)
   const handleAddBundle = (_bundleId: string, cityIds: string[]) => {
     setSelectedCityIds(prev => {
       const next = new Set(prev);
       cityIds.forEach(id => next.add(id));
+      persistSelection(next);
       return next;
     });
   };
