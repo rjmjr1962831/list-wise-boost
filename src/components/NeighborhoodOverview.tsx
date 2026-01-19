@@ -3,8 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { NearbyNeighborhoods } from '@/components/neighborhoods/NearbyNeighborhoods';
-
 interface NearbyNeighborhood {
   id: string;
   slug: string;
@@ -195,15 +193,6 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
             </div>
           </CollapsibleContent>
         </Collapsible>
-      )}
-
-      {/* Nearby Neighborhoods Section */}
-      {neighborhood.nearby_neighborhoods && neighborhood.nearby_neighborhoods.length > 0 && (
-        <NearbyNeighborhoods
-          neighborhoods={neighborhood.nearby_neighborhoods}
-          currentState={stateSlug}
-          currentCity={citySlug}
-        />
       )}
     </div>
   );
