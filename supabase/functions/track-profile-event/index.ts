@@ -82,13 +82,17 @@ serve(async (req) => {
       );
     }
 
-    // Check if this is the agent's first funnel event (first click)
-    const { count: existingEventCount } = await supabase
-      .from('funnel_events')
-      .select('*', { count: 'exact', head: true })
-      .eq('professional_id', professional.id);
+    // Check if this is the agent's first step0_viewed event (funnel entry)
+    let isFirstStep0View = false;
+    if (event_name === 'step0_viewed') {
+      const { count: existingStep0Count } = await supabase
+        .from('funnel_events')
+        .select('*', { count: 'exact', head: true })
+        .eq('professional_id', professional.id)
+        .eq('event_name', 'step0_viewed');
 
-    const isFirstFunnelClick = existingEventCount === 0;
+      isFirstStep0View = existingStep0Count === 0;
+    }
 
     // Insert event
     const { error: insertError } = await supabase
@@ -104,9 +108,9 @@ serve(async (req) => {
       throw insertError;
     }
 
-    // On first funnel click, update funnel_status to trigger Hot lead sync
-    if (isFirstFunnelClick) {
-      console.log('🔥 First funnel click detected - upgrading to Hot lead');
+    // On first step0_viewed, update funnel_status to trigger Hot lead sync
+    if (isFirstStep0View) {
+      console.log('🔥 First step0_viewed detected - upgrading to Hot lead');
       
       const { error: updateError } = await supabase
         .from('professionals')
