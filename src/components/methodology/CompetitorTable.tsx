@@ -1,7 +1,7 @@
 import { Check, X } from "lucide-react";
 
 const competitors = [
-  { name: "Top10Lists.us", payToPlay: false, cost: "Free (invitation-only)", highlight: true },
+  { name: "Top10Lists.us", payToPlay: false, cost: "Free listing; optional neighborhood verification", highlight: true },
   { name: "Zillow", payToPlay: true, cost: "$300–$5,000/mo" },
   { name: "Realtor.com", payToPlay: true, cost: "$200–$10,000/mo" },
   { name: "HomeLight", payToPlay: true, cost: "33% referral fee" },
