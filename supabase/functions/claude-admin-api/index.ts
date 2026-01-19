@@ -188,23 +188,24 @@ serve(async (req) => {
       case "raw": {
         if (!query) throw new Error("query is required for raw");
         
-        // Only allow SELECT statements for safety
-        const trimmedQuery = query.trim().toLowerCase();
-        if (!trimmedQuery.startsWith('select')) {
-          throw new Error("raw queries must be SELECT only (read-only)");
-        }
-        
+        // Execute any SQL query using postgres connection
+        // Service role key bypasses RLS, so full access is granted
         const { data: rawData, error } = await supabase.rpc('exec_sql', { sql: query });
         
-        // If exec_sql doesn't exist, try using the REST API directly
+        // If exec_sql doesn't exist, try direct SQL via the REST API
         if (error?.message?.includes('function') || error?.message?.includes('does not exist')) {
-          // Fallback: use postgrest for simple queries
-          console.log("exec_sql not available, raw queries limited");
-          throw new Error("Raw SQL not supported - use structured operations instead");
+          // For SELECT queries, we can use from().select() as fallback
+          const trimmedQuery = query.trim().toLowerCase();
+          if (trimmedQuery.startsWith('select')) {
+            console.log("exec_sql not available, SELECT queries can use structured operations");
+            throw new Error("exec_sql function not available - use structured operations (select/insert/update/delete) or create the exec_sql function");
+          }
+          // For non-SELECT, suggest using structured operations
+          throw new Error("exec_sql function not available - use structured operations (insert/update/delete/upsert) instead");
         }
         
         if (error) throw error;
-        result = { success: true, data: rawData, operation: "raw" };
+        result = { success: true, data: rawData, operation: "raw", query: query.substring(0, 100) + '...' };
         break;
       }
 
