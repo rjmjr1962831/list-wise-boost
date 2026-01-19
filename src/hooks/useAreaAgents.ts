@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Professional } from '@/types/professional';
 
 interface AreaAgent extends Professional {
+  isPaidExpert: boolean;
   neighborhoodTransactions?: number;
   transactionZips?: string[];
   distanceMiles?: number;
@@ -69,7 +70,20 @@ export function useAreaAgents({
 
         console.log(`[useAreaAgents] Finding agents within ${radiusMiles} miles of ${primaryZip}`);
 
-        // Step 2: Get adjacent ZIPs within radius
+        // Step 2: Get paid experts for this neighborhood (to flag/filter on page 2)
+        const { data: subscriptions, error: subError } = await supabase
+          .from('agent_neighborhood_subscriptions')
+          .select('professional_id')
+          .eq('neighborhood_id', neighborhood.id)
+          .eq('is_active', true);
+
+        if (subError) {
+          console.error('[useAreaAgents] Error fetching subscriptions:', subError);
+        }
+
+        const paidExpertIds = new Set((subscriptions || []).map((s: any) => s.professional_id));
+
+        // Step 3: Get adjacent ZIPs within radius
         const { data: adjacentZips, error: adjacencyError } = await supabase
           .from('zip_adjacency')
           .select('adjacent_zip, distance_miles')
@@ -183,6 +197,7 @@ export function useAreaAgents({
             license_verified_at: prof.license_verified_at || undefined,
             years_experience: prof.years_experience || undefined,
             canonical_slug: prof.canonical_slug,
+            isPaidExpert: paidExpertIds.has(prof.id),
             neighborhoodTransactions: activity.totalTx,
             transactionZips: activity.zips,
             distanceMiles: activity.minDistance,
