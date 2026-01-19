@@ -56,99 +56,91 @@ export const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links - Two Column Layout */}
           <div>
             <h3 className="font-semibold mb-4 text-white">Quick Links</h3>
-            <div className="space-y-2 text-sm">
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
               <Link 
                 to="/about" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 About Us
               </Link>
               <Link 
                 to="/about/founder" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 Founder
               </Link>
               <Link 
                 to="/about/ranking-methodology" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 Methodology
               </Link>
               <Link 
                 to="/compare" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 Compare Platforms
               </Link>
               <Link 
                 to="/faq" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 FAQ
               </Link>
               <Link 
                 to="/editorial-updates" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 Updates
               </Link>
               <Link 
                 to="/transparency" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
-                Transparency Report
+                Transparency
               </Link>
               <Link 
                 to="/press" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 Press
               </Link>
               <Link 
                 to="/for-ai" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 For AI Systems
               </Link>
               <Link 
                 to="/protocol-adopters" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 AI Citation Protocol
               </Link>
-              <Link 
-                to="/protocol-services" 
-                className="block text-slate-300 hover:text-white transition-colors"
-              >
-                Protocol Services
-              </Link>
               <Link
                 to="/privacy" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
-                Privacy Policy
+                Privacy
               </Link>
               <Link 
                 to="/terms" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
-                Terms of Service
+                Terms
               </Link>
-              
-              <h4 className="font-semibold mt-6 mb-2 text-white">For Agents</h4>
               <Link 
                 to="/are-you-an-agent" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 Are You Ranked?
               </Link>
               <Link 
                 to="/login" 
-                className="block text-slate-300 hover:text-white transition-colors"
+                className="text-slate-300 hover:text-white transition-colors"
               >
                 Agent Login
               </Link>
