@@ -15,6 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ImageUploadModal from '@/components/profile/ImageUploadModal';
 import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 import { EditableFieldRow } from '@/components/profile/EditableFieldRow';
+import { PhoneFieldsEditor, PhoneNumbers } from '@/components/profile/PhoneFieldsEditor';
 
 // Bio Preview component with ...more expander - converts HTML to plain text with paragraph breaks
 const BioPreview = ({ text }: { text: string }) => {
@@ -161,6 +162,16 @@ export default function EditProfile() {
     social_facebook: '',
     social_instagram: ''
   });
+  
+  // Phone numbers state (stored in phone_numbers JSON field)
+  const [phoneNumbers, setPhoneNumbers] = useState<PhoneNumbers>({
+    zillow: '',
+    mobile: '',
+    business: '',
+    publish_zillow: true,
+    publish_mobile: false,
+    publish_business: false
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -224,6 +235,29 @@ export default function EditProfile() {
           social_facebook: prof.social_facebook || '',
           social_instagram: prof.social_instagram || ''
         });
+        
+        // Parse phone_numbers JSON if exists, otherwise use phone field as zillow
+        const existingPhoneData = prof.phone_numbers as PhoneNumbers | null;
+        if (existingPhoneData && typeof existingPhoneData === 'object') {
+          setPhoneNumbers({
+            zillow: existingPhoneData.zillow || prof.phone || '',
+            mobile: existingPhoneData.mobile || '',
+            business: existingPhoneData.business || '',
+            publish_zillow: existingPhoneData.publish_zillow ?? true,
+            publish_mobile: existingPhoneData.publish_mobile ?? false,
+            publish_business: existingPhoneData.publish_business ?? false
+          });
+        } else {
+          // Legacy: only phone field exists
+          setPhoneNumbers({
+            zillow: prof.phone || '',
+            mobile: '',
+            business: '',
+            publish_zillow: true,
+            publish_mobile: false,
+            publish_business: false
+          });
+        }
         
         // Initialize bio last edited date if description exists
         if (prof.description && prof.updated_at) {
@@ -380,6 +414,7 @@ export default function EditProfile() {
     try {
       const updates = {
         ...formData,
+        phone_numbers: phoneNumbers,
         funnel_status: 'edit_complete'
       };
 
@@ -652,6 +687,14 @@ export default function EditProfile() {
               </div>
 
               <div className="divide-y divide-border">
+                {/* Phone Numbers Section */}
+                <div className="py-4">
+                  <PhoneFieldsEditor
+                    phoneNumbers={phoneNumbers}
+                    onSave={setPhoneNumbers}
+                  />
+                </div>
+
                 {/* Professional Headline */}
                 <EditableFieldRow
                   label="Professional Headline"

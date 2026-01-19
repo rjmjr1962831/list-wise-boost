@@ -90,6 +90,7 @@ serve(async (req) => {
       'name',
       'email',
       'phone',
+      'phone_numbers',
       'company',
       'headline',
       'description',
