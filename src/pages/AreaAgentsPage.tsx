@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { useNeighborhoodAgents } from '@/hooks/useNeighborhoodAgents';
+import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { AgentBadge } from '@/components/AgentBadge';
 import { Button } from '@/components/ui/button';
 import { Users, ChevronLeft, ChevronRight, ArrowLeft, MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const AGENTS_PER_PAGE = 10;
+const SEARCH_RADIUS_MILES = 1.5;
 
 interface NeighborhoodData {
   neighborhood: string;
@@ -16,18 +17,16 @@ interface NeighborhoodData {
   city_area: string;
   city_area_slug: string;
   state: string;
+  primary_zip: string | null;
 }
 
 /**
- * QualifiedAgentsPage - Page 2+ of the Expert-First Architecture
+ * AreaAgentsPage - Shows agents operating within a geographic radius
  * 
- * This page displays qualified, non-expert agents who have passed 
- * Top10Lists' rigorous editorial review. It is:
- * - Noindex (not crawlable by search engines or AI)
- * - Paginated at 10 agents per page
- * - Accessible via navigation from Page 1
+ * This page displays agents who have verified transactions in ZIP codes
+ * within 1.5 miles of the target neighborhood. Paginated at 10 per page.
  */
-export default function QualifiedAgentsPage() {
+export default function AreaAgentsPage() {
   const { stateSlug, citySlug, zipCode, neighborhoodSlug } = useParams<{
     stateSlug: string;
     citySlug: string;
@@ -41,7 +40,7 @@ export default function QualifiedAgentsPage() {
   // Get page from URL params, default to 1
   const currentPage = parseInt(searchParams.get('page') || '1', 10);
 
-  // Always scroll to top on page load or page change
+  // Scroll to top on page load or page change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [currentPage]);
@@ -57,7 +56,7 @@ export default function QualifiedAgentsPage() {
       try {
         const { data, error } = await supabase
           .from('neighborhood_catalog')
-          .select('neighborhood, neighborhood_slug, city_area, city_area_slug, state')
+          .select('neighborhood, neighborhood_slug, city_area, city_area_slug, state, primary_zip')
           .eq('neighborhood_slug', neighborhoodSlug)
           .eq('city_area_slug', citySlug)
           .eq('is_active', true)
@@ -67,7 +66,7 @@ export default function QualifiedAgentsPage() {
           setNeighborhood(data);
         }
       } catch (err) {
-        console.error('[QualifiedAgentsPage] Error:', err);
+        console.error('[AreaAgentsPage] Error:', err);
       } finally {
         setNeighborhoodLoading(false);
       }
@@ -76,21 +75,20 @@ export default function QualifiedAgentsPage() {
     fetchNeighborhood();
   }, [neighborhoodSlug, citySlug]);
 
-  // Fetch agents
-  const { agents, loading: agentsLoading, error, totalCount } = useNeighborhoodAgents({
+  // Fetch area agents
+  const { agents, loading: agentsLoading, error, totalCount } = useAreaAgents({
     neighborhoodSlug: neighborhoodSlug || '',
     citySlug: citySlug || '',
-    stateSlug: stateSlug || ''
+    stateSlug: stateSlug || '',
+    radiusMiles: SEARCH_RADIUS_MILES
   });
 
-  // Filter to only non-expert agents
-  const qualifiedAgents = agents.filter(a => !a.isPaidExpert);
-  const totalPages = Math.ceil(qualifiedAgents.length / AGENTS_PER_PAGE);
+  const totalPages = Math.ceil(agents.length / AGENTS_PER_PAGE);
   
   // Get agents for current page
   const startIndex = (currentPage - 1) * AGENTS_PER_PAGE;
   const endIndex = startIndex + AGENTS_PER_PAGE;
-  const pageAgents = qualifiedAgents.slice(startIndex, endIndex);
+  const pageAgents = agents.slice(startIndex, endIndex);
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -130,81 +128,52 @@ export default function QualifiedAgentsPage() {
     );
   }
 
-  // Build expert page URL - always use 5-segment format when ZIP is available
-  // zipCode is always defined when accessed via the 5-segment route
-  const expertPageUrl = zipCode 
-    ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/top10realestateagents`
-    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
+  // Build qualified agents page URL
+  const qualifiedAgentsUrl = zipCode 
+    ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/qualified-real-estate-agents`
+    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
   return (
     <>
       <Helmet>
         {/* NOINDEX - This page is not for AI crawling */}
-        <title>{`Qualified Agents in ${neighborhood?.neighborhood || 'Area'}, ${neighborhood?.city_area || 'City'} | Page ${currentPage}`}</title>
+        <title>{`Top Agents Near ${neighborhood.neighborhood}, ${neighborhood.city_area} | Page ${currentPage}`}</title>
         <meta name="robots" content="noindex, nofollow" />
         <meta name="googlebot" content="noindex, nofollow" />
-        <meta name="description" content={`Browse qualified real estate agents serving ${neighborhood?.neighborhood || 'this area'}. Page ${currentPage} of ${totalPages}.`} />
+        <meta name="description" content={`Find top real estate agents operating within ${SEARCH_RADIUS_MILES} miles of ${neighborhood.neighborhood}. Page ${currentPage} of ${totalPages}.`} />
       </Helmet>
 
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="bg-gradient-to-b from-muted/50 to-background py-8">
           <div className="container mx-auto px-4">
-            {/* Back to Expert Page */}
+            {/* Back to Qualified Agents Page */}
             <Link 
-              to={expertPageUrl}
+              to={qualifiedAgentsUrl}
               className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
             >
               <ArrowLeft className="h-4 w-4" />
-              Back to Neighborhood Expert page
+              Back to Qualified Agents
             </Link>
 
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-3">
-                <Users className="h-6 w-6 text-primary" />
+                <MapPin className="h-6 w-6 text-primary" />
                 <h1 className="text-2xl md:text-3xl font-bold">
-                  Top Real Estate Professionals Serving {neighborhood.neighborhood}
+                  Top Agents in the {neighborhood.neighborhood} Area
                 </h1>
               </div>
-              <Link 
-                to="/about/ranking-methodology" 
-                className="text-sm text-primary hover:underline hidden md:inline-flex"
-              >
-                [ Methodology ]
-              </Link>
             </div>
             
             <p className="text-muted-foreground max-w-3xl">
-              Editorially selected professionals based on performance, experience, and verified data.
+              Agents with verified transactions within {SEARCH_RADIUS_MILES} miles of {neighborhood.neighborhood}, ranked by activity.
             </p>
             
             {totalPages > 1 && (
               <p className="text-sm text-muted-foreground mt-2">
-                Page {currentPage} of {totalPages} • {qualifiedAgents.length} qualified agents
+                Page {currentPage} of {totalPages} • {totalCount} agents found
               </p>
             )}
-            
-            <Link 
-              to="/about/ranking-methodology" 
-              className="text-sm text-primary hover:underline mt-2 md:hidden"
-            >
-              [ Methodology ]
-            </Link>
-          </div>
-        </div>
-
-        {/* Context Section */}
-        <div className="container mx-auto px-4 pt-8">
-          <div className="bg-muted/20 border border-border rounded-lg p-5 mb-6">
-            <p className="text-sm text-muted-foreground mb-3">
-              The professionals listed on this page represent the top tier of real estate agents 
-              serving the {neighborhood.neighborhood} area based on Top10Lists' editorial methodology.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Each agent has been evaluated across extensive data points and human review, 
-              placing them among the top performers in the region. Any of the professionals 
-              listed would be considered a strong recommendation.
-            </p>
           </div>
         </div>
 
@@ -214,12 +183,15 @@ export default function QualifiedAgentsPage() {
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No additional qualified agents found for this area.
+                No agents found within {SEARCH_RADIUS_MILES} miles of this area.
               </p>
+              <Button asChild variant="outline" className="mt-4">
+                <Link to={qualifiedAgentsUrl}>View Qualified Agents</Link>
+              </Button>
             </div>
           ) : (
             <>
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-2 pt-6">
                 {pageAgents.map((agent) => (
                   <AgentBadge
                     key={agent.id}
@@ -286,23 +258,9 @@ export default function QualifiedAgentsPage() {
             </>
           )}
 
-          {/* Find Agents in Area Button */}
-          <div className="flex justify-center mt-8">
-            <Button asChild variant="outline" size="lg" className="gap-2">
-              <Link to={zipCode 
-                ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/area-agents`
-                : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/area-agents`
-              }>
-                <MapPin className="h-4 w-4" />
-                Find top agents in the area
-              </Link>
-            </Button>
-          </div>
-
-          {/* Optional footer note */}
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            Neighborhood Expert designations, when present, are displayed separately 
-            on the primary neighborhood page.
+          {/* Footer note */}
+          <p className="text-xs text-center text-muted-foreground mt-8">
+            Agents listed are ranked by verified transaction activity in the area.
           </p>
         </div>
       </div>

@@ -114,6 +114,7 @@ const NeighborhoodWriteups = lazy(() => import("./pages/admin/NeighborhoodWriteu
 const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
 const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 const QualifiedAgentsPage = lazy(() => import("./pages/QualifiedAgentsPage"));
+const AreaAgentsPage = lazy(() => import("./pages/AreaAgentsPage"));
 
 // Visibility funnel pages
 const VisibilityCoveragePage = lazy(() => import("./pages/VisibilityCoveragePage"));
@@ -256,6 +257,9 @@ const App = () => (
                     <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/:categorySlug" element={<NeighborhoodZipCategoryRouter />} />
                     {/* 5-segment: qualified agents page with ZIP */}
                     <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/qualified-real-estate-agents" element={<QualifiedAgentsPage />} />
+                    {/* Area agents page - find agents in wider radius */}
+                    <Route path="/:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/area-agents" element={<AreaAgentsPage />} />
+                    <Route path="/:stateSlug/:citySlug/:neighborhoodSlug/area-agents" element={<AreaAgentsPage />} />
                     {/* Qualified Agents Page (Page 2+ of Expert-First Architecture) - legacy 4-segment format */}
                     <Route path="/:stateSlug/:citySlug/:neighborhoodSlug/qualified-real-estate-agents" element={<QualifiedAgentsPage />} />
                     {/* Legacy /az/ magic link format - redirect to full state name with category */}
