@@ -199,7 +199,7 @@ export default function QualifiedAgentsPage() {
         <div className="container mx-auto px-4 pt-8">
           <div className="bg-muted/20 border border-border rounded-lg p-5 mb-6">
             <p className="text-sm text-muted-foreground">
-              These agents have at least one verified transaction in ZIP codes adjacent to {neighborhood.neighborhood}.
+              Top-rated agents who meet our editorial standards for {neighborhood.neighborhood} and surrounding areas.
             </p>
           </div>
         </div>
