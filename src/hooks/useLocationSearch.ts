@@ -89,17 +89,17 @@ export const useLocationSearch = () => {
       return `/${state}/${result.city_area_slug}`;
     }
 
-    // Neighborhood result
+    // Neighborhood result - navigate to qualified agents page (the list of agents)
     const city = result.city_area_slug;
     const neighborhood = result.neighborhood_slug;
     const zip = result.primary_zip;
 
-    // Use 5-segment URL with ZIP when available
+    // Use 5-segment URL with ZIP when available - qualified-real-estate-agents shows the agent list
     if (zip) {
-      return `/${state}/${city}/${zip}/${neighborhood}/top10realestateagents`;
+      return `/${state}/${city}/${zip}/${neighborhood}/qualified-real-estate-agents`;
     }
-    // Fallback to 4-segment (will trigger redirect to canonical 5-segment URL)
-    return `/${state}/${city}/${neighborhood}/top10realestateagents`;
+    // Fallback to 4-segment format
+    return `/${state}/${city}/${neighborhood}/qualified-real-estate-agents`;
   }, []);
 
   const trackSearch = useCallback((searchType: 'zip' | 'text', resultCount: number, term: string) => {
