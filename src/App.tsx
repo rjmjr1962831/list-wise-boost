@@ -227,7 +227,7 @@ const App = () => (
                     <Route path="/profile/:token/edit" element={<EditProfile />} />
                     <Route path="/profile/:token/preview" element={<ClaimListingPreview />} />
                     <Route path="/profile/:token/success" element={<FunnelSuccess />} />
-                    <Route path="/profile/:token/review" element={<ReviewListing />} />
+                    
                     <Route path="/profile/:token/select-free-city" element={<FreeCitySelection />} />
                     <Route path="/profile/:token/free-confirmed" element={<FreeCityConfirmation />} />
                     <Route path="/profile/:token/how-it-works" element={<HowItWorksPage />} />
