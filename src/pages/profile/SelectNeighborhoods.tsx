@@ -172,8 +172,8 @@ export default function SelectNeighborhoods() {
             Your first neighborhood is <span className="font-semibold text-green-600">FREE</span>. 
             Add more to expand your reach.
           </p>
-          <p className="text-sm text-slate-500 mt-2">
-            Cities are free — pay only for neighborhood specialization
+          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
+            Neighborhood Expert pricing reflects the work and risk required to stand behind neighborhood-specific recommendations. Selection and ranking cannot be purchased.
           </p>
         </div>
 
