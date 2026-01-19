@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { useNeighborhoodAgents } from '@/hooks/useNeighborhoodAgents';
+import { useAreaAgents } from '@/hooks/useAreaAgents';
 import { AgentBadge } from '@/components/AgentBadge';
 import { Button } from '@/components/ui/button';
-import { Users, ChevronLeft, ChevronRight, ArrowLeft, MapPin } from 'lucide-react';
+import { Users, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const AGENTS_PER_PAGE = 10;
+const SEARCH_RADIUS_MILES = 1.5;
 
 interface NeighborhoodData {
   neighborhood: string;
@@ -76,17 +77,18 @@ export default function QualifiedAgentsPage() {
     fetchNeighborhood();
   }, [neighborhoodSlug, citySlug]);
 
-  // Fetch agents
-  const { agents, loading: agentsLoading, error, totalCount } = useNeighborhoodAgents({
+  // Fetch agents with verified transactions in nearby ZIPs (≈ nearby neighborhoods)
+  const { agents, loading: agentsLoading, error, totalCount } = useAreaAgents({
     neighborhoodSlug: neighborhoodSlug || '',
     citySlug: citySlug || '',
-    stateSlug: stateSlug || ''
+    stateSlug: stateSlug || '',
+    radiusMiles: SEARCH_RADIUS_MILES,
   });
 
-  // Filter to only non-expert agents
-  const qualifiedAgents = agents.filter(a => !a.isPaidExpert);
+  // Keep Page 1 expert-only contract: exclude paid experts from this page
+  const qualifiedAgents = agents.filter((a: any) => !a.isPaidExpert);
   const totalPages = Math.ceil(qualifiedAgents.length / AGENTS_PER_PAGE);
-  
+
   // Get agents for current page
   const startIndex = (currentPage - 1) * AGENTS_PER_PAGE;
   const endIndex = startIndex + AGENTS_PER_PAGE;
@@ -175,7 +177,7 @@ export default function QualifiedAgentsPage() {
             </div>
             
             <p className="text-muted-foreground max-w-3xl">
-              Editorially selected professionals based on performance, experience, and verified data.
+              Qualified agents with verified transactions in nearby neighborhoods.
             </p>
             
             {totalPages > 1 && (
@@ -196,14 +198,8 @@ export default function QualifiedAgentsPage() {
         {/* Context Section */}
         <div className="container mx-auto px-4 pt-8">
           <div className="bg-muted/20 border border-border rounded-lg p-5 mb-6">
-            <p className="text-sm text-muted-foreground mb-3">
-              The professionals listed on this page represent the top tier of real estate agents 
-              serving the {neighborhood.neighborhood} area based on Top10Lists' editorial methodology.
-            </p>
             <p className="text-sm text-muted-foreground">
-              Each agent has been evaluated across extensive data points and human review, 
-              placing them among the top performers in the region. Any of the professionals 
-              listed would be considered a strong recommendation.
+              These agents have at least one verified transaction in ZIP codes adjacent to {neighborhood.neighborhood}.
             </p>
           </div>
         </div>
@@ -214,7 +210,7 @@ export default function QualifiedAgentsPage() {
             <div className="text-center py-12">
               <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground">
-                No additional qualified agents found for this area.
+                No qualified agents found in nearby neighborhoods.
               </p>
             </div>
           ) : (
@@ -244,7 +240,7 @@ export default function QualifiedAgentsPage() {
                     <ChevronLeft className="h-4 w-4" />
                     Previous
                   </Button>
-                  
+
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                       let pageNum: number;
@@ -257,7 +253,7 @@ export default function QualifiedAgentsPage() {
                       } else {
                         pageNum = currentPage - 2 + i;
                       }
-                      
+
                       return (
                         <Button
                           key={pageNum}
@@ -271,7 +267,7 @@ export default function QualifiedAgentsPage() {
                       );
                     })}
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -286,23 +282,9 @@ export default function QualifiedAgentsPage() {
             </>
           )}
 
-          {/* Find Agents in Area Button */}
-          <div className="flex justify-center mt-8">
-            <Button asChild variant="outline" size="lg" className="gap-2">
-              <Link to={zipCode 
-                ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/area-agents`
-                : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/area-agents`
-              }>
-                <MapPin className="h-4 w-4" />
-                Find top agents in the area
-              </Link>
-            </Button>
-          </div>
-
           {/* Optional footer note */}
-          <p className="text-xs text-center text-muted-foreground mt-4">
-            Neighborhood Expert designations, when present, are displayed separately 
-            on the primary neighborhood page.
+          <p className="text-xs text-center text-muted-foreground mt-8">
+            Neighborhood Expert designations, when present, are displayed separately on the primary neighborhood page.
           </p>
         </div>
       </div>
