@@ -17,9 +17,89 @@ import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 import { EditableFieldRow } from '@/components/profile/EditableFieldRow';
 import { PhoneFieldsEditor, PhoneNumbers } from '@/components/profile/PhoneFieldsEditor';
 
+// Convert plain text bio to HTML with proper paragraph breaks based on English grammar
+const formatBioWithParagraphs = (text: string): string => {
+  if (!text) return '';
+  
+  // If already has HTML paragraph tags, return as-is
+  if (text.includes('<p>') || text.includes('<p ')) {
+    return text;
+  }
+  
+  // If has double newlines, split on those
+  if (text.includes('\n\n')) {
+    const paragraphs = text.split(/\n{2,}/).filter(Boolean);
+    return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+  }
+  
+  // Split on sentence boundaries (handles abbreviations and decimals better)
+  const sentences = text.split(/(?<=[.!?])\s+(?=[A-Z])/);
+  
+  if (sentences.length <= 2) {
+    return `<p>${text}</p>`;
+  }
+  
+  // Group sentences into logical paragraphs based on topic shifts
+  const paragraphs: string[] = [];
+  let currentParagraph: string[] = [];
+  
+  // Patterns that indicate a new topic/paragraph should start
+  const topicShiftPatterns = [
+    /^An?\s+Arizona/i,
+    /^(He|She|They)\s+(holds?|earned?|received|maintains?|has\s+(?:dedicated|served|been)|have|serves?|also\s+serves?)/i,
+    /^(Since|Beyond|In\s+addition|Additionally|Previously|Before|Outside\s+of)/i,
+    /^The\s+\w+\s+Team/i,
+    /^(His|Her|Their)\s+(team|performance|expertise|work|commitment)/i,
+  ];
+  
+  sentences.forEach((sentence, index) => {
+    const trimmed = sentence.trim();
+    if (!trimmed) return;
+    
+    // Check if this sentence starts a new topic (after first paragraph)
+    const startsNewTopic = index > 0 && topicShiftPatterns.some(pattern => pattern.test(trimmed));
+    
+    if (startsNewTopic && currentParagraph.length >= 2) {
+      // Save current paragraph and start new one
+      paragraphs.push(currentParagraph.join(' '));
+      currentParagraph = [trimmed];
+    } else {
+      currentParagraph.push(trimmed);
+      // Also break after 3 sentences for readability (but not mid-topic)
+      if (currentParagraph.length >= 3 && index < sentences.length - 1) {
+        const nextSentence = sentences[index + 1]?.trim() || '';
+        const nextStartsNewTopic = topicShiftPatterns.some(pattern => pattern.test(nextSentence));
+        if (nextStartsNewTopic) {
+          paragraphs.push(currentParagraph.join(' '));
+          currentParagraph = [];
+        }
+      }
+    }
+  });
+  
+  // Don't forget the last paragraph
+  if (currentParagraph.length > 0) {
+    paragraphs.push(currentParagraph.join(' '));
+  }
+  
+  // If we only got one paragraph, try a simpler approach: break every 3-4 sentences
+  if (paragraphs.length <= 1 && sentences.length > 4) {
+    const simpleParagraphs: string[] = [];
+    for (let i = 0; i < sentences.length; i += 3) {
+      simpleParagraphs.push(sentences.slice(i, i + 3).join(' '));
+    }
+    return simpleParagraphs.map(p => `<p>${p}</p>`).join('');
+  }
+  
+  return paragraphs.map(p => `<p>${p}</p>`).join('');
+};
+
 // Bio Preview component with ...more expander - converts HTML to plain text with paragraph breaks
 const BioPreview = ({ text }: { text: string }) => {
   const [expanded, setExpanded] = useState(false);
+  
+  // Format the text with paragraphs
+  const formattedHtml = formatBioWithParagraphs(text);
 
   // Get plain text length for truncation calculation only
   const getPlainTextLength = (html: string) => {
@@ -34,34 +114,36 @@ const BioPreview = ({ text }: { text: string }) => {
   const needsTruncation = textLength > maxLength;
 
   // For truncated view, we need to cut the HTML safely
-  const getTruncatedHtml = (html: string, limit: number) => {
+  const getTruncatedText = (html: string, limit: number) => {
     if (!html) return '';
     const temp = document.createElement('div');
     temp.innerHTML = html;
     const plainText = temp.textContent || temp.innerText || '';
-    if (plainText.length <= limit) return html;
+    if (plainText.length <= limit) return formatBioWithParagraphs(plainText);
     
     // Find a good break point in the plain text
     const truncated = plainText.slice(0, limit);
     const lastSpace = truncated.lastIndexOf(' ');
     const breakPoint = lastSpace > limit * 0.8 ? lastSpace : limit;
     
-    return plainText.slice(0, breakPoint) + '...';
+    // Return truncated text formatted with paragraphs
+    return formatBioWithParagraphs(plainText.slice(0, breakPoint)) + '...';
   };
 
   // Truncated view
   if (!expanded && needsTruncation) {
     return (
       <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
-        <div className="whitespace-pre-line">
-          {getTruncatedHtml(text, maxLength)}
-          <span
-            onClick={() => setExpanded(true)}
-            className="text-primary cursor-pointer hover:underline font-medium ml-1"
-          >
-            more
-          </span>
-        </div>
+        <div 
+          className="prose prose-sm max-w-none [&>p]:mb-3 [&>p:last-child]:mb-0"
+          dangerouslySetInnerHTML={{ __html: getTruncatedText(text, maxLength) }}
+        />
+        <span
+          onClick={() => setExpanded(true)}
+          className="text-primary cursor-pointer hover:underline font-medium mt-2 inline-block"
+        >
+          more
+        </span>
       </div>
     );
   }
@@ -69,8 +151,8 @@ const BioPreview = ({ text }: { text: string }) => {
   return (
     <div className="bg-muted/50 rounded-md p-4 text-sm text-muted-foreground">
       <div 
-        className="prose prose-sm max-w-none [&>p]:mb-4 [&>p:last-child]:mb-0"
-        dangerouslySetInnerHTML={{ __html: text }}
+        className="prose prose-sm max-w-none [&>p]:mb-3 [&>p:last-child]:mb-0"
+        dangerouslySetInnerHTML={{ __html: formattedHtml }}
       />
       {needsTruncation && (
         <span
