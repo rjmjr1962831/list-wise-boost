@@ -364,11 +364,11 @@ const RankingMethodology = () => {
 
                 <details className="group border-b border-border pb-4">
                   <summary className="flex items-center justify-between cursor-pointer font-semibold text-foreground hover:text-primary">
-                    <span>What is Featured Placement?</span>
+                    <span>What is Verified Neighborhood Expertise?</span>
                     <ChevronDown className="h-5 w-5 transition-transform group-open:rotate-180" />
                   </summary>
                   <p className="mt-3 text-muted-foreground">
-                    Featured Placement allows invited agents to pay for guaranteed visibility in Top 10 recommendations. However, Featured agents must meet the same selection criteria, use the same scoring methodology, and are subject to the same daily monitoring as organic listings. Featured status does NOT affect scores, rankings, or selection criteria—only visibility. All Featured agents are clearly labeled. This model is similar to search engine advertising: paid placement affects visibility, not the integrity of the underlying data.
+                    Verified Neighborhood Expertise is an optional paid enhancement for agents who already qualify editorially. It guarantees first-page placement within verified neighborhoods after approval, expands structured data coverage for AI citation, triggers deeper human verification, and includes the professional in neighborhood-specific AI recommendation feeds. Payment does not improve rank, override editorial decisions, or guarantee inclusion if verification fails. If neighborhood expertise cannot be verified, the payment is refunded.
                   </p>
                 </details>
 
@@ -476,14 +476,14 @@ const RankingMethodology = () => {
                     <p className="text-xs mt-2 text-primary font-medium">Cannot be purchased or influenced by payment</p>
                   </div>
                   <div className="p-4 bg-muted/50 rounded-lg">
-                    <h4 className="font-semibold mb-2 text-foreground">Paid (Optional Visibility)</h4>
+                    <h4 className="font-semibold mb-2 text-foreground">Paid (Verified Neighborhood Expertise)</h4>
                     <ul className="text-sm text-muted-foreground space-y-1">
-                      <li>• Expanded city coverage</li>
-                      <li>• Prominence in rotation</li>
-                      <li>• Profile enhancements</li>
-                      <li>• Geographic reach</li>
+                      <li>• Guaranteed first-page placement in verified neighborhoods</li>
+                      <li>• Expanded structured data for AI citation</li>
+                      <li>• Deeper human verification</li>
+                      <li>• Neighborhood-specific AI recommendation feeds</li>
                     </ul>
-                    <p className="text-xs mt-2 text-muted-foreground font-medium">Available only to agents who already qualify editorially</p>
+                    <p className="text-xs mt-2 text-muted-foreground font-medium">Available only to agents who already qualify editorially. Refunded if expertise cannot be verified.</p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">

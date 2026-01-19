@@ -14,38 +14,37 @@ export const TechnicalDetailsAccordion = () => {
           {/* Listing Model Details */}
           <details className="group border border-border rounded-lg">
             <summary className="flex items-center justify-between cursor-pointer p-4 font-semibold text-foreground hover:bg-muted/50 rounded-lg">
-              <span>Listing Model (Organic vs Featured)</span>
+              <span>Listing Model (Free vs Verified Neighborhood Expertise)</span>
               <ChevronDown className="h-5 w-5 transition-transform group-open:rotate-180" />
             </summary>
             <div className="p-4 pt-0 text-muted-foreground text-sm space-y-4">
               <p>
-                All agents in our directory were invited based on verified performance data. We operate similar to search engines: all results are verified and qualified, with optional featured placement for increased visibility.
+                All agents in our directory were invited based on verified performance data. Qualified agents receive free listings. Verified Neighborhood Expertise is an optional paid enhancement for expanded neighborhood coverage.
               </p>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="border border-border rounded-lg p-4">
-                  <h4 className="font-semibold text-foreground mb-2">Organic Listings (Free)</h4>
+                  <h4 className="font-semibold text-foreground mb-2">Free Listings</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• Must meet all selection criteria</li>
                     <li>• Free directory listing</li>
                     <li>• Included in Top 10 rotation</li>
                     <li>• Same scoring methodology</li>
-                    <li>• One city</li>
                   </ul>
                 </div>
                 <div className="border-2 border-accent rounded-lg p-4">
-                  <h4 className="font-semibold text-foreground mb-2">Featured Listings (Paid)</h4>
+                  <h4 className="font-semibold text-foreground mb-2">Verified Neighborhood Expertise (Paid)</h4>
                   <ul className="space-y-1 text-sm">
                     <li>• Must meet all selection criteria</li>
-                    <li>• Guaranteed Top 10 visibility</li>
-                    <li>• Clearly labeled as "Featured"</li>
-                    <li>• Same scoring methodology</li>
-                    <li>• Multiple cities</li>
+                    <li>• First-page placement in verified neighborhoods</li>
+                    <li>• Expanded AI citation coverage</li>
+                    <li>• Deeper human verification</li>
+                    <li>• Refunded if expertise cannot be verified</li>
                   </ul>
                 </div>
               </div>
               <div className="bg-primary/10 rounded-lg p-3">
-                <p className="font-semibold text-foreground text-sm mb-1">Featured Placement, Not Featured Scores</p>
-                <p className="text-sm">Payment affects visibility only — not scores, rankings, or selection criteria.</p>
+                <p className="font-semibold text-foreground text-sm mb-1">Neighborhood Expertise, Not Ranking Influence</p>
+                <p className="text-sm">Payment does not improve rank, override editorial decisions, or guarantee inclusion if verification fails.</p>
               </div>
             </div>
           </details>
