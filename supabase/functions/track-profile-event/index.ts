@@ -81,6 +81,14 @@ serve(async (req) => {
       );
     }
 
+    // Check if this is the agent's first funnel event (first click)
+    const { count: existingEventCount } = await supabase
+      .from('funnel_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('professional_id', professional.id);
+
+    const isFirstFunnelClick = existingEventCount === 0;
+
     // Insert event
     const { error: insertError } = await supabase
       .from('funnel_events')
@@ -93,6 +101,25 @@ serve(async (req) => {
     if (insertError) {
       console.error('❌ Insert error:', insertError);
       throw insertError;
+    }
+
+    // On first funnel click, update funnel_status to trigger Hot lead sync
+    if (isFirstFunnelClick) {
+      console.log('🔥 First funnel click detected - upgrading to Hot lead');
+      
+      const { error: updateError } = await supabase
+        .from('professionals')
+        .update({ 
+          funnel_status: 'approved',
+          funnel_started_at: new Date().toISOString()
+        })
+        .eq('id', professional.id);
+
+      if (updateError) {
+        console.error('⚠️ Failed to update funnel_status:', updateError);
+      } else {
+        console.log('✅ Funnel status updated to approved - Pipedrive sync will set Hot lead');
+      }
     }
 
     console.log('✅ Event tracked:', event_name, 'for:', professional.name);
