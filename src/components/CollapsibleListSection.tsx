@@ -76,22 +76,21 @@ export const CollapsibleListSection = ({
       <CollapsibleContent 
         forceMount
         className={cn(
-          "space-y-6 overflow-hidden",
+          "grid gap-4 md:gap-5 lg:grid-cols-2 overflow-hidden",
           "data-[state=closed]:h-0 data-[state=closed]:opacity-0",
           "data-[state=open]:h-auto data-[state=open]:opacity-100",
           "transition-all duration-200"
         )}
       >
         {section.items.map((professional, index) => (
-          <div key={`${section.title}-${professional.rank}-${professional.id}`} id={`agent-${professional.id}`}>
-            <AgentBadge 
-              professional={professional}
-              stateSlug={stateSlug || 'arizona'}
-              citySlug={citySlug}
-              rank={index + 1}
-              accentColor={section.accentColor}
-            />
-          </div>
+          <AgentBadge 
+            key={`${section.title}-${professional.rank}-${professional.id}`}
+            professional={professional}
+            stateSlug={stateSlug || 'arizona'}
+            citySlug={citySlug}
+            rank={index + 1}
+            accentColor={section.accentColor}
+          />
         ))}
       </CollapsibleContent>
     </Collapsible>
