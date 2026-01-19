@@ -1629,18 +1629,74 @@ export const ProfessionalCard = ({
                 
                 if (!bioContent) return null;
                 
+                // Convert plain text to paragraphs based on English grammar rules
+                // Split on topic changes: sentences about different subjects become separate paragraphs
+                const formatBioWithParagraphs = (text: string): string => {
+                  // If already has HTML paragraph tags, return as-is
+                  if (text.includes('<p>') || text.includes('<p ')) {
+                    return text;
+                  }
+                  
+                  // If has double newlines, split on those
+                  if (text.includes('\n\n')) {
+                    const paragraphs = text.split(/\n{2,}/).filter(Boolean);
+                    return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+                  }
+                  
+                  // Split long text into logical paragraphs based on topic shifts
+                  // Look for sentences that start new topics (credentials, achievements, community, etc.)
+                  const sentences = text.split(/(?<=[.!?])\s+/);
+                  const paragraphs: string[] = [];
+                  let currentParagraph: string[] = [];
+                  
+                  const topicIndicators = [
+                    /^(An?|The|His|Her|Their)\s+(Arizona|team|performance|expertise)/i,
+                    /^(He|She|They)\s+(holds?|earned?|maintains?|has|have|serves?|also)/i,
+                    /^(Since|Beyond|In addition|Additionally|Previously|Before)/i,
+                    /^(The\s+\w+\s+Team)/i,
+                    /^(As\s+a|With\s+over|For\s+over)/i,
+                  ];
+                  
+                  sentences.forEach((sentence, index) => {
+                    const trimmed = sentence.trim();
+                    if (!trimmed) return;
+                    
+                    // Start new paragraph on topic shift (after first 2 sentences)
+                    const isTopicShift = index > 1 && topicIndicators.some(pattern => pattern.test(trimmed));
+                    
+                    if (isTopicShift && currentParagraph.length >= 2) {
+                      paragraphs.push(currentParagraph.join(' '));
+                      currentParagraph = [trimmed];
+                    } else {
+                      currentParagraph.push(trimmed);
+                      // Also break after every 3-4 sentences for readability
+                      if (currentParagraph.length >= 4) {
+                        paragraphs.push(currentParagraph.join(' '));
+                        currentParagraph = [];
+                      }
+                    }
+                  });
+                  
+                  if (currentParagraph.length > 0) {
+                    paragraphs.push(currentParagraph.join(' '));
+                  }
+                  
+                  return paragraphs.map(p => `<p>${p}</p>`).join('');
+                };
+                
                 const CHAR_LIMIT = 400;
                 const needsTruncation = bioContent.length > CHAR_LIMIT;
-                const displayText = showFullSynthesizedBio || !needsTruncation 
-                  ? bioContent 
-                  : bioContent.slice(0, CHAR_LIMIT) + '...';
+                const truncatedText = needsTruncation && !showFullSynthesizedBio
+                  ? bioContent.slice(0, CHAR_LIMIT) + '...'
+                  : bioContent;
+                const displayHtml = formatBioWithParagraphs(truncatedText);
                 
                 return (
                   <div className="border rounded-lg p-4 bg-primary/5 mt-3">
                     <h4 className="sr-only">Professional Summary</h4>
                     <div 
-                      className="text-sm text-foreground whitespace-pre-line"
-                      dangerouslySetInnerHTML={{ __html: displayText }}
+                      className="prose prose-sm max-w-none text-sm text-foreground [&>p]:mb-3 [&>p:last-child]:mb-0"
+                      dangerouslySetInnerHTML={{ __html: displayHtml }}
                     />
                     {needsTruncation && (
                       <button
