@@ -47,7 +47,7 @@ export function useAreaAgents({
         // Step 1: Get neighborhood and its primary ZIP
         const { data: neighborhood, error: neighborhoodError } = await supabase
           .from('neighborhood_catalog')
-          .select('id, primary_zip, zips, nearby_neighborhoods')
+          .select('id, primary_zip, zips, nearby_neighborhoods, city_area, city_area_slug')
           .eq('neighborhood_slug', neighborhoodSlug)
           .eq('city_area_slug', citySlug)
           .eq('is_active', true)
@@ -58,6 +58,25 @@ export function useAreaAgents({
           setAgents([]);
           setLoading(false);
           return;
+        }
+        
+        // Define metro area cities for filtering
+        const PHOENIX_METRO = ['phoenix', 'scottsdale', 'tempe', 'mesa', 'chandler', 'gilbert', 'glendale', 'peoria', 'surprise', 'goodyear', 'avondale', 'buckeye', 'queen-creek', 'paradise-valley', 'fountain-hills', 'cave-creek', 'carefree'];
+        const TUCSON_METRO = ['tucson', 'oro-valley', 'marana', 'sahuarita', 'south-tucson'];
+        const FLAGSTAFF_METRO = ['flagstaff', 'sedona', 'cottonwood', 'camp-verde'];
+        
+        // Determine which metro this neighborhood belongs to
+        const cityLower = citySlug.toLowerCase();
+        let metroCities: string[] = [];
+        if (PHOENIX_METRO.includes(cityLower)) {
+          metroCities = PHOENIX_METRO;
+        } else if (TUCSON_METRO.includes(cityLower)) {
+          metroCities = TUCSON_METRO;
+        } else if (FLAGSTAFF_METRO.includes(cityLower)) {
+          metroCities = FLAGSTAFF_METRO;
+        } else {
+          // Default to the specific city only
+          metroCities = [cityLower];
         }
 
         const primaryZip = neighborhood.primary_zip || neighborhood.zips?.[0];
@@ -132,10 +151,32 @@ export function useAreaAgents({
 
         const licenseNumbers = Object.keys(agentActivityMap);
         
-        // FALLBACK: If no transaction-based agents, query top-rated agents from the city
+        // FALLBACK: If no transaction-based agents, query top-rated agents from metro area
         if (licenseNumbers.length === 0) {
-          console.log('[useAreaAgents] No transaction data - falling back to city-based search');
+          console.log('[useAreaAgents] No transaction data - falling back to metro-based search for:', metroCities);
           
+          // Get all ZIPs for the metro area cities
+          const { data: metroNeighborhoods, error: metroError } = await supabase
+            .from('neighborhood_catalog')
+            .select('primary_zip, zips')
+            .in('city_area_slug', metroCities)
+            .eq('is_active', true);
+          
+          if (metroError) {
+            console.error('[useAreaAgents] Metro neighborhoods query error:', metroError);
+          }
+          
+          // Collect all metro ZIP codes
+          const metroZips = new Set<string>();
+          (metroNeighborhoods || []).forEach((n: any) => {
+            if (n.primary_zip) metroZips.add(n.primary_zip);
+            if (n.zips) n.zips.forEach((z: string) => metroZips.add(z));
+          });
+          
+          const metroZipArray = Array.from(metroZips);
+          console.log(`[useAreaAgents] Found ${metroZipArray.length} ZIPs in metro area`);
+          
+          // Query agents with business_zip in metro area, or fall back to top agents if no zip data
           const { data: fallbackAgents, error: fallbackError } = await supabase
             .from('professionals')
             .select(`
@@ -156,13 +197,14 @@ export function useAreaAgents({
               canonical_slug,
               active,
               license_verified_at,
-              business_city
+              business_city,
+              business_zip
             `)
             .eq('active', true)
             .gte('review_stars_rating', 4.8)
             .gte('num_total_reviews', 20)
             .order('num_total_reviews', { ascending: false })
-            .limit(50);
+            .limit(100);
 
           if (fallbackError) {
             console.error('[useAreaAgents] Fallback query error:', fallbackError);
@@ -170,8 +212,23 @@ export function useAreaAgents({
             setLoading(false);
             return;
           }
+          
+          // Filter to agents in metro area (by business_zip or business_city)
+          const metroAgents = (fallbackAgents || []).filter((prof: any) => {
+            // Check if business_zip is in metro
+            if (prof.business_zip && metroZipArray.includes(prof.business_zip)) {
+              return true;
+            }
+            // Check if business_city matches metro cities
+            if (prof.business_city) {
+              const citySlugified = prof.business_city.toLowerCase().replace(/\s+/g, '-');
+              return metroCities.includes(citySlugified);
+            }
+            // If no location data, include top agents anyway (temporary until data is enriched)
+            return true;
+          }).slice(0, 50);
 
-          const fallbackMapped: AreaAgent[] = (fallbackAgents || []).map((prof: any) => ({
+          const fallbackMapped: AreaAgent[] = metroAgents.map((prof: any) => ({
             id: prof.id,
             rank: 0,
             name: prof.name,
