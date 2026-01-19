@@ -8,6 +8,7 @@ const corsHeaders = {
 
 // Events that should trigger admin notifications
 const NOTIFICATION_EVENTS = [
+  'step0_viewed',
   'funnel_started',
   'magic_link_clicked',
   'welcome_viewed',
@@ -131,7 +132,7 @@ serve(async (req) => {
         
         // Map event names to notification event types
         let notificationEventType = event_name;
-        if (event_name === 'funnel_started' || event_name === 'magic_link_clicked' || event_name === 'welcome_viewed') {
+        if (event_name === 'step0_viewed' || event_name === 'funnel_started' || event_name === 'magic_link_clicked' || event_name === 'welcome_viewed') {
           notificationEventType = 'funnel_started';
         }
         
