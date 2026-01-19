@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 
@@ -114,7 +114,7 @@ export default function FunnelStep0() {
       <div className="min-h-screen bg-white">
         {/* Header */}
         <header className="border-b border-gray-100">
-          <div className="max-w-[680px] mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="max-w-[720px] mx-auto px-4 py-4 flex items-center justify-between">
             <span className="font-semibold text-gray-900">Top10Lists.us</span>
             <div className="flex items-center gap-4 text-sm">
               <a href="/about/ranking-methodology" className="text-gray-600 hover:text-gray-900">Methodology</a>
@@ -123,7 +123,7 @@ export default function FunnelStep0() {
           </div>
         </header>
 
-        <div className="max-w-[680px] mx-auto px-4 py-16 text-center">
+        <div className="max-w-[720px] mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">{error}</h1>
           <p className="text-gray-600 mb-6">
             Questions? Call <a href="tel:+16027589600" className="text-gray-900 underline">(602) 758-9600</a>
@@ -136,14 +136,14 @@ export default function FunnelStep0() {
   return (
     <>
       <Helmet>
-        <title>Introduction | Top10Lists</title>
+        <title>Confirm Your Profile | Top10Lists</title>
         <meta name="robots" content="noindex, nofollow" />
       </Helmet>
 
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gray-50 pb-24 sm:pb-8">
         {/* Minimal Header */}
-        <header className="border-b border-gray-100">
-          <div className="max-w-[680px] mx-auto px-4 py-4 flex items-center justify-between">
+        <header className="border-b border-gray-100 bg-white">
+          <div className="max-w-[720px] mx-auto px-4 py-4 flex items-center justify-between">
             <span className="font-semibold text-gray-900">Top10Lists.us</span>
             <div className="flex items-center gap-4 text-sm">
               <a href="/about/ranking-methodology" className="text-gray-600 hover:text-gray-900">Methodology</a>
@@ -153,135 +153,122 @@ export default function FunnelStep0() {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-[680px] mx-auto px-4 py-8 space-y-8">
-          
-          {/* Greeting */}
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Hello {firstName}</h1>
-            <p className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-              Step 1 of 5: Introduction and Context
+        <main className="max-w-[720px] mx-auto px-4 py-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-6">
+            
+            {/* Step Label */}
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Step 1 of 5
             </p>
-          </div>
 
-          {/* Why you are here */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900">Why you are here</h2>
-            <p className="text-gray-700 leading-relaxed">
-              We analyzed the professional qualifications of more than 200,000 licensed real estate agents in Arizona.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              Our analysis evaluated over 1,000 data points per agent, including licensing history, transaction activity, reviews, public media, client satisfaction, community involvement, and competitive positioning.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              Based on this analysis, you rank in the top 1 percent of agents in Arizona for trust, experience, and competitive advantages.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              That is why your profile was selected.
-            </p>
-          </section>
-
-          {/* What you will do next */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900">What you will do next</h2>
-            <div className="space-y-2 text-gray-700">
-              <p><span className="font-semibold">Edit your profile</span><br />Review information gathered from all available sources. Correct errors. Add context.</p>
-              <p><span className="font-semibold">Select city bundles</span><br />Choose which Arizona metro areas you want to appear in.</p>
-              <p><span className="font-semibold">Select neighborhoods</span><br />Choose specific neighborhoods within those cities.</p>
+            {/* Title and Time Estimate */}
+            <div className="space-y-3">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                Hello {firstName}
+              </h1>
+              <span className="inline-block text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                Estimated time: 3 to 5 minutes
+              </span>
             </div>
-          </section>
 
-          {/* Important to know */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900">Important to know</h2>
-            <div className="space-y-3 text-gray-700">
-              <p><span className="font-semibold">No account required</span><br />There is no username or password. Access is via secure, one-time links.</p>
-              <p><span className="font-semibold">No payment required</span><br />We have already published your listing and will publish any verified updates you make at no cost. There is no charge for your standard listing in the cities you choose.</p>
-              <p><span className="font-semibold">No impact on eligibility</span><br />Whether you complete this flow or not, your qualification status is not affected. If you do nothing, your profile may be published using all available data.</p>
+            {/* Why you are here */}
+            <section className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Why you are here</h2>
+              <ul className="space-y-2 text-gray-700 text-[15px] leading-relaxed">
+                <li>We independently analyzed over 200,000 licensed real estate agents in Arizona.</li>
+                <li>Based on objective data, you ranked in the top 1 percent statewide.</li>
+                <li>Your agent profile has already been created on Top10Lists.us.</li>
+              </ul>
+            </section>
+
+            {/* What happens next */}
+            <section className="space-y-3">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">What happens next</h2>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center mt-0.5">
+                    <Check className="w-3 h-3 text-white" />
+                  </span>
+                  <span className="text-gray-700 text-[15px]">Review your existing profile</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center mt-0.5">
+                    <Check className="w-3 h-3 text-white" />
+                  </span>
+                  <span className="text-gray-700 text-[15px]">Correct or clarify any information</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-900 flex items-center justify-center mt-0.5">
+                    <Check className="w-3 h-3 text-white" />
+                  </span>
+                  <span className="text-gray-700 text-[15px]">Choose the cities and neighborhoods you want to appear in</span>
+                </li>
+              </ul>
+            </section>
+
+            {/* Important to know */}
+            <section className="space-y-2">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Important to know</h2>
+              <ul className="space-y-2 text-gray-700 text-[15px] leading-relaxed">
+                <li><span className="font-medium">No account required.</span></li>
+                <li><span className="font-medium">No payment required.</span></li>
+                <li>If you take no action, your profile may still be published using publicly available data.</li>
+              </ul>
+            </section>
+
+            {/* Why this matters */}
+            <section className="space-y-2">
+              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Why this matters</h2>
+              <ul className="space-y-2 text-gray-700 text-[15px] leading-relaxed">
+                <li>Consumers are increasingly asking AI tools to name specific agents.</li>
+                <li>Top10Lists.us exists so those systems can confidently recommend verified professionals and send clients directly to them.</li>
+                <li><span className="font-medium">You are already included.</span></li>
+                <li>Verification improves accuracy and visibility.</li>
+              </ul>
+            </section>
+
+            {/* CTA Button - Desktop */}
+            <div className="pt-4 hidden sm:block">
+              <Button
+                onClick={handleNext}
+                disabled={navigating}
+                aria-label="Review Your Profile"
+                className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 h-12 text-base font-semibold"
+              >
+                {navigating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Loading...
+                  </>
+                ) : (
+                  'Review Your Profile'
+                )}
+              </Button>
             </div>
-          </section>
 
-          {/* Why this matters now */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900">Why this matters now</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Consumer search behavior is shifting.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              AI assistants are increasingly used to answer questions like:
-            </p>
-            <ul className="text-gray-700 leading-relaxed pl-4 space-y-1">
-              <li><em>Who is the best real estate agent in Paradise Valley?</em></li>
-              <li><em>Find me a top rated agent in Scottsdale who speaks Spanish.</em></li>
-            </ul>
-            <p className="text-gray-700 leading-relaxed">
-              AI systems do not browse the web or rank websites. They select a small number of professionals they can confidently name and defend as answers.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              Agent websites, blog posts, keyword optimized pages, and advertising driven platforms are self-reported by design, which makes them difficult for AI systems to trust when recommending individual professionals.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              As a result, AI models increasingly avoid naming agents from those sources. Instead, they defer the question or send users to do their own research.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              Top10Lists.us was built for this exact gap.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              Your profile is already published within a structured, transparent source that AI systems will reference and cite when recommending agents. Verification improves how strongly and how often your profile is selected.
-            </p>
-          </section>
-
-          {/* Why Top10Lists.us exists */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900">Why Top10Lists.us exists</h2>
-            <p className="text-gray-700 leading-relaxed">
-              We exist to ensure you do not lose inbound clients as AI systems turn away from legacy lead platforms and begin naming individual agents they trust.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              We never gate contact information, capture the prospect, or insert ourselves into the transaction. Our role is to make sure AI can confidently recommend you and send clients directly to you, without interference.
-            </p>
-          </section>
-
-          {/* Why this is critical now */}
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-gray-900">Why this is critical now</h2>
-            <p className="text-gray-700 leading-relaxed">
-              We have invested heavily in building an architecture and data model that allows AI systems to cite individual agents with confidence. This is something agent websites and pay-to-play platforms cannot do.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              Right now, there is no other site in the real estate industry with comparable data sourcing, verification standards, or citation-ready structure. That is why we are consistently told we are two to three years ahead of any competitor.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              AI systems learn citation patterns over time. Once they consistently trust a source, that preference compounds.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              By verifying your profile now, you help ensure your name is associated with a trusted source before citation patterns fully harden.
-            </p>
-            <p className="text-gray-700 leading-relaxed">
-              In two years, this will not be an opportunity. It will be the default.
-            </p>
-          </section>
-
-          {/* Next Button */}
-          <div className="pt-4">
-            <Button
-              onClick={handleNext}
-              disabled={navigating}
-              className="w-full sm:w-auto bg-gray-800 hover:bg-gray-900 text-white px-8 py-3"
-            >
-              {navigating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Loading...
-                </>
-              ) : (
-                'Next'
-              )}
-            </Button>
           </div>
-
         </main>
 
         <FunnelPhoneSupport />
+
+        {/* Sticky Mobile CTA */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:hidden">
+          <Button
+            onClick={handleNext}
+            disabled={navigating}
+            aria-label="Review Your Profile"
+            className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 h-12 text-base font-semibold"
+          >
+            {navigating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Loading...
+              </>
+            ) : (
+              'Review Your Profile'
+            )}
+          </Button>
+        </div>
       </div>
     </>
   );
