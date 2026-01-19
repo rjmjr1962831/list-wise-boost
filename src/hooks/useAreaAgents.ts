@@ -131,9 +131,77 @@ export function useAreaAgents({
         });
 
         const licenseNumbers = Object.keys(agentActivityMap);
+        
+        // FALLBACK: If no transaction-based agents, query top-rated agents from the city
         if (licenseNumbers.length === 0) {
-          console.log('[useAreaAgents] No agents found in area');
-          setAgents([]);
+          console.log('[useAreaAgents] No transaction data - falling back to city-based search');
+          
+          const { data: fallbackAgents, error: fallbackError } = await supabase
+            .from('professionals')
+            .select(`
+              id,
+              name,
+              company,
+              title,
+              image_url,
+              review_stars_rating,
+              num_total_reviews,
+              years_experience,
+              phone,
+              email,
+              website,
+              license_number,
+              synthesized_bio,
+              specialty,
+              canonical_slug,
+              active,
+              license_verified_at,
+              business_city
+            `)
+            .eq('active', true)
+            .gte('review_stars_rating', 4.8)
+            .gte('num_total_reviews', 20)
+            .order('num_total_reviews', { ascending: false })
+            .limit(50);
+
+          if (fallbackError) {
+            console.error('[useAreaAgents] Fallback query error:', fallbackError);
+            setAgents([]);
+            setLoading(false);
+            return;
+          }
+
+          const fallbackMapped: AreaAgent[] = (fallbackAgents || []).map((prof: any) => ({
+            id: prof.id,
+            rank: 0,
+            name: prof.name,
+            company: prof.company || '',
+            rating: prof.review_stars_rating || 0,
+            reviews: prof.num_total_reviews || 0,
+            specialties: prof.specialty || [],
+            address: '',
+            phone: prof.phone || '',
+            email: prof.email || '',
+            website: prof.website || '',
+            description: prof.synthesized_bio || '',
+            stats: {
+              yearsExperience: prof.years_experience || undefined,
+            },
+            verified: !!prof.license_verified_at,
+            image: prof.image_url || '',
+            license_number: prof.license_number || undefined,
+            license_verified_at: prof.license_verified_at || undefined,
+            years_experience: prof.years_experience || undefined,
+            canonical_slug: prof.canonical_slug,
+            isPaidExpert: paidExpertIds.has(prof.id),
+            neighborhoodTransactions: 0,
+            transactionZips: [],
+            distanceMiles: undefined,
+          }));
+
+          setTotalCount(fallbackMapped.length);
+          setAgents(fallbackMapped);
+          console.log(`[useAreaAgents] Fallback returned ${fallbackMapped.length} agents`);
           setLoading(false);
           return;
         }
