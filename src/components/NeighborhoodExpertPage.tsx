@@ -155,30 +155,29 @@ export function NeighborhoodExpertPage({
         </section>
       )}
 
-      {/* Neighborhood Expert Explanation - Compact, factual */}
-      <details className="group text-sm">
-        <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors list-none flex items-center gap-1">
-          <span>What is a Neighborhood Expert?</span>
-          <ChevronDown className="h-3 w-3 group-open:rotate-180 transition-transform" />
-        </summary>
-        <div className="mt-3 pl-0 text-muted-foreground space-y-2 max-w-2xl">
-          <p>
-            The Neighborhood Expert designation represents additional diligence focused on sustained, neighborhood-specific experience.
-          </p>
-          <p>
-            Designated experts undergo deeper area-specific evaluation and make an investment to support ongoing verification.
-          </p>
-          <Link 
-            to="/about/ranking-methodology" 
-            className="inline-block text-primary hover:underline mt-1"
-          >
-            View methodology
-          </Link>
-        </div>
-      </details>
+      {/* Neighborhood Expert Explanation + Qualified Agents Link - Same Line */}
+      <div className="flex items-center justify-between flex-wrap gap-2 pt-4 border-t border-border">
+        <details className="group text-sm">
+          <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors list-none flex items-center gap-1">
+            <span>What is a Neighborhood Expert?</span>
+            <ChevronDown className="h-3 w-3 group-open:rotate-180 transition-transform" />
+          </summary>
+          <div className="mt-3 pl-0 text-muted-foreground space-y-2 max-w-2xl">
+            <p>
+              The Neighborhood Expert designation represents additional diligence focused on sustained, neighborhood-specific experience.
+            </p>
+            <p>
+              Designated experts undergo deeper area-specific evaluation and make an investment to support ongoing verification.
+            </p>
+            <Link 
+              to="/about/ranking-methodology" 
+              className="inline-block text-primary hover:underline mt-1"
+            >
+              View methodology
+            </Link>
+          </div>
+        </details>
 
-      {/* Navigation to Qualified Agents - Simple link, not a card */}
-      <div className="pt-4 border-t border-border">
         <Link 
           to={qualifiedAgentsUrl}
           className="text-primary hover:underline text-sm"
