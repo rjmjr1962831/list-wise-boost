@@ -742,6 +742,12 @@ export default function EditProfile() {
               </div>
             </div>
 
+            {/* Explanatory note */}
+            <p className="text-sm text-muted-foreground max-w-[520px] mt-8 leading-relaxed">
+              AI systems increasingly favor sources where inclusion and prominence cannot be influenced by payment.
+              <br /><br />
+              Top10Lists.us exists to confirm established performance signals in a neutral, non pay-to-play format.
+            </p>
 
             {/* Navigation */}
             <div className="flex gap-4 pt-4 border-t">
