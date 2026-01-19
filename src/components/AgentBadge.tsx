@@ -70,15 +70,15 @@ export const AgentBadge = ({
       href={profileUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="block group"
+      className="block group h-full"
     >
       <Card className={cn(
-        "relative overflow-hidden transition-all duration-300",
+        "relative overflow-hidden transition-all duration-300 h-full",
         "hover:shadow-lg hover:-translate-y-0.5",
         "border border-border/50 hover:border-primary/30",
         `bg-gradient-to-br ${getGradientClass(accentColor)}`
       )}>
-        <CardContent className="p-4">
+        <CardContent className="p-5">
           <div className="flex items-center gap-4">
             
             {/* Avatar */}
