@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,78 +17,41 @@ const STATIC_PAGES = [
   "https://www.top10lists.us/arizona",
 ];
 
-async function warmAllPages(supabase: any, options: {
-  state: string;
-  forceRefresh: boolean;
-  includeStatic: boolean;
-  includeCities: boolean;
-  includeNeighborhoods: boolean;
-  limit: number;
-}) {
-  const results: any[] = [];
-  const errors: any[] = [];
-  let urls: string[] = [];
+interface WarmResult {
+  url: string;
+  status: number;
+  cache: string;
+  rendered: string;
+  size: number;
+  ms: number;
+  success: boolean;
+}
 
-  // 1. Static pages
-  if (options.includeStatic) {
-    urls.push(...STATIC_PAGES);
-    console.log(`Added ${STATIC_PAGES.length} static pages`);
-  }
+interface WarmError {
+  url?: string;
+  type: string;
+  message: string;
+}
 
-  // 2. City pages
-  if (options.includeCities) {
-    const { data: cities, error: cityError } = await supabase
-      .from("cities")
-      .select("slug, state_slug")
-      .eq("active", true);
+async function warmStaticPages(forceRefresh: boolean): Promise<{
+  results: WarmResult[];
+  errors: WarmError[];
+  totalUrls: number;
+}> {
+  const results: WarmResult[] = [];
+  const errors: WarmError[] = [];
 
-    if (cityError) {
-      errors.push({ type: 'db', source: 'cities', message: cityError.message });
-    } else if (cities) {
-      for (const city of cities) {
-        urls.push(`https://www.top10lists.us/${city.state_slug}/${city.slug}/top10realestateagents`);
-      }
-      console.log(`Added ${cities.length} city pages`);
-    }
-  }
+  console.log(`Warming ${STATIC_PAGES.length} static pages`);
 
-  // 3. Neighborhood pages
-  if (options.includeNeighborhoods) {
-    const { data: neighborhoods, error: nhError } = await supabase
-      .from("neighborhood_catalog")
-      .select("neighborhood_slug, city_area_slug, primary_zip, state")
-      .eq("state", options.state)
-      .eq("is_active", true)
-      .not("primary_zip", "is", null);
-
-    if (nhError) {
-      errors.push({ type: 'db', source: 'neighborhoods', message: nhError.message });
-    } else if (neighborhoods) {
-      for (const nh of neighborhoods) {
-        const stateSlug = nh.state === 'AZ' ? 'arizona' : nh.state.toLowerCase();
-        urls.push(`https://www.top10lists.us/${stateSlug}/${nh.city_area_slug}/${nh.primary_zip}/${nh.neighborhood_slug}/top10realestateagents`);
-      }
-      console.log(`Added ${neighborhoods.length} neighborhood pages`);
-    }
-  }
-
-  // Apply limit if specified
-  if (options.limit > 0 && urls.length > options.limit) {
-    urls = urls.slice(0, options.limit);
-  }
-
-  console.log(`Total URLs to warm: ${urls.length}`);
-
-  // Warm each URL
-  for (let i = 0; i < urls.length; i++) {
-    const url = urls[i];
+  for (let i = 0; i < STATIC_PAGES.length; i++) {
+    const url = STATIC_PAGES[i];
     try {
       const headers: Record<string, string> = {
         "X-Cache-Warming": "true",
         "User-Agent": "Top10Lists-CacheWarmer/1.0"
       };
       
-      if (options.forceRefresh) {
+      if (forceRefresh) {
         headers["X-Force-Refresh"] = "true";
       }
 
@@ -113,16 +75,16 @@ async function warmAllPages(supabase: any, options: {
         success
       });
 
-      console.log(`[${i + 1}/${urls.length}] ${success ? '✓' : '✗'} ${url} (${cacheStatus}, ${elapsed}ms)`);
+      console.log(`[${i + 1}/${STATIC_PAGES.length}] ${success ? '✓' : '✗'} ${url} (${cacheStatus}, ${elapsed}ms)`);
 
     } catch (fetchError: unknown) {
       const errMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
       errors.push({ url, type: 'fetch', message: errMsg });
-      console.error(`[${i + 1}/${urls.length}] ERROR ${url}: ${errMsg}`);
+      console.error(`[${i + 1}/${STATIC_PAGES.length}] ERROR ${url}: ${errMsg}`);
     }
   }
 
-  return { results, errors, totalUrls: urls.length };
+  return { results, errors, totalUrls: STATIC_PAGES.length };
 }
 
 serve(async (req) => {
@@ -131,41 +93,22 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
-
     const body = await req.json().catch(() => ({}));
     const { 
-      limit = 0, // 0 = no limit
-      state = 'AZ',
       forceRefresh = false,
-      urlPattern = 'all', // 'neighborhood', 'city', 'static', or 'all'
-      background = true // Use background processing
+      background = false
     } = body;
 
-    const options = {
-      state,
-      forceRefresh,
-      includeStatic: urlPattern === 'static' || urlPattern === 'all',
-      includeCities: urlPattern === 'city' || urlPattern === 'all',
-      includeNeighborhoods: urlPattern === 'neighborhood' || urlPattern === 'all',
-      limit
-    };
-
     if (background) {
-      // Background processing - return immediately
       const jobId = crypto.randomUUID().substring(0, 8);
       
-      // Use waitUntil for background processing
       (globalThis as any).EdgeRuntime?.waitUntil?.(
         (async () => {
           console.log(`Background job ${jobId} started`);
           const startTime = Date.now();
           
           try {
-            const { results, errors, totalUrls } = await warmAllPages(supabase, options);
+            const { results, errors, totalUrls } = await warmStaticPages(forceRefresh);
             
             const summary = {
               total: totalUrls,
@@ -189,15 +132,15 @@ serve(async (req) => {
           success: true,
           message: `Cache warming job ${jobId} started in background`,
           job_id: jobId,
-          options
+          pages: STATIC_PAGES.length
         }, null, 2),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Synchronous processing (will timeout for large jobs)
+    // Synchronous processing
     const startTime = Date.now();
-    const { results, errors, totalUrls } = await warmAllPages(supabase, options);
+    const { results, errors, totalUrls } = await warmStaticPages(forceRefresh);
 
     const summary = {
       total: totalUrls,
