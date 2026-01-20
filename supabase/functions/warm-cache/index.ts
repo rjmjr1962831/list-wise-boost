@@ -7,9 +7,14 @@ const corsHeaders = {
 };
 
 const STATIC_PAGES = [
-  // Homepage & State
+  // Homepage & States
   "https://www.top10lists.us/",
   "https://www.top10lists.us/arizona",
+  "https://www.top10lists.us/california",
+  "https://www.top10lists.us/texas",
+  "https://www.top10lists.us/florida",
+  "https://www.top10lists.us/new-york",
+  "https://www.top10lists.us/colorado",
   // About pages
   "https://www.top10lists.us/about",
   "https://www.top10lists.us/about/founder",
@@ -17,7 +22,6 @@ const STATIC_PAGES = [
   // AI & Protocol pages
   "https://www.top10lists.us/for-ai",
   "https://www.top10lists.us/transparency",
-  "https://www.top10lists.us/ai-compare",
   "https://www.top10lists.us/ai-liability",
   "https://www.top10lists.us/protocol-adopters",
   "https://www.top10lists.us/protocol-services",
@@ -33,6 +37,10 @@ const STATIC_PAGES = [
   "https://www.top10lists.us/terms",
   "https://www.top10lists.us/sms-terms",
   "https://www.top10lists.us/opt-in",
+  // Testing & Agent Onboarding
+  "https://www.top10lists.us/test",
+  "https://www.top10lists.us/are-you-an-agent",
+  "https://www.top10lists.us/agent-onboarding",
 ];
 
 interface WarmResult {
