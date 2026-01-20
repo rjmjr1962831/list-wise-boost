@@ -208,10 +208,15 @@ interface WarmResult {
   nextOffset: number;
 }
 
-// Generate a cache key from URL
+// Generate a cache key from URL - matches Cloudflare Worker format
 function urlToCacheKey(url: string): string {
-  // Remove protocol and create a clean key
-  return url.replace('https://', '').replace('http://', '').replace(/[^a-zA-Z0-9]/g, '_');
+  const urlObj = new URL(url);
+  // Normalize: remove trailing slash except for homepage
+  let pathname = urlObj.pathname;
+  if (pathname !== '/' && pathname.endsWith('/')) {
+    pathname = pathname.slice(0, -1);
+  }
+  return `html:${pathname}`;
 }
 
 // Delete from Cloudflare KV
