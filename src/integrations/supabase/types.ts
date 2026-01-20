@@ -2495,6 +2495,7 @@ export type Database = {
           phone_numbers: Json | null
           platform_reviews: Json | null
           press_mentions: Json | null
+          previous_short_codes: string[] | null
           price_range_3yr_max: number | null
           price_range_3yr_min: number | null
           professional_data: Json | null
@@ -2634,6 +2635,7 @@ export type Database = {
           phone_numbers?: Json | null
           platform_reviews?: Json | null
           press_mentions?: Json | null
+          previous_short_codes?: string[] | null
           price_range_3yr_max?: number | null
           price_range_3yr_min?: number | null
           professional_data?: Json | null
@@ -2773,6 +2775,7 @@ export type Database = {
           phone_numbers?: Json | null
           platform_reviews?: Json | null
           press_mentions?: Json | null
+          previous_short_codes?: string[] | null
           price_range_3yr_max?: number | null
           price_range_3yr_min?: number | null
           professional_data?: Json | null

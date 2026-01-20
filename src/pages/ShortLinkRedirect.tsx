@@ -15,11 +15,25 @@ const ShortLinkRedirect = () => {
         return;
       }
 
-      const { data, error: queryError } = await supabase
+      // First try current short_code
+      let { data, error: queryError } = await supabase
         .from("professionals")
         .select("id, verification_token")
         .eq("short_code", shortCode)
         .maybeSingle();
+
+      // If not found, check previous_short_codes array for backwards compatibility
+      if (!data && !queryError) {
+        const { data: historyData, error: historyError } = await supabase
+          .from("professionals")
+          .select("id, verification_token")
+          .contains("previous_short_codes", [shortCode])
+          .maybeSingle();
+        
+        if (!historyError && historyData) {
+          data = historyData;
+        }
+      }
 
       if (queryError || !data) {
         setError(true);
