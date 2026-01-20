@@ -16,8 +16,8 @@ const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
 const CLOUDFLARE_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN');
 const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
-const CLOUDFLARE_API_EMAIL = Deno.env.get('CLOUDFLARE_API_EMAIL'); // Cloudflare account email for Browser Rendering API
-const CLOUDFLARE_API_KEY = Deno.env.get('CLOUDFLARE_GLOBAL_API_KEY'); // Global API key for Browser Rendering
+const CLOUDFLARE_API_EMAIL = Deno.env.get('CLOUDFLARE_API_EMAIL');
+const CLOUDFLARE_API_KEY = Deno.env.get('CLOUDFLARE_GLOBAL_API_KEY'); // Note: matches your secret name
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -81,24 +81,24 @@ async function sendPrematureStopEmail(processed: number, total: number, lastUrl:
     await client.send({
       from: SMTP_FROM_EMAIL,
       to: ADMIN_EMAIL,
-      subject: `⚠️ Cache Warming Stopped Prematurely - ${processed}/${total} completed`,
+      subject: `Cache Warming Stopped Prematurely - ${processed}/${total} completed`,
       html: `
-        <h1>⚠️ Cache Warming Stopped Early</h1>
+        <h2>Cache Warming Stopped Early</h2>
         <p><strong>Time:</strong> ${timestamp}</p>
         <p><strong>Progress:</strong> ${processed} of ${total} URLs processed (${Math.round(processed/total*100)}%)</p>
         <p><strong>Last URL processed:</strong> ${lastUrl}</p>
-        ${errorMessage ? `<p style="color: red;"><strong>Error:</strong> ${errorMessage}</p>` : '<p><strong>Reason:</strong> Edge function likely timed out or crashed</p>'}
+        ${errorMessage ? `<p style="color: red;"><strong>Error:</strong> ${errorMessage}</p>` : '<p>Reason: Edge function likely timed out or crashed</p>'}
         
-        <h2>🔧 Quick Actions</h2>
+        <h3>Quick Actions</h3>
         <p>Click to resume or restart:</p>
         <div style="margin: 20px 0;">
-          <table>
+          <table cellspacing="10">
             <tr>
-              <td style="padding: 10px;">
-                <a href="${baseUrl}/functions/v1/warm-cache" style="background: #22c55e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🔄 Restart Warm Cache</a>
+              <td>
+                <a href="${baseUrl}/functions/v1/warm-cache" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Restart Warm Cache</a>
               </td>
-              <td style="padding: 10px;">
-                <a href="${baseUrl}/functions/v1/run-cache-health-check" style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🏥 Run Health Check</a>
+              <td>
+                <a href="${baseUrl}/functions/v1/warm-cache-health" style="background-color: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Run Health Check</a>
               </td>
             </tr>
           </table>
@@ -109,7 +109,7 @@ async function sendPrematureStopEmail(processed: number, total: number, lastUrl:
     });
     
     await client.close();
-    console.log('📧 Premature stop notification email sent to', ADMIN_EMAIL);
+    console.log('Premature stop notification email sent to', ADMIN_EMAIL);
   } catch (emailError) {
     console.error('Failed to send premature stop email:', emailError);
   }
@@ -141,9 +141,9 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
     await client.send({
       from: SMTP_FROM_EMAIL,
       to: ADMIN_EMAIL,
-      subject: `🚨 IMMEDIATE: Cache Warming Failed - ${result.failed} URLs failed`,
+      subject: `IMMEDIATE: Cache Warming Failed - ${result.failed} URLs failed`,
       html: `
-        <h1>🚨 Cache Warming Failure Alert</h1>
+        <h2>Cache Warming Failure Alert</h2>
         <p><strong>Time:</strong> ${timestamp}</p>
         <p><strong>Summary:</strong></p>
         <ul>
@@ -154,22 +154,22 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
         ${errorMessage ? `<p style="color: red;"><strong>Error:</strong> ${errorMessage}</p>` : ''}
         ${result.errors.length > 0 ? `
           <h3>Failed URLs:</h3>
-          <ul style="font-size: 12px; color: #666;">
+          <ul style="font-family: monospace; font-size: 12px;">
             ${result.errors.slice(0, 20).map(e => `<li>${e}</li>`).join('')}
             ${result.errors.length > 20 ? `<li>... and ${result.errors.length - 20} more</li>` : ''}
           </ul>
         ` : ''}
         
-        <h2>🔧 Quick Actions</h2>
+        <h3>Quick Actions</h3>
         <p>Click a button to trigger the action directly:</p>
         <div style="margin: 20px 0;">
-          <table>
+          <table cellspacing="10">
             <tr>
-              <td style="padding: 10px;">
-                <a href="${baseUrl}/functions/v1/warm-cache" style="background: #22c55e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🔄 Re-run Warm Cache</a>
+              <td>
+                <a href="${baseUrl}/functions/v1/warm-cache" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Re-run Warm Cache</a>
               </td>
-              <td style="padding: 10px;">
-                <a href="${baseUrl}/functions/v1/run-cache-health-check" style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🏥 Run Health Check</a>
+              <td>
+                <a href="${baseUrl}/functions/v1/warm-cache-health" style="background-color: #2196F3; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Run Health Check</a>
               </td>
             </tr>
           </table>
@@ -180,7 +180,7 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
     });
     
     await client.close();
-    console.log('📧 Failure notification email sent to', ADMIN_EMAIL);
+    console.log('Failure notification email sent to', ADMIN_EMAIL);
   } catch (emailError) {
     console.error('Failed to send failure notification email:', emailError);
   }
@@ -206,7 +206,6 @@ interface WarmResult {
 // Generate a cache key from URL - matches Cloudflare Worker format
 function urlToCacheKey(url: string): string {
   const urlObj = new URL(url);
-  // Normalize: remove trailing slash except for homepage
   let pathname = urlObj.pathname;
   if (pathname !== '/' && pathname.endsWith('/')) {
     pathname = pathname.slice(0, -1);
@@ -232,7 +231,6 @@ async function deleteFromKV(key: string): Promise<boolean> {
       }
     );
 
-    // 404 is okay - key didn't exist
     if (response.ok || response.status === 404) {
       return true;
     }
@@ -290,34 +288,28 @@ function isValidContent(html: string, url: string): { valid: boolean; reason?: s
     return { valid: false, reason: 'HTML too short' };
   }
   
-  // Reject rate limit pages
   if (html.includes('429') && html.includes('Too Many Requests')) {
     return { valid: false, reason: 'Rate limited' };
   }
   
-  // Reject error pages
   if (html.includes('500') && html.includes('Internal Server Error')) {
     return { valid: false, reason: 'Server error page' };
   }
   
-  // Must have doctype
   const hasDoctype = html.includes('<!DOCTYPE') || html.includes('<!doctype');
   if (!hasDoctype) {
     return { valid: false, reason: 'No doctype' };
   }
   
-  // Must have Top10Lists content (not Lovable auth page)
   const hasContent = html.includes('Top10Lists') || html.includes('top10lists');
   if (!hasContent) {
     return { valid: false, reason: 'No Top10Lists content' };
   }
   
-  // Reject Lovable auth/bridge pages
   if (html.includes('Authenticating') && html.includes('lovable')) {
     return { valid: false, reason: 'Lovable auth page' };
   }
   
-  // Check for spinner - if present, content may not have loaded
   const hasSpinner = html.includes('animate-spin');
   const hasRealContent = html.includes('Neighborhood Expert') || 
                          html.includes('Verified') ||
@@ -330,10 +322,8 @@ function isValidContent(html: string, url: string): { valid: boolean; reason?: s
     return { valid: false, reason: 'Page still showing spinner' };
   }
 
-  // Page-specific validation
   const urlPath = new URL(url).pathname;
   
-  // Non-homepage showing homepage default content
   if (urlPath !== '/' && urlPath !== '') {
     const hasDefaultTitle = html.includes('>Top 10 Real Estate Agents | Top10Lists.us<');
     const hasDefaultH1 = html.includes('Find the Top 10 Real Estate Agents in Your City');
@@ -347,12 +337,10 @@ function isValidContent(html: string, url: string): { valid: boolean; reason?: s
 
 // Render a page using Cloudflare Browser Rendering API
 async function renderPageWithBrowser(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
-  // Check for required credentials
   if (!CLOUDFLARE_ACCOUNT_ID) {
     return { success: false, error: 'CLOUDFLARE_ACCOUNT_ID not configured' };
   }
   
-  // Can use either API Token or Email+Key combo
   const hasApiToken = !!CLOUDFLARE_API_TOKEN;
   const hasEmailKey = !!(CLOUDFLARE_API_EMAIL && CLOUDFLARE_API_KEY);
   
@@ -361,18 +349,17 @@ async function renderPageWithBrowser(url: string): Promise<{ success: boolean; h
   }
 
   try {
-    console.log(`    🌐 Browser rendering: ${url}`);
+    console.log(`    Browser rendering: ${url}`);
     
-    // Determine if this is a listing page that needs longer wait
     const urlPath = new URL(url).pathname;
     const isListingPage = urlPath.includes('top10realestateagents') || 
                           urlPath.includes('best-real-estate-agents');
     
-    // Build headers based on available credentials
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
     
+    // Prefer Email+Key for Browser Rendering API
     if (hasEmailKey) {
       headers['X-Auth-Email'] = CLOUDFLARE_API_EMAIL!;
       headers['X-Auth-Key'] = CLOUDFLARE_API_KEY!;
@@ -391,7 +378,6 @@ async function renderPageWithBrowser(url: string): Promise<{ success: boolean; h
             waitUntil: 'networkidle0',
             timeout: RENDER_TIMEOUT_MS,
           },
-          // Extra wait after network idle for React to finish rendering
           waitForTimeout: isListingPage ? 8000 : 3000,
           viewport: {
             width: 1280,
@@ -403,7 +389,7 @@ async function renderPageWithBrowser(url: string): Promise<{ success: boolean; h
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`    ✗ Browser Rendering API error: ${response.status} - ${errorText}`);
+      console.error(`    Browser Rendering API error: ${response.status} - ${errorText}`);
       return { success: false, error: `API error ${response.status}: ${errorText.substring(0, 200)}` };
     }
 
@@ -414,19 +400,18 @@ async function renderPageWithBrowser(url: string): Promise<{ success: boolean; h
       return { success: false, error: 'No HTML returned from Browser Rendering API' };
     }
 
-    // Validate the rendered content
     const validation = isValidContent(html, url);
     if (!validation.valid) {
-      console.warn(`    ⚠ Validation failed: ${validation.reason}`);
+      console.warn(`    Validation failed: ${validation.reason}`);
       return { success: false, error: validation.reason };
     }
 
-    console.log(`    ✓ Rendered successfully: ${html.length} bytes`);
+    console.log(`    Rendered successfully: ${html.length} bytes`);
     return { success: true, html };
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`    ✗ Render error: ${message}`);
+    console.error(`    Render error: ${message}`);
     return { success: false, error: message };
   }
 }
@@ -435,7 +420,6 @@ async function renderPageWithBrowser(url: string): Promise<{ success: boolean; h
 async function warmUrl(url: string): Promise<{ success: boolean; error?: string }> {
   const cacheKey = urlToCacheKey(url);
   
-  // Skip static files - just fetch them directly
   if (isStaticFile(url)) {
     try {
       const response = await fetch(url);
@@ -450,28 +434,26 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
       if (!kvSuccess) {
         return { success: false, error: 'Failed to write to KV' };
       }
-      console.log(`  ✓ Cached static file ${url} (${content.length} bytes)`);
+      console.log(`  Cached static file ${url} (${content.length} bytes)`);
       return { success: true };
     } catch (error) {
       return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
 
-  // Render HTML page with Browser Rendering API
   const renderResult = await renderPageWithBrowser(url);
   
   if (!renderResult.success || !renderResult.html) {
     return { success: false, error: renderResult.error || 'No HTML returned' };
   }
 
-  // Store in Cloudflare KV
   const kvSuccess = await writeToKV(cacheKey, renderResult.html);
   
   if (!kvSuccess) {
     return { success: false, error: 'Failed to write to KV' };
   }
 
-  console.log(`  ✓ Cached ${url} (${renderResult.html.length} bytes) -> ${cacheKey}`);
+  console.log(`  Cached ${url} (${renderResult.html.length} bytes) -> ${cacheKey}`);
   return { success: true };
 }
 
@@ -479,9 +461,8 @@ async function warmUrl(url: string): Promise<{ success: boolean; error?: string 
 async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
   const baseUrl = 'https://www.top10lists.us';
 
-  // Static crawlable pages
   const staticPages = [
-    '', // homepage
+    '',
     '/about',
     '/about/ranking-methodology',
     '/faq',
@@ -500,7 +481,6 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/agent-onboarding',
     '/privacy',
     '/terms',
-    // Question pages for GEO optimization
     '/q/how-does-top10lists-rank-real-estate-agents',
     '/q/can-agents-pay-to-be-listed-on-top10lists',
     '/q/how-is-top10lists-different-from-zillow',
@@ -515,7 +495,6 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
 
   const staticUrls = staticPages.map((path) => `${baseUrl}${path}`);
 
-  // Query active Arizona cities from database
   const { data: cities, error: citiesError } = await supabaseAdmin
     .from('cities')
     .select('slug, state_slug')
@@ -528,7 +507,6 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
 
   const cityUrls = (cities || []).map((c) => `${baseUrl}/${c.state_slug}/${c.slug}/top10realestateagents`);
 
-  // Query active Arizona neighborhoods with primary_zip
   const { data: neighborhoodsAZ, error: neighborhoodsAZError } = await supabaseAdmin
     .from('neighborhood_catalog')
     .select('state, city_area_slug, primary_zip, neighborhood_slug')
@@ -558,7 +536,6 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     return `${baseUrl}/${stateLower}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`;
   });
 
-  // Combine all URLs
   const allUrls = [...staticUrls, ...cityUrls, ...neighborhoodUrls];
 
   console.log(
@@ -575,7 +552,6 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -584,7 +560,6 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({})) as WarmRequest;
     const { urls: providedUrls, region, limit, offset = 0 } = body;
 
-    // Validate Cloudflare credentials
     if (!CLOUDFLARE_API_TOKEN || !CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID) {
       return new Response(
         JSON.stringify({ success: false, error: 'Cloudflare KV credentials not configured' }),
@@ -592,7 +567,6 @@ serve(async (req) => {
       );
     }
 
-    // Get URLs to warm
     let urls: string[];
     let totalCount: number;
     
@@ -615,13 +589,11 @@ serve(async (req) => {
     const nextOffset = offset + urls.length;
     const hasMore = nextOffset < totalCount;
     
-    console.log(`🔥 Starting cache warming for ${urls.length} URLs (batch ${offset}-${nextOffset} of ${totalCount})...`);
+    console.log(`Starting cache warming for ${urls.length} URLs (batch ${offset}-${nextOffset} of ${totalCount})...`);
 
-    // Track progress
     let lastProcessedUrl = '';
     let lastHeartbeat = Date.now();
     
-    // Update initial job status
     await updateJobProgress('running', `Starting: 0/${totalCount}`, 0, totalCount, 0);
 
     const result: WarmResult = {
@@ -634,9 +606,8 @@ serve(async (req) => {
       nextOffset,
     };
 
-    // Step 1: Purge all URLs from KV before warming (only on first batch)
     if (offset === 0) {
-      console.log(`🗑️ Purging ${urls.length} URLs from KV before warming...`);
+      console.log(`Purging ${urls.length} URLs from KV before warming...`);
       await updateJobProgress('running', `Purging KV cache...`, 0, totalCount, 0);
       let purged = 0;
       for (const url of urls) {
@@ -644,10 +615,9 @@ serve(async (req) => {
         const deleted = await deleteFromKV(cacheKey);
         if (deleted) purged++;
       }
-      console.log(`✓ Purged ${purged}/${urls.length} KV entries`);
+      console.log(`Purged ${purged}/${urls.length} KV entries`);
     }
 
-    // Step 2: Process URLs sequentially with delays
     for (let i = 0; i < urls.length; i++) {
       const url = urls[i];
       lastProcessedUrl = url;
@@ -660,56 +630,51 @@ serve(async (req) => {
       } else {
         result.failed++;
         result.errors.push(`${url}: ${warmResult.error}`);
-        console.error(`  ✗ Failed: ${warmResult.error}`);
+        console.error(`  Failed: ${warmResult.error}`);
       }
       
-      // Update progress periodically
       if (Date.now() - lastHeartbeat > HEARTBEAT_INTERVAL_MS) {
         const processed = result.warmed + result.failed;
         await updateJobProgress('running', `Processing: ${processed}/${totalCount} (${result.failed} errors)`, processed, totalCount, result.failed);
         lastHeartbeat = Date.now();
-        console.log(`📊 Progress update: ${processed}/${totalCount}`);
+        console.log(`Progress update: ${processed}/${totalCount}`);
       }
       
-      // Delay between URLs (except after the last one)
       if (i < urls.length - 1) {
-        console.log(`  ⏱️ Waiting ${SEQUENTIAL_DELAY_MS / 1000}s before next URL...`);
+        console.log(`  Waiting ${SEQUENTIAL_DELAY_MS / 1000}s before next URL...`);
         await new Promise(resolve => setTimeout(resolve, SEQUENTIAL_DELAY_MS));
       }
     }
 
-    console.log(`✅ Cache warming complete: ${result.warmed}/${result.total} successful, ${result.failed} failed`);
+    console.log(`Cache warming complete: ${result.warmed}/${result.total} successful, ${result.failed} failed`);
     
-    // Job completed - update status
     const finalStatus = result.failed > 0 ? 'completed_with_errors' : 'completed';
     await updateJobProgress(finalStatus, `Done: ${result.warmed}/${result.total} warmed, ${result.failed} failed`, result.warmed, result.total, result.failed);
 
-    // Send failure email if any URLs failed
     if (result.failed > 0) {
       result.success = false;
       await sendFailureEmail(result);
     }
 
-    // Trigger IndexNow after cache warming completes (only on final batch)
     if (!hasMore && result.warmed > 0) {
-      console.log('📢 Triggering IndexNow to notify search engines...');
+      console.log('Triggering IndexNow to notify search engines...');
       try {
         const { data: indexNowResult, error: indexNowError } = await supabaseAdmin.functions.invoke('push-indexnow', {
           body: {},
         });
 
         if (indexNowError) {
-          console.error('⚠️ IndexNow failed:', indexNowError);
+          console.error('IndexNow failed:', indexNowError);
           (result as any).indexNowTriggered = false;
           (result as any).indexNowError = indexNowError.message;
         } else {
           const urlsSubmitted = (indexNowResult as any)?.urlsSubmitted || 0;
-          console.log(`✅ IndexNow triggered successfully: ${urlsSubmitted} URLs pushed`);
+          console.log(`IndexNow triggered successfully: ${urlsSubmitted} URLs pushed`);
           (result as any).indexNowTriggered = true;
           (result as any).indexNowUrls = urlsSubmitted;
         }
       } catch (indexNowError) {
-        console.error('⚠️ IndexNow error:', indexNowError);
+        console.error('IndexNow error:', indexNowError);
         (result as any).indexNowTriggered = false;
         (result as any).indexNowError = indexNowError instanceof Error ? indexNowError.message : 'Unknown error';
       }
