@@ -7,14 +7,32 @@ const corsHeaders = {
 };
 
 const STATIC_PAGES = [
+  // Homepage & State
   "https://www.top10lists.us/",
+  "https://www.top10lists.us/arizona",
+  // About pages
   "https://www.top10lists.us/about",
-  "https://www.top10lists.us/methodology",
+  "https://www.top10lists.us/about/founder",
+  "https://www.top10lists.us/about/ranking-methodology",
+  // AI & Protocol pages
+  "https://www.top10lists.us/for-ai",
+  "https://www.top10lists.us/transparency",
+  "https://www.top10lists.us/ai-compare",
+  "https://www.top10lists.us/ai-liability",
+  "https://www.top10lists.us/protocol-adopters",
+  "https://www.top10lists.us/protocol-services",
+  // Editorial & Press
+  "https://www.top10lists.us/press",
+  "https://www.top10lists.us/editorial-updates",
+  // Comparison & Info
+  "https://www.top10lists.us/compare",
+  "https://www.top10lists.us/zillow-explained",
+  "https://www.top10lists.us/faq",
+  // Legal
   "https://www.top10lists.us/privacy",
   "https://www.top10lists.us/terms",
-  "https://www.top10lists.us/contact",
-  "https://www.top10lists.us/faq",
-  "https://www.top10lists.us/arizona",
+  "https://www.top10lists.us/sms-terms",
+  "https://www.top10lists.us/opt-in",
 ];
 
 interface WarmResult {
