@@ -16,7 +16,7 @@ const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
 const CLOUDFLARE_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN');
 const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
-const CLOUDFLARE_API_EMAIL = Deno.env.get('SMTP_USERNAME'); // Using SMTP username as Cloudflare email
+const CLOUDFLARE_API_EMAIL = Deno.env.get('CLOUDFLARE_API_EMAIL'); // Cloudflare account email for Browser Rendering API
 const CLOUDFLARE_API_KEY = Deno.env.get('CLOUDFLARE_GLOBAL_API_KEY'); // Global API key for Browser Rendering
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
