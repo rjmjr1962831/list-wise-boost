@@ -16,12 +16,17 @@ const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL");
 const CLOUDFLARE_API_TOKEN = Deno.env.get('CLOUDFLARE_API_TOKEN');
 const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get('CLOUDFLARE_KV_NAMESPACE_ID');
+const CLOUDFLARE_API_EMAIL = Deno.env.get('CLOUDFLARE_API_EMAIL'); // For Browser Rendering API
+const CLOUDFLARE_API_KEY = Deno.env.get('CLOUDFLARE_API_KEY'); // Global API key for Browser Rendering
+
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'robert@top10lists.us';
-const URL_TIMEOUT_MS = 15000; // 15 seconds per URL
-const SEQUENTIAL_DELAY_MS = 7000; // 7 seconds between each URL to avoid Cloudflare rate limits
+
+const RENDER_TIMEOUT_MS = 60000; // 60 seconds for browser rendering
+const SEQUENTIAL_DELAY_MS = 7000; // 7 seconds between each URL to avoid rate limits
 const HEARTBEAT_INTERVAL_MS = 60000; // Update progress every 60 seconds
+
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Track job progress in cron_state table
@@ -82,21 +87,23 @@ async function sendPrematureStopEmail(processed: number, total: number, lastUrl:
         <p><strong>Time:</strong> ${timestamp}</p>
         <p><strong>Progress:</strong> ${processed} of ${total} URLs processed (${Math.round(processed/total*100)}%)</p>
         <p><strong>Last URL processed:</strong> ${lastUrl}</p>
-        ${errorMessage ? `<p><strong>Error:</strong> ${errorMessage}</p>` : '<p><strong>Reason:</strong> Edge function likely timed out or crashed</p>'}
-        <hr />
+        ${errorMessage ? `<p style="color: red;"><strong>Error:</strong> ${errorMessage}</p>` : '<p><strong>Reason:</strong> Edge function likely timed out or crashed</p>'}
+        
         <h2>🔧 Quick Actions</h2>
         <p>Click to resume or restart:</p>
-        <table cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td style="padding: 8px;">
-              <a href="${baseUrl}/functions/v1/warm-cache" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🔄 Restart Warm Cache</a>
-            </td>
-            <td style="padding: 8px;">
-              <a href="${baseUrl}/functions/v1/check-cache-health" style="display: inline-block; padding: 12px 24px; background: #6b7280; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🏥 Run Health Check</a>
-            </td>
-          </tr>
-        </table>
-        <hr />
+        <div style="margin: 20px 0;">
+          <table>
+            <tr>
+              <td style="padding: 10px;">
+                <a href="${baseUrl}/functions/v1/warm-cache" style="background: #22c55e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🔄 Restart Warm Cache</a>
+              </td>
+              <td style="padding: 10px;">
+                <a href="${baseUrl}/functions/v1/run-cache-health-check" style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🏥 Run Health Check</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+        
         <p style="color: #666; font-size: 12px;">Check edge function logs for more details.</p>
       `,
     });
@@ -129,7 +136,6 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
     });
 
     const timestamp = new Date().toISOString();
-    
     const baseUrl = SUPABASE_URL;
     
     await client.send({
@@ -141,45 +147,34 @@ async function sendFailureEmail(result: WarmResult, errorMessage?: string): Prom
         <p><strong>Time:</strong> ${timestamp}</p>
         <p><strong>Summary:</strong></p>
         <ul>
-          <li>Total URLs: ${result.total}</li>
-          <li>Successfully warmed: ${result.warmed}</li>
-          <li>Failed: ${result.failed}</li>
+          <li><strong>Total URLs:</strong> ${result.total}</li>
+          <li><strong>Successfully warmed:</strong> ${result.warmed}</li>
+          <li style="color: red;"><strong>Failed:</strong> ${result.failed}</li>
         </ul>
-        ${errorMessage ? `<p><strong>Error:</strong> ${errorMessage}</p>` : ''}
+        ${errorMessage ? `<p style="color: red;"><strong>Error:</strong> ${errorMessage}</p>` : ''}
         ${result.errors.length > 0 ? `
-          <p><strong>Failed URLs:</strong></p>
-          <ul>
+          <h3>Failed URLs:</h3>
+          <ul style="font-size: 12px; color: #666;">
             ${result.errors.slice(0, 20).map(e => `<li>${e}</li>`).join('')}
             ${result.errors.length > 20 ? `<li>... and ${result.errors.length - 20} more</li>` : ''}
           </ul>
         ` : ''}
-        <hr />
+        
         <h2>🔧 Quick Actions</h2>
         <p>Click a button to trigger the action directly:</p>
-        <table cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td style="padding: 8px;">
-              <a href="${baseUrl}/functions/v1/warm-cache" style="display: inline-block; padding: 12px 24px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🔄 Re-run Warm Cache</a>
-            </td>
-            <td style="padding: 8px;">
-              <a href="${baseUrl}/functions/v1/check-cache-health" style="display: inline-block; padding: 12px 24px; background: #6b7280; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">🏥 Run Health Check</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding: 8px;">
-              <a href="${baseUrl}/functions/v1/cache-admin-action?action=start-cron" style="display: inline-block; padding: 12px 24px; background: #10b981; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">▶️ Start Cron</a>
-            </td>
-            <td style="padding: 8px;">
-              <a href="${baseUrl}/functions/v1/cache-admin-action?action=stop-cron" style="display: inline-block; padding: 12px 24px; background: #ef4444; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">⏹️ Stop Cron</a>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" style="padding: 8px;">
-              <a href="${baseUrl}/functions/v1/cache-admin-action?action=check-cron" style="display: inline-block; padding: 12px 24px; background: #8b5cf6; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">📊 Check Cron Status</a>
-            </td>
-          </tr>
-        </table>
-        <hr />
+        <div style="margin: 20px 0;">
+          <table>
+            <tr>
+              <td style="padding: 10px;">
+                <a href="${baseUrl}/functions/v1/warm-cache" style="background: #22c55e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🔄 Re-run Warm Cache</a>
+              </td>
+              <td style="padding: 10px;">
+                <a href="${baseUrl}/functions/v1/run-cache-health-check" style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">🏥 Run Health Check</a>
+              </td>
+            </tr>
+          </table>
+        </div>
+        
         <p style="color: #666; font-size: 12px;">Check edge function logs for more details.</p>
       `,
     });
@@ -228,7 +223,7 @@ async function deleteFromKV(key: string): Promise<boolean> {
 
   try {
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${key}`,
+      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${encodeURIComponent(key)}`,
       {
         method: 'DELETE',
         headers: {
@@ -260,7 +255,7 @@ async function writeToKV(key: string, value: string): Promise<boolean> {
 
   try {
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${key}`,
+      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${encodeURIComponent(key)}`,
       {
         method: 'PUT',
         headers: {
@@ -289,196 +284,208 @@ function isStaticFile(url: string): boolean {
   return url.endsWith('.txt') || url.endsWith('.xml') || url.endsWith('.json');
 }
 
-// Check if URL is a city/category page that needs agent stripping
-function isCityPage(url: string): boolean {
-  // City pages match pattern: /arizona/city-name/category-slug
-  const cityPagePattern = /\/[a-z-]+\/[a-z-]+\/[a-z0-9-]+$/i;
-  return cityPagePattern.test(new URL(url).pathname);
-}
+// Validate that rendered HTML contains expected content
+function isValidContent(html: string, url: string): { valid: boolean; reason?: string } {
+  if (!html || html.length < 2000) {
+    return { valid: false, reason: 'HTML too short' };
+  }
+  
+  // Reject rate limit pages
+  if (html.includes('429') && html.includes('Too Many Requests')) {
+    return { valid: false, reason: 'Rate limited' };
+  }
+  
+  // Reject error pages
+  if (html.includes('500') && html.includes('Internal Server Error')) {
+    return { valid: false, reason: 'Server error page' };
+  }
+  
+  // Must have doctype
+  const hasDoctype = html.includes('<!DOCTYPE') || html.includes('<!doctype');
+  if (!hasDoctype) {
+    return { valid: false, reason: 'No doctype' };
+  }
+  
+  // Must have Top10Lists content (not Lovable auth page)
+  const hasContent = html.includes('Top10Lists') || html.includes('top10lists');
+  if (!hasContent) {
+    return { valid: false, reason: 'No Top10Lists content' };
+  }
+  
+  // Reject Lovable auth/bridge pages
+  if (html.includes('Authenticating') && html.includes('lovable')) {
+    return { valid: false, reason: 'Lovable auth page' };
+  }
+  
+  // Check for spinner - if present, content may not have loaded
+  const hasSpinner = html.includes('animate-spin');
+  const hasRealContent = html.includes('Neighborhood Expert') || 
+                         html.includes('Verified') ||
+                         html.includes('Merit-Based') ||
+                         html.includes('FAQ') ||
+                         html.includes('methodology') ||
+                         html.includes('About Top10Lists');
+  
+  if (hasSpinner && !hasRealContent) {
+    return { valid: false, reason: 'Page still showing spinner' };
+  }
 
-// Strip agent-identifying content from HTML while preserving page structure
-// Keeps: headers, methodology content, FAQ, schema markup, meta tags
-// Removes: agent names, photos, stats, bios, contact info
-function stripAgentContent(html: string): string {
-  let sanitized = html;
-  
-  // Remove Person schema (contains agent names/details)
-  sanitized = sanitized.replace(/<script[^>]*type="application\/ld\+json"[^>]*>[\s\S]*?"@type"\s*:\s*"Person"[\s\S]*?<\/script>/gi, '');
-  
-  // Remove agent card containers (common patterns)
-  // Pattern 1: data-agent-card or similar attributes
-  sanitized = sanitized.replace(/<[^>]+data-agent[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
-  
-  // Pattern 2: Agent card divs with itemtype Person
-  sanitized = sanitized.replace(/<[^>]+itemtype="https?:\/\/schema\.org\/Person"[^>]*>[\s\S]*?<\/[^>]+>/gi, '');
-  
-  // Pattern 3: Elements with agent-specific classes (professional-card, agent-card)
-  sanitized = sanitized.replace(/<div[^>]*class="[^"]*(?:professional-card|agent-card|agent-list)[^"]*"[^>]*>[\s\S]*?(?:<\/div>\s*){1,10}/gi, '');
-  
-  // Remove img tags with agent photos (typically zillow/realtor URLs or profile images)
-  sanitized = sanitized.replace(/<img[^>]*(?:zillow|realtor|profile|agent)[^>]*>/gi, '');
-  
-  // Remove tel: and mailto: links (agent contact info)
-  sanitized = sanitized.replace(/<a[^>]*href="(?:tel:|mailto:)[^"]*"[^>]*>[\s\S]*?<\/a>/gi, '');
-  
-  // Add a notice that agent details are available on site
-  const noticeHtml = `
-    <div style="padding:20px;background:#f5f5f5;border-radius:8px;margin:20px 0;text-align:center;">
-      <p style="margin:0;font-size:16px;">
-        <strong>View the complete Top 10 agent rankings at Top10Lists.us</strong><br>
-        Our curated list includes verified reviews, credentials, and community involvement data.
-      </p>
-    </div>
-  `;
-  
-  // Insert notice before closing body tag
-  sanitized = sanitized.replace('</body>', `${noticeHtml}</body>`);
-  
-  return sanitized;
-}
-
-// Validate that page content matches expected content (not just homepage defaults)
-function validatePageContent(url: string, html: string): { success: boolean; reason?: string } {
+  // Page-specific validation
   const urlPath = new URL(url).pathname;
   
-  // Check for presence of H1 tag
-  if (!html.includes('<h1')) {
-    return { success: false, reason: 'No <h1> tag found' };
-  }
-
-  // Homepage is always valid if it has content
-  if (urlPath === '/' || urlPath === '') {
-    return { success: true };
-  }
-
-  // Extract and log title/H1 for debugging
-  const titleMatch = html.match(/<title[^>]*>(.*?)<\/title>/i);
-  const h1Match = html.match(/<h1[^>]*>(.*?)<\/h1>/i);
-  const pageTitle = titleMatch ? titleMatch[1] : 'NO TITLE';
-  const pageH1 = h1Match ? h1Match[1].replace(/<[^>]+>/g, '') : 'NO H1';
-  
-  console.log(`    Page: ${urlPath} | Title: ${pageTitle} | H1: ${pageH1}`);
-
-  // Reject non-homepage pages showing homepage default content
-  const hasDefaultTitle = html.includes('Top 10 Real Estate Agents | Top10Lists.us');
-  const hasDefaultH1 = html.includes('Find the Top 10 Real Estate Agents in Your City');
-  
-  if (urlPath !== '/' && hasDefaultTitle && hasDefaultH1) {
-    return { 
-      success: false, 
-      reason: `Page showing default homepage content instead of page-specific content` 
-    };
-  }
-
-  // Page-specific validations
-  const validations: Record<string, () => boolean> = {
-    '/faq': () => html.toLowerCase().includes('faq') || html.toLowerCase().includes('frequently asked'),
-    '/about': () => html.toLowerCase().includes('about'),
-    '/about/ranking-methodology': () => html.toLowerCase().includes('methodology'),
-    '/compare': () => html.toLowerCase().includes('zillow') || html.toLowerCase().includes('comparison'),
-    '/for-ai': () => html.toLowerCase().includes('ai systems'),
-    '/ai-liability': () => html.toLowerCase().includes('liability'),
-  };
-
-  for (const [path, validator] of Object.entries(validations)) {
-    if (urlPath.includes(path) && !validator()) {
-      return { success: false, reason: `Path ${path} missing expected content` };
+  // Non-homepage showing homepage default content
+  if (urlPath !== '/' && urlPath !== '') {
+    const hasDefaultTitle = html.includes('>Top 10 Real Estate Agents | Top10Lists.us<');
+    const hasDefaultH1 = html.includes('Find the Top 10 Real Estate Agents in Your City');
+    if (hasDefaultTitle && hasDefaultH1) {
+      return { valid: false, reason: 'Page showing homepage default content' };
     }
   }
 
-  return { success: true };
+  return { valid: true };
 }
 
-// Fetch rendered page from Cloudflare Worker using X-Cache-Warming header
-// This triggers browser rendering for proper JS execution and correct meta tags
-async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
-  try {
-    console.log(`    Requesting browser-rendered HTML for: ${url}`);
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), URL_TIMEOUT_MS);
+// Render a page using Cloudflare Browser Rendering API
+async function renderPageWithBrowser(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
+  // Check for required credentials
+  if (!CLOUDFLARE_ACCOUNT_ID) {
+    return { success: false, error: 'CLOUDFLARE_ACCOUNT_ID not configured' };
+  }
+  
+  // Can use either API Token or Email+Key combo
+  const hasApiToken = !!CLOUDFLARE_API_TOKEN;
+  const hasEmailKey = !!(CLOUDFLARE_API_EMAIL && CLOUDFLARE_API_KEY);
+  
+  if (!hasApiToken && !hasEmailKey) {
+    return { success: false, error: 'Cloudflare API credentials not configured' };
+  }
 
-    // Request from www.top10lists.us with X-Cache-Warming header
-    // This tells Cloudflare Worker to force fresh browser render
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-        'X-Cache-Warming': 'true', // Triggers fresh browser render in Cloudflare Worker
-        'Cache-Control': 'no-cache',
-      },
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+  try {
+    console.log(`    🌐 Browser rendering: ${url}`);
+    
+    // Determine if this is a listing page that needs longer wait
+    const urlPath = new URL(url).pathname;
+    const isListingPage = urlPath.includes('top10realestateagents') || 
+                          urlPath.includes('best-real-estate-agents');
+    
+    // Build headers based on available credentials
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (hasEmailKey) {
+      headers['X-Auth-Email'] = CLOUDFLARE_API_EMAIL!;
+      headers['X-Auth-Key'] = CLOUDFLARE_API_KEY!;
+    } else {
+      headers['Authorization'] = `Bearer ${CLOUDFLARE_API_TOKEN}`;
+    }
+
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/browser-rendering/content`,
+      {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          url,
+          gotoOptions: {
+            waitUntil: 'networkidle0',
+            timeout: RENDER_TIMEOUT_MS,
+          },
+          // Extra wait after network idle for React to finish rendering
+          waitForTimeout: isListingPage ? 8000 : 3000,
+          viewport: {
+            width: 1280,
+            height: 800,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
-      return { success: false, error: `HTTP ${response.status}` };
+      const errorText = await response.text();
+      console.error(`    ✗ Browser Rendering API error: ${response.status} - ${errorText}`);
+      return { success: false, error: `API error ${response.status}: ${errorText.substring(0, 200)}` };
     }
 
-    // Check if response came from Cloudflare Worker browser rendering
-    const renderedBy = response.headers.get('X-Rendered-By');
-    if (renderedBy) {
-      console.log(`    Rendered by: ${renderedBy}`);
-    }
-
-    const html = await response.text();
+    const data = await response.json();
+    const html = data.result || '';
     
-    // Static files don't need content validation
-    if (isStaticFile(url)) {
-      return html.length > 100 
-        ? { success: true, html } 
-        : { success: false, error: 'Static file appears empty' };
+    if (!html) {
+      return { success: false, error: 'No HTML returned from Browser Rendering API' };
     }
 
-    // Validate that page content matches expected content
-    const validation = validatePageContent(url, html);
-    if (!validation.success) {
-      console.warn(`    Validation failed: ${validation.reason}`);
-      return { success: false, error: validation.reason || 'Content validation failed' };
+    // Validate the rendered content
+    const validation = isValidContent(html, url);
+    if (!validation.valid) {
+      console.warn(`    ⚠ Validation failed: ${validation.reason}`);
+      return { success: false, error: validation.reason };
     }
 
-    console.log(`    Successfully fetched and validated: ${url}`);
+    console.log(`    ✓ Rendered successfully: ${html.length} bytes`);
     return { success: true, html };
-      
+
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`    ✗ Render error: ${message}`);
     return { success: false, error: message };
   }
 }
 
-// Warm a single URL: fetch rendered HTML and store in KV
-async function warmUrl(url: string, canonicalUrl: string): Promise<{ success: boolean; error?: string }> {
-  // Fetch from origin (lovable.app)
-  const fetchResult = await fetchRenderedPage(url);
+// Warm a single URL: render with Browser API and store in KV
+async function warmUrl(url: string): Promise<{ success: boolean; error?: string }> {
+  const cacheKey = urlToCacheKey(url);
   
-  if (!fetchResult.success || !fetchResult.html) {
-    return { success: false, error: fetchResult.error || 'No HTML returned' };
+  // Skip static files - just fetch them directly
+  if (isStaticFile(url)) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        return { success: false, error: `HTTP ${response.status}` };
+      }
+      const content = await response.text();
+      if (content.length < 100) {
+        return { success: false, error: 'Static file appears empty' };
+      }
+      const kvSuccess = await writeToKV(cacheKey, content);
+      if (!kvSuccess) {
+        return { success: false, error: 'Failed to write to KV' };
+      }
+      console.log(`  ✓ Cached static file ${url} (${content.length} bytes)`);
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
   }
 
-  // Store in Cloudflare KV using the CANONICAL URL (www.top10lists.us) for the key
-  const cacheKey = urlToCacheKey(canonicalUrl);
-  const kvSuccess = await writeToKV(cacheKey, fetchResult.html);
+  // Render HTML page with Browser Rendering API
+  const renderResult = await renderPageWithBrowser(url);
+  
+  if (!renderResult.success || !renderResult.html) {
+    return { success: false, error: renderResult.error || 'No HTML returned' };
+  }
+
+  // Store in Cloudflare KV
+  const kvSuccess = await writeToKV(cacheKey, renderResult.html);
   
   if (!kvSuccess) {
     return { success: false, error: 'Failed to write to KV' };
   }
 
-  console.log(`  ✓ Cached ${canonicalUrl} (${fetchResult.html.length} bytes)`);
+  console.log(`  ✓ Cached ${url} (${renderResult.html.length} bytes) -> ${cacheKey}`);
   return { success: true };
 }
 
 // Get URLs to warm - static pages + cities + neighborhoods
-async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: { fetchUrl: string; canonicalUrl: string }[]; totalCount: number }> {
-  const fetchBaseUrl = 'https://www.top10lists.us';
-  const canonicalBaseUrl = 'https://www.top10lists.us';
+async function getUrlsToWarm(region?: string, limit?: number, offset?: number): Promise<{ urls: string[]; totalCount: number }> {
+  const baseUrl = 'https://www.top10lists.us';
 
-  // Static crawlable pages (React pages only - Worker skips .txt, .json, .xml files)
+  // Static crawlable pages
   const staticPages = [
     '', // homepage
     '/about',
     '/about/ranking-methodology',
     '/faq',
-    '/transparency', // GEO Schema - methodology and data sources
+    '/transparency',
     '/for-agents',
     '/compare',
     '/press',
@@ -488,7 +495,7 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/protocol-services',
     '/test',
     '/ai-compare',
-    '/arizona', // state landing page
+    '/arizona',
     '/are-you-an-agent',
     '/agent-onboarding',
     '/privacy',
@@ -506,12 +513,9 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     '/q/what-cities-does-top10lists-cover',
   ];
 
-  const staticUrls = staticPages.map((path) => ({
-    fetchUrl: `${fetchBaseUrl}${path}`,
-    canonicalUrl: `${canonicalBaseUrl}${path}`,
-  }));
+  const staticUrls = staticPages.map((path) => `${baseUrl}${path}`);
 
-  // Query active Arizona cities from database (only Arizona for now)
+  // Query active Arizona cities from database
   const { data: cities, error: citiesError } = await supabaseAdmin
     .from('cities')
     .select('slug, state_slug')
@@ -522,13 +526,9 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     console.error('Error fetching cities:', citiesError);
   }
 
-  const cityUrls = (cities || []).map((c) => {
-    const path = `/${c.state_slug}/${c.slug}/top10realestateagents`;
-    return { fetchUrl: `${fetchBaseUrl}${path}`, canonicalUrl: `${canonicalBaseUrl}${path}` };
-  });
+  const cityUrls = (cities || []).map((c) => `${baseUrl}/${c.state_slug}/${c.slug}/top10realestateagents`);
 
   // Query active Arizona neighborhoods with primary_zip
-  // Split into two queries - AZ has 1054 entries, so need explicit limit
   const { data: neighborhoodsAZ, error: neighborhoodsAZError } = await supabaseAdmin
     .from('neighborhood_catalog')
     .select('state, city_area_slug, primary_zip, neighborhood_slug')
@@ -551,16 +551,14 @@ async function getUrlsToWarm(region?: string, limit?: number, offset?: number): 
     console.error('Error fetching Arizona neighborhoods:', neighborhoodsArizonaError);
   }
 
-  // Combine both results
   const neighborhoods = [...(neighborhoodsAZ || []), ...(neighborhoodsArizona || [])];
 
   const neighborhoodUrls = (neighborhoods || []).map((n) => {
-    const stateLower = n.state.toLowerCase();
-    const path = `/${stateLower}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`;
-    return { fetchUrl: `${fetchBaseUrl}${path}`, canonicalUrl: `${canonicalBaseUrl}${path}` };
+    const stateLower = n.state.toLowerCase() === 'az' ? 'arizona' : n.state.toLowerCase();
+    return `${baseUrl}/${stateLower}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`;
   });
 
-  // Combine all URLs: static + cities + neighborhoods
+  // Combine all URLs
   const allUrls = [...staticUrls, ...cityUrls, ...neighborhoodUrls];
 
   console.log(
@@ -584,7 +582,6 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({})) as WarmRequest;
-    // No default limit - warm all URLs in one run
     const { urls: providedUrls, region, limit, offset = 0 } = body;
 
     // Validate Cloudflare credentials
@@ -596,12 +593,11 @@ serve(async (req) => {
     }
 
     // Get URLs to warm
-    let urls: { fetchUrl: string; canonicalUrl: string }[];
+    let urls: string[];
     let totalCount: number;
     
     if (providedUrls && providedUrls.length > 0) {
-      // If URLs are provided directly, assume they're canonical URLs and use them for both
-      urls = providedUrls.map(u => ({ fetchUrl: u, canonicalUrl: u }));
+      urls = providedUrls;
       totalCount = providedUrls.length;
     } else {
       const result = await getUrlsToWarm(region, limit, offset);
@@ -621,20 +617,9 @@ serve(async (req) => {
     
     console.log(`🔥 Starting cache warming for ${urls.length} URLs (batch ${offset}-${nextOffset} of ${totalCount})...`);
 
-    // Track progress for premature stop detection
+    // Track progress
     let lastProcessedUrl = '';
     let lastHeartbeat = Date.now();
-    
-    // Register shutdown handler to email if stopped prematurely
-    const shutdownHandler = async () => {
-      console.log('⚠️ Function shutting down, checking if job completed...');
-      // Only send email if we didn't finish
-      if (result.warmed + result.failed < urls.length) {
-        await sendPrematureStopEmail(result.warmed + result.failed, totalCount, lastProcessedUrl, 'Edge function shutdown');
-        await updateJobProgress('stopped', `Stopped at ${result.warmed + result.failed}/${totalCount}`, result.warmed + result.failed, totalCount, result.failed);
-      }
-    };
-    addEventListener('beforeunload', shutdownHandler);
     
     // Update initial job status
     await updateJobProgress('running', `Starting: 0/${totalCount}`, 0, totalCount, 0);
@@ -654,8 +639,8 @@ serve(async (req) => {
       console.log(`🗑️ Purging ${urls.length} URLs from KV before warming...`);
       await updateJobProgress('running', `Purging KV cache...`, 0, totalCount, 0);
       let purged = 0;
-      for (const { canonicalUrl } of urls) {
-        const cacheKey = urlToCacheKey(canonicalUrl);
+      for (const url of urls) {
+        const cacheKey = urlToCacheKey(url);
         const deleted = await deleteFromKV(cacheKey);
         if (deleted) purged++;
       }
@@ -664,21 +649,21 @@ serve(async (req) => {
 
     // Step 2: Process URLs sequentially with delays
     for (let i = 0; i < urls.length; i++) {
-      const { fetchUrl, canonicalUrl } = urls[i];
-      lastProcessedUrl = canonicalUrl;
-      console.log(`[${i + 1}/${urls.length}] Warming: ${canonicalUrl} (from ${fetchUrl})`);
+      const url = urls[i];
+      lastProcessedUrl = url;
+      console.log(`[${i + 1}/${urls.length}] Warming: ${url}`);
       
-      const warmResult = await warmUrl(fetchUrl, canonicalUrl);
+      const warmResult = await warmUrl(url);
       
       if (warmResult.success) {
         result.warmed++;
       } else {
         result.failed++;
-        result.errors.push(`${canonicalUrl}: ${warmResult.error}`);
+        result.errors.push(`${url}: ${warmResult.error}`);
         console.error(`  ✗ Failed: ${warmResult.error}`);
       }
       
-      // Update progress periodically (every 60 seconds)
+      // Update progress periodically
       if (Date.now() - lastHeartbeat > HEARTBEAT_INTERVAL_MS) {
         const processed = result.warmed + result.failed;
         await updateJobProgress('running', `Processing: ${processed}/${totalCount} (${result.failed} errors)`, processed, totalCount, result.failed);
@@ -695,7 +680,7 @@ serve(async (req) => {
 
     console.log(`✅ Cache warming complete: ${result.warmed}/${result.total} successful, ${result.failed} failed`);
     
-    // Job completed successfully - update status
+    // Job completed - update status
     const finalStatus = result.failed > 0 ? 'completed_with_errors' : 'completed';
     await updateJobProgress(finalStatus, `Done: ${result.warmed}/${result.total} warmed, ${result.failed} failed`, result.warmed, result.total, result.failed);
 
@@ -705,9 +690,9 @@ serve(async (req) => {
       await sendFailureEmail(result);
     }
 
-    // Trigger IndexNow after cache warming completes (only on final batch or single batch)
+    // Trigger IndexNow after cache warming completes (only on final batch)
     if (!hasMore && result.warmed > 0) {
-      console.log('🔔 Triggering IndexNow to notify search engines...');
+      console.log('📢 Triggering IndexNow to notify search engines...');
       try {
         const { data: indexNowResult, error: indexNowError } = await supabaseAdmin.functions.invoke('push-indexnow', {
           body: {},
@@ -739,10 +724,8 @@ serve(async (req) => {
     console.error('Cache warming error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
-    // Update job status as failed
     await updateJobProgress('failed', errorMessage, 0, 0, 1);
     
-    // Send failure email for catastrophic errors
     await sendFailureEmail(
       { success: false, total: 0, warmed: 0, failed: 1, errors: [errorMessage], hasMore: false, nextOffset: 0 },
       errorMessage
