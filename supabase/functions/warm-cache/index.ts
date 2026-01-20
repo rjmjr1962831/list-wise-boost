@@ -1,53 +1,22 @@
 // supabase/functions/warm-cache/index.ts
 // Cache warming edge function - calls Cloudflare Browser Rendering API directly
-// Updated: January 2026 - Direct Browser Rendering API integration
+// Updated: January 2026
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ============================================
-// CONFIGURATION
-// ============================================
 const SEQUENTIAL_DELAY_MS = 7000;
 const URL_TIMEOUT_MS = 30000;
 const SITE_BASE_URL = "https://www.top10lists.us";
 const LOVABLE_ORIGIN = "https://list-wise-boost.lovable.app";
 
-// Cloudflare credentials (hardcoded for reliability)
 const CLOUDFLARE_ACCOUNT_ID = "3421869440bd3684ee44fbdfa4b0de7f";
 const CLOUDFLARE_API_EMAIL = "robert@aryah.ai";
 const CLOUDFLARE_GLOBAL_API_KEY = "1deb2afb9bbb2fbeffe2efabc6546a381ab29";
-
-// Cloudflare KV
 const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get("CLOUDFLARE_KV_NAMESPACE_ID") || "";
 
-// Supabase
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-
-// SMTP for alerts (using existing secrets)
-const SMTP_HOST = "mail.privateemail.com";
-const SMTP_PORT = parseInt(Deno.env.get("SMTP_PORT") || "587");
-const SMTP_USER = Deno.env.get("SMTP_USERNAME") || "";
-const SMTP_PASS = Deno.env.get("SMTP_PASSWORD") || "";
-const SMTP_FROM = Deno.env.get("SMTP_FROM_EMAIL") || "robert@top10lists.us";
-const ALERT_EMAIL = Deno.env.get("ADMIN_EMAIL") || "robert@aryah.ai";
-
-// ============================================
-// TYPES
-// ============================================
-interface JobProgress {
-  job_id: string;
-  status: "running" | "completed" | "failed" | "stopped";
-  total_urls: number;
-  processed_urls: number;
-  successful_urls: number;
-  failed_urls: number;
-  current_url: string;
-  started_at: string;
-  updated_at: string;
-  errors: string[];
-}
 
 interface WarmResult {
   url: string;
@@ -56,32 +25,6 @@ interface WarmResult {
   cached_at?: string;
 }
 
-// ============================================
-// JOB PROGRESS TRACKING (disabled - just log)
-// ============================================
-async function updateJobProgress(
-  supabase: any,
-  progress: Partial<JobProgress> & { job_id: string }
-): Promise<void> {
-  console.log(`Job ${progress.job_id}: ${progress.processed_urls}/${progress.total_urls} URLs processed`);
-    if (error) {
-      console.error("Failed to update job progress:", error);
-    }
-  } catch (e) {
-    console.error("Error updating job progress:", e);
-  }
-}
-
-// ============================================
-// EMAIL ALERTS (placeholder - logs only)
-// ============================================
-async function sendFailureEmail(jobId: string, error: string): Promise<void> {
-  console.log(`[ALERT] Cache warming job ${jobId} failed: ${error}`);
-}
-
-// ============================================
-// CLOUDFLARE KV OPERATIONS
-// ============================================
 function urlToCacheKey(url: string): string {
   const urlObj = new URL(url);
   let path = urlObj.pathname;
@@ -116,10 +59,7 @@ async function writeToKV(cacheKey: string, html: string): Promise<boolean> {
   }
 }
 
-// ============================================
-// HTML VALIDATION
-// ============================================
-function validateHtml(html: string, url: string): { valid: boolean; reason?: string } {
+function validateHtml(html: string): { valid: boolean; reason?: string } {
   if (!html || html.length < 1000) {
     return { valid: false, reason: "HTML too short (< 1000 chars)" };
   }
@@ -132,9 +72,6 @@ function validateHtml(html: string, url: string): { valid: boolean; reason?: str
   return { valid: true };
 }
 
-// ============================================
-// CLOUDFLARE BROWSER RENDERING API
-// ============================================
 async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?: string; error?: string }> {
   try {
     const renderUrl = url.replace(SITE_BASE_URL, LOVABLE_ORIGIN);
@@ -170,7 +107,7 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
       return { success: false, error: "No HTML in API response" };
     }
     
-    const validation = validateHtml(html, url);
+    const validation = validateHtml(html);
     if (!validation.valid) {
       return { success: false, error: validation.reason };
     }
@@ -182,9 +119,6 @@ async function fetchRenderedPage(url: string): Promise<{ success: boolean; html?
   }
 }
 
-// ============================================
-// WARM SINGLE URL
-// ============================================
 async function warmUrl(url: string): Promise<WarmResult> {
   const result: WarmResult = { url, success: false };
   try {
@@ -211,23 +145,18 @@ async function warmUrl(url: string): Promise<WarmResult> {
   }
 }
 
-// ============================================
-// GET URLs TO WARM
-// ============================================
-async function getUrlsToWarm(supabase: ReturnType<typeof createClient>): Promise<string[]> {
+async function getUrlsToWarm(supabase: any): Promise<string[]> {
   const urls: string[] = [];
   
-  // Static pages
   const staticPages = ["/", "/about", "/faq", "/methodology", "/privacy", "/terms", "/contact", "/arizona"];
   for (const page of staticPages) {
     urls.push(`${SITE_BASE_URL}${page}`);
   }
   
-  // City pages
   try {
     const { data: cities } = await supabase.from("cities").select("slug, state_slug").eq("active", true);
     if (cities) {
-      for (const city of cities) {
+      for (const city of cities as any[]) {
         urls.push(`${SITE_BASE_URL}/${city.state_slug}/${city.slug}/top10realestateagents`);
       }
     }
@@ -235,7 +164,6 @@ async function getUrlsToWarm(supabase: ReturnType<typeof createClient>): Promise
     console.error("Error fetching cities:", e);
   }
   
-  // Neighborhood pages
   try {
     const { data: neighborhoods } = await supabase
       .from("neighborhood_catalog")
@@ -243,7 +171,7 @@ async function getUrlsToWarm(supabase: ReturnType<typeof createClient>): Promise
       .eq("is_active", true)
       .not("primary_zip", "is", null);
     if (neighborhoods) {
-      for (const n of neighborhoods) {
+      for (const n of neighborhoods as any[]) {
         const stateSlug = n.state.toLowerCase().replace(/\s+/g, '-');
         urls.push(`${SITE_BASE_URL}/${stateSlug}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`);
       }
@@ -256,9 +184,6 @@ async function getUrlsToWarm(supabase: ReturnType<typeof createClient>): Promise
   return urls;
 }
 
-// ============================================
-// MAIN HANDLER
-// ============================================
 serve(async (req: Request) => {
   const startTime = Date.now();
   const jobId = crypto.randomUUID().substring(0, 8);
