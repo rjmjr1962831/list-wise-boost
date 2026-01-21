@@ -125,6 +125,9 @@ const VisibilitySuccessPage = lazy(() => import("./pages/VisibilitySuccessPage")
 // Agent lookup page
 const AgentLookup = lazy(() => import("./pages/AgentLookup"));
 
+// Neighborhood application page
+const NeighborhoodApply = lazy(() => import("./pages/NeighborhoodApply"));
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -200,6 +203,7 @@ const App = () => (
                     <Route path="/agent/verify" element={<AgentCodeVerify />} />
                     <Route path="/agent-onboarding" element={<AgentOnboarding />} />
                     <Route path="/are-you-an-agent" element={<AreYouAnAgent />} />
+                    <Route path="/neighborhood/apply" element={<NeighborhoodApply />} />
                     <Route path="/agent-onboarding/success" element={<AgentPaymentSuccess />} />
                     <Route path="/agent-payment-success" element={<AgentPaymentSuccess />} />
                     {/* New Agent Onboarding Funnel */}
