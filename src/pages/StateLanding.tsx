@@ -1,6 +1,6 @@
 import { useParams, Navigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,10 +13,27 @@ interface City {
   state_slug: string;
 }
 
+// Supported states for state landing pages
+const SUPPORTED_STATES: Record<string, { name: string; slug: string }> = {
+  'arizona': { name: 'Arizona', slug: 'arizona' },
+  'az': { name: 'Arizona', slug: 'arizona' },
+  'california': { name: 'California', slug: 'california' },
+  'ca': { name: 'California', slug: 'california' },
+};
+
 export default function StateLanding() {
   const { stateSlug } = useParams<{ stateSlug: string }>();
   const [cities, setCities] = useState<City[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Normalize state slug and get state info
+  const stateInfo = useMemo(() => {
+    const normalized = stateSlug?.toLowerCase() || '';
+    return SUPPORTED_STATES[normalized] || null;
+  }, [stateSlug]);
+
+  const normalizedStateSlug = stateInfo?.slug || 'arizona';
+  const stateName = stateInfo?.name || 'Arizona';
 
   // ALL HOOKS MUST BE ABOVE ANY CONDITIONAL RETURNS
   useEffect(() => {
@@ -28,7 +45,7 @@ export default function StateLanding() {
       const { data } = await supabase
         .from('cities')
         .select('id, name, slug, state_slug')
-        .eq('state_slug', 'arizona')
+        .eq('state_slug', normalizedStateSlug)
         .eq('active', true)
         .order('name');
       
@@ -36,29 +53,38 @@ export default function StateLanding() {
       setIsLoading(false);
     };
 
-    fetchCities();
+    if (stateInfo) {
+      fetchCities();
+    } else {
+      setIsLoading(false);
+    }
 
     // GA4 page view
     if (typeof window.gtag === 'function') {
       window.gtag('event', 'page_view', {
-        page_title: 'Real Estate Agent Recommendations in Arizona',
+        page_title: `Real Estate Agent Recommendations in ${stateName}`,
         page_location: window.location.href,
         page_path: window.location.pathname
       });
     }
-  }, []);
+  }, [normalizedStateSlug, stateInfo, stateName]);
 
-  // Only Arizona is supported currently - redirect AFTER all hooks
-  if (stateSlug && stateSlug !== 'arizona' && stateSlug !== 'az') {
+  // Redirect unsupported states to homepage
+  if (!stateInfo) {
     return <Navigate to="/" replace />;
   }
+
+  const cityCount = cities.length || (normalizedStateSlug === 'arizona' ? 48 : 1684);
+  const description = normalizedStateSlug === 'california' 
+    ? `Top10Lists.us is expanding to ${stateName}. ${cityCount.toLocaleString()} cities indexed. Agent verification and neighborhood coverage coming Q1 2026.`
+    : `Top10Lists.us recommends real estate agents serving ${stateName} cities. Recommendations are surfaced through our centralized discovery experience.`;
 
   return (
     <>
       <Helmet>
-        <title>Real Estate Agent Recommendations in Arizona | Top10Lists.us</title>
-        <meta name="description" content="Top10Lists.us recommends real estate agents serving Arizona cities including Phoenix, Scottsdale, Tucson, and Mesa. Recommendations are surfaced through our centralized discovery experience." />
-        <link rel="canonical" href="https://www.top10lists.us/arizona" />
+        <title>Real Estate Agent Recommendations in {stateName} | Top10Lists.us</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={`https://www.top10lists.us/${normalizedStateSlug}`} />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -68,13 +94,16 @@ export default function StateLanding() {
             <div className="max-w-4xl mx-auto text-center">
               <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 bg-primary/10 rounded-full">
                 <MapPin className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium">Arizona</span>
+                <span className="text-sm font-medium">{stateName}</span>
               </div>
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
-                Real Estate Agent Recommendations in Arizona
+                Real Estate Agent Recommendations in {stateName}
               </h1>
               <p className="text-xl text-muted-foreground mb-8">
-                Top10Lists.us evaluates and recommends real estate agents across 40+ Arizona cities through our centralized discovery experience.
+                {normalizedStateSlug === 'california' 
+                  ? `Top10Lists.us is expanding to ${stateName}. ${cityCount.toLocaleString()} cities indexed with agent verification coming soon.`
+                  : `Top10Lists.us evaluates and recommends real estate agents across ${cityCount}+ ${stateName} cities through our centralized discovery experience.`
+                }
               </p>
             </div>
           </div>
@@ -83,7 +112,7 @@ export default function StateLanding() {
         {/* Coverage Confirmation Block */}
         <div className="container mx-auto px-4 -mt-8">
           <div className="max-w-3xl mx-auto">
-            <CoverageConfirmationBlock locationName="Arizona" />
+            <CoverageConfirmationBlock locationName={stateName} />
           </div>
         </div>
 
