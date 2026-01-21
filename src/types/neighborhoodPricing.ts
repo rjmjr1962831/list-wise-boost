@@ -53,6 +53,7 @@ export interface NeighborhoodCatalogItem {
   city_area_slug: string;
   neighborhood: string;
   neighborhood_slug: string;
+  primary_zip: string | null;
   zips: string[];
   lat: number | null;
   lon: number | null;
@@ -64,6 +65,18 @@ export interface NeighborhoodCatalogItem {
   score: number | null;
   is_verified: boolean;
   is_active: boolean;
+  // JSONB from database - use unknown to avoid type conflicts
+  nearby_neighborhoods?: unknown;
+}
+
+// Nearby neighborhood reference (stored in nearby_neighborhoods JSONB)
+export interface NearbyNeighborhood {
+  id: string;
+  name: string;
+  slug: string;
+  tier: string;
+  city_area: string;
+  distance_miles: number;
 }
 
 // ========================================

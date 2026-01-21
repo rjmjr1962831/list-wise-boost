@@ -20,8 +20,9 @@ export default function SelectNeighborhoods() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  // Check for preselect param (from neighborhood apply flow)
+  // Check for preselect params (from neighborhood apply flow)
   const preselectSlug = searchParams.get('preselect');
+  const preselectCity = searchParams.get('city');
   
   const [neighborhoods, setNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
@@ -43,15 +44,17 @@ export default function SelectNeighborhoods() {
   // Handle preselect when neighborhoods are loaded
   useEffect(() => {
     if (preselectSlug && neighborhoods.length > 0 && !preselectApplied) {
+      // Use both slug AND city to find exact match
       const preselected = neighborhoods.find(
-        n => n.neighborhood_slug === preselectSlug
+        n => n.neighborhood_slug === preselectSlug && 
+             (!preselectCity || n.city_area_slug === preselectCity)
       );
       if (preselected && !selectedNeighborhoods.some(n => n.id === preselected.id)) {
         setSelectedNeighborhoods([preselected]);
         setPreselectApplied(true);
       }
     }
-  }, [preselectSlug, neighborhoods, preselectApplied, selectedNeighborhoods]);
+  }, [preselectSlug, preselectCity, neighborhoods, preselectApplied, selectedNeighborhoods]);
 
   const loadNeighborhoods = async () => {
     const { data, error } = await supabase
@@ -94,9 +97,12 @@ export default function SelectNeighborhoods() {
   // Get unique cities for filter
   const uniqueCities = [...new Set(neighborhoods.map(n => n.city_area))].sort();
 
-  // Filter neighborhoods - if preselect is set, only show that one neighborhood
+  // Filter neighborhoods - if preselect is set, only show that specific neighborhood
   const filteredNeighborhoods = preselectSlug 
-    ? neighborhoods.filter(n => n.neighborhood_slug === preselectSlug)
+    ? neighborhoods.filter(n => 
+        n.neighborhood_slug === preselectSlug && 
+        (!preselectCity || n.city_area_slug === preselectCity)
+      )
     : neighborhoods.filter(n => {
         const matchesTier = filterTier === 'all' || n.tier === filterTier;
         const matchesCity = filterCity === 'all' || n.city_area === filterCity;
@@ -105,6 +111,28 @@ export default function SelectNeighborhoods() {
           n.city_area.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesTier && matchesCity && matchesSearch;
       });
+  
+  // Get nearby neighborhoods for upsell when preselecting
+  const preselectedNeighborhood = preselectSlug && preselectCity 
+    ? neighborhoods.find(n => n.neighborhood_slug === preselectSlug && n.city_area_slug === preselectCity)
+    : null;
+  
+  const nearbyNeighborhoods = React.useMemo(() => {
+    if (!preselectedNeighborhood?.nearby_neighborhoods) return [];
+    const nearby = preselectedNeighborhood.nearby_neighborhoods as Array<{
+      id: string;
+      name: string;
+      slug: string;
+      tier: string;
+      city_area: string;
+      distance_miles: number;
+    }>;
+    // Get the first 3 nearby neighborhoods that exist in our catalog
+    return nearby
+      .slice(0, 3)
+      .map(n => neighborhoods.find(catalog => catalog.id === n.id))
+      .filter((n): n is NeighborhoodCatalogItem => n !== undefined);
+  }, [preselectedNeighborhood, neighborhoods]);
 
   // Group by tier
   const groupedNeighborhoods = {
@@ -371,6 +399,98 @@ export default function SelectNeighborhoods() {
             </div>
           );
         })}
+
+        {/* Nearby Neighborhoods Upsell Section - Show when preselecting a specific neighborhood */}
+        {preselectSlug && nearbyNeighborhoods.length > 0 && (
+          <div className="mt-10 border-t border-slate-200 pt-8">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold text-slate-900 mb-2">
+                Expand Your Coverage
+              </h2>
+              <p className="text-slate-600 text-sm">
+                These neighborhoods are close to {preselectedNeighborhood?.neighborhood}. 
+                Add them to reach more buyers in your area.
+              </p>
+            </div>
+            
+            <div className="grid md:grid-cols-3 gap-4">
+              {nearbyNeighborhoods.map(neighborhood => {
+                const isSelected = selectedNeighborhoods.some(n => n.id === neighborhood.id);
+                const styles = NEIGHBORHOOD_TIER_STYLES[neighborhood.tier];
+                const monthlyPrice = NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
+                const priceDisplay = billingCycle === 'annual' 
+                  ? getAnnualPriceWithDiscount(monthlyPrice) 
+                  : monthlyPrice;
+                
+                return (
+                  <div
+                    key={neighborhood.id}
+                    onClick={() => handleNeighborhoodSelect(neighborhood)}
+                    className={`
+                      relative rounded-2xl border-2 p-5 transition-all cursor-pointer hover:shadow-lg
+                      ${styles.bg} ${styles.border}
+                      ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                    `}
+                  >
+                    {/* Selected badge */}
+                    {isSelected && (
+                      <div className="absolute -top-3 -right-3">
+                        <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                          ADDED
+                        </span>
+                      </div>
+                    )}
+                    
+                    {/* Header */}
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <h3 className="text-base font-bold text-slate-900">{neighborhood.neighborhood}</h3>
+                        <p className="text-xs text-slate-600">{neighborhood.city_area}, {neighborhood.state}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${styles.badge}`}>
+                        {neighborhood.tier}
+                      </span>
+                    </div>
+                    
+                    {/* Pricing */}
+                    <div className="flex items-baseline gap-1">
+                      <span className={`text-xl font-bold ${styles.text}`}>
+                        {formatPrice(priceDisplay)}
+                      </span>
+                      <span className="text-slate-500 text-xs">
+                        /{billingCycle === 'annual' ? 'yr' : 'mo'}
+                      </span>
+                    </div>
+                    
+                    {/* Selection indicator */}
+                    {isSelected && (
+                      <div className="mt-2 flex items-center gap-1 text-blue-600">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-xs font-medium">Added</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            
+            {/* "Browse All" link */}
+            <div className="text-center mt-6">
+              <button
+                onClick={() => {
+                  // Clear preselect to show full catalog
+                  const newUrl = `/profile/${token}/select-neighborhoods`;
+                  navigate(newUrl);
+                }}
+                className="text-primary hover:underline text-sm font-medium"
+              >
+                Browse all neighborhoods →
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Sticky Bottom Cart */}
