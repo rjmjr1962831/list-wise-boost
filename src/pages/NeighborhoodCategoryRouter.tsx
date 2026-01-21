@@ -1,4 +1,4 @@
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { lazy, Suspense, useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,6 +24,7 @@ const NeighborhoodCategoryRouter = () => {
     fourthSegment: string;
   }>();
   
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [isAgentRoute, setIsAgentRoute] = useState<boolean | null>(null);
   const [redirectPath, setRedirectPath] = useState<string | null>(null);
@@ -51,10 +52,9 @@ const NeighborhoodCategoryRouter = () => {
             .maybeSingle();
 
           if (agent && !agentError) {
-            // This IS an agent profile URL
-            console.log('[NeighborhoodCategoryRouter] Agent found:', fourthSegment);
-            setIsAgentRoute(true);
-            setLoading(false);
+            // Redirect to canonical agent URL
+            console.log('[NeighborhoodCategoryRouter] Agent found, redirecting to canonical URL:', fourthSegment);
+            navigate(`/${stateSlug}/agents/${fourthSegment}`, { replace: true });
             return;
           }
         }
