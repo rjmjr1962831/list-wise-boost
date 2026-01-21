@@ -379,9 +379,16 @@ export default function AccuracyReview() {
                 {professional.awards_verified && professional.awards_verified.length > 0 && (
                   <VerifiedFieldRow
                     label="Awards & recognition"
-                    value={professional.awards_verified.map(a => a.award_name || a.name).join(', ')}
+                    value={professional.awards_verified.map(a => {
+                      // Handle both direct object and JSON string scenarios
+                      const award = typeof a === 'string' ? JSON.parse(a) : a;
+                      return award.award_name || award.name || '';
+                    }).filter(Boolean).join(', ')}
                     source="Verified records"
-                    onRequestCorrection={() => handleRequestCorrection('Awards', professional.awards_verified?.map(a => a.award_name || a.name).join(', ') || null)}
+                    onRequestCorrection={() => handleRequestCorrection('Awards', professional.awards_verified?.map(a => {
+                      const award = typeof a === 'string' ? JSON.parse(a) : a;
+                      return award.award_name || award.name || '';
+                    }).filter(Boolean).join(', ') || null)}
                   />
                 )}
                 {professional.notable_achievements && professional.notable_achievements.length > 0 && (
