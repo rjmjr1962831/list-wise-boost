@@ -133,10 +133,29 @@ serve(async (req) => {
       timeStyle: 'short'
     });
 
-    if (event_type === 'funnel_started') {
-      subject = `🟢 Agent Clicked Into Funnel: ${agent_name || 'Unknown'}`;
+    if (event_type === 'step0_viewed') {
+      subject = `[Step 1/5] Agent Opened Magic Link: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #e0e7ff; color: #3730a3; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 1 OF 5</p>
+          <h2 style="color: #16a34a; margin-bottom: 20px;">🚀 Agent Clicked Magic Link</h2>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            Agent is on the welcome screen. Next step: Review accuracy (Step 2).
+          </p>
+        </div>
+      `;
+    } else if (event_type === 'funnel_started') {
+      subject = `[Step 1/5] Agent Started Funnel: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #e0e7ff; color: #3730a3; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 1 OF 5</p>
           <h2 style="color: #16a34a; margin-bottom: 20px;">🚀 Agent Started Funnel</h2>
           <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
@@ -157,10 +176,11 @@ serve(async (req) => {
         </div>
       `;
     } else if (event_type === 'accuracy_review_viewed') {
-      subject = `🔵 Agent Viewing Accuracy Review: ${agent_name || 'Unknown'}`;
+      subject = `[Step 2/5] Agent Reviewing Accuracy: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #2563eb; margin-bottom: 20px;">Agent Reviewing Their Profile</h2>
+          <p style="background: #dbeafe; color: #1e40af; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 2 OF 5</p>
+          <h2 style="color: #2563eb; margin-bottom: 20px;">📋 Agent Reviewing Their Profile</h2>
           <div style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
             <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
@@ -169,21 +189,34 @@ serve(async (req) => {
           </div>
           ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
-            This agent is reviewing their profile accuracy. They may approve or request corrections.
+            Agent is reviewing their profile data. Next step: Edit profile (Step 3).
           </p>
-          <p style="margin-top: 20px; color: #333;">
-            Robert Maynard<br>
-            <em>Founder</em><br><br>
-            Give me a call if I can help you:<br>
-            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+        </div>
+      `;
+    } else if (event_type === 'accuracy_confirmed') {
+      subject = `[Step 2/5] Agent Confirmed Accuracy: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #dcfce7; color: #166534; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 2 OF 5 ✓</p>
+          <h2 style="color: #16a34a; margin-bottom: 20px;">✅ Agent Confirmed Profile Accuracy</h2>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            Agent confirmed data accuracy. Proceeding to profile edit (Step 3).
           </p>
         </div>
       `;
     } else if (event_type === 'profile_edit_viewed') {
-      subject = `🔵 Agent Viewing Edit Page: ${agent_name || 'Unknown'}`;
+      subject = `[Step 3/5] Agent Editing Profile: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #2563eb; margin-bottom: 20px;">Agent Viewing Profile Edit Page</h2>
+          <p style="background: #dbeafe; color: #1e40af; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 3 OF 5</p>
+          <h2 style="color: #2563eb; margin-bottom: 20px;">📝 Agent Editing Profile</h2>
           <div style="background: #f8fafc; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
             <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
@@ -192,20 +225,33 @@ serve(async (req) => {
           </div>
           ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
-            This agent is actively engaged with their profile. They may reach out or proceed to pricing.
+            Agent is adding/editing profile details. Next step: Coverage selection (Step 4).
           </p>
-          <p style="margin-top: 20px; color: #333;">
-            Robert Maynard<br>
-            <em>Founder</em><br><br>
-            Give me a call if I can help you:<br>
-            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+        </div>
+      `;
+    } else if (event_type === 'profile_edited') {
+      subject = `[Step 3/5] Agent Saved Edits: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #dcfce7; color: #166534; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 3 OF 5 ✓</p>
+          <h2 style="color: #16a34a; margin-bottom: 20px;">📝 Agent Saved Profile Edits</h2>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            Agent submitted profile edits. Check Field Change Requests in admin.
           </p>
         </div>
       `;
     } else if (event_type === 'pricing_viewed') {
-      subject = `🟡 Agent Viewing Pricing: ${agent_name || 'Unknown'}`;
+      subject = `[Step 4/5] 🟡 Agent Viewing Pricing: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #fef3c7; color: #92400e; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 4 OF 5</p>
           <h2 style="color: #ca8a04; margin-bottom: 20px;">⚡ Agent Viewing Pricing Page</h2>
           <div style="background: #fefce8; border-left: 4px solid #ca8a04; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
@@ -215,20 +261,36 @@ serve(async (req) => {
           </div>
           ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
-            <strong>Hot lead!</strong> This agent is considering premium placement. Follow up may increase conversion.
+            <strong>Hot lead!</strong> Agent is selecting coverage. Next step: Checkout (Step 5).
           </p>
-          <p style="margin-top: 20px; color: #333;">
-            Robert Maynard<br>
-            <em>Founder</em><br><br>
-            Give me a call if I can help you:<br>
-            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+        </div>
+      `;
+    } else if (event_type === 'cities_selected' || event_type === 'neighborhoods_selected') {
+      const selectionType = event_type === 'cities_selected' ? 'Cities' : 'Neighborhoods';
+      subject = `[Step 4/5] Agent Selected ${selectionType}: ${agent_name || 'Unknown'}`;
+      html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #dcfce7; color: #166534; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 4 OF 5 ✓</p>
+          <h2 style="color: #16a34a; margin-bottom: 20px;">📍 Agent Selected ${selectionType}</h2>
+          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
+            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
+            ${cities_selected ? `<p style="margin: 5px 0;"><strong>Selected:</strong> ${cities_selected.count} cities (${cities_selected.names?.join(', ') || 'N/A'})</p>` : ''}
+            ${neighborhoods_selected ? `<p style="margin: 5px 0;"><strong>Selected:</strong> ${neighborhoods_selected.count} neighborhoods ($${neighborhoods_selected.monthly_total}/mo)</p>` : ''}
+          </div>
+          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
+          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
+            Agent made coverage selections. Next step: Checkout (Step 5).
           </p>
         </div>
       `;
     } else if (event_type === 'checkout_started') {
-      subject = `🔥 Agent Started Checkout: ${agent_name || 'Unknown'}`;
+      subject = `[Step 5/5] 🔥 Agent Started Checkout: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #fee2e2; color: #991b1b; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 5 OF 5</p>
           <h2 style="color: #dc2626; margin-bottom: 20px;">🔥 Agent Starting Checkout!</h2>
           <div style="background: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
@@ -238,20 +300,15 @@ serve(async (req) => {
           </div>
           ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
-            <strong>VERY HOT LEAD!</strong> This agent is entering payment info. Watch for completion or abandonment.
-          </p>
-          <p style="margin-top: 20px; color: #333;">
-            Robert Maynard<br>
-            <em>Founder</em><br><br>
-            Give me a call if I can help you:<br>
-            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
+            <strong>VERY HOT LEAD!</strong> Agent is entering payment info. Watch for completion.
           </p>
         </div>
       `;
     } else if (event_type === 'checkout_completed') {
-      subject = `💰 Agent Completed Purchase: ${agent_name || 'Unknown'}`;
+      subject = `[COMPLETE] 💰 Agent Completed Purchase: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #16a34a; color: #ffffff; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">✓ FUNNEL COMPLETE</p>
           <h2 style="color: #16a34a; margin-bottom: 20px;">💰 Purchase Complete!</h2>
           <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
@@ -263,52 +320,13 @@ serve(async (req) => {
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
             <strong>New paying customer!</strong> Welcome them and ensure their listing is live.
           </p>
-          <p style="margin-top: 20px; color: #333;">
-            Robert Maynard<br>
-            <em>Founder</em><br><br>
-            Give me a call if I can help you:<br>
-            <a href="tel:+16027589600" style="color: #2563eb;">(602) 758-9600</a>
-          </p>
-        </div>
-      `;
-    } else if (event_type === 'accuracy_confirmed') {
-      subject = `✅ Agent Confirmed Accuracy: ${agent_name || 'Unknown'}`;
-      html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #16a34a; margin-bottom: 20px;">✅ Agent Confirmed Profile Accuracy</h2>
-          <div style="background: #f0fdf4; border-left: 4px solid #16a34a; padding: 15px; margin-bottom: 20px;">
-            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
-            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
-            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
-            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
-          </div>
-          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
-          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
-            This agent confirmed their profile information is accurate. They may proceed to approval or pricing.
-          </p>
-        </div>
-      `;
-    } else if (event_type === 'profile_edited') {
-      subject = `📝 Agent Edited Profile: ${agent_name || 'Unknown'}`;
-      html = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #2563eb; margin-bottom: 20px;">📝 Agent Made Profile Edits</h2>
-          <div style="background: #eff6ff; border-left: 4px solid #2563eb; padding: 15px; margin-bottom: 20px;">
-            <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
-            <p style="margin: 5px 0;"><strong>Email:</strong> ${agent_email || 'N/A'}</p>
-            <p style="margin: 5px 0;"><strong>City:</strong> ${city_name || 'N/A'}</p>
-            <p style="margin: 5px 0;"><strong>Time:</strong> ${timestamp} (Arizona)</p>
-          </div>
-          ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
-          <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
-            This agent submitted profile edits. Check the Field Change Requests in admin.
-          </p>
         </div>
       `;
     } else if (event_type === 'profile_approved') {
-      subject = `🎉 Agent APPROVED Profile: ${agent_name || 'Unknown'}`;
+      subject = `[Step 3/5] 🎉 Agent APPROVED Profile: ${agent_name || 'Unknown'}`;
       html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <p style="background: #f3e8ff; color: #6b21a8; padding: 8px 12px; border-radius: 6px; display: inline-block; font-size: 13px; font-weight: 600; margin-bottom: 16px;">STEP 3 OF 5 ✓</p>
           <h2 style="color: #7c3aed; margin-bottom: 20px;">🎉 Agent Approved Their Profile!</h2>
           <div style="background: #f5f3ff; border-left: 4px solid #7c3aed; padding: 15px; margin-bottom: 20px;">
             <p style="margin: 5px 0;"><strong>Agent:</strong> ${agent_name || 'Unknown'}</p>
@@ -318,7 +336,7 @@ serve(async (req) => {
           </div>
           ${profile_link ? `<p><a href="${profile_link}" style="color: #2563eb;">View Profile Link</a></p>` : ''}
           <p style="color: #64748b; font-size: 12px; margin-top: 30px;">
-            <strong>Key milestone!</strong> This agent has approved their profile and may proceed to pricing.
+            <strong>Key milestone!</strong> Agent approved profile. Next step: Coverage selection (Step 4).
           </p>
         </div>
       `;
