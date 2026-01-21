@@ -131,40 +131,8 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
 
   return (
     <div className="mb-6">
-      {/* Neighborhood Facts Bar - Clean horizontal layout */}
-      <div className="flex flex-wrap items-center gap-x-8 gap-y-2 py-4 border-b border-border">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">Neighborhood:</span>
-          <span className="font-medium text-foreground">{neighborhood.neighborhood}</span>
-          <span className="text-xs text-muted-foreground px-2 py-0.5 bg-muted rounded">
-            {getTierDisplayName(neighborhood.tier)}
-          </span>
-        </div>
-        
-        {neighborhood.median_home_value && (
-          <div>
-            <span className="text-sm text-muted-foreground">Median Home: </span>
-            <span className="font-medium text-foreground">{formatCurrency(neighborhood.median_home_value)}</span>
-          </div>
-        )}
-
-        {neighborhood.median_income && (
-          <div>
-            <span className="text-sm text-muted-foreground">Median Income: </span>
-            <span className="font-medium text-foreground">{formatCurrency(neighborhood.median_income)}</span>
-          </div>
-        )}
-
-        {neighborhood.zips && neighborhood.zips.length > 0 && (
-          <div>
-            <span className="text-sm text-muted-foreground">ZIP: </span>
-            <span className="font-medium text-foreground">
-              {neighborhood.zips.slice(0, 3).join(', ')}
-              {neighborhood.zips.length > 3 && ` +${neighborhood.zips.length - 3}`}
-            </span>
-          </div>
-        )}
-      </div>
+      {/* Market Statistics Card - Enriched data from marketing_content */}
+      {marketStats && <NeighborhoodMarketStatsCard stats={marketStats} neighborhoodName={neighborhood.neighborhood} tier={neighborhood.tier} />}
 
       {/* About Section - Separate, clean collapsible */}
       {(neighborhood.writeup_html || neighborhood.tier) && (

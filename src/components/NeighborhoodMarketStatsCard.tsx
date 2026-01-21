@@ -18,7 +18,22 @@ import type { NeighborhoodMarketStats } from "@/types/neighborhoodMarketStats";
 
 interface NeighborhoodMarketStatsCardProps {
   stats: NeighborhoodMarketStats;
+  neighborhoodName?: string;
+  tier?: string;
 }
+
+const getTierDisplayName = (tier: string): string => {
+  switch (tier?.toLowerCase()) {
+    case 'luxury':
+      return 'Luxury Market';
+    case 'prime':
+      return 'Prime Market';
+    case 'main':
+      return 'Main Market';
+    default:
+      return tier || 'Market';
+  }
+};
 
 const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('en-US', {
@@ -38,7 +53,7 @@ const formatNumber = (value: number): string => {
   return new Intl.NumberFormat('en-US').format(value);
 };
 
-export function NeighborhoodMarketStatsCard({ stats }: NeighborhoodMarketStatsCardProps) {
+export function NeighborhoodMarketStatsCard({ stats, neighborhoodName, tier }: NeighborhoodMarketStatsCardProps) {
   const getYoYTrendIcon = () => {
     if (stats.yearOverYearChange > 0.5) {
       return <TrendingUp className="h-4 w-4 text-green-600" />;
@@ -69,10 +84,17 @@ export function NeighborhoodMarketStatsCard({ stats }: NeighborhoodMarketStatsCa
   return (
     <Card className="mt-6">
       <CardHeader className="pb-4">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <BarChart3 className="h-5 w-5 text-primary" />
-          Market Statistics
-        </CardTitle>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            {neighborhoodName || stats.metadata?.neighborhoodName || 'Neighborhood'} Market Statistics
+          </CardTitle>
+          {tier && (
+            <span className="text-xs text-muted-foreground px-2 py-1 bg-muted rounded">
+              {getTierDisplayName(tier)}
+            </span>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Row 1: Primary Stats */}
