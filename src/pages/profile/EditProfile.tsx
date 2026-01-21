@@ -240,6 +240,7 @@ export default function EditProfile() {
     description: '', // Agent's bio (first-person)
     featured_city: '', // Single city for featuring
     website: '',
+    sidebar_video_url: '', // Video introduction URL
     social_linkedin: '',
     social_facebook: '',
     social_instagram: ''
@@ -313,6 +314,7 @@ export default function EditProfile() {
           description: prof.description || '',
           featured_city: prof.cities?.name || '',
           website: prof.website || '',
+          sidebar_video_url: prof.sidebar_video_url || '',
           social_linkedin: prof.social_linkedin || '',
           social_facebook: prof.social_facebook || '',
           social_instagram: prof.social_instagram || ''
@@ -820,6 +822,16 @@ export default function EditProfile() {
                   placeholder="https://instagram.com/yourprofile"
                   isLink
                   onSave={(val) => handleInputChange('social_instagram', val)}
+                />
+
+                {/* Video Introduction */}
+                <EditableFieldRow
+                  label="Video Introduction URL"
+                  value={formData.sidebar_video_url}
+                  placeholder="https://youtube.com/watch?v=..."
+                  note="YouTube or Vimeo URL to introduce yourself"
+                  isLink
+                  onSave={(val) => handleInputChange('sidebar_video_url', val)}
                 />
               </div>
             </div>
