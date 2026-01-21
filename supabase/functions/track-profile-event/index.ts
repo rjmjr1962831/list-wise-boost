@@ -134,11 +134,13 @@ serve(async (req) => {
       try {
         console.log('📧 Triggering notification for:', event_name);
         
-        // Map event names to notification event types
+        // Pass through actual event name for distinct email templates
+        // Only map legacy events that don't have their own templates
         let notificationEventType = event_name;
-        if (event_name === 'step0_viewed' || event_name === 'funnel_started' || event_name === 'magic_link_clicked' || event_name === 'welcome_viewed') {
+        if (event_name === 'funnel_started' || event_name === 'magic_link_clicked' || event_name === 'welcome_viewed') {
           notificationEventType = 'funnel_started';
         }
+        // step0_viewed now gets its own distinct notification (not grouped with funnel_started)
         
         // Build notification payload
         const notificationPayload: Record<string, any> = {
