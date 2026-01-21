@@ -1,5 +1,5 @@
 // src/pages/profile/SelectNeighborhoods.tsx
-// New neighborhood-based selection page (replaces SelectCities.tsx)
+// Neighborhood-based selection page for Expert placements
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
