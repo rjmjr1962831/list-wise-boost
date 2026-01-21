@@ -25,12 +25,10 @@ export default function SelectNeighborhoods() {
   
   const [neighborhoods, setNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
-  // Always use monthly pricing
-  const billingCycle = 'monthly' as const;
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [filterTier, setFilterTier] = useState<string>('all');
   const [filterCity, setFilterCity] = useState<string>('all');
   const [loading, setLoading] = useState(true);
-  const [freeNeighborhood, setFreeNeighborhood] = useState<NeighborhoodCatalogItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [preselectApplied, setPreselectApplied] = useState(false);
 
@@ -48,12 +46,12 @@ export default function SelectNeighborhoods() {
       const preselected = neighborhoods.find(
         n => n.neighborhood_slug === preselectSlug
       );
-      if (preselected && !freeNeighborhood) {
-        setFreeNeighborhood(preselected);
+      if (preselected && !selectedNeighborhoods.some(n => n.id === preselected.id)) {
+        setSelectedNeighborhoods([preselected]);
         setPreselectApplied(true);
       }
     }
-  }, [preselectSlug, neighborhoods, preselectApplied, freeNeighborhood]);
+  }, [preselectSlug, neighborhoods, preselectApplied, selectedNeighborhoods]);
 
   const loadNeighborhoods = async () => {
     const { data, error } = await supabase
@@ -69,30 +67,22 @@ export default function SelectNeighborhoods() {
   };
 
   const handleNeighborhoodSelect = (neighborhood: NeighborhoodCatalogItem) => {
-    // If clicking on the current free neighborhood, deselect it
-    if (freeNeighborhood?.id === neighborhood.id) {
-      setFreeNeighborhood(null);
-      return;
-    }
-    
-    // If clicking on a selected paid neighborhood, deselect it
+    // If clicking on a selected neighborhood, deselect it
     if (selectedNeighborhoods.find(n => n.id === neighborhood.id)) {
       setSelectedNeighborhoods(selectedNeighborhoods.filter(n => n.id !== neighborhood.id));
       return;
     }
     
-    // First selection is free
-    if (!freeNeighborhood) {
-      setFreeNeighborhood(neighborhood);
-      return;
-    }
-    
-    // Add to paid selections
+    // Add to selections
     setSelectedNeighborhoods([...selectedNeighborhoods, neighborhood]);
   };
 
+  // Annual = 10 months (2 months free)
+  const getAnnualPriceWithDiscount = (monthly: number) => monthly * 10;
+
   const getPrice = (tier: NeighborhoodTier) => {
-    return NEIGHBORHOOD_TIER_PRICES[tier];
+    const monthly = NEIGHBORHOOD_TIER_PRICES[tier];
+    return billingCycle === 'annual' ? getAnnualPriceWithDiscount(monthly) : monthly;
   };
 
   const calculateTotal = () => {
@@ -146,13 +136,40 @@ export default function SelectNeighborhoods() {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-sm">10</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-sm">10</span>
+              </div>
+              <span className="text-xl font-bold text-slate-900">
+                Top<span className="text-blue-500">10</span>Lists
+              </span>
             </div>
-            <span className="text-xl font-bold text-slate-900">
-              Top<span className="text-blue-500">10</span>Lists
-            </span>
+            
+            {/* Billing Toggle */}
+            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
+              <button
+                onClick={() => setBillingCycle('monthly')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  billingCycle === 'monthly' 
+                    ? 'bg-white shadow text-slate-900' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingCycle('annual')}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-1 ${
+                  billingCycle === 'annual' 
+                    ? 'bg-white shadow text-slate-900' 
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Annual
+                <span className="text-xs text-green-600 font-semibold">2 months free</span>
+              </button>
+            </div>
           </div>
         </div>
       </header>
@@ -160,70 +177,34 @@ export default function SelectNeighborhoods() {
       <div className="max-w-6xl mx-auto px-4 py-8">
         {/* Page Title */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Select Your Neighborhoods</h1>
-          {preselectSlug && freeNeighborhood ? (
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            {preselectSlug ? 'Become a Neighborhood Expert' : 'Select Your Neighborhoods'}
+          </h1>
+          {preselectSlug && selectedNeighborhoods.length > 0 ? (
             <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 mb-4 inline-block">
               <p className="text-primary font-medium">
-                ✓ Pre-selected: {freeNeighborhood.neighborhood}, {freeNeighborhood.city_area}
+                ✓ Pre-selected: {selectedNeighborhoods[0].neighborhood}, {selectedNeighborhoods[0].city_area}
               </p>
             </div>
           ) : null}
           <p className="text-slate-600">
-            Your first neighborhood is <span className="font-semibold text-green-600">FREE</span>. 
-            Add more to expand your reach.
+            Select neighborhoods where you want to be featured as a Neighborhood Expert.
           </p>
           <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
             Neighborhood Expert pricing reflects the work and risk required to stand behind neighborhood-specific recommendations. Selection and ranking cannot be purchased.
           </p>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="Search neighborhoods or cities..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Free Neighborhood Prompt or Selection */}
-        {!freeNeighborhood ? (
-          <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 mb-8">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-green-900">Your Free Neighborhood</h2>
-                <p className="text-green-700">Select your primary neighborhood below — it's on us!</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-green-50 border-2 border-green-300 rounded-2xl p-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-bold text-green-900">{freeNeighborhood.neighborhood}</p>
-                  <p className="text-sm text-green-700">{freeNeighborhood.city_area} · Your FREE neighborhood</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setFreeNeighborhood(null)}
-                className="text-green-600 hover:text-green-800 text-sm font-medium"
-              >
-                Change
-              </button>
-            </div>
+        {/* Search - only show if not preselecting a specific neighborhood */}
+        {!preselectSlug && (
+          <div className="mb-6">
+            <input
+              type="text"
+              placeholder="Search neighborhoods or cities..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
         )}
 
@@ -296,9 +277,11 @@ export default function SelectNeighborhoods() {
               
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tierNeighborhoods.slice(0, 30).map(neighborhood => {
-                  const isFreeSelected = freeNeighborhood?.id === neighborhood.id;
-                  const isPaidSelected = selectedNeighborhoods.some(n => n.id === neighborhood.id);
-                  const priceDisplay = NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
+                  const isSelected = selectedNeighborhoods.some(n => n.id === neighborhood.id);
+                  const monthlyPrice = NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
+                  const priceDisplay = billingCycle === 'annual' 
+                    ? getAnnualPriceWithDiscount(monthlyPrice) 
+                    : monthlyPrice;
                   
                   return (
                     <div
@@ -307,15 +290,14 @@ export default function SelectNeighborhoods() {
                       className={`
                         relative rounded-2xl border-2 p-6 transition-all cursor-pointer hover:shadow-lg
                         ${styles.bg} ${styles.border}
-                        ${isFreeSelected ? 'ring-2 ring-green-500 ring-offset-2' : ''}
-                        ${isPaidSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
+                        ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
                       `}
                     >
-                      {/* Free badge */}
-                      {isFreeSelected && (
+                      {/* Selected badge */}
+                      {isSelected && (
                         <div className="absolute -top-3 -right-3">
-                          <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                            FREE
+                          <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                            SELECTED
                           </span>
                         </div>
                       )}
@@ -332,20 +314,19 @@ export default function SelectNeighborhoods() {
                       </div>
                       
                       {/* Pricing */}
-                      {!isFreeSelected ? (
-                        <div className="mb-3">
-                          <div className="flex items-baseline gap-1">
-                            <span className={`text-2xl font-bold ${styles.text}`}>
-                              {formatPrice(priceDisplay)}
-                            </span>
-                            <span className="text-slate-500 text-sm">/mo</span>
-                          </div>
+                      <div className="mb-3">
+                        <div className="flex items-baseline gap-1">
+                          <span className={`text-2xl font-bold ${styles.text}`}>
+                            {formatPrice(priceDisplay)}
+                          </span>
+                          <span className="text-slate-500 text-sm">
+                            /{billingCycle === 'annual' ? 'yr' : 'mo'}
+                          </span>
                         </div>
-                      ) : (
-                        <div className="mb-3">
-                          <span className="text-2xl font-bold text-green-600">FREE</span>
-                        </div>
-                      )}
+                        {billingCycle === 'annual' && (
+                          <p className="text-xs text-green-600 mt-1">2 months free</p>
+                        )}
+                      </div>
                       
                       {/* Zip Codes */}
                       {neighborhood.zips && neighborhood.zips.length > 0 && (
@@ -369,14 +350,12 @@ export default function SelectNeighborhoods() {
                       )}
                       
                       {/* Selection indicator */}
-                      {(isFreeSelected || isPaidSelected) && (
-                        <div className={`mt-3 flex items-center gap-2 ${isFreeSelected ? 'text-green-600' : 'text-blue-600'}`}>
+                      {isSelected && (
+                        <div className="mt-3 flex items-center gap-2 text-blue-600">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
-                          <span className="text-sm font-medium">
-                            {isFreeSelected ? 'Your Free Neighborhood' : 'Selected'}
-                          </span>
+                          <span className="text-sm font-medium">Selected</span>
                         </div>
                       )}
                     </div>
@@ -400,31 +379,28 @@ export default function SelectNeighborhoods() {
           <div className="flex items-center justify-between">
             <div>
               <div className="flex items-center gap-4 mb-1">
-                {freeNeighborhood && (
-                  <span className="text-sm bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
-                    1 free neighborhood
-                  </span>
-                )}
-                {selectedNeighborhoods.length > 0 && (
+                {selectedNeighborhoods.length > 0 ? (
                   <span className="text-sm text-slate-600">
-                    + {selectedNeighborhoods.length} paid {selectedNeighborhoods.length === 1 ? 'neighborhood' : 'neighborhoods'}
+                    {selectedNeighborhoods.length} {selectedNeighborhoods.length === 1 ? 'neighborhood' : 'neighborhoods'} selected
                   </span>
-                )}
-                {!freeNeighborhood && selectedNeighborhoods.length === 0 && (
+                ) : (
                   <span className="text-sm text-slate-400">Select a neighborhood to get started</span>
                 )}
               </div>
               <div className="flex items-baseline gap-2">
                 {selectedNeighborhoods.length === 0 ? (
-                  <span className="text-2xl font-bold text-green-600">
-                    {freeNeighborhood ? 'FREE' : '$0'}
-                  </span>
+                  <span className="text-2xl font-bold text-slate-400">$0</span>
                 ) : (
                   <>
                     <span className="text-2xl font-bold text-slate-900">
                       {formatPrice(calculateTotal())}
                     </span>
-                    <span className="text-slate-500 text-sm">/mo</span>
+                    <span className="text-slate-500 text-sm">
+                      /{billingCycle === 'annual' ? 'yr' : 'mo'}
+                    </span>
+                    {billingCycle === 'annual' && (
+                      <span className="text-xs text-green-600 ml-1">(2 months free)</span>
+                    )}
                   </>
                 )}
               </div>
@@ -432,14 +408,13 @@ export default function SelectNeighborhoods() {
             
             <button
               onClick={() => {
-                // TODO: Navigate to checkout with selections
-                console.log('Checkout with:', { freeNeighborhood, selectedNeighborhoods, billingCycle });
+                console.log('Checkout with:', { selectedNeighborhoods, billingCycle });
                 navigate(`/profile/${token}/checkout`);
               }}
-              disabled={!freeNeighborhood && selectedNeighborhoods.length === 0}
+              disabled={selectedNeighborhoods.length === 0}
               className={`
                 px-8 py-3 rounded-xl font-semibold text-white transition-all
-                ${freeNeighborhood || selectedNeighborhoods.length > 0
+                ${selectedNeighborhoods.length > 0
                   ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
                   : 'bg-slate-300 cursor-not-allowed'
                 }
