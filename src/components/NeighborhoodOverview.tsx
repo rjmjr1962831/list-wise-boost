@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useNeighborhoodMarketStats } from '@/hooks/useNeighborhoodMarketStats';
+import { NeighborhoodMarketStatsCard } from '@/components/NeighborhoodMarketStatsCard';
 interface NearbyNeighborhood {
   id: string;
   slug: string;
@@ -72,6 +74,9 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
   const [neighborhood, setNeighborhood] = useState<NeighborhoodData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  
+  // Fetch enriched market stats from marketing_content
+  const { data: marketStats, isLoading: marketStatsLoading } = useNeighborhoodMarketStats(neighborhoodSlug);
 
   useEffect(() => {
     const fetchNeighborhood = async () => {
@@ -194,6 +199,9 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
           </CollapsibleContent>
         </Collapsible>
       )}
+
+      {/* Market Statistics Card - Enriched data from marketing_content */}
+      {marketStats && <NeighborhoodMarketStatsCard stats={marketStats} />}
     </div>
   );
 }
