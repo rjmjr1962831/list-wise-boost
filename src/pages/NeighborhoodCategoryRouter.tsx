@@ -52,9 +52,11 @@ const NeighborhoodCategoryRouter = () => {
             .maybeSingle();
 
           if (agent && !agentError) {
-            // Redirect to canonical agent URL
-            console.log('[NeighborhoodCategoryRouter] Agent found, redirecting to canonical URL:', fourthSegment);
-            navigate(`/${stateSlug}/agents/${fourthSegment}`, { replace: true });
+            // Redirect to canonical agent URL using setRedirectPath pattern
+            const canonicalUrl = `/${stateSlug}/agents/${fourthSegment}`;
+            console.log('[NeighborhoodCategoryRouter] Agent found, setting redirect to:', canonicalUrl);
+            setRedirectPath(canonicalUrl);
+            setLoading(false);
             return;
           }
         }
