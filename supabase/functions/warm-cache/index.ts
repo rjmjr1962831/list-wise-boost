@@ -99,14 +99,20 @@ async function fetchNeighborhoodPages(supabase: any): Promise<string[]> {
     return [];
   }
 
-  // Convert state name to slug
+  // Convert state name or abbreviation to slug
   const stateToSlug: Record<string, string> = {
     "Arizona": "arizona",
-    "California": "california",
+    "AZ": "arizona",
+    "California": "california", 
+    "CA": "california",
     "Texas": "texas",
+    "TX": "texas",
     "Florida": "florida",
+    "FL": "florida",
     "New York": "new-york",
-    "Colorado": "colorado"
+    "NY": "new-york",
+    "Colorado": "colorado",
+    "CO": "colorado"
   };
 
   return neighborhoods
