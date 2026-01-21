@@ -148,15 +148,21 @@ export function NeighborhoodExpertPage({
           </div>
         </section>
       ) : (
-        <section className="py-4">
+        <section className="py-4 space-y-4">
           <p className="text-sm text-muted-foreground">
             No Neighborhood Expert currently designated for {neighborhoodName}.
           </p>
+          <Link 
+            to={qualifiedAgentsUrl}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors"
+          >
+            View all qualified agents serving {neighborhoodName} →
+          </Link>
         </section>
       )}
 
-      {/* Neighborhood Expert Explanation + Qualified Agents Link - Same Line */}
-      <div className="flex items-center justify-between flex-wrap gap-2 pt-4 border-t border-border">
+      {/* Neighborhood Expert Explanation */}
+      <div className="pt-4 border-t border-border">
         <details className="group text-sm">
           <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors list-none flex items-center gap-1">
             <span>What is a Neighborhood Expert?</span>
@@ -178,12 +184,15 @@ export function NeighborhoodExpertPage({
           </div>
         </details>
 
-        <Link 
-          to={qualifiedAgentsUrl}
-          className="text-primary hover:underline text-sm"
-        >
-          View all qualified agents serving {neighborhoodName} →
-        </Link>
+        {/* Show qualified agents link when experts exist (placed in the details area) */}
+        {experts.length > 0 && (
+          <Link 
+            to={qualifiedAgentsUrl}
+            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors"
+          >
+            View all qualified agents serving {neighborhoodName} →
+          </Link>
+        )}
       </div>
     </div>
   );
