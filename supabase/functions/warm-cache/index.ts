@@ -87,36 +87,78 @@ async function fetchCityPages(supabase: any): Promise<string[]> {
   );
 }
 
-async function fetchNeighborhoodPages(supabase: any): Promise<string[]> {
-  const { data: neighborhoods, error } = await supabase
-    .from("neighborhood_catalog")
-    .select("neighborhood_slug, city_area_slug, primary_zip, state")
-    .eq("is_active", true)
-    .not("primary_zip", "is", null);
+// Convert state name or abbreviation to slug
+const stateToSlug: Record<string, string> = {
+  "Arizona": "arizona",
+  "AZ": "arizona",
+  "California": "california", 
+  "CA": "california",
+  "Texas": "texas",
+  "TX": "texas",
+  "Florida": "florida",
+  "FL": "florida",
+  "New York": "new-york",
+  "NY": "new-york",
+  "Colorado": "colorado",
+  "CO": "colorado"
+};
 
-  if (error) {
-    console.error("Error fetching neighborhoods:", error);
-    return [];
+// Reverse lookup: slug to state abbreviations
+const slugToStateAbbrs: Record<string, string[]> = {
+  "arizona": ["AZ", "Arizona"],
+  "california": ["CA", "California"],
+  "texas": ["TX", "Texas"],
+  "florida": ["FL", "Florida"],
+  "new-york": ["NY", "New York"],
+  "colorado": ["CO", "Colorado"]
+};
+
+async function fetchNeighborhoodPages(supabase: any, stateFilter?: string): Promise<string[]> {
+  const allNeighborhoods: any[] = [];
+  const pageSize = 1000;
+  let offset = 0;
+  let hasMore = true;
+
+  // Normalize state filter to abbreviations for DB query
+  let stateAbbrs: string[] | undefined;
+  if (stateFilter) {
+    const normalizedFilter = stateFilter.toLowerCase();
+    stateAbbrs = slugToStateAbbrs[normalizedFilter] || [stateFilter.toUpperCase(), stateFilter];
   }
 
-  // Convert state name or abbreviation to slug
-  const stateToSlug: Record<string, string> = {
-    "Arizona": "arizona",
-    "AZ": "arizona",
-    "California": "california", 
-    "CA": "california",
-    "Texas": "texas",
-    "TX": "texas",
-    "Florida": "florida",
-    "FL": "florida",
-    "New York": "new-york",
-    "NY": "new-york",
-    "Colorado": "colorado",
-    "CO": "colorado"
-  };
+  while (hasMore) {
+    let query = supabase
+      .from("neighborhood_catalog")
+      .select("neighborhood_slug, city_area_slug, primary_zip, state")
+      .eq("is_active", true)
+      .not("primary_zip", "is", null)
+      .range(offset, offset + pageSize - 1);
 
-  return neighborhoods
-    .filter((n: any) => stateToSlug[n.state]) // Only active states
+    // Apply state filter if provided
+    if (stateAbbrs && stateAbbrs.length > 0) {
+      query = query.in("state", stateAbbrs);
+    }
+
+    const { data: neighborhoods, error } = await query;
+
+    if (error) {
+      console.error("Error fetching neighborhoods:", error);
+      break;
+    }
+
+    if (!neighborhoods || neighborhoods.length === 0) {
+      hasMore = false;
+    } else {
+      allNeighborhoods.push(...neighborhoods);
+      offset += pageSize;
+      hasMore = neighborhoods.length === pageSize;
+    }
+  }
+
+  console.log(`Fetched ${allNeighborhoods.length} neighborhoods${stateFilter ? ` for state: ${stateFilter}` : ''}`);
+
+  return allNeighborhoods
+    .filter((n: any) => stateToSlug[n.state])
     .map((n: any) => 
       `/${stateToSlug[n.state]}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`
     );
@@ -200,29 +242,38 @@ serve(async (req) => {
       includeNeighborhoods = true,
       includeCities = true,
       staticOnly = false,
+      neighborhoodsOnly = false,
+      stateFilter = undefined,
       concurrency = 5
     } = body;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Build URL list
-    let allUrls = [...STATIC_PAGES];
+    let allUrls: string[] = [];
     let cityCount = 0;
     let neighborhoodCount = 0;
 
+    // If neighborhoodsOnly, skip static and cities
+    if (!neighborhoodsOnly && !staticOnly) {
+      allUrls = [...STATIC_PAGES];
+    } else if (staticOnly) {
+      allUrls = [...STATIC_PAGES];
+    }
+
     if (!staticOnly) {
-      if (includeCities) {
+      if (includeCities && !neighborhoodsOnly) {
         const cityPages = await fetchCityPages(supabase);
         cityCount = cityPages.length;
         allUrls = [...allUrls, ...cityPages];
         console.log(`Found ${cityCount} city pages to warm`);
       }
 
-      if (includeNeighborhoods) {
-        const neighborhoodPages = await fetchNeighborhoodPages(supabase);
+      if (includeNeighborhoods || neighborhoodsOnly) {
+        const neighborhoodPages = await fetchNeighborhoodPages(supabase, stateFilter);
         neighborhoodCount = neighborhoodPages.length;
         allUrls = [...allUrls, ...neighborhoodPages];
-        console.log(`Found ${neighborhoodCount} neighborhood pages to warm`);
+        console.log(`Found ${neighborhoodCount} neighborhood pages to warm${stateFilter ? ` (state: ${stateFilter})` : ''}`);
       }
     }
 
@@ -267,11 +318,11 @@ serve(async (req) => {
           job_id: jobId,
           pages: {
             total: allUrls.length,
-            static: STATIC_PAGES.length,
+            static: neighborhoodsOnly ? 0 : STATIC_PAGES.length,
             cities: cityCount,
             neighborhoods: neighborhoodCount
           },
-          options: { forceRefresh, concurrency, includeCities, includeNeighborhoods }
+          options: { forceRefresh, concurrency, includeCities, includeNeighborhoods, neighborhoodsOnly, stateFilter }
         }, null, 2),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
