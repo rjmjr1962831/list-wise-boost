@@ -25,7 +25,8 @@ export default function SelectNeighborhoods() {
   
   const [neighborhoods, setNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
+  // Always use monthly pricing
+  const billingCycle = 'monthly' as const;
   const [filterTier, setFilterTier] = useState<string>('all');
   const [filterCity, setFilterCity] = useState<string>('all');
   const [loading, setLoading] = useState(true);
@@ -91,8 +92,7 @@ export default function SelectNeighborhoods() {
   };
 
   const getPrice = (tier: NeighborhoodTier) => {
-    const monthly = NEIGHBORHOOD_TIER_PRICES[tier];
-    return billingCycle === 'annual' ? getAnnualPrice(monthly) : monthly;
+    return NEIGHBORHOOD_TIER_PRICES[tier];
   };
 
   const calculateTotal = () => {
@@ -104,15 +104,17 @@ export default function SelectNeighborhoods() {
   // Get unique cities for filter
   const uniqueCities = [...new Set(neighborhoods.map(n => n.city_area))].sort();
 
-  // Filter neighborhoods
-  const filteredNeighborhoods = neighborhoods.filter(n => {
-    const matchesTier = filterTier === 'all' || n.tier === filterTier;
-    const matchesCity = filterCity === 'all' || n.city_area === filterCity;
-    const matchesSearch = searchQuery === '' || 
-      n.neighborhood.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.city_area.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesTier && matchesCity && matchesSearch;
-  });
+  // Filter neighborhoods - if preselect is set, only show that one neighborhood
+  const filteredNeighborhoods = preselectSlug 
+    ? neighborhoods.filter(n => n.neighborhood_slug === preselectSlug)
+    : neighborhoods.filter(n => {
+        const matchesTier = filterTier === 'all' || n.tier === filterTier;
+        const matchesCity = filterCity === 'all' || n.city_area === filterCity;
+        const matchesSearch = searchQuery === '' || 
+          n.neighborhood.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          n.city_area.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesTier && matchesCity && matchesSearch;
+      });
 
   // Group by tier
   const groupedNeighborhoods = {
@@ -144,40 +146,13 @@ export default function SelectNeighborhoods() {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-sm">10</span>
-              </div>
-              <span className="text-xl font-bold text-slate-900">
-                Top<span className="text-blue-500">10</span>Lists
-              </span>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-sm">10</span>
             </div>
-            
-            {/* Billing Toggle */}
-            <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                  billingCycle === 'monthly' 
-                    ? 'bg-white shadow text-slate-900' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingCycle('annual')}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-1 ${
-                  billingCycle === 'annual' 
-                    ? 'bg-white shadow text-slate-900' 
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                Annual
-                <span className="text-xs text-green-600 font-semibold">Save 17%</span>
-              </button>
-            </div>
+            <span className="text-xl font-bold text-slate-900">
+              Top<span className="text-blue-500">10</span>Lists
+            </span>
           </div>
         </div>
       </header>
@@ -305,15 +280,14 @@ export default function SelectNeighborhoods() {
           
           const styles = NEIGHBORHOOD_TIER_STYLES[tierName];
           const price = NEIGHBORHOOD_TIER_PRICES[tierName];
-          const displayPrice = billingCycle === 'annual' ? getAnnualPrice(price) : price;
+          const displayPrice = price;
           
           return (
             <div key={tierName} className="mb-10">
               <div className="flex items-center gap-3 mb-4">
                 <h2 className="text-xl font-bold text-slate-900">{tierName}</h2>
                 <span className={`text-sm ${styles.color}`}>
-                  {formatPrice(displayPrice)}
-                  /{billingCycle === 'annual' ? 'year' : 'month'}
+                  {formatPrice(displayPrice)}/mo
                 </span>
                 <span className="text-sm text-slate-400">
                   · {tierNeighborhoods.length} {tierNeighborhoods.length === 1 ? 'neighborhood' : 'neighborhoods'}
@@ -324,7 +298,7 @@ export default function SelectNeighborhoods() {
                 {tierNeighborhoods.slice(0, 30).map(neighborhood => {
                   const isFreeSelected = freeNeighborhood?.id === neighborhood.id;
                   const isPaidSelected = selectedNeighborhoods.some(n => n.id === neighborhood.id);
-                  const priceDisplay = billingCycle === 'annual' ? getAnnualPrice(NEIGHBORHOOD_TIER_PRICES[neighborhood.tier]) : NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
+                  const priceDisplay = NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
                   
                   return (
                     <div
@@ -364,9 +338,7 @@ export default function SelectNeighborhoods() {
                             <span className={`text-2xl font-bold ${styles.text}`}>
                               {formatPrice(priceDisplay)}
                             </span>
-                            <span className="text-slate-500 text-sm">
-                              /{billingCycle === 'annual' ? 'yr' : 'mo'}
-                            </span>
+                            <span className="text-slate-500 text-sm">/mo</span>
                           </div>
                         </div>
                       ) : (
@@ -452,9 +424,7 @@ export default function SelectNeighborhoods() {
                     <span className="text-2xl font-bold text-slate-900">
                       {formatPrice(calculateTotal())}
                     </span>
-                    <span className="text-slate-500 text-sm">
-                      /{billingCycle === 'annual' ? 'year' : 'month'}
-                    </span>
+                    <span className="text-slate-500 text-sm">/mo</span>
                   </>
                 )}
               </div>
