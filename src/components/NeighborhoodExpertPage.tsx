@@ -166,15 +166,31 @@ export function NeighborhoodExpertPage({
                 />
               ))}
             </div>
+            <div className="mt-4">
+              <Link
+                to={`/neighborhood/apply?state=${stateSlug}&city=${citySlug}&zip=${primaryZip || ''}&neighborhood=${neighborhoodSlug}`}
+                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
+              >
+                <span className="mr-1">→</span>
+                Think you belong here? Click here
+              </Link>
+            </div>
           </>
         ) : (
           <div className="py-4">
             <p className="text-muted-foreground mb-2">
               No Neighborhood Expert designated yet for {neighborhoodName}.
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               This featured position is available for agents with proven expertise in this area.
             </p>
+            <Link
+              to={`/neighborhood/apply?state=${stateSlug}&city=${citySlug}&zip=${primaryZip || ''}&neighborhood=${neighborhoodSlug}`}
+              className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium text-sm transition-colors"
+            >
+              <span className="mr-1">→</span>
+              Think you belong here? Click here
+            </Link>
           </div>
         )}
       </section>

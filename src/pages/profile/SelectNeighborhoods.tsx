@@ -2,7 +2,7 @@
 // New neighborhood-based selection page (replaces SelectCities.tsx)
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   NeighborhoodTier, 
@@ -17,7 +17,11 @@ import {
 // ============================================
 export default function SelectNeighborhoods() {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  
+  // Check for preselect param (from neighborhood apply flow)
+  const preselectSlug = searchParams.get('preselect');
   
   const [neighborhoods, setNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
   const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
@@ -27,6 +31,7 @@ export default function SelectNeighborhoods() {
   const [loading, setLoading] = useState(true);
   const [freeNeighborhood, setFreeNeighborhood] = useState<NeighborhoodCatalogItem | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [preselectApplied, setPreselectApplied] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -35,6 +40,19 @@ export default function SelectNeighborhoods() {
   useEffect(() => {
     loadNeighborhoods();
   }, []);
+
+  // Handle preselect when neighborhoods are loaded
+  useEffect(() => {
+    if (preselectSlug && neighborhoods.length > 0 && !preselectApplied) {
+      const preselected = neighborhoods.find(
+        n => n.neighborhood_slug === preselectSlug
+      );
+      if (preselected && !freeNeighborhood) {
+        setFreeNeighborhood(preselected);
+        setPreselectApplied(true);
+      }
+    }
+  }, [preselectSlug, neighborhoods, preselectApplied, freeNeighborhood]);
 
   const loadNeighborhoods = async () => {
     const { data, error } = await supabase
@@ -168,6 +186,13 @@ export default function SelectNeighborhoods() {
         {/* Page Title */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">Select Your Neighborhoods</h1>
+          {preselectSlug && freeNeighborhood ? (
+            <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 mb-4 inline-block">
+              <p className="text-primary font-medium">
+                ✓ Pre-selected: {freeNeighborhood.neighborhood}, {freeNeighborhood.city_area}
+              </p>
+            </div>
+          ) : null}
           <p className="text-slate-600">
             Your first neighborhood is <span className="font-semibold text-green-600">FREE</span>. 
             Add more to expand your reach.
