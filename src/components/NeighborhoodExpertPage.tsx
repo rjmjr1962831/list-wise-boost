@@ -136,32 +136,48 @@ export function NeighborhoodExpertPage({
 
   return (
     <div className="space-y-8">
-      {/* Section 1: Neighborhood Experts (if any) */}
-      {experts.length > 0 && (
-        <section>
-          <div className="flex items-baseline gap-3 mb-4">
-            <h2 className="text-lg font-semibold text-foreground">
-              Neighborhood Expert{experts.length > 1 ? 's' : ''}: {neighborhoodName}
-            </h2>
-            <span className="text-sm text-muted-foreground">
-              ({experts.length} designated)
-            </span>
+      {/* Section 1: Dedicated Neighborhood Expert Space - Always visible */}
+      <section className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent border border-primary/20 rounded-xl p-6">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+            Featured Position
+          </span>
+        </div>
+        <h2 className="text-xl font-bold text-foreground mb-2">
+          Neighborhood Expert{experts.length !== 1 ? 's' : ''}: {neighborhoodName}
+        </h2>
+        
+        {experts.length > 0 ? (
+          <>
+            <p className="text-sm text-muted-foreground mb-4">
+              {experts.length} designated expert{experts.length !== 1 ? 's' : ''} with verified neighborhood-specific experience.
+            </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              {experts.map((expert, index) => (
+                <AgentBadge 
+                  key={expert.id} 
+                  professional={expert}
+                  stateSlug={stateSlug}
+                  citySlug={citySlug}
+                  rank={index + 1}
+                  accentColor="primary"
+                  isPaidExpert={true}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="py-4">
+            <p className="text-muted-foreground mb-2">
+              No Neighborhood Expert designated yet for {neighborhoodName}.
+            </p>
+            <p className="text-sm text-muted-foreground">
+              This featured position is available for agents with proven expertise in this area.
+            </p>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            {experts.map((expert, index) => (
-              <AgentBadge 
-                key={expert.id} 
-                professional={expert}
-                stateSlug={stateSlug}
-                citySlug={citySlug}
-                rank={index + 1}
-                accentColor="primary"
-                isPaidExpert={true}
-              />
-            ))}
-          </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* Section 2: Qualified Agents (10 in round-robin order) */}
       <section>
