@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,41 +7,46 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const BASE_URL = "https://www.top10lists.us";
+
+// Static pages - always warmed
 const STATIC_PAGES = [
   // Homepage & States
-  "https://www.top10lists.us/",
-  "https://www.top10lists.us/arizona",
-  "https://www.top10lists.us/california",
-  "https://www.top10lists.us/texas",
-  "https://www.top10lists.us/florida",
-  "https://www.top10lists.us/new-york",
-  "https://www.top10lists.us/colorado",
+  "/",
+  "/arizona",
+  "/california",
+  "/texas",
+  "/florida",
+  "/new-york",
+  "/colorado",
   // About pages
-  "https://www.top10lists.us/about",
-  "https://www.top10lists.us/about/founder",
-  "https://www.top10lists.us/about/ranking-methodology",
+  "/about",
+  "/about/founder",
+  "/about/ranking-methodology",
   // AI & Protocol pages
-  "https://www.top10lists.us/for-ai",
-  "https://www.top10lists.us/transparency",
-  "https://www.top10lists.us/ai-liability",
-  "https://www.top10lists.us/protocol-adopters",
-  "https://www.top10lists.us/protocol-services",
+  "/for-ai",
+  "/transparency",
+  "/ai-liability",
+  "/protocol-adopters",
+  "/protocol-services",
   // Editorial & Press
-  "https://www.top10lists.us/press",
-  "https://www.top10lists.us/editorial-updates",
+  "/press",
+  "/editorial-updates",
   // Comparison & Info
-  "https://www.top10lists.us/compare",
-  "https://www.top10lists.us/zillow-explained",
-  "https://www.top10lists.us/faq",
+  "/compare",
+  "/zillow-explained",
+  "/faq",
   // Legal
-  "https://www.top10lists.us/privacy",
-  "https://www.top10lists.us/terms",
-  "https://www.top10lists.us/sms-terms",
-  "https://www.top10lists.us/opt-in",
+  "/privacy",
+  "/terms",
+  "/sms-terms",
+  "/opt-in",
   // Testing & Agent Onboarding
-  "https://www.top10lists.us/test",
-  "https://www.top10lists.us/are-you-an-agent",
-  "https://www.top10lists.us/agent-onboarding",
+  "/test",
+  "/are-you-an-agent",
+  "/agent-onboarding",
 ];
 
 interface WarmResult {
@@ -59,58 +65,120 @@ interface WarmError {
   message: string;
 }
 
-async function warmStaticPages(forceRefresh: boolean): Promise<{
-  results: WarmResult[];
-  errors: WarmError[];
-  totalUrls: number;
-}> {
+interface WarmProgress {
+  static: { total: number; completed: number };
+  cities: { total: number; completed: number };
+  neighborhoods: { total: number; completed: number };
+}
+
+async function fetchCityPages(supabase: any): Promise<string[]> {
+  const { data: cities, error } = await supabase
+    .from("cities")
+    .select("slug, state_slug")
+    .eq("active", true);
+
+  if (error) {
+    console.error("Error fetching cities:", error);
+    return [];
+  }
+
+  return cities.map((city: any) => 
+    `/${city.state_slug}/${city.slug}/top10realestateagents`
+  );
+}
+
+async function fetchNeighborhoodPages(supabase: any): Promise<string[]> {
+  const { data: neighborhoods, error } = await supabase
+    .from("neighborhood_catalog")
+    .select("neighborhood_slug, city_area_slug, primary_zip, state")
+    .eq("is_active", true)
+    .not("primary_zip", "is", null);
+
+  if (error) {
+    console.error("Error fetching neighborhoods:", error);
+    return [];
+  }
+
+  // Convert state name to slug
+  const stateToSlug: Record<string, string> = {
+    "Arizona": "arizona",
+    "California": "california",
+    "Texas": "texas",
+    "Florida": "florida",
+    "New York": "new-york",
+    "Colorado": "colorado"
+  };
+
+  return neighborhoods
+    .filter((n: any) => stateToSlug[n.state]) // Only active states
+    .map((n: any) => 
+      `/${stateToSlug[n.state]}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents`
+    );
+}
+
+async function warmUrl(url: string, forceRefresh: boolean): Promise<WarmResult | WarmError> {
+  try {
+    const headers: Record<string, string> = {
+      "X-Cache-Warming": "true",
+      "User-Agent": "Top10Lists-CacheWarmer/1.0"
+    };
+    
+    if (forceRefresh) {
+      headers["X-Force-Refresh"] = "true";
+    }
+
+    const startTime = Date.now();
+    const response = await fetch(url, { headers });
+    const elapsed = Date.now() - startTime;
+
+    const cacheStatus = response.headers.get("X-Cache") || "unknown";
+    const renderMethod = response.headers.get("X-Rendered") || "unknown";
+    const contentLength = response.headers.get("Content-Length") || "0";
+
+    const success = response.status === 200 && renderMethod !== "fallback";
+    
+    return {
+      url,
+      status: response.status,
+      cache: cacheStatus,
+      rendered: renderMethod,
+      size: parseInt(contentLength),
+      ms: elapsed,
+      success
+    };
+  } catch (fetchError: unknown) {
+    const errMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+    return { url, type: 'fetch', message: errMsg };
+  }
+}
+
+async function warmPages(
+  urls: string[], 
+  forceRefresh: boolean, 
+  concurrency: number = 5,
+  logPrefix: string = ""
+): Promise<{ results: WarmResult[]; errors: WarmError[] }> {
   const results: WarmResult[] = [];
   const errors: WarmError[] = [];
 
-  console.log(`Warming ${STATIC_PAGES.length} static pages`);
+  // Process in batches for concurrency control
+  for (let i = 0; i < urls.length; i += concurrency) {
+    const batch = urls.slice(i, i + concurrency);
+    const batchPromises = batch.map(path => warmUrl(`${BASE_URL}${path}`, forceRefresh));
+    const batchResults = await Promise.all(batchPromises);
 
-  for (let i = 0; i < STATIC_PAGES.length; i++) {
-    const url = STATIC_PAGES[i];
-    try {
-      const headers: Record<string, string> = {
-        "X-Cache-Warming": "true",
-        "User-Agent": "Top10Lists-CacheWarmer/1.0"
-      };
-      
-      if (forceRefresh) {
-        headers["X-Force-Refresh"] = "true";
+    for (const result of batchResults) {
+      if ('success' in result) {
+        results.push(result);
+        console.log(`${logPrefix}[${results.length + errors.length}/${urls.length}] ${result.success ? '✓' : '✗'} ${result.url} (${result.cache}, ${result.ms}ms)`);
+      } else {
+        errors.push(result);
+        console.error(`${logPrefix}[${results.length + errors.length}/${urls.length}] ERROR ${result.url}: ${result.message}`);
       }
-
-      const startTime = Date.now();
-      const response = await fetch(url, { headers });
-      const elapsed = Date.now() - startTime;
-
-      const cacheStatus = response.headers.get("X-Cache") || "unknown";
-      const renderMethod = response.headers.get("X-Rendered") || "unknown";
-      const contentLength = response.headers.get("Content-Length") || "0";
-
-      const success = response.status === 200 && renderMethod !== "fallback";
-      
-      results.push({
-        url,
-        status: response.status,
-        cache: cacheStatus,
-        rendered: renderMethod,
-        size: parseInt(contentLength),
-        ms: elapsed,
-        success
-      });
-
-      console.log(`[${i + 1}/${STATIC_PAGES.length}] ${success ? '✓' : '✗'} ${url} (${cacheStatus}, ${elapsed}ms)`);
-
-    } catch (fetchError: unknown) {
-      const errMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
-      errors.push({ url, type: 'fetch', message: errMsg });
-      console.error(`[${i + 1}/${STATIC_PAGES.length}] ERROR ${url}: ${errMsg}`);
     }
   }
 
-  return { results, errors, totalUrls: STATIC_PAGES.length };
+  return { results, errors };
 }
 
 serve(async (req) => {
@@ -122,22 +190,55 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { 
       forceRefresh = false,
-      background = false
+      background = false,
+      includeNeighborhoods = true,
+      includeCities = true,
+      staticOnly = false,
+      concurrency = 5
     } = body;
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Build URL list
+    let allUrls = [...STATIC_PAGES];
+    let cityCount = 0;
+    let neighborhoodCount = 0;
+
+    if (!staticOnly) {
+      if (includeCities) {
+        const cityPages = await fetchCityPages(supabase);
+        cityCount = cityPages.length;
+        allUrls = [...allUrls, ...cityPages];
+        console.log(`Found ${cityCount} city pages to warm`);
+      }
+
+      if (includeNeighborhoods) {
+        const neighborhoodPages = await fetchNeighborhoodPages(supabase);
+        neighborhoodCount = neighborhoodPages.length;
+        allUrls = [...allUrls, ...neighborhoodPages];
+        console.log(`Found ${neighborhoodCount} neighborhood pages to warm`);
+      }
+    }
+
+    console.log(`Total pages to warm: ${allUrls.length} (${STATIC_PAGES.length} static, ${cityCount} cities, ${neighborhoodCount} neighborhoods)`);
 
     if (background) {
       const jobId = crypto.randomUUID().substring(0, 8);
       
       (globalThis as any).EdgeRuntime?.waitUntil?.(
         (async () => {
-          console.log(`Background job ${jobId} started`);
+          console.log(`Background job ${jobId} started - warming ${allUrls.length} pages`);
           const startTime = Date.now();
           
           try {
-            const { results, errors, totalUrls } = await warmStaticPages(forceRefresh);
+            const { results, errors } = await warmPages(allUrls, forceRefresh, concurrency, `[${jobId}] `);
             
             const summary = {
-              total: totalUrls,
+              job_id: jobId,
+              total: allUrls.length,
+              static_pages: STATIC_PAGES.length,
+              city_pages: cityCount,
+              neighborhood_pages: neighborhoodCount,
               successful: results.filter(r => r.success).length,
               cached: results.filter(r => r.cache === "HIT").length,
               rendered: results.filter(r => r.rendered === "browser-rest-api").length,
@@ -158,7 +259,13 @@ serve(async (req) => {
           success: true,
           message: `Cache warming job ${jobId} started in background`,
           job_id: jobId,
-          pages: STATIC_PAGES.length
+          pages: {
+            total: allUrls.length,
+            static: STATIC_PAGES.length,
+            cities: cityCount,
+            neighborhoods: neighborhoodCount
+          },
+          options: { forceRefresh, concurrency, includeCities, includeNeighborhoods }
         }, null, 2),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -166,10 +273,13 @@ serve(async (req) => {
 
     // Synchronous processing
     const startTime = Date.now();
-    const { results, errors, totalUrls } = await warmStaticPages(forceRefresh);
+    const { results, errors } = await warmPages(allUrls, forceRefresh, concurrency);
 
     const summary = {
-      total: totalUrls,
+      total: allUrls.length,
+      static_pages: STATIC_PAGES.length,
+      city_pages: cityCount,
+      neighborhood_pages: neighborhoodCount,
       successful: results.filter(r => r.success).length,
       cached: results.filter(r => r.cache === "HIT").length,
       rendered: results.filter(r => r.rendered === "browser-rest-api").length,
