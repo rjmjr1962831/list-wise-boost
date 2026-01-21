@@ -90,6 +90,7 @@ const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnbo
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
 const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
+const CanonicalAgentRedirect = lazy(() => import("./pages/CanonicalAgentRedirect"));
 // Q&A Landing Pages for LLM optimization
 const QALandingPage = lazy(() => import("./pages/QALandingPage"));
 
@@ -273,7 +274,7 @@ const App = () => (
                     {/* Compatibility redirect: /{state}/{city}/agents/{canonical_slug} -> /{state}/agents/{canonical_slug} */}
                     <Route
                       path="/:stateSlug/:citySlug/agents/:canonicalSlug"
-                      element={<Navigate to="/:stateSlug/agents/:canonicalSlug" replace />}
+                      element={<CanonicalAgentRedirect />}
                     />
                     {/* Smart router to distinguish magic links from categories for any state */}
                     <Route path="/:stateSlug/:citySlug/:thirdSegment" element={<StateAgentOrCategoryRouter />} />
