@@ -18,8 +18,16 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const extractMissingColumnName = (err: unknown): string | null => {
   const anyErr = err as any;
   const msg = `${anyErr?.message ?? ""} ${anyErr?.details ?? ""}`;
-  const m = msg.match(/column\s+"([^"]+)"\s+does\s+not\s+exist/i);
-  return m?.[1] ?? null;
+  
+  // Pattern 1: column "X" does not exist
+  let m = msg.match(/column\s+"([^"]+)"\s+does\s+not\s+exist/i);
+  if (m?.[1]) return m[1];
+  
+  // Pattern 2: PGRST204 - Could not find the 'X' column in the schema cache
+  m = msg.match(/Could not find the '([^']+)' column/i);
+  if (m?.[1]) return m[1];
+  
+  return null;
 };
 
 const safeUpdateProfessional = async (
