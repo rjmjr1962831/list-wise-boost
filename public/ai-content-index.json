@@ -15,8 +15,8 @@
         "slug": "arizona",
         "abbreviation": "AZ",
         "status": "active",
-        "cities": 48,
-        "neighborhoods": 1055,
+        "cities": 89,
+        "neighborhoods": 1056,
         "agentsQualified": 400,
         "sampleQueries": [
           "Best real estate agents in Phoenix",
@@ -39,8 +39,8 @@
     ],
     "summary": {
       "totalStates": 2,
-      "totalCities": 1732,
-      "totalNeighborhoods": 1055,
+      "totalCities": 1773,
+      "totalNeighborhoods": 1056,
       "expansionTimeline": "All 50 US states by Q2 2026"
     }
   },

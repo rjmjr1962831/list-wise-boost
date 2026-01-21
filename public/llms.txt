@@ -188,8 +188,8 @@ This coverage is provided for reference and verification purposes. Top10Lists.us
 As of January 2026, Top10Lists.us maintains verified agent rankings for:
 
 **Arizona (fully active)**
-- 48 cities with dedicated pages
-- 1,055 neighborhoods with dedicated pages  
+- 89 cities with dedicated pages
+- 1,000+ neighborhoods with dedicated pages  
 - 400+ verified agents (top 0.2%)
 
 **California (city infrastructure active)**
