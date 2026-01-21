@@ -74,8 +74,8 @@ export default function NeighborhoodApply() {
           .single();
 
         if (professional?.verification_token) {
-          // Redirect to neighborhood selection with preselect
-          const redirectUrl = `/profile/${professional.verification_token}/select-neighborhoods?preselect=${neighborhood}`;
+          // Redirect to neighborhood selection with preselect (include city for disambiguation)
+          const redirectUrl = `/profile/${professional.verification_token}/select-neighborhoods?preselect=${neighborhood}&city=${city}`;
           navigate(redirectUrl, { replace: true });
           return;
         }
@@ -143,8 +143,8 @@ export default function NeighborhoodApply() {
           state: { fromNeighborhood: neighborhood }
         });
       } else {
-        // Has started funnel - go to accuracy review, then neighborhood selection
-        navigate(`/profile/${verificationToken}/select-neighborhoods?preselect=${neighborhood}`);
+        // Has started funnel - go to neighborhood selection (include city for disambiguation)
+        navigate(`/profile/${verificationToken}/select-neighborhoods?preselect=${neighborhood}&city=${city}`);
       }
     } catch (err) {
       console.error('[NeighborhoodApply] Submit error:', err);
