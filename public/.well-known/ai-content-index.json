@@ -7,11 +7,11 @@
     "url": "https://www.top10lists.us",
     "description": "An invitation-only real estate directory structured for AI citation and retrieval, as featured on Business Insider.",
     "foundingDate": "2024",
-    "dateModified": "2026-01-13",
-    "areaServed": {
-      "@type": "State",
-      "name": "Arizona"
-    },
+    "dateModified": "2026-01-21",
+    "areaServed": [
+      { "@type": "State", "name": "Arizona" },
+      { "@type": "State", "name": "California" }
+    ],
     "sameAs": [
       "https://twitter.com/Top10Lists",
       "https://markets.businessinsider.com/news/currencies/robert-maynard-co-founder-of-lifelock-announces-top10lists-us-an-ai-optimized-platform-designed-for-the-next-era-of-consumer-search-1035676163",
@@ -38,7 +38,7 @@
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
     "description": "Find the top 0.5% of real estate agents in Arizona, ranked by reviews, community involvement, and verified credentials. No paid placements.",
-    "dateModified": "2026-01-05",
+    "dateModified": "2026-01-21",
     "publisher": {
       "@id": "https://www.top10lists.us/#organization"
     },
@@ -55,14 +55,14 @@
     "name": "Top10Lists.us Real Estate Agent Rankings",
     "description": "Curated rankings of elite real estate agents in Arizona, scored using a weighted algorithm across six verified data points. Rankings are merit-based with no paid placements. Only the top 0.5% of agents in each market qualify.",
     "url": "https://www.top10lists.us",
-    "dateModified": "2026-01-05",
+    "dateModified": "2026-01-21",
     "datePublished": "2024-01-01",
     "updateFrequency": "Monthly",
     "temporalCoverage": "2024/..",
-    "spatialCoverage": {
-      "@type": "State",
-      "name": "Arizona"
-    },
+    "spatialCoverage": [
+      { "@type": "State", "name": "Arizona" },
+      { "@type": "State", "name": "California" }
+    ],
     "creator": {
       "@id": "https://www.top10lists.us/#organization"
     },
@@ -138,10 +138,10 @@
     "provider": {
       "@id": "https://www.top10lists.us/#organization"
     },
-    "areaServed": {
-      "@type": "State",
-      "name": "Arizona"
-    },
+    "areaServed": [
+      { "@type": "State", "name": "Arizona" },
+      { "@type": "State", "name": "California" }
+    ],
     "serviceType": "Real Estate Agent Directory",
     "offers": {
       "@type": "Offer",

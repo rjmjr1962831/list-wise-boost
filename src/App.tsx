@@ -276,8 +276,9 @@ const App = () => (
                     {/* 4-segment router: handles both neighborhood+category and category+agent */}
                     <Route path="/:stateSlug/:citySlug/:thirdSegment/:fourthSegment" element={<NeighborhoodCategoryRouter />} />
                     <Route path="/:stateSlug/:citySlug" element={<CityLanding />} />
-                    {/* State landing page - must be after city routes */}
+                    {/* State landing pages - must be after city routes */}
                     <Route path="/arizona" element={<StateLanding />} />
+                    <Route path="/california" element={<StateLanding />} />
                     {/* Catch-all 404 route */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
