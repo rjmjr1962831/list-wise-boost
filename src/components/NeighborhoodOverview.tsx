@@ -167,9 +167,6 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
           </CollapsibleContent>
         </Collapsible>
       )}
-
-      {/* Market Statistics Card - Enriched data from marketing_content */}
-      {marketStats && <NeighborhoodMarketStatsCard stats={marketStats} />}
     </div>
   );
 }
