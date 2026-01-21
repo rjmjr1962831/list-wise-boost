@@ -195,7 +195,7 @@ serve(async (req) => {
 
       // Allowed fields for bulk update
       const allowedFields = [
-        'description', 'years_experience', 'total_sales', 'current_listings',
+        'name', 'canonical_slug', 'description', 'years_experience', 'total_sales', 'current_listings',
         'agent_sales_stats', 'past_sales', 'specialty', 'certifications',
         'languages', 'service_areas', 'reviews_data', 'is_top_agent',
         'is_premier_agent', 'badges', 'platform_reviews', 'num_total_reviews',
@@ -378,6 +378,8 @@ serve(async (req) => {
 
       // Allowed fields that can be updated
       const allowedFields = [
+        'name',
+        'canonical_slug',
         'description',
         'years_experience',
         'total_sales',
