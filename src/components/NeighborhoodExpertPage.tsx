@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Users } from 'lucide-react';
 import { AgentBadge } from './AgentBadge';
 import { Professional } from '@/types/professional';
 import { Link } from 'react-router-dom';
+import { useAreaAgents } from '@/hooks/useAreaAgents';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface NeighborhoodExpertPageProps {
   neighborhoodSlug: string;
@@ -13,18 +15,11 @@ interface NeighborhoodExpertPageProps {
   primaryZip?: string;
 }
 
+const DISPLAY_AGENT_COUNT = 10;
+
 /**
- * NeighborhoodExpertPage - Page 1 of Expert-First Architecture
- * 
- * This component renders the CRAWLABLE, INDEXABLE Page 1 that contains:
- * - Neighborhood Expert Designation block (canonical language)
- * - Designated Neighborhood Experts (if any exist)
- * - Link to Page 2+ for qualified agents
- * 
- * Per the architecture:
- * - Page 1 is reserved EXCLUSIVELY for Neighborhood Experts
- * - No non-expert agents appear on this page
- * - If no experts exist, show the canonical "no expert designated" message
+ * NeighborhoodExpertPage - Displays neighborhood experts first, 
+ * then 10 qualified agents in round-robin order serving the area.
  */
 export function NeighborhoodExpertPage({ 
   neighborhoodSlug, 
@@ -35,6 +30,25 @@ export function NeighborhoodExpertPage({
 }: NeighborhoodExpertPageProps) {
   const [experts, setExperts] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Fetch qualified agents using the area agents hook
+  const { agents: areaAgents, loading: agentsLoading } = useAreaAgents({
+    neighborhoodSlug,
+    citySlug,
+    stateSlug,
+    radiusMiles: 5, // Broader radius for agents doing business in area
+  });
+
+  // Filter out paid experts and apply round-robin ordering
+  const qualifiedAgents = useMemo(() => {
+    const nonExperts = areaAgents.filter(a => !a.isPaidExpert);
+    
+    // Round-robin: use hourly offset for fair rotation
+    const hourlyOffset = Math.floor(Date.now() / (1000 * 60 * 60)) % Math.max(nonExperts.length, 1);
+    const rotated = [...nonExperts.slice(hourlyOffset), ...nonExperts.slice(0, hourlyOffset)];
+    
+    return rotated.slice(0, DISPLAY_AGENT_COUNT);
+  }, [areaAgents]);
 
   useEffect(() => {
     const fetchExperts = async () => {
@@ -121,9 +135,9 @@ export function NeighborhoodExpertPage({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Experts Display OR No Expert Message */}
-      {experts.length > 0 ? (
+    <div className="space-y-8">
+      {/* Section 1: Neighborhood Experts (if any) */}
+      {experts.length > 0 && (
         <section>
           <div className="flex items-baseline gap-3 mb-4">
             <h2 className="text-lg font-semibold text-foreground">
@@ -133,7 +147,7 @@ export function NeighborhoodExpertPage({
               ({experts.length} designated)
             </span>
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             {experts.map((expert, index) => (
               <AgentBadge 
                 key={expert.id} 
@@ -147,19 +161,57 @@ export function NeighborhoodExpertPage({
             ))}
           </div>
         </section>
-      ) : (
-        <section className="py-4 space-y-4">
-          <p className="text-sm text-muted-foreground">
-            No Neighborhood Expert currently designated for {neighborhoodName}.
-          </p>
-          <Link 
-            to={qualifiedAgentsUrl}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors"
-          >
-            View all qualified agents serving {neighborhoodName} →
-          </Link>
-        </section>
       )}
+
+      {/* Section 2: Qualified Agents (10 in round-robin order) */}
+      <section>
+        <div className="flex items-center gap-2 mb-4">
+          <Users className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-semibold text-foreground">
+            Top Agents Serving {neighborhoodName}
+          </h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-4">
+          Editorially selected agents with verified activity in this area. This is not a ranking.
+        </p>
+
+        {agentsLoading ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-32 rounded-lg" />
+            ))}
+          </div>
+        ) : qualifiedAgents.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {qualifiedAgents.map((agent) => (
+              <AgentBadge
+                key={agent.id}
+                professional={agent}
+                stateSlug={stateSlug}
+                citySlug={citySlug}
+                accentColor="turquoise"
+                isPaidExpert={false}
+              />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground py-4">
+            No qualified agents with verified activity in {neighborhoodName} found yet.
+          </p>
+        )}
+
+        {/* Link to full qualified agents page for more */}
+        {qualifiedAgents.length > 0 && (
+          <div className="mt-6">
+            <Link 
+              to={qualifiedAgentsUrl}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors"
+            >
+              View all qualified agents serving {neighborhoodName} →
+            </Link>
+          </div>
+        )}
+      </section>
 
       {/* Neighborhood Expert Explanation */}
       <div className="pt-4 border-t border-border">
@@ -183,16 +235,6 @@ export function NeighborhoodExpertPage({
             </Link>
           </div>
         </details>
-
-        {/* Show qualified agents link when experts exist (placed in the details area) */}
-        {experts.length > 0 && (
-          <Link 
-            to={qualifiedAgentsUrl}
-            className="inline-flex items-center gap-2 mt-4 px-5 py-2.5 bg-primary text-primary-foreground font-medium rounded-md hover:bg-primary/90 transition-colors"
-          >
-            View all qualified agents serving {neighborhoodName} →
-          </Link>
-        )}
       </div>
     </div>
   );
