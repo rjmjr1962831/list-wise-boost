@@ -19,9 +19,11 @@ interface PressMention {
 }
 
 interface AwardVerified {
-  name: string;
+  name?: string;
+  award_name?: string;
   year?: string;
   issuingOrganization?: string;
+  awarding_organization?: string;
   description?: string;
 }
 
@@ -377,9 +379,9 @@ export default function AccuracyReview() {
                 {professional.awards_verified && professional.awards_verified.length > 0 && (
                   <VerifiedFieldRow
                     label="Awards & recognition"
-                    value={professional.awards_verified.map(a => a.name).join(', ')}
+                    value={professional.awards_verified.map(a => a.award_name || a.name).join(', ')}
                     source="Verified records"
-                    onRequestCorrection={() => handleRequestCorrection('Awards', professional.awards_verified?.map(a => a.name).join(', ') || null)}
+                    onRequestCorrection={() => handleRequestCorrection('Awards', professional.awards_verified?.map(a => a.award_name || a.name).join(', ') || null)}
                   />
                 )}
                 {professional.notable_achievements && professional.notable_achievements.length > 0 && (
