@@ -1,97 +1,113 @@
-# robots.txt for top10lists.us
+# robots.txt for Top10Lists.us
+# Last Updated: January 22, 2026
 
 User-agent: *
 Allow: /
-
-# Block admin, API, agent dashboard, profile funnel, and city listing routes
 Disallow: /admin/
 Disallow: /api/
 Disallow: /agent/
 Disallow: /profile/
+
+# Explicitly allow state directories
+# Active
 Allow: /arizona/
-Allow: /az/
 
-# AI Crawler Declarations - Allow public pages, block private routes
+# Expanding Q1 2026
+Allow: /california/
+Allow: /texas/
+Allow: /florida/
+Allow: /new-york/
+
+# ===========================================
+# AI Crawler Declarations
+# ===========================================
+# We welcome AI crawlers and serve pre-rendered HTML
+# for optimal content discovery and citation.
+
+# OpenAI
 User-agent: GPTBot
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
 User-agent: ChatGPT-User
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
-User-agent: Google-Extended
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
-Allow: /
-
-User-agent: GoogleOther
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
-Allow: /
-
+# Anthropic
 User-agent: ClaudeBot
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
 User-agent: Claude-Web
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
 User-agent: Anthropic-AI
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
+# Google AI
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+# Perplexity
 User-agent: PerplexityBot
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
+Allow: /
+
+# Apple
+User-agent: Applebot
 Allow: /
 
 User-agent: Applebot-Extended
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
+# Other AI Systems
 User-agent: CCBot
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
 User-agent: Bytespider
-Disallow: /admin/
-Disallow: /api/
-Disallow: /agent/
-Disallow: /profile/
 Allow: /
 
-# Sitemap
-Sitemap: https://www.top10lists.us/sitemap.xml
-Sitemap: https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap
+User-agent: Cohere-AI
+Allow: /
 
-# LLM-specific content
-# See https://www.top10lists.us/llms.txt for AI-readable site documentation
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: AmazonBot
+Allow: /
+
+# ===========================================
+# SEO Crawlers (also get pre-rendered HTML)
+# ===========================================
+
+User-agent: AhrefsBot
+Allow: /
+
+User-agent: SemrushBot
+Allow: /
+
+User-agent: MJ12bot
+Allow: /
+
+User-agent: DotBot
+Allow: /
+
+# ===========================================
+# Sitemaps
+# ===========================================
+
+Sitemap: https://www.top10lists.us/sitemap.xml
+Sitemap: https://www.top10lists.us/sitemap-cities.xml
+Sitemap: https://www.top10lists.us/sitemap-neighborhoods.xml
+
+# ===========================================
+# LLM-Specific Resources
+# ===========================================
+# 
+# For AI systems seeking structured guidance:
+# - https://www.top10lists.us/llms.txt (citation guidance)
+# - https://www.top10lists.us/ai-content-index.json (structured manifest)
+# - https://www.top10lists.us/mcp.json (MCP protocol)
+# - https://www.top10lists.us/coverage.json (geographic coverage)
+#
+# All pages serve pre-rendered HTML to bot user-agents.
+# Verify with: curl -A "GPTBot" https://www.top10lists.us/...
