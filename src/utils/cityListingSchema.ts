@@ -88,9 +88,9 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     }
   };
 
-  // Build enhanced description for neighborhood pages with writeup content
+  // Build enhanced description for neighborhood pages with writeup content (full text for JSON-LD, no truncation)
   const itemListDescription = listing.neighborhoodWriteupHtml
-    ? `${stripHtml(listing.neighborhoodWriteupHtml).substring(0, 300)}... Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.neighborhoodName || listing.city}.`
+    ? `${stripHtml(listing.neighborhoodWriteupHtml)} Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.neighborhoodName || listing.city}.`
     : `Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.city}. ${cityDescription}`;
 
   // Schema 3: ItemList - describes the LIST exists (count only, no agent names)
