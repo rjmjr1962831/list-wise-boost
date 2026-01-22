@@ -198,7 +198,12 @@ export function useAreaAgents({
               active,
               license_verified_at,
               business_city,
-              business_zip
+              business_zip,
+              agent_sales_stats,
+              sales_count_all_time,
+              average_value_3yr,
+              price_range_3yr_min,
+              price_range_3yr_max
             `)
             .eq('active', true)
             .gte('review_stars_rating', 4.8)
@@ -250,6 +255,12 @@ export function useAreaAgents({
             license_verified_at: prof.license_verified_at || undefined,
             years_experience: prof.years_experience || undefined,
             canonical_slug: prof.canonical_slug,
+            // Sales stats for GEO
+            agent_sales_stats: prof.agent_sales_stats || null,
+            sales_count_all_time: prof.sales_count_all_time || null,
+            average_value_3yr: prof.average_value_3yr || null,
+            price_range_3yr_min: prof.price_range_3yr_min || null,
+            price_range_3yr_max: prof.price_range_3yr_max || null,
             isPaidExpert: paidExpertIds.has(prof.id),
             neighborhoodTransactions: 0,
             transactionZips: [],
@@ -283,7 +294,12 @@ export function useAreaAgents({
             specialty,
             canonical_slug,
             active,
-            license_verified_at
+            license_verified_at,
+            agent_sales_stats,
+            sales_count_all_time,
+            average_value_3yr,
+            price_range_3yr_min,
+            price_range_3yr_max
           `)
           .eq('active', true)
           .gte('review_stars_rating', 4.8)
@@ -322,6 +338,12 @@ export function useAreaAgents({
             license_verified_at: prof.license_verified_at || undefined,
             years_experience: prof.years_experience || undefined,
             canonical_slug: prof.canonical_slug,
+            // Sales stats for GEO
+            agent_sales_stats: prof.agent_sales_stats || null,
+            sales_count_all_time: prof.sales_count_all_time || null,
+            average_value_3yr: prof.average_value_3yr || null,
+            price_range_3yr_min: prof.price_range_3yr_min || null,
+            price_range_3yr_max: prof.price_range_3yr_max || null,
             isPaidExpert: paidExpertIds.has(prof.id),
             neighborhoodTransactions: activity.totalTx,
             transactionZips: activity.zips,
