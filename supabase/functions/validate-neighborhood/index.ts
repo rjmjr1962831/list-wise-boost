@@ -95,8 +95,8 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`Search failed: ${searchError.message}`);
     }
 
-    // Also search aliases
-    let aliasQuery = supabase
+    // Also search aliases - filter by state on the joined table
+    const { data: aliasResults, error: aliasError } = await supabase
       .from('neighborhood_aliases')
       .select(`
         alias_slug,
@@ -105,9 +105,10 @@ const handler = async (req: Request): Promise<Response> => {
           id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, zips, lat, lon, is_active
         )
       `)
-      .ilike('alias_name', `%${searchTerm}%`);
-
-    const { data: aliasResults, error: aliasError } = await aliasQuery.limit(limit);
+      .ilike('alias_name', `%${searchTerm}%`)
+      .eq('neighborhood_catalog.state', state)
+      .eq('neighborhood_catalog.is_active', true)
+      .limit(limit);
 
     if (aliasError) {
       console.error('[validate-neighborhood] Alias search error:', aliasError);
