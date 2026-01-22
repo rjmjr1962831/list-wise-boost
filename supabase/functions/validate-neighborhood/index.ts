@@ -24,6 +24,8 @@ interface NeighborhoodSuggestion {
   zips: string[];
   lat: number | null;
   lon: number | null;
+  matched_via_alias?: boolean;
+  alias_name?: string;
 }
 
 interface ValidateNeighborhoodResponse {
@@ -71,7 +73,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Build the query with fuzzy matching
+    // Build the query for primary neighborhoods with fuzzy matching
     let query = supabase
       .from('neighborhood_catalog')
       .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, zips, lat, lon')
@@ -86,60 +88,106 @@ const handler = async (req: Request): Promise<Response> => {
     // Fuzzy match on neighborhood or city_area
     query = query.or(`neighborhood.ilike.%${searchTerm}%,city_area.ilike.%${searchTerm}%`);
 
-    const { data: rawResults, error: searchError } = await query.limit(limit * 3); // Fetch extra for sorting
+    const { data: rawResults, error: searchError } = await query.limit(limit * 3);
 
     if (searchError) {
       console.error('[validate-neighborhood] Search error:', searchError);
       throw new Error(`Search failed: ${searchError.message}`);
     }
 
-    // Sort results by relevance: exact match > starts-with > contains
-    const sortedResults = (rawResults || [])
+    // Also search aliases
+    let aliasQuery = supabase
+      .from('neighborhood_aliases')
+      .select(`
+        alias_slug,
+        alias_name,
+        neighborhood_catalog!inner (
+          id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, zips, lat, lon, is_active
+        )
+      `)
+      .ilike('alias_name', `%${searchTerm}%`);
+
+    const { data: aliasResults, error: aliasError } = await aliasQuery.limit(limit);
+
+    if (aliasError) {
+      console.error('[validate-neighborhood] Alias search error:', aliasError);
+      // Don't throw - aliases are optional
+    }
+
+    // Sort primary results by relevance
+    const sortedPrimaryResults = (rawResults || [])
       .map(item => {
         const neighborhoodLower = item.neighborhood.toLowerCase();
         const cityAreaLower = item.city_area.toLowerCase();
         
-        let score = 3; // Default: contains
+        let score = 3;
         
-        // Exact match on neighborhood
         if (neighborhoodLower === searchTerm) score = 0;
-        // Starts with on neighborhood
         else if (neighborhoodLower.startsWith(searchTerm)) score = 1;
-        // Exact match on city_area
         else if (cityAreaLower === searchTerm) score = 0.5;
-        // Starts with on city_area
         else if (cityAreaLower.startsWith(searchTerm)) score = 1.5;
-        // Contains in neighborhood
         else if (neighborhoodLower.includes(searchTerm)) score = 2;
-        // Contains in city_area
         else if (cityAreaLower.includes(searchTerm)) score = 2.5;
         
-        return { ...item, _score: score };
+        return { ...item, _score: score, matched_via_alias: false, alias_name: undefined as string | undefined };
       })
+      .sort((a, b) => a._score - b._score);
+
+    // Process alias results
+    const aliasItems = (aliasResults || [])
+      .filter(item => item.neighborhood_catalog && (item.neighborhood_catalog as any).is_active)
+      .map(item => {
+        const nc = item.neighborhood_catalog as any;
+        return {
+          id: nc.id,
+          neighborhood: nc.neighborhood,
+          neighborhood_slug: nc.neighborhood_slug,
+          city_area: nc.city_area,
+          city_area_slug: nc.city_area_slug,
+          state: nc.state,
+          tier: nc.tier,
+          zips: nc.zips || [],
+          lat: nc.lat,
+          lon: nc.lon,
+          _score: 1.8, // Between starts-with and contains
+          matched_via_alias: true,
+          alias_name: item.alias_name
+        };
+      });
+
+    // Merge and dedupe results
+    const seenIds = new Set<string>();
+    const mergedResults: NeighborhoodSuggestion[] = [];
+
+    [...sortedPrimaryResults, ...aliasItems]
       .sort((a, b) => a._score - b._score)
-      .slice(0, limit);
+      .forEach(item => {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id);
+          mergedResults.push({
+            id: item.id,
+            neighborhood: item.neighborhood,
+            neighborhood_slug: item.neighborhood_slug,
+            city_area: item.city_area,
+            city_area_slug: item.city_area_slug,
+            state: item.state,
+            tier: item.tier as 'Main' | 'Prime' | 'Luxury',
+            zips: item.zips || [],
+            lat: item.lat,
+            lon: item.lon,
+            matched_via_alias: item.matched_via_alias,
+            alias_name: item.alias_name
+          });
+        }
+      });
 
-    // Map to response format
-    const suggestions: NeighborhoodSuggestion[] = sortedResults.map(item => ({
-      id: item.id,
-      neighborhood: item.neighborhood,
-      neighborhood_slug: item.neighborhood_slug,
-      city_area: item.city_area,
-      city_area_slug: item.city_area_slug,
-      state: item.state,
-      tier: item.tier as 'Main' | 'Prime' | 'Luxury',
-      zips: item.zips || [],
-      lat: item.lat,
-      lon: item.lon
-    }));
-
+    const suggestions = mergedResults.slice(0, limit);
     const found = suggestions.length > 0;
 
     // Log unrecognized inputs (only if input >= 3 chars and no results)
     if (!found && normalizedInput.length >= 3) {
       console.log('[validate-neighborhood] Logging unrecognized input:', normalizedInput);
       
-      // Upsert to unrecognized_neighborhoods
       const { error: upsertError } = await supabase
         .from('unrecognized_neighborhoods')
         .upsert({
@@ -154,7 +202,6 @@ const handler = async (req: Request): Promise<Response> => {
         });
 
       if (upsertError) {
-        // Log upsert error but don't fail the request
         console.log('[validate-neighborhood] Upsert to unrecognized_neighborhoods failed:', upsertError.message);
       }
     }

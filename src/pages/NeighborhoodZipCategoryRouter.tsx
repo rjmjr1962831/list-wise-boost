@@ -19,6 +19,7 @@ interface NeighborhoodData {
  * /:stateSlug/:citySlug/:zipCode/:neighborhoodSlug/:categorySlug
  * 
  * Validates ZIP code and redirects to canonical (primary_zip) if needed.
+ * Also checks for aliases and redirects to canonical neighborhood slug.
  * Returns 404 for invalid neighborhoods.
  */
 const NeighborhoodZipCategoryRouter = () => {
@@ -53,7 +54,7 @@ const NeighborhoodZipCategoryRouter = () => {
       }
 
       try {
-        // Query neighborhood by slug and city
+        // Step 1: Try to find neighborhood by primary slug
         const { data: neighborhoodData, error } = await supabase
           .from('neighborhood_catalog')
           .select('neighborhood, neighborhood_slug, city_area_slug, primary_zip, zips')
@@ -62,37 +63,73 @@ const NeighborhoodZipCategoryRouter = () => {
           .eq('is_active', true)
           .maybeSingle();
 
-        if (error || !neighborhoodData) {
-          console.log('[NeighborhoodZipCategoryRouter] Neighborhood not found:', neighborhoodSlug);
-          setNotFound(true);
+        if (!error && neighborhoodData) {
+          // Found by primary slug - validate ZIP
+          const primaryZip = neighborhoodData.primary_zip;
+          const canonicalZip = primaryZip || (neighborhoodData.zips && neighborhoodData.zips[0]) || null;
+
+          if (!canonicalZip) {
+            console.log('[NeighborhoodZipCategoryRouter] Neighborhood has no ZIP data');
+            setNotFound(true);
+            setLoading(false);
+            return;
+          }
+
+          // Check if URL ZIP matches canonical ZIP
+          if (zipCode !== canonicalZip) {
+            console.log(`[NeighborhoodZipCategoryRouter] Redirecting ${zipCode} → ${canonicalZip}`);
+            setRedirectPath(`/${stateSlug}/${citySlug}/${canonicalZip}/${neighborhoodSlug}/${categorySlug}`);
+            setLoading(false);
+            return;
+          }
+
+          // ZIP matches - render the page
+          setNeighborhood(neighborhoodData);
           setLoading(false);
           return;
         }
 
-        const primaryZip = neighborhoodData.primary_zip;
+        // Step 2: Not found by primary slug - check aliases
+        console.log('[NeighborhoodZipCategoryRouter] Checking aliases for:', neighborhoodSlug);
+        
+        const { data: aliasData, error: aliasError } = await supabase
+          .from('neighborhood_aliases')
+          .select(`
+            alias_slug,
+            neighborhood_catalog!inner (
+              neighborhood,
+              neighborhood_slug,
+              city_area_slug,
+              primary_zip,
+              zips,
+              is_active
+            )
+          `)
+          .eq('alias_slug', neighborhoodSlug)
+          .maybeSingle();
 
-        // If no primary_zip set, use first ZIP from array
-        const canonicalZip = primaryZip || (neighborhoodData.zips && neighborhoodData.zips[0]) || null;
+        if (!aliasError && aliasData && aliasData.neighborhood_catalog) {
+          const canonical = aliasData.neighborhood_catalog as unknown as NeighborhoodData & { is_active: boolean };
+          
+          // Verify neighborhood is active and in the correct city
+          if (!canonical.is_active || canonical.city_area_slug !== citySlug) {
+            console.log('[NeighborhoodZipCategoryRouter] Alias found but neighborhood inactive or wrong city');
+            setNotFound(true);
+            setLoading(false);
+            return;
+          }
 
-        if (!canonicalZip) {
-          // Neighborhood has no ZIP data - 404
-          console.log('[NeighborhoodZipCategoryRouter] Neighborhood has no ZIP data');
-          setNotFound(true);
+          // Found via alias - redirect to canonical URL (301)
+          const canonicalZip = canonical.primary_zip || (canonical.zips && canonical.zips[0]) || zipCode;
+          console.log(`[NeighborhoodZipCategoryRouter] Alias redirect: ${neighborhoodSlug} → ${canonical.neighborhood_slug}`);
+          setRedirectPath(`/${stateSlug}/${citySlug}/${canonicalZip}/${canonical.neighborhood_slug}/${categorySlug}`);
           setLoading(false);
           return;
         }
 
-        // Check if URL ZIP matches canonical ZIP
-        if (zipCode !== canonicalZip) {
-          // Redirect to canonical URL with primary_zip
-          console.log(`[NeighborhoodZipCategoryRouter] Redirecting ${zipCode} → ${canonicalZip}`);
-          setRedirectPath(`/${stateSlug}/${citySlug}/${canonicalZip}/${neighborhoodSlug}/${categorySlug}`);
-          setLoading(false);
-          return;
-        }
-
-        // ZIP matches - render the page
-        setNeighborhood(neighborhoodData);
+        // Step 3: Not found anywhere
+        console.log('[NeighborhoodZipCategoryRouter] Neighborhood not found:', neighborhoodSlug);
+        setNotFound(true);
         setLoading(false);
 
       } catch (err) {
@@ -115,7 +152,7 @@ const NeighborhoodZipCategoryRouter = () => {
     return loader;
   }
 
-  // 301 redirect for non-canonical ZIPs
+  // 301 redirect for non-canonical ZIPs or alias slugs
   if (redirectPath) {
     return <Navigate to={redirectPath} replace />;
   }
