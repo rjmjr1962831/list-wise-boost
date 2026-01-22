@@ -822,7 +822,7 @@ serve(async (req) => {
       let failed = 0;
 
       for (const city of cities) {
-        const { name, state, state_slug, slug, active } = city;
+        const { name, state, state_slug, slug, active, lat, lon } = city;
 
         if (!name || !state || !state_slug || !slug) {
           results.push({ slug: slug || 'unknown', success: false, action: 'skipped', error: 'Missing required fields (name, state, state_slug, slug)' });
@@ -845,10 +845,19 @@ serve(async (req) => {
         }
 
         if (existing) {
-          // Update existing city
+          // Update existing city - include lat/lon if provided
+          const updateData: Record<string, unknown> = { 
+            name, 
+            state, 
+            active: active ?? true, 
+            updated_at: new Date().toISOString() 
+          };
+          if (lat !== undefined) updateData.lat = lat;
+          if (lon !== undefined) updateData.lon = lon;
+
           const { error: updateError } = await supabase
             .from('cities')
-            .update({ name, state, active: active ?? true, updated_at: new Date().toISOString() })
+            .update(updateData)
             .eq('id', existing.id);
 
           if (updateError) {
@@ -859,10 +868,20 @@ serve(async (req) => {
             updated++;
           }
         } else {
-          // Insert new city
+          // Insert new city - include lat/lon if provided
+          const insertData: Record<string, unknown> = { 
+            name, 
+            state, 
+            state_slug, 
+            slug, 
+            active: active ?? true 
+          };
+          if (lat !== undefined) insertData.lat = lat;
+          if (lon !== undefined) insertData.lon = lon;
+
           const { error: insertError } = await supabase
             .from('cities')
-            .insert({ name, state, state_slug, slug, active: active ?? true });
+            .insert(insertData);
 
           if (insertError) {
             results.push({ slug, success: false, action: 'insert_failed', error: insertError.message });
