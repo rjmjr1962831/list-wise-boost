@@ -21,6 +21,18 @@ export interface CityListingData {
   neighborhoodName?: string;
   neighborhoodSlug?: string;
   neighborhoodZipCode?: string;
+  // Neighborhood writeup for GEO optimization
+  neighborhoodWriteupHtml?: string;
+}
+
+/**
+ * Strip HTML tags and normalize whitespace for plain text output
+ */
+function stripHtml(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function generateCityListingSchema(listing: CityListingData): object[] {
@@ -76,21 +88,34 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     }
   };
 
+  // Build enhanced description for neighborhood pages with writeup content
+  const itemListDescription = listing.neighborhoodWriteupHtml
+    ? `${stripHtml(listing.neighborhoodWriteupHtml).substring(0, 300)}... Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.neighborhoodName || listing.city}.`
+    : `Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.city}. ${cityDescription}`;
+
   // Schema 3: ItemList - describes the LIST exists (count only, no agent names)
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
-    "description": `Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.city}. ${cityDescription}`,
-    "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
+    "name": listing.neighborhoodName 
+      ? `Top 10 Real Estate Agents in ${listing.neighborhoodName}, ${listing.city}, ${listing.stateAbbrev}`
+      : `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
+    "description": itemListDescription,
+    "url": listing.neighborhoodSlug && listing.neighborhoodZipCode
+      ? `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodZipCode}/${listing.neighborhoodSlug}/top10realestateagents`
+      : `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
     "numberOfItems": listing.agents.length,
     "dateModified": listing.dateModified,
     "itemListOrder": "https://schema.org/ItemListOrderDescending",
     "mainEntityOfPage": {
       "@type": "WebPage",
-      "name": `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
-      "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
-      "description": `Visit Top10Lists.us for the complete ranked list of top real estate agents in ${listing.city}. Merit-based selection with no pay-to-play.`
+      "name": listing.neighborhoodName
+        ? `Top 10 Real Estate Agents in ${listing.neighborhoodName}, ${listing.city}, ${listing.stateAbbrev}`
+        : `Top 10 Real Estate Agents in ${listing.city}, ${listing.stateAbbrev}`,
+      "url": listing.neighborhoodSlug && listing.neighborhoodZipCode
+        ? `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/${listing.neighborhoodZipCode}/${listing.neighborhoodSlug}/top10realestateagents`
+        : `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents`,
+      "description": `Visit Top10Lists.us for the complete ranked list of top real estate agents in ${listing.neighborhoodName || listing.city}. Merit-based selection with no pay-to-play.`
     }
   };
 

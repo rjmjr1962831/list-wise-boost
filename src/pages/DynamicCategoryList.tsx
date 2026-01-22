@@ -29,6 +29,7 @@ import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
 import { Info } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
 import { DualSearchBox } from '@/components/DualSearchBox';
+import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
 
 interface City {
   id: string;
@@ -237,6 +238,9 @@ export default function DynamicCategoryList({
   const [isBotRequest, setIsBotRequest] = useState(false);
   const [showCityInfo, setShowCityInfo] = useState(false);
   const [highlightedAgent, setHighlightedAgent] = useState<DBProfessional | null>(null);
+
+  // Fetch neighborhood writeup for GEO optimization (shared cache with NeighborhoodOverview)
+  const { data: neighborhoodWriteup } = useNeighborhoodWriteup(neighborhoodSlug, citySlug);
 
   // Scroll to top on page load
   useEffect(() => {
@@ -1210,11 +1214,25 @@ export default function DynamicCategoryList({
     // Include neighborhood data for 5-segment URL breadcrumbs
     neighborhoodName: neighborhoodName,
     neighborhoodSlug: neighborhoodSlug,
-    neighborhoodZipCode: neighborhoodZipCode
+    neighborhoodZipCode: neighborhoodZipCode,
+    // Include writeup for GEO optimization (AI crawler visibility)
+    neighborhoodWriteupHtml: neighborhoodWriteup?.writeup_html || undefined
   };
   
   // Get all schemas: Place, Service, ItemList, FAQ, Breadcrumb (no individual agent names)
   const citySchemas = generateCityListingSchema(cityListingData);
+
+  // Helper to strip HTML for plain text schema descriptions
+  const stripHtmlForSchema = (html: string): string => {
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  };
+
+  // Build enhanced description with writeup content for GEO
+  const collectionPageDescription = neighborhoodWriteup?.writeup_html
+    ? `${stripHtmlForSchema(neighborhoodWriteup.writeup_html).substring(0, 400)}... Top-rated real estate agents in ${neighborhoodName || city.name}.`
+    : neighborhoodName
+      ? `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`
+      : `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`;
 
   // Enhanced JSON-LD schema for city/neighborhood page (CollectionPage wrapper)
   const collectionPageSchema = {
@@ -1223,9 +1241,7 @@ export default function DynamicCategoryList({
     "name": neighborhoodName 
       ? `Top 10 ${category.plural_name} in ${neighborhoodName}, ${city.name}, ${city.state}`
       : `Top 10 ${category.plural_name} in ${city.name}, ${city.state}`,
-    "description": neighborhoodName
-      ? `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${neighborhoodName}, ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`
-      : `Invitation-only directory of elite ${category.plural_name.toLowerCase()} in ${city.name}, ${stateAbbrev}. All agents are data-verified with 20+ reviews, 4.8+ ratings.`,
+    "description": collectionPageDescription,
     "url": pageUrl,
     "dateModified": lastUpdated,
     "isPartOf": {
