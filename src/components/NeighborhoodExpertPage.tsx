@@ -73,7 +73,8 @@ export function NeighborhoodExpertPage({
             professionals (
               id, name, company, title, image_url, review_stars_rating,
               num_total_reviews, years_experience, phone, email, website,
-              license_number, synthesized_bio, specialty, canonical_slug, active, license_verified_at
+              license_number, synthesized_bio, specialty, canonical_slug, active, license_verified_at,
+              agent_sales_stats, sales_count_all_time, average_value_3yr, price_range_3yr_min, price_range_3yr_max
             )
           `)
           .eq('neighborhood_id', neighborhood.id)
@@ -87,7 +88,7 @@ export function NeighborhoodExpertPage({
         const activeExperts = (subscriptions || [])
           .map((sub: any) => sub.professionals)
           .filter((prof: any) => prof && prof.active === true)
-          .map((prof: any): Professional => ({
+          .map((prof: any) => ({
             id: prof.id,
             rank: 0,
             name: prof.name,
@@ -106,7 +107,14 @@ export function NeighborhoodExpertPage({
             license_number: prof.license_number || undefined,
             license_verified_at: prof.license_verified_at || undefined,
             years_experience: prof.years_experience || undefined,
-          }));
+            canonical_slug: prof.canonical_slug,
+            // Sales stats for GEO
+            agent_sales_stats: prof.agent_sales_stats || null,
+            sales_count_all_time: prof.sales_count_all_time || null,
+            average_value_3yr: prof.average_value_3yr || null,
+            price_range_3yr_min: prof.price_range_3yr_min || null,
+            price_range_3yr_max: prof.price_range_3yr_max || null,
+          } as Professional & Record<string, any>));
 
         setExperts(activeExperts);
       } catch (error) {

@@ -108,6 +108,12 @@ export function useNeighborhoodAgents({
           license_verified_at: agent.license_verified_at || undefined,
           years_experience: agent.years_experience || undefined,
           canonical_slug: agent.canonical_slug,
+          // Sales stats for GEO
+          agent_sales_stats: agent.agent_sales_stats || null,
+          sales_count_all_time: agent.sales_count_all_time || null,
+          average_value_3yr: agent.average_value_3yr || null,
+          price_range_3yr_min: agent.price_range_3yr_min || null,
+          price_range_3yr_max: agent.price_range_3yr_max || null,
           // Transaction-based fields
           isPaidExpert: paidExpertIds.has(agent.professional_id),
           neighborhoodTransactions: agent.neighborhood_transactions,
@@ -201,7 +207,12 @@ async function fallbackToOldMethod(
       canonical_slug,
       active,
       license_verified_at,
-      zip_code
+      zip_code,
+      agent_sales_stats,
+      sales_count_all_time,
+      average_value_3yr,
+      price_range_3yr_min,
+      price_range_3yr_max
     `)
     .eq('active', true)
     .gte('review_stars_rating', 4.8)
@@ -236,6 +247,12 @@ async function fallbackToOldMethod(
     license_verified_at: prof.license_verified_at || undefined,
     years_experience: prof.years_experience || undefined,
     canonical_slug: prof.canonical_slug,
+    // Sales stats for GEO
+    agent_sales_stats: prof.agent_sales_stats || null,
+    sales_count_all_time: prof.sales_count_all_time || null,
+    average_value_3yr: prof.average_value_3yr || null,
+    price_range_3yr_min: prof.price_range_3yr_min || null,
+    price_range_3yr_max: prof.price_range_3yr_max || null,
     isPaidExpert: paidExpertIds.has(prof.id),
   }));
 
