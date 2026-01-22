@@ -50,18 +50,18 @@ export default function FunnelStep0() {
         const prof = data.professional;
         setProfessional(prof);
 
-        // Check if user already completed Step 0 - redirect to AccuracyReview
+        // Check if user has any funnel history - redirect to AccuracyReview
+        // This catches both step0_completed AND legacy users who entered before Step 0 existed
         // Skip this check for Maynard test profile so funnel always starts at Step 0
         if (prof.id !== TEST_PROFILE_ID) {
-          const { data: existingEvent } = await supabase
+          const { data: existingEvents, count } = await supabase
             .from('funnel_events')
-            .select('id')
+            .select('event_name', { count: 'exact', head: false })
             .eq('professional_id', prof.id)
-            .eq('event_name', 'step0_completed')
-            .limit(1)
-            .maybeSingle();
+            .in('event_name', ['step0_completed', 'accuracy_review_viewed', 'funnel_started', 'profile_edit_viewed', 'accuracy_confirmed'])
+            .limit(1);
 
-          if (existingEvent) {
+          if (count && count > 0) {
             // Returning user - go to Step 1 (AccuracyReview)
             navigate(`/profile/${token}/review`, { replace: true });
             return;
