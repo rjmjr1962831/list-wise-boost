@@ -1273,6 +1273,8 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          lat: number | null
+          lon: number | null
           name: string
           slug: string
           state: string
@@ -1283,6 +1285,8 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          lat?: number | null
+          lon?: number | null
           name: string
           slug: string
           state: string
@@ -1293,6 +1297,8 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          lat?: number | null
+          lon?: number | null
           name?: string
           slug?: string
           state?: string
