@@ -149,7 +149,7 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
               </button>
             </CollapsibleTrigger>
           </div>
-          <CollapsibleContent>
+          <CollapsibleContent forceMount className="data-[state=closed]:hidden">
             <div className="py-4">
               {neighborhood.writeup_html ? (
                 <div 
