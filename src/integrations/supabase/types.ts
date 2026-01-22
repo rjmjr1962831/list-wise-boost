@@ -1801,6 +1801,48 @@ export type Database = {
         }
         Relationships: []
       }
+      neighborhood_aliases: {
+        Row: {
+          alias_name: string
+          alias_slug: string
+          created_at: string | null
+          id: string
+          neighborhood_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          alias_name: string
+          alias_slug: string
+          created_at?: string | null
+          id?: string
+          neighborhood_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          alias_name?: string
+          alias_slug?: string
+          created_at?: string | null
+          id?: string
+          neighborhood_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "neighborhood_aliases_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "neighborhood_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "neighborhood_aliases_neighborhood_id_fkey"
+            columns: ["neighborhood_id"]
+            isOneToOne: false
+            referencedRelation: "zip_neighborhood_lookup"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       neighborhood_catalog: {
         Row: {
           city_area: string
