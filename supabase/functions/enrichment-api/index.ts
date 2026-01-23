@@ -1210,6 +1210,255 @@ serve(async (req) => {
       });
     }
 
+    // ============ NEW: POST action=match-city ============
+    if (req.method === 'POST' && action === 'match-city') {
+      const body = await req.json();
+      const { query, state } = body;
+
+      if (!query || !state) {
+        return new Response(JSON.stringify({ error: 'query and state are required' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log(`enrichment-api - Matching city: "${query}" in ${state}`);
+
+      // Abbreviation mappings (full form -> abbreviated forms)
+      const ABBREV_MAP: Record<string, string[]> = {
+        'los angeles': ['la'],
+        'san francisco': ['sf'],
+        'san diego': ['sd'],
+        'san jose': ['sj'],
+        'saint': ['st', 'st.'],
+        'mount': ['mt', 'mt.'],
+        'fort': ['ft', 'ft.'],
+        'port': ['pt', 'pt.'],
+        'heights': ['hts', 'hgts'],
+        'beach': ['bch'],
+        'springs': ['spgs', 'sprgs'],
+        'valley': ['vly', 'vlly'],
+        'village': ['vlg', 'vil'],
+        'center': ['ctr', 'centre'],
+        'centre': ['ctr', 'center'],
+        'park': ['pk'],
+        'point': ['pt', 'pointe'],
+        'pointe': ['pt', 'point'],
+        'ranch': ['rch', 'rancho'],
+        'rancho': ['rch', 'ranch'],
+        'lake': ['lk'],
+        'lakes': ['lks'],
+        'mountain': ['mtn', 'mt'],
+        'creek': ['crk', 'ck'],
+      };
+
+      // Normalize place name to generate all variations
+      function normalizePlaceName(name: string): Set<string> {
+        if (!name) return new Set();
+        
+        const nameLower = name.toLowerCase().trim();
+        const variations = new Set<string>([nameLower]);
+        
+        // Handle parentheticals
+        const parenMatch = nameLower.match(/^(.+?)\s*\((.+?)\)$/);
+        if (parenMatch) {
+          variations.add(parenMatch[1].trim());
+          variations.add(parenMatch[2].trim());
+        }
+        
+        // Handle "at" pattern
+        const atMatch = nameLower.match(/^(.+?)\s+at\s+.+$/);
+        if (atMatch && atMatch[1].length > 2) {
+          variations.add(atMatch[1].trim());
+        }
+        
+        // Handle "of" pattern
+        const ofMatch = nameLower.match(/^(?:city|town|village|county)\s+of\s+(.+)$/);
+        if (ofMatch) {
+          variations.add(ofMatch[1].trim());
+        }
+        
+        // Handle directional prefixes
+        const dirMatch = nameLower.match(/^(north|south|east|west|northeast|northwest|southeast|southwest|upper|lower|old|new)\s+(.+)$/);
+        if (dirMatch && dirMatch[2].length > 2) {
+          variations.add(dirMatch[2].trim());
+        }
+        
+        // Apply abbreviation mappings
+        const currentVariations = Array.from(variations);
+        for (const variant of currentVariations) {
+          for (const [full, abbrevs] of Object.entries(ABBREV_MAP)) {
+            if (variant.includes(full)) {
+              for (const abbr of abbrevs) {
+                variations.add(variant.replace(full, abbr));
+              }
+            }
+            const words = variant.split(' ');
+            for (let i = 0; i < words.length; i++) {
+              for (const abbr of abbrevs) {
+                if (words[i] === abbr || words[i] === abbr.replace('.', '')) {
+                  const newWords = [...words];
+                  newWords[i] = full;
+                  variations.add(newWords.join(' '));
+                }
+              }
+            }
+          }
+        }
+        
+        // Handle hyphens
+        const hyphenVariations = Array.from(variations);
+        for (const variant of hyphenVariations) {
+          if (variant.includes('-')) {
+            variations.add(variant.replace(/-/g, ' '));
+          }
+        }
+        
+        // Handle "The" prefix
+        const theVariations = Array.from(variations);
+        for (const variant of theVariations) {
+          const theMatch = variant.match(/^the\s+(.+)$/);
+          if (theMatch) {
+            variations.add(theMatch[1].trim());
+          }
+        }
+        
+        // Handle CDP/city/town suffixes
+        const suffixVariations = Array.from(variations);
+        for (const variant of suffixVariations) {
+          for (const suffix of [' cdp', ' city', ' town', ' village', ' township']) {
+            if (variant.endsWith(suffix)) {
+              variations.add(variant.slice(0, -suffix.length).trim());
+            }
+          }
+        }
+        
+        // Handle possessives
+        const possessiveVariations = Array.from(variations);
+        for (const variant of possessiveVariations) {
+          if (variant.includes("'s ")) {
+            variations.add(variant.replace("'s ", "s "));
+          }
+        }
+        
+        return new Set(Array.from(variations).filter(v => v && v.length > 1));
+      }
+
+      // Fetch all active cities for the state (with pagination)
+      const allCities: Array<{ id: string; name: string; slug: string; state: string }> = [];
+      const pageSize = 1000;
+      let offset = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        const { data: citiesPage, error: citiesError } = await supabase
+          .from('cities')
+          .select('id, name, slug, state')
+          .eq('state', state)
+          .eq('active', true)
+          .order('name')
+          .range(offset, offset + pageSize - 1);
+
+        if (citiesError) {
+          return new Response(JSON.stringify({ error: citiesError.message }), {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        if (citiesPage && citiesPage.length > 0) {
+          allCities.push(...citiesPage);
+          offset += pageSize;
+          hasMore = citiesPage.length === pageSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      // Build lookup
+      const cityLookup = new Map<string, { id: string; name: string; slug: string }>();
+      const cityNames: string[] = [];
+      
+      for (const city of allCities) {
+        cityLookup.set(city.name.toLowerCase().trim(), city);
+        cityNames.push(city.name);
+      }
+
+      const queryClean = query.trim();
+      const queryLower = queryClean.toLowerCase();
+
+      // Try exact match first
+      if (cityLookup.has(queryLower)) {
+        const city = cityLookup.get(queryLower)!;
+        console.log(`enrichment-api - Exact match: "${query}" -> "${city.name}"`);
+        return new Response(JSON.stringify({
+          matched: true,
+          query: queryClean,
+          dbName: city.name,
+          dbSlug: city.slug,
+          dbId: city.id,
+          matchType: 'exact',
+          confidence: 1.0
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Try variation matching
+      const queryVars = normalizePlaceName(queryClean);
+      let bestMatch: { name: string; id: string; slug: string } | null = null;
+      let matchConfidence = 0;
+
+      for (const cityName of cityNames) {
+        const candVars = normalizePlaceName(cityName);
+        
+        for (const v of queryVars) {
+          if (candVars.has(v)) {
+            const city = cityLookup.get(cityName.toLowerCase());
+            if (city) {
+              // Calculate confidence
+              let commonCount = 0;
+              for (const qv of queryVars) {
+                if (candVars.has(qv)) commonCount++;
+              }
+              const confidence = commonCount / Math.max(queryVars.size, candVars.size);
+              
+              if (!bestMatch || cityName.length <= bestMatch.name.length) {
+                bestMatch = city;
+                matchConfidence = confidence;
+              }
+            }
+            break;
+          }
+        }
+      }
+
+      if (bestMatch) {
+        console.log(`enrichment-api - Variation match: "${query}" -> "${bestMatch.name}" (${matchConfidence})`);
+        return new Response(JSON.stringify({
+          matched: true,
+          query: queryClean,
+          dbName: bestMatch.name,
+          dbSlug: bestMatch.slug,
+          dbId: bestMatch.id,
+          matchType: 'variation',
+          confidence: matchConfidence
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      console.log(`enrichment-api - No match for: "${query}" in ${state}`);
+      return new Response(JSON.stringify({
+        matched: false,
+        query: queryClean,
+        matchType: 'none',
+        confidence: 0
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Invalid action - show all available actions
     return new Response(
       JSON.stringify({ 
@@ -1239,7 +1488,9 @@ serve(async (req) => {
           // Promotion
           promote_to_professional: 'POST ?action=promote_to_professional - Promote qualified license (body: {license_id})',
           // Custom query
-          query: 'POST ?action=query - Custom query (body: {table, select, filters: [{field, operator, value}], limit, offset})'
+          query: 'POST ?action=query - Custom query (body: {table, select, filters: [{field, operator, value}], limit, offset})',
+          // City matching
+          'match-city': 'POST ?action=match-city - Match city name variations (body: {query, state})'
         }
       }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
