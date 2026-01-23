@@ -447,21 +447,38 @@ function calculateNearbyNeighborhoods(
 // ============================================================
 
 async function fetchAllCACities(): Promise<Array<{name: string; slug: string; lat: number; lon: number}>> {
-  const { data, error } = await supabase
-    .from("cities")
-    .select("name, slug, lat, lon")
-    .eq("state", "California")
-    .eq("active", true)
-    .not("lat", "is", null)
-    .not("lon", "is", null)
-    .order("name");
+  const allCities: Array<{name: string; slug: string; lat: number; lon: number}> = [];
+  const pageSize = 1000;
+  let offset = 0;
+  let hasMore = true;
   
-  if (error) {
-    console.error("Error fetching cities:", error);
-    return [];
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from("cities")
+      .select("name, slug, lat, lon")
+      .eq("state", "California")
+      .eq("active", true)
+      .not("lat", "is", null)
+      .not("lon", "is", null)
+      .order("name")
+      .range(offset, offset + pageSize - 1);
+    
+    if (error) {
+      console.error("Error fetching cities:", error);
+      break;
+    }
+    
+    if (data && data.length > 0) {
+      allCities.push(...data);
+      offset += pageSize;
+      hasMore = data.length === pageSize;
+    } else {
+      hasMore = false;
+    }
   }
   
-  return data || [];
+  console.log(`Fetched ${allCities.length} California cities (paginated)`);
+  return allCities;
 }
 
 async function getPipelineState(): Promise<PipelineState | null> {
