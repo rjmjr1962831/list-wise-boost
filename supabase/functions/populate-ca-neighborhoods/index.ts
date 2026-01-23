@@ -562,8 +562,21 @@ async function processAllCities() {
     const existingState = await getPipelineState();
     
     if (existingState && existingState.status === "running") {
-      // Resume from where we left off
-      state = existingState;
+      // Resume from where we left off.
+      // IMPORTANT: keep total_cities aligned to the *current* paginated city list.
+      // Older runs may have persisted a stale 1000 due to default query limits.
+      const needsTotalUpdate = existingState.total_cities !== allCities.length;
+      state = {
+        ...existingState,
+        total_cities: allCities.length,
+        last_update: new Date().toISOString(),
+      };
+      if (needsTotalUpdate) {
+        console.log(
+          `Updating persisted total_cities from ${existingState.total_cities} → ${allCities.length} (paginated city list)`
+        );
+        await updatePipelineState(state);
+      }
       console.log(`Resuming from city index ${state.current_city_index}`);
     } else {
       // Start fresh
