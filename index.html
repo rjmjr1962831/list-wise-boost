@@ -418,7 +418,25 @@
       var parts = path.split('/').filter(function(p) { return p; });
       var h1 = document.getElementById('static-h1');
       
-      if (parts.length >= 3) {
+      // 5-segment: /:state/:city/:zip/:neighborhood/:category (neighborhood pages)
+      if (parts.length === 5) {
+        var stateSlug = parts[0].toLowerCase();
+        var citySlug = parts[1];
+        var neighborhoodSlug = parts[3];
+        var pageType = parts[4];
+        
+        var stateName = states[stateSlug] || toTitleCase(stateSlug);
+        var cityName = toTitleCase(citySlug);
+        var neighborhoodName = toTitleCase(neighborhoodSlug);
+        
+        if (pageType === 'top10realestateagents') {
+          h1.textContent = 'Top Agents: ' + neighborhoodName + ', ' + cityName + ', ' + stateName;
+        } else if (pageType === 'best-real-estate-agents') {
+          h1.textContent = 'Best Real Estate Agents in ' + neighborhoodName + ', ' + cityName + ', ' + stateName;
+        }
+      }
+      // 3-segment: /:state/:city/:category (city pages)
+      else if (parts.length >= 3) {
         var stateSlug = parts[0].toLowerCase();
         var citySlug = parts[1];
         var pageType = parts[2];
