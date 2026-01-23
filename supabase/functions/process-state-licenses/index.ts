@@ -58,6 +58,193 @@ function normalizeZillowUrl(url: string): string {
     .replace(/\?.*$/, ''); // Remove query params
 }
 
+// ============= PLACE NAME MATCHER =============
+// Handles city name variations: "LA" -> "Los Angeles", "Mt Shasta" -> "Mount Shasta"
+
+const ABBREV_MAP: Record<string, string[]> = {
+  'los angeles': ['la'],
+  'san francisco': ['sf'],
+  'san diego': ['sd'],
+  'san jose': ['sj'],
+  'saint': ['st', 'st.'],
+  'mount': ['mt', 'mt.'],
+  'fort': ['ft', 'ft.'],
+  'port': ['pt', 'pt.'],
+  'heights': ['hts', 'hgts'],
+  'beach': ['bch'],
+  'springs': ['spgs', 'sprgs'],
+  'valley': ['vly', 'vlly'],
+  'village': ['vlg', 'vil'],
+  'center': ['ctr', 'centre'],
+  'centre': ['ctr', 'center'],
+  'park': ['pk'],
+  'point': ['pt', 'pointe'],
+  'pointe': ['pt', 'point'],
+  'ranch': ['rch', 'rancho'],
+  'rancho': ['rch', 'ranch'],
+  'lake': ['lk'],
+  'lakes': ['lks'],
+  'mountain': ['mtn', 'mt'],
+  'creek': ['crk', 'ck'],
+};
+
+function normalizePlaceName(name: string): Set<string> {
+  if (!name) return new Set();
+  
+  const nameLower = name.toLowerCase().trim();
+  const variations = new Set<string>([nameLower]);
+  
+  // Handle parentheticals: "San Buenaventura (Ventura)" -> "Ventura"
+  const parenMatch = nameLower.match(/^(.+?)\s*\((.+?)\)$/);
+  if (parenMatch) {
+    variations.add(parenMatch[1].trim());
+    variations.add(parenMatch[2].trim());
+  }
+  
+  // Handle "at" pattern: "Victory at Verrado" -> "Victory"
+  const atMatch = nameLower.match(/^(.+?)\s+at\s+.+$/);
+  if (atMatch && atMatch[1].length > 2) {
+    variations.add(atMatch[1].trim());
+  }
+  
+  // Handle "of" pattern: "City of Industry" -> "Industry"
+  const ofMatch = nameLower.match(/^(?:city|town|village|county)\s+of\s+(.+)$/);
+  if (ofMatch) {
+    variations.add(ofMatch[1].trim());
+  }
+  
+  // Handle directional prefixes: "East Los Angeles" -> "Los Angeles"
+  const dirMatch = nameLower.match(/^(north|south|east|west|northeast|northwest|southeast|southwest|upper|lower|old|new)\s+(.+)$/);
+  if (dirMatch && dirMatch[2].length > 2) {
+    variations.add(dirMatch[2].trim());
+  }
+  
+  // Apply abbreviation mappings
+  const currentVariations = Array.from(variations);
+  for (const variant of currentVariations) {
+    for (const [full, abbrevs] of Object.entries(ABBREV_MAP)) {
+      if (variant.includes(full)) {
+        for (const abbr of abbrevs) {
+          variations.add(variant.replace(full, abbr));
+        }
+      }
+      const words = variant.split(' ');
+      for (let i = 0; i < words.length; i++) {
+        for (const abbr of abbrevs) {
+          if (words[i] === abbr || words[i] === abbr.replace('.', '')) {
+            const newWords = [...words];
+            newWords[i] = full;
+            variations.add(newWords.join(' '));
+          }
+        }
+      }
+    }
+  }
+  
+  // Handle hyphens: "Rancho-Santa-Margarita" <-> "Rancho Santa Margarita"
+  const hyphenVariations = Array.from(variations);
+  for (const variant of hyphenVariations) {
+    if (variant.includes('-')) {
+      variations.add(variant.replace(/-/g, ' '));
+    }
+  }
+  
+  // Handle "The" prefix: "The Sea Ranch" -> "Sea Ranch"
+  const theVariations = Array.from(variations);
+  for (const variant of theVariations) {
+    const theMatch = variant.match(/^the\s+(.+)$/);
+    if (theMatch) {
+      variations.add(theMatch[1].trim());
+    }
+  }
+  
+  // Handle CDP/city/town suffixes
+  const suffixVariations = Array.from(variations);
+  for (const variant of suffixVariations) {
+    for (const suffix of [' cdp', ' city', ' town', ' village', ' township']) {
+      if (variant.endsWith(suffix)) {
+        variations.add(variant.slice(0, -suffix.length).trim());
+      }
+    }
+  }
+  
+  // Handle possessives: "King's Beach" <-> "Kings Beach"
+  const possessiveVariations = Array.from(variations);
+  for (const variant of possessiveVariations) {
+    if (variant.includes("'s ")) {
+      variations.add(variant.replace("'s ", "s "));
+    }
+  }
+  
+  return new Set(Array.from(variations).filter(v => v && v.length > 1));
+}
+
+interface CityRecord {
+  id: string;
+  name: string;
+  slug: string;
+  state: string;
+}
+
+function matchToDbCities(query: string, cities: CityRecord[]): { matched: boolean; city?: CityRecord; matchType: string; confidence: number } {
+  if (!query || !query.trim()) {
+    return { matched: false, matchType: 'none', confidence: 0 };
+  }
+  
+  const queryClean = query.trim();
+  const queryLower = queryClean.toLowerCase();
+  
+  // Build lookup
+  const cityLookup = new Map<string, CityRecord>();
+  const cityNames: string[] = [];
+  
+  for (const city of cities) {
+    cityLookup.set(city.name.toLowerCase().trim(), city);
+    cityNames.push(city.name);
+  }
+  
+  // Try exact match first
+  if (cityLookup.has(queryLower)) {
+    return { matched: true, city: cityLookup.get(queryLower)!, matchType: 'exact', confidence: 1.0 };
+  }
+  
+  // Try variation matching
+  const queryVars = normalizePlaceName(queryClean);
+  let bestMatch: CityRecord | undefined;
+  let matchConfidence = 0;
+
+  for (const cityName of cityNames) {
+    const candVars = normalizePlaceName(cityName);
+    
+    for (const v of queryVars) {
+      if (candVars.has(v)) {
+        const city = cityLookup.get(cityName.toLowerCase());
+        if (city) {
+          let commonCount = 0;
+          for (const qv of queryVars) {
+            if (candVars.has(qv)) commonCount++;
+          }
+          const confidence = commonCount / Math.max(queryVars.size, candVars.size);
+          
+          if (!bestMatch || cityName.length <= bestMatch.name.length) {
+            bestMatch = city;
+            matchConfidence = confidence;
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  if (bestMatch) {
+    return { matched: true, city: bestMatch, matchType: 'variation', confidence: matchConfidence };
+  }
+  
+  return { matched: false, matchType: 'none', confidence: 0 };
+}
+
+// ============= END PLACE NAME MATCHER =============
+
 // Send failure notification email
 async function sendPipelineFailureEmail(
   state: string,
@@ -388,21 +575,30 @@ async function processAgent(
       console.log(`[${name}] Not qualified (${exaRating ?? 'NA'} stars, ${exaReviewCount ?? 'NA'} reviews) - saving to DB but skipping Firecrawl enrichment`);
     }
 
-    // 6. Get or create city record
+    // 6. Get or create city record using fuzzy matching
     const agentCity = fullData.primaryCity || city || null;
     
     let cityRecord = null;
     if (agentCity) {
-      const { data: existingCity } = await supabase
+      // First, fetch all cities for this state to use fuzzy matching
+      const { data: stateCities } = await supabase
         .from('cities')
-        .select('id')
-        .eq('name', agentCity)
+        .select('id, name, slug, state')
         .eq('state', state)
-        .maybeSingle();
-
-      if (existingCity) {
-        cityRecord = existingCity;
-      } else {
+        .eq('active', true);
+      
+      if (stateCities && stateCities.length > 0) {
+        // Use fuzzy matching to find city
+        const matchResult = matchToDbCities(agentCity, stateCities);
+        
+        if (matchResult.matched && matchResult.city) {
+          console.log(`[${name}] City matched: "${agentCity}" -> "${matchResult.city.name}" (${matchResult.matchType}, ${matchResult.confidence})`);
+          cityRecord = { id: matchResult.city.id };
+        }
+      }
+      
+      // If no match found, create new city
+      if (!cityRecord) {
         const citySlug = agentCity.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         const { data: newCity, error: cityError } = await supabase
           .from('cities')
@@ -420,6 +616,7 @@ async function processAgent(
           console.error(`[${name}] Failed to create city:`, cityError);
           return { name, licenseNumber: license_number, city: agentCity || 'Unknown', status: 'error', error: `City creation failed` };
         }
+        console.log(`[${name}] Created new city: "${agentCity}"`);
         cityRecord = newCity;
       }
     } else {
