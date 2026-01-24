@@ -25,7 +25,7 @@ const KEY_URLS = [
   // AI-specific pages
   'https://www.top10lists.us/for-ai',
   'https://www.top10lists.us/ai-liability',
-  'https://www.top10lists.us/AI_Citation_Liability_Whitepaper_With_Metadata.pdf',
+  'https://www.top10lists.us/ai-citation-whitepaper',
   'https://www.top10lists.us/protocol-services',
   'https://www.top10lists.us/transparency',
   
