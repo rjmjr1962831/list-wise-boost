@@ -1,119 +1,190 @@
 
-# Plan: DeepSeek California Neighborhood Discovery Test
 
-## Objective
-Create an edge function that uses DeepSeek to discover neighborhoods and their corresponding cities for 3 California test cities. This will evaluate whether DeepSeek can replace Gemini Flash 2.5 for the neighborhood discovery step (cheaper alternative).
+# California Neighborhood Pipeline Fix
 
-## Test Cities (Suggested)
-I recommend testing with cities of different sizes to evaluate DeepSeek's knowledge:
-1. **San Diego** - Large city with well-known neighborhoods (La Jolla, Pacific Beach, Gaslamp, etc.)
-2. **Oakland** - Mid-size city with distinct neighborhoods (Rockridge, Temescal, Jack London, etc.)
-3. **Anaheim** - Smaller city, fewer distinct neighborhoods (tests accuracy on sparse data)
+## Summary
 
-## Implementation
+This is a **4-step plan with NO deletions**. We will:
+1. Create the `pipeline_alerts` table for database-based logging
+2. Replace `populate-ca-neighborhoods/index.ts` with v2 code
+3. Reset the stalled pipeline state
+4. Restart the pipeline
 
-### New Edge Function: `discover-neighborhoods-deepseek`
+---
 
-**Location:** `supabase/functions/discover-neighborhoods-deepseek/index.ts`
+## Current State (Confirmed via Database Query)
 
-**Core Logic:**
-1. Accept a list of city names (or use hardcoded test cities)
-2. For each city, call DeepSeek with a neighborhood discovery prompt
-3. Return structured JSON with neighborhoods and their cities
+| Metric | Value |
+|--------|-------|
+| Pipeline status | `running` (but stalled) |
+| Last update | 2026-01-24 04:15:02 (~14 hours ago) |
+| Cities processed | 42 of 1,591 |
+| Last city | Antelope |
+| CA neighborhoods created | 68 |
+| Errors | 0 |
 
-### DeepSeek Prompt Design
-```text
-You are a California real estate expert. List all distinct, locally-recognized 
-neighborhoods in {cityName}, California.
+The pipeline is stuck because `triggerNextBatch()` in v1 silently fails after processing Antelope.
 
-For each neighborhood provide:
-- name: Official or commonly used name
-- slug: URL-safe lowercase-hyphenated version
-- city: The city this neighborhood belongs to
-- zipCodes: Array of ZIP codes covering this neighborhood
-- primaryZip: Main ZIP code
-- description: 1-2 sentence description
-- vibe: One phrase describing neighborhood character
+---
 
-Return ONLY valid JSON array. For small cities with no distinct neighborhoods, return [].
+## Step 1: Create `pipeline_alerts` Table
+
+**Type:** Database migration
+
+**SQL:**
+```sql
+CREATE TABLE IF NOT EXISTS pipeline_alerts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  pipeline TEXT NOT NULL,
+  severity TEXT NOT NULL CHECK (severity IN ('info', 'warning', 'error', 'critical')),
+  title TEXT NOT NULL,
+  message TEXT,
+  metadata JSONB DEFAULT '{}',
+  acknowledged BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_pipeline_alerts_lookup 
+  ON pipeline_alerts (pipeline, acknowledged, created_at DESC);
+
+CREATE INDEX idx_pipeline_alerts_unacked_critical 
+  ON pipeline_alerts (created_at DESC) 
+  WHERE severity IN ('error', 'critical') AND acknowledged = false;
 ```
 
-### Response Format
+**Purpose:** Replace unreliable SMTP email alerts with queryable database logs.
+
+---
+
+## Step 2: Replace Edge Function with v2
+
+**Type:** File modification
+
+**File:** `supabase/functions/populate-ca-neighborhoods/index.ts`
+
+**Key improvements in v2:**
+
+| Issue | v1 (Current) | v2 (New) |
+|-------|--------------|----------|
+| Batch size | 10 neighborhoods | 3 neighborhoods |
+| Alert method | SMTP email (fails silently) | Database logging to `pipeline_alerts` |
+| Error handling | One failure crashes batch | Per-neighborhood try/catch |
+| State persistence | End of batch only | After EACH neighborhood |
+| API validation | None | Validates GEMINI/ANTHROPIC keys at startup |
+| Tracking | Basic counters | Adds `neighborhoods_skipped`, `last_successful_neighborhood` |
+| Rate limits | Claude 600ms, Census 200ms | Claude 400ms, Census 150ms |
+
+**New API actions in v2:**
+
+| Action | Description |
+|--------|-------------|
+| `{"action": "status"}` | Get current state + 10 recent alerts |
+| `{"action": "reset"}` | Reset and start fresh from city 0 |
+| `{"action": "stop"}` | Stop the pipeline gracefully |
+| `{"action": "continue"}` | Continue processing (default) |
+| `{"action": "watchdog"}` | Check for stall (>20 min no update) |
+| `{"action": "alerts"}` | Get unacknowledged alerts only |
+| `{"action": "acknowledge-alerts"}` | Mark all alerts as read |
+
+**v2 Code Source:** The code from `populate-ca-neighborhoods-v2_2.ts` that you uploaded.
+
+**Note:** The document parser failed to extract the TypeScript code from your upload. I will need you to either:
+- Re-upload the `.ts` file directly (not wrapped in markdown), OR
+- Paste the v2 code in chat, OR
+- Confirm I should use the improvements described above and write the v2 code myself based on the existing v1 structure
+
+---
+
+## Step 3: Reset Stalled Pipeline State
+
+**Type:** SQL update (via Supabase insert tool)
+
+**SQL:**
+```sql
+UPDATE cron_state 
+SET 
+  status = 'stopped',
+  is_running = false,
+  message = '{"status": "stopped", "error_message": "Manually reset for v2 deployment"}',
+  updated_at = NOW()
+WHERE job_name = 'ca_neighborhood_population';
+```
+
+**Purpose:** Clear the stuck state so v2 can start fresh.
+
+---
+
+## Step 4: Restart Pipeline
+
+**Type:** API call to edge function
+
+**Command:**
+```bash
+curl -X POST "https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/populate-ca-neighborhoods" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer [ANON_KEY]" \
+  -d '{"action": "reset"}'
+```
+
+**Expected response:**
 ```json
 {
-  "city": "San Diego",
-  "neighborhoods": [
-    {
-      "name": "La Jolla",
-      "slug": "la-jolla", 
-      "city": "San Diego",
-      "zipCodes": ["92037", "92038"],
-      "primaryZip": "92037",
-      "description": "Upscale coastal community known for beaches and UC San Diego.",
-      "vibe": "Affluent seaside resort"
-    }
-  ],
-  "model": "deepseek-chat",
-  "processingTimeMs": 1234
+  "success": true,
+  "message": "Pipeline reset and started",
+  "result": {
+    "done": false,
+    "message": "Processed 3 neighborhoods in Adelanto. Progress: 0/1591 cities, 3 neighborhoods"
+  }
 }
 ```
 
-## Technical Details
+---
 
-### API Configuration
-- **Model:** `deepseek-chat` (cost-effective, good for structured output)
-- **Temperature:** 0.2 (low for factual accuracy)
-- **Max Tokens:** 8192 (neighborhoods can be verbose)
-- **API Key:** `DEEPSEEK_API_KEY` (already configured in secrets)
+## Implementation Order
 
-### Function Structure
-```typescript
-// 1. CORS headers (standard pattern)
-// 2. Accept POST with { cities: ["San Diego", "Oakland", "Anaheim"] }
-// 3. For each city:
-//    a. Fetch lat/lon from cities table
-//    b. Call DeepSeek with neighborhood discovery prompt
-//    c. Parse JSON response
-// 4. Return combined results with timing metrics
-```
+| Step | Action | Type |
+|------|--------|------|
+| 1 | Create `pipeline_alerts` table | Database migration |
+| 2 | Replace `populate-ca-neighborhoods/index.ts` with v2 | File modification |
+| 3 | Deploy edge function | Automatic |
+| 4 | Reset pipeline state | SQL update |
+| 5 | Restart pipeline with `{"action": "reset"}` | API call |
 
-### Comparison Metrics
-The function will capture:
-- Processing time per city
-- Number of neighborhoods discovered
-- Token usage (if available in response)
+---
 
-This allows direct comparison with the existing Gemini Flash implementation.
+## Files Summary
 
-## Files to Create
+### Database Changes
+| Change | Details |
+|--------|---------|
+| Create table | `pipeline_alerts` with 2 indexes |
 
-| File | Purpose |
-|------|---------|
-| `supabase/functions/discover-neighborhoods-deepseek/index.ts` | Main edge function |
-
-## Files to Modify
-
+### Files to Modify
 | File | Change |
 |------|--------|
-| `supabase/config.toml` | Add function entry (if needed) |
+| `supabase/functions/populate-ca-neighborhoods/index.ts` | Replace with v2 code (~970 lines) |
 
-## Testing Plan
-1. Deploy the edge function
-2. Call with test cities: `{ "cities": ["San Diego", "Oakland", "Anaheim"] }`
-3. Evaluate results for:
-   - Accuracy of neighborhood names
-   - Correct ZIP code assignments
-   - Quality of descriptions
-   - Processing time vs Gemini Flash
+### NO Files to Delete
+None. We are not deleting any edge functions or frontend files.
 
-## Expected Output
-A comparison showing:
-- DeepSeek neighborhoods discovered per city
-- Quality assessment (known neighborhoods included/missed)
-- Cost/speed comparison with current Gemini pipeline
+---
 
-## Next Steps After Testing
-If DeepSeek performs well:
-1. Add it as an option in the main `populate-ca-neighborhoods` function
-2. Use the two-model approach: DeepSeek for discovery → Sonnet for polish
-3. Run full California enrichment with the cheaper pipeline
+## Verification After Implementation
+
+1. Pipeline starts with `{"action": "reset"}` and returns success
+2. Status endpoint returns new state structure with `neighborhoods_skipped`
+3. Alerts are written to `pipeline_alerts` table (check with SQL query)
+4. Each neighborhood triggers state save (monitor `cron_state.updated_at`)
+5. Pipeline continues past Antelope without stalling
+
+---
+
+## Blocker: v2 Code File
+
+The file `populate-ca-neighborhoods-v2_2.ts` failed to parse. I need the actual TypeScript code to proceed.
+
+**Options:**
+1. Re-upload the raw `.ts` file
+2. Paste the v2 code directly in chat
+3. Tell me to write v2 myself based on the improvements listed above
+
