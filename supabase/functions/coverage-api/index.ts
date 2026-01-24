@@ -40,28 +40,61 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Fetch active neighborhoods (AZ only has data, CA has 0)
-    const { data: neighborhoods, error: nhError } = await supabase
-      .from('neighborhood_catalog')
-      .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, primary_zip, state, tier, median_home_value')
-      .in('state', ['AZ', 'CA'])
-      .eq('is_active', true)
-      .not('primary_zip', 'is', null)
-      .order('city_area')
-      .order('neighborhood');
+    // Fetch ALL active neighborhoods with pagination (bypasses 1000-row limit)
+    const PAGE_SIZE = 1000;
+    let allNeighborhoods: any[] = [];
+    let nhOffset = 0;
+    let nhHasMore = true;
 
-    if (nhError) throw nhError;
+    while (nhHasMore) {
+      const { data, error } = await supabase
+        .from('neighborhood_catalog')
+        .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, primary_zip, state, tier, median_home_value')
+        .in('state', ['AZ', 'CA'])
+        .eq('is_active', true)
+        .not('primary_zip', 'is', null)
+        .order('city_area')
+        .order('neighborhood')
+        .range(nhOffset, nhOffset + PAGE_SIZE - 1);
 
-    // Fetch active cities for AZ and CA
-    const { data: cities, error: cityError } = await supabase
-      .from('cities')
-      .select('id, name, slug, state, state_slug')
-      .in('state_slug', ['arizona', 'california'])
-      .eq('active', true)
-      .order('state_slug')
-      .order('name');
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        allNeighborhoods = allNeighborhoods.concat(data);
+        nhOffset += data.length;
+        nhHasMore = data.length === PAGE_SIZE;
+      } else {
+        nhHasMore = false;
+      }
+    }
+    const neighborhoods = allNeighborhoods;
 
-    if (cityError) throw cityError;
+    // Fetch ALL active cities with pagination
+    let allCities: any[] = [];
+    let cityOffset = 0;
+    let cityHasMore = true;
+
+    while (cityHasMore) {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('id, name, slug, state, state_slug')
+        .in('state_slug', ['arizona', 'california'])
+        .eq('active', true)
+        .order('state_slug')
+        .order('name')
+        .range(cityOffset, cityOffset + PAGE_SIZE - 1);
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        allCities = allCities.concat(data);
+        cityOffset += data.length;
+        cityHasMore = data.length === PAGE_SIZE;
+      } else {
+        cityHasMore = false;
+      }
+    }
+    const cities = allCities;
 
     // Count by state
     const azNeighborhoods = (neighborhoods || []).filter(n => n.state === 'AZ');
