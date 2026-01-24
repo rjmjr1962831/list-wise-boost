@@ -36,7 +36,7 @@ export default function VisibilitySuccessPage() {
     <>
       <Helmet>
         <title>{isFreeOnly ? 'Coverage Confirmed' : 'Payment Successful'} | Top10Lists</title>
-        <meta name="description" content={isFreeOnly ? "Your city coverage has been set up successfully." : "Your subscription has been activated successfully."} />
+        <meta name="description" content={isFreeOnly ? "Your free city listing has been confirmed." : "Your neighborhood endorsement has been activated successfully."} />
       </Helmet>
 
       <div className="container max-w-2xl mx-auto px-4 py-8">
@@ -51,8 +51,8 @@ export default function VisibilitySuccessPage() {
           
           <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
             {isFreeOnly 
-              ? "Your city coverage has been confirmed. You may be evaluated for rankings in your selected cities if you qualify."
-              : "Your subscription has been activated. You'll now appear with enhanced visibility in your selected coverage areas."
+              ? "Your free city listing has been confirmed. You may be evaluated for rankings in your selected cities if you qualify."
+              : "Your neighborhood endorsement has been activated. You are now a Verified Neighborhood Expert in your selected areas."
             }
           </p>
 

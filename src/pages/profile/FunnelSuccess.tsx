@@ -113,15 +113,15 @@ export default function FunnelSuccess() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-semibold mb-4">Next: Select Your Coverage Areas</h2>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Now that your profile is live, choose the cities and neighborhoods where you'd like to be featured. Your primary city listing is free—additional areas are optional.
+                  Now that your profile is live, choose the neighborhoods where you'd like to be featured. City listings are free for all qualified agents. Neighborhood endorsement and verification is optional.
                 </p>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3 p-3 bg-primary/5 rounded-lg border border-primary/20">
                     <MapPin className="h-5 w-5 text-primary mt-0.5 shrink-0" />
                     <div>
-                      <p className="font-medium text-sm">City Coverage</p>
+                      <p className="font-medium text-sm">City Coverage (Free)</p>
                       <p className="text-sm text-muted-foreground">
-                        Select the cities where you work. Your primary city is included free.
+                        City listings are free for all qualified agents.
                       </p>
                     </div>
                   </div>

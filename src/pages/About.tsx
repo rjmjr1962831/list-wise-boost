@@ -146,7 +146,7 @@ const About = () => {
                 Our editorial reference pages are structured to be clear to both human readers and AI systems. When a consumer asks a conversational AI for a recommendation, or when a search engine looks for authoritative sources, we provide factual, well organized information designed to answer that question directly.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                Agents who meet our standards may choose expanded editorial coverage and broader distribution. Payment affects the depth of presentation and the scope of coverage. It does not change ranking, evaluation, or eligibility.
+                City listings are free for all qualified agents. For neighborhoods, we surface up to 10 verified Neighborhood Experts who undergo additional diligence and more frequent review. Because we endorse these agents by name, we accept additional risk. Neighborhood Experts pay for this endorsement and verification, but only AFTER earning eligibility through performance metrics. Payment does not change ranking, evaluation, or eligibility.
               </p>
             </div>
           </div>
@@ -169,7 +169,7 @@ const About = () => {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-primary font-bold">•</span>
-                    <span>We do not offer pinning or guaranteed placement. Every list reflects editorial judgment.</span>
+                    <span>We do not sell city placement. City listings are free for all qualified agents.</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-primary font-bold">•</span>

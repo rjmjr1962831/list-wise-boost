@@ -482,8 +482,8 @@ export default function Transparency() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Visibility Programs</div>
-                  <p className="text-sm text-muted-foreground">Qualified agents may pay for additional city coverage, but payment never affects ranking position or inclusion eligibility.</p>
+                  <div className="font-medium">Neighborhood Endorsement</div>
+                  <p className="text-sm text-muted-foreground">Qualified agents may pay for neighborhood endorsement and verification. City listings are free for all who qualify. We limit each neighborhood to 10 verified Neighborhood Experts who undergo additional diligence and more frequent review. Payment never affects ranking position or inclusion eligibility.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">

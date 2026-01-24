@@ -226,7 +226,7 @@ export default function VisibilityCoveragePage() {
     <>
       <Helmet>
         <title>Select Your Coverage Areas | Top10Lists</title>
-        <meta name="description" content="Choose the cities where you actively serve clients. City coverage is free." />
+        <meta name="description" content="Choose the cities where you actively serve clients. City listings are free for all qualified agents." />
       </Helmet>
 
       <div className="container max-w-7xl mx-auto px-4 py-8">
@@ -234,7 +234,7 @@ export default function VisibilityCoveragePage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Select Your Coverage Areas</h1>
           <p className="text-muted-foreground mt-1">
-            Choose the cities where you want to appear in the Top 10. City coverage is free.
+            Choose the cities where you want to appear. City listings are free for all qualified agents.
           </p>
         </div>
 
