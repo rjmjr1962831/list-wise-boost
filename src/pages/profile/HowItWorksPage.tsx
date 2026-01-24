@@ -126,12 +126,12 @@ export default function HowItWorksPage() {
                 </div>
                 
                 <div className="space-y-3 p-4 rounded-lg border border-primary/30 bg-primary/5">
-                  <h3 className="font-semibold text-primary">Premium Placement</h3>
+                  <h3 className="font-semibold text-primary">Verified Neighborhood Expertise</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
-                    <li>• <strong className="text-foreground">Guaranteed placement</strong> - always visible</li>
-                    <li>• Available in all cities including premium markets</li>
+                    <li>• <strong className="text-foreground">Neighborhood endorsement</strong> - verified and featured</li>
+                    <li>• Up to 10 Neighborhood Experts per neighborhood</li>
+                    <li>• Additional diligence and more frequent review</li>
                     <li>• Structured for AI citation and retrieval</li>
-                    <li>• 24-month price lock guarantee</li>
                   </ul>
                 </div>
               </div>

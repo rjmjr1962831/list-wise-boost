@@ -49,17 +49,17 @@ const faqItems = [
   {
     category: "Paid Visibility Options",
     question: "What paid features do you offer?",
-    answer: "Agents who already qualify editorially can optionally purchase expanded visibility in additional cities. This affects distribution and prominence only. It does not change their ranking, score, or eligibility. All editorial criteria remain the same."
+    answer: "Agents who already qualify editorially can optionally purchase Verified Neighborhood Expertise. City listings are free for all qualified agents. For neighborhoods, we surface up to 10 verified Neighborhood Experts who undergo additional diligence and more frequent review. Because we endorse these agents by name, we accept additional risk. Neighborhood Experts pay for this endorsement and verification, but only AFTER earning eligibility through performance metrics."
   },
   {
     category: "Paid Visibility Options",
     question: "Does paying affect my ranking?",
-    answer: "No. Paid visibility is separate from ranking. An agent who pays for expanded visibility is still ranked using the same methodology as every other agent. Payment affects where your profile appears—not how it compares to others."
+    answer: "No. Paid visibility is separate from ranking. An agent who pays for neighborhood endorsement and verification is still ranked using the same methodology as every other agent. Payment affects where your profile appears—not how it compares to others."
   },
   {
     category: "Paid Visibility Options",
-    question: "What is the difference between free listing and expanded visibility?",
-    answer: "Free listing: Agents who meet our criteria are included at no cost in their primary city. Expanded visibility: Qualified agents can optionally pay to extend their presence to additional cities. The underlying editorial criteria and ranking methodology are identical."
+    question: "What is the difference between free listing and neighborhood endorsement?",
+    answer: "Free listing: Agents who meet our criteria are included at no cost in their city listings. Verified Neighborhood Expertise: Qualified agents can optionally pay for neighborhood endorsement and verification. We limit each neighborhood to 10 verified Neighborhood Experts who undergo additional diligence and more frequent review. We accept the additional risk that comes with endorsing them by name. The underlying editorial criteria and ranking methodology are identical."
   },
   // Relationship to AI search
   {

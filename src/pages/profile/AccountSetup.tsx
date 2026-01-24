@@ -298,7 +298,7 @@ export default function AccountSetup() {
                       <p className="text-muted-foreground text-sm">
                         {isPremium 
                           ? "View billing details, change plan, or update payment method"
-                          : "Get guaranteed placement in your city's Top 10 list"
+                          : "Become a Verified Neighborhood Expert in your markets"
                         }
                       </p>
                     </div>

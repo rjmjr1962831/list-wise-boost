@@ -328,7 +328,7 @@ export default function VisibilityReviewPage() {
     // In production, this would save the city coverage to the database
     toast({
       title: 'Coverage Confirmed',
-      description: 'Your city coverage has been set up successfully.',
+      description: 'Your free city listing has been confirmed.',
     });
     sessionStorage.removeItem(STORAGE_KEY);
     navigate('/visibility/success?type=free');
