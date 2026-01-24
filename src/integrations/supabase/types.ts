@@ -2149,6 +2149,39 @@ export type Database = {
           },
         ]
       }
+      pipeline_alerts: {
+        Row: {
+          acknowledged: boolean | null
+          created_at: string | null
+          id: string
+          message: string | null
+          metadata: Json | null
+          pipeline: string
+          severity: string
+          title: string
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          pipeline: string
+          severity: string
+          title: string
+        }
+        Update: {
+          acknowledged?: boolean | null
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          metadata?: Json | null
+          pipeline?: string
+          severity?: string
+          title?: string
+        }
+        Relationships: []
+      }
       pipeline_state: {
         Row: {
           batch_size: number

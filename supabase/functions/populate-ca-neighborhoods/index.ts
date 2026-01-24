@@ -1,28 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
 const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") || "robert@top10lists.us";
-
-// SMTP Config
-const SMTP_USERNAME = Deno.env.get("SMTP_USERNAME");
-const SMTP_PASSWORD = Deno.env.get("SMTP_PASSWORD");
-const SMTP_FROM_EMAIL = Deno.env.get("SMTP_FROM_EMAIL") || "hello@top10lists.us";
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 // Census ACS API (free, no key needed)
 const CENSUS_ACS_BASE = "https://api.census.gov/data/2022/acs/acs5";
 
-// Safeguards
+// v2 Safeguards - reduced batch size for reliability
 const MAX_NEIGHBORHOODS_PER_CITY = 50;
-const NEIGHBORHOODS_PER_BATCH = 10; // Process 10 neighborhoods at a time
-const CENSUS_RATE_LIMIT_MS = 200;
-const CLAUDE_RATE_LIMIT_MS = 600;
+const NEIGHBORHOODS_PER_BATCH = 3; // Reduced from 10 to prevent timeout
+const CENSUS_RATE_LIMIT_MS = 150; // Reduced from 200
+const CLAUDE_RATE_LIMIT_MS = 400; // Reduced from 600
 const STALL_THRESHOLD_MINUTES = 20;
 
 const corsHeaders = {
@@ -70,56 +63,80 @@ interface NeighborhoodData {
 
 interface PipelineState {
   current_city_index: number;
-  current_neighborhood_index: number; // Track within city
+  current_neighborhood_index: number;
   total_cities: number;
   cities_processed: number;
   neighborhoods_created: number;
+  neighborhoods_skipped: number; // v2: track skipped neighborhoods
   errors: number;
   status: "running" | "completed" | "failed" | "stopped";
   last_city_processed: string | null;
+  last_successful_neighborhood: string | null; // v2: track last successful
   current_city_name: string | null;
-  current_city_neighborhoods: NeighborhoodDiscovery[] | null; // Cache discovered neighborhoods
+  current_city_neighborhoods: NeighborhoodDiscovery[] | null;
   started_at: string;
   last_update: string;
   error_message: string | null;
 }
 
 // ============================================================
-// EMAIL ALERT FUNCTION
+// v2: DATABASE ALERT LOGGING (replaces unreliable SMTP)
 // ============================================================
 
-async function sendAlertEmail(subject: string, body: string) {
+async function logAlert(
+  severity: "info" | "warning" | "error" | "critical",
+  title: string,
+  message: string,
+  metadata: Record<string, unknown> = {}
+) {
   try {
-    if (!SMTP_USERNAME || !SMTP_PASSWORD) {
-      console.error("SMTP credentials not configured, cannot send alert email");
-      return;
-    }
+    const { error } = await supabase
+      .from("pipeline_alerts")
+      .insert({
+        pipeline: "ca_neighborhood_population",
+        severity,
+        title,
+        message,
+        metadata
+      });
     
-    const client = new SMTPClient({
-      connection: {
-        hostname: "mx1.privateemail.com",
-        port: 465,
-        tls: true,
-        auth: {
-          username: SMTP_USERNAME,
-          password: SMTP_PASSWORD,
-        },
-      },
-    });
-
-    await client.send({
-      from: SMTP_FROM_EMAIL,
-      to: ADMIN_EMAIL,
-      subject: subject,
-      content: body,
-      html: body.replace(/\n/g, "<br>"),
-    });
-
-    await client.close();
-    console.log("Alert email sent successfully");
-  } catch (error) {
-    console.error("Failed to send alert email:", error);
+    if (error) {
+      console.error("Failed to log alert:", error);
+    } else {
+      console.log(`[ALERT ${severity.toUpperCase()}] ${title}`);
+    }
+  } catch (err) {
+    console.error("Alert logging exception:", err);
   }
+}
+
+async function getRecentAlerts(limit: number = 10) {
+  const { data, error } = await supabase
+    .from("pipeline_alerts")
+    .select("*")
+    .eq("pipeline", "ca_neighborhood_population")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  
+  if (error) {
+    console.error("Failed to fetch alerts:", error);
+    return [];
+  }
+  return data || [];
+}
+
+async function acknowledgeAlerts() {
+  const { error } = await supabase
+    .from("pipeline_alerts")
+    .update({ acknowledged: true })
+    .eq("pipeline", "ca_neighborhood_population")
+    .eq("acknowledged", false);
+  
+  if (error) {
+    console.error("Failed to acknowledge alerts:", error);
+    return false;
+  }
+  return true;
 }
 
 // ============================================================
@@ -143,6 +160,7 @@ async function triggerNextBatch() {
     console.log("Triggered next batch");
   } catch (error) {
     console.error("Failed to trigger next batch:", error);
+    await logAlert("error", "Self-trigger failed", `Error: ${error}`, { error: String(error) });
   }
 }
 
@@ -221,6 +239,7 @@ If ${cityName} has no distinct neighborhoods (common for small cities), respond 
     }
   } catch (error) {
     console.error(`Gemini discovery error for ${cityName}:`, error);
+    await logAlert("error", `Gemini error for ${cityName}`, String(error), { city: cityName });
   }
   
   return [];
@@ -366,6 +385,10 @@ Respond with ONLY the HTML content, no markdown code blocks:`;
     return `<p>${text.trim()}</p>`;
   } catch (error) {
     console.error(`Claude writeup error for ${neighborhood.neighborhood}:`, error);
+    await logAlert("warning", `Claude error for ${neighborhood.neighborhood}`, String(error), { 
+      city: neighborhood.city_area,
+      neighborhood: neighborhood.neighborhood 
+    });
     return `<p>${neighborhood.neighborhood} is a neighborhood in ${neighborhood.city_area}, California.</p>`;
   }
 }
@@ -464,6 +487,8 @@ async function getPipelineState(): Promise<PipelineState | null> {
 }
 
 async function updatePipelineState(state: PipelineState) {
+  state.last_update = new Date().toISOString();
+  
   const { error } = await supabase
     .from("cron_state")
     .upsert({
@@ -480,268 +505,427 @@ async function updatePipelineState(state: PipelineState) {
   }
 }
 
-async function saveNeighborhoods(neighborhoods: Partial<NeighborhoodData>[]): Promise<{success: number; failed: number}> {
-  let success = 0;
-  let failed = 0;
-  const batchSize = 25;
+async function saveNeighborhood(neighborhood: Partial<NeighborhoodData>): Promise<boolean> {
+  const { error } = await supabase
+    .from("neighborhood_catalog")
+    .upsert(neighborhood, { 
+      onConflict: "state,city_area_slug,neighborhood_slug",
+      ignoreDuplicates: false
+    });
   
-  for (let i = 0; i < neighborhoods.length; i += batchSize) {
-    const batch = neighborhoods.slice(i, i + batchSize);
-    
-    const { error } = await supabase
-      .from("neighborhood_catalog")
-      .upsert(batch, { 
-        onConflict: "state,city_area_slug,neighborhood_slug",
-        ignoreDuplicates: false
-      });
-    
-    if (error) {
-      console.error(`Batch insert error:`, error);
-      failed += batch.length;
-    } else {
-      success += batch.length;
-    }
-    
-    await new Promise(r => setTimeout(r, 200));
+  if (error) {
+    console.error(`Insert error for ${neighborhood.neighborhood}:`, error);
+    return false;
   }
-  
-  return { success, failed };
+  return true;
 }
 
 // ============================================================
-// PROCESS ONE BATCH OF NEIGHBORHOODS (up to 10)
+// v2: PROCESS SINGLE NEIGHBORHOOD (with per-neighborhood error handling)
 // ============================================================
 
-async function processNextBatch(): Promise<{done: boolean; message: string}> {
-  const allCities = await fetchAllCACities();
-  
-  if (allCities.length === 0) {
-    return { done: true, message: "No California cities found" };
-  }
-  
-  let state = await getPipelineState();
-  
-  // Initialize if not exists or completed/failed
-  if (!state || state.status === "completed" || state.status === "failed" || state.status === "stopped") {
-    state = {
-      current_city_index: 0,
-      current_neighborhood_index: 0,
-      total_cities: allCities.length,
-      cities_processed: 0,
-      neighborhoods_created: 0,
-      errors: 0,
-      status: "running",
-      last_city_processed: null,
-      current_city_name: null,
-      current_city_neighborhoods: null,
-      started_at: new Date().toISOString(),
-      last_update: new Date().toISOString(),
-      error_message: null
-    };
-    await updatePipelineState(state);
-    console.log("Started new pipeline run");
-  }
-  
-  // Update total_cities in case it changed
-  if (state.total_cities !== allCities.length) {
-    state.total_cities = allCities.length;
-  }
-  
-  // Check if we're done
-  if (state.current_city_index >= allCities.length) {
-    state.status = "completed";
-    state.last_update = new Date().toISOString();
-    await updatePipelineState(state);
-    
-    await sendAlertEmail(
-      `✅ CA Neighborhoods: Pipeline Complete`,
-      `The California neighborhood population pipeline has completed successfully.\n\nSummary:\n- Cities processed: ${state.cities_processed}\n- Neighborhoods created: ${state.neighborhoods_created}\n- Errors: ${state.errors}\n- Started: ${state.started_at}\n- Completed: ${new Date().toISOString()}`
-    );
-    
-    return { done: true, message: "Pipeline completed!" };
-  }
-  
-  const city = allCities[state.current_city_index];
-  console.log(`\n[${state.current_city_index + 1}/${allCities.length}] ${city.name}`);
-  
+async function processSingleNeighborhood(
+  discovery: NeighborhoodDiscovery,
+  cityName: string,
+  citySlug: string,
+  allStats: Array<{income: number | null, homeValue: number | null}>
+): Promise<{ success: boolean; neighborhood: Partial<NeighborhoodData> | null; error?: string }> {
   try {
-    // Step 1: Discover neighborhoods if we haven't for this city
-    let neighborhoods = state.current_city_neighborhoods;
+    // Fetch census data
+    const censusData = await fetchCensusDataForZip(discovery.primaryZip);
+    await new Promise(r => setTimeout(r, CENSUS_RATE_LIMIT_MS));
     
-    if (!neighborhoods || state.current_city_name !== city.name) {
-      console.log("  Discovering neighborhoods with Gemini...");
-      neighborhoods = await discoverNeighborhoods(city.name, city.lat, city.lon);
-      state.current_city_name = city.name;
-      state.current_city_neighborhoods = neighborhoods;
-      state.current_neighborhood_index = 0;
-      console.log(`  Found ${neighborhoods.length} neighborhoods`);
+    // Calculate tier
+    const tierData = calculateTier(censusData.income, censusData.homeValue, allStats);
+    
+    // Build partial neighborhood
+    const partial: Partial<NeighborhoodData> = {
+      state: "California",
+      city_area: cityName,
+      city_area_slug: citySlug,
+      neighborhood: discovery.name,
+      neighborhood_slug: discovery.slug,
+      zips: discovery.zipCodes,
+      primary_zip: discovery.primaryZip,
+      lat: discovery.lat,
+      lon: discovery.lon,
+      median_income: censusData.income,
+      median_home_value: censusData.homeValue,
+      tier: tierData.tier,
+      income_pct: tierData.income_pct,
+      value_pct: tierData.value_pct,
+      score: tierData.score,
+      is_verified: false,
+      is_active: true,
+      writeup_research: JSON.stringify({
+        description: discovery.description,
+        features: discovery.features,
+        housingTypes: discovery.housingTypes,
+        vibe: discovery.vibe
+      }),
+      nearby_neighborhoods: []
+    };
+    
+    // Generate writeup
+    const writeup = await generateWriteup(partial);
+    await new Promise(r => setTimeout(r, CLAUDE_RATE_LIMIT_MS));
+    
+    partial.writeup_html = writeup;
+    partial.writeup_generated_at = new Date().toISOString();
+    
+    // Save to database
+    const saved = await saveNeighborhood(partial);
+    
+    if (!saved) {
+      return { success: false, neighborhood: null, error: "Database save failed" };
+    }
+    
+    return { success: true, neighborhood: partial };
+  } catch (error) {
+    return { success: false, neighborhood: null, error: String(error) };
+  }
+}
+
+// ============================================================
+// MAIN BATCH PROCESSING
+// ============================================================
+
+async function processBatch(state: PipelineState, cities: Array<{name: string; slug: string; lat: number; lon: number}>): Promise<{done: boolean; message: string}> {
+  let neighborhoodsProcessedThisBatch = 0;
+  
+  // v2: Validate API keys at startup
+  if (!GEMINI_API_KEY) {
+    await logAlert("critical", "Missing GEMINI_API_KEY", "Cannot discover neighborhoods without Gemini API key");
+    state.status = "failed";
+    state.error_message = "Missing GEMINI_API_KEY";
+    await updatePipelineState(state);
+    return { done: true, message: "Missing GEMINI_API_KEY" };
+  }
+  
+  if (!ANTHROPIC_API_KEY) {
+    await logAlert("critical", "Missing ANTHROPIC_API_KEY", "Cannot generate writeups without Anthropic API key");
+    state.status = "failed";
+    state.error_message = "Missing ANTHROPIC_API_KEY";
+    await updatePipelineState(state);
+    return { done: true, message: "Missing ANTHROPIC_API_KEY" };
+  }
+  
+  while (state.current_city_index < cities.length) {
+    const city = cities[state.current_city_index];
+    
+    // If we don't have neighborhoods for this city, discover them
+    if (!state.current_city_neighborhoods) {
+      console.log(`Discovering neighborhoods for ${city.name}...`);
+      const discoveries = await discoverNeighborhoods(city.name, city.lat!, city.lon!);
       
-      // If no neighborhoods, move to next city
-      if (neighborhoods.length === 0) {
-        state.current_city_index++;
-        state.cities_processed++;
+      if (discoveries.length === 0) {
+        console.log(`No neighborhoods found for ${city.name}, moving to next city`);
+        state.neighborhoods_skipped = (state.neighborhoods_skipped || 0) + 1;
         state.last_city_processed = city.name;
+        state.current_city_index++;
+        state.current_neighborhood_index = 0;
         state.current_city_neighborhoods = null;
         state.current_city_name = null;
-        state.last_update = new Date().toISOString();
+        state.cities_processed++;
         await updatePipelineState(state);
-        return { done: false, message: `${city.name}: No neighborhoods, moving to next city` };
+        continue;
       }
+      
+      state.current_city_neighborhoods = discoveries;
+      state.current_city_name = city.name;
+      state.current_neighborhood_index = 0;
+      await updatePipelineState(state);
+      console.log(`Found ${discoveries.length} neighborhoods for ${city.name}`);
     }
     
-    // Step 2: Process up to NEIGHBORHOODS_PER_BATCH neighborhoods
-    const startIdx = state.current_neighborhood_index;
-    const endIdx = Math.min(startIdx + NEIGHBORHOODS_PER_BATCH, neighborhoods.length);
-    const batchNeighborhoods = neighborhoods.slice(startIdx, endIdx);
+    // Process neighborhoods in this city
+    const neighborhoods = state.current_city_neighborhoods!;
     
-    console.log(`  Processing neighborhoods ${startIdx + 1}-${endIdx} of ${neighborhoods.length}`);
-    
-    // Collect unique ZIP codes for this batch
-    const batchZips = new Set<string>();
-    for (const n of batchNeighborhoods) {
-      n.zipCodes.forEach(z => batchZips.add(z));
-    }
-    
-    // Fetch Census data for batch ZIPs
-    console.log(`  Fetching Census data for ${batchZips.size} ZIPs...`);
-    const zipStats = new Map<string, {income: number | null, homeValue: number | null}>();
-    for (const zip of batchZips) {
-      const stats = await fetchCensusDataForZip(zip);
-      zipStats.set(zip, stats);
+    // Collect census stats for tier calculation (do once per city)
+    const allStats: Array<{income: number | null, homeValue: number | null}> = [];
+    for (const n of neighborhoods) {
+      const stats = await fetchCensusDataForZip(n.primaryZip);
+      allStats.push(stats);
       await new Promise(r => setTimeout(r, CENSUS_RATE_LIMIT_MS));
     }
     
-    const allStats = Array.from(zipStats.values());
-    const enrichedBatch: Partial<NeighborhoodData>[] = [];
-    
-    // Enrich each neighborhood in batch
-    for (const n of batchNeighborhoods) {
-      const primaryStats = zipStats.get(n.primaryZip) || { income: null, homeValue: null };
-      const tierData = calculateTier(primaryStats.income, primaryStats.homeValue, allStats);
+    while (state.current_neighborhood_index < neighborhoods.length) {
+      if (neighborhoodsProcessedThisBatch >= NEIGHBORHOODS_PER_BATCH) {
+        // Time to yield and self-trigger
+        console.log(`Batch complete: ${neighborhoodsProcessedThisBatch} neighborhoods. Triggering next batch...`);
+        await updatePipelineState(state);
+        await triggerNextBatch();
+        return { 
+          done: false, 
+          message: `Processed ${neighborhoodsProcessedThisBatch} neighborhoods in ${city.name}. Progress: ${state.current_city_index}/${state.total_cities} cities, ${state.neighborhoods_created} neighborhoods` 
+        };
+      }
       
-      const enriched: Partial<NeighborhoodData> = {
-        state: "CA",
-        city_area: city.name,
-        city_area_slug: city.slug,
-        neighborhood: n.name,
-        neighborhood_slug: n.slug,
-        zips: n.zipCodes,
-        primary_zip: n.primaryZip,
-        lat: n.lat,
-        lon: n.lon,
-        median_income: primaryStats.income,
-        median_home_value: primaryStats.homeValue,
-        tier: tierData.tier,
-        income_pct: tierData.income_pct,
-        value_pct: tierData.value_pct,
-        score: tierData.score,
-        is_verified: false,
-        is_active: true,
-        writeup_research: JSON.stringify({
-          description: n.description,
-          features: n.features,
-          housingTypes: n.housingTypes,
-          vibe: n.vibe
-        })
-      };
+      const discovery = neighborhoods[state.current_neighborhood_index];
+      console.log(`Processing ${discovery.name} (${state.current_neighborhood_index + 1}/${neighborhoods.length}) in ${city.name}`);
       
-      // Generate writeup
-      console.log(`    Writing: ${n.name}`);
-      enriched.writeup_html = await generateWriteup(enriched);
-      enriched.writeup_generated_at = new Date().toISOString();
-      await new Promise(r => setTimeout(r, CLAUDE_RATE_LIMIT_MS));
+      // v2: Per-neighborhood try/catch
+      const result = await processSingleNeighborhood(discovery, city.name, city.slug, allStats);
       
-      // Calculate nearby (within batch only for now, will update later)
-      enriched.nearby_neighborhoods = [];
+      if (result.success) {
+        state.neighborhoods_created++;
+        state.last_successful_neighborhood = `${discovery.name}, ${city.name}`;
+        console.log(`✓ Created ${discovery.name}`);
+      } else {
+        state.errors++;
+        await logAlert("error", `Failed: ${discovery.name}`, result.error || "Unknown error", {
+          city: city.name,
+          neighborhood: discovery.name,
+          index: state.current_neighborhood_index
+        });
+        console.error(`✗ Failed ${discovery.name}: ${result.error}`);
+      }
       
-      enrichedBatch.push(enriched);
+      state.current_neighborhood_index++;
+      neighborhoodsProcessedThisBatch++;
+      
+      // v2: Save state after EACH neighborhood (crash recovery)
+      await updatePipelineState(state);
     }
     
-    // Save batch to database
-    console.log(`  Saving ${enrichedBatch.length} neighborhoods...`);
-    const saveResult = await saveNeighborhoods(enrichedBatch);
-    
-    // Update state
-    state.current_neighborhood_index = endIdx;
-    state.neighborhoods_created += saveResult.success;
-    state.errors += saveResult.failed;
-    state.last_update = new Date().toISOString();
-    
-    // Check if we finished this city
-    if (endIdx >= neighborhoods.length) {
-      state.current_city_index++;
-      state.cities_processed++;
-      state.last_city_processed = city.name;
-      state.current_city_neighborhoods = null;
-      state.current_city_name = null;
-      state.current_neighborhood_index = 0;
-      console.log(`  Completed ${city.name}!`);
-    }
-    
-    await updatePipelineState(state);
-    
-    const progress = `${state.cities_processed}/${allCities.length} cities, ${state.neighborhoods_created} neighborhoods`;
-    return { 
-      done: false, 
-      message: `Processed ${batchNeighborhoods.length} neighborhoods in ${city.name}. Progress: ${progress}` 
-    };
-    
-  } catch (error) {
-    console.error(`Error processing ${city.name}:`, error);
-    
-    state.errors++;
-    state.error_message = `Error on ${city.name}: ${error instanceof Error ? error.message : String(error)}`;
-    state.last_update = new Date().toISOString();
-    
-    // Skip to next city on error
+    // City complete
+    state.last_city_processed = city.name;
+    state.cities_processed++;
     state.current_city_index++;
+    state.current_neighborhood_index = 0;
     state.current_city_neighborhoods = null;
     state.current_city_name = null;
-    state.current_neighborhood_index = 0;
-    
     await updatePipelineState(state);
     
-    await sendAlertEmail(
-      `⚠️ CA Neighborhoods: Error on ${city.name}`,
-      `The pipeline encountered an error and will continue with the next city.\n\nError: ${error instanceof Error ? error.message : String(error)}\n\nProgress: ${state.cities_processed}/${allCities.length} cities`
-    );
-    
-    return { done: false, message: `Error on ${city.name}, moving to next` };
+    // Log progress every 10 cities
+    if (state.cities_processed % 10 === 0) {
+      await logAlert("info", `Progress: ${state.cities_processed}/${state.total_cities} cities`, 
+        `Created ${state.neighborhoods_created}, skipped ${state.neighborhoods_skipped || 0}, errors: ${state.errors}`,
+        { cities_processed: state.cities_processed, neighborhoods_created: state.neighborhoods_created }
+      );
+    }
   }
+  
+  // All cities complete
+  state.status = "completed";
+  await updatePipelineState(state);
+  await logAlert("info", "Pipeline complete", 
+    `Processed ${state.cities_processed} cities, created ${state.neighborhoods_created} neighborhoods, ${state.errors} errors`,
+    { final_stats: state }
+  );
+  
+  return { 
+    done: true, 
+    message: `Complete! ${state.cities_processed} cities, ${state.neighborhoods_created} neighborhoods, ${state.errors} errors` 
+  };
 }
 
 // ============================================================
-// WATCHDOG: Check for stalled pipeline
+// REQUEST HANDLERS
 // ============================================================
 
-async function checkForStall(): Promise<boolean> {
+async function handleStatus(): Promise<Response> {
+  const state = await getPipelineState();
+  const alerts = await getRecentAlerts(10);
+  
+  return new Response(JSON.stringify({
+    success: true,
+    state: state || { status: "not_started" },
+    recent_alerts: alerts
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+async function handleReset(): Promise<Response> {
+  const cities = await fetchAllCACities();
+  
+  const newState: PipelineState = {
+    current_city_index: 0,
+    current_neighborhood_index: 0,
+    total_cities: cities.length,
+    cities_processed: 0,
+    neighborhoods_created: 0,
+    neighborhoods_skipped: 0,
+    errors: 0,
+    status: "running",
+    last_city_processed: null,
+    last_successful_neighborhood: null,
+    current_city_name: null,
+    current_city_neighborhoods: null,
+    started_at: new Date().toISOString(),
+    last_update: new Date().toISOString(),
+    error_message: null
+  };
+  
+  await updatePipelineState(newState);
+  await logAlert("info", "Pipeline reset and started", `Starting fresh with ${cities.length} cities`);
+  
+  // Start processing
+  const result = await processBatch(newState, cities);
+  
+  return new Response(JSON.stringify({
+    success: true,
+    message: "Pipeline reset and started",
+    result
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+async function handleStop(): Promise<Response> {
+  const state = await getPipelineState();
+  if (state) {
+    state.status = "stopped";
+    state.error_message = "Manually stopped";
+    await updatePipelineState(state);
+    await logAlert("warning", "Pipeline stopped", "Manually stopped by user");
+  }
+  
+  return new Response(JSON.stringify({
+    success: true,
+    message: "Pipeline stopped"
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+async function handleContinue(): Promise<Response> {
   const state = await getPipelineState();
   
-  if (!state || state.status !== "running") {
-    return false;
+  if (!state) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: "No pipeline state found. Use 'reset' to start fresh."
+    }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
   
-  const lastUpdate = new Date(state.last_update);
-  const now = new Date();
-  const minutesSinceUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60);
+  if (state.status === "completed") {
+    return new Response(JSON.stringify({
+      success: true,
+      message: "Pipeline already completed",
+      state
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+  
+  if (state.status === "stopped" || state.status === "failed") {
+    state.status = "running";
+    await updatePipelineState(state);
+  }
+  
+  const cities = await fetchAllCACities();
+  // Update total_cities in case it changed
+  state.total_cities = cities.length;
+  
+  const result = await processBatch(state, cities);
+  
+  return new Response(JSON.stringify({
+    success: true,
+    result
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+async function handleWatchdog(): Promise<Response> {
+  const state = await getPipelineState();
+  
+  if (!state) {
+    return new Response(JSON.stringify({
+      success: true,
+      stalled: false,
+      message: "No pipeline running"
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+  
+  if (state.status !== "running") {
+    return new Response(JSON.stringify({
+      success: true,
+      stalled: false,
+      message: `Pipeline status: ${state.status}`
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
+  }
+  
+  const lastUpdate = new Date(state.last_update).getTime();
+  const now = Date.now();
+  const minutesSinceUpdate = (now - lastUpdate) / (1000 * 60);
   
   if (minutesSinceUpdate > STALL_THRESHOLD_MINUTES) {
-    console.log(`Pipeline stalled! Last update ${minutesSinceUpdate.toFixed(1)} minutes ago`);
-    
-    state.status = "failed";
-    state.error_message = `Pipeline stalled for ${minutesSinceUpdate.toFixed(0)} minutes`;
-    state.last_update = new Date().toISOString();
-    await updatePipelineState(state);
-    
-    await sendAlertEmail(
-      `🚨 CA Neighborhoods: Pipeline STALLED`,
-      `The California neighborhood population pipeline has stalled and been marked as failed.\n\nLast activity: ${minutesSinceUpdate.toFixed(0)} minutes ago\nLast city: ${state.last_city_processed || "Unknown"}\nProgress: ${state.cities_processed}/${state.total_cities} cities\nNeighborhoods created: ${state.neighborhoods_created}\n\nPlease restart the pipeline to continue.`
+    await logAlert("critical", "Pipeline stalled", 
+      `No update for ${Math.round(minutesSinceUpdate)} minutes. Last city: ${state.current_city_name || "unknown"}`,
+      { minutes_since_update: minutesSinceUpdate, last_state: state }
     );
     
-    return true;
+    state.status = "failed";
+    state.error_message = `Stalled for ${Math.round(minutesSinceUpdate)} minutes`;
+    await updatePipelineState(state);
+    
+    return new Response(JSON.stringify({
+      success: true,
+      stalled: true,
+      message: `Pipeline stalled for ${Math.round(minutesSinceUpdate)} minutes. Marked as failed.`,
+      state
+    }), {
+      status: 200,
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
+    });
   }
   
-  return false;
+  return new Response(JSON.stringify({
+    success: true,
+    stalled: false,
+    message: `Pipeline running. Last update ${Math.round(minutesSinceUpdate)} minutes ago.`,
+    state
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+async function handleAlerts(): Promise<Response> {
+  const { data, error } = await supabase
+    .from("pipeline_alerts")
+    .select("*")
+    .eq("pipeline", "ca_neighborhood_population")
+    .eq("acknowledged", false)
+    .order("created_at", { ascending: false });
+  
+  return new Response(JSON.stringify({
+    success: !error,
+    alerts: data || [],
+    error: error?.message
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+async function handleAcknowledgeAlerts(): Promise<Response> {
+  const success = await acknowledgeAlerts();
+  
+  return new Response(JSON.stringify({
+    success,
+    message: success ? "All alerts acknowledged" : "Failed to acknowledge alerts"
+  }), {
+    status: 200,
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
 }
 
 // ============================================================
@@ -752,113 +936,44 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
-  
+
   try {
     const body = await req.json().catch(() => ({}));
-    const action = body.action || "start";
-    
-    // Status check
-    if (action === "status") {
-      const state = await getPipelineState();
-      return new Response(JSON.stringify({
-        success: true,
-        state: state || { status: "not_started" }
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
+    const action = body.action || "continue";
+
+    console.log(`CA Neighborhoods v2 - Action: ${action}`);
+
+    switch (action) {
+      case "status":
+        return await handleStatus();
+      case "reset":
+        return await handleReset();
+      case "stop":
+        return await handleStop();
+      case "continue":
+        return await handleContinue();
+      case "watchdog":
+        return await handleWatchdog();
+      case "alerts":
+        return await handleAlerts();
+      case "acknowledge-alerts":
+        return await handleAcknowledgeAlerts();
+      default:
+        return new Response(JSON.stringify({
+          success: false,
+          message: `Unknown action: ${action}. Valid actions: status, reset, stop, continue, watchdog, alerts, acknowledge-alerts`
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
     }
-    
-    // Stop pipeline
-    if (action === "stop") {
-      const state = await getPipelineState();
-      if (state) {
-        state.status = "stopped";
-        state.last_update = new Date().toISOString();
-        await updatePipelineState(state);
-      }
-      return new Response(JSON.stringify({
-        success: true,
-        message: "Pipeline stopped"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-    
-    // Watchdog check
-    if (action === "watchdog") {
-      const stalled = await checkForStall();
-      return new Response(JSON.stringify({
-        success: true,
-        stalled,
-        message: stalled ? "Pipeline was stalled, marked as failed" : "Pipeline is healthy"
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-    
-    // Reset pipeline (start fresh)
-    if (action === "reset") {
-      const state: PipelineState = {
-        current_city_index: 0,
-        current_neighborhood_index: 0,
-        total_cities: 0,
-        cities_processed: 0,
-        neighborhoods_created: 0,
-        errors: 0,
-        status: "running",
-        last_city_processed: null,
-        current_city_name: null,
-        current_city_neighborhoods: null,
-        started_at: new Date().toISOString(),
-        last_update: new Date().toISOString(),
-        error_message: null
-      };
-      await updatePipelineState(state);
-      
-      // Continue with processing
-      const result = await processNextBatch();
-      
-      if (!result.done) {
-        triggerNextBatch();
-      }
-      
-      return new Response(JSON.stringify({
-        success: true,
-        message: "Pipeline reset and started",
-        result
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-    
-    // Continue or start processing
-    const result = await processNextBatch();
-    
-    if (!result.done) {
-      // Trigger next batch
-      triggerNextBatch();
-    }
-    
-    return new Response(JSON.stringify({
-      success: true,
-      done: result.done,
-      message: result.message
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" }
-    });
-    
   } catch (error) {
-    console.error("Error:", error);
-    
-    // Try to send alert on fatal error
-    await sendAlertEmail(
-      `🚨 CA Neighborhoods: Fatal Error`,
-      `The pipeline encountered a fatal error.\n\nError: ${error instanceof Error ? error.message : String(error)}`
-    );
+    console.error("Handler error:", error);
+    await logAlert("critical", "Handler exception", String(error));
     
     return new Response(JSON.stringify({
       success: false,
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: String(error)
     }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" }
