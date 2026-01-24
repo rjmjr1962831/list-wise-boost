@@ -20,8 +20,10 @@ const CENSUS_ACS_BASE = "https://api.census.gov/data/2022/acs/acs5";
 
 // Safeguards
 const MAX_NEIGHBORHOODS_PER_CITY = 50;
+const NEIGHBORHOODS_PER_BATCH = 10; // Process 10 neighborhoods at a time
 const CENSUS_RATE_LIMIT_MS = 200;
 const CLAUDE_RATE_LIMIT_MS = 600;
+const STALL_THRESHOLD_MINUTES = 20;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,12 +70,15 @@ interface NeighborhoodData {
 
 interface PipelineState {
   current_city_index: number;
+  current_neighborhood_index: number; // Track within city
   total_cities: number;
   cities_processed: number;
   neighborhoods_created: number;
   errors: number;
   status: "running" | "completed" | "failed" | "stopped";
   last_city_processed: string | null;
+  current_city_name: string | null;
+  current_city_neighborhoods: NeighborhoodDiscovery[] | null; // Cache discovered neighborhoods
   started_at: string;
   last_update: string;
   error_message: string | null;
@@ -118,7 +123,31 @@ async function sendAlertEmail(subject: string, body: string) {
 }
 
 // ============================================================
-// MODEL 1: GEMINI FLASH 2.0 - Neighborhood Discovery
+// SELF-TRIGGER: Schedule next batch
+// ============================================================
+
+async function triggerNextBatch() {
+  try {
+    const functionUrl = `${SUPABASE_URL}/functions/v1/populate-ca-neighborhoods`;
+    
+    // Fire and forget - don't await
+    fetch(functionUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+      },
+      body: JSON.stringify({ action: "continue" })
+    }).catch(err => console.error("Self-trigger fetch error:", err));
+    
+    console.log("Triggered next batch");
+  } catch (error) {
+    console.error("Failed to trigger next batch:", error);
+  }
+}
+
+// ============================================================
+// MODEL 1: GEMINI FLASH 2.5 - Neighborhood Discovery
 // ============================================================
 
 async function discoverNeighborhoods(cityName: string, cityLat: number, cityLon: number): Promise<NeighborhoodDiscovery[]> {
@@ -257,69 +286,6 @@ function calculateTier(income: number | null, homeValue: number | null, allStats
   }
   
   return { tier, income_pct, value_pct, score };
-}
-
-async function enrichWithStats(
-  neighborhoods: NeighborhoodDiscovery[],
-  cityName: string,
-  citySlug: string
-): Promise<Partial<NeighborhoodData>[]> {
-  const allZips = new Set<string>();
-  for (const n of neighborhoods) {
-    n.zipCodes.forEach(z => allZips.add(z));
-  }
-  
-  console.log(`  Fetching Census data for ${allZips.size} ZIP codes...`);
-  
-  const zipStats = new Map<string, {income: number | null, homeValue: number | null}>();
-  let censusErrors = 0;
-  
-  for (const zip of allZips) {
-    const stats = await fetchCensusDataForZip(zip);
-    zipStats.set(zip, stats);
-    if (stats.income === null && stats.homeValue === null) {
-      censusErrors++;
-    }
-    await new Promise(r => setTimeout(r, CENSUS_RATE_LIMIT_MS));
-  }
-  
-  console.log(`  Census data: ${allZips.size - censusErrors} success, ${censusErrors} no data`);
-  
-  const allStats = Array.from(zipStats.values());
-  const enriched: Partial<NeighborhoodData>[] = [];
-  
-  for (const n of neighborhoods) {
-    const primaryStats = zipStats.get(n.primaryZip) || { income: null, homeValue: null };
-    const tierData = calculateTier(primaryStats.income, primaryStats.homeValue, allStats);
-    
-    enriched.push({
-      state: "CA",
-      city_area: cityName,
-      city_area_slug: citySlug,
-      neighborhood: n.name,
-      neighborhood_slug: n.slug,
-      zips: n.zipCodes,
-      primary_zip: n.primaryZip,
-      lat: n.lat,
-      lon: n.lon,
-      median_income: primaryStats.income,
-      median_home_value: primaryStats.homeValue,
-      tier: tierData.tier,
-      income_pct: tierData.income_pct,
-      value_pct: tierData.value_pct,
-      score: tierData.score,
-      is_verified: false,
-      is_active: true,
-      writeup_research: JSON.stringify({
-        description: n.description,
-        features: n.features,
-        housingTypes: n.housingTypes,
-        vibe: n.vibe
-      })
-    });
-  }
-  
-  return enriched;
 }
 
 // ============================================================
@@ -543,181 +509,239 @@ async function saveNeighborhoods(neighborhoods: Partial<NeighborhoodData>[]): Pr
 }
 
 // ============================================================
-// MAIN PROCESSING FUNCTION (background)
+// PROCESS ONE BATCH OF NEIGHBORHOODS (up to 10)
 // ============================================================
 
-async function processAllCities() {
-  let state: PipelineState;
+async function processNextBatch(): Promise<{done: boolean; message: string}> {
+  const allCities = await fetchAllCACities();
   
-  try {
-    // Get all California cities
-    const allCities = await fetchAllCACities();
-    
-    if (allCities.length === 0) {
-      console.log("No California cities found");
-      return;
-    }
-    
-    // Check for existing pipeline state
-    const existingState = await getPipelineState();
-    
-    if (existingState && existingState.status === "running") {
-      // Resume from where we left off.
-      // IMPORTANT: keep total_cities aligned to the *current* paginated city list.
-      // Older runs may have persisted a stale 1000 due to default query limits.
-      const needsTotalUpdate = existingState.total_cities !== allCities.length;
-      state = {
-        ...existingState,
-        total_cities: allCities.length,
-        last_update: new Date().toISOString(),
-      };
-      if (needsTotalUpdate) {
-        console.log(
-          `Updating persisted total_cities from ${existingState.total_cities} → ${allCities.length} (paginated city list)`
-        );
-        await updatePipelineState(state);
-      }
-      console.log(`Resuming from city index ${state.current_city_index}`);
-    } else {
-      // Start fresh
-      state = {
-        current_city_index: 0,
-        total_cities: allCities.length,
-        cities_processed: 0,
-        neighborhoods_created: 0,
-        errors: 0,
-        status: "running",
-        last_city_processed: null,
-        started_at: new Date().toISOString(),
-        last_update: new Date().toISOString(),
-        error_message: null
-      };
-      await updatePipelineState(state);
-    }
-    
-    console.log(`\n========================================`);
-    console.log(`CA NEIGHBORHOOD POPULATION PIPELINE`);
-    console.log(`Total cities: ${allCities.length}`);
-    console.log(`Starting from: ${state.current_city_index}`);
-    console.log(`========================================\n`);
-    
-    // Process cities one at a time
-    for (let i = state.current_city_index; i < allCities.length; i++) {
-      const city = allCities[i];
-      
-      try {
-        console.log(`\n[${i + 1}/${allCities.length}] Processing: ${city.name}`);
-        console.log("----------------------------------------");
-        
-        // Step 1: Discover neighborhoods
-        console.log("Step 1: Gemini discovery...");
-        const discovered = await discoverNeighborhoods(city.name, city.lat, city.lon);
-        console.log(`  Found ${discovered.length} neighborhoods`);
-        
-        if (discovered.length === 0) {
-          console.log("  Skipping - no neighborhoods");
-          state.current_city_index = i + 1;
-          state.cities_processed++;
-          state.last_city_processed = city.name;
-          state.last_update = new Date().toISOString();
-          await updatePipelineState(state);
-          continue;
-        }
-        
-        // Step 2: Enrich with Census data
-        console.log("Step 2: Census enrichment...");
-        const enriched = await enrichWithStats(discovered, city.name, city.slug);
-        
-        // Step 3: Generate writeups with Claude
-        console.log("Step 3: Claude writeups...");
-        for (let j = 0; j < enriched.length; j++) {
-          const n = enriched[j];
-          console.log(`  [${j + 1}/${enriched.length}] ${n.neighborhood}`);
-          n.writeup_html = await generateWriteup(n);
-          n.writeup_generated_at = new Date().toISOString();
-          await new Promise(r => setTimeout(r, CLAUDE_RATE_LIMIT_MS));
-        }
-        
-        // Step 4: Calculate nearby neighborhoods (within this city)
-        for (const n of enriched) {
-          n.nearby_neighborhoods = calculateNearbyNeighborhoods(n, enriched);
-        }
-        
-        // Step 5: Save to database
-        console.log("Step 4: Saving to database...");
-        const saveResult = await saveNeighborhoods(enriched);
-        console.log(`  Saved: ${saveResult.success}, Failed: ${saveResult.failed}`);
-        
-        // Update state
-        state.current_city_index = i + 1;
-        state.cities_processed++;
-        state.neighborhoods_created += saveResult.success;
-        state.errors += saveResult.failed;
-        state.last_city_processed = city.name;
-        state.last_update = new Date().toISOString();
-        await updatePipelineState(state);
-        
-        // Brief pause between cities
-        await new Promise(r => setTimeout(r, 1000));
-        
-      } catch (cityError) {
-        console.error(`Error processing ${city.name}:`, cityError);
-        state.errors++;
-        state.error_message = `Error on ${city.name}: ${cityError instanceof Error ? cityError.message : String(cityError)}`;
-        state.last_update = new Date().toISOString();
-        await updatePipelineState(state);
-        
-        // Send alert but continue
-        await sendAlertEmail(
-          `⚠️ CA Neighborhoods: Error on ${city.name}`,
-          `The California neighborhood population pipeline encountered an error on ${city.name}.\n\nError: ${cityError instanceof Error ? cityError.message : String(cityError)}\n\nThe pipeline will continue with the next city.\n\nProgress: ${state.cities_processed}/${allCities.length} cities processed\nNeighborhoods created: ${state.neighborhoods_created}`
-        );
-        
-        // Continue to next city
-        state.current_city_index = i + 1;
-        await updatePipelineState(state);
-        continue;
-      }
-    }
-    
-    // Pipeline complete
+  if (allCities.length === 0) {
+    return { done: true, message: "No California cities found" };
+  }
+  
+  let state = await getPipelineState();
+  
+  // Initialize if not exists or completed/failed
+  if (!state || state.status === "completed" || state.status === "failed" || state.status === "stopped") {
+    state = {
+      current_city_index: 0,
+      current_neighborhood_index: 0,
+      total_cities: allCities.length,
+      cities_processed: 0,
+      neighborhoods_created: 0,
+      errors: 0,
+      status: "running",
+      last_city_processed: null,
+      current_city_name: null,
+      current_city_neighborhoods: null,
+      started_at: new Date().toISOString(),
+      last_update: new Date().toISOString(),
+      error_message: null
+    };
+    await updatePipelineState(state);
+    console.log("Started new pipeline run");
+  }
+  
+  // Update total_cities in case it changed
+  if (state.total_cities !== allCities.length) {
+    state.total_cities = allCities.length;
+  }
+  
+  // Check if we're done
+  if (state.current_city_index >= allCities.length) {
     state.status = "completed";
     state.last_update = new Date().toISOString();
     await updatePipelineState(state);
     
-    console.log(`\n========================================`);
-    console.log(`PIPELINE COMPLETE`);
-    console.log(`Cities processed: ${state.cities_processed}`);
-    console.log(`Neighborhoods created: ${state.neighborhoods_created}`);
-    console.log(`Errors: ${state.errors}`);
-    console.log(`========================================\n`);
-    
-    // Send completion email
     await sendAlertEmail(
       `✅ CA Neighborhoods: Pipeline Complete`,
       `The California neighborhood population pipeline has completed successfully.\n\nSummary:\n- Cities processed: ${state.cities_processed}\n- Neighborhoods created: ${state.neighborhoods_created}\n- Errors: ${state.errors}\n- Started: ${state.started_at}\n- Completed: ${new Date().toISOString()}`
     );
     
-  } catch (error) {
-    console.error("Fatal pipeline error:", error);
+    return { done: true, message: "Pipeline completed!" };
+  }
+  
+  const city = allCities[state.current_city_index];
+  console.log(`\n[${state.current_city_index + 1}/${allCities.length}] ${city.name}`);
+  
+  try {
+    // Step 1: Discover neighborhoods if we haven't for this city
+    let neighborhoods = state.current_city_neighborhoods;
     
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    
-    // Update state to failed
-    const currentState = await getPipelineState();
-    if (currentState) {
-      currentState.status = "failed";
-      currentState.error_message = errorMessage;
-      currentState.last_update = new Date().toISOString();
-      await updatePipelineState(currentState);
+    if (!neighborhoods || state.current_city_name !== city.name) {
+      console.log("  Discovering neighborhoods with Gemini...");
+      neighborhoods = await discoverNeighborhoods(city.name, city.lat, city.lon);
+      state.current_city_name = city.name;
+      state.current_city_neighborhoods = neighborhoods;
+      state.current_neighborhood_index = 0;
+      console.log(`  Found ${neighborhoods.length} neighborhoods`);
+      
+      // If no neighborhoods, move to next city
+      if (neighborhoods.length === 0) {
+        state.current_city_index++;
+        state.cities_processed++;
+        state.last_city_processed = city.name;
+        state.current_city_neighborhoods = null;
+        state.current_city_name = null;
+        state.last_update = new Date().toISOString();
+        await updatePipelineState(state);
+        return { done: false, message: `${city.name}: No neighborhoods, moving to next city` };
+      }
     }
     
-    // Send failure alert
+    // Step 2: Process up to NEIGHBORHOODS_PER_BATCH neighborhoods
+    const startIdx = state.current_neighborhood_index;
+    const endIdx = Math.min(startIdx + NEIGHBORHOODS_PER_BATCH, neighborhoods.length);
+    const batchNeighborhoods = neighborhoods.slice(startIdx, endIdx);
+    
+    console.log(`  Processing neighborhoods ${startIdx + 1}-${endIdx} of ${neighborhoods.length}`);
+    
+    // Collect unique ZIP codes for this batch
+    const batchZips = new Set<string>();
+    for (const n of batchNeighborhoods) {
+      n.zipCodes.forEach(z => batchZips.add(z));
+    }
+    
+    // Fetch Census data for batch ZIPs
+    console.log(`  Fetching Census data for ${batchZips.size} ZIPs...`);
+    const zipStats = new Map<string, {income: number | null, homeValue: number | null}>();
+    for (const zip of batchZips) {
+      const stats = await fetchCensusDataForZip(zip);
+      zipStats.set(zip, stats);
+      await new Promise(r => setTimeout(r, CENSUS_RATE_LIMIT_MS));
+    }
+    
+    const allStats = Array.from(zipStats.values());
+    const enrichedBatch: Partial<NeighborhoodData>[] = [];
+    
+    // Enrich each neighborhood in batch
+    for (const n of batchNeighborhoods) {
+      const primaryStats = zipStats.get(n.primaryZip) || { income: null, homeValue: null };
+      const tierData = calculateTier(primaryStats.income, primaryStats.homeValue, allStats);
+      
+      const enriched: Partial<NeighborhoodData> = {
+        state: "CA",
+        city_area: city.name,
+        city_area_slug: city.slug,
+        neighborhood: n.name,
+        neighborhood_slug: n.slug,
+        zips: n.zipCodes,
+        primary_zip: n.primaryZip,
+        lat: n.lat,
+        lon: n.lon,
+        median_income: primaryStats.income,
+        median_home_value: primaryStats.homeValue,
+        tier: tierData.tier,
+        income_pct: tierData.income_pct,
+        value_pct: tierData.value_pct,
+        score: tierData.score,
+        is_verified: false,
+        is_active: true,
+        writeup_research: JSON.stringify({
+          description: n.description,
+          features: n.features,
+          housingTypes: n.housingTypes,
+          vibe: n.vibe
+        })
+      };
+      
+      // Generate writeup
+      console.log(`    Writing: ${n.name}`);
+      enriched.writeup_html = await generateWriteup(enriched);
+      enriched.writeup_generated_at = new Date().toISOString();
+      await new Promise(r => setTimeout(r, CLAUDE_RATE_LIMIT_MS));
+      
+      // Calculate nearby (within batch only for now, will update later)
+      enriched.nearby_neighborhoods = [];
+      
+      enrichedBatch.push(enriched);
+    }
+    
+    // Save batch to database
+    console.log(`  Saving ${enrichedBatch.length} neighborhoods...`);
+    const saveResult = await saveNeighborhoods(enrichedBatch);
+    
+    // Update state
+    state.current_neighborhood_index = endIdx;
+    state.neighborhoods_created += saveResult.success;
+    state.errors += saveResult.failed;
+    state.last_update = new Date().toISOString();
+    
+    // Check if we finished this city
+    if (endIdx >= neighborhoods.length) {
+      state.current_city_index++;
+      state.cities_processed++;
+      state.last_city_processed = city.name;
+      state.current_city_neighborhoods = null;
+      state.current_city_name = null;
+      state.current_neighborhood_index = 0;
+      console.log(`  Completed ${city.name}!`);
+    }
+    
+    await updatePipelineState(state);
+    
+    const progress = `${state.cities_processed}/${allCities.length} cities, ${state.neighborhoods_created} neighborhoods`;
+    return { 
+      done: false, 
+      message: `Processed ${batchNeighborhoods.length} neighborhoods in ${city.name}. Progress: ${progress}` 
+    };
+    
+  } catch (error) {
+    console.error(`Error processing ${city.name}:`, error);
+    
+    state.errors++;
+    state.error_message = `Error on ${city.name}: ${error instanceof Error ? error.message : String(error)}`;
+    state.last_update = new Date().toISOString();
+    
+    // Skip to next city on error
+    state.current_city_index++;
+    state.current_city_neighborhoods = null;
+    state.current_city_name = null;
+    state.current_neighborhood_index = 0;
+    
+    await updatePipelineState(state);
+    
     await sendAlertEmail(
-      `🚨 CA Neighborhoods: Pipeline FAILED`,
-      `The California neighborhood population pipeline has STOPPED due to a fatal error.\n\nError: ${errorMessage}\n\nLast state:\n${currentState ? JSON.stringify(currentState, null, 2) : "Unknown"}\n\nPlease investigate and restart if needed.`
+      `⚠️ CA Neighborhoods: Error on ${city.name}`,
+      `The pipeline encountered an error and will continue with the next city.\n\nError: ${error instanceof Error ? error.message : String(error)}\n\nProgress: ${state.cities_processed}/${allCities.length} cities`
     );
+    
+    return { done: false, message: `Error on ${city.name}, moving to next` };
   }
+}
+
+// ============================================================
+// WATCHDOG: Check for stalled pipeline
+// ============================================================
+
+async function checkForStall(): Promise<boolean> {
+  const state = await getPipelineState();
+  
+  if (!state || state.status !== "running") {
+    return false;
+  }
+  
+  const lastUpdate = new Date(state.last_update);
+  const now = new Date();
+  const minutesSinceUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60);
+  
+  if (minutesSinceUpdate > STALL_THRESHOLD_MINUTES) {
+    console.log(`Pipeline stalled! Last update ${minutesSinceUpdate.toFixed(1)} minutes ago`);
+    
+    state.status = "failed";
+    state.error_message = `Pipeline stalled for ${minutesSinceUpdate.toFixed(0)} minutes`;
+    state.last_update = new Date().toISOString();
+    await updatePipelineState(state);
+    
+    await sendAlertEmail(
+      `🚨 CA Neighborhoods: Pipeline STALLED`,
+      `The California neighborhood population pipeline has stalled and been marked as failed.\n\nLast activity: ${minutesSinceUpdate.toFixed(0)} minutes ago\nLast city: ${state.last_city_processed || "Unknown"}\nProgress: ${state.cities_processed}/${state.total_cities} cities\nNeighborhoods created: ${state.neighborhoods_created}\n\nPlease restart the pipeline to continue.`
+    );
+    
+    return true;
+  }
+  
+  return false;
 }
 
 // ============================================================
@@ -733,8 +757,8 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const action = body.action || "start";
     
+    // Status check
     if (action === "status") {
-      // Return current pipeline status
       const state = await getPipelineState();
       return new Response(JSON.stringify({
         success: true,
@@ -744,8 +768,8 @@ serve(async (req) => {
       });
     }
     
+    // Stop pipeline
     if (action === "stop") {
-      // Stop the pipeline
       const state = await getPipelineState();
       if (state) {
         state.status = "stopped";
@@ -760,40 +784,78 @@ serve(async (req) => {
       });
     }
     
-    // Default: start/resume pipeline
-    const allCities = await fetchAllCACities();
-    const existingState = await getPipelineState();
-    
-    // Use EdgeRuntime.waitUntil for background processing
-    const runtime = (globalThis as any).EdgeRuntime;
-    if (runtime?.waitUntil) {
-      runtime.waitUntil(processAllCities());
-      
+    // Watchdog check
+    if (action === "watchdog") {
+      const stalled = await checkForStall();
       return new Response(JSON.stringify({
         success: true,
-        message: existingState?.status === "running" 
-          ? `Resuming pipeline from city ${existingState.current_city_index + 1}`
-          : `Starting pipeline for ${allCities.length} California cities`,
-        totalCities: allCities.length,
-        currentIndex: existingState?.current_city_index || 0,
-        note: "Processing in background. Check logs for progress. Email alert on completion or failure."
+        stalled,
+        message: stalled ? "Pipeline was stalled, marked as failed" : "Pipeline is healthy"
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
     
-    // Fallback: run synchronously (will likely timeout)
-    await processAllCities();
+    // Reset pipeline (start fresh)
+    if (action === "reset") {
+      const state: PipelineState = {
+        current_city_index: 0,
+        current_neighborhood_index: 0,
+        total_cities: 0,
+        cities_processed: 0,
+        neighborhoods_created: 0,
+        errors: 0,
+        status: "running",
+        last_city_processed: null,
+        current_city_name: null,
+        current_city_neighborhoods: null,
+        started_at: new Date().toISOString(),
+        last_update: new Date().toISOString(),
+        error_message: null
+      };
+      await updatePipelineState(state);
+      
+      // Continue with processing
+      const result = await processNextBatch();
+      
+      if (!result.done) {
+        triggerNextBatch();
+      }
+      
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Pipeline reset and started",
+        result
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    
+    // Continue or start processing
+    const result = await processNextBatch();
+    
+    if (!result.done) {
+      // Trigger next batch
+      triggerNextBatch();
+    }
     
     return new Response(JSON.stringify({
       success: true,
-      message: "Pipeline completed"
+      done: result.done,
+      message: result.message
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
     
   } catch (error) {
     console.error("Error:", error);
+    
+    // Try to send alert on fatal error
+    await sendAlertEmail(
+      `🚨 CA Neighborhoods: Fatal Error`,
+      `The pipeline encountered a fatal error.\n\nError: ${error instanceof Error ? error.message : String(error)}`
+    );
+    
     return new Response(JSON.stringify({
       success: false,
       error: error instanceof Error ? error.message : "Unknown error"
