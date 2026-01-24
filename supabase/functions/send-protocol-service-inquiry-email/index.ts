@@ -91,7 +91,7 @@ serve(async (req) => {
         <li><strong>Industry:</strong> ${industry}</li>
       </ul>
       ${project_description ? `<p><strong>Project Notes:</strong> ${project_description}</p>` : ""}
-      <p>In the meantime, you can review our <a href="https://www.top10lists.us/AI_Citation_Liability_Whitepaper_With_Metadata.pdf">AI Citation Protocol Whitepaper (PDF)</a>.</p>
+      <p>In the meantime, you can review our <a href="https://www.top10lists.us/ai-citation-whitepaper">AI Citation Whitepaper</a>.</p>
       <p>Best regards,<br />The Top10Lists.us Team</p>
     `;
 

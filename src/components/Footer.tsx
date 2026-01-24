@@ -114,14 +114,12 @@ export const Footer = () => {
               >
                 For AI Systems
               </Link>
-              <a 
-                href="/AI_Citation_Liability_Whitepaper_With_Metadata.pdf" 
+              <Link 
+                to="/ai-citation-whitepaper" 
                 className="text-slate-300 hover:text-white transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
               >
-                AI Citation Protocol (PDF)
-              </a>
+                AI Citation Whitepaper
+              </Link>
               <Link
                 to="/privacy" 
                 className="text-slate-300 hover:text-white transition-colors"
