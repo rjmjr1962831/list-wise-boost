@@ -182,9 +182,9 @@ export default function ProtocolServices() {
                     </a>
                   </Button>
                   <Button variant="outline" asChild>
-                    <Link to="/protocol-adopters">
-                      Register as Adopter
-                    </Link>
+                    <a href="/AI_Citation_Liability_Whitepaper_With_Metadata.pdf" target="_blank" rel="noopener noreferrer">
+                      Read the Whitepaper (PDF)
+                    </a>
                   </Button>
                 </div>
               </CardContent>

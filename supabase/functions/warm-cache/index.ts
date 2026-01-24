@@ -29,7 +29,7 @@ const STATIC_PAGES = [
   "/for-ai",
   "/transparency",
   "/ai-liability",
-  "/protocol-adopters",
+  
   "/protocol-services",
   // Editorial & Press
   "/press",

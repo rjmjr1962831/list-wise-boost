@@ -56,7 +56,7 @@ Organization: ${organization_name}
 Website: ${website_url}
 Status: ${statusLabel}
 
-Your registration is pending review. Once approved, your organization will appear on our Protocol Adopters page at https://www.top10lists.us/protocol-adopters.
+Your registration is pending review. You can read our full AI Citation Protocol whitepaper at https://www.top10lists.us/AI_Citation_Liability_Whitepaper_With_Metadata.pdf.
 
 If you have questions, reply to this email or contact hello@top10lists.us.
 

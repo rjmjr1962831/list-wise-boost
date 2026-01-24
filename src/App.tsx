@@ -108,7 +108,7 @@ const Transparency = lazy(() => import("./pages/Transparency"));
 const EditorialUpdates = lazy(() => import("./pages/EditorialUpdates"));
 const Founder = lazy(() => import("./pages/Founder"));
 const AILiability = lazy(() => import("./pages/AILiability"));
-const ProtocolAdopters = lazy(() => import("./pages/ProtocolAdopters"));
+
 const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
 const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods"));
 const NeighborhoodWriteups = lazy(() => import("./pages/admin/NeighborhoodWriteups"));
@@ -187,7 +187,7 @@ const App = () => (
                     <Route path="/test" element={<TestAI />} />
                     <Route path="/ai-compare" element={<AICompare />} />
                     <Route path="/ai-liability" element={<AILiability />} />
-                    <Route path="/protocol-adopters" element={<ProtocolAdopters />} />
+                    
                     <Route path="/protocol-services" element={<ProtocolServices />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/check-agent" element={<AgentLookup />} />
