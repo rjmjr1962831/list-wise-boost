@@ -9,12 +9,14 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const stateToSlug = (abbr: string): string => {
+const stateToSlug = (state: string): string => {
   const map: Record<string, string> = {
+    'Arizona': 'arizona',
+    'California': 'california',
     'AZ': 'arizona',
     'CA': 'california',
   };
-  return map[abbr] || abbr.toLowerCase();
+  return map[state] || state.toLowerCase();
 };
 
 const stateSlugToName = (slug: string): string => {
@@ -50,7 +52,7 @@ serve(async (req) => {
       const { data, error } = await supabase
         .from('neighborhood_catalog')
         .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, primary_zip, state, tier, median_home_value')
-        .in('state', ['AZ', 'CA'])
+        .in('state', ['Arizona', 'California'])
         .eq('is_active', true)
         .not('primary_zip', 'is', null)
         .order('city_area')
@@ -97,8 +99,8 @@ serve(async (req) => {
     const cities = allCities;
 
     // Count by state
-    const azNeighborhoods = (neighborhoods || []).filter(n => n.state === 'AZ');
-    const caNeighborhoods = (neighborhoods || []).filter(n => n.state === 'CA');
+    const azNeighborhoods = (neighborhoods || []).filter(n => n.state === 'Arizona');
+    const caNeighborhoods = (neighborhoods || []).filter(n => n.state === 'California');
     const azCities = (cities || []).filter(c => c.state_slug === 'arizona');
     const caCities = (cities || []).filter(c => c.state_slug === 'california');
 
