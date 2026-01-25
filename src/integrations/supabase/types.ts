@@ -1853,6 +1853,7 @@ export type Database = {
         Row: {
           city_area: string
           city_area_slug: string
+          county: string | null
           created_at: string | null
           id: string
           income_pct: number | null
@@ -1867,6 +1868,7 @@ export type Database = {
           neighborhood_slug: string
           primary_zip: string | null
           score: number | null
+          source: string | null
           state: string
           tier: string
           updated_at: string | null
@@ -1874,11 +1876,13 @@ export type Database = {
           writeup_generated_at: string | null
           writeup_html: string | null
           writeup_research: string | null
+          zillow_region_id: string | null
           zips: string[] | null
         }
         Insert: {
           city_area: string
           city_area_slug: string
+          county?: string | null
           created_at?: string | null
           id?: string
           income_pct?: number | null
@@ -1893,6 +1897,7 @@ export type Database = {
           neighborhood_slug: string
           primary_zip?: string | null
           score?: number | null
+          source?: string | null
           state: string
           tier: string
           updated_at?: string | null
@@ -1900,11 +1905,13 @@ export type Database = {
           writeup_generated_at?: string | null
           writeup_html?: string | null
           writeup_research?: string | null
+          zillow_region_id?: string | null
           zips?: string[] | null
         }
         Update: {
           city_area?: string
           city_area_slug?: string
+          county?: string | null
           created_at?: string | null
           id?: string
           income_pct?: number | null
@@ -1919,6 +1926,7 @@ export type Database = {
           neighborhood_slug?: string
           primary_zip?: string | null
           score?: number | null
+          source?: string | null
           state?: string
           tier?: string
           updated_at?: string | null
@@ -1926,6 +1934,7 @@ export type Database = {
           writeup_generated_at?: string | null
           writeup_html?: string | null
           writeup_research?: string | null
+          zillow_region_id?: string | null
           zips?: string[] | null
         }
         Relationships: []
