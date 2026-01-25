@@ -4,6 +4,8 @@
 
 Schema migration complete. Edge function deployed. JSON data copied.
 
+**Note:** Existing records keep NULL source (no incorrect 'osm' backfill). New Zillow records get `source = 'zillow'`.
+
 ## Current Database State
 
 | State | Before | Zillow Records |
@@ -58,7 +60,7 @@ const caRecords = data.filter(n => n.state === 'California');
 SELECT state, 
        COUNT(*) as total,
        COUNT(CASE WHEN source = 'zillow' THEN 1 END) as from_zillow,
-       COUNT(CASE WHEN source = 'osm' THEN 1 END) as from_osm,
+       COUNT(CASE WHEN source IS NULL THEN 1 END) as existing_no_source,
        COUNT(CASE WHEN primary_zip IS NOT NULL THEN 1 END) as with_zip
 FROM neighborhood_catalog
 WHERE state IN ('Arizona', 'California', 'Colorado', 'Florida', 'New York', 'Texas')
