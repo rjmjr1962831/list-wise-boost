@@ -24,22 +24,12 @@ function generateSlug(text: string): string {
     .replace(/^-+|-+$/g, '');
 }
 
-// Hardcoded OSM California neighborhoods data
-const CA_NEIGHBORHOODS: NeighborhoodInput[] = [
-  {"name":"Bay Farm Island","city":"Alameda","state":"CA","lat":37.738564,"lon":-122.243993,"slug":"bay-farm-island","city_slug":"alameda"},
-  {"name":"Centre Court","city":"Alameda","state":"CA","lat":37.746167,"lon":-122.238352,"slug":"centre-court","city_slug":"alameda"},
-  {"name":"East End","city":"Alameda","state":"CA","lat":37.756956,"lon":-122.234154,"slug":"east-end","city_slug":"alameda"},
-  {"name":"Fernside","city":"Alameda","state":"CA","lat":37.765206,"lon":-122.228857,"slug":"fernside","city_slug":"alameda"},
-  {"name":"Gold Coast","city":"Alameda","state":"CA","lat":37.76665,"lon":-122.264238,"slug":"gold-coast","city_slug":"alameda"},
-  {"name":"South Shore","city":"Alameda","state":"CA","lat":37.759651,"lon":-122.257747,"slug":"south-shore","city_slug":"alameda"},
-  {"name":"West End","city":"Alameda","state":"CA","lat":37.772429,"lon":-122.281081,"slug":"west-end","city_slug":"alameda"},
-  {"name":"Woodstock","city":"Alameda","state":"CA","lat":37.776318,"lon":-122.285803,"slug":"woodstock","city_slug":"alameda"},
-];
-
 async function processNeighborhoods(
   supabase: any,
-  neighborhoods: NeighborhoodInput[]
+  neighborhoods: NeighborhoodInput[],
+  batchSize: number = 25
 ): Promise<{ inserted: number; errors: number; errorMessages: string[]; deduped: number }> {
+  // Internal deduplication - prefer records with lat/lon
   const seen = new Map<string, NeighborhoodInput>();
   for (const n of neighborhoods) {
     const key = `${n.city_slug}|${n.slug}`;
@@ -50,9 +40,8 @@ async function processNeighborhoods(
   }
 
   const uniqueNeighborhoods = Array.from(seen.values());
-  console.log(`[ingest-ca] After deduplication: ${uniqueNeighborhoods.length} unique`);
+  console.log(`[ingest-ca] After deduplication: ${uniqueNeighborhoods.length} unique neighborhoods`);
 
-  const batchSize = 100;
   let inserted = 0;
   let errors = 0;
   const errorMessages: string[] = [];
@@ -84,14 +73,15 @@ async function processNeighborhoods(
       .select('id');
 
     if (upsertError) {
-      console.error(`[ingest-ca] Batch error:`, upsertError);
+      console.error(`[ingest-ca] Batch ${Math.floor(i/batchSize) + 1} error:`, upsertError);
       errors += batch.length;
-      errorMessages.push(upsertError.message);
+      errorMessages.push(`Batch ${Math.floor(i/batchSize) + 1}: ${upsertError.message}`);
     } else {
       inserted += upsertedData?.length || batch.length;
     }
 
-    if ((i + batchSize) % 500 === 0 || i + batchSize >= uniqueNeighborhoods.length) {
+    // Progress logging every 10 batches
+    if ((i + batchSize) % (batchSize * 10) === 0 || i + batchSize >= uniqueNeighborhoods.length) {
       console.log(`[ingest-ca] Progress: ${Math.min(i + batchSize, uniqueNeighborhoods.length)}/${uniqueNeighborhoods.length}`);
     }
   }
@@ -110,21 +100,20 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const body = await req.json();
-    
-    let neighborhoods: NeighborhoodInput[];
-    
-    if (body.useBuiltIn) {
-      // Use the hardcoded data (for testing)
-      neighborhoods = CA_NEIGHBORHOODS;
-    } else if (body.data) {
-      neighborhoods = body.data;
-    } else {
-      throw new Error('Invalid request. Expected { data: [...] } or { useBuiltIn: true }');
+    const neighborhoods: NeighborhoodInput[] = body.data;
+    const batchSize = body.batchSize || 25;
+    const startIndex = body.startIndex || 0;
+    const endIndex = body.endIndex || neighborhoods.length;
+
+    if (!neighborhoods || !Array.isArray(neighborhoods)) {
+      throw new Error('Invalid request. Expected { data: [...], batchSize?: number, startIndex?: number, endIndex?: number }');
     }
 
-    console.log(`[ingest-ca] Processing ${neighborhoods.length} neighborhoods...`);
+    // Slice to requested range
+    const subset = neighborhoods.slice(startIndex, endIndex);
+    console.log(`[ingest-ca] Processing ${subset.length} neighborhoods (index ${startIndex}-${endIndex}) in batches of ${batchSize}...`);
 
-    const result = await processNeighborhoods(supabase, neighborhoods);
+    const result = await processNeighborhoods(supabase, subset, batchSize);
 
     const { count } = await supabase
       .from('neighborhood_catalog')
@@ -136,12 +125,14 @@ const handler = async (req: Request): Promise<Response> => {
         success: true,
         message: `Ingested ${result.inserted} California neighborhoods`,
         stats: {
-          inputCount: neighborhoods.length,
+          inputCount: subset.length,
           afterDedup: result.deduped,
           processed: result.inserted,
           errors: result.errors,
           totalCaliforniaNeighborhoods: count,
-          errorMessages: result.errorMessages.slice(0, 5),
+          startIndex,
+          endIndex,
+          errorMessages: result.errorMessages.slice(0, 10),
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
