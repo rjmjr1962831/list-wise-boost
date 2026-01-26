@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, Check, Pencil } from 'lucide-react';
 import { ProfessionalCard } from '@/components/ProfessionalCard';
 import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
@@ -16,7 +16,7 @@ export default function ProfileCardPreview() {
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [navigating, setNavigating] = useState(false);
+  const [navigating, setNavigating] = useState<'verify' | 'edit' | null>(null);
   const hasTrackedView = useRef(false);
 
   useEffect(() => {
@@ -85,13 +85,30 @@ export default function ProfileCardPreview() {
     loadProfessional();
   }, [token, trackEvent]);
 
-  const handleContinue = async () => {
+  const handleLooksGood = async () => {
     if (!professional || navigating) return;
     
-    setNavigating(true);
-    await trackEvent('card_preview_completed');
+    setNavigating('verify');
     
-    // Navigate to accuracy review (next step)
+    try {
+      // Record verification event
+      await trackEvent('profile_verified');
+      
+      // Navigate to city/neighborhood selection
+      navigate(`/profile/${token}/pricing`);
+    } catch (err) {
+      console.error('Error verifying profile:', err);
+      setNavigating(null);
+    }
+  };
+
+  const handleMakeChanges = async () => {
+    if (!professional || navigating) return;
+    
+    setNavigating('edit');
+    await trackEvent('edit_requested_from_card');
+    
+    // Navigate to profile edit page
     navigate(`/profile/${token}/review`);
   };
 
@@ -156,11 +173,13 @@ export default function ProfileCardPreview() {
                 Step 2 of 5
               </p>
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3">
-                {firstName}, here is your current profile
+                This is your live public profile
               </h1>
-              <p className="text-gray-600 text-[15px] leading-relaxed">
-                This is how your profile appears to consumers and AI systems right now. 
-                On the next screen, you'll be able to review the data and request any corrections.
+              <p className="text-gray-600 text-[15px] leading-relaxed mb-2">
+                This is your live public profile as it currently appears on Top10Lists.us.
+              </p>
+              <p className="text-gray-500 text-sm">
+                AI tools reference this information when answering recommendation questions.
               </p>
             </div>
 
@@ -174,25 +193,56 @@ export default function ProfileCardPreview() {
               />
             </div>
 
-            {/* CTA - Desktop */}
-            <div className="hidden sm:flex justify-end">
-              <Button
-                onClick={handleContinue}
-                disabled={navigating}
-                className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 h-12 text-base font-semibold"
-              >
-                {navigating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading...
-                  </>
-                ) : (
-                  <>
-                    Continue to Review
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </>
-                )}
-              </Button>
+            {/* Two CTAs - Desktop */}
+            <div className="hidden sm:flex gap-6 justify-center">
+              {/* Primary: Looks good */}
+              <div className="flex flex-col items-center">
+                <Button
+                  onClick={handleLooksGood}
+                  disabled={!!navigating}
+                  className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 h-12 text-base font-semibold"
+                >
+                  {navigating === 'verify' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="mr-2 h-4 w-4" />
+                      Looks good
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  This confirms your profile as accurate.
+                </p>
+              </div>
+
+              {/* Secondary: Make some changes */}
+              <div className="flex flex-col items-center">
+                <Button
+                  onClick={handleMakeChanges}
+                  disabled={!!navigating}
+                  variant="outline"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 h-12 text-base font-semibold"
+                >
+                  {navigating === 'edit' ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Pencil className="mr-2 h-4 w-4" />
+                      Make some changes
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Edit your profile before it's verified.
+                </p>
+              </div>
             </div>
 
           </div>
@@ -200,25 +250,54 @@ export default function ProfileCardPreview() {
 
         <FunnelPhoneSupport />
 
-        {/* Sticky Mobile CTA */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:hidden">
-          <Button
-            onClick={handleContinue}
-            disabled={navigating}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 h-12 text-base font-semibold"
-          >
-            {navigating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Loading...
-              </>
-            ) : (
-              <>
-                Continue to Review
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+        {/* Sticky Mobile CTAs */}
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:hidden space-y-3">
+          <div>
+            <Button
+              onClick={handleLooksGood}
+              disabled={!!navigating}
+              className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 h-12 text-base font-semibold"
+            >
+              {navigating === 'verify' ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Looks good
+                </>
+              )}
+            </Button>
+            <p className="text-xs text-gray-500 mt-1.5 text-center">
+              This confirms your profile as accurate.
+            </p>
+          </div>
+          
+          <div>
+            <Button
+              onClick={handleMakeChanges}
+              disabled={!!navigating}
+              variant="outline"
+              className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 py-3 h-12 text-base font-semibold"
+            >
+              {navigating === 'edit' ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Make some changes
+                </>
+              )}
+            </Button>
+            <p className="text-xs text-gray-500 mt-1.5 text-center">
+              Edit your profile before it's verified.
+            </p>
+          </div>
         </div>
       </div>
     </>
