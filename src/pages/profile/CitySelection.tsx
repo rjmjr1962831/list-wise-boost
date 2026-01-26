@@ -216,10 +216,10 @@ export default function CitySelection() {
               Choose at least one city where you have verified experience
             </h1>
             <p className="text-muted-foreground">
-              AI tools rely on location context when answering recommendation questions.  Selecting cities helps us associate your profile with places you actually work.
+              AI systems rely on location context when answering recommendation questions.  Selecting cities helps us associate your profile with places you actually work.  We only publish cities we can verify.
             </p>
             <p className="text-sm text-muted-foreground/80">
-              We only publish cities we can verify.
+              You must have closed at least one transaction in the past 24 months in the cities you select.
             </p>
           </div>
 
