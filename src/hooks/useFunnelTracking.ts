@@ -42,6 +42,12 @@ export const FUNNEL_EVENTS = {
   STEP0_VIEWED: 'step0_viewed',
   STEP0_COMPLETED: 'step0_completed',
   
+  // AI Challenge events
+  AI_CHALLENGE_PROMPT_COPIED: 'ai_challenge_prompt_copied',
+  AI_CHALLENGE_TOOL_OPENED: 'ai_challenge_tool_opened',
+  AI_CHALLENGE_RESPONSE_SUBMITTED: 'ai_challenge_response_submitted',
+  AI_CHALLENGE_SKIPPED: 'ai_challenge_skipped',
+  
   // Magic link / entry events
   MAGIC_LINK_CLICKED: 'magic_link_clicked',
   FUNNEL_STARTED: 'funnel_started',

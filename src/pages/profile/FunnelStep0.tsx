@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Check } from 'lucide-react';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { FunnelPhoneSupport } from '@/components/funnel/FunnelPhoneSupport';
+import { AiChallengeBox } from '@/components/onboarding/AiChallengeBox';
 
 interface ProfessionalData {
   id: string;
@@ -26,6 +27,7 @@ export default function FunnelStep0() {
   const [professional, setProfessional] = useState<ProfessionalData | null>(null);
   const hasTrackedView = useRef(false);
   const [navigating, setNavigating] = useState(false);
+  const [challengeCompleted, setChallengeCompleted] = useState(false);
 
   useEffect(() => {
     const validateAndFetch = async () => {
@@ -95,7 +97,46 @@ export default function FunnelStep0() {
       await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
     }
     
-    // Navigate to Step 1 (Card Preview)
+    // Navigate to Step 2 (Card Preview)
+    navigate(`/profile/${token}/card`);
+  };
+
+  const handleChallengeComplete = async (response: string, lastAiOpened: string | null) => {
+    if (!professional || navigating) return;
+    
+    setNavigating(true);
+    setChallengeCompleted(true);
+    
+    // Track challenge completion with data
+    await trackEvent(FUNNEL_EVENTS.AI_CHALLENGE_RESPONSE_SUBMITTED, {
+      response_length: response.length,
+      last_ai_opened: lastAiOpened,
+      response_preview: response.substring(0, 200),
+    });
+    
+    // Track step0_completed (skip for Maynard test profile)
+    if (professional.id !== TEST_PROFILE_ID) {
+      await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
+    }
+    
+    // Navigate to Step 2 (Card Preview)
+    navigate(`/profile/${token}/card`);
+  };
+
+  const handleChallengeSkip = async () => {
+    if (!professional || navigating) return;
+    
+    setNavigating(true);
+    
+    // Track skip
+    await trackEvent(FUNNEL_EVENTS.AI_CHALLENGE_SKIPPED);
+    
+    // Track step0_completed (skip for Maynard test profile)
+    if (professional.id !== TEST_PROFILE_ID) {
+      await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
+    }
+    
+    // Navigate to Step 2 (Card Preview)
     navigate(`/profile/${token}/card`);
   };
 
@@ -209,48 +250,20 @@ export default function FunnelStep0() {
               </ul>
             </section>
 
-            {/* CTA Button - Desktop */}
-            <div className="pt-4 hidden sm:block">
-              <Button
-                onClick={handleNext}
-                disabled={navigating}
-                aria-label="Review Your Profile"
-                className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 h-12 text-base font-semibold"
-              >
-                {navigating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Loading...
-                  </>
-                ) : (
-                  'Review Your Profile'
-                )}
-              </Button>
-            </div>
+            {/* AI Challenge Box */}
+            {professional && token && (
+              <AiChallengeBox
+                professionalId={professional.id}
+                token={token}
+                onContinue={handleChallengeComplete}
+                onSkip={handleChallengeSkip}
+              />
+            )}
 
           </div>
         </main>
 
         <FunnelPhoneSupport />
-
-        {/* Sticky Mobile CTA */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:hidden">
-          <Button
-            onClick={handleNext}
-            disabled={navigating}
-            aria-label="Review Your Profile"
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white py-3 h-12 text-base font-semibold"
-          >
-            {navigating ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                Loading...
-              </>
-            ) : (
-              'Review Your Profile'
-            )}
-          </Button>
-        </div>
       </div>
     </>
   );
