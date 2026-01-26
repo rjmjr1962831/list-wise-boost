@@ -27,7 +27,6 @@ export default function FunnelStep0() {
   const [professional, setProfessional] = useState<ProfessionalData | null>(null);
   const hasTrackedView = useRef(false);
   const [navigating, setNavigating] = useState(false);
-  const [challengeCompleted, setChallengeCompleted] = useState(false);
 
   useEffect(() => {
     const validateAndFetch = async () => {
@@ -52,11 +51,11 @@ export default function FunnelStep0() {
         const prof = data.professional;
         setProfessional(prof);
 
-        // Check if user has any funnel history - redirect to AccuracyReview
+        // Check if user has any funnel history - redirect to card preview
         // This catches both step0_completed AND legacy users who entered before Step 0 existed
         // Skip this check for Maynard test profile so funnel always starts at Step 0
         if (prof.id !== TEST_PROFILE_ID) {
-          const { data: existingEvents, count } = await supabase
+          const { count } = await supabase
             .from('funnel_events')
             .select('event_name', { count: 'exact', head: false })
             .eq('professional_id', prof.id)
@@ -64,7 +63,7 @@ export default function FunnelStep0() {
             .limit(1);
 
           if (count && count > 0) {
-            // Returning user - go to Step 1 (Card Preview) or Step 2 (AccuracyReview) if they've seen the card
+            // Returning user - go to card preview
             navigate(`/profile/${token}/card`, { replace: true });
             return;
           }
@@ -78,7 +77,7 @@ export default function FunnelStep0() {
 
       } catch (err) {
         console.error('Error validating token:', err);
-        setError('Something went wrong. Please try again.');
+        setError('Something went wrong.  Please try again.');
       } finally {
         setLoading(false);
       }
@@ -87,7 +86,7 @@ export default function FunnelStep0() {
     validateAndFetch();
   }, [token, navigate, trackEvent]);
 
-  const handleNext = async () => {
+  const handleContinue = async () => {
     if (!professional || navigating) return;
     
     setNavigating(true);
@@ -97,46 +96,7 @@ export default function FunnelStep0() {
       await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
     }
     
-    // Navigate to Step 2 (Card Preview)
-    navigate(`/profile/${token}/card`);
-  };
-
-  const handleChallengeComplete = async (response: string, lastAiOpened: string | null) => {
-    if (!professional || navigating) return;
-    
-    setNavigating(true);
-    setChallengeCompleted(true);
-    
-    // Track challenge completion with data
-    await trackEvent(FUNNEL_EVENTS.AI_CHALLENGE_RESPONSE_SUBMITTED, {
-      response_length: response.length,
-      last_ai_opened: lastAiOpened,
-      response_preview: response.substring(0, 200),
-    });
-    
-    // Track step0_completed (skip for Maynard test profile)
-    if (professional.id !== TEST_PROFILE_ID) {
-      await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
-    }
-    
-    // Navigate to Step 2 (Card Preview)
-    navigate(`/profile/${token}/card`);
-  };
-
-  const handleChallengeSkip = async () => {
-    if (!professional || navigating) return;
-    
-    setNavigating(true);
-    
-    // Track skip
-    await trackEvent(FUNNEL_EVENTS.AI_CHALLENGE_SKIPPED);
-    
-    // Track step0_completed (skip for Maynard test profile)
-    if (professional.id !== TEST_PROFILE_ID) {
-      await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
-    }
-    
-    // Navigate to Step 2 (Card Preview)
+    // Navigate to card preview
     navigate(`/profile/${token}/card`);
   };
 
@@ -167,7 +127,7 @@ export default function FunnelStep0() {
         <div className="max-w-[720px] mx-auto px-4 py-16 text-center">
           <h1 className="text-2xl font-semibold text-gray-900 mb-4">{error}</h1>
           <p className="text-gray-600 mb-6">
-            Questions? Call <a href="tel:+16027589600" className="text-gray-900 underline">(602) 758-9600</a>
+            Questions?  Call <a href="tel:+16027589600" className="text-gray-900 underline">(602) 758-9600</a>
           </p>
         </div>
       </div>
@@ -250,15 +210,34 @@ export default function FunnelStep0() {
               </ul>
             </section>
 
-            {/* AI Challenge Box */}
-            {professional && token && (
-              <AiChallengeBox
-                professionalId={professional.id}
-                token={token}
-                onContinue={handleChallengeComplete}
-                onSkip={handleChallengeSkip}
-              />
-            )}
+            {/* AI Challenge Box - informational only, no data collection */}
+            <AiChallengeBox />
+
+            {/* Navigation CTAs - both route to card preview */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-4">
+              <Button
+                onClick={handleContinue}
+                disabled={navigating}
+                className="bg-gray-900 hover:bg-gray-800 text-white px-6 h-11 text-sm font-semibold"
+              >
+                {navigating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  'Review your profile'
+                )}
+              </Button>
+              <button
+                type="button"
+                onClick={handleContinue}
+                disabled={navigating}
+                className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2"
+              >
+                Skip for now
+              </button>
+            </div>
 
           </div>
         </main>
