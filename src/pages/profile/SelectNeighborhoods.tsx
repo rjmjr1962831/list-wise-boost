@@ -1,5 +1,5 @@
 // src/pages/profile/SelectNeighborhoods.tsx
-// Neighborhood-based selection page for Expert placements
+// Request Neighborhood Expert designation page
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -9,12 +9,9 @@ import {
   NeighborhoodCatalogItem,
   NEIGHBORHOOD_TIER_PRICES,
   NEIGHBORHOOD_TIER_STYLES,
-  getAnnualPrice 
 } from '@/types/neighborhoodPricing';
+import { Switch } from '@/components/ui/switch';
 
-// ============================================
-// COMPONENT
-// ============================================
 export default function SelectNeighborhoods() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
@@ -25,12 +22,11 @@ export default function SelectNeighborhoods() {
   const preselectCity = searchParams.get('city');
   
   const [neighborhoods, setNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
-  const [selectedNeighborhoods, setSelectedNeighborhoods] = useState<NeighborhoodCatalogItem[]>([]);
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
-  const [filterTier, setFilterTier] = useState<string>('all');
-  const [filterCity, setFilterCity] = useState<string>('all');
+  const [selectedCities, setSelectedCities] = useState<string[]>([]);
+  const [requestedNeighborhoods, setRequestedNeighborhoods] = useState<Set<string>>(new Set());
+  const [filledPositions, setFilledPositions] = useState<Set<string>>(new Set());
+  const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const [preselectApplied, setPreselectApplied] = useState(false);
 
   useEffect(() => {
@@ -38,46 +34,93 @@ export default function SelectNeighborhoods() {
   }, []);
 
   useEffect(() => {
-    loadNeighborhoods();
-  }, []);
+    loadData();
+  }, [token]);
 
   // Handle preselect when neighborhoods are loaded
   useEffect(() => {
     if (preselectSlug && neighborhoods.length > 0 && !preselectApplied) {
-      // Use both slug AND city to find exact match
       const preselected = neighborhoods.find(
         n => n.neighborhood_slug === preselectSlug && 
              (!preselectCity || n.city_area_slug === preselectCity)
       );
-      if (preselected && !selectedNeighborhoods.some(n => n.id === preselected.id)) {
-        setSelectedNeighborhoods([preselected]);
+      if (preselected) {
+        setRequestedNeighborhoods(new Set([preselected.id]));
         setPreselectApplied(true);
       }
     }
-  }, [preselectSlug, preselectCity, neighborhoods, preselectApplied, selectedNeighborhoods]);
+  }, [preselectSlug, preselectCity, neighborhoods, preselectApplied]);
 
-  const loadNeighborhoods = async () => {
-    const { data, error } = await supabase
+  const loadData = async () => {
+    // Load professional's selected cities from CitySelection step
+    let professionalCities: string[] = [];
+    
+    if (token) {
+      // First get the professional ID from the token
+      const { data: professional } = await supabase
+        .from('professionals')
+        .select('id')
+        .eq('verification_token', token)
+        .single();
+      
+      if (professional?.id) {
+        // Get city associations from the junction table
+        const { data: cityAssocs } = await supabase
+          .from('professional_cities')
+          .select('city_id')
+          .eq('professional_id', professional.id)
+          .eq('active', true);
+        
+        if (cityAssocs && cityAssocs.length > 0) {
+          const cityIds = cityAssocs.map(c => c.city_id);
+          
+          // Get city names from IDs
+          const { data: cities } = await supabase
+            .from('cities')
+            .select('name')
+            .in('id', cityIds);
+          
+          if (cities) {
+            professionalCities = cities.map(c => c.name);
+          }
+        }
+      }
+    }
+    
+    setSelectedCities(professionalCities);
+    
+    // Load neighborhoods
+    const { data: neighborhoodData } = await supabase
       .from('neighborhood_catalog')
       .select('*')
       .eq('is_active', true)
-      .order('score', { ascending: false });
+      .order('neighborhood', { ascending: true });
     
-    if (data) {
-      setNeighborhoods(data as NeighborhoodCatalogItem[]);
+    if (neighborhoodData) {
+      setNeighborhoods(neighborhoodData as NeighborhoodCatalogItem[]);
     }
+    
+    // Load filled positions (neighborhoods with active subscriptions)
+    const { data: filledData } = await supabase
+      .from('agent_neighborhood_subscriptions')
+      .select('neighborhood_id')
+      .eq('is_active', true);
+    
+    if (filledData) {
+      setFilledPositions(new Set(filledData.map(f => f.neighborhood_id)));
+    }
+    
     setLoading(false);
   };
 
-  const handleNeighborhoodSelect = (neighborhood: NeighborhoodCatalogItem) => {
-    // If clicking on a selected neighborhood, deselect it
-    if (selectedNeighborhoods.find(n => n.id === neighborhood.id)) {
-      setSelectedNeighborhoods(selectedNeighborhoods.filter(n => n.id !== neighborhood.id));
-      return;
+  const handleToggleRequest = (neighborhoodId: string) => {
+    const newRequested = new Set(requestedNeighborhoods);
+    if (newRequested.has(neighborhoodId)) {
+      newRequested.delete(neighborhoodId);
+    } else {
+      newRequested.add(neighborhoodId);
     }
-    
-    // Add to selections
-    setSelectedNeighborhoods([...selectedNeighborhoods, neighborhood]);
+    setRequestedNeighborhoods(newRequested);
   };
 
   // Annual = 10 months (2 months free)
@@ -89,88 +132,75 @@ export default function SelectNeighborhoods() {
   };
 
   const calculateTotal = () => {
-    return selectedNeighborhoods.reduce((sum, n) => {
-      return sum + getPrice(n.tier);
+    return Array.from(requestedNeighborhoods).reduce((sum, id) => {
+      const neighborhood = neighborhoods.find(n => n.id === id);
+      if (neighborhood) {
+        return sum + getPrice(neighborhood.tier);
+      }
+      return sum;
     }, 0);
   };
 
-  // Get unique cities for filter
-  const uniqueCities = [...new Set(neighborhoods.map(n => n.city_area))].sort();
+  // Filter neighborhoods to only show those in selected cities
+  const filteredNeighborhoods = neighborhoods.filter(n => 
+    selectedCities.length === 0 || selectedCities.includes(n.city_area)
+  );
 
-  // Filter neighborhoods - if preselect is set, only show that specific neighborhood
-  const filteredNeighborhoods = preselectSlug 
-    ? neighborhoods.filter(n => 
-        n.neighborhood_slug === preselectSlug && 
-        (!preselectCity || n.city_area_slug === preselectCity)
-      )
-    : neighborhoods.filter(n => {
-        const matchesTier = filterTier === 'all' || n.tier === filterTier;
-        const matchesCity = filterCity === 'all' || n.city_area === filterCity;
-        const matchesSearch = searchQuery === '' || 
-          n.neighborhood.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          n.city_area.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesTier && matchesCity && matchesSearch;
-      });
-  
-  // Get nearby neighborhoods for upsell when preselecting
-  const preselectedNeighborhood = preselectSlug && preselectCity 
-    ? neighborhoods.find(n => n.neighborhood_slug === preselectSlug && n.city_area_slug === preselectCity)
-    : null;
-  
-  const nearbyNeighborhoods = React.useMemo(() => {
-    if (!preselectedNeighborhood?.nearby_neighborhoods) return [];
-    const nearby = preselectedNeighborhood.nearby_neighborhoods as Array<{
-      id: string;
-      name: string;
-      slug: string;
-      tier: string;
-      city_area: string;
-      distance_miles: number;
-    }>;
-    // Get the first 3 nearby neighborhoods that exist in our catalog
-    return nearby
-      .slice(0, 3)
-      .map(n => neighborhoods.find(catalog => catalog.id === n.id))
-      .filter((n): n is NeighborhoodCatalogItem => n !== undefined);
-  }, [preselectedNeighborhood, neighborhoods]);
-
-  // Group by tier
-  const groupedNeighborhoods = {
-    Luxury: filteredNeighborhoods.filter(n => n.tier === 'Luxury'),
-    Prime: filteredNeighborhoods.filter(n => n.tier === 'Prime'),
-    Main: filteredNeighborhoods.filter(n => n.tier === 'Main')
-  };
+  // Group neighborhoods by city
+  const neighborhoodsByCity = filteredNeighborhoods.reduce((acc, n) => {
+    if (!acc[n.city_area]) {
+      acc[n.city_area] = [];
+    }
+    acc[n.city_area].push(n);
+    return acc;
+  }, {} as Record<string, NeighborhoodCatalogItem[]>);
 
   const formatPrice = (amount: number) => `$${amount.toLocaleString()}`;
 
-  const tierOrder: NeighborhoodTier[] = ['Luxury', 'Prime', 'Main'];
+  const handleContinue = () => {
+    if (requestedNeighborhoods.size === 0) {
+      navigate('/agent/dashboard');
+    } else {
+      // Store selected neighborhoods for checkout
+      const selectedData = Array.from(requestedNeighborhoods).map(id => {
+        const n = neighborhoods.find(nb => nb.id === id);
+        return n ? { id: n.id, tier: n.tier, name: n.neighborhood, city: n.city_area } : null;
+      }).filter(Boolean);
+      
+      sessionStorage.setItem('neighborhood_expert_requests', JSON.stringify({
+        neighborhoods: selectedData,
+        billingCycle
+      }));
+      
+      navigate(`/profile/${token}/checkout`);
+    }
+  };
 
-  // ============================================
-  // LOADING STATE
-  // ============================================
+  const handleSkip = () => {
+    navigate('/agent/dashboard');
+  };
+
+  // Loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
       </div>
     );
   }
 
-  // ============================================
-  // RENDER
-  // ============================================
   return (
-    <div className="min-h-screen bg-slate-50 pb-32">
+    <div className="min-h-screen bg-slate-50 pb-48">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-cyan-500 rounded-xl flex items-center justify-center">
                 <span className="text-white font-bold text-sm">10</span>
               </div>
               <span className="text-xl font-bold text-slate-900">
-                Top<span className="text-blue-500">10</span>Lists
+                Top<span className="text-primary">10</span>Lists
               </span>
             </div>
             
@@ -202,343 +232,149 @@ export default function SelectNeighborhoods() {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Page Title */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            {preselectSlug ? 'Become a Neighborhood Expert' : 'Select Your Neighborhoods'}
+          <h1 className="text-3xl font-bold text-slate-900 mb-3">
+            Request Neighborhood Expert designation
           </h1>
-          {preselectSlug && selectedNeighborhoods.length > 0 ? (
-            <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 py-3 mb-4 inline-block">
-              <p className="text-primary font-medium">
-                ✓ Pre-selected: {selectedNeighborhoods[0].neighborhood}, {selectedNeighborhoods[0].city_area}
-              </p>
-            </div>
-          ) : null}
-          <p className="text-slate-600">
-            Select neighborhoods where you want to be featured as a Neighborhood Expert.
+          <p className="text-lg text-slate-600 mb-2">
+            A Neighborhood Expert is a single, verified agent highlighted for a specific neighborhood.
           </p>
-          <p className="text-sm text-muted-foreground mt-3 max-w-xl mx-auto">
-            Neighborhood Expert pricing reflects the work and risk required to stand behind neighborhood-specific recommendations. Selection and ranking cannot be purchased.
+          <p className="text-sm text-muted-foreground">
+            Expert positions are limited and verified.
           </p>
         </div>
 
-        {/* Search - only show if not preselecting a specific neighborhood */}
-        {!preselectSlug && (
-          <div className="mb-6">
-            <input
-              type="text"
-              placeholder="Search neighborhoods or cities..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        {/* Neighborhood List by City */}
+        {Object.keys(neighborhoodsByCity).length === 0 ? (
+          <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+            <p className="text-slate-600">
+              No neighborhoods available for your selected cities.  Please go back and select cities first.
+            </p>
           </div>
-        )}
-
-        {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          {/* Tier filters */}
-          <button
-            onClick={() => setFilterTier('all')}
-            className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-              filterTier === 'all'
-                ? 'bg-slate-900 text-white'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            All Tiers ({neighborhoods.length})
-          </button>
-          {tierOrder.map(tier => {
-            const count = neighborhoods.filter(n => n.tier === tier).length;
-            const price = NEIGHBORHOOD_TIER_PRICES[tier];
-            return (
-              <button
-                key={tier}
-                onClick={() => setFilterTier(tier)}
-                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                  filterTier === tier
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                }`}
-              >
-                {tier} ({count}) · ${price}/mo
-              </button>
-            );
-          })}
-        </div>
-
-        {/* City filter dropdown */}
-        <div className="mb-6">
-          <select
-            value={filterCity}
-            onChange={(e) => setFilterCity(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-slate-200 bg-white text-slate-700"
-          >
-            <option value="all">All Cities ({uniqueCities.length})</option>
-            {uniqueCities.map(city => (
-              <option key={city} value={city}>{city}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Neighborhood Grid by Tier */}
-        {tierOrder.map(tierName => {
-          const tierNeighborhoods = groupedNeighborhoods[tierName];
-          if (tierNeighborhoods.length === 0) return null;
-          
-          const styles = NEIGHBORHOOD_TIER_STYLES[tierName];
-          const price = NEIGHBORHOOD_TIER_PRICES[tierName];
-          const displayPrice = price;
-          
-          return (
-            <div key={tierName} className="mb-10">
-              <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-xl font-bold text-slate-900">{tierName}</h2>
-                <span className={`text-sm ${styles.color}`}>
-                  {formatPrice(displayPrice)}/mo
-                </span>
-                <span className="text-sm text-slate-400">
-                  · {tierNeighborhoods.length} {tierNeighborhoods.length === 1 ? 'neighborhood' : 'neighborhoods'}
-                </span>
-              </div>
-              
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {tierNeighborhoods.slice(0, 30).map(neighborhood => {
-                  const isSelected = selectedNeighborhoods.some(n => n.id === neighborhood.id);
-                  const monthlyPrice = NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
-                  const priceDisplay = billingCycle === 'annual' 
-                    ? getAnnualPriceWithDiscount(monthlyPrice) 
-                    : monthlyPrice;
-                  
-                  return (
-                    <div
-                      key={neighborhood.id}
-                      onClick={() => handleNeighborhoodSelect(neighborhood)}
-                      className={`
-                        relative rounded-2xl border-2 p-6 transition-all cursor-pointer hover:shadow-lg
-                        ${styles.bg} ${styles.border}
-                        ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
-                      `}
-                    >
-                      {/* Selected badge */}
-                      {isSelected && (
-                        <div className="absolute -top-3 -right-3">
-                          <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                            SELECTED
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Header */}
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-900">{neighborhood.neighborhood}</h3>
-                          <p className="text-sm text-slate-600">{neighborhood.city_area}, {neighborhood.state}</p>
-                        </div>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${styles.badge}`}>
-                          {neighborhood.tier}
-                        </span>
-                      </div>
-                      
-                      {/* Pricing */}
-                      <div className="mb-3">
-                        <div className="flex items-baseline gap-1">
-                          <span className={`text-2xl font-bold ${styles.text}`}>
-                            {formatPrice(priceDisplay)}
-                          </span>
-                          <span className="text-slate-500 text-sm">
-                            /{billingCycle === 'annual' ? 'yr' : 'mo'}
-                          </span>
-                        </div>
-                        {billingCycle === 'annual' && (
-                          <p className="text-xs text-green-600 mt-1">2 months free</p>
-                        )}
-                      </div>
-                      
-                      {/* Zip Codes */}
-                      {neighborhood.zips && neighborhood.zips.length > 0 && (
-                        <div className="pt-3 border-t border-slate-200/50">
-                          <p className="text-xs text-slate-500 mb-1">
-                            {neighborhood.zips.length} ZIP code{neighborhood.zips.length > 1 ? 's' : ''}
-                          </p>
-                          <div className="flex flex-wrap gap-1">
-                            {neighborhood.zips.slice(0, 3).map(zip => (
-                              <span key={zip} className="text-xs bg-white/60 px-1.5 py-0.5 rounded text-slate-500">
-                                {zip}
+        ) : (
+          <div className="space-y-8">
+            {Object.entries(neighborhoodsByCity).sort(([a], [b]) => a.localeCompare(b)).map(([city, cityNeighborhoods]) => (
+              <div key={city} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div className="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                  <h2 className="text-lg font-semibold text-slate-900">{city}</h2>
+                  <p className="text-sm text-muted-foreground">
+                    {cityNeighborhoods.length} neighborhood{cityNeighborhoods.length !== 1 ? 's' : ''} available
+                  </p>
+                </div>
+                
+                <div className="divide-y divide-slate-100">
+                  {cityNeighborhoods.map(neighborhood => {
+                    const isRequested = requestedNeighborhoods.has(neighborhood.id);
+                    const isFilled = filledPositions.has(neighborhood.id);
+                    const styles = NEIGHBORHOOD_TIER_STYLES[neighborhood.tier];
+                    const monthlyPrice = NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
+                    const priceDisplay = billingCycle === 'annual' 
+                      ? getAnnualPriceWithDiscount(monthlyPrice) 
+                      : monthlyPrice;
+                    
+                    return (
+                      <div
+                        key={neighborhood.id}
+                        className={`px-6 py-4 ${isFilled ? 'opacity-60' : ''}`}
+                      >
+                        <div className="flex items-center justify-between gap-4">
+                          {/* Neighborhood Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-medium text-slate-900 truncate">
+                                {neighborhood.neighborhood}
+                              </h3>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles.badge}`}>
+                                {neighborhood.tier}
                               </span>
-                            ))}
-                            {neighborhood.zips.length > 3 && (
-                              <span className="text-xs text-slate-400">
-                                +{neighborhood.zips.length - 3}
-                              </span>
+                            </div>
+                            
+                            {isFilled ? (
+                              <p className="text-sm text-amber-600 font-medium">
+                                Neighborhood Expert position currently filled
+                              </p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                {formatPrice(priceDisplay)}/{billingCycle === 'annual' ? 'yr' : 'mo'}
+                                {billingCycle === 'annual' && (
+                                  <span className="text-green-600 ml-2">2 months free</span>
+                                )}
+                              </p>
                             )}
                           </div>
+                          
+                          {/* Request Toggle */}
+                          <div className="flex items-center gap-3">
+                            <span className={`text-sm ${isFilled ? 'text-slate-400' : isRequested ? 'text-primary font-medium' : 'text-slate-500'}`}>
+                              {isFilled ? 'Unavailable' : 'Request Neighborhood Expert'}
+                            </span>
+                            <Switch
+                              checked={isRequested}
+                              onCheckedChange={() => handleToggleRequest(neighborhood.id)}
+                              disabled={isFilled}
+                              aria-label={`Request Neighborhood Expert for ${neighborhood.neighborhood}`}
+                            />
+                          </div>
                         </div>
-                      )}
-                      
-                      {/* Selection indicator */}
-                      {isSelected && (
-                        <div className="mt-3 flex items-center gap-2 text-blue-600">
-                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                          </svg>
-                          <span className="text-sm font-medium">Selected</span>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-              
-              {tierNeighborhoods.length > 30 && (
-                <p className="text-sm text-slate-500 mt-4 text-center">
-                  Showing 30 of {tierNeighborhoods.length} neighborhoods. Use search to find specific areas.
-                </p>
-              )}
-            </div>
-          );
-        })}
-
-        {/* Nearby Neighborhoods Upsell Section - Show when preselecting a specific neighborhood */}
-        {preselectSlug && nearbyNeighborhoods.length > 0 && (
-          <div className="mt-10 border-t border-slate-200 pt-8">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-bold text-slate-900 mb-2">
-                Expand Your Coverage
-              </h2>
-              <p className="text-slate-600 text-sm">
-                These neighborhoods are close to {preselectedNeighborhood?.neighborhood}. 
-                Add them to reach more buyers in your area.
-              </p>
-            </div>
-            
-            <div className="grid md:grid-cols-3 gap-4">
-              {nearbyNeighborhoods.map(neighborhood => {
-                const isSelected = selectedNeighborhoods.some(n => n.id === neighborhood.id);
-                const styles = NEIGHBORHOOD_TIER_STYLES[neighborhood.tier];
-                const monthlyPrice = NEIGHBORHOOD_TIER_PRICES[neighborhood.tier];
-                const priceDisplay = billingCycle === 'annual' 
-                  ? getAnnualPriceWithDiscount(monthlyPrice) 
-                  : monthlyPrice;
-                
-                return (
-                  <div
-                    key={neighborhood.id}
-                    onClick={() => handleNeighborhoodSelect(neighborhood)}
-                    className={`
-                      relative rounded-2xl border-2 p-5 transition-all cursor-pointer hover:shadow-lg
-                      ${styles.bg} ${styles.border}
-                      ${isSelected ? 'ring-2 ring-blue-500 ring-offset-2' : ''}
-                    `}
-                  >
-                    {/* Selected badge */}
-                    {isSelected && (
-                      <div className="absolute -top-3 -right-3">
-                        <span className="bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-                          ADDED
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="text-base font-bold text-slate-900">{neighborhood.neighborhood}</h3>
-                        <p className="text-xs text-slate-600">{neighborhood.city_area}, {neighborhood.state}</p>
-                      </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${styles.badge}`}>
-                        {neighborhood.tier}
-                      </span>
-                    </div>
-                    
-                    {/* Pricing */}
-                    <div className="flex items-baseline gap-1">
-                      <span className={`text-xl font-bold ${styles.text}`}>
-                        {formatPrice(priceDisplay)}
-                      </span>
-                      <span className="text-slate-500 text-xs">
-                        /{billingCycle === 'annual' ? 'yr' : 'mo'}
-                      </span>
-                    </div>
-                    
-                    {/* Selection indicator */}
-                    {isSelected && (
-                      <div className="mt-2 flex items-center gap-1 text-blue-600">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <span className="text-xs font-medium">Added</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            
-            {/* "Browse All" link */}
-            <div className="text-center mt-6">
-              <button
-                onClick={() => {
-                  // Clear preselect to show full catalog
-                  const newUrl = `/profile/${token}/select-neighborhoods`;
-                  navigate(newUrl);
-                }}
-                className="text-primary hover:underline text-sm font-medium"
-              >
-                Browse all neighborhoods →
-              </button>
-            </div>
+            ))}
           </div>
         )}
+
+        {/* Verification and Refund Notice */}
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <p className="text-sm text-blue-800">
+            All Neighborhood Expert requests are verified.  If we cannot verify your expertise or the position is unavailable, you will not be charged and any payment will be refunded.
+          </p>
+        </div>
       </div>
 
-      {/* Sticky Bottom Cart */}
+      {/* Sticky Bottom CTAs */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-lg z-50">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-4 mb-1">
-                {selectedNeighborhoods.length > 0 ? (
-                  <span className="text-sm text-slate-600">
-                    {selectedNeighborhoods.length} {selectedNeighborhoods.length === 1 ? 'neighborhood' : 'neighborhoods'} selected
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          {/* Summary */}
+          {requestedNeighborhoods.size > 0 && (
+            <div className="mb-4 pb-4 border-b border-slate-100">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-600">
+                  {requestedNeighborhoods.size} neighborhood{requestedNeighborhoods.size !== 1 ? 's' : ''} requested
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-slate-900">
+                    {formatPrice(calculateTotal())}
                   </span>
-                ) : (
-                  <span className="text-sm text-slate-400">Select a neighborhood to get started</span>
-                )}
+                  <span className="text-slate-500 text-sm">
+                    /{billingCycle === 'annual' ? 'yr' : 'mo'}
+                  </span>
+                  {billingCycle === 'annual' && (
+                    <span className="text-xs text-green-600">(2 months free)</span>
+                  )}
+                </div>
               </div>
-              <div className="flex items-baseline gap-2">
-                {selectedNeighborhoods.length === 0 ? (
-                  <span className="text-2xl font-bold text-slate-400">$0</span>
-                ) : (
-                  <>
-                    <span className="text-2xl font-bold text-slate-900">
-                      {formatPrice(calculateTotal())}
-                    </span>
-                    <span className="text-slate-500 text-sm">
-                      /{billingCycle === 'annual' ? 'yr' : 'mo'}
-                    </span>
-                    {billingCycle === 'annual' && (
-                      <span className="text-xs text-green-600 ml-1">(2 months free)</span>
-                    )}
-                  </>
-                )}
-              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Cancel anytime.
+              </p>
             </div>
+          )}
+          
+          {/* Buttons */}
+          <div className="flex items-center justify-between gap-4">
+            <button
+              onClick={handleSkip}
+              className="px-6 py-3 text-slate-600 hover:text-slate-900 text-sm font-medium transition-colors"
+            >
+              Skip neighborhood expert selection
+            </button>
             
             <button
-              onClick={() => {
-                console.log('Checkout with:', { selectedNeighborhoods, billingCycle });
-                navigate(`/profile/${token}/checkout`);
-              }}
-              disabled={selectedNeighborhoods.length === 0}
-              className={`
-                px-8 py-3 rounded-xl font-semibold text-white transition-all
-                ${selectedNeighborhoods.length > 0
-                  ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl'
-                  : 'bg-slate-300 cursor-not-allowed'
-                }
-              `}
+              onClick={handleContinue}
+              className="px-8 py-3 rounded-xl font-semibold text-white bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all"
             >
               Continue
             </button>
