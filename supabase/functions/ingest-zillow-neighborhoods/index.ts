@@ -23,8 +23,9 @@ const JOB_NAME = 'zillow-neighborhood-ingestion';
 const BATCH_SIZE = 50;
 const CONCURRENCY = 5;
 
-// Public raw URL for the JSON data - deployed with the project
-const DATA_URL = "https://list-wise-boost.lovable.app/zillowTargetStates.json";
+// Storage URL for the JSON data - uses service role for access
+const STORAGE_BUCKET = 'data';
+const STORAGE_FILE = 'zillowTargetStates.json';
 
 async function processNeighborhood(
   supabase: any,
@@ -95,15 +96,21 @@ async function processBatch(supabase: any, items: ZillowNeighborhoodInput[]): Pr
 // Cache the data in memory for the function instance
 let cachedData: ZillowNeighborhoodInput[] | null = null;
 
-async function fetchData(): Promise<ZillowNeighborhoodInput[]> {
+async function fetchData(supabase: any): Promise<ZillowNeighborhoodInput[]> {
   if (cachedData) return cachedData;
   
-  console.log('[ingest-zillow] Fetching data from:', DATA_URL);
-  const response = await fetch(DATA_URL);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+  console.log(`[ingest-zillow] Fetching data from storage: ${STORAGE_BUCKET}/${STORAGE_FILE}`);
+  
+  const { data, error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .download(STORAGE_FILE);
+  
+  if (error) {
+    throw new Error(`Failed to fetch data from storage: ${error.message}`);
   }
-  cachedData = await response.json();
+  
+  const text = await data.text();
+  cachedData = JSON.parse(text);
   console.log(`[ingest-zillow] Loaded ${cachedData!.length} records`);
   return cachedData!;
 }
@@ -178,7 +185,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       // Fetch data
-      const allData = await fetchData();
+      const allData = await fetchData(supabase);
 
       // Initialize job state at index 0
       await supabase.from('cron_state').upsert({
@@ -248,7 +255,7 @@ const handler = async (req: Request): Promise<Response> => {
       }
 
       // Fetch data and calculate current position
-      const allData = await fetchData();
+      const allData = await fetchData(supabase);
       const currentIndex = state?.total_processed || 0;
       
       if (currentIndex >= allData.length) {
