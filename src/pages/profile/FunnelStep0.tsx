@@ -58,12 +58,12 @@ export default function FunnelStep0() {
             .from('funnel_events')
             .select('event_name', { count: 'exact', head: false })
             .eq('professional_id', prof.id)
-            .in('event_name', ['step0_completed', 'accuracy_review_viewed', 'funnel_started', 'profile_edit_viewed', 'accuracy_confirmed'])
+            .in('event_name', ['step0_completed', 'card_preview_viewed', 'card_preview_completed', 'accuracy_review_viewed', 'funnel_started', 'profile_edit_viewed', 'accuracy_confirmed'])
             .limit(1);
 
           if (count && count > 0) {
-            // Returning user - go to Step 1 (AccuracyReview)
-            navigate(`/profile/${token}/review`, { replace: true });
+            // Returning user - go to Step 1 (Card Preview) or Step 2 (AccuracyReview) if they've seen the card
+            navigate(`/profile/${token}/card`, { replace: true });
             return;
           }
         }
@@ -95,8 +95,8 @@ export default function FunnelStep0() {
       await trackEvent(FUNNEL_EVENTS.STEP0_COMPLETED);
     }
     
-    // Navigate to Step 1 (AccuracyReview)
-    navigate(`/profile/${token}/review`);
+    // Navigate to Step 1 (Card Preview)
+    navigate(`/profile/${token}/card`);
   };
 
   const firstName = professional?.name?.split(' ')[0] || 'there';

@@ -85,6 +85,7 @@ const FunnelSuccess = lazy(() => import("./pages/profile/FunnelSuccess"));
 const FunnelIntro = lazy(() => import("./pages/profile/FunnelIntro"));
 const AccuracyReview = lazy(() => import("./pages/profile/AccuracyReview"));
 const FunnelStep0 = lazy(() => import("./pages/profile/FunnelStep0"));
+const ProfileCardPreview = lazy(() => import("./pages/profile/ProfileCardPreview"));
 const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
 const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
@@ -221,7 +222,9 @@ const App = () => (
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Step 0: Introduction and Context (entry point for magic links) */}
                     <Route path="/profile/:token" element={<FunnelStep0 />} />
-                    {/* Step 1: Accuracy Review */}
+                    {/* Step 1: Card Preview (shows current profile before edits) */}
+                    <Route path="/profile/:token/card" element={<ProfileCardPreview />} />
+                    {/* Step 2: Accuracy Review */}
                     <Route path="/profile/:token/review" element={<AccuracyReview />} />
                     {/* Legacy funnel routes - still accessible but not in main flow */}
                     <Route path="/profile/:token/intro" element={<AccuracyReview />} />
