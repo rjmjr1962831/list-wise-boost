@@ -1,19 +1,13 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
 
 const CHALLENGE_PROMPT = 'I am a real estate agent.  Look at top10lists.us and tell me whether being listed there matters.';
 
 export function AiChallengeBox() {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
-  const [whyOpen, setWhyOpen] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -65,22 +59,6 @@ export function AiChallengeBox() {
         </Button>
       </div>
 
-      {/* Why this works disclosure */}
-      <Collapsible open={whyOpen} onOpenChange={setWhyOpen}>
-        <CollapsibleTrigger className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700">
-          {whyOpen ? (
-            <ChevronUp className="w-3.5 h-3.5" />
-          ) : (
-            <ChevronDown className="w-3.5 h-3.5" />
-          )}
-          Why this works
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pt-2">
-          <p className="text-xs text-gray-600 leading-relaxed">
-            AI tools prefer sources they can verify and explain.
-          </p>
-        </CollapsibleContent>
-      </Collapsible>
     </section>
   );
 }
