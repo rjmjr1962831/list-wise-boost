@@ -181,7 +181,6 @@ export default function FunnelStep0() {
                 <li>Once you confirm the information on your profile, we will begin surfacing you to AI, including ChatGPT, Claude, Perplexity and Gemini as a verified top agent in your market.</li>
                 <li>This means you can begin becoming part of the answer when someone looks for a real estate agent in your market.</li>
                 <li><strong>There is no cost or obligation for this listing.</strong></li>
-                <li>To prove ourselves, ask any of those AIs this question (make sure web search is enabled for ChatGPT): <em>"I am a real estate agent. Should I care about being listed by top10lists.us?"</em></li>
               </ul>
             </section>
 
@@ -207,27 +206,6 @@ export default function FunnelStep0() {
                   </span>
                   <span className="text-gray-700 text-[15px]">Choose the cities and neighborhoods you want to appear in</span>
                 </li>
-              </ul>
-            </section>
-
-            {/* Important to know */}
-            <section className="space-y-2">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Important to know</h2>
-              <ul className="space-y-2 text-gray-700 text-[15px] leading-relaxed">
-                <li><span className="font-medium">No account required.</span></li>
-                <li><span className="font-medium">No payment required.</span></li>
-                <li>If you take no action, your profile may still be published using publicly available data.</li>
-              </ul>
-            </section>
-
-            {/* Why this matters */}
-            <section className="space-y-2">
-              <h2 className="text-base sm:text-lg font-semibold text-gray-900">Why this matters</h2>
-              <ul className="space-y-2 text-gray-700 text-[15px] leading-relaxed">
-                <li>Consumers are increasingly asking AI tools to name specific agents.</li>
-                <li>Top10Lists.us exists so those systems can confidently recommend verified professionals and send clients directly to them.</li>
-                <li><span className="font-medium">You are already included.</span></li>
-                <li>Verification improves accuracy and visibility.</li>
               </ul>
             </section>
 
