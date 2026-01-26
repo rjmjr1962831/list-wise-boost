@@ -568,10 +568,10 @@ export default function EditProfile() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="mb-2">
-            <span className="text-sm font-medium text-foreground">Step 3 of 5 (2 minutes)</span>
+            <span className="text-sm font-medium text-foreground">Step 4 of 5 (2 minutes)</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-primary rounded-full transition-all" style={{ width: '66%' }} />
+            <div className="h-full bg-primary rounded-full transition-all" style={{ width: '80%' }} />
           </div>
         </div>
 

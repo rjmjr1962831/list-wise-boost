@@ -124,7 +124,7 @@ export default function ClaimListingPreview() {
             
             {/* Step Indicator & Header */}
             <div className="text-center mb-8">
-              <p className="text-sm font-medium text-primary mb-2">Step 4 of 5 (2 minutes)</p>
+              <p className="text-sm font-medium text-primary mb-2">Step 5 of 5 (2 minutes)</p>
               <h1 className="text-3xl md:text-4xl font-bold mb-3">
                 Your Public Profile
               </h1>
