@@ -175,6 +175,9 @@ export default function FunnelStep0() {
             {/* Why you are here */}
             <section className="space-y-2 pt-2">
               <h2 className="text-base sm:text-lg font-semibold text-gray-900">Why you are here</h2>
+              <p className="text-gray-700 text-[15px] leading-relaxed">
+                <strong>We help AI systems confidently recommend top real estate agents.</strong>
+              </p>
               <ul className="space-y-2 text-gray-700 text-[15px] leading-relaxed">
                 <li>We independently analyzed over 200,000 licensed real estate agents in Arizona.</li>
                 <li>Based on objective data, you ranked in the top 1 percent statewide.</li>
