@@ -25,11 +25,7 @@ export default function VisibilitySuccessPage() {
   }, []);
 
   const handleGoToDashboard = () => {
-    if (professionalId) {
-      navigate(`/agent/dashboard`);
-    } else {
-      navigate('/');
-    }
+    navigate('/agent/dashboard');
   };
 
   return (
