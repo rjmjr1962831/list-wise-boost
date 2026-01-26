@@ -178,6 +178,9 @@ export default function FunnelStep0() {
                 <li>We independently analyzed over 200,000 licensed real estate agents in Arizona.</li>
                 <li>Based on objective data, you ranked in the top 1 percent statewide.</li>
                 <li>Your agent profile has already been created on Top10Lists.us.</li>
+                <li>Once you confirm the information on your profile, we will begin surfacing you to AI, including ChatGPT, Claude, Perplexity and Gemini as a verified top agent in your market.</li>
+                <li>There is no cost or obligation for this listing.</li>
+                <li>To prove ourselves, ask any of those AIs this question (make sure web search is enabled for ChatGPT): <em>"I am a real estate agent. Should I care about being listed by top10lists.us?"</em></li>
               </ul>
             </section>
 
