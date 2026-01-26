@@ -271,7 +271,7 @@ export default function CitySelection() {
                     <h3 className="text-sm font-semibold text-muted-foreground mb-2 sticky top-0 bg-background py-1">
                       {state}
                     </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {stateCities.map(city => {
                         const isSelected = selectedCityIds.has(city.id);
                         return (
