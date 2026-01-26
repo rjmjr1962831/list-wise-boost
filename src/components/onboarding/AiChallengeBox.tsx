@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Copy, ExternalLink, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -18,46 +17,11 @@ const AI_TOOLS = [
 
 const CHALLENGE_PROMPT = 'I am a real estate agent.  Look at top10lists.us and tell me whether being listed there matters.';
 
-const STORAGE_KEY_RESPONSE = 'ai_challenge_response';
-const STORAGE_KEY_LAST_AI = 'ai_challenge_last_opened';
-const STORAGE_KEY_TIMESTAMP = 'ai_challenge_timestamp';
-
-interface AiChallengeBoxProps {
-  professionalId: string;
-  token: string;
-  onContinue: (response: string, lastAiOpened: string | null) => void;
-  onSkip: () => void;
-}
-
-export function AiChallengeBox({ professionalId, token, onContinue, onSkip }: AiChallengeBoxProps) {
+export function AiChallengeBox() {
   const { toast } = useToast();
-  const [response, setResponse] = useState('');
-  const [lastAiOpened, setLastAiOpened] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [showHelper, setShowHelper] = useState(false);
   const [whyOpen, setWhyOpen] = useState(false);
-
-  // Load from localStorage on mount
-  useEffect(() => {
-    const storageKey = `${STORAGE_KEY_RESPONSE}_${token}`;
-    const savedResponse = localStorage.getItem(storageKey);
-    const savedAi = localStorage.getItem(`${STORAGE_KEY_LAST_AI}_${token}`);
-    
-    if (savedResponse) {
-      setResponse(savedResponse);
-    }
-    if (savedAi) {
-      setLastAiOpened(savedAi);
-    }
-  }, [token]);
-
-  // Save to localStorage when response changes
-  useEffect(() => {
-    if (response) {
-      localStorage.setItem(`${STORAGE_KEY_RESPONSE}_${token}`, response);
-      localStorage.setItem(`${STORAGE_KEY_TIMESTAMP}_${token}`, new Date().toISOString());
-    }
-  }, [response, token]);
 
   const handleCopyPrompt = async () => {
     try {
@@ -78,14 +42,9 @@ export function AiChallengeBox({ professionalId, token, onContinue, onSkip }: Ai
   };
 
   const handleOpenAi = (toolName: string, url: string) => {
-    setLastAiOpened(toolName);
-    localStorage.setItem(`${STORAGE_KEY_LAST_AI}_${token}`, toolName);
     setShowHelper(true);
-
-    // Try to open in new tab
     const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
     
-    // If popup was blocked, ask user before opening in same tab
     if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
       const confirmed = window.confirm(
         `Your browser blocked the popup.  Open ${toolName} in this tab instead?  You can come back using your browser's back button.`
@@ -96,12 +55,6 @@ export function AiChallengeBox({ professionalId, token, onContinue, onSkip }: Ai
     }
   };
 
-  const handleContinue = () => {
-    onContinue(response, lastAiOpened);
-  };
-
-  const isValid = response.trim().length >= 40;
-
   return (
     <section className="border border-gray-200 bg-gray-50/50 rounded-xl p-5 sm:p-6 space-y-4">
       {/* Header */}
@@ -110,7 +63,7 @@ export function AiChallengeBox({ professionalId, token, onContinue, onSkip }: Ai
           Want to verify this for yourself?
         </h3>
         <p className="text-sm text-gray-600">
-          Ask any AI tool the question below.  Then paste the answer here.
+          Ask any AI tool you already use the question below.
         </p>
       </div>
 
@@ -157,46 +110,9 @@ export function AiChallengeBox({ professionalId, token, onContinue, onSkip }: Ai
         </div>
         {showHelper && (
           <p className="text-xs text-gray-500 italic">
-            After you get an answer, come back and paste it here.
+            After you get an answer, return here to continue.
           </p>
         )}
-      </div>
-
-      {/* Response textarea */}
-      <div className="space-y-2">
-        <label htmlFor="ai-response" className="text-sm font-medium text-gray-700">
-          Paste the AI answer here
-        </label>
-        <Textarea
-          id="ai-response"
-          value={response}
-          onChange={(e) => setResponse(e.target.value)}
-          placeholder="Paste what the AI said.  A few sentences is enough."
-          className="min-h-[100px] text-sm resize-none"
-        />
-        {response.length > 0 && response.length < 40 && (
-          <p className="text-xs text-gray-500">
-            {40 - response.length} more characters needed
-          </p>
-        )}
-      </div>
-
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-2">
-        <Button
-          onClick={handleContinue}
-          disabled={!isValid}
-          className="bg-gray-900 hover:bg-gray-800 text-white px-6 h-10 text-sm font-semibold"
-        >
-          Continue
-        </Button>
-        <button
-          type="button"
-          onClick={onSkip}
-          className="text-sm text-gray-500 hover:text-gray-700 underline underline-offset-2"
-        >
-          Skip for now
-        </button>
       </div>
 
       {/* Why this works disclosure */}
