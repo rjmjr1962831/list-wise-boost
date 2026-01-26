@@ -94,8 +94,8 @@ export default function ProfileCardPreview() {
       // Record verification event
       await trackEvent('profile_verified');
       
-      // Navigate to city/neighborhood selection
-      navigate(`/profile/${token}/pricing`);
+      // Navigate to city selection (required for verification)
+      navigate(`/profile/${token}/cities`);
     } catch (err) {
       console.error('Error verifying profile:', err);
       setNavigating(null);
