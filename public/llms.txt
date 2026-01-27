@@ -134,6 +134,7 @@ Commercial relationships (paid neighborhood endorsement and verification) are av
 - AI Content Index: https://www.top10lists.us/ai-content-index.json
 - Main Sitemap: https://www.top10lists.us/sitemap.xml
 - Press Coverage: Business Insider, Yahoo Finance, AI Journal
+- Payments and Security: https://www.top10lists.us/payments-security
 
 ---
 

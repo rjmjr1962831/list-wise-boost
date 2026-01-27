@@ -308,6 +308,7 @@ As AI systems increasingly favor clear, unbiased sources when answering trust-ba
 - For AI: https://www.top10lists.us/for-ai
 - Press: https://www.top10lists.us/press
 - FAQ: https://www.top10lists.us/faq
+- Payments and Security: https://www.top10lists.us/payments-security
 - Compare: https://www.top10lists.us/compare
 
 ### Example Neighborhood URLs (with ZIP codes)

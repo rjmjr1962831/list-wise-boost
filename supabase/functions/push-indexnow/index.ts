@@ -20,7 +20,6 @@ const KEY_URLS = [
   'https://www.top10lists.us/faq',
   'https://www.top10lists.us/for-agents',
   'https://www.top10lists.us/compare',
-  'https://www.top10lists.us/test',
   
   // AI-specific pages
   'https://www.top10lists.us/for-ai',
@@ -28,6 +27,7 @@ const KEY_URLS = [
   'https://www.top10lists.us/ai-citation-whitepaper',
   'https://www.top10lists.us/protocol-services',
   'https://www.top10lists.us/transparency',
+  'https://www.top10lists.us/payments-security',
   
   // Technical/AI files
   'https://www.top10lists.us/llms.txt',
