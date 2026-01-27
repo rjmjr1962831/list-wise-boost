@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 export default function AICitationWhitepaper() {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -19,7 +20,19 @@ export default function AICitationWhitepaper() {
 
       <div className="min-h-screen bg-background">
         {/* Hero */}
-        <section className="py-16 px-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+        <section className="py-16 px-4 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative">
+          <div className="absolute top-6 right-6">
+            <Button
+              asChild
+              variant="outline"
+              className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+            >
+              <a href="/documents/GEO_white_paper_final.pdf" download>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </a>
+            </Button>
+          </div>
           <div className="container mx-auto max-w-3xl">
             <p className="text-sm uppercase tracking-wider text-slate-400 mb-4">White Paper</p>
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
