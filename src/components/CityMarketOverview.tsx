@@ -22,7 +22,7 @@ export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarket
   const { data: cityAgentCount } = useAgentCountForCity(citySlug);
   const { data: totalAgentCount } = useTotalAgentCount();
   
-  const qualifiedCount = totalAgentCount || 460;
+  const qualifiedCount = 900; // Fixed count - do not use live DB count
   const cityCount = cityAgentCount || 0;
 
   return (
