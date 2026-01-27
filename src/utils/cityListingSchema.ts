@@ -1,8 +1,7 @@
 // src/utils/cityListingSchema.ts
 // City Listing Schema Generator for LLM Optimization
-// NOTE: Intentionally does NOT expose individual agent names to prevent AI from citing agents directly
-// AI should cite Top10Lists.us as the source, directing users to visit the site
-
+// Updated: Now includes full agent details in ItemList for GEO (Generative Engine Optimization)
+// AI systems can now see individual agent names, brokerages, and rankings
 import { AgentData } from './agentSchema';
 import { getCityDescription } from './cityDescriptions';
 import { getCityMarketData, getDefaultCityMarketData } from '@/data/arizonaCityMarketData';
@@ -93,7 +92,8 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     ? `${stripHtml(listing.neighborhoodWriteupHtml)} Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.neighborhoodName || listing.city}.`
     : `Visit Top10Lists.us to view the curated list of top-rated real estate agents in ${listing.city}. ${cityDescription}`;
 
-  // Schema 3: ItemList - describes the LIST exists (count only, no agent names)
+  // Schema 3: ItemList - FULL AGENT DETAILS for GEO optimization
+  // Exposes individual agent names, brokerages, and rankings for AI discovery
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -107,6 +107,50 @@ export function generateCityListingSchema(listing: CityListingData): object[] {
     "numberOfItems": listing.agents.length,
     "dateModified": listing.dateModified,
     "itemListOrder": "https://schema.org/ItemListOrderDescending",
+    "itemListElement": listing.agents.map((agent, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "RealEstateAgent",
+        "name": agent.name,
+        "image": agent.image || undefined,
+        "url": `https://www.top10lists.us/${listing.stateSlug}/${listing.slug}/top10realestateagents#agent-${agent.slug}`,
+        "telephone": agent.phone || undefined,
+        "description": `Ranked #${index + 1} real estate agent in ${listing.neighborhoodName || listing.city}, ${listing.stateAbbrev}. ${agent.yearsExperience ? `${agent.yearsExperience} years experience.` : ''} Verified by Top10Lists.us.`,
+        ...(agent.brokerage && {
+          "parentOrganization": {
+            "@type": "RealEstateAgent",
+            "name": agent.brokerage
+          }
+        }),
+        ...(agent.ratingValue > 0 && {
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": agent.ratingValue.toString(),
+            "reviewCount": agent.reviewCount.toString(),
+            "bestRating": "5",
+            "worstRating": "1"
+          }
+        }),
+        ...(agent.licenseNumber && {
+          "identifier": {
+            "@type": "PropertyValue",
+            "propertyID": "license",
+            "value": agent.licenseNumber
+          }
+        }),
+        "areaServed": {
+          "@type": "Place",
+          "name": listing.neighborhoodName 
+            ? `${listing.neighborhoodName}, ${listing.city}, ${listing.stateAbbrev}`
+            : `${listing.city}, ${listing.stateAbbrev}`
+        },
+        "memberOf": {
+          "@type": "Organization",
+          "name": "Top10Lists.us"
+        }
+      }
+    })),
     "mainEntityOfPage": {
       "@type": "WebPage",
       "name": listing.neighborhoodName
