@@ -105,7 +105,7 @@ const ZillowPayToPlayPage = lazy(() => import("./pages/ZillowPayToPlayPage"));
 const Compare = lazy(() => import("./pages/Compare"));
 const Press = lazy(() => import("./pages/Press"));
 const ForAI = lazy(() => import("./pages/ForAI"));
-const TestAI = lazy(() => import("./pages/TestAI"));
+
 const Transparency = lazy(() => import("./pages/Transparency"));
 const EditorialUpdates = lazy(() => import("./pages/EditorialUpdates"));
 const Founder = lazy(() => import("./pages/Founder"));
@@ -186,7 +186,7 @@ const App = () => (
                     <Route path="/for-ai" element={<ForAI />} />
                     <Route path="/transparency" element={<Transparency />} />
                     <Route path="/editorial-updates" element={<EditorialUpdates />} />
-                    <Route path="/test" element={<TestAI />} />
+                    
                     <Route path="/ai-compare" element={<AICompare />} />
                     <Route path="/ai-liability" element={<AILiability />} />
                     <Route path="/ai-citation-whitepaper" element={<AICitationWhitepaper />} />
