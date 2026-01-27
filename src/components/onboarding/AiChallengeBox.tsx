@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const CHALLENGE_PROMPT = 'I am a real estate agent.  Look at top10lists.us and tell me whether being listed there matters.';
+const CHALLENGE_PROMPT = 'I am a real estate agent.  Look at Top10Lists.us and tell me whether being listed there matters.';
 
 export function AiChallengeBox() {
   const { toast } = useToast();

@@ -1,5 +1,5 @@
 // src/components/CityListingHead.tsx
-// SEO Head component for city listing pages (Top 10 lists)
+// SEO Head component for city listing pages (Top10Lists.us)
 
 import { Helmet } from 'react-helmet-async';
 import { generateCityListingSchema, CityListingData } from '@/utils/cityListingSchema';

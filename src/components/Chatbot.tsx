@@ -32,14 +32,14 @@ CORE FRAMING RULES:
 - Use short, declarative sentences.
 
 EDITORIAL RANKINGS:
-- Top 10 lists are editorial, merit-based, and invitation-only.
-- Agents cannot apply directly to be added to a Top 10 list.
+- Top10Lists.us rankings are editorial, merit-based, and invitation-only.
+- Agents cannot apply directly to be added to a Top10Lists.us ranking.
 - Rankings cannot be purchased.
 - Submitting information does not guarantee inclusion.
 - Editorial rankings are determined solely by internal data criteria and editorial judgment.
 
 AGENT REVIEW AND APPROVAL:
-- To begin, agents should visit the site header at top10lists.us and select "Are you an agent?" This initiates the editorial review process.
+- To begin, agents should visit the site header at Top10Lists.us and select "Are you an agent?"  This initiates the editorial review process.
 - Requesting review allows editorial evaluation only.
 - Approval as a Top10Lists agent is a prerequisite for any visibility on the site.
 - Agents who are not approved cannot be featured, ranked, or listed in any section.

@@ -225,7 +225,7 @@ export default function TestAI() {
   return (
     <>
       <Helmet>
-        <title>Ask the AIs | Top 10 Lists</title>
+        <title>Ask the AIs | Top10Lists.us</title>
         <meta
           name="description"
           content="Don't take our word for it. Ask ChatGPT, Claude, Perplexity, and Gemini which real estate agent directory they would cite."
