@@ -1,78 +1,68 @@
+# Arizona Neighborhood Writeup Generation Pipeline
 
+## Summary
 
-## Un-Pin All Brand Builders Except Beauvais in Scottsdale
+Generate **~1,910 Arizona neighborhood writeups** using the existing infrastructure. Census data is already populated; this pipeline focuses solely on creating HTML narratives.
 
-### Summary
-Remove all `is_brand_builder` pinning except for Dina and Mark Beauvais in Scottsdale. This ensures fair round-robin rotation for all other agents across all cities.
+**IMPORTANT:** Before starting, re-query the database to get fresh counts. Census data was just populated externally, so the 'missing' counts in this plan may be outdated. The writeup_html count (~1,910 missing) should still be accurate.
 
----
-
-### Database Changes
-
-**Update 6 agents to remove brand builder status:**
-
-| Agent | City | Action |
-|-------|------|--------|
-| Eileen Taggart | Flagstaff | Set `is_brand_builder = false` |
-| Claire Ackerman | Scottsdale | Set `is_brand_builder = false` |
-| Eric Tont | Scottsdale | Set `is_brand_builder = false` |
-| Jeff Seman | Phoenix | Set `is_brand_builder = false` |
-| Robert Maynard | Avondale | Set `is_brand_builder = false` |
-| Adam Hamblen | Avondale | Set `is_brand_builder = false` |
-| Cody Anne Yarnes | Prescott | Set `is_brand_builder = false` |
-
-**Beauvais stays pinned:**
-- Dina And Mark Beauvais (Scottsdale) - remains `is_brand_builder = true`
+**Estimated Cost:** ~$29 (Claude Sonnet)  
+**Estimated Runtime:** ~1.5 hours  
+**Batch Size:** 25 neighborhoods per invocation
 
 ---
 
-### Code Changes
+## Architecture
 
-**File: `src/pages/DynamicCategoryList.tsx`**
+Self-triggering edge function following the proven `populate-ca-neighborhoods` pattern:
 
-1. **Remove Phoenix from Beauvais pinning logic** (lines 512-523)
-   - Currently pins Beauvais to #1 in both Scottsdale AND Phoenix
-   - Change to pin ONLY in Scottsdale
-
-2. **Update stub injection logic** (lines 419-464)
-   - Already Scottsdale-only, no change needed
-
----
-
-### Technical Details
-
-**SQL Migration:**
-```sql
-UPDATE professionals 
-SET is_brand_builder = false 
-WHERE is_brand_builder = true 
-  AND id NOT IN ('bf553bf9-6d6c-4b54-8bd4-3699332c8287'); -- Beauvais ID
 ```
-
-**Code change in DynamicCategoryList.tsx:**
-```typescript
-// Before (line 512):
-if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && ...)
-
-// After:
-if (cityData.slug === 'scottsdale' && ...)
+1. Fetch 25 neighborhoods via enrichment-api (query action)
+                     ↓
+2. For each: Gemini Flash 2.0 → Research (0.5s delay)
+                     ↓
+3. For each: Claude Sonnet → 300-400 word HTML (1s delay)
+                     ↓
+4. Update via enrichment-api (update-neighborhood action)
+                     ↓
+5. Self-trigger next batch (if more remain)
 ```
 
 ---
 
-### Result After Implementation
+## Implementation
 
-- **Scottsdale**: Beauvais always #1, remaining 9 slots rotate hourly among qualified agents
-- **Phoenix**: All 10 slots rotate hourly (no pinned agents)
-- **Flagstaff**: All 10 slots rotate hourly (Eileen Taggart joins rotation)
-- **All other cities**: All 10 slots rotate hourly (no pinned agents)
+**File:** `supabase/functions/az-neighborhood-writeups/index.ts`
+
+**Actions:**
+- `start` - Begin processing (re-queries for fresh count)
+- `continue` - Resume (self-triggered after each batch)
+- `status` - Return current progress
+- `stop` - Halt processing gracefully
 
 ---
 
-### Verification Steps
+## Writeup Format
 
-1. Query database to confirm only Beauvais has `is_brand_builder = true`
-2. Test Scottsdale page - Beauvais should appear #1
-3. Test Phoenix page - no pinned agent, rotation only
-4. Test Flagstaff page - Eileen Taggart in rotation, not pinned
+```html
+<h3>Neighborhood Overview</h3>
+<p>Desert Ridge stands as one of North Phoenix's...</p>
 
+<h3>Housing & Market</h3>
+<p>The real estate market in Desert Ridge reflects...</p>
+
+<h3>Lifestyle & Amenities</h3>
+<p>Residents enjoy access to excellent schools...</p>
+```
+
+---
+
+## Secrets (All Configured)
+
+- `GEMINI_API_KEY` ✓
+- `ANTHROPIC_API_KEY` ✓  
+- `ENRICHMENT_API_KEY` ✓
+
+---
+
+## Status: APPROVED - IMPLEMENTING
