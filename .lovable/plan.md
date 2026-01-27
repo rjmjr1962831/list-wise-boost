@@ -1,69 +1,78 @@
-# Zillow Neighborhood Supplement Plan
 
-## Status: READY TO PROCESS
 
-Schema migration complete. Edge function deployed. JSON data copied.
+## Un-Pin All Brand Builders Except Beauvais in Scottsdale
 
-**Note:** Existing records keep NULL source (no incorrect 'osm' backfill). New Zillow records get `source = 'zillow'`.
+### Summary
+Remove all `is_brand_builder` pinning except for Dina and Mark Beauvais in Scottsdale. This ensures fair round-robin rotation for all other agents across all cities.
 
-## Current Database State
+---
 
-| State | Before | Zillow Records |
-|-------|--------|----------------|
-| California | 2,384 | 2,051 |
-| Arizona | 1,057 | 791 |
-| Colorado | 0 | 557 |
-| Florida | 0 | 1,314 |
-| New York | 0 | 579 |
-| Texas | 0 | 1,388 |
-| **Total** | **3,441** | **6,680** |
+### Database Changes
 
-## Processing Order
+**Update 6 agents to remove brand builder status:**
 
-1. **California** (2,051 records) - verify coverage-api fix
-2. **Arizona** (791 records) - gap-fill with ZIP preservation
-3. **Texas** (1,388 records) - new state
-4. **Florida** (1,314 records) - new state
-5. **New York** (579 records) - new state
-6. **Colorado** (557 records) - new state
+| Agent | City | Action |
+|-------|------|--------|
+| Eileen Taggart | Flagstaff | Set `is_brand_builder = false` |
+| Claire Ackerman | Scottsdale | Set `is_brand_builder = false` |
+| Eric Tont | Scottsdale | Set `is_brand_builder = false` |
+| Jeff Seman | Phoenix | Set `is_brand_builder = false` |
+| Robert Maynard | Avondale | Set `is_brand_builder = false` |
+| Adam Hamblen | Avondale | Set `is_brand_builder = false` |
+| Cody Anne Yarnes | Prescott | Set `is_brand_builder = false` |
 
-## Edge Function Endpoint
+**Beauvais stays pinned:**
+- Dina And Mark Beauvais (Scottsdale) - remains `is_brand_builder = true`
 
-```
-POST /functions/v1/ingest-zillow-neighborhoods
-{
-  "data": [...],  // Full JSON array
-  "batchSize": 25,
-  "startIndex": 0,
-  "endIndex": 100
-}
-```
+---
 
-## Files Created
+### Code Changes
 
-- `supabase/functions/ingest-zillow-neighborhoods/index.ts` - Multi-state ingestion
-- `src/data/zillowTargetStates.json` - 6,680 Zillow records
+**File: `src/pages/DynamicCategoryList.tsx`**
 
-## Next Step
+1. **Remove Phoenix from Beauvais pinning logic** (lines 512-523)
+   - Currently pins Beauvais to #1 in both Scottsdale AND Phoenix
+   - Change to pin ONLY in Scottsdale
 
-Run ingestion starting with California:
+2. **Update stub injection logic** (lines 419-464)
+   - Already Scottsdale-only, no change needed
 
-```javascript
-// Filter California records and process
-const caRecords = data.filter(n => n.state === 'California');
-// Process in batches via edge function
-```
+---
 
-## Verification Query (After Completion)
+### Technical Details
 
+**SQL Migration:**
 ```sql
-SELECT state, 
-       COUNT(*) as total,
-       COUNT(CASE WHEN source = 'zillow' THEN 1 END) as from_zillow,
-       COUNT(CASE WHEN source IS NULL THEN 1 END) as existing_no_source,
-       COUNT(CASE WHEN primary_zip IS NOT NULL THEN 1 END) as with_zip
-FROM neighborhood_catalog
-WHERE state IN ('Arizona', 'California', 'Colorado', 'Florida', 'New York', 'Texas')
-GROUP BY state
-ORDER BY total DESC;
+UPDATE professionals 
+SET is_brand_builder = false 
+WHERE is_brand_builder = true 
+  AND id NOT IN ('bf553bf9-6d6c-4b54-8bd4-3699332c8287'); -- Beauvais ID
 ```
+
+**Code change in DynamicCategoryList.tsx:**
+```typescript
+// Before (line 512):
+if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && ...)
+
+// After:
+if (cityData.slug === 'scottsdale' && ...)
+```
+
+---
+
+### Result After Implementation
+
+- **Scottsdale**: Beauvais always #1, remaining 9 slots rotate hourly among qualified agents
+- **Phoenix**: All 10 slots rotate hourly (no pinned agents)
+- **Flagstaff**: All 10 slots rotate hourly (Eileen Taggart joins rotation)
+- **All other cities**: All 10 slots rotate hourly (no pinned agents)
+
+---
+
+### Verification Steps
+
+1. Query database to confirm only Beauvais has `is_brand_builder = true`
+2. Test Scottsdale page - Beauvais should appear #1
+3. Test Phoenix page - no pinned agent, rotation only
+4. Test Flagstaff page - Eileen Taggart in rotation, not pinned
+
