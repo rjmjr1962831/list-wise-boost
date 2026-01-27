@@ -91,7 +91,8 @@
     "llms": "https://www.top10lists.us/llms.txt",
     "mcp": "https://www.top10lists.us/mcp.json",
     "methodology": "https://www.top10lists.us/about/ranking-methodology",
-    "health": "https://www.top10lists.us/_health"
+    "health": "https://www.top10lists.us/_health",
+    "paymentsSecurity": "https://www.top10lists.us/payments-security"
   },
   "urlPatterns": {
     "stateDirectory": "https://www.top10lists.us/{state}",

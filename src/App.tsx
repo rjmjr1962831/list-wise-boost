@@ -112,6 +112,7 @@ const Founder = lazy(() => import("./pages/Founder"));
 const AILiability = lazy(() => import("./pages/AILiability"));
 const AICitationWhitepaper = lazy(() => import("./pages/AICitationWhitepaper"));
 const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
+const PaymentsSecurity = lazy(() => import("./pages/PaymentsSecurity"));
 const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods"));
 const NeighborhoodWriteups = lazy(() => import("./pages/admin/NeighborhoodWriteups"));
 const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
@@ -191,6 +192,7 @@ const App = () => (
                     <Route path="/ai-liability" element={<AILiability />} />
                     <Route path="/ai-citation-whitepaper" element={<AICitationWhitepaper />} />
                     <Route path="/protocol-services" element={<ProtocolServices />} />
+                    <Route path="/payments-security" element={<PaymentsSecurity />} />
                     <Route path="/check-profile" element={<CheckProfile />} />
                     <Route path="/check-agent" element={<AgentLookup />} />
                     <Route path="/agent-info" element={<AgentInfo />} />

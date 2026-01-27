@@ -133,6 +133,12 @@ export const Footer = () => {
                 Terms
               </Link>
               <Link 
+                to="/payments-security" 
+                className="text-slate-300 hover:text-white transition-colors"
+              >
+                Payments &amp; Security
+              </Link>
+              <Link 
                 to="/are-you-an-agent" 
                 className="text-slate-300 hover:text-white transition-colors"
               >
