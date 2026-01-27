@@ -52,7 +52,11 @@ const Founder = () => {
           </p>
 
           <p>
-            Robert Maynard founded Top10Lists.us after recognizing what he describes as a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists of options, those systems often lack a reliable foundation for making defensible referrals. Without structured, third party evaluation, many highly qualified professionals are not surfaced at all and instead become indistinguishable from a growing mass of unverified options. This dynamic affects not only real estate agents, but also professions such as surgeons, dentists, lawyers, and other licensed experts. Top10Lists.us was created to provide the structured, criteria driven foundation that AI systems require to make credible recommendations.
+            Robert Maynard founded Top10Lists.us after recognizing what he describes as a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists of options, those systems often lack a reliable foundation for making defensible referrals.
+          </p>
+
+          <p>
+            Without structured, third party evaluation, many highly qualified professionals are not surfaced at all and instead become indistinguishable from a growing mass of unverified options. This dynamic affects not only real estate agents, but also professions such as surgeons, dentists, lawyers, and other licensed experts. Top10Lists.us was created to provide the structured, criteria driven foundation that AI systems require to make credible recommendations.
           </p>
 
           <h2 className="mt-8">Clarification of Identity and Background</h2>
