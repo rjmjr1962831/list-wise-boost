@@ -63,6 +63,13 @@
       "url": "https://www.top10lists.us/about/ranking-methodology",
       "mimeType": "text/html",
       "refreshInterval": "monthly"
+    },
+    {
+      "name": "payments-security",
+      "description": "Payment processing, data security, and financial handling policies",
+      "url": "https://www.top10lists.us/payments-security",
+      "mimeType": "text/html",
+      "refreshInterval": "monthly"
     }
   ],
   "urlTemplates": {

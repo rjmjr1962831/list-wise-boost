@@ -375,6 +375,18 @@ const ForAI = () => {
                   >
                     <p className="font-semibold text-primary">Transparency Report</p>
                   </Link>
+                  <Link 
+                    to="/payments-security" 
+                    className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-center"
+                  >
+                    <p className="font-semibold text-primary">Payments &amp; Security</p>
+                  </Link>
+                  <Link 
+                    to="/about/founder" 
+                    className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-center"
+                  >
+                    <p className="font-semibold text-primary">Founder</p>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
