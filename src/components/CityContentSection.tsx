@@ -16,7 +16,7 @@ export function CityContentSection({ citySlug, cityName, categoryName }: CityCon
   const { data: totalAgentCount } = useTotalAgentCount();
   
   // Use live count or fallback
-  const qualifiedCount = totalAgentCount || 460;
+  const qualifiedCount = 900; // Fixed count - do not use live DB count
   const cityCount = cityAgentCount || 0;
   
   return (
