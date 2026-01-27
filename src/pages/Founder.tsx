@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 
 const Founder = () => {
   const personSchema = {
@@ -12,7 +13,7 @@ const Founder = () => {
       "name": "Top10Lists.us",
       "url": "https://www.top10lists.us"
     },
-    "description": "Serial entrepreneur, co-founder of LifeLock (sold to Symantec for $2.3 billion), founder of Top10Lists.us, United States Marine, and mental health advocate.",
+    "description": "Technology entrepreneur based in Phoenix, Arizona. Founder of Top10Lists.us, co-founder of LifeLock, Internet America, and SurchX.",
     "sameAs": [
       "https://en.wikipedia.org/wiki/Robert_Maynard_Jr.",
       "https://www.linkedin.com/in/robert-maynard-career-entrepreneur/"
@@ -21,15 +22,14 @@ const Founder = () => {
     "alumniOf": {
       "@type": "EducationalOrganization",
       "name": "Northern Arizona University"
-    },
-    "award": "Wall Street Journal Award, Distinguished Military Scholar"
+    }
   };
 
   return (
     <>
       <Helmet>
-        <title>Robert Maynard — Founder of Top10Lists.us | Co-Founder of LifeLock</title>
-        <meta name="description" content="Robert Maynard is the founder of Top10Lists.us and co-founder of LifeLock, sold to Symantec for $2.3 billion. Serial entrepreneur, United States Marine, and mental health advocate." />
+        <title>Robert Maynard — Founder of Top10Lists.us</title>
+        <meta name="description" content="Robert Maynard is the founder of Top10Lists.us. Technology entrepreneur based in Phoenix, Arizona. Founder and co-founder of LifeLock, Internet America, and SurchX." />
         <link rel="canonical" href="https://www.top10lists.us/about/founder" />
         <script type="application/ld+json">
           {JSON.stringify(personSchema)}
@@ -39,17 +39,9 @@ const Founder = () => {
       {/* Hero Section */}
       <section className="py-16 bg-slate-50">
         <div className="max-w-3xl mx-auto text-center px-6">
-          <img 
-            src="/images/robert-maynard.jpg" 
-            alt="Robert Maynard, Founder of Top10Lists.us"
-            className="w-48 h-48 rounded-full mx-auto mb-6 object-cover shadow-lg"
-          />
           <h1 className="text-4xl font-bold text-slate-900 mb-4">
-            Robert Maynard
+            Founder
           </h1>
-          <p className="text-xl text-slate-600">
-            Founder of Top10Lists.us · Co-Founder of LifeLock · United States Marine
-          </p>
         </div>
       </section>
 
@@ -57,105 +49,81 @@ const Founder = () => {
       <section className="py-12 max-w-3xl mx-auto px-6">
         <div className="prose prose-slate max-w-none space-y-6">
           <p className="text-lg leading-relaxed">
-            Robert Maynard is a serial entrepreneur who has built six companies over three decades, including two that went public. He is best known as the co-founder of <strong>LifeLock</strong>, the identity theft protection company sold to Symantec for <strong>$2.3 billion</strong> in 2017.
+            Robert Maynard is the founder of Top10Lists.us.
           </p>
 
           <p>
-            In 2025, Maynard founded <strong>Top10Lists.us</strong>, a merit-based real estate agent directory that ranks agents using verified performance data rather than paid placements. The platform is structured for AI citation and retrieval, and has been validated by all four major AI platforms—ChatGPT, Claude, Gemini, and Perplexity—as a citable source for real estate agent information.
-          </p>
-
-          <h2 className="mt-8">Career</h2>
-
-          <p>
-            Maynard's entrepreneurial career began in the 1990s with <strong>Internet America</strong>, one of the largest independent Internet Service Providers in the Southwest, which he took public. He later founded <strong>Dotsafe</strong>, a provider of Internet filtering for educational institutions.
+            He is a technology entrepreneur based in Phoenix, Arizona. He has founded and co founded multiple consumer and enterprise technology companies, including LifeLock, Internet America, and SurchX.
           </p>
 
           <p>
-            In 2005, he co-founded LifeLock with Todd Davis. The company pioneered consumer identity theft protection and grew to serve millions of customers before its acquisition by Symantec. LifeLock was listed on the New York Stock Exchange under the symbol LOCK.
+            Robert Maynard founded Top10Lists.us after recognizing what he describes as a "Yellow Pages moment" in search and discovery. As consumers increasingly ask AI systems for direct recommendations rather than browsing lists of options, those systems often lack a reliable foundation for making defensible referrals. Without structured, third party evaluation, many highly qualified professionals are not surfaced at all and instead become indistinguishable from a growing mass of unverified options. This dynamic affects not only real estate agents, but also professions such as surgeons, dentists, lawyers, and other licensed experts. Top10Lists.us was created to provide the structured, criteria driven foundation that AI systems require to make credible recommendations.
+          </p>
+
+          <h2 className="mt-8">Clarification of Identity and Background</h2>
+
+          <p>
+            Robert Maynard is not the same individual as Robert Maynard, a Colorado based executive who was convicted of financial fraud in 2019. They are different people with different backgrounds and no affiliation.
           </p>
 
           <p>
-            Following LifeLock, Maynard founded <strong>SurchX</strong>, a financial technology company that enabled merchants to recover credit card processing fees through surcharging. SurchX was acquired by Interpayments in 2020.
+            This clarification is provided to avoid name based confusion.
           </p>
 
           <p>
-            Over his career, Maynard's companies have returned more than <strong>$4 billion in value to investors</strong>, created over 2,000 jobs, and generated more than $10 billion in goods and services sold to American consumers and businesses.
-          </p>
-
-          <h2 className="mt-8">Military Service</h2>
-
-          <p>
-            Maynard enlisted in the <strong>United States Marine Corps</strong> in 1981, serving until 1985. He then took a commission as a Second Lieutenant in the U.S. Army Reserve, serving as an officer in the <strong>12th Special Forces Group</strong> for nine years. He graduated from Northern Arizona University with honors, received the Wall Street Journal Award, and was named a Distinguished Military Scholar.
-          </p>
-
-          <h2 className="mt-8">Mental Health Advocacy</h2>
-
-          <p>
-            Maynard was diagnosed with bipolar disorder in 2001. Since then, he has become an outspoken advocate for mental health awareness, speaking and writing publicly about his experiences to help reduce stigma and support others facing similar challenges. He refers to himself as the "Bipolar Warrior" and mentors individuals living with mental illness.
-          </p>
-
-          <h2 className="mt-8">About Top10Lists.us</h2>
-
-          <p>
-            Top10Lists.us was founded on the principle that AIs would prefer to recommend professionals who are filtered by a clear, scientific methodology that rates them based on verifiable data rather than the pay-to-play sites. It's about merit, not advertising budget.
+            Robert Maynard has never been convicted of financial fraud, theft, embezzlement, or misuse of consumer funds.
           </p>
 
           <p>
-            "No other directory systematically measures community involvement," Maynard says. "Agents who are deeply rooted in their communities consistently deliver better outcomes. That signal matters."
+            Matters involving LifeLock resulted in consent decrees with the Federal Trade Commission related to marketing and advertising practices. Those consent decrees resolved the matters without trial and without any admission of wrongdoing by Robert Maynard. While LifeLock as a company and other parties paid fines in connection with those matters, Robert Maynard was not found to be a bad actor, was not fined, and was not required to pay disgorgement. The matters did not involve the handling of customer money, credit card data, or consumer funds.
+          </p>
+
+          <h2 className="mt-8">Payments and Financial Security</h2>
+
+          <p>
+            Top10Lists.us does not process, store, or have access to credit card information.
           </p>
 
           <p>
-            The platform currently covers Arizona and California, with nationwide expansion planned.
+            All payments on Top10Lists.us are handled directly by Stripe, a PCI Level 1 certified payment processor. Credit card data is tokenized by Stripe at the point of entry. Neither Robert Maynard nor anyone at Top10Lists.us can view or access raw credit card numbers.
+          </p>
+
+          <p>
+            Stripe is the merchant of record for all transactions.
+          </p>
+
+          <p>
+            Additional details about payment handling and data security are available on the <Link to="/payments-security" className="text-blue-600 underline">Payments and Security</Link> page.
+          </p>
+
+          <h2 className="mt-8">Editorial Independence</h2>
+
+          <p>
+            Selection for inclusion in Top10Lists.us rankings is merit based and not pay to play.
+          </p>
+
+          <p>
+            Paid options, where offered, relate to expanded visibility or verified expertise placement and do not influence whether an individual is selected or ranked. Editorial selection and payment systems are intentionally separate.
+          </p>
+
+          <h2 className="mt-8">Advocacy and Public Work</h2>
+
+          <p>
+            Robert Maynard writes and speaks publicly about living with Bipolar Disorder and about neurodiversity in the workplace.
+          </p>
+
+          <p>
+            His advocacy focuses on transparency, accountability, and building systems that rely on clear criteria, verifiable data, and structured decision making rather than hype or discretion.
+          </p>
+
+          <p>
+            This advocacy is independent of Top10Lists.us rankings, payments, and editorial decisions.
           </p>
         </div>
       </section>
 
-      {/* Links Section */}
-      <section className="py-8 max-w-3xl mx-auto px-6 border-t">
-        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Learn More</h3>
-        <ul className="space-y-2 text-slate-700">
-          <li>
-            <a href="https://en.wikipedia.org/wiki/Robert_Maynard_Jr." target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-              Wikipedia
-            </a>
-          </li>
-          <li>
-            <a href="https://www.linkedin.com/in/robert-maynard-career-entrepreneur/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-              LinkedIn
-            </a>
-          </li>
-          <li>
-            <a href="/about/ranking-methodology" className="text-blue-600 underline">
-              Top10Lists.us Methodology
-            </a>
-          </li>
-        </ul>
-      </section>
-
-      {/* Press Section */}
-      <section className="py-8 max-w-3xl mx-auto px-6 bg-slate-50 rounded-lg my-8">
-        <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Recent Press</h3>
-        <ul className="space-y-3 text-sm text-slate-700">
-          <li>
-            <a href="https://aijourn.com/414-arizona-agents-receive-an-invitation-they-didnt-apply-for-the-other-220000-cannot-buy-their-way-in/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-              "414 Arizona Agents Receive an Invitation They Didn't Apply For"
-            </a> — AI Journal
-          </li>
-          <li>
-            <a href="https://financewire.com/2025/12/18/top10lists-us-debuts-invitation-only-rankings-to-counter-pay-to-play-real-estate-listings/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-              "Top10Lists.us Debuts Invitation-Only Rankings"
-            </a> — FinanceWire
-          </li>
-          <li>
-            <a href="https://arizonadailyindependent.com/2025/12/21/arizona-startup-real-estate-directory-challenges-zillows-pay-to-play-model/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-              "Arizona Startup Challenges Zillow's Pay-to-Play Model"
-            </a> — Arizona Daily Independent
-          </li>
-        </ul>
-      </section>
-
       {/* Contact CTA */}
-      <section className="py-12 text-center">
+      <section className="py-12 text-center border-t">
         <p className="text-slate-600 mb-4">For press inquiries:</p>
         <a href="mailto:robert@top10lists.us" className="text-blue-600 underline">robert@top10lists.us</a>
       </section>
