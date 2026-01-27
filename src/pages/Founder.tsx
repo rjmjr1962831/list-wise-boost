@@ -6,23 +6,18 @@ const Founder = () => {
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Robert Maynard",
-    "alternateName": "Robert Maynard Jr.",
     "jobTitle": "Founder",
-    "worksFor": {
+    "affiliation": {
       "@type": "Organization",
-      "name": "Top10Lists.us",
-      "url": "https://www.top10lists.us"
+      "name": "Top10Lists.us"
     },
-    "description": "Technology entrepreneur based in Phoenix, Arizona. Founder of Top10Lists.us, co-founder of LifeLock, Internet America, and SurchX.",
+    "knowsAbout": ["Technology Entrepreneurship", "Neurodiversity", "Search and Discovery"],
     "sameAs": [
-      "https://en.wikipedia.org/wiki/Robert_Maynard_Jr.",
-      "https://www.linkedin.com/in/robert-maynard-career-entrepreneur/"
+      "https://www.linkedin.com/in/robert-maynard-url",
+      "https://top10lists.us"
     ],
-    "knowsAbout": ["entrepreneurship", "identity theft protection", "real estate technology", "mental health advocacy"],
-    "alumniOf": {
-      "@type": "EducationalOrganization",
-      "name": "Northern Arizona University"
-    }
+    "description": "Technology entrepreneur and founder of Top10Lists.us, LifeLock, and Internet America. Based in Phoenix, Arizona.",
+    "disambiguatingDescription": "Robert Maynard of Phoenix, AZ is a technology entrepreneur. He is distinct from and not affiliated with the Robert Maynard convicted of financial fraud in Colorado in 2019."
   };
 
   return (
