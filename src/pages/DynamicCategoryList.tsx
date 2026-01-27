@@ -508,8 +508,8 @@ export default function DynamicCategoryList({
               }
             }
           } else {
-            // Special sorting for Scottsdale: Beauvais-Real-Estate always first
-            if ((cityData.slug === 'scottsdale' || cityData.slug === 'phoenix') && categoryData.slug === 'top10realestateagents') {
+            // Special sorting for Scottsdale ONLY: Beauvais-Real-Estate always first
+            if (cityData.slug === 'scottsdale' && categoryData.slug === 'top10realestateagents') {
               const beauvaisIndex = displayAgents.findIndex(p => 
                 (p.zuid && p.zuid.toLowerCase().includes('beauvais-real-estate')) ||
                 (p.zillow_profile_url && p.zillow_profile_url.toLowerCase().includes('beauvais-real-estate')) ||
