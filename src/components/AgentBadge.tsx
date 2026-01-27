@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Star, ShieldCheck, ExternalLink, Award, Home, TrendingUp, Clock } from "lucide-react";
+import { Star, ShieldCheck, ExternalLink, Award, Home, TrendingUp, Clock, BadgeCheck, Link as LinkIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Professional } from "@/types/professional";
 import { getValidImageUrl } from "@/utils/imageUrlValidator";
@@ -16,6 +16,28 @@ interface AgentSalesStats {
   source?: string;
 }
 
+interface CommunityRole {
+  organization: string;
+  role: string;
+  description?: string;
+  url?: string;
+}
+
+interface NotableAchievement {
+  title: string;
+  description?: string;
+  year?: number;
+  source?: string;
+  url?: string;
+}
+
+interface PressMention {
+  title?: string;
+  outlet?: string;
+  url?: string;
+  date?: string;
+}
+
 interface AgentBadgeProps {
   professional: Professional & {
     agent_sales_stats?: AgentSalesStats | null;
@@ -23,6 +45,10 @@ interface AgentBadgeProps {
     average_value_3yr?: number | null;
     price_range_3yr_min?: number | null;
     price_range_3yr_max?: number | null;
+    community_roles?: CommunityRole[] | null;
+    notable_achievements?: NotableAchievement[] | null;
+    awards_verified?: any[] | null;
+    press_mentions?: PressMention[] | null;
   };
   stateSlug: string;
   citySlug?: string;
@@ -167,6 +193,66 @@ export const AgentBadge = ({
 
   // Check if we have any sales stats to show
   const hasSalesStats = totalSales || avgSalePrice;
+
+  // Extract primary citation for GEO verification display
+  // Priority: 1. Community role with URL, 2. Award with source, 3. Press mention with URL
+  const primaryCitation = (() => {
+    // Check community roles first (most compelling for "community leader" positioning)
+    const communityRoles = (professional as any).community_roles as CommunityRole[] | null;
+    if (communityRoles && Array.isArray(communityRoles) && communityRoles.length > 0) {
+      const roleWithUrl = communityRoles.find(r => r.url);
+      if (roleWithUrl) {
+        return {
+          text: `${roleWithUrl.role}, ${roleWithUrl.organization}`,
+          url: roleWithUrl.url,
+          type: 'community' as const
+        };
+      }
+      // Even without URL, show the role
+      const firstRole = communityRoles[0];
+      return {
+        text: `${firstRole.role}, ${firstRole.organization}`,
+        url: null,
+        type: 'community' as const
+      };
+    }
+    
+    // Check notable achievements / awards
+    const achievements = (professional as any).notable_achievements as NotableAchievement[] | null;
+    const awards = (professional as any).awards_verified;
+    const achievementList = achievements || awards;
+    if (achievementList && Array.isArray(achievementList) && achievementList.length > 0) {
+      const first = achievementList[0];
+      return {
+        text: first.title || first.name || 'Recognized Achievement',
+        url: first.url || null,
+        type: 'award' as const
+      };
+    }
+    
+    // Check press mentions
+    const pressMentions = (professional as any).press_mentions as PressMention[] | null;
+    if (pressMentions && Array.isArray(pressMentions) && pressMentions.length > 0) {
+      const first = pressMentions[0];
+      if (first.url) {
+        return {
+          text: first.outlet ? `Featured in ${first.outlet}` : 'Press Feature',
+          url: first.url,
+          type: 'press' as const
+        };
+      }
+    }
+    
+    return null;
+  })();
+
+  // Determine if agent has verifiable merit data
+  const hasMeritData = !!(
+    isVerified ||
+    primaryCitation ||
+    rating >= 4.8 ||
+    totalSales
+  );
 
   const getGradientClass = (color: string) => {
     const gradients: Record<string, string> = {
@@ -359,6 +445,50 @@ export const AgentBadge = ({
                         {priceRange}
                       </Badge>
                     )}
+                  </div>
+                )}
+
+                {/* Verified Citation - GEO optimization with external source link */}
+                {primaryCitation && (
+                  <div className="mt-2 pt-2 border-t border-border/30">
+                    <div className="flex items-start gap-1.5">
+                      <LinkIcon className="h-3 w-3 text-cactus-green flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <span className="text-[10px] text-cactus-green font-medium uppercase tracking-wide">
+                          {primaryCitation.type === 'community' ? 'Community' : 
+                           primaryCitation.type === 'award' ? 'Recognition' : 'Press'}
+                        </span>
+                        {primaryCitation.url ? (
+                          <a
+                            href={primaryCitation.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="block text-xs text-foreground/80 hover:text-primary hover:underline truncate"
+                          >
+                            {primaryCitation.text}
+                          </a>
+                        ) : (
+                          <p className="text-xs text-foreground/80 truncate">
+                            {primaryCitation.text}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Merit Verified Badge with hover tooltip */}
+                {hasMeritData && (
+                  <div className="mt-2 relative group/merit inline-block">
+                    <div className="inline-flex items-center gap-1 text-[10px] text-cactus-green cursor-help">
+                      <BadgeCheck className="h-3 w-3" />
+                      <span className="font-medium">Merit Verified</span>
+                    </div>
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-full left-0 mb-1 px-2 py-1 bg-popover border rounded-md shadow-md text-xs text-popover-foreground max-w-[200px] opacity-0 invisible group-hover/merit:opacity-100 group-hover/merit:visible transition-opacity z-50 pointer-events-none">
+                      This agent qualified based on performance data and community service, not payment.
+                    </div>
                   </div>
                 )}
               </div>
