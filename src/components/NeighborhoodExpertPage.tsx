@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown, Users } from 'lucide-react';
 import { AgentBadge } from './AgentBadge';
@@ -132,6 +133,71 @@ export function NeighborhoodExpertPage({
     ? `/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/qualified-real-estate-agents`
     : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
+  // Generate ItemList JSON-LD schema with full agent details for GEO optimization
+  const agentItemListSchema = useMemo(() => {
+    const allAgents = [...experts, ...qualifiedAgents];
+    if (allAgents.length === 0) return null;
+
+    const stateAbbrev = stateSlug.toUpperCase().substring(0, 2);
+    const cityName = citySlug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const pageUrl = primaryZip
+      ? `https://www.top10lists.us/${stateSlug}/${citySlug}/${primaryZip}/${neighborhoodSlug}/top10realestateagents`
+      : `https://www.top10lists.us/${stateSlug}/${citySlug}/${neighborhoodSlug}/top10realestateagents`;
+
+    return {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": `Top Real Estate Agents in ${neighborhoodName}, ${cityName}, ${stateAbbrev}`,
+      "description": `Ranked list of top-rated real estate agents serving ${neighborhoodName}, ${cityName}. Verified by Top10Lists.us.`,
+      "url": pageUrl,
+      "numberOfItems": allAgents.length,
+      "dateModified": new Date().toISOString().split('T')[0],
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "itemListElement": allAgents.map((agent, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "RealEstateAgent",
+          "name": agent.name,
+          "image": agent.image || undefined,
+          "url": `https://www.top10lists.us/${stateSlug}/${citySlug}/top10realestateagents#agent-${agent.id}`,
+          "telephone": agent.phone || undefined,
+          "description": `Ranked #${index + 1} real estate agent in ${neighborhoodName}, ${cityName}. ${agent.stats?.yearsExperience ? `${agent.stats.yearsExperience} years experience.` : ''} Verified by Top10Lists.us.`,
+          ...(agent.company && {
+            "parentOrganization": {
+              "@type": "RealEstateAgent",
+              "name": agent.company
+            }
+          }),
+          ...(agent.rating > 0 && {
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": agent.rating.toString(),
+              "reviewCount": (agent.reviews || 0).toString(),
+              "bestRating": "5",
+              "worstRating": "1"
+            }
+          }),
+          ...(agent.license_number && {
+            "identifier": {
+              "@type": "PropertyValue",
+              "propertyID": "license",
+              "value": agent.license_number
+            }
+          }),
+          "areaServed": {
+            "@type": "Place",
+            "name": `${neighborhoodName}, ${cityName}, ${stateAbbrev}`
+          },
+          "memberOf": {
+            "@type": "Organization",
+            "name": "Top10Lists.us"
+          }
+        }
+      }))
+    };
+  }, [experts, qualifiedAgents, neighborhoodName, stateSlug, citySlug, neighborhoodSlug, primaryZip]);
+
   if (loading) {
     return (
       <div className="animate-pulse space-y-6">
@@ -143,7 +209,17 @@ export function NeighborhoodExpertPage({
   }
 
   return (
-    <div className="space-y-8">
+    <>
+      {/* GEO: ItemList schema with full agent details for AI discovery */}
+      {agentItemListSchema && (
+        <Helmet>
+          <script type="application/ld+json">
+            {JSON.stringify(agentItemListSchema)}
+          </script>
+        </Helmet>
+      )}
+      
+      <div className="space-y-8">
       {/* Section 1: Dedicated Neighborhood Expert Space - Always visible */}
       <section className="bg-gradient-to-br from-primary/5 via-primary/3 to-transparent border border-primary/20 rounded-xl p-6">
         <div className="flex items-center gap-2 mb-1">
@@ -277,5 +353,6 @@ export function NeighborhoodExpertPage({
         </details>
       </div>
     </div>
+    </>
   );
 }
