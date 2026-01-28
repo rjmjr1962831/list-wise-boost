@@ -561,10 +561,9 @@ wall_clock_limit = 400
 [functions.discover-neighborhoods-deepseek]
 verify_jwt = false
 
-[functions.coverage]
-verify_jwt = false
+# REMOVED: coverage function replaced by coverage-api
 
-[functions.coverage-api]
+[functions.coverage-json]
 verify_jwt = false
 
 [functions.serve-llms-txt]

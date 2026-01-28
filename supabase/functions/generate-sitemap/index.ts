@@ -6,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// State abbreviation to slug mapping
+// State mapping
 const stateSlugMap: Record<string, string> = {
   'AZ': 'arizona',
   'Arizona': 'arizona',
@@ -14,10 +14,6 @@ const stateSlugMap: Record<string, string> = {
   'California': 'california',
 };
 
-// States to include in sitemap (indexable states only)
-const INDEXABLE_STATES = ['Arizona', 'California', 'AZ', 'CA'];
-
-// Get today's date in YYYY-MM-DD format
 function getTodayDate(): string {
   return new Date().toISOString().split('T')[0];
 }
@@ -42,7 +38,6 @@ async function fetchAllPaginated(
       .order(orderBy)
       .range(offset, offset + pageSize - 1);
 
-    // Apply filters
     for (const filter of filters) {
       if (filter.op === 'eq') {
         query = query.eq(filter.column, filter.value);
@@ -72,7 +67,6 @@ async function fetchAllPaginated(
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -82,24 +76,26 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const url = new URL(req.url);
+    const type = url.searchParams.get('type') || 'sitemap';
     const today = getTodayDate();
     const baseUrl = 'https://www.top10lists.us';
 
-    console.log('[generate-sitemap] Starting sitemap generation with pagination...');
+    console.log(`[generate-sitemap] Request type: ${type}`);
 
-    // Fetch cities with pagination - Arizona and California only (indexable)
+    // Fetch cities with minimal fields
     const cities = await fetchAllPaginated(
       supabase,
       'cities',
-      'slug, state, state_slug',
+      'slug, state_slug, name',
       [
         { column: 'active', op: 'eq', value: true },
-        { column: 'state', op: 'in', value: ['Arizona', 'California'] }
+        { column: 'state_slug', op: 'in', value: ['arizona', 'california'] }
       ],
       'slug'
     );
 
-    // Fetch neighborhoods with pagination - Arizona and California only (indexable)
+    // Fetch neighborhoods with minimal fields
     const neighborhoods = await fetchAllPaginated(
       supabase,
       'neighborhood_catalog',
@@ -112,50 +108,126 @@ serve(async (req) => {
       'neighborhood_slug'
     );
 
-    console.log(`[generate-sitemap] Found ${cities.length} cities and ${neighborhoods.length} neighborhoods (AZ + CA)`);
+    console.log(`[generate-sitemap] Found ${cities.length} cities and ${neighborhoods.length} neighborhoods`);
 
-    // Build XML sitemap
-    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+    // Count by state
+    const azCities = cities.filter(c => c.state_slug === 'arizona');
+    const caCities = cities.filter(c => c.state_slug === 'california');
+    const azNeighborhoods = neighborhoods.filter(n => n.state === 'Arizona');
+    const caNeighborhoods = neighborhoods.filter(n => n.state === 'California');
 
-    // Add city pages (priority 0.8) - skip entries with empty slugs
-    for (const city of cities) {
-      if (!city.slug || city.slug.trim() === '') continue;
-      const stateSlug = city.state_slug || stateSlugMap[city.state] || city.state.toLowerCase();
-      const url = `${baseUrl}/${stateSlug}/${city.slug}/top10realestateagents`;
-      
-      xml += '  <url>\n';
-      xml += `    <loc>${url}</loc>\n`;
-      xml += `    <lastmod>${today}</lastmod>\n`;
-      xml += '    <changefreq>weekly</changefreq>\n';
-      xml += '    <priority>0.8</priority>\n';
-      xml += '  </url>\n';
+    // Stats endpoint: ?type=stats
+    if (type === 'stats') {
+      return new Response(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        states: {
+          arizona: { cities: azCities.length, neighborhoods: azNeighborhoods.length, status: 'active' },
+          california: { cities: caCities.length, neighborhoods: caNeighborhoods.length, status: 'expanding' }
+        },
+        totals: { cities: cities.length, neighborhoods: neighborhoods.length }
+      }, null, 2), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-cache' }
+      });
     }
 
-    // Add neighborhood pages with ZIP (priority 0.7) - 5-segment format
-    for (const neighborhood of neighborhoods) {
-      const stateSlug = stateSlugMap[neighborhood.state] || neighborhood.state.toLowerCase().replace(/\s+/g, '-');
-      const url = `${baseUrl}/${stateSlug}/${neighborhood.city_area_slug}/${neighborhood.primary_zip}/${neighborhood.neighborhood_slug}/top10realestateagents`;
-      
-      xml += '  <url>\n';
-      xml += `    <loc>${url}</loc>\n`;
-      xml += `    <lastmod>${today}</lastmod>\n`;
-      xml += '    <changefreq>weekly</changefreq>\n';
-      xml += '    <priority>0.7</priority>\n';
-      xml += '  </url>\n';
+    // Coverage JSON endpoint: ?type=coverage
+    if (type === 'coverage') {
+      const coverage = {
+        "$schema": "https://top10lists.us/schemas/coverage.json",
+        "version": "1.0",
+        "lastUpdated": today,
+        "publisher": {
+          "name": "Top10Lists.us",
+          "url": "https://www.top10lists.us",
+          "description": "Merit-based real estate agent directory ranking top 0.2% using verified performance data."
+        },
+        "geographicCoverage": {
+          "summary": {
+            "totalStates": 2,
+            "totalCities": cities.length,
+            "totalNeighborhoods": neighborhoods.length,
+            "lastCalculated": today
+          },
+          "states": [
+            {
+              "name": "Arizona",
+              "slug": "arizona",
+              "abbreviation": "AZ",
+              "status": "active",
+              "cities": azCities.length,
+              "neighborhoods": azNeighborhoods.length,
+              "cityList": azCities.map(c => ({
+                name: c.name,
+                slug: c.slug,
+                url: `${baseUrl}/arizona/${c.slug}/top10realestateagents`
+              }))
+            },
+            {
+              "name": "California",
+              "slug": "california",
+              "abbreviation": "CA",
+              "status": "expanding",
+              "cities": caCities.length,
+              "neighborhoods": caNeighborhoods.length,
+              "note": "City infrastructure active. Neighborhood coverage expanding Q1 2026.",
+              "cityList": caCities.slice(0, 100).map(c => ({
+                name: c.name,
+                slug: c.slug,
+                url: `${baseUrl}/california/${c.slug}/top10realestateagents`
+              }))
+            }
+          ]
+        },
+        "endpoints": {
+          "coverage": `${baseUrl}/coverage.json`,
+          "sitemap": `${baseUrl}/sitemap.xml`,
+          "llms": `${baseUrl}/llms.txt`
+        },
+        "urlPatterns": {
+          "city": `${baseUrl}/{state}/{city}/top10realestateagents`,
+          "neighborhood": `${baseUrl}/{state}/{city}/{zip}/{neighborhood}/top10realestateagents`
+        }
+      };
+
+      return new Response(JSON.stringify(coverage, null, 2), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' }
+      });
+    }
+
+    // Neighborhood sitemap: ?type=neighborhoods
+    if (type === 'neighborhoods') {
+      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+      for (const n of neighborhoods) {
+        const stateSlug = stateSlugMap[n.state] || n.state.toLowerCase();
+        xml += `  <url>\n    <loc>${baseUrl}/${stateSlug}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+      }
+      xml += '</urlset>';
+      return new Response(xml, {
+        headers: { ...corsHeaders, 'Content-Type': 'application/xml', 'Cache-Control': 'public, max-age=3600' }
+      });
+    }
+
+    // Default: combined sitemap (cities + neighborhoods)
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+    // Add city pages
+    for (const city of cities) {
+      if (!city.slug || city.slug.trim() === '') continue;
+      xml += `  <url>\n    <loc>${baseUrl}/${city.state_slug}/${city.slug}/top10realestateagents</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    }
+
+    // Add neighborhood pages
+    for (const n of neighborhoods) {
+      const stateSlug = stateSlugMap[n.state] || n.state.toLowerCase();
+      xml += `  <url>\n    <loc>${baseUrl}/${stateSlug}/${n.city_area_slug}/${n.primary_zip}/${n.neighborhood_slug}/top10realestateagents</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
     }
 
     xml += '</urlset>';
 
-    const totalUrls = cities.length + neighborhoods.length;
-    console.log(`[generate-sitemap] Generated sitemap with ${totalUrls} URLs`);
+    console.log(`[generate-sitemap] Generated sitemap with ${cities.length + neighborhoods.length} URLs`);
 
     return new Response(xml, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600',
-      },
+      headers: { ...corsHeaders, 'Content-Type': 'application/xml', 'Cache-Control': 'public, max-age=3600' }
     });
 
   } catch (error) {
@@ -163,7 +235,7 @@ serve(async (req) => {
     console.error('[generate-sitemap] Error:', errorMessage);
     return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });
