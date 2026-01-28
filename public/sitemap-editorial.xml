@@ -3,7 +3,7 @@
   <!-- Homepage - Primary entry point -->
   <url>
     <loc>https://www.top10lists.us/</loc>
-    <lastmod>2026-01-05</lastmod>
+    <lastmod>2026-01-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -37,6 +37,13 @@
     <priority>0.8</priority>
   </url>
 
+  <url>
+    <loc>https://www.top10lists.us/how-it-works</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- Proof & Comparison Pages - Differentiators -->
   <url>
     <loc>https://www.top10lists.us/compare</loc>
@@ -52,12 +59,12 @@
     <priority>0.7</priority>
   </url>
 
-  <!-- AI-Specific Pages -->
+  <!-- AI-Specific Pages - Critical for GEO -->
   <url>
     <loc>https://www.top10lists.us/for-ai</loc>
     <lastmod>2026-01-06</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 
   <url>
@@ -71,7 +78,7 @@
     <loc>https://www.top10lists.us/ai-citation-whitepaper</loc>
     <lastmod>2026-01-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
 
   <url>
@@ -86,6 +93,20 @@
     <lastmod>2026-01-06</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/developers</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/llms.txt</loc>
+    <lastmod>2026-01-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
   </url>
 
   <!-- Agent-Facing Pages -->
@@ -103,12 +124,56 @@
     <priority>0.5</priority>
   </url>
 
-  <!-- Press & News - Featured on Business Insider, FinanceWire, StreetInsider -->
+  <url>
+    <loc>https://www.top10lists.us/pricing</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Resource Pages -->
+  <url>
+    <loc>https://www.top10lists.us/resources</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/guides</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- Press & News -->
   <url>
     <loc>https://www.top10lists.us/press</loc>
     <lastmod>2026-01-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- Business Pages -->
+  <url>
+    <loc>https://www.top10lists.us/contact</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/partners</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://www.top10lists.us/careers</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
   </url>
 
   <!-- Legal Pages -->
