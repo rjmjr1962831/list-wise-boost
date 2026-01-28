@@ -218,14 +218,12 @@ export const Header = () => {
                 Admin
               </Link>
             )}
-            {!isLoggedIn && (
-              <Link 
-                to="/are-you-an-agent" 
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Are you an agent?
-              </Link>
-            )}
+            <Link 
+              to="/are-you-an-agent" 
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Are you an agent?
+            </Link>
             {isLoggedIn ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -353,16 +351,14 @@ export const Header = () => {
                     </Link>
                   </SheetClose>
                 )}
-                {!isLoggedIn && (
-                  <SheetClose asChild>
-                    <Link 
-                      to="/are-you-an-agent" 
-                      className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
-                    >
-                      Are you an agent?
-                    </Link>
-                  </SheetClose>
-                )}
+                <SheetClose asChild>
+                  <Link 
+                    to="/are-you-an-agent" 
+                    className="text-base font-medium text-foreground hover:text-primary transition-colors py-2"
+                  >
+                    Are you an agent?
+                  </Link>
+                </SheetClose>
                 
                 <div className="border-t pt-4 mt-2">
                   {isLoggedIn ? (
