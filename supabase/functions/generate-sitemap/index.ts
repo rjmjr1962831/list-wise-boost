@@ -9,12 +9,66 @@ const corsHeaders = {
 // State abbreviation to slug mapping
 const stateSlugMap: Record<string, string> = {
   'AZ': 'arizona',
+  'Arizona': 'arizona',
   'CA': 'california',
+  'California': 'california',
 };
+
+// States to include in sitemap (indexable states only)
+const INDEXABLE_STATES = ['Arizona', 'California', 'AZ', 'CA'];
 
 // Get today's date in YYYY-MM-DD format
 function getTodayDate(): string {
   return new Date().toISOString().split('T')[0];
+}
+
+// Paginated fetch helper to bypass 1000-row limit
+async function fetchAllPaginated(
+  supabase: any,
+  table: string,
+  columns: string,
+  filters: { column: string; op: string; value: any }[],
+  orderBy: string
+): Promise<any[]> {
+  const allResults: any[] = [];
+  const pageSize = 1000;
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    let query = supabase
+      .from(table)
+      .select(columns)
+      .order(orderBy)
+      .range(offset, offset + pageSize - 1);
+
+    // Apply filters
+    for (const filter of filters) {
+      if (filter.op === 'eq') {
+        query = query.eq(filter.column, filter.value);
+      } else if (filter.op === 'in') {
+        query = query.in(filter.column, filter.value);
+      } else if (filter.op === 'not.is') {
+        query = query.not(filter.column, 'is', filter.value);
+      }
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch ${table}: ${error.message}`);
+    }
+
+    if (data && data.length > 0) {
+      allResults.push(...data);
+      offset += pageSize;
+      hasMore = data.length === pageSize;
+    } else {
+      hasMore = false;
+    }
+  }
+
+  return allResults;
 }
 
 serve(async (req) => {
@@ -31,47 +85,42 @@ serve(async (req) => {
     const today = getTodayDate();
     const baseUrl = 'https://www.top10lists.us';
 
-    console.log('[generate-sitemap] Starting sitemap generation...');
+    console.log('[generate-sitemap] Starting sitemap generation with pagination...');
 
-    // Fetch cities and neighborhoods in parallel
-    // RESTRICTED TO ARIZONA ONLY for now
-    const [citiesResult, neighborhoodsResult] = await Promise.all([
-      supabase
-        .from('cities')
-        .select('slug, state, state_slug')
-        .eq('active', true)
-        .eq('state', 'Arizona')
-        .order('slug'),
-      supabase
-        .from('neighborhood_catalog')
-        .select('neighborhood_slug, city_area_slug, state, primary_zip')
-        .eq('is_active', true)
-        .eq('state', 'Arizona')
-        .not('primary_zip', 'is', null)
-        .order('neighborhood_slug')
-    ]);
+    // Fetch cities with pagination - Arizona and California only (indexable)
+    const cities = await fetchAllPaginated(
+      supabase,
+      'cities',
+      'slug, state, state_slug',
+      [
+        { column: 'active', op: 'eq', value: true },
+        { column: 'state', op: 'in', value: ['Arizona', 'California'] }
+      ],
+      'slug'
+    );
 
-    if (citiesResult.error) {
-      console.error('[generate-sitemap] Cities query error:', citiesResult.error);
-      throw new Error(`Failed to fetch cities: ${citiesResult.error.message}`);
-    }
+    // Fetch neighborhoods with pagination - Arizona and California only (indexable)
+    const neighborhoods = await fetchAllPaginated(
+      supabase,
+      'neighborhood_catalog',
+      'neighborhood_slug, city_area_slug, state, primary_zip',
+      [
+        { column: 'is_active', op: 'eq', value: true },
+        { column: 'state', op: 'in', value: ['Arizona', 'California'] },
+        { column: 'primary_zip', op: 'not.is', value: null }
+      ],
+      'neighborhood_slug'
+    );
 
-    if (neighborhoodsResult.error) {
-      console.error('[generate-sitemap] Neighborhoods query error:', neighborhoodsResult.error);
-      throw new Error(`Failed to fetch neighborhoods: ${neighborhoodsResult.error.message}`);
-    }
-
-    const cities = citiesResult.data || [];
-    const neighborhoods = neighborhoodsResult.data || [];
-
-    console.log(`[generate-sitemap] Found ${cities.length} Arizona cities and ${neighborhoods.length} Arizona neighborhoods`);
+    console.log(`[generate-sitemap] Found ${cities.length} cities and ${neighborhoods.length} neighborhoods (AZ + CA)`);
 
     // Build XML sitemap
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
-    // Add city pages (priority 0.8)
+    // Add city pages (priority 0.8) - skip entries with empty slugs
     for (const city of cities) {
+      if (!city.slug || city.slug.trim() === '') continue;
       const stateSlug = city.state_slug || stateSlugMap[city.state] || city.state.toLowerCase();
       const url = `${baseUrl}/${stateSlug}/${city.slug}/top10realestateagents`;
       
@@ -83,10 +132,9 @@ serve(async (req) => {
       xml += '  </url>\n';
     }
 
-    // Add neighborhood pages with ZIP (priority 0.7) - new 5-segment format
+    // Add neighborhood pages with ZIP (priority 0.7) - 5-segment format
     for (const neighborhood of neighborhoods) {
-      const stateSlug = stateSlugMap[neighborhood.state] || 'arizona';
-      // Use primary_zip in the URL for canonical 5-segment format
+      const stateSlug = stateSlugMap[neighborhood.state] || neighborhood.state.toLowerCase().replace(/\s+/g, '-');
       const url = `${baseUrl}/${stateSlug}/${neighborhood.city_area_slug}/${neighborhood.primary_zip}/${neighborhood.neighborhood_slug}/top10realestateagents`;
       
       xml += '  <url>\n';
@@ -106,7 +154,7 @@ serve(async (req) => {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600', // 1 hour cache
+        'Cache-Control': 'public, max-age=3600',
       },
     });
 
