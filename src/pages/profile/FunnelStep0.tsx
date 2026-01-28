@@ -12,6 +12,7 @@ interface ProfessionalData {
   id: string;
   name: string;
   verification_token: string | null;
+  funnel_status?: string | null;
 }
 
 // Maynard test profile - never track step0_completed so funnel always starts fresh
@@ -50,6 +51,31 @@ export default function FunnelStep0() {
 
         const prof = data.professional;
         setProfessional(prof);
+
+        // If agent has already completed the funnel (approved), redirect to dashboard
+        // Create a session for them so they don't need to authenticate again
+        if (prof.funnel_status === 'approved' && prof.id !== TEST_PROFILE_ID) {
+          console.log('[FunnelStep0] Approved agent detected, creating session and redirecting to dashboard');
+          
+          try {
+            const { data: sessionData, error: sessionError } = await supabase.functions.invoke('create-session-from-token', {
+              body: { token }
+            });
+
+            if (!sessionError && sessionData?.success && sessionData?.sessionToken) {
+              // Store session token and redirect to dashboard
+              localStorage.setItem('agent_session_token', sessionData.sessionToken);
+              navigate('/agent/dashboard', { replace: true });
+              return;
+            } else {
+              console.error('[FunnelStep0] Failed to create session:', sessionError || sessionData?.error);
+              // Fall through to normal funnel flow if session creation fails
+            }
+          } catch (sessionErr) {
+            console.error('[FunnelStep0] Error creating session from token:', sessionErr);
+            // Fall through to normal funnel flow
+          }
+        }
 
         // Check if user has any funnel history - redirect to card preview
         // This catches both step0_completed AND legacy users who entered before Step 0 existed
