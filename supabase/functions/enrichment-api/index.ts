@@ -202,7 +202,9 @@ serve(async (req) => {
         'review_stars_rating', 'has_recent_review', 'most_recent_review_date',
         'phone', 'email', 'website', 'company', 'business_name', 'address',
         'zip_code', 'image_url', 'headline', 'get_to_know_me', 'review_link',
-        'profile_link', 'license_number', 'synthesized_bio', 'zillow_data_fetched_at'
+        'profile_link', 'license_number', 'synthesized_bio', 'zillow_data_fetched_at',
+        'zillow_search_city', 'zillow_search_position', 'zillow_search_total',
+        'zillow_search_page', 'zillow_rank_captured_at'
       ];
 
       const results: { id: string; success: boolean; error?: string }[] = [];
@@ -428,7 +430,12 @@ serve(async (req) => {
         'team_display_information',
         'raw_scraper_data',
         'synthesized_bio',
-        'profile_last_synthesized_at'
+        'profile_last_synthesized_at',
+        'zillow_search_city',
+        'zillow_search_position',
+        'zillow_search_total',
+        'zillow_search_page',
+        'zillow_rank_captured_at'
       ];
 
       // Filter to only allowed fields
