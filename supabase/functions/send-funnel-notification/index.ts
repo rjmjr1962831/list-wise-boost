@@ -355,21 +355,25 @@ serve(async (req) => {
 
     // Send email notification with graceful error handling
     let emailSent = false;
+    console.log(`📤 Attempting to send email to ${ADMIN_EMAIL} for ${event_type}...`);
+    console.log(`📧 Subject: ${subject}`);
     try {
-      const { error } = await resend.emails.send({
+      const emailResult = await resend.emails.send({
         from: 'Robert from Top10lists <hello@top10lists.us>',
         replyTo: 'robert@top10lists.us',
         to: [ADMIN_EMAIL],
         subject,
         html,
       });
+      
+      console.log(`📬 Resend API response:`, JSON.stringify(emailResult));
 
-      if (error) {
-        console.error(`[email-error] ${event_type}: ${error.message}`);
+      if (emailResult.error) {
+        console.error(`[email-error] ${event_type}: ${emailResult.error.message}`);
         // Continue - don't throw, email failure is non-fatal
       } else {
         emailSent = true;
-        console.log(`✅ Funnel notification sent: ${event_type}`);
+        console.log(`✅ Funnel notification sent: ${event_type} - ID: ${emailResult.data?.id || 'unknown'}`);
       }
     } catch (emailError) {
       console.error(`[email-error] ${event_type}:`, emailError);
