@@ -138,6 +138,10 @@ export default function CityLanding() {
   const cityName = `${city.name}, ${city.state}`;
   const canonicalUrl = `https://www.top10lists.us/${normalizedStateSlug}/${city.slug}`;
 
+  // States that should be indexed (AZ and CA only)
+  const indexableStates = ['arizona', 'california'];
+  const shouldNoindex = !indexableStates.includes(stateSlugLower);
+
   return (
     <>
       <Helmet>
@@ -146,6 +150,7 @@ export default function CityLanding() {
           name="description"
           content={`Local market guide for ${cityName}: neighborhoods, pricing context, and how to find a verified real estate agent.`}
         />
+        {shouldNoindex && <meta name="robots" content="noindex, follow" />}
         <link rel="canonical" href={canonicalUrl} />
 
         <meta property="og:title" content={`${city.name} ${city.state} Real Estate Guide | Top10Lists.us`} />
