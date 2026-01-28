@@ -897,7 +897,7 @@ export const ProfessionalCard = ({
                   )}
                 </div>
               ) : (
-                /* Display specialties */
+                /* Display specialties - filtered pills */
                 (() => {
                   const profileTypeMap: Record<string, string> = {
                     'consumer': 'Buyer Representation',
@@ -910,6 +910,26 @@ export const ProfessionalCard = ({
                     'newConstruction': 'New Construction',
                     'relocation': 'Relocation Services',
                     'investment': 'Investment Properties'
+                  };
+                  
+                  // Generic tags to filter OUT
+                  const genericTags = [
+                    "buyer's agent",
+                    "buyers agent",
+                    "buyer agent",
+                    "listing agent",
+                    "seller's agent",
+                    "sellers agent",
+                    "seller agent",
+                    "real estate agent",
+                    "realtor",
+                    "agent",
+                    "full-service agent"
+                  ];
+                  
+                  const isGenericTag = (tag: string) => {
+                    const lower = tag.toLowerCase().trim();
+                    return genericTags.some(generic => lower === generic || lower.includes(generic));
                   };
                   
                   const profileTypes = ((professional as any).profile_types || []) as string[];
@@ -951,11 +971,8 @@ export const ProfessionalCard = ({
                     if (languagesEntry) {
                       const rawData = languagesEntry.description || languagesEntry.lines;
                       if (typeof rawData === 'string' && rawData.trim()) {
-                        // Split by comma and clean up, filtering out English if more than 1 language
                         const langs = rawData.split(',').map(l => l.trim()).filter(Boolean);
                         const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
-                        // If they list multiple languages including English, only show non-English
-                        // If English is the only language listed, don't show it
                         if (nonEnglishLangs.length > 0) {
                           nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
                         }
@@ -969,39 +986,23 @@ export const ProfessionalCard = ({
                     }
                   }
                   
-                  const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])];
+                  // Combine and filter out generic tags
+                  const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])]
+                    .filter(s => !isGenericTag(s));
                   
                   if (allSpecialties.length === 0) return null;
                   
                   return (
-                    <div className="mt-3 space-y-1.5 flex flex-col items-center">
-                      {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
-                        const getSpecialtyIcon = (spec: string) => {
-                          const lower = spec.toLowerCase();
-                          // Check if it's a language (from extractedLanguages)
-                          const commonLanguages = ['spanish', 'french', 'german', 'italian', 'portuguese', 'chinese', 'japanese', 'korean', 'arabic', 'russian', 'hindi', 'tagalog', 'vietnamese'];
-                          if (commonLanguages.some(lang => lower.includes(lang))) return Globe;
-                          if (lower.includes('residential') || lower.includes('single family')) return Home;
-                          if (lower.includes('commercial') || lower.includes('business')) return Building2;
-                          if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
-                          if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
-                          if (lower.includes('first') || lower.includes('buyer')) return Key;
-                          if (lower.includes('relocation')) return Users;
-                          return Award;
-                        };
-                        const Icon = getSpecialtyIcon(specialty);
-                        return (
-                          <Badge 
-                            key={idx} 
-                            variant="secondary" 
-                            className="text-xs w-full justify-start gap-1.5"
-                            itemProp="knowsAbout"
-                          >
-                            <Icon className="h-3 w-3" />
-                            {specialty}
-                          </Badge>
-                        );
-                      })}
+                    <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+                      {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => (
+                        <span 
+                          key={idx} 
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.7rem] font-medium bg-muted text-muted-foreground"
+                          itemProp="knowsAbout"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
                     </div>
                   );
                 })()
@@ -1022,15 +1023,20 @@ export const ProfessionalCard = ({
                          {professional.name}
                          {professional.title && <span className="text-muted-foreground">, {professional.title}</span>}
                        </h3>
-                       {professional.verified && (
-                         <Badge 
-                           variant="secondary" 
-                           className="gap-1 agent-badge"
-                           onMouseEnter={handleBadgeHover}
+                       {/* Green Verified Badge - Icon only with tooltip */}
+                       {(professional.verified || isLicenseVerified) && (
+                         <div 
+                           className="relative group"
+                           title="Identity & License Verified"
                          >
-                           <Award className="h-3 w-3" />
-                           Verified
-                         </Badge>
+                           <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30">
+                             <ShieldCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                           </div>
+                           {/* Tooltip */}
+                           <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 bg-foreground text-background text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                             Identity & License Verified
+                           </div>
+                         </div>
                        )}
                        {isOwnProfile && !isEditing && (
                          <Button
@@ -1265,16 +1271,15 @@ export const ProfessionalCard = ({
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     </div>
                   ) : license ? (
-                    <div className="flex flex-col gap-1.5">
-                      <Badge variant="outline" className="gap-1.5 px-2.5 py-0.5 text-xs font-medium tracking-wide w-fit">
-                        {license}
-                      </Badge>
-                      {isLicenseVerified && (
-                        <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                          <ShieldCheck className="h-3 w-3" />
-                          Verified via Arizona Department of Real Estate
-                        </span>
-                      )}
+                    <div className="flex flex-col gap-0.5">
+                      {/* License number in neutral gray */}
+                      <span className="text-sm text-gray-600 dark:text-gray-400 font-mono tracking-wide">
+                        Lic #{license}
+                      </span>
+                      {/* Source provenance - tiny text, low contrast */}
+                      <span className="text-[0.7rem] text-gray-500 dark:text-gray-500 leading-tight">
+                        Source: {stateAbbr === 'AZ' ? 'Arizona' : stateAbbr || 'State'} Dept. of Real Estate
+                      </span>
                     </div>
                   ) : (
                     <Button
@@ -1290,7 +1295,7 @@ export const ProfessionalCard = ({
                   )}
               </div>
 
-              {/* Rating & Statistics Combined */}
+              {/* Stats Grid - Financial Dashboard Style */}
               {(() => {
                 const statFromObj = (obj: any, path: string) => {
                   try { const v = path.split('.').reduce((o: any, k: string) => (o ? o[k] : undefined), obj); return v; } catch { return undefined; }
@@ -1317,21 +1322,30 @@ export const ProfessionalCard = ({
                 const dbYears = (professional as any).years_experience;
                 const yearsExperience = typeof dbYears === 'number' && dbYears > 0 ? dbYears : null;
                 
+                // Volume calculation
+                const volumeAllTime = toNum(statFromObj(agentStats, 'volumeAllTime'));
+                const formatVolume = (v: number | null) => {
+                  if (v == null || v <= 0) return 'NA';
+                  if (v >= 1000000000) return `$${(v / 1000000000).toFixed(1)}B`;
+                  if (v >= 1000000) return `$${(v / 1000000).toFixed(1)}M`;
+                  if (v >= 1000) return `$${(v / 1000).toFixed(0)}K`;
+                  return `$${v.toLocaleString()}`;
+                };
 
                 // Support both Professional interface (rating/reviews) and raw DB fields (review_stars_rating/num_total_reviews)
                 const displayRating = professional.rating || (professional as any).review_stars_rating || 0;
                 const displayReviews = professional.reviews || (professional as any).num_total_reviews || 0;
 
                 return (
-                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-2">
-                    {/* Rating */}
+                  <div className="py-3 space-y-3">
+                    {/* Rating Row */}
                     {displayRating > 0 ? (
                       <div className="flex items-center gap-2" itemProp="aggregateRating" itemScope itemType="https://schema.org/AggregateRating">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5">
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`h-5 w-5 ${
+                              className={`h-4 w-4 ${
                                 i < Math.floor(displayRating)
                                   ? "fill-primary text-primary"
                                   : "text-muted"
@@ -1339,8 +1353,8 @@ export const ProfessionalCard = ({
                             />
                           ))}
                         </div>
-                        <span className="font-semibold" itemProp="ratingValue">{displayRating}</span>
-                        <span className="text-muted-foreground">(<span itemProp="reviewCount">{displayReviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
+                        <span className="font-bold text-lg" itemProp="ratingValue">{displayRating}</span>
+                        <span className="text-sm text-muted-foreground">(<span itemProp="reviewCount">{displayReviews.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span> reviews)</span>
                         <meta itemProp="bestRating" content="5" />
                       </div>
                     ) : (
@@ -1350,59 +1364,38 @@ export const ProfessionalCard = ({
                       </div>
                     )}
 
-                    {/* Total Sales */}
-                    {isOwnProfile && isEditing ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          value={editedData.total_sales}
-                          onChange={(e) => setEditedData({ ...editedData, total_sales: parseInt(e.target.value) || 0 })}
-                          className="h-8 w-24"
-                        />
-                        <span className="text-xs text-muted-foreground">Total Sales</span>
+                    {/* Stats Grid - Horizontal with bold values and tiny uppercase labels */}
+                    <div className="flex flex-wrap items-start gap-x-8 gap-y-3">
+                      {/* Years */}
+                      <div className="flex flex-col">
+                        <span className="text-2xl font-bold text-foreground leading-none">
+                          {yearsExperience != null && yearsExperience > 0 ? yearsExperience : 'NA'}
+                        </span>
+                        <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">
+                          Years
+                        </span>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-bold text-primary">
-                            {(totalSales == null || Number(totalSales) <= 0) ? 'NA' : Number(totalSales).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                          </span>
-                          {totalSales != null && Number(totalSales) > 0 && (
-                            <span title="Verified from Zillow data">
-                              <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">Total Sales</span>
-                      </div>
-                    )}
 
-                    {/* Years Experience */}
-                    {isOwnProfile && isEditing ? (
-                      <div className="flex items-center gap-2">
-                        <Input
-                          type="number"
-                          value={editedData.years_experience}
-                          onChange={(e) => setEditedData({ ...editedData, years_experience: parseInt(e.target.value) || 0 })}
-                          className="h-8 w-24"
-                        />
-                        <span className="text-xs text-muted-foreground">Years Experience</span>
+                      {/* Total Sales */}
+                      <div className="flex flex-col">
+                        <span className="text-2xl font-bold text-foreground leading-none">
+                          {totalSales != null && totalSales > 0 ? totalSales.toLocaleString('en-US') : 'NA'}
+                        </span>
+                        <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">
+                          Total Sales
+                        </span>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-lg font-bold text-primary">
-                            {(yearsExperience == null || Number(yearsExperience) <= 0) ? 'NA' : Number(yearsExperience).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                          </span>
-                          {yearsExperience != null && Number(yearsExperience) > 0 && (
-                            <span title="Verified from license database">
-                              <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-xs text-muted-foreground">Years Experience</span>
+
+                      {/* Volume */}
+                      <div className="flex flex-col">
+                        <span className="text-2xl font-bold text-foreground leading-none">
+                          {formatVolume(volumeAllTime)}
+                        </span>
+                        <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mt-1">
+                          Volume
+                        </span>
                       </div>
-                    )}
+                    </div>
                   </div>
                 );
               })()}
@@ -1477,7 +1470,7 @@ export const ProfessionalCard = ({
                     )}
                   </div>
                 ) : (
-                  /* Display specialties */
+                  /* Display specialties - filtered pills */
                   (() => {
                     const profileTypeMap: Record<string, string> = {
                       'consumer': 'Buyer Representation',
@@ -1490,6 +1483,26 @@ export const ProfessionalCard = ({
                       'newConstruction': 'New Construction',
                       'relocation': 'Relocation Services',
                       'investment': 'Investment Properties'
+                    };
+                    
+                    // Generic tags to filter OUT
+                    const genericTags = [
+                      "buyer's agent",
+                      "buyers agent",
+                      "buyer agent",
+                      "listing agent",
+                      "seller's agent",
+                      "sellers agent",
+                      "seller agent",
+                      "real estate agent",
+                      "realtor",
+                      "agent",
+                      "full-service agent"
+                    ];
+                    
+                    const isGenericTag = (tag: string) => {
+                      const lower = tag.toLowerCase().trim();
+                      return genericTags.some(generic => lower === generic || lower.includes(generic));
                     };
                     
                     const profileTypes = ((professional as any).profile_types || []) as string[];
@@ -1531,11 +1544,8 @@ export const ProfessionalCard = ({
                       if (languagesEntry) {
                         const rawData = languagesEntry.description || languagesEntry.lines;
                         if (typeof rawData === 'string' && rawData.trim()) {
-                          // Split by comma and clean up, filtering out English if more than 1 language
                           const langs = rawData.split(',').map(l => l.trim()).filter(Boolean);
                           const nonEnglishLangs = langs.filter(l => l.toLowerCase() !== 'english');
-                          // If they list multiple languages including English, only show non-English
-                          // If English is the only language listed, don't show it
                           if (nonEnglishLangs.length > 0) {
                             nonEnglishLangs.forEach(lang => extractedLanguages.push(lang));
                           }
@@ -1549,39 +1559,23 @@ export const ProfessionalCard = ({
                       }
                     }
                     
-                    const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])];
+                    // Combine and filter out generic tags
+                    const allSpecialties = [...new Set([...mappedProfileTypes, ...dbSpecialties, ...parsedSpecialties, ...extractedSpecialties, ...extractedLanguages])]
+                      .filter(s => !isGenericTag(s));
                     
                     if (allSpecialties.length === 0) return null;
                     
                     return (
-                      <div className="space-y-1.5 flex flex-col items-center w-full">
-                        {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => {
-                          const getSpecialtyIcon = (spec: string) => {
-                            const lower = spec.toLowerCase();
-                            // Check if it's a language (from extractedLanguages)
-                            const commonLanguages = ['spanish', 'french', 'german', 'italian', 'portuguese', 'chinese', 'japanese', 'korean', 'arabic', 'russian', 'hindi', 'tagalog', 'vietnamese'];
-                            if (commonLanguages.some(lang => lower.includes(lang))) return Globe;
-                            if (lower.includes('residential') || lower.includes('single family')) return Home;
-                            if (lower.includes('commercial') || lower.includes('business')) return Building2;
-                            if (lower.includes('luxury') || lower.includes('high-end')) return TrendingUp;
-                            if (lower.includes('investment') || lower.includes('investor')) return DollarSign;
-                            if (lower.includes('first') || lower.includes('buyer')) return Key;
-                            if (lower.includes('relocation')) return Users;
-                            return Award;
-                          };
-                          const Icon = getSpecialtyIcon(specialty);
-                          return (
-                            <Badge 
-                              key={idx} 
-                              variant="secondary" 
-                              className="text-xs w-full justify-start gap-1.5"
-                              itemProp="knowsAbout"
-                            >
-                              <Icon className="h-3 w-3" />
-                              {specialty}
-                            </Badge>
-                          );
-                        })}
+                      <div className="flex flex-wrap gap-1.5 justify-center">
+                        {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => (
+                          <span 
+                            key={idx} 
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.7rem] font-medium bg-muted text-muted-foreground"
+                            itemProp="knowsAbout"
+                          >
+                            {specialty}
+                          </span>
+                        ))}
                       </div>
                     );
                   })()
