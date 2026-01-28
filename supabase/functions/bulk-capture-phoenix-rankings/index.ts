@@ -8,24 +8,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const PHOENIX_METRO_CITIES = [
-  "Phoenix, AZ",
-  "Scottsdale, AZ",
-  "Gilbert, AZ",
-  "Mesa, AZ",
-  "Chandler, AZ",
-  "Tempe, AZ",
-  "Glendale, AZ",
-  "Peoria, AZ",
-  "Surprise, AZ",
+// All Arizona cities needing ranking capture (ordered by agent count)
+const ARIZONA_CITIES_NEEDING_RANKINGS = [
+  "Cottonwood, AZ",
+  "Tucson, AZ",
+  "Prescott, AZ",
+  "Apache Junction, AZ",
+  "Flagstaff, AZ",
   "Avondale, AZ",
-  "Goodyear, AZ",
-  "Buckeye, AZ",
-  "Queen Creek, AZ",
-  "Fountain Hills, AZ",
+  "Maricopa, AZ",
+  "Sun City, AZ",
+  "Phoenix, AZ",
+  "Anthem, AZ",
+  "El Mirage, AZ",
+  "Bullhead City, AZ",
+  "Coolidge, AZ",
+  "Sierra Vista, AZ",
+  "Chandler, AZ",
+  "Scottsdale, AZ",
+  "Wickenburg, AZ",
+  "Gilbert, AZ",
+  "Carefree, AZ",
   "Paradise Valley, AZ",
-  "Cave Creek, AZ",
-  "Anthem, AZ"
+  "Glendale, AZ",
+  "Sun City West, AZ",
+  "Tolleson, AZ",
+  "Buckeye, AZ",
+  "San Tan Valley, AZ",
+  "Benson, AZ",
+  "Peoria, AZ",
+  "Goodyear, AZ",
+  "Tempe, AZ",
+  "Mesa, AZ",
+  "Gold Canyon, AZ",
+  "Fountain Hills, AZ",
+  "Queen Creek, AZ",
+  "Payson, AZ"
 ];
 
 // Invoke with timeout wrapper
@@ -101,14 +119,15 @@ async function isCityRecentlyCaptured(supabase: any, cityName: string): Promise<
 }
 
 // Process cities in background
-async function processCitiesInBackground(sessionId: string, supabase: any) {
+async function processCitiesInBackground(sessionId: string, supabase: any, cities: string[]) {
   console.log(`🚀 Starting background processing for session ${sessionId}`);
+  console.log(`📋 Processing ${cities.length} cities`);
   
   const results: any[] = [];
   
-  for (let i = 0; i < PHOENIX_METRO_CITIES.length; i++) {
-    const cityName = PHOENIX_METRO_CITIES[i];
-    console.log(`\n[${i + 1}/${PHOENIX_METRO_CITIES.length}] Processing ${cityName}...`);
+  for (let i = 0; i < cities.length; i++) {
+    const cityName = cities[i];
+    console.log(`\n[${i + 1}/${cities.length}] Processing ${cityName}...`);
     
     // Check if already captured recently
     const alreadyCaptured = await isCityRecentlyCaptured(supabase, cityName);
@@ -171,7 +190,7 @@ async function processCitiesInBackground(sessionId: string, supabase: any) {
       console.log(`✅ ${cityName}: ${cityResult.status}`);
 
       // Wait between cities
-      if (i < PHOENIX_METRO_CITIES.length - 1) {
+      if (i < cities.length - 1) {
         console.log('⏱️ Waiting 5 seconds before next city...');
         await new Promise(resolve => setTimeout(resolve, 5000));
       }
@@ -255,10 +274,24 @@ serve(async (req) => {
   // POST request - start bulk capture
   if (req.method === 'POST') {
     try {
+      // Check for custom cities list in body
+      let citiesToProcess = ARIZONA_CITIES_NEEDING_RANKINGS;
+      
+      try {
+        const body = await req.json();
+        if (body.cities && Array.isArray(body.cities) && body.cities.length > 0) {
+          citiesToProcess = body.cities;
+          console.log(`📋 Using custom city list with ${citiesToProcess.length} cities`);
+        }
+      } catch {
+        // No body or invalid JSON, use default list
+      }
+      
       // Generate unique session ID
       const sessionId = crypto.randomUUID();
       
       console.log(`🚀 Starting bulk capture with session ${sessionId}`);
+      console.log(`📋 Processing ${citiesToProcess.length} cities`);
       
       // Create progress record
       const { error: insertError } = await supabase
@@ -266,7 +299,7 @@ serve(async (req) => {
         .insert({
           session_id: sessionId,
           status: 'running',
-          total_cities: PHOENIX_METRO_CITIES.length,
+          total_cities: citiesToProcess.length,
           current_index: 0,
           results: []
         });
@@ -278,7 +311,7 @@ serve(async (req) => {
 
       // Start background processing with EdgeRuntime.waitUntil to keep function alive
       EdgeRuntime.waitUntil(
-        processCitiesInBackground(sessionId, supabase).catch(err => {
+        processCitiesInBackground(sessionId, supabase, citiesToProcess).catch(err => {
           console.error('Background processing error:', err);
           supabase
             .from('bulk_capture_progress')
@@ -297,7 +330,8 @@ serve(async (req) => {
           success: true,
           sessionId,
           message: 'Bulk capture started',
-          totalCities: PHOENIX_METRO_CITIES.length
+          totalCities: citiesToProcess.length,
+          cities: citiesToProcess
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
