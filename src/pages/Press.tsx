@@ -334,7 +334,7 @@ const Press = () => {
                   <h3 className="font-semibold mb-3">Coverage</h3>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li>• 48 Arizona cities currently covered</li>
-                    <li>• 414 agents selected from 200,000+ analyzed</li>
+                    <li>• 882 agents selected from 200,000+ analyzed</li>
                     <li>• Top 0.5% qualification rate</li>
                     <li>• Nationwide expansion planned for Summer 2026</li>
                   </ul>

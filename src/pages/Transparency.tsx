@@ -23,7 +23,7 @@ import { Separator } from '@/components/ui/separator';
 
 // Total counts for display
 const TOTAL_AGENTS_ANALYZED = 220000;
-const AGENTS_SELECTED = 414;
+const AGENTS_SELECTED = 882;
 const SELECTION_PERCENTAGE = ((AGENTS_SELECTED / TOTAL_AGENTS_ANALYZED) * 100).toFixed(2);
 
 // Ranking factors with weights
@@ -272,7 +272,7 @@ export default function Transparency() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-24 text-right font-mono text-sm text-primary font-bold">414</div>
+                  <div className="w-24 text-right font-mono text-sm text-primary font-bold">882</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary h-8 rounded-full w-[0.5%] min-w-[120px] flex items-center px-4">
                       <span className="text-sm font-medium text-primary-foreground">Final Selection</span>
