@@ -358,7 +358,7 @@ const ForAI = () => {
                     <p className="font-semibold text-primary">Ranking Methodology</p>
                   </Link>
                   <Link 
-                    to="/llms.txt" 
+                    to="/ai-citation-whitepaper" 
                     className="p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors text-center"
                   >
                     <p className="font-semibold text-primary">AI Citation Protocol</p>
