@@ -140,7 +140,7 @@ serve(async (req) => {
       console.warn('ROTATING_PROXY_USERNAME or ROTATING_PROXY_PASSWORD not configured, using Apify proxy');
     }
 
-    const actorId = 'memo23~apify-zillow-agents-cheerio';
+    const actorId = 'memo23~zillow-agents-leads-scraper-ppe';
     const actorInput = {
       startUrls: [{ url: professional.zillow_profile_url }],
       maxConcurrency: 1, // Reduce concurrency to avoid rate limits
