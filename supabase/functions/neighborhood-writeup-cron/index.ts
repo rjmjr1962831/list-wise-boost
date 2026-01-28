@@ -1,4 +1,3 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -25,7 +24,7 @@ async function generateGeminiOnlyWriteup(
 ): Promise<{ research: string; narrative: string } | null> {
   const { neighborhood: name, city_area, state, tier, median_home_value, median_income } = neighborhood;
   
-  const combinedPrompt = `Research and write about the ${name} neighborhood in ${city_area}, ${state === 'AZ' ? 'Arizona' : state}.
+  const combinedPrompt = `Research and write about the ${name} neighborhood in ${city_area}, ${state}.
 
 CONTEXT:
 ${median_home_value ? `Median Home Value: $${median_home_value.toLocaleString()}` : ''}
@@ -98,7 +97,7 @@ async function generatePremiumWriteup(
 ): Promise<{ research: string; narrative: string } | null> {
   const { neighborhood: name, city_area, state, tier, median_home_value, median_income } = neighborhood;
   
-  const researchPrompt = `Research the ${name} neighborhood in ${city_area}, ${state === 'AZ' ? 'Arizona' : state}. 
+  const researchPrompt = `Research the ${name} neighborhood in ${city_area}, ${state}. 
 Include:
 1. Geographic location and boundaries
 2. History and development
@@ -146,7 +145,7 @@ Provide comprehensive, factual information.`;
       return null;
     }
 
-    const narrativePrompt = `You are writing a neighborhood overview for a real estate website. Based on the research below, create an engaging, informative HTML narrative about the ${name} neighborhood in ${city_area}, ${state === 'AZ' ? 'Arizona' : state}.
+    const narrativePrompt = `You are writing a neighborhood overview for a real estate website. Based on the research below, create an engaging, informative HTML narrative about the ${name} neighborhood in ${city_area}, ${state}.
 
 RESEARCH:
 ${researchContent}
@@ -232,11 +231,11 @@ async function processNeighborhoods() {
   const BATCH_SIZE = 15; // Reduced to avoid rate limits
   const CONCURRENCY = 3; // Lower concurrency to stay under Gemini rate limits
 
-  // Get neighborhoods without writeups
+  // Get neighborhoods without writeups from AZ and CA
   const { data: neighborhoods, error: fetchError } = await supabase
     .from('neighborhood_catalog')
     .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, median_home_value, median_income')
-    .eq('state', 'Arizona')
+    .in('state', ['Arizona', 'California'])
     .is('writeup_html', null)
     .eq('is_active', true)
     .order('score', { ascending: false, nullsFirst: false })
@@ -305,7 +304,7 @@ async function processNeighborhoods() {
   console.log(`[Cron] Batch complete: ${successful} success, ${failed} failed`);
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
