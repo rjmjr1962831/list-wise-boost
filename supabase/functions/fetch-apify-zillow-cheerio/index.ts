@@ -51,7 +51,7 @@ serve(async (req) => {
 
     // Start the Apify actor
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/memo23~zillow-agents-leads-scraper-ppe/runs',
+      'https://api.apify.com/v2/acts/memo23~apify-zillow-agents-cheerio/runs',
       {
         method: 'POST',
         headers: {
