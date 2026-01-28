@@ -191,7 +191,7 @@ serve(async (req) => {
         try {
           // Start Apify actor
           const actorResponse = await fetch(
-            `https://api.apify.com/v2/acts/memo23~apify-zillow-agents-cheerio/runs?token=${apifyToken}`,
+            `https://api.apify.com/v2/acts/memo23~zillow-agents-leads-scraper-ppe/runs?token=${apifyToken}`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
