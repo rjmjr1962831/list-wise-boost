@@ -138,8 +138,8 @@ async function processNeighborhoods() {
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);
-  const BATCH_SIZE = 30; // Fetch more to process concurrently
-  const CONCURRENCY = 10;
+  const BATCH_SIZE = 15; // Reduced to avoid rate limits
+  const CONCURRENCY = 3; // Lower concurrency to stay under Gemini rate limits
 
   // Get neighborhoods without writeups
   const { data: neighborhoods, error: fetchError } = await supabase
@@ -205,9 +205,9 @@ async function processNeighborhoods() {
       }
     }
 
-    // Small delay between chunks to avoid rate limits
+    // Longer delay between chunks to avoid Gemini rate limits
     if (i + CONCURRENCY < neighborhoods.length) {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
   }
 
