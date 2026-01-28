@@ -6,6 +6,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Helper to normalize city names for comparison
+function normalizeCity(city: string): string {
+  return city.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -28,6 +33,8 @@ serve(async (req) => {
     // Get city details if cityId provided
     let searchLocation = cityName;
     let cityDbId = cityId;
+    let searchCityName = ''; // Extracted city name for matching
+    let searchState = '';    // Extracted state for matching
     
     if (cityId && !cityName) {
       const { data: cityData } = await supabase
@@ -38,7 +45,14 @@ serve(async (req) => {
       
       if (cityData) {
         searchLocation = `${cityData.name}, ${cityData.state}`;
+        searchCityName = cityData.name;
+        searchState = cityData.state;
       }
+    } else if (cityName) {
+      // Parse "City, State" format
+      const parts = cityName.split(',').map((p: string) => p.trim());
+      searchCityName = parts[0] || '';
+      searchState = parts[1] || '';
     }
 
     if (!searchLocation) {
@@ -46,6 +60,7 @@ serve(async (req) => {
     }
 
     console.log(`Starting Zillow ranking capture for: ${searchLocation}`);
+    console.log(`Will only update agents with business_address.city matching: ${searchCityName}`);
 
     // Configure ProxyScrape proxy (same as working architecture)
     const proxyUrl = `http://${proxyUsername}:${proxyPassword}@rp.scrapegw.com:6060`;
@@ -135,6 +150,8 @@ serve(async (req) => {
     // Process and update rankings
     let updated = 0;
     let notFound = 0;
+    let cityMismatch = 0;
+    let alreadyCaptured = 0;
     const totalAgents = agents.length;
 
     for (let i = 0; i < agents.length; i++) {
@@ -149,10 +166,10 @@ serve(async (req) => {
         continue;
       }
 
-      // Find and update existing professional by zillow_profile_url
+      // Find existing professional by zillow_profile_url - include business_address for city matching
       const { data: existingAgent } = await supabase
         .from('professionals')
-        .select('id, name, zillow_rank_captured_at')
+        .select('id, name, zillow_rank_captured_at, business_address')
         .eq('zillow_profile_url', zillowUrl)
         .single();
 
@@ -163,9 +180,26 @@ serve(async (req) => {
           const hoursSinceCaptured = (Date.now() - capturedAt.getTime()) / (1000 * 60 * 60);
           if (hoursSinceCaptured < 24) {
             console.log(`⏭️ Skipping ${existingAgent.name} - already captured ${hoursSinceCaptured.toFixed(1)}h ago`);
+            alreadyCaptured++;
             continue;
           }
         }
+
+        // CRITICAL: Validate agent's business_address.city matches search city
+        const businessAddress = existingAgent.business_address as { city?: string; state?: string } | null;
+        const agentCity = businessAddress?.city || '';
+        
+        if (searchCityName && agentCity) {
+          const normalizedSearchCity = normalizeCity(searchCityName);
+          const normalizedAgentCity = normalizeCity(agentCity);
+          
+          if (normalizedSearchCity !== normalizedAgentCity) {
+            console.log(`⚠️ City mismatch for ${existingAgent.name}: searched "${searchCityName}" but agent is in "${agentCity}" - SKIPPING`);
+            cityMismatch++;
+            continue;
+          }
+        }
+
         const { error: updateError } = await supabase
           .from('professionals')
           .update({
@@ -197,6 +231,8 @@ serve(async (req) => {
           totalFound: totalAgents,
           updated,
           notFound,
+          cityMismatch,
+          alreadyCaptured,
           city: searchLocation,
           cityId: cityDbId
         }
