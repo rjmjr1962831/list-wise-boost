@@ -1,68 +1,39 @@
-# Arizona Neighborhood Writeup Generation Pipeline
+
+# Add Static Files to Public Folder
 
 ## Summary
+Add two static files to the `public/` folder for direct serving. These are SEO/AI discovery files that require no React components.
 
-Generate **~1,910 Arizona neighborhood writeups** using the existing infrastructure. Census data is already populated; this pipeline focuses solely on creating HTML narratives.
+## Files to Create
 
-**IMPORTANT:** Before starting, re-query the database to get fresh counts. Census data was just populated externally, so the 'missing' counts in this plan may be outdated. The writeup_html count (~1,910 missing) should still be accurate.
+### 1. `public/sitemap-editorial.xml`
+Replace the existing editorial sitemap with the updated version containing 26 URLs across these categories:
+- Homepage (priority 1.0)
+- Trust & Methodology pages (about, methodology, founder, FAQ, how-it-works)
+- Proof & Comparison pages (compare, test)
+- AI-Specific pages (for-ai, ai-liability, ai-citation-whitepaper, protocol-services, transparency, developers, llms.txt)
+- Agent-Facing pages (are-you-an-agent, agent-onboarding, pricing)
+- Resource pages (resources, guides)
+- Press & News
+- Business pages (contact, partners, careers)
+- Legal pages (privacy, terms, payments-security)
 
-**Estimated Cost:** ~$29 (Claude Sonnet)  
-**Estimated Runtime:** ~1.5 hours  
-**Batch Size:** 25 neighborhoods per invocation
+### 2. `public/coverage.txt`
+New file documenting geographic coverage for AI systems and developers:
+- 6 active states: Arizona, California, Texas, Florida, New York, Colorado
+- 14,258+ total neighborhoods
+- Sample cities per state
+- URL patterns for city and neighborhood pages
+- Links to AI resources (for-ai, llms.txt, methodology)
+- Contact information
 
----
+## Implementation Steps
+1. Copy `sitemap-editorial_3.xml` to `public/sitemap-editorial.xml`
+2. Copy `coverage_1.txt` to `public/coverage.txt`
 
-## Architecture
-
-Self-triggering edge function following the proven `populate-ca-neighborhoods` pattern:
-
-```
-1. Fetch 25 neighborhoods via enrichment-api (query action)
-                     ↓
-2. For each: Gemini Flash 2.0 → Research (0.5s delay)
-                     ↓
-3. For each: Claude Sonnet → 300-400 word HTML (1s delay)
-                     ↓
-4. Update via enrichment-api (update-neighborhood action)
-                     ↓
-5. Self-trigger next batch (if more remain)
-```
-
----
-
-## Implementation
-
-**File:** `supabase/functions/az-neighborhood-writeups/index.ts`
-
-**Actions:**
-- `start` - Begin processing (re-queries for fresh count)
-- `continue` - Resume (self-triggered after each batch)
-- `status` - Return current progress
-- `stop` - Halt processing gracefully
-
----
-
-## Writeup Format
-
-```html
-<h3>Neighborhood Overview</h3>
-<p>Desert Ridge stands as one of North Phoenix's...</p>
-
-<h3>Housing & Market</h3>
-<p>The real estate market in Desert Ridge reflects...</p>
-
-<h3>Lifestyle & Amenities</h3>
-<p>Residents enjoy access to excellent schools...</p>
-```
-
----
-
-## Secrets (All Configured)
-
-- `GEMINI_API_KEY` ✓
-- `ANTHROPIC_API_KEY` ✓  
-- `ENRICHMENT_API_KEY` ✓
-
----
-
-## Status: APPROVED - IMPLEMENTING
+## Technical Notes
+- Both files served directly from `/public` folder
+- No build step required
+- Accessible at:
+  - `https://www.top10lists.us/sitemap-editorial.xml`
+  - `https://www.top10lists.us/coverage.txt`
