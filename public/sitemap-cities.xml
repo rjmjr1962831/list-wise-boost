@@ -3,8 +3,40 @@
 <!-- Request: https://www.top10lists.us/sitemap-cities.xml -->
 <!-- Backend: /functions/v1/generate-sitemap?type=cities -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Arizona Cities -->
   <url>
     <loc>https://www.top10lists.us/arizona/phoenix/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/scottsdale/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/tucson/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <!-- California Cities -->
+  <url>
+    <loc>https://www.top10lists.us/california/los-angeles/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/california/san-francisco/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/california/san-diego/top10realestateagents</loc>
     <lastmod>2026-01-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
