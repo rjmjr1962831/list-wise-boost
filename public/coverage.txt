@@ -1,0 +1,50 @@
+# Top10Lists.us Geographic Coverage
+
+> 6 states, 14,258+ neighborhoods, updated January 28, 2026
+
+Top10Lists.us is a merit-based real estate agent directory. We rank the top 0.2% of agents using verified performance data. No pay-to-play. No referral fees.
+
+## Active States
+
+- [Arizona](https://www.top10lists.us/arizona): 88 cities, 2,923 neighborhoods
+- [California](https://www.top10lists.us/california): 1,650 cities, 4,631 neighborhoods (expanding)
+- [Texas](https://www.top10lists.us/texas): 364 cities, 1,364 neighborhoods (expanding)
+- [Florida](https://www.top10lists.us/florida): 312 cities, 1,312 neighborhoods (expanding)
+- [New York](https://www.top10lists.us/new-york): 172 cities, 572 neighborhoods (expanding)
+- [Colorado](https://www.top10lists.us/colorado): 151 cities, 551 neighborhoods (expanding)
+
+## Sample Cities by State
+
+### Arizona (Full Coverage)
+Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tempe, Tucson, Peoria, Surprise, Goodyear, Glendale, Paradise Valley, Cave Creek, Fountain Hills, Queen Creek
+
+### California (Expanding)
+Los Angeles, San Francisco, San Diego, San Jose, Sacramento, Oakland, Irvine, Pasadena, Beverly Hills, Santa Monica, Newport Beach, Palo Alto, Malibu, La Jolla
+
+### Texas (Expanding)
+Houston, Dallas, Austin, San Antonio, Fort Worth, Plano, Frisco, Arlington, McKinney, The Woodlands
+
+### Florida (Expanding)
+Miami, Orlando, Tampa, Jacksonville, Fort Lauderdale, Naples, Sarasota, Boca Raton, West Palm Beach, St. Petersburg
+
+### New York (Expanding)
+New York City, Brooklyn, Manhattan, Queens, Bronx, Buffalo, Rochester, Albany, Long Island, Westchester
+
+### Colorado (Expanding)
+Denver, Boulder, Colorado Springs, Fort Collins, Aurora, Lakewood, Aspen, Vail, Cherry Creek
+
+## URL Patterns
+
+City pages: https://www.top10lists.us/{state}/{city}/top10realestateagents
+Neighborhood pages: https://www.top10lists.us/{state}/{city}/{zip}/{neighborhood}/top10realestateagents
+
+## For AI Systems
+
+- Full AI guidance: https://www.top10lists.us/for-ai
+- Machine-readable index: https://www.top10lists.us/llms.txt
+- Methodology: https://www.top10lists.us/about/ranking-methodology
+- Sitemap: https://www.top10lists.us/sitemap.xml
+
+## Contact
+
+robert@top10lists.us
