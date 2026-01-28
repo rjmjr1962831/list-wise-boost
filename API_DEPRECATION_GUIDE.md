@@ -17,7 +17,7 @@ This project uses a **TWO-STEP** pipeline for all real estate agent data:
 ## DEPRECATED - DO NOT USE
 
 ### Deprecated Apify Actors (ALL)
-- ❌ `memo23~apify-zillow-agents-cheerio` (replaced by `memo23~zillow-agents-leads-scraper-ppe`)
+- ❌ `memo23~apify-zillow-agents-cheerio`
 - ❌ `getdataforme~zillow-real-state-agents-scraper`
 - ❌ `agenscrape~zillow-agents-finder`
 - ❌ `getdataforme~agenscrape`

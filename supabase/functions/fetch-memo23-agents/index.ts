@@ -165,7 +165,7 @@ serve(async (req) => {
     const searchLocation = `${city.name}, ${city.state}`;
 
     // Start the memo23 Apify actor for detailed agent data
-    const actorId = 'memo23~zillow-agents-leads-scraper-ppe';
+    const actorId = 'memo23~apify-zillow-agents-cheerio';
 
     // First, get agent URLs from existing profiles
     // Only fetch agents that need updating (never fetched OR older than 30 days)
