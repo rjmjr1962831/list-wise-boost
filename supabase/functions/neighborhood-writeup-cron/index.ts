@@ -18,8 +18,80 @@ interface NeighborhoodRecord {
   median_income: number | null;
 }
 
-// Generate writeup for a single neighborhood
-async function generateWriteup(
+// Generate writeup using Gemini Flash only (for Main tier)
+async function generateGeminiOnlyWriteup(
+  neighborhood: NeighborhoodRecord,
+  geminiApiKey: string
+): Promise<{ research: string; narrative: string } | null> {
+  const { neighborhood: name, city_area, state, tier, median_home_value, median_income } = neighborhood;
+  
+  const combinedPrompt = `Research and write about the ${name} neighborhood in ${city_area}, ${state === 'AZ' ? 'Arizona' : state}.
+
+CONTEXT:
+${median_home_value ? `Median Home Value: $${median_home_value.toLocaleString()}` : ''}
+${median_income ? `Median Household Income: $${median_income.toLocaleString()}` : ''}
+Market Tier: ${tier}
+
+TASK:
+1. First, research the neighborhood covering: location, history, housing types, demographics, amenities (schools, parks, shopping), real estate trends, unique features, landmarks, transportation, and community character.
+
+2. Then, write an engaging HTML neighborhood overview for a real estate website.
+
+REQUIREMENTS FOR THE WRITEUP:
+- Write in a warm, professional tone that helps homebuyers envision living there
+- Use HTML formatting with <h3>, <p>, and <ul>/<li> tags
+- Include 4-6 sections covering: Overview, Lifestyle, Real Estate, Amenities, and Why Choose This Neighborhood
+- Be factual but engaging
+- Keep it 300-500 words
+- Do NOT include <h1> or <h2> tags
+- Do NOT wrap in <html>, <body>, or <div>
+
+OUTPUT FORMAT:
+First provide your research notes (plain text), then after "---WRITEUP---" provide the HTML content.`;
+
+  try {
+    const geminiResponse = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: combinedPrompt }] }],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 4096,
+          },
+        }),
+      }
+    );
+
+    if (!geminiResponse.ok) {
+      console.error(`[Cron] Gemini error for ${name}: ${geminiResponse.status}`);
+      return null;
+    }
+
+    const geminiData = await geminiResponse.json();
+    const fullContent = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!fullContent) {
+      console.error(`[Cron] No content for ${name}`);
+      return null;
+    }
+
+    // Split into research and writeup
+    const parts = fullContent.split('---WRITEUP---');
+    const research = parts[0]?.trim() || fullContent;
+    const narrative = parts[1]?.trim() || fullContent;
+
+    return { research, narrative };
+  } catch (error) {
+    console.error(`[Cron] Error processing ${name}:`, error);
+    return null;
+  }
+}
+
+// Generate writeup using Gemini research + Sonnet narrative (for Premium/Luxury tiers)
+async function generatePremiumWriteup(
   neighborhood: NeighborhoodRecord,
   geminiApiKey: string,
   anthropicApiKey: string
@@ -124,6 +196,25 @@ OUTPUT FORMAT:
     console.error(`[Cron] Error processing ${name}:`, error);
     return null;
   }
+}
+
+// Route to appropriate enrichment based on tier
+async function generateWriteup(
+  neighborhood: NeighborhoodRecord,
+  geminiApiKey: string,
+  anthropicApiKey: string
+): Promise<{ research: string; narrative: string } | null> {
+  const tier = neighborhood.tier?.toLowerCase() || 'main';
+  
+  // Premium and Luxury tiers get Sonnet enrichment
+  if (tier === 'premium' || tier === 'luxury') {
+    console.log(`[Cron] Using Sonnet enrichment for ${neighborhood.neighborhood} (${tier} tier)`);
+    return generatePremiumWriteup(neighborhood, geminiApiKey, anthropicApiKey);
+  }
+  
+  // Main tier (and any other) uses Gemini-only
+  console.log(`[Cron] Using Gemini-only enrichment for ${neighborhood.neighborhood} (${tier} tier)`);
+  return generateGeminiOnlyWriteup(neighborhood, geminiApiKey);
 }
 
 async function processNeighborhoods() {
