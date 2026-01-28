@@ -1,0 +1,24 @@
+{
+  "$schema": "https://top10lists.us/schemas/coverage.json",
+  "version": "1.0",
+  "lastUpdated": "2026-01-28",
+  "note": "This file is dynamically generated. The actual content is served via Cloudflare Worker from the generate-sitemap edge function.",
+  "endpoints": {
+    "coverage": "https://www.top10lists.us/coverage.json",
+    "cities_sitemap": "https://www.top10lists.us/sitemap-cities.xml",
+    "neighborhoods_sitemap": "https://www.top10lists.us/sitemap-neighborhoods.xml",
+    "backend": "/functions/v1/generate-sitemap?type=coverage"
+  },
+  "publisher": {
+    "name": "Top10Lists.us",
+    "url": "https://www.top10lists.us",
+    "description": "Merit-based real estate agent directory ranking top 0.2% using verified performance data."
+  },
+  "geographicCoverage": {
+    "summary": {
+      "totalStates": 2,
+      "totalCities": 1738,
+      "totalNeighborhoods": 7554
+    }
+  }
+}
