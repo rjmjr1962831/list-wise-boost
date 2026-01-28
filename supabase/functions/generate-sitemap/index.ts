@@ -46,7 +46,7 @@ serve(async (req) => {
         .from('neighborhood_catalog')
         .select('neighborhood_slug, city_area_slug, state, primary_zip')
         .eq('is_active', true)
-        .eq('state', 'AZ')
+        .eq('state', 'Arizona')
         .not('primary_zip', 'is', null)
         .order('neighborhood_slug')
     ]);
