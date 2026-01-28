@@ -155,9 +155,9 @@ verify_jwt = false
 [functions.bulk-sync-hubspot]
 verify_jwt = false
 
-# DEPRECATED: Uses getdataforme Apify actor - replaced by Firecrawl pipeline
-# [functions.capture-zillow-rankings]
-# verify_jwt = false
+# Note: Still needed for Zillow rank capture
+[functions.capture-zillow-rankings]
+verify_jwt = false
 
 [functions.pipedrive-webhook]
 verify_jwt = false
