@@ -8,43 +8,26 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// All Arizona cities needing ranking capture (ordered by agent count)
-const ARIZONA_CITIES_NEEDING_RANKINGS = [
-  "Cottonwood, AZ",
-  "Tucson, AZ",
-  "Prescott, AZ",
-  "Apache Junction, AZ",
-  "Flagstaff, AZ",
-  "Avondale, AZ",
-  "Maricopa, AZ",
-  "Sun City, AZ",
-  "Phoenix, AZ",
-  "Anthem, AZ",
-  "El Mirage, AZ",
-  "Bullhead City, AZ",
-  "Coolidge, AZ",
-  "Sierra Vista, AZ",
-  "Chandler, AZ",
-  "Scottsdale, AZ",
-  "Wickenburg, AZ",
-  "Gilbert, AZ",
-  "Carefree, AZ",
-  "Paradise Valley, AZ",
-  "Glendale, AZ",
-  "Sun City West, AZ",
-  "Tolleson, AZ",
-  "Buckeye, AZ",
-  "San Tan Valley, AZ",
-  "Benson, AZ",
-  "Peoria, AZ",
-  "Goodyear, AZ",
-  "Tempe, AZ",
-  "Mesa, AZ",
-  "Gold Canyon, AZ",
-  "Fountain Hills, AZ",
-  "Queen Creek, AZ",
-  "Payson, AZ"
-];
+// Fetch all active Arizona cities from database
+async function getArizonaCities(supabase: any): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('cities')
+    .select('name')
+    .eq('state_slug', 'arizona')
+    .eq('active', true)
+    .order('name');
+  
+  if (error) {
+    console.error('Error fetching cities:', error);
+    // Fallback to major cities if query fails
+    return [
+      "Phoenix, AZ", "Scottsdale, AZ", "Tucson, AZ", "Mesa, AZ", 
+      "Chandler, AZ", "Gilbert, AZ", "Tempe, AZ", "Peoria, AZ"
+    ];
+  }
+  
+  return data.map((c: { name: string }) => `${c.name}, AZ`);
+}
 
 // Invoke with timeout wrapper
 async function invokeCaptureWithTimeout(
@@ -274,8 +257,8 @@ serve(async (req) => {
   // POST request - start bulk capture
   if (req.method === 'POST') {
     try {
-      // Check for custom cities list in body
-      let citiesToProcess = ARIZONA_CITIES_NEEDING_RANKINGS;
+      // Check for custom cities list in body, otherwise fetch from database
+      let citiesToProcess: string[] = [];
       
       try {
         const body = await req.json();
@@ -284,7 +267,13 @@ serve(async (req) => {
           console.log(`📋 Using custom city list with ${citiesToProcess.length} cities`);
         }
       } catch {
-        // No body or invalid JSON, use default list
+        // No body or invalid JSON, fetch from database
+      }
+      
+      // If no custom cities provided, fetch all Arizona cities from database
+      if (citiesToProcess.length === 0) {
+        citiesToProcess = await getArizonaCities(supabase);
+        console.log(`📋 Fetched ${citiesToProcess.length} Arizona cities from database`);
       }
       
       // Generate unique session ID
