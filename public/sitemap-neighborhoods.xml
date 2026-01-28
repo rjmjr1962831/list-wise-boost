@@ -3,8 +3,40 @@
 <!-- Request: https://www.top10lists.us/sitemap-neighborhoods.xml -->
 <!-- Backend: /functions/v1/generate-sitemap?type=neighborhoods -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Arizona Neighborhoods -->
   <url>
-    <loc>https://www.top10lists.us/arizona/phoenix/85001/downtown/top10realestateagents</loc>
+    <loc>https://www.top10lists.us/arizona/scottsdale/85251/old-town/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/phoenix/85016/biltmore/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/arizona/paradise-valley/85253/mummy-mountain/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <!-- California Neighborhoods -->
+  <url>
+    <loc>https://www.top10lists.us/california/los-angeles/90210/beverly-hills/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/california/san-francisco/94102/pacific-heights/top10realestateagents</loc>
+    <lastmod>2026-01-28</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.top10lists.us/california/san-diego/92037/la-jolla/top10realestateagents</loc>
     <lastmod>2026-01-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

@@ -3,12 +3,8 @@
   "version": "1.0",
   "lastUpdated": "2026-01-28",
   "note": "This file is dynamically generated. The actual content is served via Cloudflare Worker from the generate-sitemap edge function.",
-  "endpoints": {
-    "coverage": "https://www.top10lists.us/coverage.json",
-    "cities_sitemap": "https://www.top10lists.us/sitemap-cities.xml",
-    "neighborhoods_sitemap": "https://www.top10lists.us/sitemap-neighborhoods.xml",
-    "backend": "/functions/v1/generate-sitemap?type=coverage"
-  },
+  "endpoint": "https://www.top10lists.us/coverage.json",
+  "backend": "/functions/v1/generate-sitemap?type=coverage",
   "publisher": {
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",
@@ -17,8 +13,48 @@
   "geographicCoverage": {
     "summary": {
       "totalStates": 2,
-      "totalCities": 1738,
-      "totalNeighborhoods": 7554
-    }
+      "totalCities": 1679,
+      "totalNeighborhoods": 8546,
+      "lastCalculated": "2026-01-28"
+    },
+    "states": [
+      {
+        "name": "Arizona",
+        "slug": "arizona",
+        "abbreviation": "AZ",
+        "status": "active",
+        "cities": 88,
+        "neighborhoods": 1054,
+        "sampleCities": [
+          {"name": "Phoenix", "slug": "phoenix", "url": "https://www.top10lists.us/arizona/phoenix/top10realestateagents"},
+          {"name": "Scottsdale", "slug": "scottsdale", "url": "https://www.top10lists.us/arizona/scottsdale/top10realestateagents"},
+          {"name": "Tucson", "slug": "tucson", "url": "https://www.top10lists.us/arizona/tucson/top10realestateagents"}
+        ]
+      },
+      {
+        "name": "California",
+        "slug": "california",
+        "abbreviation": "CA",
+        "status": "expanding",
+        "cities": 1591,
+        "neighborhoods": 7492,
+        "note": "City infrastructure active. Neighborhood coverage expanding Q1 2026.",
+        "sampleCities": [
+          {"name": "Los Angeles", "slug": "los-angeles", "url": "https://www.top10lists.us/california/los-angeles/top10realestateagents"},
+          {"name": "San Francisco", "slug": "san-francisco", "url": "https://www.top10lists.us/california/san-francisco/top10realestateagents"},
+          {"name": "San Diego", "slug": "san-diego", "url": "https://www.top10lists.us/california/san-diego/top10realestateagents"}
+        ]
+      }
+    ]
+  },
+  "endpoints": {
+    "coverage": "https://www.top10lists.us/coverage.json",
+    "sitemapCities": "https://www.top10lists.us/sitemap-cities.xml",
+    "sitemapNeighborhoods": "https://www.top10lists.us/sitemap-neighborhoods.xml",
+    "llms": "https://www.top10lists.us/llms.txt"
+  },
+  "urlPatterns": {
+    "city": "https://www.top10lists.us/{state}/{city}/top10realestateagents",
+    "neighborhood": "https://www.top10lists.us/{state}/{city}/{zip}/{neighborhood}/top10realestateagents"
   }
 }
