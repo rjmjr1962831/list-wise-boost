@@ -19,7 +19,18 @@ const SUPPORTED_STATES: Record<string, { name: string; slug: string }> = {
   'az': { name: 'Arizona', slug: 'arizona' },
   'california': { name: 'California', slug: 'california' },
   'ca': { name: 'California', slug: 'california' },
+  'texas': { name: 'Texas', slug: 'texas' },
+  'tx': { name: 'Texas', slug: 'texas' },
+  'florida': { name: 'Florida', slug: 'florida' },
+  'fl': { name: 'Florida', slug: 'florida' },
+  'colorado': { name: 'Colorado', slug: 'colorado' },
+  'co': { name: 'Colorado', slug: 'colorado' },
+  'new-york': { name: 'New York', slug: 'new-york' },
+  'ny': { name: 'New York', slug: 'new-york' },
 };
+
+// Only AZ and CA are fully enriched and should be indexed
+const INDEXABLE_STATES = ['arizona', 'california'];
 
 export default function StateLanding() {
   const { stateSlug } = useParams<{ stateSlug: string }>();
@@ -84,6 +95,7 @@ export default function StateLanding() {
       <Helmet>
         <title>Real Estate Agent Recommendations in {stateName} | Top10Lists.us</title>
         <meta name="description" content={description} />
+        {!INDEXABLE_STATES.includes(normalizedStateSlug) && <meta name="robots" content="noindex, nofollow" />}
         <link rel="canonical" href={`https://www.top10lists.us/${normalizedStateSlug}`} />
       </Helmet>
 
