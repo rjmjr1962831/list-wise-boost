@@ -148,15 +148,21 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { limit = 100, dryRun = false } = await req.json().catch(() => ({}));
+    const { limit = 100, dryRun = false, state: filterState } = await req.json().catch(() => ({}));
 
-    console.log(`[BackfillMarketStats] Starting backfill (limit: ${limit}, dryRun: ${dryRun})`);
+    console.log(`[BackfillMarketStats] Starting backfill (limit: ${limit}, dryRun: ${dryRun}, state: ${filterState || 'all'})`);
 
-    // Find neighborhoods without market stats
-    const { data: allNeighborhoods, error: fetchError } = await supabase
+    // Build query with optional state filter
+    let query = supabase
       .from('neighborhood_catalog')
       .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, primary_zip, median_home_value, median_income')
-      .eq('is_active', true)
+      .eq('is_active', true);
+    
+    if (filterState) {
+      query = query.eq('state', filterState.toLowerCase());
+    }
+    
+    const { data: allNeighborhoods, error: fetchError } = await query
       .order('city_area')
       .order('neighborhood');
 
@@ -175,13 +181,12 @@ serve(async (req) => {
       throw new Error(`Failed to fetch existing stats: ${existingError.message}`);
     }
 
-    const existingSlugs = new Set(
-      existingStats?.map(s => s.page.replace('neighborhood-', '')) || []
-    );
+    // Use state-slug composite key to avoid cross-state collisions
+    const existingPages = new Set(existingStats?.map(s => s.page) || []);
 
-    // Filter to only missing neighborhoods
+    // Filter to only missing neighborhoods (using state-slug composite)
     const missingNeighborhoods = allNeighborhoods?.filter(
-      n => !existingSlugs.has(n.neighborhood_slug)
+      n => !existingPages.has(`neighborhood-${n.state}-${n.neighborhood_slug}`)
     ) || [];
 
     console.log(`[BackfillMarketStats] Found ${missingNeighborhoods.length} neighborhoods missing market stats`);
@@ -214,7 +219,7 @@ serve(async (req) => {
         const { error: insertError } = await supabase
           .from('marketing_content')
           .insert({
-            page: `neighborhood-${neighborhood.neighborhood_slug}`,
+            page: `neighborhood-${neighborhood.state}-${neighborhood.neighborhood_slug}`,
             section: 'market_stats',
             key: 'full_content',
             type: 'json',

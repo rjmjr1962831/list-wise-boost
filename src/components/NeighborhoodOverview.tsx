@@ -75,8 +75,8 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
   const [loading, setLoading] = useState(true);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   
-  // Fetch enriched market stats from marketing_content
-  const { data: marketStats, isLoading: marketStatsLoading } = useNeighborhoodMarketStats(neighborhoodSlug);
+  // Fetch enriched market stats from marketing_content (state-aware lookup)
+  const { data: marketStats, isLoading: marketStatsLoading } = useNeighborhoodMarketStats(neighborhoodSlug, stateSlug);
 
   useEffect(() => {
     const fetchNeighborhood = async () => {

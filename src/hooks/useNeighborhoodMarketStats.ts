@@ -2,18 +2,46 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { NeighborhoodMarketStats } from "@/types/neighborhoodMarketStats";
 
-export const useNeighborhoodMarketStats = (neighborhoodSlug: string | undefined) => {
+export const useNeighborhoodMarketStats = (
+  neighborhoodSlug: string | undefined,
+  state?: string
+) => {
   return useQuery({
-    queryKey: ['neighborhood-market-stats', neighborhoodSlug],
+    queryKey: ['neighborhood-market-stats', state, neighborhoodSlug],
     queryFn: async (): Promise<NeighborhoodMarketStats | null> => {
       if (!neighborhoodSlug) return null;
 
-      const pageKey = `neighborhood-${neighborhoodSlug}`;
+      // Try state-aware format first (new format: neighborhood-{state}-{slug})
+      if (state) {
+        const statePageKey = `neighborhood-${state.toLowerCase()}-${neighborhoodSlug}`;
+        
+        const { data: stateData, error: stateError } = await supabase
+          .from('marketing_content')
+          .select('value')
+          .eq('page', statePageKey)
+          .eq('section', 'market_stats')
+          .eq('key', 'full_content')
+          .maybeSingle();
+
+        if (!stateError && stateData?.value) {
+          try {
+            const parsed = typeof stateData.value === 'string' 
+              ? JSON.parse(stateData.value) 
+              : stateData.value;
+            return parsed as NeighborhoodMarketStats;
+          } catch (e) {
+            console.error('Error parsing neighborhood market stats JSON:', e);
+          }
+        }
+      }
+
+      // Fall back to legacy format (neighborhood-{slug})
+      const legacyPageKey = `neighborhood-${neighborhoodSlug}`;
       
       const { data, error } = await supabase
         .from('marketing_content')
         .select('value')
-        .eq('page', pageKey)
+        .eq('page', legacyPageKey)
         .eq('section', 'market_stats')
         .eq('key', 'full_content')
         .maybeSingle();
