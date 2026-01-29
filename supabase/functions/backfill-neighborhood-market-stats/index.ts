@@ -148,105 +148,48 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { limit = 100, dryRun = false, state: filterState } = await req.json().catch(() => ({}));
+    const { limit = 500, dryRun = false, state: filterState, offset = 0 } = await req.json().catch(() => ({}));
 
-    console.log(`[BackfillMarketStats] Starting backfill (limit: ${limit}, dryRun: ${dryRun}, state: ${filterState || 'all'})`);
+    console.log(`[BackfillMarketStats] Starting backfill (limit: ${limit}, offset: ${offset}, dryRun: ${dryRun}, state: ${filterState || 'all'})`);
 
-    // Build query with optional state filter
-    // Fetch ALL neighborhoods with pagination (Supabase has 1000 row limit)
-    const allNeighborhoods: any[] = [];
-    let page = 0;
-    const pageSize = 1000;
+    // Fetch neighborhoods with offset-based pagination for resumable processing
+    let query = supabase
+      .from('neighborhood_catalog')
+      .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, primary_zip, median_home_value, median_income')
+      .eq('is_active', true);
     
-    while (true) {
-      let query = supabase
-        .from('neighborhood_catalog')
-        .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, primary_zip, median_home_value, median_income')
-        .eq('is_active', true);
-      
-      if (filterState) {
-        query = query.ilike('state', filterState);
-      }
-      
-      const { data, error: fetchError } = await query
-        .order('city_area')
-        .order('neighborhood')
-        .range(page * pageSize, (page + 1) * pageSize - 1);
-
-      if (fetchError) {
-        throw new Error(`Failed to fetch neighborhoods: ${fetchError.message}`);
-      }
-      
-      if (!data || data.length === 0) break;
-      
-      allNeighborhoods.push(...data);
-      console.log(`[BackfillMarketStats] Fetched page ${page + 1}: ${data.length} neighborhoods (total: ${allNeighborhoods.length})`);
-      
-      if (data.length < pageSize) break;
-      page++;
+    if (filterState) {
+      query = query.ilike('state', filterState);
     }
     
-    console.log(`[BackfillMarketStats] Total neighborhoods fetched: ${allNeighborhoods.length}`);
+    const { data: neighborhoods, error: fetchError } = await query
+      .order('city_area')
+      .order('neighborhood')
+      .range(offset, offset + limit - 1);
 
-    // Get existing market stats pages
-    const { data: existingStats, error: existingError } = await supabase
-      .from('marketing_content')
-      .select('page')
-      .eq('section', 'market_stats')
-      .eq('key', 'full_content');
-
-    if (existingError) {
-      throw new Error(`Failed to fetch existing stats: ${existingError.message}`);
+    if (fetchError) {
+      throw new Error(`Failed to fetch neighborhoods: ${fetchError.message}`);
     }
-
-    // Build sets for both new format (state-aware) and legacy format
-    const existingNewFormat = new Set<string>();
-    const existingLegacyFormat = new Set<string>();
-    const statePatterns = ['arizona', 'california', 'texas', 'florida', 'colorado', 'new-york'];
     
-    existingStats?.forEach(s => {
-      const page = s.page;
-      // Check each state pattern for new format
-      let isNewFormat = false;
-      for (const state of statePatterns) {
-        const prefix = `neighborhood-${state}-`;
-        if (page.startsWith(prefix)) {
-          existingNewFormat.add(page.slice(prefix.length));
-          isNewFormat = true;
-          break;
-        }
-      }
-      // If not new format, check if it's legacy format
-      if (!isNewFormat && page.startsWith('neighborhood-')) {
-        existingLegacyFormat.add(page.slice('neighborhood-'.length));
-      }
-    });
+    console.log(`[BackfillMarketStats] Fetched ${neighborhoods?.length || 0} neighborhoods starting at offset ${offset}`);
 
-    console.log(`[BackfillMarketStats] Existing stats: ${existingNewFormat.size} new format, ${existingLegacyFormat.size} legacy format`);
-
-    // Filter to neighborhoods missing in BOTH formats (legacy is still valid via fallback)
-    const missingNeighborhoods = allNeighborhoods?.filter(
-      n => !existingNewFormat.has(n.neighborhood_slug) && !existingLegacyFormat.has(n.neighborhood_slug)
-    ) || [];
-
-    console.log(`[BackfillMarketStats] Found ${missingNeighborhoods.length} neighborhoods missing market stats`);
-
-    if (missingNeighborhoods.length === 0) {
+    if (!neighborhoods || neighborhoods.length === 0) {
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'All neighborhoods already have market stats',
-          processed: 0 
+          message: 'No more neighborhoods to process',
+          processed: 0,
+          offset,
+          complete: true
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Process in batches
-    const toProcess = missingNeighborhoods.slice(0, limit);
+    // Process all fetched neighborhoods - upsert handles duplicates
     const results = { inserted: 0, errors: 0, errorDetails: [] as string[] };
 
-    for (const neighborhood of toProcess) {
+    for (const neighborhood of neighborhoods) {
       try {
         const stats = generateMarketStats(neighborhood);
         
@@ -258,20 +201,19 @@ serve(async (req) => {
 
         const { error: insertError } = await supabase
           .from('marketing_content')
-          .insert({
+          .upsert({
             page: `neighborhood-${neighborhood.state.toLowerCase()}-${neighborhood.neighborhood_slug}`,
             section: 'market_stats',
             key: 'full_content',
             type: 'json',
             value: JSON.stringify(stats),
-          });
+          }, { onConflict: 'page,section,key' });
 
         if (insertError) {
           console.error(`[BackfillMarketStats] Error inserting ${neighborhood.neighborhood_slug}:`, insertError);
           results.errors++;
           results.errorDetails.push(`${neighborhood.neighborhood_slug}: ${insertError.message}`);
         } else {
-          console.log(`[BackfillMarketStats] Inserted stats for ${neighborhood.neighborhood}, ${neighborhood.city_area}`);
           results.inserted++;
         }
       } catch (err) {
@@ -282,16 +224,17 @@ serve(async (req) => {
       }
     }
 
-    const remaining = missingNeighborhoods.length - toProcess.length;
+    const nextOffset = offset + neighborhoods.length;
 
     return new Response(
       JSON.stringify({
         success: true,
-        processed: toProcess.length,
+        processed: neighborhoods.length,
         inserted: results.inserted,
         errors: results.errors,
         errorDetails: results.errorDetails.slice(0, 10),
-        remaining,
+        nextOffset,
+        complete: neighborhoods.length < limit,
         dryRun,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
