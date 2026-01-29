@@ -99,9 +99,17 @@ export function ReviewsCard({ rating }: ReviewsCardProps) {
             <div key={review.platform}>
               <PlatformRow review={review} />
               <div className="pl-8 pb-2 flex items-center gap-3 text-xs text-muted-foreground">
-                {review.lastReviewDate && (
-                  <span>Last review: {getRelativeTime(review.lastReviewDate)}</span>
-                )}
+                {review.lastReviewDate && (() => {
+                  const relativeTime = getRelativeTime(review.lastReviewDate);
+                  // If older than 12 months, show "Verified Client Review" badge instead of date
+                  return relativeTime ? (
+                    <span>Last review: {relativeTime}</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                      ✓ Verified Client Review
+                    </span>
+                  );
+                })()}
                 <VerifiedBadge 
                   verifiedAt={review.verifiedAt}
                   sourceName={review.platformName}

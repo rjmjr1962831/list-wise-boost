@@ -211,19 +211,22 @@ export function formatVerificationDate(dateString: string): string {
 
 /**
  * Get relative time string (e.g., "2 days ago")
+ * Returns null for dates older than 12 months to signal hiding
  */
-export function getRelativeTime(dateString: string): string {
+export function getRelativeTime(dateString: string): string | null {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
   
+  // If older than 12 months, return null to hide date
+  if (diffDays >= 365) return null;
+  
   if (diffDays === 0) return 'today';
   if (diffDays === 1) return 'yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;
   if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
-  return `${Math.floor(diffDays / 365)} years ago`;
+  return `${Math.floor(diffDays / 30)} months ago`;
 }
 
 /**

@@ -81,24 +81,24 @@ export function NeighborhoodAgentList({
           </h2>
         </div>
         <p className="text-sm text-muted-foreground mt-2">
-          All agents below have passed Top10Lists' rigorous, non-commercial editorial review. 
-          They represent top-performing professionals in this market. This is not a ranking.
+          Agents selected and ordered based on our multi-layer verification process (Performance Data, Community Standing, Human Editorial Review).
         </p>
       </div>
 
-      {/* Agent Grid - limited preview */}
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* Agent Grid - semantic ordered list for Google rich snippets */}
+      <ol className="grid gap-4 md:grid-cols-2 list-none p-0 m-0">
         {displayAgents.map((agent) => (
-          <AgentBadge
-            key={agent.id}
-            professional={agent}
-            stateSlug={stateSlug}
-            citySlug={citySlug}
-            accentColor="turquoise"
-            isPaidExpert={false}
-          />
+          <li key={agent.id} className="list-none">
+            <AgentBadge
+              professional={agent}
+              stateSlug={stateSlug}
+              citySlug={citySlug}
+              accentColor="turquoise"
+              isPaidExpert={false}
+            />
+          </li>
         ))}
-      </div>
+      </ol>
 
       {/* Helper text */}
       <p className="text-xs text-muted-foreground text-center">
