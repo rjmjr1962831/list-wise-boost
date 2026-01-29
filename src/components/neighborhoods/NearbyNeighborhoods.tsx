@@ -6,6 +6,8 @@ interface NearbyNeighborhood {
   name: string;
   tier: "Main" | "Prime" | "Luxury";
   city_area: string;
+  city_area_slug?: string;
+  primary_zip?: string;
   distance_miles: number;
 }
 
@@ -27,6 +29,27 @@ const tierPrices: Record<string, string> = {
   Luxury: "$99",
 };
 
+/**
+ * Generate neighborhood URL - uses 5-segment format with ZIP when available
+ * Format: /{state}/{city}/{zip}/{neighborhood}/top10realestateagents
+ * Falls back to 4-segment (legacy) if no ZIP available
+ */
+const generateNeighborhoodUrl = (
+  state: string, 
+  neighborhood: NearbyNeighborhood
+): string => {
+  const citySlug = neighborhood.city_area_slug || 
+    neighborhood.city_area.toLowerCase().replace(/\s+/g, '-');
+  
+  // Use 5-segment format with ZIP if available (preferred)
+  if (neighborhood.primary_zip) {
+    return `/${state}/${citySlug}/${neighborhood.primary_zip}/${neighborhood.slug}/top10realestateagents`;
+  }
+  
+  // Fallback to 4-segment (will redirect via NeighborhoodCategoryRouter)
+  return `/${state}/${citySlug}/${neighborhood.slug}/top10realestateagents`;
+};
+
 export const NearbyNeighborhoods = ({ 
   neighborhoods, 
   currentState,
@@ -45,7 +68,7 @@ export const NearbyNeighborhoods = ({
         {neighborhoods.map((neighborhood) => (
           <Link
             key={neighborhood.id}
-            to={`/${currentState}/${neighborhood.city_area.toLowerCase().replace(/\s+/g, '-')}/${neighborhood.slug}/top10realestateagents`}
+            to={generateNeighborhoodUrl(currentState, neighborhood)}
             className="block p-4 bg-card border border-border rounded-lg hover:border-primary/50 hover:shadow-md transition-all"
           >
             <div className="flex items-start justify-between">
@@ -55,7 +78,7 @@ export const NearbyNeighborhoods = ({
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {neighborhood.city_area}
-                  {neighborhood.city_area.toLowerCase().replace(/\s+/g, '-') !== currentCity.toLowerCase() && (
+                  {(neighborhood.city_area_slug || neighborhood.city_area.toLowerCase().replace(/\s+/g, '-')) !== currentCity.toLowerCase() && (
                     <span className="ml-1 text-primary">(nearby city)</span>
                   )}
                 </p>
