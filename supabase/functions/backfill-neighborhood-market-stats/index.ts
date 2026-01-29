@@ -153,22 +153,40 @@ serve(async (req) => {
     console.log(`[BackfillMarketStats] Starting backfill (limit: ${limit}, dryRun: ${dryRun}, state: ${filterState || 'all'})`);
 
     // Build query with optional state filter
-    let query = supabase
-      .from('neighborhood_catalog')
-      .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, primary_zip, median_home_value, median_income')
-      .eq('is_active', true);
+    // Fetch ALL neighborhoods with pagination (Supabase has 1000 row limit)
+    const allNeighborhoods: any[] = [];
+    let page = 0;
+    const pageSize = 1000;
     
-    if (filterState) {
-      query = query.eq('state', filterState.toLowerCase());
-    }
-    
-    const { data: allNeighborhoods, error: fetchError } = await query
-      .order('city_area')
-      .order('neighborhood');
+    while (true) {
+      let query = supabase
+        .from('neighborhood_catalog')
+        .select('id, neighborhood, neighborhood_slug, city_area, city_area_slug, state, tier, primary_zip, median_home_value, median_income')
+        .eq('is_active', true);
+      
+      if (filterState) {
+        query = query.ilike('state', filterState);
+      }
+      
+      const { data, error: fetchError } = await query
+        .order('city_area')
+        .order('neighborhood')
+        .range(page * pageSize, (page + 1) * pageSize - 1);
 
-    if (fetchError) {
-      throw new Error(`Failed to fetch neighborhoods: ${fetchError.message}`);
+      if (fetchError) {
+        throw new Error(`Failed to fetch neighborhoods: ${fetchError.message}`);
+      }
+      
+      if (!data || data.length === 0) break;
+      
+      allNeighborhoods.push(...data);
+      console.log(`[BackfillMarketStats] Fetched page ${page + 1}: ${data.length} neighborhoods (total: ${allNeighborhoods.length})`);
+      
+      if (data.length < pageSize) break;
+      page++;
     }
+    
+    console.log(`[BackfillMarketStats] Total neighborhoods fetched: ${allNeighborhoods.length}`);
 
     // Get existing market stats pages
     const { data: existingStats, error: existingError } = await supabase
@@ -181,12 +199,34 @@ serve(async (req) => {
       throw new Error(`Failed to fetch existing stats: ${existingError.message}`);
     }
 
-    // Use state-slug composite key to avoid cross-state collisions
-    const existingPages = new Set(existingStats?.map(s => s.page) || []);
+    // Build sets for both new format (state-aware) and legacy format
+    const existingNewFormat = new Set<string>();
+    const existingLegacyFormat = new Set<string>();
+    const statePatterns = ['arizona', 'california', 'texas', 'florida', 'colorado', 'new-york'];
+    
+    existingStats?.forEach(s => {
+      const page = s.page;
+      // Check each state pattern for new format
+      let isNewFormat = false;
+      for (const state of statePatterns) {
+        const prefix = `neighborhood-${state}-`;
+        if (page.startsWith(prefix)) {
+          existingNewFormat.add(page.slice(prefix.length));
+          isNewFormat = true;
+          break;
+        }
+      }
+      // If not new format, check if it's legacy format
+      if (!isNewFormat && page.startsWith('neighborhood-')) {
+        existingLegacyFormat.add(page.slice('neighborhood-'.length));
+      }
+    });
 
-    // Filter to only missing neighborhoods (using state-slug composite)
+    console.log(`[BackfillMarketStats] Existing stats: ${existingNewFormat.size} new format, ${existingLegacyFormat.size} legacy format`);
+
+    // Filter to neighborhoods missing in BOTH formats (legacy is still valid via fallback)
     const missingNeighborhoods = allNeighborhoods?.filter(
-      n => !existingPages.has(`neighborhood-${n.state}-${n.neighborhood_slug}`)
+      n => !existingNewFormat.has(n.neighborhood_slug) && !existingLegacyFormat.has(n.neighborhood_slug)
     ) || [];
 
     console.log(`[BackfillMarketStats] Found ${missingNeighborhoods.length} neighborhoods missing market stats`);
@@ -219,7 +259,7 @@ serve(async (req) => {
         const { error: insertError } = await supabase
           .from('marketing_content')
           .insert({
-            page: `neighborhood-${neighborhood.state}-${neighborhood.neighborhood_slug}`,
+            page: `neighborhood-${neighborhood.state.toLowerCase()}-${neighborhood.neighborhood_slug}`,
             section: 'market_stats',
             key: 'full_content',
             type: 'json',
