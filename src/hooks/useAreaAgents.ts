@@ -176,7 +176,7 @@ export function useAreaAgents({
           const metroZipArray = Array.from(metroZips);
           console.log(`[useAreaAgents] Found ${metroZipArray.length} ZIPs in metro area`);
           
-          // Query agents with business_zip in metro area, or fall back to top agents if no zip data
+          // Query agents with business_zip in metro area - FILTER BY STATE to prevent cross-state pollution
           const { data: fallbackAgents, error: fallbackError } = await supabase
             .from('professionals')
             .select(`
@@ -201,6 +201,7 @@ export function useAreaAgents({
               license_verified_at,
               business_city,
               business_zip,
+              state_slug,
               agent_sales_stats,
               sales_count_all_time,
               average_value_3yr,
@@ -208,6 +209,7 @@ export function useAreaAgents({
               price_range_3yr_max
             `)
             .eq('active', true)
+            .eq('state_slug', stateSlug) // CRITICAL: Filter by state to prevent cross-state agents
             .gte('review_stars_rating', 4.8)
             .gte('num_total_reviews', 20)
             .order('num_total_reviews', { ascending: false })
@@ -221,6 +223,7 @@ export function useAreaAgents({
           }
           
           // Filter to agents in metro area (by business_zip or business_city)
+          // State filtering is already done in query above
           const metroAgents = (fallbackAgents || []).filter((prof: any) => {
             // Check if business_zip is in metro
             if (prof.business_zip && metroZipArray.includes(prof.business_zip)) {
@@ -231,7 +234,7 @@ export function useAreaAgents({
               const citySlugified = prof.business_city.toLowerCase().replace(/\s+/g, '-');
               return metroCities.includes(citySlugified);
             }
-            // If no location data, include top agents anyway (temporary until data is enriched)
+            // Include agent even without location data - state filter already applied in query
             return true;
           }).slice(0, 50);
 
@@ -260,6 +263,7 @@ export function useAreaAgents({
             license_verified_at: prof.license_verified_at || undefined,
             years_experience: prof.years_experience || undefined,
             canonical_slug: prof.canonical_slug,
+            state_slug: prof.state_slug, // Include state_slug for correct profile links
             // Sales stats for GEO
             agent_sales_stats: prof.agent_sales_stats || null,
             sales_count_all_time: prof.sales_count_all_time || null,
@@ -302,6 +306,7 @@ export function useAreaAgents({
             canonical_slug,
             active,
             license_verified_at,
+            state_slug,
             agent_sales_stats,
             sales_count_all_time,
             average_value_3yr,
@@ -309,6 +314,7 @@ export function useAreaAgents({
             price_range_3yr_max
           `)
           .eq('active', true)
+          .eq('state_slug', stateSlug) // CRITICAL: Filter by state to prevent cross-state agents
           .gte('review_stars_rating', 4.8)
           .gte('num_total_reviews', 20)
           .in('license_number', licenseNumbers);
@@ -348,6 +354,7 @@ export function useAreaAgents({
             license_verified_at: prof.license_verified_at || undefined,
             years_experience: prof.years_experience || undefined,
             canonical_slug: prof.canonical_slug,
+            state_slug: prof.state_slug, // Include state_slug for correct profile links
             // Sales stats for GEO
             agent_sales_stats: prof.agent_sales_stats || null,
             sales_count_all_time: prof.sales_count_all_time || null,
