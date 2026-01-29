@@ -1,78 +1,100 @@
 
-# Fix Zillow Rank Data for Arizona Agents
+# Plan: Add noindex Meta Tags for Incomplete States
 
 ## Problem
-600 Arizona agents have incorrect `zillow_search_city` data. Agents were searched in random cities (e.g., bulk job cycled through Cottonwood, Tucson, Prescott) instead of their actual business city (derived from `business_address.city`).
+Texas, Florida, Colorado, and New York pages are being indexed by Google, but these states lack enriched data (missing ZIPs, writeups, nearby neighborhoods). Currently:
+
+- `DynamicCategoryList.tsx` has **all pages set to noindex** (line 1288) - this is too aggressive, blocking Arizona and California
+- `CityLanding.tsx` already has correct conditional logic
+- `StateLanding.tsx` redirects unsupported states to homepage, but needs to support TX, FL, CO, NY with noindex
 
 ## Solution
 
-### Step 1: Clear Bad Data (Database Migration)
-Run SQL to NULL out all Zillow rank fields for active Arizona agents:
+### Affected Files
 
-```sql
-UPDATE professionals 
-SET 
-  zillow_search_city = NULL,
-  zillow_search_position = NULL,
-  zillow_search_total = NULL,
-  zillow_search_page = NULL,
-  zillow_rank_captured_at = NULL
-WHERE 
-  active = true 
-  AND state_slug = 'arizona'
-  AND zillow_search_city IS NOT NULL;
+| File | Current Behavior | Required Change |
+|------|------------------|-----------------|
+| `src/pages/DynamicCategoryList.tsx` | Hardcoded `noindex, follow` for all | Conditional based on state |
+| `src/pages/StateLanding.tsx` | Only supports AZ, CA (redirects others) | Add TX, FL, CO, NY with noindex |
+
+### Implementation Details
+
+**1. DynamicCategoryList.tsx (Neighborhood/City Agent Pages)**
+
+Add indexable states check near line 1180, before the return statement:
+
+```typescript
+// States that should be indexed (AZ and CA only - fully enriched)
+const INDEXABLE_STATES = ['arizona', 'california'];
+const shouldNoindex = !INDEXABLE_STATES.includes(city.state_slug);
 ```
 
-Expected: ~600 rows updated
-
-### Step 2: Update enrichment-api Edge Function
-Add Zillow rank fields to the allowed fields whitelist in both `action=update` and `action=bulk-update` sections:
-
-**File:** `supabase/functions/enrichment-api/index.ts`
-
-Add to both `allowedFields` arrays (lines ~197 and ~380):
-- `zillow_search_city`
-- `zillow_search_position`
-- `zillow_search_total`
-- `zillow_search_page`
-- `zillow_rank_captured_at`
-
-### Step 3: Update capture-zillow-rankings Function
-Modify `supabase/functions/capture-zillow-rankings/index.ts` to determine search city from the agent's `business_address` rather than a passed-in city parameter.
-
-**New Logic:**
-```text
-1. Accept either cityName OR agentId as input
-2. If agentId provided:
-   - Fetch agent's business_address from professionals table
-   - Use business_address.city + business_address.state as search location
-   - Fall back to zip_code lookup if no business_address
-3. If cityName provided (bulk mode):
-   - Query agents WHERE business_address->>'city' ILIKE cityName
-   - Run Apify search for that city
-   - Only update agents whose business city matches
+Then modify line 1288 from:
+```jsx
+<meta name="robots" content="noindex, follow" />
 ```
 
-**Key Change:** The function will validate that the agent's business_address.city matches the search city before updating rank data.
-
-## Files Modified
-| File | Change |
-|------|--------|
-| Database | Clear 5 Zillow fields for ~600 AZ agents |
-| `enrichment-api/index.ts` | Add 5 fields to both allowedFields arrays |
-| `capture-zillow-rankings/index.ts` | Add business_address city matching logic |
-
-## Verification Query
-After clearing data:
-```sql
-SELECT COUNT(*) FROM professionals 
-WHERE active = true AND state_slug = 'arizona' AND zillow_search_city IS NOT NULL;
--- Expected: 0
+To:
+```jsx
+{shouldNoindex && <meta name="robots" content="noindex, nofollow" />}
 ```
 
-## Future Workflow
-When re-capturing Zillow ranks:
-1. Run per-city capture (e.g., "Phoenix, AZ")
-2. Function searches Zillow for that city
-3. Function only updates agents whose `business_address.city` matches "Phoenix"
-4. Agents with mismatched business cities are skipped, not polluted with wrong rank data
+**2. StateLanding.tsx**
+
+Expand the `SUPPORTED_STATES` mapping to include Texas, Florida, Colorado, and New York:
+
+```typescript
+const SUPPORTED_STATES: Record<string, { name: string; slug: string }> = {
+  'arizona': { name: 'Arizona', slug: 'arizona' },
+  'az': { name: 'Arizona', slug: 'arizona' },
+  'california': { name: 'California', slug: 'california' },
+  'ca': { name: 'California', slug: 'california' },
+  'texas': { name: 'Texas', slug: 'texas' },
+  'tx': { name: 'Texas', slug: 'texas' },
+  'florida': { name: 'Florida', slug: 'florida' },
+  'fl': { name: 'Florida', slug: 'florida' },
+  'colorado': { name: 'Colorado', slug: 'colorado' },
+  'co': { name: 'Colorado', slug: 'colorado' },
+  'new-york': { name: 'New York', slug: 'new-york' },
+  'ny': { name: 'New York', slug: 'new-york' },
+};
+```
+
+Then add indexable check and noindex meta tag in the Helmet section:
+
+```typescript
+// Only AZ and CA are fully enriched and should be indexed
+const INDEXABLE_STATES = ['arizona', 'california'];
+const shouldNoindex = !INDEXABLE_STATES.includes(normalizedStateSlug);
+
+// In Helmet:
+{shouldNoindex && <meta name="robots" content="noindex, nofollow" />}
+```
+
+### Pattern Consistency
+
+Both files will use the same pattern as `CityLanding.tsx` (already implemented correctly):
+```typescript
+const indexableStates = ['arizona', 'california'];
+const shouldNoindex = !indexableStates.includes(stateSlugLower);
+```
+
+### Verification
+
+After deployment, verify with curl:
+
+**Should have noindex:**
+```bash
+curl -s "https://www.top10lists.us/texas/houston/77002/downtown/top10realestateagents" | grep "noindex"
+curl -s "https://www.top10lists.us/florida" | grep "noindex"
+```
+
+**Should NOT have noindex:**
+```bash
+curl -s "https://www.top10lists.us/arizona/scottsdale/85255/grayhawk/top10realestateagents" | grep "noindex"
+curl -s "https://www.top10lists.us/california/los-angeles/90024/westwood/top10realestateagents" | grep "noindex"
+```
+
+### Future Maintenance
+
+When a state is fully enriched (ZIPs, writeups, nearby data complete), add it to the `INDEXABLE_STATES` array in both files.
