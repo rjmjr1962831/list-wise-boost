@@ -1,100 +1,85 @@
 
-# Plan: Add noindex Meta Tags for Incomplete States
 
-## Problem
-Texas, Florida, Colorado, and New York pages are being indexed by Google, but these states lack enriched data (missing ZIPs, writeups, nearby neighborhoods). Currently:
+# Fix Plan: Restore Agent Bios and Fix Card Layout
 
-- `DynamicCategoryList.tsx` has **all pages set to noindex** (line 1288) - this is too aggressive, blocking Arizona and California
-- `CityLanding.tsx` already has correct conditional logic
-- `StateLanding.tsx` redirects unsupported states to homepage, but needs to support TX, FL, CO, NY with noindex
+## What Went Wrong
 
-## Solution
+I broke the agent cards by not understanding the data flow. Here is the precise issue:
 
-### Affected Files
+**Database Fields:**
+- `get_to_know_me` - Original Zillow "Get to Know Me" bio (HAS DATA)
+- `description` - Original Zillow bio/description (MAY HAVE DATA)  
+- `synthesized_bio` - AI-generated bio (HAS DATA)
 
-| File | Current Behavior | Required Change |
-|------|------------------|-----------------|
-| `src/pages/DynamicCategoryList.tsx` | Hardcoded `noindex, follow` for all | Conditional based on state |
-| `src/pages/StateLanding.tsx` | Only supports AZ, CA (redirects others) | Add TX, FL, CO, NY with noindex |
+**What `useAreaAgents.ts` Currently Does:**
+- Fetches `synthesized_bio` only
+- Maps it to `description` for the Professional type
+- Does NOT fetch `get_to_know_me`
+- Does NOT provide `original_description`
 
-### Implementation Details
+**What `ProfessionalCard.tsx` Expects:**
+- Checks `(professional as any).get_to_know_me` for the bio button
+- Falls back to `(professional as any).original_description`
+- If BOTH are missing, the bio button returns `null`
 
-**1. DynamicCategoryList.tsx (Neighborhood/City Agent Pages)**
+**Result:** Grid is `grid-cols-3` but only 2 buttons render, causing the broken layout.
 
-Add indexable states check near line 1180, before the return statement:
+---
+
+## The Fix (2 Changes)
+
+### Change 1: Update `useAreaAgents.ts` Data Fetching
+
+Add missing fields to BOTH SELECT queries (main query and fallback query):
+
+```text
+Current:  synthesized_bio
+Add:      get_to_know_me, description
+```
+
+### Change 2: Update `useAreaAgents.ts` Mapping
+
+Map the new fields to what `ProfessionalCard` expects:
 
 ```typescript
-// States that should be indexed (AZ and CA only - fully enriched)
-const INDEXABLE_STATES = ['arizona', 'california'];
-const shouldNoindex = !INDEXABLE_STATES.includes(city.state_slug);
+// In both mapping blocks (fallback and main)
+get_to_know_me: prof.get_to_know_me || undefined,
+original_description: prof.description || undefined,  // Map description to original_description
+synthesized_bio: prof.synthesized_bio || undefined,
 ```
 
-Then modify line 1288 from:
-```jsx
-<meta name="robots" content="noindex, follow" />
-```
+This ensures:
+- The bio button gets `get_to_know_me` data (if available)
+- Falls back to `original_description` (mapped from `description`)
+- The grid layout works correctly (3 buttons when bio exists)
 
-To:
-```jsx
-{shouldNoindex && <meta name="robots" content="noindex, nofollow" />}
-```
+---
 
-**2. StateLanding.tsx**
+## Files to Modify
 
-Expand the `SUPPORTED_STATES` mapping to include Texas, Florida, Colorado, and New York:
+| File | Changes |
+|------|---------|
+| `src/hooks/useAreaAgents.ts` | Add `get_to_know_me`, `description` to SELECT; map to `get_to_know_me`, `original_description` |
 
-```typescript
-const SUPPORTED_STATES: Record<string, { name: string; slug: string }> = {
-  'arizona': { name: 'Arizona', slug: 'arizona' },
-  'az': { name: 'Arizona', slug: 'arizona' },
-  'california': { name: 'California', slug: 'california' },
-  'ca': { name: 'California', slug: 'california' },
-  'texas': { name: 'Texas', slug: 'texas' },
-  'tx': { name: 'Texas', slug: 'texas' },
-  'florida': { name: 'Florida', slug: 'florida' },
-  'fl': { name: 'Florida', slug: 'florida' },
-  'colorado': { name: 'Colorado', slug: 'colorado' },
-  'co': { name: 'Colorado', slug: 'colorado' },
-  'new-york': { name: 'New York', slug: 'new-york' },
-  'ny': { name: 'New York', slug: 'new-york' },
-};
-```
+---
 
-Then add indexable check and noindex meta tag in the Helmet section:
+## Technical Details
 
-```typescript
-// Only AZ and CA are fully enriched and should be indexed
-const INDEXABLE_STATES = ['arizona', 'california'];
-const shouldNoindex = !INDEXABLE_STATES.includes(normalizedStateSlug);
+**Lines to modify in `useAreaAgents.ts`:**
 
-// In Helmet:
-{shouldNoindex && <meta name="robots" content="noindex, nofollow" />}
-```
+1. **Fallback SELECT query (lines 182-206):** Add `get_to_know_me, description` fields
+2. **Fallback mapping (lines 236-268):** Add the three bio field mappings
+3. **Main SELECT query (lines 280-303):** Add `get_to_know_me, description` fields
+4. **Main mapping (lines 317-351):** Add the three bio field mappings
 
-### Pattern Consistency
+---
 
-Both files will use the same pattern as `CityLanding.tsx` (already implemented correctly):
-```typescript
-const indexableStates = ['arizona', 'california'];
-const shouldNoindex = !indexableStates.includes(stateSlugLower);
-```
+## Verification Plan
 
-### Verification
+After implementation:
+1. Navigate to /arizona/phoenix/85018/arcadia/top10realestateagents
+2. Verify agent cards show 3 buttons (From [Name], Reviews, News and Awards)
+3. Click "From [Name]" button and verify bio content displays
+4. Verify buttons are evenly spaced, not mashed together
+5. Run 5-page test per project rules
 
-After deployment, verify with curl:
-
-**Should have noindex:**
-```bash
-curl -s "https://www.top10lists.us/texas/houston/77002/downtown/top10realestateagents" | grep "noindex"
-curl -s "https://www.top10lists.us/florida" | grep "noindex"
-```
-
-**Should NOT have noindex:**
-```bash
-curl -s "https://www.top10lists.us/arizona/scottsdale/85255/grayhawk/top10realestateagents" | grep "noindex"
-curl -s "https://www.top10lists.us/california/los-angeles/90024/westwood/top10realestateagents" | grep "noindex"
-```
-
-### Future Maintenance
-
-When a state is fully enriched (ZIPs, writeups, nearby data complete), add it to the `INDEXABLE_STATES` array in both files.
