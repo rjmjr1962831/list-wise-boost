@@ -1271,7 +1271,7 @@ export const ProfessionalCard = ({
                       <div className="h-6 w-32 bg-muted animate-pulse rounded" />
                       <Loader2 className="h-4 w-4 animate-spin text-primary" />
                     </div>
-                  ) : license ? (
+                  ) : license && license.toLowerCase() !== 'not provided' ? (
                     <div className="flex flex-col gap-0.5">
                       {/* License number in neutral gray */}
                       <span className="text-sm text-gray-600 dark:text-gray-400 font-mono tracking-wide">
@@ -1323,8 +1323,27 @@ export const ProfessionalCard = ({
                 const dbYears = (professional as any).years_experience;
                 const yearsExperience = typeof dbYears === 'number' && dbYears > 0 ? dbYears : null;
                 
-                // Volume calculation
-                const volumeAllTime = toNum(statFromObj(agentStats, 'volumeAllTime'));
+                // Parse money strings like "$664K" or "$1.2M"
+                const parseMoneyString = (str: string | null | undefined): number | null => {
+                  if (!str || str === 'Not provided') return null;
+                  const cleaned = str.replace(/[$,]/g, '');
+                  const match = cleaned.match(/^([\d.]+)\s*([KMB])?$/i);
+                  if (!match) return null;
+                  const num = parseFloat(match[1]);
+                  if (!Number.isFinite(num)) return null;
+                  const suffix = (match[2] || '').toUpperCase();
+                  if (suffix === 'K') return num * 1000;
+                  if (suffix === 'M') return num * 1000000;
+                  if (suffix === 'B') return num * 1000000000;
+                  return num;
+                };
+
+                // Volume calculation with fallback chain
+                const volumeAllTime = toNum(statFromObj(agentStats, 'volumeAllTime')) 
+                  || toNum((professional as any).average_value_3yr)
+                  || parseMoneyString(agentStats?.avgListPrice)
+                  || parseMoneyString(agentStats?.avgSalePrice);
+                  
                 const formatVolume = (v: number | null) => {
                   if (v == null || v <= 0) return 'NA';
                   if (v >= 1000000000) return `$${(v / 1000000000).toFixed(1)}B`;
@@ -1333,9 +1352,9 @@ export const ProfessionalCard = ({
                   return `$${v.toLocaleString()}`;
                 };
 
-                // Support both Professional interface (rating/reviews) and raw DB fields (review_stars_rating/num_total_reviews)
-                const displayRating = professional.rating || (professional as any).review_stars_rating || 0;
-                const displayReviews = professional.reviews || (professional as any).num_total_reviews || 0;
+                // Prefer raw DB fields for consistency, fall back to Professional interface
+                const displayRating = (professional as any).review_stars_rating || professional.rating || 0;
+                const displayReviews = (professional as any).num_total_reviews || professional.reviews || 0;
 
                 return (
                   <div className="py-3 space-y-3">
@@ -2469,3 +2488,4 @@ export const ProfessionalCard = ({
     </Card>
   );
 };
+
