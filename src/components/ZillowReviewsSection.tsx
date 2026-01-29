@@ -190,15 +190,24 @@ export const ZillowReviewsSection = ({ zuid, agentName, market, lazyLoad = false
                   <p className="font-semibold text-sm" itemProp="author">
                     {review.reviewerName}
                   </p>
-                  {review.reviewDate && (
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(review.reviewDate).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </p>
-                  )}
+                  {review.reviewDate && (() => {
+                    const reviewDateObj = new Date(review.reviewDate);
+                    const now = new Date();
+                    const isOlderThanYear = (now.getTime() - reviewDateObj.getTime()) > 31536000000;
+                    return isOlderThanYear ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                        ✓ Verified Past Client
+                      </span>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        {reviewDateObj.toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </p>
+                    );
+                  })()}
                 </div>
                 <div className="flex gap-0.5">
                   {[...Array(5)].map((_, i) => (

@@ -993,15 +993,16 @@ export const ProfessionalCard = ({
                   if (allSpecialties.length === 0) return null;
                   
                   return (
-                    <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
+                    <div className="mt-3 flex flex-wrap gap-2 justify-center">
                       {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => (
-                        <span 
+                        <Badge 
                           key={idx} 
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.7rem] font-medium bg-muted text-muted-foreground"
+                          variant="secondary"
+                          className="px-2.5 py-0.5 text-[0.7rem] font-medium"
                           itemProp="knowsAbout"
                         >
                           {specialty}
-                        </span>
+                        </Badge>
                       ))}
                     </div>
                   );
@@ -1566,15 +1567,16 @@ export const ProfessionalCard = ({
                     if (allSpecialties.length === 0) return null;
                     
                     return (
-                      <div className="flex flex-wrap gap-1.5 justify-center">
+                      <div className="flex flex-wrap gap-2 justify-center">
                         {allSpecialties.slice(0, 5).map((specialty: string, idx: number) => (
-                          <span 
+                          <Badge 
                             key={idx} 
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.7rem] font-medium bg-muted text-muted-foreground"
+                            variant="secondary"
+                            className="px-2.5 py-0.5 text-[0.7rem] font-medium"
                             itemProp="knowsAbout"
                           >
                             {specialty}
-                          </span>
+                          </Badge>
                         ))}
                       </div>
                     );
