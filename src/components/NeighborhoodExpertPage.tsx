@@ -288,7 +288,7 @@ export function NeighborhoodExpertPage({
           </h2>
         </div>
         <p className="text-sm text-muted-foreground mb-4">
-          Editorially selected agents with verified activity in this area. This is not a ranking.
+          Agents selected and ordered based on our multi-layer verification process (Performance Data, Community Standing, Human Editorial Review).
         </p>
 
         {agentsLoading ? (
@@ -298,18 +298,19 @@ export function NeighborhoodExpertPage({
             ))}
           </div>
         ) : qualifiedAgents.length > 0 ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <ol className="grid gap-4 md:grid-cols-2 list-none p-0 m-0">
             {qualifiedAgents.map((agent) => (
-              <AgentBadge
-                key={agent.id}
-                professional={agent}
-                stateSlug={stateSlug}
-                citySlug={citySlug}
-                accentColor="turquoise"
-                isPaidExpert={false}
-              />
+              <li key={agent.id} className="list-none">
+                <AgentBadge
+                  professional={agent}
+                  stateSlug={stateSlug}
+                  citySlug={citySlug}
+                  accentColor="turquoise"
+                  isPaidExpert={false}
+                />
+              </li>
             ))}
-          </div>
+          </ol>
         ) : (
           <p className="text-sm text-muted-foreground py-4">
             No qualified agents with verified activity in {neighborhoodName} found yet.

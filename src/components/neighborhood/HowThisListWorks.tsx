@@ -51,7 +51,7 @@ export function HowThisListWorks({ neighborhoodName, hasNeighborhoodExpert, clas
             </div>
 
             <p>
-              <strong className="text-foreground">Placement is not rank-ordered.</strong> Neighborhood Experts appear in the order they joined, not by any scoring system.
+              <strong className="text-foreground">Multi-layer verification.</strong> All agents are selected and ordered based on our multi-layer verification process: Performance Data, Community Standing, and Human Editorial Review.
             </p>
             <p>
               <strong className="text-foreground">This list is intentionally curated.</strong> We keep the Top 10 curated for clarity and explainability, rather than showing hundreds of results.
