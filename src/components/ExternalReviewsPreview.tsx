@@ -26,9 +26,33 @@ function formatRelativeTime(dateString: string): string {
     return dateString;
   }
 }
+// Helper function to check if date is older than 12 months
+function isOlderThanYear(dateString: string): boolean {
+  try {
+    let date: Date;
+    if (dateString.includes('T')) {
+      date = new Date(dateString);
+    } else if (dateString.includes('/')) {
+      const datePart = dateString.split(' ')[0];
+      const [month, day, year] = datePart.split('/');
+      date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    } else {
+      return false;
+    }
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    return diffMs > 31536000000; // approx 1 year in ms
+  } catch {
+    return false;
+  }
+}
 
 // Helper function to format review dates without time
-function formatReviewDate(dateString: string): string {
+function formatReviewDate(dateString: string): string | null {
+  // If older than 12 months, return null to hide date
+  if (isOlderThanYear(dateString)) {
+    return null;
+  }
   try {
     // Handle ISO format (2024-07-28T11:59:00)
     if (dateString.includes('T')) {
@@ -55,7 +79,6 @@ function formatReviewDate(dateString: string): string {
     return dateString;
   }
 }
-
 // Helper function to parse review date for sorting
 function parseReviewDate(dateString?: string): number {
   if (!dateString) return 0;
@@ -183,9 +206,16 @@ export function ExternalReviewsPreview({
                     </div>
                   )}
                 </div>
-                {r.reviewDate && (
-                  <div className="text-xs text-muted-foreground mt-1">{formatReviewDate(r.reviewDate)}</div>
-                )}
+                {r.reviewDate && (() => {
+                  const formattedDate = formatReviewDate(r.reviewDate);
+                  return formattedDate ? (
+                    <div className="text-xs text-muted-foreground mt-1">{formattedDate}</div>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+                      ✓ Verified Past Client
+                    </span>
+                  );
+                })()}
                 <p 
                   className="mt-2 text-sm leading-relaxed"
                   style={!isOpen && needsExpansion ? {
