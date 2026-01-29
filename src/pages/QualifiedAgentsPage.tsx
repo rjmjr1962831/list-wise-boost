@@ -220,7 +220,7 @@ export default function QualifiedAgentsPage() {
                   <AgentBadge
                     key={agent.id}
                     professional={agent}
-                    stateSlug={stateSlug || ''}
+                    stateSlug={(agent as any).state_slug || stateSlug || ''}
                     citySlug={citySlug || ''}
                     accentColor="turquoise"
                     isPaidExpert={false}
