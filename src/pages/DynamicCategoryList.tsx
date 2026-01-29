@@ -1178,6 +1178,10 @@ export default function DynamicCategoryList({
     }
   };
 
+  // States that should be indexed (AZ and CA only - fully enriched)
+  const INDEXABLE_STATES = ['arizona', 'california'];
+  const shouldNoindex = !INDEXABLE_STATES.includes(city.state_slug);
+
   // Get city coordinates for geo tags
   const cityCoords = getCityCoordinates(city.slug);
   // Canonical URL includes neighborhood and ZIP if present
@@ -1285,7 +1289,7 @@ export default function DynamicCategoryList({
         {/* Primary Meta Tags */}
         <title>{seoTitle}</title>
         <meta name="description" content={seoDescription} />
-        <meta name="robots" content="noindex, follow" />
+        {shouldNoindex && <meta name="robots" content="noindex, nofollow" />}
         <link rel="canonical" href={canonicalUrl} />
         
         {/* Topic Hints for LLMs */}
