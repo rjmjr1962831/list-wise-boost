@@ -1,5 +1,5 @@
 import { VerifiedAgent, LicenseInfo, AggregatedRating, PlatformReview, Certification, Award, PressMention, DataSourceLog, VerifiedField } from '@/types/verifiedAgent';
-import { getCertificationInfo, DATA_SOURCES } from '@/config/dataSources';
+import { getCertificationInfo, DATA_SOURCES, getStateDRESource } from '@/config/dataSources';
 
 /**
  * Transform a Professional database record to VerifiedAgent format
@@ -13,6 +13,9 @@ export function professionalToVerifiedAgent(
 ): VerifiedAgent {
   const now = new Date().toISOString();
   
+  // Get state-specific DRE source
+  const stateDRE = getStateDRESource(stateAbbrev);
+  
   // Build license info
   const license: LicenseInfo = {
     licenseNumber: professional.license_number || 'N/A',
@@ -22,8 +25,8 @@ export function professionalToVerifiedAgent(
     issuedAt: professional.license_issued_at || professional.license_verified_at || now,
     expiresAt: professional.license_expires_at,
     verifiedAt: professional.license_verified_at || now,
-    verificationUrl: DATA_SOURCES.AZDRE.url,
-    verificationSource: DATA_SOURCES.AZDRE.name,
+    verificationUrl: stateDRE.url,
+    verificationSource: stateDRE.name,
   };
 
   // Build platform reviews from existing data
@@ -160,8 +163,8 @@ export function professionalToVerifiedAgent(
     }
     if (professional.license_verified_at) {
       dataSources.push({
-        sourceId: 'azdre',
-        sourceName: 'Arizona DRE',
+        sourceId: stateDRE.id,
+        sourceName: stateDRE.name,
         lastFetchedAt: professional.license_verified_at,
         fieldsUpdated: ['license_number', 'license_status'],
       });
