@@ -1,17 +1,76 @@
 import { DataSource } from '@/types/verifiedAgent';
 
 /**
- * All data sources used for agent verification
+ * State DRE/real estate commission data
  */
-export const DATA_SOURCES: Record<string, DataSource> = {
-  // Government Sources
-  AZDRE: {
+export const STATE_DRE_SOURCES: Record<string, DataSource> = {
+  AZ: {
     id: 'azdre',
     name: 'Arizona Department of Real Estate',
     url: 'https://services.azre.gov/publicdatabase/searchlicensee.aspx',
     type: 'government',
     logo: '/images/sources/azdre.png'
   },
+  CA: {
+    id: 'cadre',
+    name: 'California Department of Real Estate',
+    url: 'https://www2.dre.ca.gov/PublicASP/pplinfo.asp',
+    type: 'government',
+    logo: '/images/sources/cadre.png'
+  },
+  TX: {
+    id: 'trec',
+    name: 'Texas Real Estate Commission',
+    url: 'https://www.trec.texas.gov/apps/license-holder-search/',
+    type: 'government',
+    logo: '/images/sources/trec.png'
+  },
+  FL: {
+    id: 'fldbpr',
+    name: 'Florida DBPR',
+    url: 'https://www.myfloridalicense.com/wl11.asp',
+    type: 'government',
+    logo: '/images/sources/fldbpr.png'
+  },
+  NY: {
+    id: 'nydos',
+    name: 'NY Department of State',
+    url: 'https://appext20.dos.ny.gov/lcns_public/chk_load',
+    type: 'government',
+    logo: '/images/sources/nydos.png'
+  },
+  CO: {
+    id: 'codora',
+    name: 'Colorado DORA',
+    url: 'https://apps.colorado.gov/dora/licensing/Lookup/LicenseLookup.aspx',
+    type: 'government',
+    logo: '/images/sources/codora.png'
+  },
+};
+
+/**
+ * Get the appropriate state DRE source for a given state abbreviation
+ */
+export function getStateDRESource(stateAbbrev: string): DataSource {
+  const source = STATE_DRE_SOURCES[stateAbbrev.toUpperCase()];
+  if (source) return source;
+  
+  // Fallback for unknown states
+  return {
+    id: `${stateAbbrev.toLowerCase()}dre`,
+    name: `${stateAbbrev} Real Estate Commission`,
+    url: '#',
+    type: 'government',
+    logo: '/images/sources/default-dre.png'
+  };
+}
+
+/**
+ * All data sources used for agent verification
+ */
+export const DATA_SOURCES: Record<string, DataSource> = {
+  // Government Sources (legacy - use STATE_DRE_SOURCES for state-specific)
+  AZDRE: STATE_DRE_SOURCES.AZ,
   
   // Review Platforms
   GOOGLE: {
