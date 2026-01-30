@@ -76,7 +76,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  const verificationLabel = `Verification: Updated ${formatMonthYear(verificationUpdatedAt)}`;
+  const verificationLabel = `Updated ${formatMonthYear(verificationUpdatedAt)}`;
 
   const contact = useMemo(() => {
     return {
@@ -86,58 +86,28 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
     };
   }, [agent]);
 
-  const keyStats = useMemo(() => {
-    const tiles: { label: string; value: string }[] = [];
-
+  // Build headline summary from stats
+  const headlineSummary = useMemo(() => {
+    const parts: string[] = [];
+    
     const yearsActive = license?.originalIssueDate
       ? computeYearsActive(license.originalIssueDate)
       : null;
-
-    if (yearsActive) {
-      tiles.push({ label: "Years active", value: yearsActive.toString() });
+    
+    if (yearsActive && yearsActive > 0) {
+      parts.push(`${yearsActive} years of market experience`);
     }
-
-    if (agent.ratings?.average && agent.ratings?.count) {
-      tiles.push({
-        label: "Reviews",
-        value: `${agent.ratings.average.toFixed(1)} (${agent.ratings.count})`,
-      });
-    }
-
+    
     if (agent.agentSalesStats?.countAllTime) {
-      tiles.push({
-        label: "Transactions",
-        value: agent.agentSalesStats.countAllTime.toLocaleString(),
-      });
+      parts.push(`${agent.agentSalesStats.countAllTime.toLocaleString()} transactions`);
     }
-
-    if (agent.agentSalesStats?.countLastYear) {
-      tiles.push({
-        label: "Past 12 months",
-        value: agent.agentSalesStats.countLastYear.toLocaleString(),
-      });
+    
+    if (agent.ratings?.average && agent.ratings?.count) {
+      const stars = agent.ratings.average >= 4.8 ? "five-star" : `${agent.ratings.average.toFixed(1)}-star`;
+      parts.push(`${agent.ratings.count.toLocaleString()} ${stars} reviews`);
     }
-
-    if (agent.forSaleListings?.listing_count) {
-      tiles.push({
-        label: "Active listings",
-        value: agent.forSaleListings.listing_count.toLocaleString(),
-      });
-    }
-
-    if (
-      agent.agentSalesStats?.priceRangeThreeYearMin &&
-      agent.agentSalesStats?.priceRangeThreeYearMax &&
-      agent.agentSalesStats.priceRangeThreeYearMin > 0 &&
-      agent.agentSalesStats.priceRangeThreeYearMax > 0
-    ) {
-      tiles.push({
-        label: "3-year range",
-        value: `${formatCurrency(agent.agentSalesStats.priceRangeThreeYearMin)} – ${formatCurrency(agent.agentSalesStats.priceRangeThreeYearMax)}`,
-      });
-    }
-
-    return tiles.slice(0, 6);
+    
+    return parts.length > 0 ? parts.join(". ") + "." : null;
   }, [agent, license]);
 
   // Deduplicate specialties (case-insensitive), filter generic ones, limit to 8
@@ -160,15 +130,27 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
     return unique.slice(0, 8);
   }, [agent]);
 
+  // Extract first paragraph from synthesized bio for the summary card
+  const bioExcerpt = useMemo(() => {
+    if (!synthesizedBio) return null;
+    // Strip HTML tags and get first ~300 chars
+    const text = synthesizedBio.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (text.length <= 300) return text;
+    const cut = text.slice(0, 300);
+    const lastSpace = cut.lastIndexOf(' ');
+    return cut.slice(0, lastSpace) + '...';
+  }, [synthesizedBio]);
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="lg:grid lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-10">
-        {/* LEFT RAIL */}
+    <div className="mx-auto max-w-7xl px-4 py-6">
+      <div className="lg:grid lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-8">
+        {/* LEFT RAIL - Compact facts */}
         <aside className="lg:sticky lg:top-6 self-start">
           <Card className="p-4 space-y-4">
+            {/* Header with photo and name */}
             <header>
-              <div className="flex gap-4">
-                <div className="h-20 w-20 overflow-hidden rounded-xl border bg-slate-100 flex-shrink-0">
+              <div className="flex gap-3">
+                <div className="h-16 w-16 overflow-hidden rounded-lg border bg-slate-100 flex-shrink-0">
                   {isValidImageUrl(agent.profilePhotoSrc) ? (
                     <img
                       src={agent.profilePhotoSrc!}
@@ -177,97 +159,104 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
                     />
                   ) : (
                     <div className="h-full w-full flex items-center justify-center text-slate-400">
-                      <span className="text-2xl">{agent.name.charAt(0)}</span>
+                      <span className="text-xl font-medium">{agent.name.charAt(0)}</span>
                     </div>
                   )}
                 </div>
-                <div>
-                  <h1 className="text-lg font-semibold">{agent.name}</h1>
-                  {agent.businessName ? (
-                    <div className="text-sm text-slate-600">{agent.businessName}</div>
-                  ) : null}
-                  <span className="mt-2 inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-700">
-                    {verificationLabel}
+                <div className="min-w-0">
+                  <h1 className="text-base font-semibold leading-tight truncate">{agent.name}</h1>
+                  {agent.businessName && (
+                    <div className="text-xs text-slate-600 truncate">{agent.businessName}</div>
+                  )}
+                  <span className="mt-1 inline-flex rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] text-emerald-700 font-medium">
+                    Verified {verificationLabel}
                   </span>
                 </div>
               </div>
             </header>
 
-            {keyStats.length > 0 && (
-              <>
-                <Separator />
-                <div className="grid grid-cols-2 gap-2">
-                  {keyStats.map((t) => (
-                    <div key={t.label} className="rounded-lg border px-3 py-2">
-                      <div className="text-[11px] uppercase text-slate-500">{t.label}</div>
-                      <div className="text-sm font-semibold">{t.value}</div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-
+            {/* Contact */}
             {(contact.phone || contact.email || contact.website) && (
               <>
                 <Separator />
-                <SectionTitle title="Contact" />
-                <div className="space-y-2">
+                <div className="space-y-1.5">
+                  <SectionTitle title="Contact" />
                   {contact.phone && <InfoRow label="Phone" value={contact.phone} />}
                   {contact.email && <InfoRow label="Email" value={contact.email} />}
-                  {contact.website && (
-                    <InfoRow label="Website" value={prettyDomain(contact.website)} />
-                  )}
+                  {contact.website && <InfoRow label="Web" value={prettyDomain(contact.website)} />}
                 </div>
               </>
             )}
 
+            {/* License */}
             {license && (
               <>
                 <Separator />
-                <SectionTitle title="License" />
-                <div className="space-y-2">
+                <div className="space-y-1.5">
+                  <SectionTitle title="License" />
                   <InfoRow label="Number" value={license.licenseNumber} />
                   {license.licenseType && <InfoRow label="Type" value={license.licenseType} />}
-                  {license.originalIssueDate && (
-                    <InfoRow label="Originally issued" value={formatDateShort(license.originalIssueDate)} />
-                  )}
                   <InfoRow label="Verified by" value={license.agencyName} />
                 </div>
               </>
             )}
 
+            {/* Specialties */}
             {specialties.length > 0 && (
               <>
                 <Separator />
-                <SectionTitle title="Specialties" />
-                <div className="flex flex-wrap gap-2">
-                  {specialties.map((s) => (
-                    <span key={s} className="rounded-full border px-2.5 py-0.5 text-xs">
-                      {s}
-                    </span>
-                  ))}
+                <div className="space-y-2">
+                  <SectionTitle title="Specialties" />
+                  <div className="flex flex-wrap gap-1.5">
+                    {specialties.map((s) => (
+                      <span key={s} className="rounded border px-2 py-0.5 text-[11px] bg-slate-50">
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </>
             )}
           </Card>
         </aside>
 
-        {/* RIGHT COLUMN */}
+        {/* RIGHT COLUMN - Stacked dossier */}
         <main className="space-y-4 mt-6 lg:mt-0">
-          {/* About section - from get_to_know_me (agent's own words) */}
-          {getToKnowMe && (
-            <DetailsSection id="about" title={`About ${agent.name}`} defaultOpen>
-              <div
-                className="prose prose-sm max-w-none text-slate-700"
-                dangerouslySetInnerHTML={{ __html: getToKnowMe }}
-              />
-            </DetailsSection>
-          )}
+          
+          {/* 1. Recommendation Summary Card - Always visible, dense */}
+          <Card className="p-5 border-l-4 border-l-primary">
+            <div className="space-y-3">
+              <div className="flex items-start justify-between gap-4">
+                <h2 className="text-sm font-semibold text-slate-900">
+                  Why Top10Lists Recommends This Agent
+                </h2>
+                <span className="text-[10px] text-slate-500 whitespace-nowrap">
+                  Based on verified data
+                </span>
+              </div>
+              
+              {/* Headline stats */}
+              {headlineSummary && (
+                <p className="text-sm font-medium text-slate-800">
+                  {headlineSummary}
+                </p>
+              )}
+              
+              {/* Bio excerpt */}
+              {bioExcerpt && (
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  {bioExcerpt}
+                </p>
+              )}
+              
+              {/* Evidence tiles - compact row */}
+              <EvidenceTiles agent={agent} license={license} />
+            </div>
+          </Card>
 
-          {/* Why Top10Lists Recommends - from synthesized_bio */}
-          {/* Auto-expand if there's no About section */}
+          {/* 2. Professional Track Record - Open by default */}
           {synthesizedBio && (
-            <DetailsSection id="synthesis" title="Why Top10Lists Recommends This Agent" defaultOpen={!getToKnowMe}>
+            <DetailsSection id="track-record" title="Professional Track Record" defaultOpen>
               <div
                 className="prose prose-sm max-w-none text-slate-700"
                 dangerouslySetInnerHTML={{ __html: synthesizedBio }}
@@ -275,9 +264,19 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
             </DetailsSection>
           )}
 
-          {/* Selected Reviews */}
+          {/* 3. In Their Own Words (get_to_know_me) - Collapsed */}
+          {getToKnowMe && (
+            <DetailsSection id="about" title="In Their Own Words">
+              <div
+                className="prose prose-sm max-w-none text-slate-700"
+                dangerouslySetInnerHTML={{ __html: getToKnowMe }}
+              />
+            </DetailsSection>
+          )}
+
+          {/* 4. Selected Client Feedback - Collapsed */}
           {props.selectedReviews && props.selectedReviews.length > 0 && (
-            <DetailsSection id="reviews" title="Selected client feedback">
+            <DetailsSection id="reviews" title="Selected Client Feedback">
               <ReviewList reviews={props.selectedReviews} />
             </DetailsSection>
           )}
@@ -288,18 +287,63 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
 }
 
 /* -------------------------------------------------
+   Evidence Tiles - Compact stats row
+-------------------------------------------------- */
+
+function EvidenceTiles({ agent, license }: { agent: Memo23Agent; license?: StateLicense | null }) {
+  const tiles: { label: string; value: string }[] = [];
+
+  const yearsActive = license?.originalIssueDate
+    ? computeYearsActive(license.originalIssueDate)
+    : null;
+
+  if (agent.agentSalesStats?.countAllTime) {
+    tiles.push({ label: "Transactions", value: agent.agentSalesStats.countAllTime.toLocaleString() });
+  }
+
+  if (agent.ratings?.count) {
+    tiles.push({ label: "Reviews", value: agent.ratings.count.toLocaleString() });
+  }
+
+  if (yearsActive && yearsActive > 0) {
+    tiles.push({ label: "Years", value: yearsActive.toString() });
+  }
+
+  if (agent.agentSalesStats?.countLastYear) {
+    tiles.push({ label: "Last 12mo", value: agent.agentSalesStats.countLastYear.toLocaleString() });
+  }
+
+  if (agent.forSaleListings?.listing_count) {
+    tiles.push({ label: "Active", value: agent.forSaleListings.listing_count.toLocaleString() });
+  }
+
+  if (tiles.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-3 pt-2 border-t border-slate-100">
+      {tiles.slice(0, 5).map((t) => (
+        <div key={t.label} className="text-center">
+          <div className="text-lg font-semibold text-slate-900">{t.value}</div>
+          <div className="text-[10px] uppercase text-slate-500">{t.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* -------------------------------------------------
    Subcomponents
 -------------------------------------------------- */
 
 function SectionTitle({ title }: { title: string }) {
-  return <div className="text-xs font-semibold uppercase text-slate-700">{title}</div>;
+  return <div className="text-[10px] font-semibold uppercase text-slate-500 tracking-wide">{title}</div>;
 }
 
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div>
-      <div className="text-[11px] uppercase text-slate-500">{label}</div>
-      <div className="text-sm break-words">{value}</div>
+    <div className="flex justify-between gap-2 text-xs">
+      <span className="text-slate-500">{label}</span>
+      <span className="text-slate-900 font-medium text-right break-words">{value}</span>
     </div>
   );
 }
@@ -317,26 +361,31 @@ function DetailsSection({
 }) {
   return (
     <section id={id}>
-      <Card className="p-4">
-        <details open={defaultOpen}>
-          <summary className="cursor-pointer text-sm font-semibold list-none">
-            <span className="inline-block mr-2 transition-transform details-marker">▶</span>
-            {title}
+      <Card className="overflow-hidden">
+        <details open={defaultOpen} className="group">
+          <summary className="cursor-pointer px-5 py-3 bg-slate-50 hover:bg-slate-100 transition-colors flex items-center justify-between list-none">
+            <span className="text-sm font-semibold text-slate-800">{title}</span>
+            <span className="text-slate-400 group-open:rotate-180 transition-transform">
+              <ChevronIcon />
+            </span>
           </summary>
-          <div className="mt-3">{children}</div>
+          <div className="px-5 py-4">{children}</div>
         </details>
       </Card>
-      <style>{`
-        details[open] .details-marker {
-          transform: rotate(90deg);
-        }
-      `}</style>
     </section>
   );
 }
 
+function ChevronIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M4 6L8 10L12 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
 /* -------------------------------------------------
-   ReviewList with stale-date logic
+   ReviewList
 -------------------------------------------------- */
 
 function ReviewList({ reviews }: { reviews: Review[] }) {
@@ -353,18 +402,18 @@ function ReviewList({ reviews }: { reviews: Review[] }) {
       {reviews.slice(0, 6).map((r, i) => {
         const isOld = r.createdAt && isOlderThanOneYear(r.createdAt);
         return (
-          <div key={i} className="rounded-lg border p-3">
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              {r.rating ? <span>Rating: {r.rating}</span> : null}
+          <div key={i} className="rounded-lg border p-3 bg-slate-50">
+            <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
+              {r.rating && <span className="font-medium">★ {r.rating}</span>}
               {isOld ? (
-                <span className="rounded-sm bg-slate-100 px-1.5 py-0.5 text-[10px]">
+                <span className="rounded bg-slate-200 px-1.5 py-0.5 text-[10px]">
                   Verified Past Client
                 </span>
               ) : r.createdAt ? (
                 <span>{formatDateShort(r.createdAt)}</span>
               ) : null}
             </div>
-            <div className="mt-1 text-sm">{r.text}</div>
+            <div className="text-sm text-slate-700 leading-relaxed">{r.text}</div>
           </div>
         );
       })}
@@ -379,11 +428,9 @@ function ReviewList({ reviews }: { reviews: Review[] }) {
 function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   const lower = url.toLowerCase();
-  // Reject non-image URLs
   if (lower.includes('youtube.com') || lower.includes('youtu.be')) return false;
   if (lower.includes('facebook.com') || lower.includes('twitter.com')) return false;
   if (lower.includes('linkedin.com') || lower.includes('instagram.com')) return false;
-  // Must look like an image or a CDN URL
   const hasImageExt = /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url);
   const isZillowCdn = url.includes('zillowstatic.com') || url.includes('photos.zillowstatic.com');
   const isCloudinary = url.includes('cloudinary.com');
