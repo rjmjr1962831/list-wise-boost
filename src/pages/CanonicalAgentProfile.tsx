@@ -65,6 +65,9 @@ interface DBProfessional {
   canonical_slug: string | null;
   state_slug: string | null;
   served_cities: string[] | null;
+  // Profile enhancement fields
+  selection_rationale: string | null;
+  community_roles: any | null;
 }
 
 interface City {
@@ -158,6 +161,55 @@ function extractReviews(dbProf: DBProfessional): Review[] {
     rating: r.rating,
     createdAt: r.createDate || r.createdAt,
   }));
+}
+
+// Extract press mentions as string array
+function extractPressMentions(pressMentions: any): string[] | null {
+  if (!pressMentions || !Array.isArray(pressMentions)) return null;
+  return pressMentions
+    .filter((p: any) => p.source)
+    .map((p: any) => p.source)
+    .slice(0, 5);
+}
+
+// Extract certifications from verified or raw data
+function extractCertifications(certs: any, certsVerified: any): string[] | null {
+  // Prefer verified certifications
+  if (certsVerified && Array.isArray(certsVerified) && certsVerified.length > 0) {
+    return certsVerified.map((c: any) => typeof c === 'string' ? c : c.name || c.title).slice(0, 8);
+  }
+  // Fall back to raw certifications
+  if (certs && Array.isArray(certs) && certs.length > 0) {
+    return certs.map((c: any) => typeof c === 'string' ? c : c.name || c.title).slice(0, 8);
+  }
+  return null;
+}
+
+// Extract awards from verified awards and notable achievements
+function extractAwards(awardsVerified: any, notableAchievements: any): string[] | null {
+  const awards: string[] = [];
+  
+  // Add verified awards
+  if (awardsVerified && Array.isArray(awardsVerified)) {
+    awardsVerified.forEach((a: any) => {
+      const title = typeof a === 'string' ? a : a.title || a.name;
+      if (title) awards.push(title);
+    });
+  }
+  
+  // Add notable achievements that look like awards (high credibility)
+  if (notableAchievements && Array.isArray(notableAchievements)) {
+    notableAchievements
+      .filter((a: any) => a.credibility >= 7 && a.title)
+      .forEach((a: any) => {
+        // Avoid duplicates
+        if (!awards.some(existing => existing.toLowerCase() === a.title.toLowerCase())) {
+          awards.push(a.title);
+        }
+      });
+  }
+  
+  return awards.length > 0 ? awards.slice(0, 6) : null;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -442,6 +494,10 @@ export default function CanonicalAgentProfile() {
         verificationUpdatedAt={new Date(rawDbProf.updated_at || rawDbProf.created_at)}
         getToKnowMe={rawDbProf.get_to_know_me}
         synthesizedBio={rawDbProf.synthesized_bio}
+        selectionRationale={rawDbProf.selection_rationale}
+        pressMentions={extractPressMentions(rawDbProf.press_mentions)}
+        certifications={extractCertifications(rawDbProf.certifications, rawDbProf.certifications_verified)}
+        awards={extractAwards(rawDbProf.awards_verified, rawDbProf.notable_achievements)}
         selectedReviews={selectedReviews}
       />
 
@@ -472,3 +528,4 @@ export default function CanonicalAgentProfile() {
     </>
   );
 }
+
