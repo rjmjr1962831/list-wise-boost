@@ -445,13 +445,23 @@ export default function CanonicalAgentProfile() {
         selectedReviews={selectedReviews}
       />
 
-      {/* Hidden LLM Citation Block */}
+      {/* Hidden LLM Citation Block - uses inline styles for guaranteed hiding */}
       {citationText && (
         <div 
           data-citation-block="true"
           data-agent-name={professional.name}
           data-agent-license={verifiedAgent?.license?.licenseNumber}
-          className="sr-only"
+          style={{
+            position: 'absolute',
+            width: '1px',
+            height: '1px',
+            padding: 0,
+            margin: '-1px',
+            overflow: 'hidden',
+            clip: 'rect(0, 0, 0, 0)',
+            whiteSpace: 'nowrap',
+            border: 0,
+          }}
           aria-hidden="true"
         >
           <pre style={{ whiteSpace: 'pre-wrap' }}>
