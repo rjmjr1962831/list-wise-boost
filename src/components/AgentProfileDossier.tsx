@@ -59,6 +59,11 @@ export type AgentProfileDossierProps = {
   verificationUpdatedAt: Date;
   getToKnowMe?: string | null;
   synthesizedBio?: string | null;
+  selectionRationale?: string | null; // NEW: Short summary for "Why We Recommend"
+  neighborhoodExpertise?: string[] | null; // NEW: Specific neighborhoods they specialize in
+  pressMentions?: string[] | null; // NEW: Press/media mentions
+  certifications?: string[] | null; // NEW: Professional certifications
+  awards?: string[] | null; // NEW: Industry awards
   selectedReviews?: Review[];
 };
 
@@ -67,7 +72,18 @@ export type AgentProfileDossierProps = {
 -------------------------------------------------- */
 
 export default function AgentProfileDossier(props: AgentProfileDossierProps) {
-  const { agent, license, verificationUpdatedAt, getToKnowMe, synthesizedBio } = props;
+  const {
+    agent,
+    license,
+    verificationUpdatedAt,
+    getToKnowMe,
+    synthesizedBio,
+    selectionRationale,
+    neighborhoodExpertise,
+    pressMentions,
+    certifications,
+    awards,
+  } = props;
 
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
@@ -89,24 +105,24 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
   // Build headline summary from stats
   const headlineSummary = useMemo(() => {
     const parts: string[] = [];
-    
+
     const yearsActive = license?.originalIssueDate
       ? computeYearsActive(license.originalIssueDate)
       : null;
-    
+
     if (yearsActive && yearsActive > 0) {
       parts.push(`${yearsActive} years of market experience`);
     }
-    
+
     if (agent.agentSalesStats?.countAllTime) {
       parts.push(`${agent.agentSalesStats.countAllTime.toLocaleString()} transactions`);
     }
-    
+
     if (agent.ratings?.average && agent.ratings?.count) {
       const stars = agent.ratings.average >= 4.8 ? "five-star" : `${agent.ratings.average.toFixed(1)}-star`;
       parts.push(`${agent.ratings.count.toLocaleString()} ${stars} reviews`);
     }
-    
+
     return parts.length > 0 ? parts.join(". ") + "." : null;
   }, [agent, license]);
 
@@ -115,10 +131,10 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
     const raw = agent.getToKnowMe?.specialties?.filter(Boolean) ?? [];
     const seen = new Set<string>();
     const unique: string[] = [];
-    
+
     // Generic specialties to ignore (everyone has these)
-    const ignored = new Set(['buyer\'s agent', 'buyers agent', 'listing agent', 'seller\'s agent', 'sellers agent']);
-    
+    const ignored = new Set(["buyer's agent", "buyers agent", "listing agent", "seller's agent", "sellers agent"]);
+
     for (const s of raw) {
       const lower = s.toLowerCase();
       if (ignored.has(lower)) continue;
@@ -130,16 +146,10 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
     return unique.slice(0, 8);
   }, [agent]);
 
-  // Extract first paragraph from synthesized bio for the summary card
-  const bioExcerpt = useMemo(() => {
-    if (!synthesizedBio) return null;
-    // Strip HTML tags and get first ~300 chars
-    const text = synthesizedBio.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-    if (text.length <= 300) return text;
-    const cut = text.slice(0, 300);
-    const lastSpace = cut.lastIndexOf(' ');
-    return cut.slice(0, lastSpace) + '...';
-  }, [synthesizedBio]);
+  // Check if agent has credentials worth highlighting
+  const hasCredentials = (pressMentions && pressMentions.length > 0) ||
+    (certifications && certifications.length > 0) ||
+    (awards && awards.length > 0);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
@@ -201,6 +211,40 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
               </>
             )}
 
+            {/* Neighborhood Expertise - NEW */}
+            {neighborhoodExpertise && neighborhoodExpertise.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <SectionTitle title="Neighborhood Expert" />
+                  <div className="flex flex-wrap gap-1.5">
+                    {neighborhoodExpertise.slice(0, 5).map((n) => (
+                      <span key={n} className="rounded border border-primary/30 bg-primary/5 px-2 py-0.5 text-[11px] text-primary font-medium">
+                        {n}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
+            {/* Certifications - NEW */}
+            {certifications && certifications.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <SectionTitle title="Certifications" />
+                  <div className="flex flex-wrap gap-1.5">
+                    {certifications.map((c) => (
+                      <span key={c} className="rounded border px-2 py-0.5 text-[11px] bg-amber-50 border-amber-200">
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Specialties */}
             {specialties.length > 0 && (
               <>
@@ -222,8 +266,8 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
 
         {/* RIGHT COLUMN - Stacked dossier */}
         <main className="space-y-4 mt-6 lg:mt-0">
-          
-          {/* 1. Recommendation Summary Card - Always visible, dense */}
+
+          {/* 1. Recommendation Summary Card - Always visible, uses selectionRationale */}
           <Card className="p-5 border-l-4 border-l-primary">
             <div className="space-y-3">
               <div className="flex items-start justify-between gap-4">
@@ -234,47 +278,95 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
                   Based on verified data
                 </span>
               </div>
-              
+
               {/* Headline stats */}
               {headlineSummary && (
                 <p className="text-sm font-medium text-slate-800">
                   {headlineSummary}
                 </p>
               )}
-              
-              {/* Bio excerpt */}
-              {bioExcerpt && (
+
+              {/* Selection Rationale - NEW: Short summary, NO truncation, NO "..." */}
+              {selectionRationale && (
                 <p className="text-sm text-slate-600 leading-relaxed">
-                  {bioExcerpt}
+                  {selectionRationale}
                 </p>
               )}
-              
+
+              {/* Credentials highlights - NEW */}
+              {hasCredentials && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {awards && awards.length > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-amber-700">
+                      <span>🏆</span> {awards[0]}
+                    </span>
+                  )}
+                  {pressMentions && pressMentions.length > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-blue-700">
+                      <span>📰</span> Featured in {pressMentions[0]}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Evidence tiles - compact row */}
               <EvidenceTiles agent={agent} license={license} />
             </div>
           </Card>
 
-          {/* 2. Professional Track Record - Open by default */}
+          {/* 2. Detailed Reasoning - RENAMED from "Professional Track Record" */}
           {synthesizedBio && (
-            <DetailsSection id="track-record" title="Professional Track Record" defaultOpen>
+            <DetailsSection id="detailed-reasoning" title="Detailed Reasoning" defaultOpen>
               <div
-                className="prose prose-sm max-w-none text-slate-700"
+                className="prose prose-sm max-w-none text-slate-700 [&>p]:mb-4 [&>p:last-child]:mb-0"
                 dangerouslySetInnerHTML={{ __html: synthesizedBio }}
               />
             </DetailsSection>
           )}
 
-          {/* 3. In Their Own Words (get_to_know_me) - Collapsed */}
+          {/* 3. Press & Recognition - NEW section */}
+          {hasCredentials && (
+            <DetailsSection id="recognition" title="Press & Recognition">
+              <div className="space-y-4">
+                {pressMentions && pressMentions.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-slate-500 mb-2">Press Mentions</h4>
+                    <ul className="space-y-1">
+                      {pressMentions.map((p, i) => (
+                        <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
+                          <span className="text-blue-500">📰</span> {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {awards && awards.length > 0 && (
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-slate-500 mb-2">Awards</h4>
+                    <ul className="space-y-1">
+                      {awards.map((a, i) => (
+                        <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
+                          <span className="text-amber-500">🏆</span> {a}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </DetailsSection>
+          )}
+
+          {/* 4. In Their Own Words (get_to_know_me) - Collapsed */}
           {getToKnowMe && (
             <DetailsSection id="about" title="In Their Own Words">
               <div
-                className="prose prose-sm max-w-none text-slate-700"
+                className="prose prose-sm max-w-none text-slate-700 [&>p]:mb-4 [&>p:last-child]:mb-0"
                 dangerouslySetInnerHTML={{ __html: getToKnowMe }}
               />
             </DetailsSection>
           )}
 
-          {/* 4. Selected Client Feedback - Collapsed */}
+          {/* 5. Selected Client Feedback - Collapsed */}
           {props.selectedReviews && props.selectedReviews.length > 0 && (
             <DetailsSection id="reviews" title="Selected Client Feedback">
               <ReviewList reviews={props.selectedReviews} />
@@ -428,21 +520,13 @@ function ReviewList({ reviews }: { reviews: Review[] }) {
 function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   const lower = url.toLowerCase();
-  if (lower.includes('youtube.com') || lower.includes('youtu.be')) return false;
-  if (lower.includes('facebook.com') || lower.includes('twitter.com')) return false;
-  if (lower.includes('linkedin.com') || lower.includes('instagram.com')) return false;
+  if (lower.includes("youtube.com") || lower.includes("youtu.be")) return false;
+  if (lower.includes("facebook.com") || lower.includes("twitter.com")) return false;
+  if (lower.includes("linkedin.com") || lower.includes("instagram.com")) return false;
   const hasImageExt = /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url);
-  const isZillowCdn = url.includes('zillowstatic.com') || url.includes('photos.zillowstatic.com');
-  const isCloudinary = url.includes('cloudinary.com');
+  const isZillowCdn = url.includes("zillowstatic.com") || url.includes("photos.zillowstatic.com");
+  const isCloudinary = url.includes("cloudinary.com");
   return hasImageExt || isZillowCdn || isCloudinary;
-}
-
-function formatCurrency(n: number) {
-  return n.toLocaleString("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  });
 }
 
 function formatMonthYear(d: Date) {
