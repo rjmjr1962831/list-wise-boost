@@ -3,7 +3,7 @@ import { useParams, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Helmet } from 'react-helmet-async';
 import { Loader2 } from 'lucide-react';
-import { ProfessionalCard } from '@/components/ProfessionalCard';
+import AgentProfileDossier, { Memo23Agent, StateLicense, Review } from '@/components/AgentProfileDossier';
 import { Professional } from '@/types/professional';
 import { generateAgentProfileSchema, professionalToSchemaData } from '@/utils/agentSchema';
 import { generateVerifiedAgentSchema, generateCitationText } from '@/utils/verifiedAgentSchema';
@@ -80,6 +80,84 @@ interface Category {
   name: string;
   plural_name: string;
   slug: string;
+}
+
+// Convert DB professional to Memo23Agent format for the dossier component
+function convertToMemo23Agent(dbProf: DBProfessional): Memo23Agent {
+  const ratingsObj = dbProf.ratings as any;
+  const agentSalesStats = dbProf.agent_sales_stats as any;
+
+  return {
+    name: dbProf.name,
+    businessName: dbProf.company,
+    profilePhotoSrc: getValidImageUrl(dbProf.image_url),
+    email: dbProf.email,
+    phoneNumbers: {
+      cell: dbProf.phone,
+      business: null,
+    },
+    ratings: ratingsObj ? {
+      average: ratingsObj.average || dbProf.review_stars_rating,
+      count: ratingsObj.count || dbProf.num_total_reviews,
+    } : {
+      average: dbProf.review_stars_rating,
+      count: dbProf.num_total_reviews,
+    },
+    agentSalesStats: agentSalesStats ? {
+      countAllTime: agentSalesStats.countAllTime || dbProf.total_sales,
+      countLastYear: agentSalesStats.countLastYear,
+      priceRangeThreeYearMin: agentSalesStats.priceRangeThreeYearMin,
+      priceRangeThreeYearMax: agentSalesStats.priceRangeThreeYearMax,
+      averageValueThreeYear: agentSalesStats.averageValueThreeYear,
+    } : {
+      countAllTime: dbProf.total_sales,
+      countLastYear: null,
+      priceRangeThreeYearMin: null,
+      priceRangeThreeYearMax: null,
+      averageValueThreeYear: null,
+    },
+    forSaleListings: {
+      listing_count: dbProf.current_listings,
+    },
+    getToKnowMe: {
+      description: dbProf.get_to_know_me,
+      specialties: dbProf.specialty,
+      websiteUrl: dbProf.website,
+    },
+  };
+}
+
+// Convert DB professional to license info
+function convertToLicense(dbProf: DBProfessional, stateName: string): StateLicense | null {
+  if (!dbProf.license_number) return null;
+  
+  const agencyNames: Record<string, string> = {
+    'Arizona': 'Arizona Dept. of Real Estate',
+    'California': 'California DRE',
+    'Texas': 'Texas Real Estate Commission',
+    'Florida': 'Florida DBPR',
+    'New York': 'NY Dept. of State',
+    'Colorado': 'Colorado DORA',
+  };
+
+  return {
+    licenseNumber: dbProf.license_number,
+    licenseType: dbProf.license_type,
+    originalIssueDate: dbProf.license_issued_at,
+    agencyName: agencyNames[stateName] || `${stateName} Real Estate Commission`,
+  };
+}
+
+// Extract reviews from platform_reviews
+function extractReviews(dbProf: DBProfessional): Review[] {
+  const platformReviews = dbProf.platform_reviews as any;
+  if (!platformReviews?.reviews) return [];
+
+  return platformReviews.reviews.slice(0, 6).map((r: any) => ({
+    text: r.reviewComment || r.text || '',
+    rating: r.rating,
+    createdAt: r.createDate || r.createdAt,
+  }));
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -286,7 +364,7 @@ export default function CanonicalAgentProfile() {
     );
   }
 
-  if (notFound || !professional || !city || !category) {
+  if (notFound || !professional || !city || !category || !rawDbProf) {
     return <Navigate to="/404" replace />;
   }
 
@@ -308,8 +386,10 @@ export default function CanonicalAgentProfile() {
   const verifiedSchema = verifiedAgent ? generateVerifiedAgentSchema(verifiedAgent) : null;
   const citationText = verifiedAgent ? generateCitationText(verifiedAgent) : null;
 
-  // Get state abbreviation for display
-  const stateAbbrev = city.state === 'Arizona' ? 'AZ' : city.state.substring(0, 2).toUpperCase();
+  // Convert data for AgentProfileDossier
+  const memo23Agent = convertToMemo23Agent(rawDbProf);
+  const licenseInfo = convertToLicense(rawDbProf, city.state);
+  const selectedReviews = extractReviews(rawDbProf);
 
   return (
     <>
@@ -340,9 +420,9 @@ export default function CanonicalAgentProfile() {
         )}
       </Helmet>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Breadcrumbs - Updated for canonical structure */}
-        <nav className="mb-6 text-sm text-muted-foreground">
+      {/* Breadcrumbs */}
+      <div className="container mx-auto px-4 pt-6 max-w-6xl">
+        <nav className="mb-2 text-sm text-muted-foreground">
           <ol className="flex items-center space-x-2">
             <li><a href="/" className="hover:text-foreground">Home</a></li>
             <li>/</li>
@@ -353,34 +433,32 @@ export default function CanonicalAgentProfile() {
             <li className="text-foreground">{professional.name}</li>
           </ol>
         </nav>
-
-        {/* Main Profile Card */}
-        <ProfessionalCard
-          professional={professional}
-          accentColor="primary"
-          schemaType="RealEstateAgent"
-          market={`${city.name}, ${city.state}`}
-          stateAbbr={stateAbbrev}
-          citySlug={city.slug}
-          categorySlug={category.slug}
-          quizCompleted={true}
-        />
-
-        {/* Hidden LLM Citation Block */}
-        {citationText && (
-          <div 
-            data-citation-block="true"
-            data-agent-name={professional.name}
-            data-agent-license={verifiedAgent?.license?.licenseNumber}
-            className="sr-only"
-            aria-hidden="true"
-          >
-            <pre style={{ whiteSpace: 'pre-wrap' }}>
-              {citationText}
-            </pre>
-          </div>
-        )}
       </div>
+
+      {/* New AgentProfileDossier Component */}
+      <AgentProfileDossier
+        agent={memo23Agent}
+        license={licenseInfo}
+        verificationUpdatedAt={new Date(rawDbProf.updated_at || rawDbProf.created_at)}
+        getToKnowMe={rawDbProf.get_to_know_me}
+        synthesizedBio={rawDbProf.synthesized_bio}
+        selectedReviews={selectedReviews}
+      />
+
+      {/* Hidden LLM Citation Block */}
+      {citationText && (
+        <div 
+          data-citation-block="true"
+          data-agent-name={professional.name}
+          data-agent-license={verifiedAgent?.license?.licenseNumber}
+          className="sr-only"
+          aria-hidden="true"
+        >
+          <pre style={{ whiteSpace: 'pre-wrap' }}>
+            {citationText}
+          </pre>
+        </div>
+      )}
     </>
   );
 }
