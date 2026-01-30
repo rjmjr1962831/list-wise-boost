@@ -140,13 +140,18 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
     return tiles.slice(0, 6);
   }, [agent, license]);
 
-  // Deduplicate specialties (case-insensitive) and limit to 8
+  // Deduplicate specialties (case-insensitive), filter generic ones, limit to 8
   const specialties = useMemo(() => {
     const raw = agent.getToKnowMe?.specialties?.filter(Boolean) ?? [];
     const seen = new Set<string>();
     const unique: string[] = [];
+    
+    // Generic specialties to ignore (everyone has these)
+    const ignored = new Set(['buyer\'s agent', 'buyers agent', 'listing agent', 'seller\'s agent', 'sellers agent']);
+    
     for (const s of raw) {
       const lower = s.toLowerCase();
+      if (ignored.has(lower)) continue;
       if (!seen.has(lower)) {
         seen.add(lower);
         unique.push(s);
