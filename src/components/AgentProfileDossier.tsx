@@ -140,7 +140,20 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
     return tiles.slice(0, 6);
   }, [agent, license]);
 
-  const specialties = agent.getToKnowMe?.specialties?.filter(Boolean) ?? [];
+  // Deduplicate specialties (case-insensitive) and limit to 8
+  const specialties = useMemo(() => {
+    const raw = agent.getToKnowMe?.specialties?.filter(Boolean) ?? [];
+    const seen = new Set<string>();
+    const unique: string[] = [];
+    for (const s of raw) {
+      const lower = s.toLowerCase();
+      if (!seen.has(lower)) {
+        seen.add(lower);
+        unique.push(s);
+      }
+    }
+    return unique.slice(0, 8);
+  }, [agent]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -151,9 +164,9 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
             <header>
               <div className="flex gap-4">
                 <div className="h-20 w-20 overflow-hidden rounded-xl border bg-slate-100 flex-shrink-0">
-                  {agent.profilePhotoSrc ? (
+                  {isValidImageUrl(agent.profilePhotoSrc) ? (
                     <img
-                      src={agent.profilePhotoSrc}
+                      src={agent.profilePhotoSrc!}
                       alt={agent.name}
                       className="h-full w-full object-cover"
                     />
@@ -247,8 +260,9 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
           )}
 
           {/* Why Top10Lists Recommends - from synthesized_bio */}
+          {/* Auto-expand if there's no About section */}
           {synthesizedBio && (
-            <DetailsSection id="synthesis" title="Why Top10Lists Recommends This Agent">
+            <DetailsSection id="synthesis" title="Why Top10Lists Recommends This Agent" defaultOpen={!getToKnowMe}>
               <div
                 className="prose prose-sm max-w-none text-slate-700"
                 dangerouslySetInnerHTML={{ __html: synthesizedBio }}
@@ -356,6 +370,20 @@ function ReviewList({ reviews }: { reviews: Review[] }) {
 /* -------------------------------------------------
    Helpers
 -------------------------------------------------- */
+
+function isValidImageUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  // Reject non-image URLs
+  if (lower.includes('youtube.com') || lower.includes('youtu.be')) return false;
+  if (lower.includes('facebook.com') || lower.includes('twitter.com')) return false;
+  if (lower.includes('linkedin.com') || lower.includes('instagram.com')) return false;
+  // Must look like an image or a CDN URL
+  const hasImageExt = /\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i.test(url);
+  const isZillowCdn = url.includes('zillowstatic.com') || url.includes('photos.zillowstatic.com');
+  const isCloudinary = url.includes('cloudinary.com');
+  return hasImageExt || isZillowCdn || isCloudinary;
+}
 
 function formatCurrency(n: number) {
   return n.toLocaleString("en-US", {
