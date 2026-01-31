@@ -261,6 +261,40 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
                 </div>
               </>
             )}
+
+            {/* Press Mentions - Moved to sidebar */}
+            {pressMentions && pressMentions.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <SectionTitle title="Press Mentions" />
+                  <ul className="space-y-1">
+                    {pressMentions.map((p, i) => (
+                      <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5">
+                        <span className="text-blue-500">📰</span> {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
+
+            {/* Awards - Moved to sidebar */}
+            {awards && awards.length > 0 && (
+              <>
+                <Separator />
+                <div className="space-y-2">
+                  <SectionTitle title="Awards" />
+                  <ul className="space-y-1">
+                    {awards.map((a, i) => (
+                      <li key={i} className="text-xs text-slate-700 flex items-start gap-1.5">
+                        <span className="text-amber-500">🏆</span> {a}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </>
+            )}
           </Card>
         </aside>
 
@@ -324,39 +358,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
             </DetailsSection>
           )}
 
-          {/* 3. Press & Recognition - NEW section */}
-          {hasCredentials && (
-            <DetailsSection id="recognition" title="Press & Recognition">
-              <div className="space-y-4">
-                {pressMentions && pressMentions.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase text-slate-500 mb-2">Press Mentions</h4>
-                    <ul className="space-y-1">
-                      {pressMentions.map((p, i) => (
-                        <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                          <span className="text-blue-500">📰</span> {p}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {awards && awards.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase text-slate-500 mb-2">Awards</h4>
-                    <ul className="space-y-1">
-                      {awards.map((a, i) => (
-                        <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                          <span className="text-amber-500">🏆</span> {a}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </DetailsSection>
-          )}
-
-          {/* 4. In Their Own Words (get_to_know_me) - Collapsed */}
+          {/* 3. In Their Own Words (get_to_know_me) - Collapsed */}
           {getToKnowMe && (
             <DetailsSection id="about" title="In Their Own Words">
               <div
@@ -366,7 +368,7 @@ export default function AgentProfileDossier(props: AgentProfileDossierProps) {
             </DetailsSection>
           )}
 
-          {/* 5. Selected Client Feedback - Collapsed */}
+          {/* 4. Selected Client Feedback - Collapsed */}
           {props.selectedReviews && props.selectedReviews.length > 0 && (
             <DetailsSection id="reviews" title="Selected Client Feedback">
               <ReviewList reviews={props.selectedReviews} />
@@ -565,3 +567,4 @@ function computeYearsActive(originalDateLike: string) {
   }
   return years > 0 ? years : 0;
 }
+
