@@ -18,13 +18,14 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
  * Updates corresponding professional records in Supabase.
  * 
  * SYNC STRATEGY:
- * - Initial creation: Supabase is source of truth
- * - After sync: Pipedrive edits become source of truth
+ * - Initial creation: Supabase pushes to Pipedrive
+ * - After sync: Pipedrive is source of truth for ALL fields
+ * - All edits should be made in Pipedrive, not Supabase
  * 
  * Setup in Pipedrive:
  * 1. Settings → Webhooks → Create webhook
  * 2. Event: person.updated, person.deleted, person.merged
- * 3. URL: https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/pipedrive-webhook
+ * 3. URL: https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/pipedrive-webhook
  */
 
 interface PipedriveWebhookPayload {
@@ -45,16 +46,15 @@ interface PipedriveWebhookPayload {
 }
 
 /**
- * REVIEW-REQUIRED FIELDS (Pipedrive is source of truth)
+ * SYNCED FIELDS (Pipedrive is source of truth for all)
  * 
- * These fields can ONLY be synced FROM Pipedrive → Supabase.
- * They require admin review before changes are applied.
+ * All fields sync from Pipedrive → Supabase.
+ * Make edits in Pipedrive, they will flow to the website.
  * 
- * Agent-editable fields (Supabase is source of truth) are NOT in this list:
- * - image_url, sidebar_video_url, description, specialty
- * - notable_achievements, press_mentions, company
- * - phone, email, website (contact info agents can update)
- * - social_facebook, social_twitter, social_instagram, social_tiktok, social_linkedin
+ * Fields NOT synced (internal/computed):
+ * - supabase_id, card_url, profile_link (internal URLs)
+ * - city_name, state (computed from location)
+ * - email_verified (internal flag)
  */
 const REVIEW_REQUIRED_FIELDS = [
   // Identity (verified)
@@ -238,6 +238,20 @@ serve(async (req) => {
         fieldsUpdated.push('phone');
       }
 
+      // Organization/Company name
+      const orgName = personData?.org_name || personData?.organization?.name;
+      if (orgName) {
+        updates.company = orgName;
+        fieldsUpdated.push('company');
+      }
+
+      // Website
+      const website = personData?.website || personData?.websites?.[0]?.value;
+      if (website) {
+        updates.website = website;
+        fieldsUpdated.push('website');
+      }
+
       // Sync custom fields from Pipedrive
       // In webhooks, custom_fields is an object with keys like { "abc123": "value" }
       const customFields = (personData?.custom_fields || {}) as Record<string, unknown>;
@@ -246,17 +260,13 @@ serve(async (req) => {
       const yearsKey = '7cadd870f1f4e976fceb908facf6291e7aab0a0d';
       console.log(`🔎 years_experience key value:`, customFields[yearsKey], typeof customFields[yearsKey]);
       for (const [pipedriveKey, fieldName] of Object.entries(fieldMappings)) {
-        // Skip fields we already handled or that are agent-editable (not synced from Pipedrive)
-        // Agent-editable fields: email, phone, website, specialty, business_name, company, social links, etc.
+        // Skip internal/computed fields that shouldn't be synced from Pipedrive
         if (['supabase_id', 'card_url', 'profile_link', 'city_name', 'state', 'email_verified'].includes(fieldName)) {
           continue;
         }
         
-        // Only sync REVIEW-REQUIRED fields from Pipedrive
-        // These are fields where Pipedrive is the source of truth
-        if (!REVIEW_REQUIRED_FIELDS.includes(fieldName)) {
-          continue;
-        }
+        // Sync ALL fields from Pipedrive (Pipedrive is source of truth after initial sync)
+        // Previously restricted to REVIEW_REQUIRED_FIELDS only
 
         // Look for the custom field value in the custom_fields object
         // Pipedrive webhook sends custom fields as { type: "double", value: 7 } or similar
@@ -363,3 +373,4 @@ serve(async (req) => {
     );
   }
 });
+
