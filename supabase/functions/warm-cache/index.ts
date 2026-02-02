@@ -10,6 +10,10 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const BASE_URL = "https://www.top10lists.us";
+const PRERENDER_TOKEN = Deno.env.get("PRERENDER_TOKEN");
+const CLOUDFLARE_ACCOUNT_ID = Deno.env.get("CLOUDFLARE_ACCOUNT_ID");
+const CLOUDFLARE_KV_NAMESPACE_ID = Deno.env.get("CLOUDFLARE_KV_NAMESPACE_ID");
+const CLOUDFLARE_API_TOKEN = Deno.env.get("CLOUDFLARE_API_TOKEN");
 
 // Static pages - always warmed
 const STATIC_PAGES = [
@@ -69,6 +73,148 @@ interface WarmProgress {
   static: { total: number; completed: number };
   cities: { total: number; completed: number };
   neighborhoods: { total: number; completed: number };
+}
+
+const EMPTY_ROOT_PATTERN = /<div id="root"[^>]*>\s*<\/div>/i;
+
+function hasAgentContent(html: string): boolean {
+  return html.includes('itemtype="https://schema.org/RealEstateAgent"') ||
+    html.includes("data-professional-id") ||
+    html.includes("professional-card");
+}
+
+function hasStructuredData(html: string): boolean {
+  return html.includes("application/ld+json") &&
+    (html.includes("RealEstateAgent") || html.includes("ItemList"));
+}
+
+function validateRenderedHtml(html: string, url: string): { ok: boolean; reason?: string } {
+  if (!html || html.length < 1000 || !html.includes("</html>")) {
+    return { ok: false, reason: "Invalid HTML response" };
+  }
+
+  if (EMPTY_ROOT_PATTERN.test(html)) {
+    return { ok: false, reason: "Empty React shell detected" };
+  }
+
+  const isAgentList = url.includes("/top10realestateagents");
+  if (isAgentList) {
+    if (!hasAgentContent(html) && !hasStructuredData(html)) {
+      return { ok: false, reason: "No agent content detected" };
+    }
+    if (html.length < 30000) {
+      return { ok: false, reason: "Rendered content too small for agent list" };
+    }
+  }
+
+  return { ok: true };
+}
+
+function urlToSanitizedCacheKey(url: string): string {
+  return url
+    .replace(/^https?:\/\//, "")
+    .replace(/[^a-zA-Z0-9]/g, "_")
+    .substring(0, 512);
+}
+
+function buildCacheKeys(url: string): string[] {
+  const rawKey = url;
+  const sanitizedKey = urlToSanitizedCacheKey(url);
+  return sanitizedKey !== rawKey ? [rawKey, sanitizedKey] : [rawKey];
+}
+
+async function fetchPrerenderedHtml(url: string, forceRefresh: boolean): Promise<{ success: boolean; html?: string; status?: number; error?: string }> {
+  if (!PRERENDER_TOKEN) {
+    return { success: false, error: "PRERENDER_TOKEN not configured" };
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+  try {
+    const response = await fetch(`https://service.prerender.io/${url}`, {
+      headers: {
+        "X-Prerender-Token": PRERENDER_TOKEN,
+        "Prerender-Force-Reload": forceRefresh ? "true" : "false",
+        "User-Agent": "Top10Lists-CacheWarmer/1.0",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return { success: false, status: response.status, error: `Prerender HTTP ${response.status}` };
+    }
+
+    const html = await response.text();
+    return { success: true, html, status: response.status };
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errMsg };
+  }
+}
+
+async function fetchBotHtml(url: string, forceRefresh: boolean): Promise<{ success: boolean; html?: string; status?: number; cache?: string; rendered?: string; error?: string }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+  try {
+    const headers: Record<string, string> = {
+      "X-Cache-Warming": "true",
+      "User-Agent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) GPTBot/1.0",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    };
+
+    if (forceRefresh) {
+      headers["X-Force-Refresh"] = "true";
+    }
+
+    const response = await fetch(url, { headers, signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return { success: false, status: response.status, error: `HTTP ${response.status}` };
+    }
+
+    const html = await response.text();
+    return {
+      success: true,
+      html,
+      status: response.status,
+      cache: response.headers.get("X-Cache") || "unknown",
+      rendered: response.headers.get("X-Rendered") || "unknown",
+    };
+  } catch (error: unknown) {
+    const errMsg = error instanceof Error ? error.message : String(error);
+    return { success: false, error: errMsg };
+  }
+}
+
+async function writeToKv(cacheKey: string, html: string): Promise<{ success: boolean; error?: string }> {
+  if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_KV_NAMESPACE_ID || !CLOUDFLARE_API_TOKEN) {
+    return { success: false, error: "Missing Cloudflare KV credentials" };
+  }
+
+  const response = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/storage/kv/namespaces/${CLOUDFLARE_KV_NAMESPACE_ID}/values/${encodeURIComponent(cacheKey)}`,
+    {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
+        "Content-Type": "text/html; charset=utf-8",
+      },
+      body: html,
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    return { success: false, error: `KV write failed: ${response.status} ${errorText}` };
+  }
+
+  return { success: true };
 }
 
 async function fetchCityPages(supabase: any): Promise<string[]> {
@@ -166,37 +312,73 @@ async function fetchNeighborhoodPages(supabase: any, stateFilter?: string): Prom
 
 async function warmUrl(url: string, forceRefresh: boolean): Promise<WarmResult | WarmError> {
   try {
-    const headers: Record<string, string> = {
-      "X-Cache-Warming": "true",
-      "User-Agent": "Top10Lists-CacheWarmer/1.0"
-    };
-    
-    if (forceRefresh) {
-      headers["X-Force-Refresh"] = "true";
+    const startTime = Date.now();
+    const canWriteKv = Boolean(CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_KV_NAMESPACE_ID && CLOUDFLARE_API_TOKEN);
+    let html = "";
+    let renderMethod = "unknown";
+    let status = 0;
+    let cacheStatus = "unknown";
+
+    if (PRERENDER_TOKEN && canWriteKv) {
+      const prerenderResult = await fetchPrerenderedHtml(url, forceRefresh);
+      if (!prerenderResult.success || !prerenderResult.html) {
+        return { url, type: "fetch", message: prerenderResult.error || "Prerender fetch failed" };
+      }
+
+      html = prerenderResult.html;
+      renderMethod = "prerender-io";
+      status = prerenderResult.status || 200;
+      cacheStatus = "KV";
+    } else {
+      const botResult = await fetchBotHtml(url, forceRefresh);
+      if (!botResult.success || !botResult.html) {
+        return { url, type: "fetch", message: botResult.error || "Bot fetch failed" };
+      }
+
+      html = botResult.html;
+      renderMethod = botResult.rendered || "unknown";
+      status = botResult.status || 200;
+      cacheStatus = botResult.cache || "unknown";
     }
 
-    const startTime = Date.now();
-    const response = await fetch(url, { headers });
+    const validation = validateRenderedHtml(html, url);
+    if (!validation.ok) {
+      return { url, type: "validation", message: validation.reason || "Validation failed" };
+    }
+
+    if (PRERENDER_TOKEN && canWriteKv) {
+      const cacheKeys = buildCacheKeys(url);
+      const kvErrors: string[] = [];
+      let wroteAny = false;
+      for (const cacheKey of cacheKeys) {
+        const kvResult = await writeToKv(cacheKey, html);
+        if (kvResult.success) {
+          wroteAny = true;
+        } else if (kvResult.error) {
+          kvErrors.push(kvResult.error);
+        }
+      }
+      if (!wroteAny) {
+        return { url, type: "kv", message: kvErrors.join(" | ") || "KV write failed" };
+      }
+    }
+
     const elapsed = Date.now() - startTime;
+    const size = new TextEncoder().encode(html).length;
+    const success = status === 200 && renderMethod !== "fallback";
 
-    const cacheStatus = response.headers.get("X-Cache") || "unknown";
-    const renderMethod = response.headers.get("X-Rendered") || "unknown";
-    const contentLength = response.headers.get("Content-Length") || "0";
-
-    const success = response.status === 200 && renderMethod !== "fallback";
-    
     return {
       url,
-      status: response.status,
+      status,
       cache: cacheStatus,
       rendered: renderMethod,
-      size: parseInt(contentLength),
+      size,
       ms: elapsed,
       success
     };
   } catch (fetchError: unknown) {
     const errMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
-    return { url, type: 'fetch', message: errMsg };
+    return { url, type: "fetch", message: errMsg };
   }
 }
 
@@ -238,6 +420,7 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { 
       forceRefresh = false,
+      force = false,
       background = false,
       includeNeighborhoods = true,
       includeCities = true,
@@ -248,6 +431,7 @@ serve(async (req) => {
     } = body;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const shouldForceRefresh = forceRefresh || force;
 
     // Build URL list
     let allUrls: string[] = [];
@@ -288,7 +472,7 @@ serve(async (req) => {
           const startTime = Date.now();
           
           try {
-            const { results, errors } = await warmPages(allUrls, forceRefresh, concurrency, `[${jobId}] `);
+            const { results, errors } = await warmPages(allUrls, shouldForceRefresh, concurrency, `[${jobId}] `);
             
             const summary = {
               job_id: jobId,
@@ -299,6 +483,7 @@ serve(async (req) => {
               successful: results.filter(r => r.success).length,
               cached: results.filter(r => r.cache === "HIT").length,
               rendered: results.filter(r => r.rendered === "browser-rest-api").length,
+              prerendered: results.filter(r => r.rendered === "prerender-io").length,
               fallback: results.filter(r => r.rendered === "fallback").length,
               failed: errors.length,
               duration_ms: Date.now() - startTime
@@ -322,7 +507,7 @@ serve(async (req) => {
             cities: cityCount,
             neighborhoods: neighborhoodCount
           },
-          options: { forceRefresh, concurrency, includeCities, includeNeighborhoods, neighborhoodsOnly, stateFilter }
+          options: { forceRefresh: shouldForceRefresh, concurrency, includeCities, includeNeighborhoods, neighborhoodsOnly, stateFilter }
         }, null, 2),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -330,7 +515,7 @@ serve(async (req) => {
 
     // Synchronous processing
     const startTime = Date.now();
-    const { results, errors } = await warmPages(allUrls, forceRefresh, concurrency);
+    const { results, errors } = await warmPages(allUrls, shouldForceRefresh, concurrency);
 
     const summary = {
       total: allUrls.length,
@@ -340,6 +525,7 @@ serve(async (req) => {
       successful: results.filter(r => r.success).length,
       cached: results.filter(r => r.cache === "HIT").length,
       rendered: results.filter(r => r.rendered === "browser-rest-api").length,
+      prerendered: results.filter(r => r.rendered === "prerender-io").length,
       fallback: results.filter(r => r.rendered === "fallback").length,
       failed: errors.length,
       duration_ms: Date.now() - startTime

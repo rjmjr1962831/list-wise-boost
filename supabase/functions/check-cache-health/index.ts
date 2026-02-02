@@ -35,8 +35,8 @@ interface HealthCheckResult {
   details?: any;
 }
 
-// Convert URL to cache key format used by warm-cache
-function urlToCacheKey(url: string): string {
+// Convert URL to sanitized cache key format (legacy)
+function urlToSanitizedCacheKey(url: string): string {
   return url
     .replace(/^https?:\/\//, '')
     .replace(/[^a-zA-Z0-9]/g, '_')
@@ -71,6 +71,24 @@ async function fetchFromKV(cacheKey: string): Promise<string | null> {
     console.error(`KV fetch error for ${cacheKey}:`, error);
     return null;
   }
+}
+
+async function fetchFromKVForUrl(url: string): Promise<{ html: string | null; keyUsed?: string }> {
+  const rawKey = url;
+  const rawHtml = await fetchFromKV(rawKey);
+  if (rawHtml) {
+    return { html: rawHtml, keyUsed: rawKey };
+  }
+
+  const sanitizedKey = urlToSanitizedCacheKey(url);
+  if (sanitizedKey !== rawKey) {
+    const sanitizedHtml = await fetchFromKV(sanitizedKey);
+    if (sanitizedHtml) {
+      return { html: sanitizedHtml, keyUsed: sanitizedKey };
+    }
+  }
+
+  return { html: null };
 }
 
 // Analyze cached HTML content - NO AGENT DETAILS EXPOSED
@@ -144,10 +162,9 @@ async function checkCachedContent(): Promise<HealthCheckResult> {
   let prerenderedCount = 0;
   
   for (const url of testUrls) {
-    const cacheKey = urlToCacheKey(url);
     console.log(`Checking cache for: ${url}`);
     
-    const html = await fetchFromKV(cacheKey);
+    const { html, keyUsed } = await fetchFromKVForUrl(url);
     
     if (!html) {
       results.push({
@@ -156,7 +173,7 @@ async function checkCachedContent(): Promise<HealthCheckResult> {
         hasContent: false,
         isPrerendered: false,
         contentSizeKB: 0,
-        issues: ["Page not found in cache"],
+        issues: ["Page not found in cache (raw or sanitized key)"],
         hasStructuredData: false,
         hasAgentCards: false,
       });
@@ -165,6 +182,9 @@ async function checkCachedContent(): Promise<HealthCheckResult> {
     }
     
     const check = analyzeContent(html, url);
+    if (keyUsed && keyUsed !== url) {
+      check.issues.push("Cache key format mismatch (sanitized)");
+    }
     results.push(check);
     
     if (check.isPrerendered) {
