@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-enrichment-key',
 }
 
 const DEEPSEEK_API_KEY = 'REDACTED_DEEPSEEK_KEY'
@@ -69,30 +69,43 @@ Deno.serve(async (req) => {
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
-    // Get all existing marketing content pages (with pagination)
+    // Step 1: Get all existing marketing content pages (with pagination)
+    console.log('Fetching existing pages...')
     const existingPages = new Set<string>()
     let offset = 0
     while (true) {
-      const { data: contentPages } = await supabase
+      const { data: contentPages, error } = await supabase
         .from('marketing_content')
         .select('page')
         .ilike('page', 'city-%')
         .eq('section', 'market_overview')
         .range(offset, offset + 999)
       
+      if (error) {
+        console.error('Error fetching marketing_content:', error)
+        break
+      }
+      
       if (!contentPages || contentPages.length === 0) break
       contentPages.forEach(p => existingPages.add(p.page))
+      console.log(`Loaded ${existingPages.size} existing pages (offset ${offset})`)
       if (contentPages.length < 1000) break
       offset += 1000
     }
 
-    // Get cities needing content (AZ and CA only)
+    console.log(`Total existing city pages: ${existingPages.size}`)
+
+    // Step 2: Find cities needing content (AZ and CA only, active only)
     const citiesNeedingContent: City[] = []
     
     for (const state of ['Arizona', 'California']) {
+      if (citiesNeedingContent.length >= BATCH_SIZE) break
+      
       let cityOffset = 0
       while (citiesNeedingContent.length < BATCH_SIZE) {
-        const { data: cities } = await supabase
+        console.log(`Querying ${state} cities, offset ${cityOffset}...`)
+        
+        const { data: cities, error } = await supabase
           .from('cities')
           .select('id, name, state, slug')
           .eq('state', state)
@@ -100,11 +113,23 @@ Deno.serve(async (req) => {
           .order('name')
           .range(cityOffset, cityOffset + 999)
         
-        if (!cities || cities.length === 0) break
+        if (error) {
+          console.error(`Error fetching ${state} cities:`, error)
+          break
+        }
+        
+        if (!cities || cities.length === 0) {
+          console.log(`No more ${state} cities at offset ${cityOffset}`)
+          break
+        }
+        
+        console.log(`Got ${cities.length} ${state} cities, checking for missing content...`)
         
         for (const city of cities) {
-          if (!existingPages.has(`city-${city.slug}`)) {
+          const pageKey = `city-${city.slug}`
+          if (!existingPages.has(pageKey)) {
             citiesNeedingContent.push(city)
+            console.log(`Found city needing content: ${city.name} (${pageKey})`)
             if (citiesNeedingContent.length >= BATCH_SIZE) break
           }
         }
@@ -112,22 +137,22 @@ Deno.serve(async (req) => {
         if (cities.length < 1000) break
         cityOffset += 1000
       }
-      
-      if (citiesNeedingContent.length >= BATCH_SIZE) break
     }
+
+    console.log(`Cities needing content: ${citiesNeedingContent.length}`)
 
     if (citiesNeedingContent.length === 0) {
       return new Response(JSON.stringify({
         status: 'complete',
-        message: 'All AZ and CA cities have content',
+        message: 'All AZ and CA active cities have content',
         existingPages: existingPages.size
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    // Process batch
-    const results: Array<{city: string, status: string, error?: string}> = []
+    // Step 3: Process batch
+    const results: Array<{city: string, state: string, status: string, error?: string}> = []
 
     for (const city of citiesNeedingContent) {
       console.log(`Processing: ${city.name}, ${city.state}`)
@@ -151,16 +176,17 @@ Deno.serve(async (req) => {
 
         if (upsertError) {
           console.error(`Upsert error for ${city.name}:`, upsertError)
-          results.push({ city: city.name, status: 'error', error: upsertError.message })
+          results.push({ city: city.name, state: city.state, status: 'error', error: upsertError.message })
         } else {
-          results.push({ city: city.name, status: 'success' })
+          results.push({ city: city.name, state: city.state, status: 'success' })
+          console.log(`Success: ${city.name}`)
         }
       } else {
-        results.push({ city: city.name, status: 'failed', error: 'Content generation failed' })
+        results.push({ city: city.name, state: city.state, status: 'failed', error: 'Content generation failed' })
       }
 
       // Small delay between API calls
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
 
     const elapsed = Date.now() - startTime
@@ -170,7 +196,8 @@ Deno.serve(async (req) => {
       processed: results,
       batchSize: BATCH_SIZE,
       elapsedMs: elapsed,
-      message: 'Cron will trigger next batch'
+      remaining: 'Check next run for count',
+      message: 'Batch complete. Cron will trigger next batch.'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })
@@ -178,7 +205,8 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Function error:', error)
     return new Response(JSON.stringify({
-      error: error.message
+      error: error.message,
+      stack: error.stack
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
