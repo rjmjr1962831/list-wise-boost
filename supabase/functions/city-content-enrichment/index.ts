@@ -43,7 +43,6 @@ Be specific to ${city.name}. Use realistic ${city.state} market data. No em dash
     const data = await response.json()
     let content = data.choices?.[0]?.message?.content || ''
     
-    // Clean JSON
     content = content.trim()
     if (content.startsWith('```json')) content = content.slice(7)
     if (content.startsWith('```')) content = content.slice(3)
@@ -65,102 +64,68 @@ Deno.serve(async (req) => {
   const startTime = Date.now()
   
   try {
-    // Use Supabase's built-in environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    
-    console.log(`Connecting to: ${supabaseUrl}`)
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Step 1: Get all existing marketing content pages (with pagination)
-    console.log('Fetching existing pages...')
-    const existingPages = new Set<string>()
-    let offset = 0
-    while (true) {
-      const { data: contentPages, error } = await supabase
-        .from('marketing_content')
-        .select('page')
-        .ilike('page', 'city-%')
-        .eq('section', 'market_overview')
-        .range(offset, offset + 999)
-      
-      if (error) {
-        console.error('Error fetching marketing_content:', error)
-        return new Response(JSON.stringify({
-          error: 'Failed to fetch marketing_content',
-          details: error.message
-        }), {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        })
-      }
-      
-      if (!contentPages || contentPages.length === 0) break
-      contentPages.forEach(p => existingPages.add(p.page))
-      console.log(`Loaded ${existingPages.size} existing pages (offset ${offset})`)
-      if (contentPages.length < 1000) break
-      offset += 1000
-    }
-
-    console.log(`Total existing city pages: ${existingPages.size}`)
-
-    // Step 2: Find cities needing content (AZ and CA only, active only)
+    // OPTIMIZED: Use LEFT JOIN approach via RPC or direct query
+    // Find cities that DON'T have content yet - much faster than loading all existing
     const citiesNeedingContent: City[] = []
     
     for (const state of ['Arizona', 'California']) {
       if (citiesNeedingContent.length >= BATCH_SIZE) break
       
-      let cityOffset = 0
-      while (citiesNeedingContent.length < BATCH_SIZE) {
-        console.log(`Querying ${state} cities, offset ${cityOffset}...`)
-        
-        const { data: cities, error } = await supabase
-          .from('cities')
-          .select('id, name, state, slug')
-          .eq('state', state)
-          .eq('active', true)
-          .order('name')
-          .range(cityOffset, cityOffset + 999)
-        
-        if (error) {
-          console.error(`Error fetching ${state} cities:`, error)
-          break
+      // Get cities for this state, then check each against marketing_content
+      const { data: cities, error: cityError } = await supabase
+        .from('cities')
+        .select('id, name, state, slug')
+        .eq('state', state)
+        .eq('active', true)
+        .order('name')
+        .limit(200)  // Get a larger batch to find ones without content
+      
+      if (cityError || !cities) {
+        console.error(`Error fetching ${state} cities:`, cityError)
+        continue
+      }
+      
+      // Check which cities have content
+      const slugsToCheck = cities.map(c => `city-${c.slug}`)
+      
+      const { data: existingContent } = await supabase
+        .from('marketing_content')
+        .select('page')
+        .in('page', slugsToCheck)
+        .eq('section', 'market_overview')
+      
+      const existingPages = new Set((existingContent || []).map(e => e.page))
+      
+      for (const city of cities) {
+        if (!existingPages.has(`city-${city.slug}`)) {
+          citiesNeedingContent.push(city)
+          if (citiesNeedingContent.length >= BATCH_SIZE) break
         }
-        
-        if (!cities || cities.length === 0) {
-          console.log(`No more ${state} cities at offset ${cityOffset}`)
-          break
-        }
-        
-        console.log(`Got ${cities.length} ${state} cities, checking for missing content...`)
-        
-        for (const city of cities) {
-          const pageKey = `city-${city.slug}`
-          if (!existingPages.has(pageKey)) {
-            citiesNeedingContent.push(city)
-            console.log(`Found city needing content: ${city.name} (${pageKey})`)
-            if (citiesNeedingContent.length >= BATCH_SIZE) break
-          }
-        }
-        
-        if (cities.length < 1000) break
-        cityOffset += 1000
       }
     }
 
-    console.log(`Cities needing content: ${citiesNeedingContent.length}`)
-
     if (citiesNeedingContent.length === 0) {
+      // Do a quick count to report
+      const { count } = await supabase
+        .from('marketing_content')
+        .select('*', { count: 'exact', head: true })
+        .ilike('page', 'city-%')
+        .eq('section', 'market_overview')
+      
       return new Response(JSON.stringify({
         status: 'complete',
         message: 'All AZ and CA active cities have content',
-        existingPages: existingPages.size
+        existingPages: count || 0
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       })
     }
 
-    // Step 3: Process batch
+    // Process batch
     const results: Array<{city: string, state: string, status: string, error?: string}> = []
 
     for (const city of citiesNeedingContent) {
@@ -188,14 +153,12 @@ Deno.serve(async (req) => {
           results.push({ city: city.name, state: city.state, status: 'error', error: upsertError.message })
         } else {
           results.push({ city: city.name, state: city.state, status: 'success' })
-          console.log(`Success: ${city.name}`)
         }
       } else {
         results.push({ city: city.name, state: city.state, status: 'failed', error: 'Content generation failed' })
       }
 
-      // Small delay between API calls
-      await new Promise(resolve => setTimeout(resolve, 500))
+      await new Promise(resolve => setTimeout(resolve, 300))
     }
 
     const elapsed = Date.now() - startTime
@@ -205,7 +168,6 @@ Deno.serve(async (req) => {
       processed: results,
       batchSize: BATCH_SIZE,
       elapsedMs: elapsed,
-      existingPages: existingPages.size,
       message: 'Batch complete. Cron will trigger next batch.'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
