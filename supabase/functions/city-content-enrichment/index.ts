@@ -15,7 +15,7 @@ const DEEPSEEK_API_KEY = Deno.env.get('DEEPSEEK_API_KEY') || ''
 const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') || ''
 const ENRICHMENT_KEY = 't10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a'
 
-const BATCH_SIZE = 10
+const BATCH_SIZE = 5
 
 interface City {
   id: string
