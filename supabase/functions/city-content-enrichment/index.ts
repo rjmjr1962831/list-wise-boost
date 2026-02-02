@@ -68,48 +68,62 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // OPTIMIZED: Use LEFT JOIN approach via RPC or direct query
-    // Find cities that DON'T have content yet - much faster than loading all existing
     const citiesNeedingContent: City[] = []
     
     for (const state of ['Arizona', 'California']) {
       if (citiesNeedingContent.length >= BATCH_SIZE) break
       
-      // Get cities for this state, then check each against marketing_content
-      const { data: cities, error: cityError } = await supabase
-        .from('cities')
-        .select('id, name, state, slug')
-        .eq('state', state)
-        .eq('active', true)
-        .order('name')
-        .limit(200)  // Get a larger batch to find ones without content
+      let offset = 0
+      const PAGE_SIZE = 200
       
-      if (cityError || !cities) {
-        console.error(`Error fetching ${state} cities:`, cityError)
-        continue
-      }
-      
-      // Check which cities have content
-      const slugsToCheck = cities.map(c => `city-${c.slug}`)
-      
-      const { data: existingContent } = await supabase
-        .from('marketing_content')
-        .select('page')
-        .in('page', slugsToCheck)
-        .eq('section', 'market_overview')
-      
-      const existingPages = new Set((existingContent || []).map(e => e.page))
-      
-      for (const city of cities) {
-        if (!existingPages.has(`city-${city.slug}`)) {
-          citiesNeedingContent.push(city)
-          if (citiesNeedingContent.length >= BATCH_SIZE) break
+      // Paginate through ALL cities until we find enough without content
+      while (citiesNeedingContent.length < BATCH_SIZE) {
+        const { data: cities, error: cityError } = await supabase
+          .from('cities')
+          .select('id, name, state, slug')
+          .eq('state', state)
+          .eq('active', true)
+          .order('name')
+          .range(offset, offset + PAGE_SIZE - 1)
+        
+        if (cityError || !cities || cities.length === 0) {
+          console.log(`No more ${state} cities at offset ${offset}`)
+          break
+        }
+        
+        console.log(`Checking ${state} cities ${offset} to ${offset + cities.length}`)
+        
+        // Check which cities have content
+        const slugsToCheck = cities.map(c => `city-${c.slug}`)
+        
+        const { data: existingContent } = await supabase
+          .from('marketing_content')
+          .select('page')
+          .in('page', slugsToCheck)
+          .eq('section', 'market_overview')
+        
+        const existingPages = new Set((existingContent || []).map(e => e.page))
+        
+        for (const city of cities) {
+          if (!existingPages.has(`city-${city.slug}`)) {
+            citiesNeedingContent.push(city)
+            console.log(`Found: ${city.name} needs content`)
+            if (citiesNeedingContent.length >= BATCH_SIZE) break
+          }
+        }
+        
+        // Move to next page
+        offset += PAGE_SIZE
+        
+        // Safety: don't loop forever
+        if (offset > 5000) {
+          console.log('Safety limit reached')
+          break
         }
       }
     }
 
     if (citiesNeedingContent.length === 0) {
-      // Do a quick count to report
       const { count } = await supabase
         .from('marketing_content')
         .select('*', { count: 'exact', head: true })
