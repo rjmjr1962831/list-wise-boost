@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co";
 const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+const ENRICHMENT_KEY = "t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,7 +20,6 @@ async function getZipFromCoords(lat: number, lon: number): Promise<string | null
     const data = await response.json();
     const geographies = data?.result?.geographies;
     
-    // Try to get ZIP from Census Designated Places or other geography
     if (geographies?.["2020 Census ZIP Code Tabulation Areas"]?.[0]) {
       return geographies["2020 Census ZIP Code Tabulation Areas"][0].GEOID20 || null;
     }
@@ -36,10 +36,18 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Auth check using X-Enrichment-Key
+  const authKey = req.headers.get("x-enrichment-key");
+  if (authKey !== ENRICHMENT_KEY) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
     
-    // Get batch of CA/AZ neighborhoods missing primary_zip
     const { data: neighborhoods, error: fetchError } = await supabase
       .from("neighborhood_catalog")
       .select("id, neighborhood, city_area, state, lat, lon")
@@ -47,7 +55,7 @@ serve(async (req) => {
       .in("state", ["California", "Arizona"])
       .not("lat", "is", null)
       .not("lon", "is", null)
-      .limit(50);  // Process 50 at a time
+      .limit(50);
     
     if (fetchError) {
       throw new Error(`Fetch error: ${fetchError.message}`);
@@ -68,7 +76,6 @@ serve(async (req) => {
     const updates: { id: string; primary_zip: string; zips: string[] }[] = [];
     const errors: string[] = [];
     
-    // Process each neighborhood
     for (const hood of neighborhoods) {
       try {
         const zip = await getZipFromCoords(hood.lat, hood.lon);
@@ -80,17 +87,14 @@ serve(async (req) => {
           });
           console.log(`${hood.neighborhood}, ${hood.city_area}: ${zip}`);
         } else {
-          errors.push(`No zip found for ${hood.neighborhood}, ${hood.city_area} (${hood.lat}, ${hood.lon})`);
+          errors.push(`No zip for ${hood.neighborhood}, ${hood.city_area}`);
         }
-        
-        // Small delay to avoid rate limiting Census API
         await new Promise(r => setTimeout(r, 100));
       } catch (e) {
         errors.push(`Error for ${hood.neighborhood}: ${e.message}`);
       }
     }
     
-    // Bulk update the ones we found
     let successCount = 0;
     for (const update of updates) {
       const { error: updateError } = await supabase
@@ -104,25 +108,24 @@ serve(async (req) => {
       
       if (!updateError) {
         successCount++;
-      } else {
-        errors.push(`Update failed for ${update.id}: ${updateError.message}`);
       }
     }
     
-    // Check remaining count
     const { count: remaining } = await supabase
       .from("neighborhood_catalog")
       .select("*", { count: "exact", head: true })
       .is("primary_zip", null)
       .in("state", ["California", "Arizona"]);
     
-    // If there are more, schedule next batch by calling ourselves
+    // Self-chain if more remain
     if (remaining && remaining > 0) {
-      // Fire and forget - call ourselves to continue processing
       fetch(req.url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" }
-      }).catch(() => {}); // Ignore errors, just trigger next batch
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Enrichment-Key": ENRICHMENT_KEY
+        }
+      }).catch(() => {});
     }
     
     return new Response(
@@ -132,7 +135,7 @@ serve(async (req) => {
         zips_found: updates.length,
         updated: successCount,
         remaining: remaining || 0,
-        errors: errors.slice(0, 10) // Only return first 10 errors
+        errors: errors.slice(0, 5)
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
@@ -140,7 +143,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Function error:", error);
     return new Response(
-      JSON.stringify({ error: error.message}),
+      JSON.stringify({ error: error.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
