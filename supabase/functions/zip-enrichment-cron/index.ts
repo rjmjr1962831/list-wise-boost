@@ -10,18 +10,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-enrichment-key",
 };
 
-// Census Bureau reverse geocoder
+// Census Bureau reverse geocoder - using 2020 benchmark for ZCTA data
 async function getZipFromCoords(lat: number, lon: number): Promise<string | null> {
   try {
-    const url = `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${lon}&y=${lat}&benchmark=Public_AR_Current&vintage=Current_Current&format=json`;
+    const url = `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x=${lon}&y=${lat}&benchmark=2020&vintage=2020&layers=all&format=json`;
     const response = await fetch(url);
     if (!response.ok) return null;
     
     const data = await response.json();
     const geographies = data?.result?.geographies;
     
-    if (geographies?.["2020 Census ZIP Code Tabulation Areas"]?.[0]) {
-      return geographies["2020 Census ZIP Code Tabulation Areas"][0].GEOID20 || null;
+    // Get ZCTA5 from Zip Code Tabulation Areas
+    if (geographies?.["Zip Code Tabulation Areas"]?.[0]) {
+      return geographies["Zip Code Tabulation Areas"][0].ZCTA5 || null;
     }
     
     return null;
