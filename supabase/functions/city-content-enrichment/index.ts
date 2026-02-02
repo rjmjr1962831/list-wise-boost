@@ -6,8 +6,6 @@ const corsHeaders = {
 }
 
 const DEEPSEEK_API_KEY = 'REDACTED_DEEPSEEK_KEY'
-const SUPABASE_URL = 'https://wiotrvoirdgzfacuuiem.supabase.co'
-const SUPABASE_SERVICE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODA4NzM2OSwiZXhwIjoyMDUzNjYzMzY5fQ.VMloBHdsK6bCBfUMxDGY0WqiKHFRJauWfvj10bKK5W4'
 const BATCH_SIZE = 5
 
 interface City {
@@ -67,7 +65,12 @@ Deno.serve(async (req) => {
   const startTime = Date.now()
   
   try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    // Use Supabase's built-in environment variables
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    
+    console.log(`Connecting to: ${supabaseUrl}`)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
     // Step 1: Get all existing marketing content pages (with pagination)
     console.log('Fetching existing pages...')
@@ -83,7 +86,13 @@ Deno.serve(async (req) => {
       
       if (error) {
         console.error('Error fetching marketing_content:', error)
-        break
+        return new Response(JSON.stringify({
+          error: 'Failed to fetch marketing_content',
+          details: error.message
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        })
       }
       
       if (!contentPages || contentPages.length === 0) break
@@ -196,7 +205,7 @@ Deno.serve(async (req) => {
       processed: results,
       batchSize: BATCH_SIZE,
       elapsedMs: elapsed,
-      remaining: 'Check next run for count',
+      existingPages: existingPages.size,
       message: 'Batch complete. Cron will trigger next batch.'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
