@@ -6,7 +6,7 @@ const corsHeaders = {
 }
 
 const DEEPSEEK_API_KEY = 'REDACTED_DEEPSEEK_KEY'
-const BATCH_SIZE = 5
+const BATCH_SIZE = 2
 
 interface City {
   id: string
