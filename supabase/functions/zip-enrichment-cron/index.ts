@@ -92,7 +92,8 @@ serve(async (req) => {
         }
         await new Promise(r => setTimeout(r, 100));
       } catch (e) {
-        errors.push(`Error for ${hood.neighborhood}: ${e.message}`);
+        const err = e instanceof Error ? e : new Error(String(e));
+        errors.push(`Error for ${hood.neighborhood}: ${err.message}`);
       }
     }
     
@@ -143,8 +144,9 @@ serve(async (req) => {
     
   } catch (error) {
     console.error("Function error:", error);
+    const err = error instanceof Error ? error : new Error(String(error));
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: err.message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

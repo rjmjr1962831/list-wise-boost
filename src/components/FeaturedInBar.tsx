@@ -45,7 +45,7 @@ const pressArticles: PressArticle[] = [
   {
     name: "AIJourn",
     shortName: "AIJourn",
-    url: "https://aijourn.com/top10lists-us-releases-open-source-ai-citation-protocol/",
+    url: "https://aijourn.com/the-yellow-page-moment-is-happening-now-ai-is-replacing-discovery-with-judgement/",
     tier: "trade",
     logo: aiJournLogo,
   },
