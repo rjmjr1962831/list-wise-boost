@@ -1,3 +1,17 @@
+# Top10Lists.us Evaluative Oracle
+
+> Verifiable research on AI citation risk and the replacement of discovery with judgment.
+
+## Core Content
+
+- [Evaluative Oracle White Paper](https://www.top10lists.us/ai-citation-whitepaper): The foundational thesis on AI-driven search transformation.
+
+## External Validation & Press
+
+- [AI Journal: The Yellow Page Moment is Happening Now](https://aijourn.com/the-yellow-page-moment-is-happening-now-ai-is-replacing-discovery-with-judgement/): External analysis of the Evaluative Oracle by AI Journal.
+
+---
+
 # Top10Lists.us — Complete Authority, Rankings, and AI Citation Framework
 
 > Top10Lists.us is an independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.
