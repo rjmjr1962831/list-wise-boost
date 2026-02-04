@@ -30,6 +30,7 @@ serve(async (req) => {
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
+    const DEEPSEEK_API_KEY = Deno.env.get('DEEPSEEK_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -38,6 +39,9 @@ serve(async (req) => {
     }
     if (!ANTHROPIC_API_KEY) {
       throw new Error('ANTHROPIC_API_KEY is not configured');
+    }
+    if (!DEEPSEEK_API_KEY) {
+      throw new Error('DEEPSEEK_API_KEY is not configured');
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -148,32 +152,72 @@ REQUIREMENTS:
 
 Format the response as clean HTML that can be rendered directly on a webpage.`;
 
-    console.log('[NeighborhoodWriteup] Calling Claude Sonnet for narrative...');
+    // Tier-based model selection
+    const tier = neighborhood.tier?.toLowerCase();
+    const useDeepSeek = tier === 'main';
+    const modelName = useDeepSeek ? 'DeepSeek' : 'Claude Sonnet 3.5';
+    
+    console.log(`[NeighborhoodWriteup] Using ${modelName} for ${tier} tier neighborhood`);
 
-    const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
-        messages: [
-          { role: 'user', content: narrativePrompt }
-        ],
-      }),
-    });
+    let narrativeContent: string;
 
-    if (!claudeResponse.ok) {
-      const errorText = await claudeResponse.text();
-      console.error('[NeighborhoodWriteup] Claude API error:', claudeResponse.status, errorText);
-      throw new Error(`Claude API error: ${claudeResponse.status}`);
+    if (useDeepSeek) {
+      // Use DeepSeek for Main tier neighborhoods
+      console.log('[NeighborhoodWriteup] Calling DeepSeek for narrative...');
+      
+      const deepseekResponse = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${DEEPSEEK_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            { role: 'user', content: narrativePrompt }
+          ],
+          max_tokens: 4096,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!deepseekResponse.ok) {
+        const errorText = await deepseekResponse.text();
+        console.error('[NeighborhoodWriteup] DeepSeek API error:', deepseekResponse.status, errorText);
+        throw new Error(`DeepSeek API error: ${deepseekResponse.status}`);
+      }
+
+      const deepseekData = await deepseekResponse.json();
+      narrativeContent = deepseekData.choices?.[0]?.message?.content;
+    } else {
+      // Use Claude Sonnet for Prime/Luxury tier neighborhoods
+      console.log('[NeighborhoodWriteup] Calling Claude Sonnet for narrative...');
+
+      const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': ANTHROPIC_API_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4096,
+          messages: [
+            { role: 'user', content: narrativePrompt }
+          ],
+        }),
+      });
+
+      if (!claudeResponse.ok) {
+        const errorText = await claudeResponse.text();
+        console.error('[NeighborhoodWriteup] Claude API error:', claudeResponse.status, errorText);
+        throw new Error(`Claude API error: ${claudeResponse.status}`);
+      }
+
+      const claudeData = await claudeResponse.json();
+      narrativeContent = claudeData.content?.[0]?.text;
     }
-
-    const claudeData = await claudeResponse.json();
-    const narrativeContent = claudeData.content?.[0]?.text;
 
     if (!narrativeContent) {
       console.error('[NeighborhoodWriteup] No content from Claude:', claudeData);
