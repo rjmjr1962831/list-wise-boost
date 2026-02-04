@@ -178,14 +178,12 @@ export const ProfessionalListLayout = ({
             Back to Home
           </Link>
           <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="px-3 py-1">Verified List</Badge>
-                <Badge variant="outline" className="px-3 py-1">Updated Monthly</Badge>
-                <Badge variant="outline" className="px-3 py-1">2025</Badge>
+            {rightAction && (
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3"></div>
+                {rightAction}
               </div>
-              {rightAction}
-            </div>
+            )}
             <p className="text-lg text-muted-foreground">
               {metadata.description}
             </p>

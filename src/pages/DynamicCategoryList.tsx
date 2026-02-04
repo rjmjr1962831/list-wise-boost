@@ -1380,6 +1380,17 @@ export default function DynamicCategoryList({
         </div>
       </div>
       
+      {/* CITY MARKET OVERVIEW: Show immediately after header for city pages (not neighborhood pages) */}
+      {!neighborhoodSlug && !isBotRequest && city && (
+        <div className="container mx-auto px-4 mt-6">
+          <CityMarketOverview 
+            citySlug={city.slug} 
+            cityName={city.name} 
+            stateName={city.state}
+          />
+        </div>
+      )}
+      
       {/* Neighborhood Page 1: Expert-First Architecture */}
       {neighborhoodSlug && (
         <div className="container mx-auto px-4 mt-6 space-y-6">
@@ -1419,18 +1430,7 @@ export default function DynamicCategoryList({
         </>
       ) : (
         <>
-          {/* CITY MARKET OVERVIEW: Show above the fold for city pages */}
-          {!neighborhoodSlug && city && (
-            <div className="mb-8">
-              <CityMarketOverview 
-                citySlug={city.slug} 
-                cityName={city.name} 
-                stateName={city.state}
-              />
-            </div>
-          )}
-          
-          {/* HUMAN CONTENT: Full agent list with cards - shown FIRST */}
+          {/* HUMAN CONTENT: Full agent list with cards */}
           {categorySlug === 'top10realestateagents' && city && (
             <RealEstateAgentQuizModal
               open={showQuiz}
