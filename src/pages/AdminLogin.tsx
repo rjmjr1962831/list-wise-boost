@@ -14,6 +14,9 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  
+  // This log will fire when component loads - confirms new code is deployed
+  console.log("[AdminLogin] Component loaded - v2.0");
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,12 +151,10 @@ const AdminLogin = () => {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
             
-            {/* Debug info */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="text-xs text-muted-foreground mt-2">
-                Debug: Email={email.length > 0 ? '✓' : '✗'} | Pass={password.length > 0 ? '✓' : '✗'}
-              </div>
-            )}
+            {/* Debug info - Shows in all environments */}
+            <div className="text-xs text-muted-foreground mt-2">
+              Debug: Email={email.length > 0 ? '✓' : '✗'} | Pass={password.length > 0 ? '✓' : '✗'}
+            </div>
           </form>
         </CardContent>
         </Card>
