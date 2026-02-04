@@ -107,51 +107,16 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
           profQueryBuilder = profQueryBuilder.eq('state_slug', stateSlug);
         }
 
-        // Query arizona_licenses for all licensed agents
-        const licenseQuery = supabase
-          .from('arizona_licenses')
-          .select(`
-            id,
-            first_name,
-            last_name,
-            license_number,
-            license_type,
-            employer_legal_name,
-            original_date
-          `)
-          .or(`first_name.ilike.%${trimmedQuery}%,last_name.ilike.%${trimmedQuery}%`)
-          .limit(200);
-
-        // Run both queries in parallel
-        const [profResult, licenseResult] = await Promise.all([
-          profQueryBuilder,
-          licenseQuery
-        ]);
+        // Only query professionals table (no license table for public view)
+        const profResult = await profQueryBuilder;
 
         if (profResult.error) {
           throw profResult.error;
         }
 
-        if (licenseResult.error) {
-          throw licenseResult.error;
-        }
-
         const professionals = profResult.data || [];
-        const licenses = licenseResult.data || [];
 
-        // Create a map of license numbers that exist in professionals
-        const profLicenseNumbers = new Set(
-          professionals
-            .filter(p => p.license_number)
-            .map(p => p.license_number!.toUpperCase())
-        );
-
-        // Filter licenses to only include those NOT already in professionals
-        const newLicenses = licenses.filter(
-          l => !profLicenseNumbers.has(l.license_number.toUpperCase())
-        );
-
-        if (professionals.length === 0 && newLicenses.length === 0) {
+        if (professionals.length === 0) {
           setResults([]);
           setIsSearching(false);
           return;
@@ -169,8 +134,8 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
 
         const expertIds = new Set(subscriptions?.map(s => s.professional_id) || []);
 
-        // Transform professionals results
-        const transformedProfessionals: StateAgentSearchResult[] = professionals.map(p => {
+        // Transform professionals results - ONLY show agents in professionals table
+        const transformedResults: StateAgentSearchResult[] = professionals.map(p => {
           const { firstName, lastName } = parseFirstLastName(p.name);
           return {
             id: p.id,
@@ -192,59 +157,14 @@ export function useStateAgentSearch(): UseStateAgentSearchReturn {
           };
         });
 
-        // Transform license results (agents not in professionals table)
-        const transformedLicenses: StateAgentSearchResult[] = newLicenses.map(l => {
-          const fullName = `${l.first_name || ''} ${l.last_name || ''}`.trim();
-          // Calculate years experience from original_date
-          let yearsExp: number | null = null;
-          if (l.original_date) {
-            const origDate = new Date(l.original_date);
-            const now = new Date();
-            yearsExp = Math.floor((now.getTime() - origDate.getTime()) / (1000 * 60 * 60 * 24 * 365));
-          }
-          return {
-            id: l.id,
-            firstName: l.first_name || '',
-            lastName: l.last_name || '',
-            name: fullName,
-            company: l.employer_legal_name,
-            licenseNumber: l.license_number,
-            licenseStatus: 'active', // If in license table, assumed active
-            rating: null,
-            reviewCount: null,
-            yearsExperience: yearsExp,
-            isNeighborhoodExpert: false,
-            isListed: false,
-            stateSlug: 'arizona',
-            canonicalSlug: null,
-            imageUrl: null,
-            verificationToken: null,
-          };
-        });
-
-        // Combine both result sets
-        const allResults = [...transformedProfessionals, ...transformedLicenses];
-
-        // Sort: Neighborhood Experts first, then Listed, then Not Listed
-        // Within each group, sort alphabetically by last name then first name
-        allResults.sort((a, b) => {
-          // Priority: Expert > Listed > Not Listed
-          const getPriority = (agent: StateAgentSearchResult) => {
-            if (agent.isNeighborhoodExpert) return 0;
-            if (agent.isListed) return 1;
-            return 2;
-          };
-
-          const priorityDiff = getPriority(a) - getPriority(b);
-          if (priorityDiff !== 0) return priorityDiff;
-
-          // Within same priority, sort alphabetically
+        // Sort alphabetically by last name then first name
+        transformedResults.sort((a, b) => {
           const lastNameCompare = a.lastName.localeCompare(b.lastName);
           if (lastNameCompare !== 0) return lastNameCompare;
           return a.firstName.localeCompare(b.firstName);
         });
 
-        setResults(allResults);
+        setResults(transformedResults);
         setIsSearching(false);
       } catch (err: any) {
         if (err.name === 'AbortError') {
