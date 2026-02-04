@@ -5,8 +5,11 @@ import { useLocationSearch } from '@/hooks/useLocationSearch';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
-// Fixed to Arizona only
-const FIXED_STATE = { abbr: 'AZ', name: 'Arizona', slug: 'arizona' };
+// Available states
+const STATES = [
+  { abbr: 'AZ', name: 'Arizona', slug: 'arizona' },
+  { abbr: 'CA', name: 'California', slug: 'california' },
+];
 
 interface DualSearchBoxProps {
   locationPlaceholder?: string;
@@ -25,6 +28,9 @@ export const DualSearchBox = ({
   className,
 }: DualSearchBoxProps) => {
   const navigate = useNavigate();
+  
+  // State selection
+  const [selectedState, setSelectedState] = useState(STATES[0]); // Default to Arizona
   
   // Location search state
   const [locationValue, setLocationValue] = useState('');
@@ -51,14 +57,14 @@ export const DualSearchBox = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       if (locationValue.trim().length >= 2) {
-        searchLocation(locationValue);
+        searchLocation(locationValue, selectedState.name);
       } else {
         clearLocationResults();
         setShowLocationDropdown(false);
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [locationValue, searchLocation, clearLocationResults]);
+  }, [locationValue, selectedState, searchLocation, clearLocationResults]);
 
   // Auto-open location dropdown when results arrive
   useEffect(() => {
@@ -133,7 +139,7 @@ export const DualSearchBox = ({
   // Navigate to Check Agent page with search query
   const handleAgentSearch = () => {
     if (agentValue.trim().length >= 2) {
-      navigate(`/check-agent?q=${encodeURIComponent(agentValue.trim())}&state=${FIXED_STATE.slug}`);
+      navigate(`/check-agent?q=${encodeURIComponent(agentValue.trim())}&state=${selectedState.slug}`);
     }
   };
 
@@ -233,10 +239,21 @@ export const DualSearchBox = ({
 
       {/* Agent Name Search - navigates to AgentLookup page */}
       <div className="relative flex gap-2">
-        {/* Static State Label */}
-        <div className="flex items-center px-3 py-3 h-full bg-muted border border-border rounded-lg text-sm font-medium min-w-[50px] justify-center">
-          {FIXED_STATE.abbr}
-        </div>
+        {/* State Selector */}
+        <select
+          value={selectedState.abbr}
+          onChange={(e) => {
+            const state = STATES.find(s => s.abbr === e.target.value);
+            if (state) setSelectedState(state);
+          }}
+          className="flex items-center px-3 py-3 h-full bg-muted border border-border rounded-lg text-sm font-medium min-w-[60px] cursor-pointer hover:bg-muted/80"
+        >
+          {STATES.map(state => (
+            <option key={state.abbr} value={state.abbr}>
+              {state.abbr}
+            </option>
+          ))}
+        </select>
 
         {/* Agent Name Input */}
         <div className="relative flex-1">

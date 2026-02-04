@@ -33,7 +33,7 @@ export const useLocationSearch = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const search = useCallback(async (term: string): Promise<LocationSearchResult[]> => {
+  const search = useCallback(async (term: string, stateFilter?: string): Promise<LocationSearchResult[]> => {
     if (!term || term.trim().length < 2) {
       setResults([]);
       return [];
@@ -53,7 +53,10 @@ export const useLocationSearch = () => {
 
     try {
       const { data, error: searchError } = await supabase
-        .rpc('search_location', { search_term: trimmedTerm });
+        .rpc('search_location', { 
+          search_term: trimmedTerm,
+          state_filter: stateFilter || 'Arizona'
+        });
 
       if (searchError) throw searchError;
 
