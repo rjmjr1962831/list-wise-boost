@@ -19,11 +19,14 @@ const AdminLogin = () => {
   console.log("[AdminLogin] Component loaded - v2.1");
   console.log("[AdminLogin] Initial state - isLoading:", isLoading);
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAuth = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     
-    console.log("[AdminLogin] Form submitted");
+    console.log("[AdminLogin] handleAuth called");
     console.log("[AdminLogin] Email:", email);
+    console.log("[AdminLogin] Password length:", password.length);
     
     if (!email || !password) {
       toast.error("Please enter email and password");
@@ -171,18 +174,27 @@ const AdminLogin = () => {
               Debug: Email={email.length > 0 ? '✓' : '✗'} | Pass={password.length > 0 ? '✓' : '✗'} | Loading={isLoading ? '✓' : '✗'}
             </div>
             
-            {/* Test with native button */}
+            {/* Direct login button - bypasses form submission */}
             <button
               type="button"
-              onClick={() => {
-                console.log("[AdminLogin] Native button clicked - this should always fire!");
-                console.log("[AdminLogin] Current email:", email);
-                console.log("[AdminLogin] Current password length:", password.length);
-                console.log("[AdminLogin] Current isLoading:", isLoading);
+              onClick={async () => {
+                console.log("[AdminLogin] Direct login button clicked!");
+                await handleAuth();
               }}
-              style={{ padding: '8px 16px', marginTop: '8px', background: '#eee', border: '1px solid #ccc', cursor: 'pointer', width: '100%' }}
+              disabled={isLoading}
+              style={{ 
+                padding: '12px 16px', 
+                marginTop: '8px', 
+                background: isLoading ? '#ccc' : '#10b981', 
+                color: 'white',
+                border: 'none', 
+                borderRadius: '6px',
+                cursor: isLoading ? 'not-allowed' : 'pointer', 
+                width: '100%',
+                fontWeight: '600'
+              }}
             >
-              Debug: Click Me (Native Button)
+              {isLoading ? "Signing in..." : "🔑 Sign In (Direct)"}
             </button>
           </form>
         </CardContent>
