@@ -16,7 +16,8 @@ const AdminLogin = () => {
   const navigate = useNavigate();
   
   // This log will fire when component loads - confirms new code is deployed
-  console.log("[AdminLogin] Component loaded - v2.0");
+  console.log("[AdminLogin] Component loaded - v2.1");
+  console.log("[AdminLogin] Initial state - isLoading:", isLoading);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +125,10 @@ const AdminLogin = () => {
                 type="email"
                 placeholder="admin@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  console.log("[AdminLogin] Email input changed:", e.target.value);
+                  setEmail(e.target.value);
+                }}
                 required
               />
             </div>
@@ -135,7 +139,10 @@ const AdminLogin = () => {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  console.log("[AdminLogin] Password input changed, length:", e.target.value.length);
+                  setPassword(e.target.value);
+                }}
                 required
                 minLength={6}
               />
@@ -145,7 +152,15 @@ const AdminLogin = () => {
               className="w-full" 
               disabled={isLoading}
               onClick={(e) => {
-                console.log("[AdminLogin] Button clicked");
+                console.log("[AdminLogin] Button onClick fired");
+                console.log("[AdminLogin] Event type:", e.type);
+                console.log("[AdminLogin] isLoading:", isLoading);
+              }}
+              onMouseDown={() => {
+                console.log("[AdminLogin] Button mouseDown fired");
+              }}
+              onPointerDown={() => {
+                console.log("[AdminLogin] Button pointerDown fired");
               }}
             >
               {isLoading ? "Signing in..." : "Sign In"}
@@ -153,8 +168,22 @@ const AdminLogin = () => {
             
             {/* Debug info - Shows in all environments */}
             <div className="text-xs text-muted-foreground mt-2">
-              Debug: Email={email.length > 0 ? '✓' : '✗'} | Pass={password.length > 0 ? '✓' : '✗'}
+              Debug: Email={email.length > 0 ? '✓' : '✗'} | Pass={password.length > 0 ? '✓' : '✗'} | Loading={isLoading ? '✓' : '✗'}
             </div>
+            
+            {/* Test with native button */}
+            <button
+              type="button"
+              onClick={() => {
+                console.log("[AdminLogin] Native button clicked - this should always fire!");
+                console.log("[AdminLogin] Current email:", email);
+                console.log("[AdminLogin] Current password length:", password.length);
+                console.log("[AdminLogin] Current isLoading:", isLoading);
+              }}
+              style={{ padding: '8px 16px', marginTop: '8px', background: '#eee', border: '1px solid #ccc', cursor: 'pointer', width: '100%' }}
+            >
+              Debug: Click Me (Native Button)
+            </button>
           </form>
         </CardContent>
         </Card>
