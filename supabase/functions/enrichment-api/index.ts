@@ -1153,7 +1153,7 @@ serve(async (req) => {
       // Get the target neighborhood
       const { data: target, error: targetError } = await supabase
         .from('neighborhood_catalog')
-        .select('id, lat, lon')
+        .select('id, lat, lon, city_area, state')
         .eq('id', id)
         .single();
 
@@ -1164,11 +1164,14 @@ serve(async (req) => {
         });
       }
 
-      // Get all active neighborhoods
+      console.log(`enrichment-api - Target neighborhood: ${target.city_area}, ${target.state}`);
+
+      // Get all active neighborhoods IN THE SAME STATE (allow adjacent cities)
       const { data: allNeighborhoods, error: allError } = await supabase
         .from('neighborhood_catalog')
-        .select('id, neighborhood, neighborhood_slug, city_area, lat, lon, tier')
-        .eq('is_active', true);
+        .select('id, neighborhood, neighborhood_slug, city_area, state, lat, lon, tier')
+        .eq('is_active', true)
+        .eq('state', target.state);
 
       if (allError) {
         return new Response(JSON.stringify({ error: allError.message }), {
@@ -1189,7 +1192,7 @@ serve(async (req) => {
         return R * c;
       };
 
-      // Find nearby neighborhoods within 2 miles
+      // Find nearby neighborhoods within 3 miles (same state, allows adjacent cities like Phoenix/Scottsdale)
       const nearby = (allNeighborhoods || [])
         .filter(n => n.id !== id && n.lat && n.lon)
         .map(n => ({
@@ -1200,14 +1203,17 @@ serve(async (req) => {
           city_area: n.city_area,
           distance_miles: Math.round(haversine(target.lat, target.lon, n.lat!, n.lon!) * 100) / 100
         }))
-        .filter(n => n.distance_miles <= 2.0)
+        .filter(n => n.distance_miles <= 3.0) // 3 miles to include adjacent cities
         .sort((a, b) => a.distance_miles - b.distance_miles)
-        .slice(0, 6);
+        .slice(0, 8);
+
+      // Store just the neighborhood names (not full objects) for cleaner data
+      const nearbyNames = nearby.map(n => n.name);
 
       // Update the neighborhood
       const { error: updateError } = await supabase
         .from('neighborhood_catalog')
-        .update({ nearby_neighborhoods: nearby })
+        .update({ nearby_neighborhoods: nearbyNames })
         .eq('id', id);
 
       if (updateError) {

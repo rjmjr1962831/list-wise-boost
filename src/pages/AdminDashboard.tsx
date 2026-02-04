@@ -26,6 +26,8 @@ import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManage
 import { WarmCacheCronManager } from '@/components/admin/WarmCacheCronManager';
 import { RecentEnrichmentLinks } from '@/components/admin/RecentEnrichmentLinks';
 import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
+import FunnelTestingTool from '@/components/admin/FunnelTestingTool';
+import NearbyNeighborhoodsAudit from '@/components/admin/NearbyNeighborhoodsAudit';
 import { ImportAgentZipActivity } from '@/components/admin/ImportAgentZipActivity';
 import NeighborhoodAliases from '@/pages/admin/NeighborhoodAliases';
 
@@ -257,6 +259,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="funnel-test" className="space-y-4">
+            <FunnelTestingTool />
             <AgentFunnelTester />
           </TabsContent>
 
@@ -265,6 +268,7 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="neighborhood-aliases" className="space-y-4">
+            <NearbyNeighborhoodsAudit />
             <NeighborhoodAliases />
           </TabsContent>
         </Tabs>

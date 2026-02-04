@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { formatWithParagraphs } from '../_shared/formatParagraphs.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -1060,9 +1061,12 @@ REMEMBER:
     
     console.log(`   📊 Deduplication complete: ${finalAchievements.length} achievements, ${filteredPressMentions.length} press mentions`);
 
+    // Format synthesized bio with proper paragraph breaks
+    const formattedBio = formatWithParagraphs(synthesizedData.synthesized_bio) || synthesizedData.synthesized_bio;
+
     // Update professional record
     const updateData: Record<string, any> = {
-      synthesized_bio: synthesizedData.synthesized_bio,
+      synthesized_bio: formattedBio,
       notable_achievements: finalAchievements,
       press_mentions: filteredPressMentions,
       publications: synthesizedData.publications || [],

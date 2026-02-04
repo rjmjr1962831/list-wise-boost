@@ -13,7 +13,6 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -21,38 +20,42 @@ const AdminLogin = () => {
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/admin`,
-          },
-        });
-        if (error) throw error;
-        toast.success("Account created! Please check your email for verification.");
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) throw error;
-        
-        // Check if user has admin role
-        const { data: roles } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", (await supabase.auth.getUser()).data.user?.id);
-        
-        if (!roles || !roles.some(r => r.role === "admin")) {
-          await supabase.auth.signOut();
-          throw new Error("You don't have admin access");
-        }
-        
-        toast.success("Welcome back!");
-        navigate("/admin");
+      // Sign in with password
+      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (signInError) throw signInError;
+      
+      if (!authData.user) {
+        throw new Error("No user data returned");
       }
+      
+      console.log("[AdminLogin] User signed in:", authData.user.id);
+      
+      // Check if user has admin role
+      const { data: roles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authData.user.id);
+      
+      console.log("[AdminLogin] User roles:", roles);
+      
+      if (rolesError) {
+        console.error("[AdminLogin] Error fetching roles:", rolesError);
+        throw new Error("Failed to check admin access");
+      }
+      
+      if (!roles || !roles.some(r => r.role === "admin")) {
+        await supabase.auth.signOut();
+        throw new Error("You don't have admin access");
+      }
+      
+      toast.success("Welcome back!");
+      navigate("/admin");
     } catch (error: any) {
+      console.error("[AdminLogin] Error:", error);
       toast.error(error.message || "Authentication failed");
     } finally {
       setIsLoading(false);
@@ -75,7 +78,7 @@ const AdminLogin = () => {
           </div>
           <CardTitle>Admin Access</CardTitle>
           <CardDescription>
-            {isSignUp ? "Create an admin account" : "Sign in to manage your content"}
+            Sign in to manage your content
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -104,18 +107,9 @@ const AdminLogin = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
-            </button>
-          </div>
         </CardContent>
         </Card>
       </div>

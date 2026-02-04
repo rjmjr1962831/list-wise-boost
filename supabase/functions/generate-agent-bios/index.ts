@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { formatWithParagraphs } from '../_shared/formatParagraphs.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -141,10 +142,13 @@ Write only the bio, no preamble.`;
             throw new Error('No bio generated');
           }
 
+          // Format bio with proper paragraph breaks
+          const formattedBio = formatWithParagraphs(generatedBio) || generatedBio;
+
           // Update professional with generated bio (synthesized_bio is the primary field)
           const { error: updateError } = await supabase
             .from('professionals')
-            .update({ synthesized_bio: generatedBio })
+            .update({ synthesized_bio: formattedBio })
             .eq('id', prof.id);
 
           if (updateError) throw updateError;

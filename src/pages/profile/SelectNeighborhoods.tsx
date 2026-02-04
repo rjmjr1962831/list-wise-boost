@@ -12,6 +12,22 @@ import {
 } from '@/types/neighborhoodPricing';
 import { Switch } from '@/components/ui/switch';
 
+// Analytics tracking helper
+const trackEvent = async (eventName: string, properties: Record<string, any>) => {
+  try {
+    await supabase.from('funnel_analytics').insert({
+      event_name: eventName,
+      event_properties: properties,
+      created_at: new Date().toISOString(),
+      page: 'select-neighborhoods',
+      user_agent: navigator.userAgent
+    });
+    console.log(`[Analytics] ${eventName}`, properties);
+  } catch (error) {
+    console.error('[Analytics] Error tracking event:', error);
+  }
+};
+
 export default function SelectNeighborhoods() {
   const { token } = useParams<{ token: string }>();
   const [searchParams] = useSearchParams();
@@ -28,9 +44,32 @@ export default function SelectNeighborhoods() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [loading, setLoading] = useState(true);
   const [preselectApplied, setPreselectApplied] = useState(false);
+  const [expandedNeighborhood, setExpandedNeighborhood] = useState<string | null>(null);
+
+  const handleExpandNearby = (neighborhoodId: string) => {
+    const isExpanding = expandedNeighborhood !== neighborhoodId;
+    setExpandedNeighborhood(isExpanding ? neighborhoodId : null);
+    
+    if (isExpanding) {
+      const neighborhood = neighborhoods.find(n => n.id === neighborhoodId);
+      trackEvent('nearby_neighborhoods_expanded', {
+        neighborhood_id: neighborhoodId,
+        neighborhood_name: neighborhood?.neighborhood,
+        nearby_count: neighborhood?.nearby_neighborhoods?.length || 0
+      });
+    }
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Track page view
+    trackEvent('neighborhood_selection_viewed', {
+      token,
+      has_preselect: !!preselectSlug,
+      preselect_neighborhood: preselectSlug,
+      preselect_city: preselectCity
+    });
   }, []);
 
   useEffect(() => {
@@ -113,13 +152,41 @@ export default function SelectNeighborhoods() {
     setLoading(false);
   };
 
-  const handleToggleRequest = (neighborhoodId: string) => {
+  const handleToggleRequest = (neighborhoodId: string, source: 'direct' | 'nearby' = 'direct') => {
+    const neighborhood = neighborhoods.find(n => n.id === neighborhoodId);
     const newRequested = new Set(requestedNeighborhoods);
+    const isAdding = !newRequested.has(neighborhoodId);
+    
     if (newRequested.has(neighborhoodId)) {
       newRequested.delete(neighborhoodId);
+      trackEvent('neighborhood_removed', {
+        neighborhood_id: neighborhoodId,
+        neighborhood_name: neighborhood?.neighborhood,
+        tier: neighborhood?.tier,
+        city: neighborhood?.city_area
+      });
     } else {
       newRequested.add(neighborhoodId);
+      trackEvent('neighborhood_added', {
+        neighborhood_id: neighborhoodId,
+        neighborhood_name: neighborhood?.neighborhood,
+        tier: neighborhood?.tier,
+        city: neighborhood?.city_area,
+        price: getPrice(neighborhood?.tier || 'bronze'),
+        billing_cycle: billingCycle,
+        source, // 'direct' or 'nearby'
+        total_selected: newRequested.size
+      });
+      
+      // Track if this triggers the buy 2 get 1 free discount
+      if (newRequested.size === 3) {
+        trackEvent('promotion_triggered', {
+          promotion: 'buy_2_get_1_free',
+          neighborhoods_selected: newRequested.size
+        });
+      }
     }
+    
     setRequestedNeighborhoods(newRequested);
   };
 
@@ -132,14 +199,33 @@ export default function SelectNeighborhoods() {
   };
 
   const calculateTotal = () => {
-    return Array.from(requestedNeighborhoods).reduce((sum, id) => {
-      const neighborhood = neighborhoods.find(n => n.id === id);
-      if (neighborhood) {
-        return sum + getPrice(neighborhood.tier);
+    const selectedIds = Array.from(requestedNeighborhoods);
+    
+    // Get prices for all selected neighborhoods
+    const prices = selectedIds
+      .map(id => {
+        const neighborhood = neighborhoods.find(n => n.id === id);
+        return neighborhood ? getPrice(neighborhood.tier) : 0;
+      })
+      .sort((a, b) => a - b); // Sort ascending to find cheapest
+    
+    // Buy 2 Get 1 Free: Every 3rd neighborhood is free (starting with the cheapest)
+    let total = 0;
+    let freeCount = 0;
+    
+    prices.forEach((price, index) => {
+      // Every 3rd item is free (index 2, 5, 8, etc.)
+      if ((index + 1) % 3 === 0) {
+        freeCount++;
+      } else {
+        total += price;
       }
-      return sum;
-    }, 0);
+    });
+    
+    return { total, freeCount, subtotal: prices.reduce((a, b) => a + b, 0) };
   };
+
+  const { total, freeCount, subtotal } = calculateTotal();
 
   // Filter neighborhoods to only show those in selected cities
   const filteredNeighborhoods = neighborhoods.filter(n => 
@@ -159,6 +245,9 @@ export default function SelectNeighborhoods() {
 
   const handleContinue = () => {
     if (requestedNeighborhoods.size === 0) {
+      trackEvent('neighborhood_selection_skipped', {
+        token
+      });
       navigate('/agent/dashboard');
     } else {
       // Store selected neighborhoods for checkout
@@ -171,6 +260,17 @@ export default function SelectNeighborhoods() {
         neighborhoods: selectedData,
         billingCycle
       }));
+      
+      trackEvent('neighborhood_selection_completed', {
+        token,
+        neighborhoods_selected: requestedNeighborhoods.size,
+        billing_cycle: billingCycle,
+        subtotal,
+        discount: subtotal - total,
+        total,
+        free_neighborhoods: freeCount,
+        promotion_applied: freeCount > 0
+      });
       
       navigate(`/profile/${token}/checkout`);
     }
@@ -246,6 +346,23 @@ export default function SelectNeighborhoods() {
           </p>
         </div>
 
+        {/* Buy 2 Get 1 Free Promotion Banner */}
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl p-6 mb-8 text-center shadow-lg">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <span className="text-4xl">🎉</span>
+            <h2 className="text-2xl font-bold text-white">
+              Buy 2, Get 1 FREE
+            </h2>
+            <span className="text-4xl">🎉</span>
+          </div>
+          <p className="text-white text-lg">
+            Select 3+ neighborhoods and the cheapest one is free!
+          </p>
+          <p className="text-green-100 text-sm mt-1">
+            Stack savings: 6 neighborhoods = 2 free, 9 neighborhoods = 3 free
+          </p>
+        </div>
+
         {/* Neighborhood List by City */}
         {Object.keys(neighborhoodsByCity).length === 0 ? (
           <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
@@ -277,47 +394,114 @@ export default function SelectNeighborhoods() {
                     return (
                       <div
                         key={neighborhood.id}
-                        className={`px-6 py-4 ${isFilled ? 'opacity-60' : ''}`}
+                        className={`${isFilled ? 'opacity-60' : ''}`}
                       >
-                        <div className="flex items-center justify-between gap-4">
-                          {/* Neighborhood Info */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-medium text-slate-900 truncate">
-                                {neighborhood.neighborhood}
-                              </h3>
-                              <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles.badge}`}>
-                                {neighborhood.tier}
-                              </span>
+                        <div className="px-6 py-4">
+                          <div className="flex items-center justify-between gap-4">
+                            {/* Neighborhood Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="font-medium text-slate-900 truncate">
+                                  {neighborhood.neighborhood}
+                                </h3>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${styles.badge}`}>
+                                  {neighborhood.tier}
+                                </span>
+                                {/* Nearby neighborhoods indicator */}
+                                {isRequested && neighborhood.nearby_neighborhoods && Array.isArray(neighborhood.nearby_neighborhoods) && neighborhood.nearby_neighborhoods.length > 0 && (
+                                  <button
+                                    onClick={() => handleExpandNearby(neighborhood.id)}
+                                    className="text-xs text-primary hover:text-primary/80 underline ml-2"
+                                  >
+                                    {neighborhood.nearby_neighborhoods.length} nearby
+                                  </button>
+                                )}
+                              </div>
+                              
+                              {isFilled ? (
+                                <p className="text-sm text-amber-600 font-medium">
+                                  Neighborhood Expert position currently filled
+                                </p>
+                              ) : (
+                                <p className="text-sm text-muted-foreground">
+                                  {formatPrice(priceDisplay)}/{billingCycle === 'annual' ? 'yr' : 'mo'}
+                                  {billingCycle === 'annual' && (
+                                    <span className="text-green-600 ml-2">2 months free</span>
+                                  )}
+                                </p>
+                              )}
                             </div>
                             
-                            {isFilled ? (
-                              <p className="text-sm text-amber-600 font-medium">
-                                Neighborhood Expert position currently filled
-                              </p>
-                            ) : (
-                              <p className="text-sm text-muted-foreground">
-                                {formatPrice(priceDisplay)}/{billingCycle === 'annual' ? 'yr' : 'mo'}
-                                {billingCycle === 'annual' && (
-                                  <span className="text-green-600 ml-2">2 months free</span>
-                                )}
-                              </p>
-                            )}
-                          </div>
-                          
-                          {/* Request Toggle */}
-                          <div className="flex items-center gap-3">
-                            <span className={`text-sm ${isFilled ? 'text-slate-400' : isRequested ? 'text-primary font-medium' : 'text-slate-500'}`}>
-                              {isFilled ? 'Unavailable' : 'Request Neighborhood Expert'}
-                            </span>
-                            <Switch
-                              checked={isRequested}
-                              onCheckedChange={() => handleToggleRequest(neighborhood.id)}
-                              disabled={isFilled}
-                              aria-label={`Request Neighborhood Expert for ${neighborhood.neighborhood}`}
-                            />
+                            {/* Request Toggle */}
+                            <div className="flex items-center gap-3">
+                              <span className={`text-sm ${isFilled ? 'text-slate-400' : isRequested ? 'text-primary font-medium' : 'text-slate-500'}`}>
+                                {isFilled ? 'Unavailable' : 'Request Neighborhood Expert'}
+                              </span>
+                              <Switch
+                                checked={isRequested}
+                                onCheckedChange={() => handleToggleRequest(neighborhood.id)}
+                                disabled={isFilled}
+                                aria-label={`Request Neighborhood Expert for ${neighborhood.neighborhood}`}
+                              />
+                            </div>
                           </div>
                         </div>
+
+                        {/* Nearby Neighborhoods Expansion */}
+                        {isRequested && expandedNeighborhood === neighborhood.id && neighborhood.nearby_neighborhoods && Array.isArray(neighborhood.nearby_neighborhoods) && neighborhood.nearby_neighborhoods.length > 0 && (
+                          <div className="px-6 pb-4 border-t border-slate-100 bg-slate-50">
+                            <div className="pt-4">
+                              <p className="text-sm font-medium text-slate-700 mb-3">
+                                💡 Also consider these nearby neighborhoods:
+                              </p>
+                              <div className="grid grid-cols-2 gap-2">
+                                {neighborhood.nearby_neighborhoods.slice(0, 8).map((nearbyName: string, idx: number) => {
+                                  const nearbyNeighborhood = neighborhoods.find(n => 
+                                    n.neighborhood.toLowerCase() === nearbyName.toLowerCase() &&
+                                    n.city_area === neighborhood.city_area
+                                  );
+                                  
+                                  if (!nearbyNeighborhood) return null;
+                                  
+                                  const isNearbyRequested = requestedNeighborhoods.has(nearbyNeighborhood.id);
+                                  const isNearbyFilled = filledPositions.has(nearbyNeighborhood.id);
+                                  const nearbyPrice = billingCycle === 'annual' 
+                                    ? getAnnualPriceWithDiscount(NEIGHBORHOOD_TIER_PRICES[nearbyNeighborhood.tier])
+                                    : NEIGHBORHOOD_TIER_PRICES[nearbyNeighborhood.tier];
+                                  
+                                  return (
+                                    <button
+                                      key={idx}
+                                      onClick={() => !isNearbyFilled && handleToggleRequest(nearbyNeighborhood.id, 'nearby')}
+                                      disabled={isNearbyFilled}
+                                      className={`text-left p-3 rounded-lg border transition-all ${
+                                        isNearbyRequested 
+                                          ? 'bg-primary/10 border-primary shadow-sm' 
+                                          : isNearbyFilled
+                                          ? 'bg-slate-100 border-slate-200 opacity-50 cursor-not-allowed'
+                                          : 'bg-white border-slate-200 hover:border-primary hover:shadow-sm'
+                                      }`}
+                                    >
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div className="flex-1 min-w-0">
+                                          <p className="text-sm font-medium text-slate-900 truncate">
+                                            {nearbyName}
+                                          </p>
+                                          <p className="text-xs text-slate-500 mt-0.5">
+                                            {isNearbyFilled ? 'Filled' : `${formatPrice(nearbyPrice)}/${billingCycle === 'annual' ? 'yr' : 'mo'}`}
+                                          </p>
+                                        </div>
+                                        {isNearbyRequested && (
+                                          <span className="text-primary text-lg">✓</span>
+                                        )}
+                                      </div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -342,18 +526,36 @@ export default function SelectNeighborhoods() {
           {requestedNeighborhoods.size > 0 && (
             <div className="mb-4 pb-4 border-b border-slate-100">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-slate-600">
-                  {requestedNeighborhoods.size} neighborhood{requestedNeighborhoods.size !== 1 ? 's' : ''} requested
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-2xl font-bold text-slate-900">
-                    {formatPrice(calculateTotal())}
+                <div>
+                  <span className="text-sm text-slate-600">
+                    {requestedNeighborhoods.size} neighborhood{requestedNeighborhoods.size !== 1 ? 's' : ''} requested
                   </span>
-                  <span className="text-slate-500 text-sm">
-                    /{billingCycle === 'annual' ? 'yr' : 'mo'}
-                  </span>
-                  {billingCycle === 'annual' && (
-                    <span className="text-xs text-green-600">(2 months free)</span>
+                  {freeCount > 0 && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                        🎉 {freeCount} FREE (Buy 2 Get 1)
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <div className="text-right">
+                  {freeCount > 0 && (
+                    <div className="text-sm text-slate-400 line-through">
+                      {formatPrice(subtotal)}
+                    </div>
+                  )}
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-slate-900">
+                      {formatPrice(total)}
+                    </span>
+                    <span className="text-slate-500 text-sm">
+                      /{billingCycle === 'annual' ? 'yr' : 'mo'}
+                    </span>
+                  </div>
+                  {freeCount > 0 && (
+                    <div className="text-xs text-green-600 font-semibold">
+                      Save {formatPrice(subtotal - total)}
+                    </div>
                   )}
                 </div>
               </div>

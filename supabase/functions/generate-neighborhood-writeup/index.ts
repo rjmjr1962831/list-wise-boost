@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.80.0";
+import { formatWithParagraphs } from '../_shared/formatParagraphs.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -226,11 +227,14 @@ Format the response as clean HTML that can be rendered directly on a webpage.`;
 
     console.log(`[NeighborhoodWriteup] Claude narrative complete (${narrativeContent.length} chars)`);
 
+    // Format writeup with proper paragraph breaks
+    const formattedWriteup = formatWithParagraphs(narrativeContent) || narrativeContent;
+
     // Save the writeup to the database
     const { error: updateError } = await supabase
       .from('neighborhood_catalog')
       .update({
-        writeup_html: narrativeContent,
+        writeup_html: formattedWriteup,
         writeup_research: researchContent,
         writeup_generated_at: new Date().toISOString(),
       })
