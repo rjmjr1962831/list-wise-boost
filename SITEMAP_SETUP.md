@@ -3,16 +3,14 @@
 This project uses a hybrid approach for sitemap generation:
 
 ## 1. Static Sitemap (`public/sitemap.xml`)
-- Located at: `https://top10lists.us/sitemap.xml`
+- Located at: `https://www.top10lists.us/sitemap.xml`
 - Manually updated when major structural changes occur
 - Contains all 32 Arizona cities
 - Includes major city API endpoints for AI discovery
 
-## 2. Dynamic Sitemap (Edge Function)
-- Located at: `https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap`
-- Automatically updates based on database content
-- Pulls all active cities and categories in real-time
-- No manual updates needed
+## 2. Dynamic Sitemap (Internal Generation)
+- The dynamic sitemap source is generated internally and served from `www.top10lists.us`
+- No sitemap URLs should point to external domains
 
 ## How It Works
 
@@ -25,10 +23,11 @@ The edge function (`supabase/functions/generate-sitemap/index.ts`):
 5. Caches results for 1 hour
 
 ### robots.txt Configuration
-Both sitemaps are declared in `public/robots.txt`:
+Only www domain sitemaps are declared in `public/robots.txt`:
 ```
-Sitemap: https://top10lists.us/sitemap.xml
-Sitemap: https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap
+Sitemap: https://www.top10lists.us/sitemap.xml
+Sitemap: https://www.top10lists.us/sitemap-cities.xml
+Sitemap: https://www.top10lists.us/sitemap-neighborhoods.xml
 ```
 
 ## When to Update
@@ -40,10 +39,10 @@ Update `public/sitemap.xml` when:
 - Want to ensure critical pages are always listed
 
 ### Dynamic Sitemap
-No updates needed! It automatically reflects:
+No updates needed. It automatically reflects:
 - New cities added to the database
 - New categories created
-- Changes to active status of cities/categories
+- Changes to active status of cities and categories
 
 ## SEO Benefits
 
@@ -56,7 +55,7 @@ No updates needed! It automatically reflects:
 
 Test the dynamic sitemap:
 ```bash
-curl https://bgdtekbhelormzbymkhh.supabase.co/functions/v1/generate-sitemap
+curl https://www.top10lists.us/sitemap-cities.xml
 ```
 
 ## Performance

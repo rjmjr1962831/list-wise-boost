@@ -647,11 +647,13 @@ var init_BrowserWebSocketTransport = __esm({
 });
 
 // node_modules/@cloudflare/puppeteer/lib/esm/puppeteer/cloudflare/globalPatcher.js
-import { Buffer as Buffer2 } from "node:buffer";
-globalThis.Buffer = Buffer2;
+// import { Buffer as Buffer2 } from "node:buffer"; // Commented out for Cloudflare Workers
+var Buffer2 = globalThis.Buffer || (typeof Buffer !== 'undefined' ? Buffer : {});
+if (!globalThis.Buffer) globalThis.Buffer = Buffer2;
 
 // node_modules/@cloudflare/puppeteer/lib/esm/puppeteer/common/util.js
-import { Buffer as Buffer3 } from "node:buffer";
+// import { Buffer as Buffer3 } from "node:buffer"; // Commented out for Cloudflare Workers
+var Buffer3 = globalThis.Buffer || (typeof Buffer !== 'undefined' ? Buffer : {});
 
 // node_modules/@cloudflare/puppeteer/lib/esm/third_party/rxjs/rxjs.js
 var extendStatics = /* @__PURE__ */ __name(function(d, b) {
@@ -19945,10 +19947,11 @@ var index_default = {
     ];
     const isBot = bots.some((b) => ua.toLowerCase().includes(b));
     const isCacheWarming = request.headers.get("X-Cache-Warming") === "true";
+    const forceRefresh = request.headers.get("X-Force-Refresh") === "true";
 
     // --- ORIGIN CONFIGURATION ---
     const originUrl = new URL(request.url);
-    originUrl.hostname = "list-wise-boost.vercel.app";
+    originUrl.hostname = "list-wise-boost.lovable.app";
     originUrl.protocol = "https:";
     originUrl.port = "";
 
@@ -20004,10 +20007,10 @@ var index_default = {
     }
 
     // Cache Check
-    const cacheKey = new Request(url.toString(), request);
+    const cacheKey = new Request(url.toString(), { method: "GET" });
     const cache = caches.default;
     
-    if (!isCacheWarming) {
+    if (!forceRefresh) {
       const cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
         const newHdrs = new Headers(cachedResponse.headers);
@@ -20031,45 +20034,76 @@ var index_default = {
       await page.setViewport({ width: 1920, height: 1080 });
       
       await page.goto(originUrl.toString(), {
-        waitUntil: "networkidle2",
+        waitUntil: "networkidle0",
         timeout: 60000 
       });
       
-      // --- NEW END-OF-PAGE WAIT CONDITIONS ---
+      // --- ENHANCED WAIT CONDITIONS FOR AGENT DATA ---
       try {
-        // 1. Wait for Agent Cards (The Grid)
-        await page.waitForSelector('ol.grid li', { timeout: 15000 });
+        // Wait for multiple possible selectors for agent content
+        await Promise.race([
+          page.waitForSelector('[itemtype="https://schema.org/Person"]', { timeout: 20000 }),
+          page.waitForSelector('article', { timeout: 20000 }),
+          page.waitForSelector('[data-agent]', { timeout: 20000 }),
+          page.waitForSelector('.agent-card', { timeout: 20000 })
+        ]);
         
-        // 2. Wait for the absolute last unique element (Methodology Summary)
-        await page.waitForSelector('details summary', { timeout: 10000 });
+        // Additional wait to ensure all content loads
+        await page.waitForFunction(
+          () => document.querySelector('main')?.textContent?.length > 1000,
+          { timeout: 10000 }
+        );
+        
+        // Extra 2-second buffer for any final rendering
+        await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (e) {
-        console.log("Hydration markers timed out - attempting content capture anyway.");
+        console.log("Agent content markers timed out - attempting content capture anyway.");
       }
       
       const html = await page.content();
       await browser.disconnect();
 
-      if (html.length > 100) {
-        const contentType = url.pathname.endsWith('.xml') ? 'application/xml' : 'text/html;charset=UTF-8';
+      const isXml = url.pathname.endsWith(".xml");
+      const isEmptyShell = !isXml && /<div id="root"[^>]*>\s*<\/div>/i.test(html);
+      const hasHtmlTag = isXml || html.includes("<html");
+      const hasH1 = isXml || html.toLowerCase().includes("<h1");
+      const minLength = isXml ? 100 : 5000;
+
+      if (html.length >= minLength && hasHtmlTag && hasH1 && !isEmptyShell) {
+        const contentType = isXml ? "application/xml" : "text/html;charset=UTF-8";
         const response = new Response(html, {
           headers: {
             "content-type": contentType,
             "X-Worker-Cache": "MISS",
+            "X-Rendered": "puppeteer",
             "Cache-Control": "public, max-age=604800"
           }
         });
         await cache.put(cacheKey, response.clone());
         return response;
       } else {
-        return new Response(html, { headers: { "content-type": "text/html", "X-Error": "Too-Short" } });
+        return new Response(html, { headers: { "content-type": "text/html", "X-Error": "Invalid-Render" } });
       }
     } catch (e) {
       if (browser) await browser.disconnect();
+      const fallbackCachedResponse = await cache.match(cacheKey);
+      if (fallbackCachedResponse) {
+        const newHdrs = new Headers(fallbackCachedResponse.headers);
+        newHdrs.set("X-Worker-Cache", "HIT");
+        newHdrs.set("X-Worker-Error", "Render-Failed");
+        return new Response(fallbackCachedResponse.body, { status: fallbackCachedResponse.status, headers: newHdrs });
+      }
       return fetch(new Request(originUrl.toString(), request), { redirect: "manual" });
     }
   }
 };
 
-export {
-  index_default as default
-};
+// Service Worker format wrapper for Cloudflare Workers API upload
+addEventListener('fetch', event => {
+  // In Service Worker format, bindings are global variables
+  // Create an env object that the ES module code expects
+  const env = {
+    MYBROWSER: typeof MYBROWSER !== 'undefined' ? MYBROWSER : undefined
+  };
+  event.respondWith(index_default.fetch(event.request, env));
+});

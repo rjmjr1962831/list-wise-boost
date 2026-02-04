@@ -2,9 +2,9 @@
   "$schema": "https://top10lists.us/schemas/coverage.json",
   "version": "1.0",
   "lastUpdated": "2026-01-28",
-  "note": "This file is dynamically generated. The actual content is served via Cloudflare Worker from the generate-sitemap edge function.",
+  "note": "This file is generated and served on www.top10lists.us.",
   "endpoint": "https://www.top10lists.us/coverage.json",
-  "backend": "/functions/v1/generate-sitemap?type=coverage",
+  "backend": "Internal generation process",
   "publisher": {
     "name": "Top10Lists.us",
     "url": "https://www.top10lists.us",

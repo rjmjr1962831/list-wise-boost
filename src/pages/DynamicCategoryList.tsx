@@ -1419,6 +1419,17 @@ export default function DynamicCategoryList({
         </>
       ) : (
         <>
+          {/* CITY MARKET OVERVIEW: Show above the fold for city pages */}
+          {!neighborhoodSlug && city && (
+            <div className="mb-8">
+              <CityMarketOverview 
+                citySlug={city.slug} 
+                cityName={city.name} 
+                stateName={city.state}
+              />
+            </div>
+          )}
+          
           {/* HUMAN CONTENT: Full agent list with cards - shown FIRST */}
           {categorySlug === 'top10realestateagents' && city && (
             <RealEstateAgentQuizModal
@@ -1468,32 +1479,7 @@ export default function DynamicCategoryList({
               metadata={metadata}
               professionals={filteredProfessionals}
               lastUpdated={lastUpdated}
-              rightAction={
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowCityInfo(!showCityInfo)}
-                  className="flex items-center gap-2"
-                >
-                  {showCityInfo ? 'Hide' : 'More about'} {city.name}
-                  <svg 
-                    className={`h-4 w-4 transition-transform ${showCityInfo ? 'rotate-180' : ''}`}
-                    fill="none" 
-                    stroke="currentColor" 
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </Button>
-              }
-              expandedContent={showCityInfo ? (
-                <div className="animate-in slide-in-from-top-2 duration-300">
-                  <CityMarketOverview 
-                    citySlug={city.slug} 
-                    cityName={city.name} 
-                    stateName={city.state}
-                  />
-                </div>
-              ) : null}
+              rightAction={null}
             >
               {sections.map((section, index) => (
                 <CollapsibleListSection

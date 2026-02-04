@@ -12,13 +12,23 @@ serve(async (req) => {
 
   try {
     const CLOUDFLARE_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_ACCOUNT_ID');
-    const CLOUDFLARE_GLOBAL_API_KEY = Deno.env.get('CLOUDFLARE_GLOBAL_API_KEY');
+    const CURSOR_API_KEY = Deno.env.get('CURSOR_API_KEY');
 
-    if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_GLOBAL_API_KEY) {
-      throw new Error('Missing Cloudflare credentials (CLOUDFLARE_ACCOUNT_ID or CLOUDFLARE_GLOBAL_API_KEY)');
+    if (!CLOUDFLARE_ACCOUNT_ID || !CURSOR_API_KEY) {
+      throw new Error('Missing Cloudflare credentials (CLOUDFLARE_ACCOUNT_ID or CURSOR_API_KEY)');
     }
 
-    const { scriptName = 'orange-truth-a103', scriptContent } = await req.json();
+    const { scriptName, scriptContent } = await req.json();
+
+    if (!scriptName || typeof scriptName !== 'string') {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Missing required scriptName in request body'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
     if (!scriptContent) {
       throw new Error('Missing scriptContent in request body');
@@ -32,8 +42,7 @@ serve(async (req) => {
       {
         method: 'PUT',
         headers: {
-          'X-Auth-Email': 'robert@aryah.ai',
-          'X-Auth-Key': CLOUDFLARE_GLOBAL_API_KEY,
+          'Authorization': `Bearer ${CURSOR_API_KEY}`,
           'Content-Type': 'application/javascript',
         },
         body: scriptContent,

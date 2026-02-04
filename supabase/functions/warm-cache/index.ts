@@ -183,7 +183,7 @@ async function fetchBotHtml(url: string, forceRefresh: boolean): Promise<{ succe
       success: true,
       html,
       status: response.status,
-      cache: response.headers.get("X-Cache") || "unknown",
+      cache: response.headers.get("X-Worker-Cache") || response.headers.get("X-Cache") || "unknown",
       rendered: response.headers.get("X-Rendered") || "unknown",
     };
   } catch (error: unknown) {
@@ -319,7 +319,18 @@ async function warmUrl(url: string, forceRefresh: boolean): Promise<WarmResult |
     let status = 0;
     let cacheStatus = "unknown";
 
-    if (PRERENDER_TOKEN && canWriteKv) {
+    const botResult = await fetchBotHtml(url, forceRefresh);
+    if (botResult.success && botResult.html) {
+      const botValidation = validateRenderedHtml(botResult.html, url);
+      if (botValidation.ok) {
+        html = botResult.html;
+        renderMethod = botResult.rendered || "worker";
+        status = botResult.status || 200;
+        cacheStatus = botResult.cache || "unknown";
+      }
+    }
+
+    if (!html && PRERENDER_TOKEN && canWriteKv) {
       const prerenderResult = await fetchPrerenderedHtml(url, forceRefresh);
       if (!prerenderResult.success || !prerenderResult.html) {
         return { url, type: "fetch", message: prerenderResult.error || "Prerender fetch failed" };
@@ -329,16 +340,10 @@ async function warmUrl(url: string, forceRefresh: boolean): Promise<WarmResult |
       renderMethod = "prerender-io";
       status = prerenderResult.status || 200;
       cacheStatus = "KV";
-    } else {
-      const botResult = await fetchBotHtml(url, forceRefresh);
-      if (!botResult.success || !botResult.html) {
-        return { url, type: "fetch", message: botResult.error || "Bot fetch failed" };
-      }
+    }
 
-      html = botResult.html;
-      renderMethod = botResult.rendered || "unknown";
-      status = botResult.status || 200;
-      cacheStatus = botResult.cache || "unknown";
+    if (!html) {
+      return { url, type: "fetch", message: botResult.error || "Bot fetch failed" };
     }
 
     const validation = validateRenderedHtml(html, url);

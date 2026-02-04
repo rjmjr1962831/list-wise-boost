@@ -556,7 +556,6 @@ verify_jwt = false
 
 [functions.populate-ca-neighborhoods]
 verify_jwt = false
-wall_clock_limit = 400
 
 [functions.discover-neighborhoods-deepseek]
 verify_jwt = false
