@@ -40,6 +40,7 @@ const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCatego
 const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZipCategoryRouter"));
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminDashboardDirect = lazy(() => import("./pages/AdminDashboardDirect"));
 const CRM = lazy(() => import("./pages/CRM"));
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
@@ -162,6 +163,8 @@ const App = () => (
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    {/* Direct admin access - security via obscurity */}
+                    <Route path="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" element={<AdminDashboardDirect />} />
                     <Route path="/og-preview" element={<OGPreview />} />
                     <Route path="/crm" element={<CRM />} />
                     <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />
