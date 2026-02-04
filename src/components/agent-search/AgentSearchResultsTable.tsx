@@ -9,21 +9,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StateAgentSearchResult } from '@/hooks/useStateAgentSearch';
+import { Link } from 'react-router-dom';
 
 interface AgentSearchResultsTableProps {
   results: StateAgentSearchResult[];
   isLoading: boolean;
-  onViewDetails: (agent: StateAgentSearchResult) => void;
-  onApprove: (agent: StateAgentSearchResult) => void;
-  onApply: (agent: StateAgentSearchResult) => void;
 }
 
 export function AgentSearchResultsTable({
   results,
   isLoading,
-  onViewDetails,
-  onApprove,
-  onApply,
 }: AgentSearchResultsTableProps) {
   if (isLoading) {
     return (
@@ -33,9 +28,7 @@ export function AgentSearchResultsTable({
             <TableRow>
               <TableHead>First Name</TableHead>
               <TableHead>Last Name</TableHead>
-              <TableHead>Neighborhood Expert</TableHead>
-              <TableHead>Listed</TableHead>
-              <TableHead className="w-[140px]">Action</TableHead>
+              <TableHead className="w-[100px]">View</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -43,8 +36,6 @@ export function AgentSearchResultsTable({
               <TableRow key={i}>
                 <TableCell><Skeleton className="h-4 w-20" /></TableCell>
                 <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-8" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-8" /></TableCell>
                 <TableCell><Skeleton className="h-8 w-20" /></TableCell>
               </TableRow>
             ))}
@@ -69,64 +60,40 @@ export function AgentSearchResultsTable({
           <TableRow>
             <TableHead>First Name</TableHead>
             <TableHead>Last Name</TableHead>
-            <TableHead>Neighborhood Expert</TableHead>
-            <TableHead>Listed</TableHead>
-            <TableHead className="w-[140px]">Action</TableHead>
+            <TableHead className="w-[100px]">View</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {results.map((agent) => {
-            // Determine row background based on status
-            let rowClassName = '';
-            if (agent.isNeighborhoodExpert) {
-              rowClassName = 'bg-accent/30';
-            } else if (agent.isListed) {
-              rowClassName = 'bg-accent/10';
-            }
+            // Build agent profile URL
+            const profileUrl = agent.canonicalSlug && agent.stateSlug
+              ? `/${agent.stateSlug}/agents/${agent.canonicalSlug}`
+              : agent.legacyUrlSlug
+              ? `/${agent.stateSlug}/agents/${agent.legacyUrlSlug}`
+              : null;
 
             return (
-              <TableRow key={agent.id} className={rowClassName}>
+              <TableRow key={agent.id}>
                 <TableCell className="font-medium">{agent.firstName}</TableCell>
                 <TableCell>{agent.lastName}</TableCell>
                 <TableCell>
-                  {agent.isNeighborhoodExpert ? (
-                    <span>Yes</span>
-                  ) : (
-                    <span className="text-muted-foreground">No</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {agent.isListed ? (
-                    <span>Yes</span>
-                  ) : (
-                    <span className="text-muted-foreground">No</span>
-                  )}
-                </TableCell>
-                <TableCell className="space-x-2">
-                  {agent.isListed ? (
+                  {profileUrl ? (
                     <Button
-                      variant="default"
+                      variant="ghost"
                       size="sm"
-                      onClick={() => onApprove(agent)}
+                      asChild
                     >
-                      Approve
+                      <Link to={profileUrl}>View</Link>
                     </Button>
                   ) : (
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      onClick={() => onApply(agent)}
+                      disabled
                     >
-                      Apply
+                      View
                     </Button>
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewDetails(agent)}
-                  >
-                    View
-                  </Button>
                 </TableCell>
               </TableRow>
             );

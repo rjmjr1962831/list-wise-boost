@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { Search, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,10 +19,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
-import { useStateAgentSearch, StateAgentSearchResult } from '@/hooks/useStateAgentSearch';
+import { useStateAgentSearch } from '@/hooks/useStateAgentSearch';
 import { AgentSearchResultsTable } from '@/components/agent-search/AgentSearchResultsTable';
-import { AgentDetailView } from '@/components/agent-search/AgentDetailView';
-import { AgentApplicationForm } from '@/components/agent-search/AgentApplicationForm';
 
 // Currently supported states
 const STATES = [
@@ -31,7 +29,6 @@ const STATES = [
 ];
 
 export default function AgentLookup() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
   // Initialize from URL params
@@ -39,7 +36,6 @@ export default function AgentLookup() {
   const initialState = searchParams.get('state') || 'arizona';
   
   const [selectedState, setSelectedState] = useState(initialState);
-  const [applicationAgent, setApplicationAgent] = useState<StateAgentSearchResult | null>(null);
   
   const {
     query,
@@ -47,8 +43,6 @@ export default function AgentLookup() {
     results,
     isSearching,
     error,
-    selectedAgent,
-    setSelectedAgent,
     search,
     clearResults,
   } = useStateAgentSearch();
@@ -69,24 +63,6 @@ export default function AgentLookup() {
 
   const handleClearSearch = () => {
     clearResults();
-  };
-
-  // Handle "Approve" - route to new visibility funnel with agent pre-selected
-  const handleApprove = (agent: StateAgentSearchResult) => {
-    // Store professional context for visibility funnel
-    if (agent.id) {
-      sessionStorage.setItem('visibility_professional_id', agent.id);
-    }
-    if (agent.verificationToken) {
-      sessionStorage.setItem('visibility_professional_token', agent.verificationToken);
-    }
-    // Navigate to new visibility funnel
-    navigate('/visibility/coverage');
-  };
-
-  // Handle "Apply" - open application form
-  const handleApply = (agent: StateAgentSearchResult) => {
-    setApplicationAgent(agent);
   };
 
   return (
@@ -183,25 +159,8 @@ export default function AgentLookup() {
           <AgentSearchResultsTable
             results={results}
             isLoading={isSearching}
-            onViewDetails={setSelectedAgent}
-            onApprove={handleApprove}
-            onApply={handleApply}
           />
         )}
-
-        {/* Agent Detail Modal */}
-        <AgentDetailView
-          agent={selectedAgent}
-          open={!!selectedAgent}
-          onOpenChange={(open) => !open && setSelectedAgent(null)}
-        />
-
-        {/* Application Form Modal */}
-        <AgentApplicationForm
-          agent={applicationAgent}
-          open={!!applicationAgent}
-          onOpenChange={(open) => !open && setApplicationAgent(null)}
-        />
       </div>
     </>
   );
