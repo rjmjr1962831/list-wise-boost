@@ -1725,7 +1725,7 @@ export const ProfessionalCard = ({
                   <div className="border rounded-lg p-4 bg-primary/5 mt-3">
                     <h4 className="sr-only">Professional Summary</h4>
                     <div 
-                      className="prose prose-sm max-w-none text-sm text-foreground [&>p]:mb-3 [&>p:last-child]:mb-0"
+                      className="prose prose-sm max-w-none text-sm text-foreground leading-relaxed [&>p]:mb-4 [&>p:last-child]:mb-0"
                       dangerouslySetInnerHTML={{ __html: displayHtml }}
                     />
                     {needsTruncation && (
@@ -1925,9 +1925,13 @@ export const ProfessionalCard = ({
                 })()}
 
                 {/* Bar 2: Reviews */}
-                {(() => {
+                {reviewsOpen && (() => {
                   const contentRating = professional.rating || (professional as any).review_stars_rating || 0;
-                  if (contentRating <= 0 || !reviewsOpen) return null;
+                  const hasReviews = (professional as any).num_total_reviews > 0 || professional.reviews > 0;
+                  
+                  // Show reviews section if we have a rating OR review count
+                  if (contentRating <= 0 && !hasReviews) return null;
+                  
                   return (
                     <div className="border rounded-lg p-4 bg-background">
                       <ExternalReviewsPreview 
