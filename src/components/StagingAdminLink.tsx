@@ -1,15 +1,28 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Shield } from "lucide-react";
 
 export const StagingAdminLink = () => {
-  // Only show on staging environments (not production)
-  const isStaging = 
-    window.location.hostname.includes('staging') ||
-    window.location.hostname.includes('vercel.app') ||
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
+  const [isStaging, setIsStaging] = useState(false);
 
-  // Don't render anything in production
+  // Only check hostname on client-side after mount
+  useEffect(() => {
+    try {
+      const hostname = window.location.hostname;
+      const staging = 
+        hostname.includes('staging') ||
+        hostname.includes('vercel.app') ||
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1';
+      
+      setIsStaging(staging);
+    } catch (error) {
+      console.error('StagingAdminLink error:', error);
+      setIsStaging(false);
+    }
+  }, []);
+
+  // Don't render anything until we've checked (client-side only)
   if (!isStaging) {
     return null;
   }
