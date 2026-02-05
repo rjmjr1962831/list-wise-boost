@@ -20014,7 +20014,7 @@ var index_default = {
       const cachedResponse = await cache.match(cacheKey);
       if (cachedResponse) {
         const newHdrs = new Headers(cachedResponse.headers);
-        newHdrs.set("X-Worker-Cache", "HIT");
+        newHdrs.set("X-Cache", "HIT");
         return new Response(cachedResponse.body, { status: cachedResponse.status, headers: newHdrs });
       }
     }
@@ -20074,7 +20074,7 @@ var index_default = {
         const response = new Response(html, {
           headers: {
             "content-type": contentType,
-            "X-Worker-Cache": "MISS",
+            "X-Cache": "MISS",
             "X-Rendered": "puppeteer",
             "Cache-Control": "public, max-age=604800"
           }
@@ -20089,7 +20089,7 @@ var index_default = {
       const fallbackCachedResponse = await cache.match(cacheKey);
       if (fallbackCachedResponse) {
         const newHdrs = new Headers(fallbackCachedResponse.headers);
-        newHdrs.set("X-Worker-Cache", "HIT");
+        newHdrs.set("X-Cache", "HIT");
         newHdrs.set("X-Worker-Error", "Render-Failed");
         return new Response(fallbackCachedResponse.body, { status: fallbackCachedResponse.status, headers: newHdrs });
       }
