@@ -1,4 +1,4 @@
-var __create = Object.create;
+﻿var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -13019,7 +13019,7 @@ var PUPPETEER_WORLD = Symbol("puppeteerWorld");
 var puppeteerToProtocolLifecycle = /* @__PURE__ */ new Map([
   ["load", "load"],
   ["domcontentloaded", "DOMContentLoaded"],
-  ["networkidle0", "networkIdle"],
+  ["domcontentloaded", "networkIdle"],
   ["networkidle2", "networkAlmostIdle"]
 ]);
 var LifecycleWatcher = class {
@@ -20034,28 +20034,28 @@ var index_default = {
       await page.setViewport({ width: 1920, height: 1080 });
       
       await page.goto(originUrl.toString(), {
-        waitUntil: "networkidle0",
-        timeout: 60000 
+        waitUntil: "domcontentloaded",
+        timeout: 15000 
       });
       
       // --- ENHANCED WAIT CONDITIONS FOR AGENT DATA ---
       try {
         // Wait for multiple possible selectors for agent content
         await Promise.race([
-          page.waitForSelector('[itemtype="https://schema.org/Person"]', { timeout: 20000 }),
-          page.waitForSelector('article', { timeout: 20000 }),
-          page.waitForSelector('[data-agent]', { timeout: 20000 }),
-          page.waitForSelector('.agent-card', { timeout: 20000 })
+          page.waitForSelector('[itemtype="https://schema.org/Person"]', { timeout: 5000 }),
+          page.waitForSelector('article', { timeout: 5000 }),
+          page.waitForSelector('[data-agent]', { timeout: 5000 }),
+          page.waitForSelector('.agent-card', { timeout: 5000 })
         ]);
         
         // Additional wait to ensure all content loads
         await page.waitForFunction(
           () => document.querySelector('main')?.textContent?.length > 1000,
-          { timeout: 10000 }
+          { timeout: 3000 }
         );
         
         // Extra 2-second buffer for any final rendering
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (e) {
         console.log("Agent content markers timed out - attempting content capture anyway.");
       }
