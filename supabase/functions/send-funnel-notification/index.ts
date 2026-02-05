@@ -1,10 +1,8 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// SMTP Configuration - privateemail.com
-const SMTP_HOST = "mail.privateemail.com";
-const SMTP_PORT = 465; // Implicit TLS (works better in edge functions)
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 // Throttle windows by event type (in seconds)
 const THROTTLE_WINDOWS: Record<string, number> = {
@@ -355,50 +353,29 @@ serve(async (req) => {
       `;
     }
 
-    // Send email notification via SMTP (privateemail.com)
+    // Send email notification via Resend
     let emailSent = false;
-    const smtpUsername = Deno.env.get("SMTP_USERNAME");
-    const smtpPassword = Deno.env.get("SMTP_PASSWORD");
-    // SMTP_USERNAME is the email address (robert@top10lists.us)
-    // SMTP_FROM_EMAIL was incorrectly configured, so we use SMTP_USERNAME directly
-    const smtpFromEmail = smtpUsername || "robert@top10lists.us";
 
     console.log(`📤 Attempting to send email to ${ADMIN_EMAIL} for ${event_type}...`);
     console.log(`📧 Subject: ${subject}`);
-    console.log(`📧 From: ${smtpFromEmail}`);
 
-    if (!smtpUsername || !smtpPassword) {
-      console.error(`[email-error] SMTP credentials not configured`);
-    } else {
-      try {
-        // Port 465 uses implicit TLS (tls: true)
-        const client = new SMTPClient({
-          connection: {
-            hostname: SMTP_HOST,
-            port: SMTP_PORT,
-            tls: true, // Implicit TLS on port 465
-            auth: {
-              username: smtpUsername,
-              password: smtpPassword,
-            },
-          },
-        });
+    try {
+      const { data, error } = await resend.emails.send({
+        from: 'Top10Lists Funnel <notifications@top10lists.us>',
+        to: ADMIN_EMAIL,
+        subject: subject,
+        html: html,
+      });
 
-        await client.send({
-          from: smtpFromEmail,
-          to: ADMIN_EMAIL,
-          subject,
-          content: "auto",
-          html,
-        });
-
-        await client.close();
+      if (error) {
+        console.error(`[email-error] Resend error:`, error);
+      } else {
         emailSent = true;
-        console.log(`✅ Funnel notification sent via SMTP: ${event_type}`);
-      } catch (emailError) {
-        console.error(`[email-error] ${event_type}:`, emailError);
-        // Continue - don't throw, email failure is non-fatal
+        console.log(`✅ Funnel notification sent via Resend: ${event_type}`, data);
       }
+    } catch (emailError) {
+      console.error(`[email-error] ${event_type}:`, emailError);
+      // Continue - don't throw, email failure is non-fatal
     }
 
     // Create Pipedrive activity for key events
