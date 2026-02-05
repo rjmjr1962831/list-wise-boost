@@ -1655,7 +1655,13 @@ export const ProfessionalCard = ({
                   // If has double newlines, split on those
                   if (text.includes('\n\n')) {
                     const paragraphs = text.split(/\n{2,}/).filter(Boolean);
-                    return paragraphs.map(p => `<p>${p.trim()}</p>`).join('');
+                    return paragraphs.map(p => `<p class="mb-4">${p.trim()}</p>`).join('');
+                  }
+                  
+                  // If has single newlines, treat each as a paragraph
+                  if (text.includes('\n')) {
+                    const paragraphs = text.split(/\n+/).filter(Boolean);
+                    return paragraphs.map(p => `<p class="mb-4">${p.trim()}</p>`).join('');
                   }
                   
                   // Split long text into logical paragraphs based on topic shifts
@@ -1696,7 +1702,16 @@ export const ProfessionalCard = ({
                     paragraphs.push(currentParagraph.join(' '));
                   }
                   
-                  return paragraphs.map(p => `<p>${p}</p>`).join('');
+                  // Ensure minimum 2 paragraphs for better readability
+                  if (paragraphs.length === 1 && paragraphs[0].length > 200) {
+                    const midPoint = Math.floor(sentences.length / 2);
+                    paragraphs = [
+                      sentences.slice(0, midPoint).join(' '),
+                      sentences.slice(midPoint).join(' ')
+                    ];
+                  }
+                  
+                  return paragraphs.map(p => `<p class="mb-4">${p}</p>`).join('');
                 };
                 
                 const CHAR_LIMIT = 400;

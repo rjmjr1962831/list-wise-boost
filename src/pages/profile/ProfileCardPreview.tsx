@@ -188,6 +188,11 @@ export default function ProfileCardPreview() {
               <ProfessionalCard 
                 professional={professional} 
                 accentColor="primary" 
+                schemaType="RealEstateAgent"
+                market={professional.cities ? `${professional.cities.name}, ${professional.cities.state}` : undefined}
+                stateAbbr={professional.cities?.state}
+                citySlug={professional.cities?.slug}
+                categorySlug={professional.categories?.slug}
                 quizCompleted={true}
                 expandSections={true}
               />
