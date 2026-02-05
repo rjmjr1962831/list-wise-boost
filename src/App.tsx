@@ -8,7 +8,6 @@ import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Chatbot } from "@/components/Chatbot";
-import { StagingAdminLink } from "@/components/StagingAdminLink";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -143,7 +142,6 @@ const App = () => (
         <RateLimitGuard>
           <Toaster />
         <div className="flex flex-col min-h-screen">
-            <StagingAdminLink />
             <Header />
             <main className="flex-1">
               <ErrorBoundary>
