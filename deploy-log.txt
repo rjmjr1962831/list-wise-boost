@@ -1,0 +1,19 @@
+[staging b7d9b38d] Update email functions and admin improvements
+ 2 files changed, 37 insertions(+)
+ create mode 100644 deploy-log.txt
+ create mode 100644 deploy-to-production.bat
+Merge made by the 'ort' strategy.
+ public/ai-content-index.json                       |   4 +-
+ public/llms-full.txt                               |  17 ++-
+ public/llms.txt                                    |   2 +-
+ public/mcp.json                                    |   2 +-
+ src/components/FeaturedInBar.tsx                   |   2 +-
+ src/pages/Press.tsx                                |  10 ++
+ .../functions/city-content-enrichment/index.ts     |   5 +-
+ supabase/functions/instantly-sync/index.ts         | 160 +++++++++++++++++++++
+ supabase/functions/instantly-webhook/index.ts      | 130 +++++++++++++++++
+ supabase/functions/zip-enrichment-cron/index.ts    |   6 +-
+ 10 files changed, 328 insertions(+), 10 deletions(-)
+ create mode 100644 supabase/functions/instantly-sync/index.ts
+ create mode 100644 supabase/functions/instantly-webhook/index.ts
+Already up to date.
