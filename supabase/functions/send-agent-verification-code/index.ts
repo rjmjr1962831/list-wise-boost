@@ -1,8 +1,18 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const smtpClient = new SMTPClient({
+  connection: {
+    hostname: "smtp.gmail.com",
+    port: 465,
+    tls: true,
+    auth: {
+      username: "robert@top10lists.us",
+      password: "pewacsqsjpocgnsp",
+    },
+  },
+});
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -160,34 +170,28 @@ serve(async (req) => {
       </html>
     `;
 
-    // Send email via Resend
-    console.log(`[send-agent-verification-code] Sending email via Resend to ${professional.email}`);
+    // Send email via Gmail SMTP
+    console.log(`[send-agent-verification-code] Sending email via Gmail SMTP to ${professional.email}`);
 
     try {
-      const { data, error } = await resend.emails.send({
-        from: 'Top10Lists <notifications@top10lists.us>',
+      await smtpClient.send({
+        from: "Robert Maynard <robert@top10lists.us>",
         to: professional.email,
         subject: `Your verification code - ${code}`,
+        content: "auto",
         html: emailHtml,
       });
 
-      if (error) {
-        console.error("[send-agent-verification-code] Resend error:", error);
-        return new Response(
-          JSON.stringify({ success: false, error: "Failed to send verification email" }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      console.log(`✅ Verification email sent via Resend:`, data);
+      console.log(`✅ Verification email sent via Gmail SMTP`);
     } catch (emailError) {
-      console.error("[send-agent-verification-code] Send error:", emailError);
+      console.error("[send-agent-verification-code] SMTP error:", emailError);
       return new Response(
         JSON.stringify({ success: false, error: "Failed to send verification email" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } finally {
       try {
+        await smtpClient.close();
       } catch (closeError) {
         console.warn("[send-agent-verification-code] SMTP close error:", closeError);
       }

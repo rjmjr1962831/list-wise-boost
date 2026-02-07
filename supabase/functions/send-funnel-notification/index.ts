@@ -1,8 +1,18 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const smtpClient = new SMTPClient({
+  connection: {
+    hostname: "smtp.gmail.com",
+    port: 465,
+    tls: true,
+    auth: {
+      username: "robert@top10lists.us",
+      password: "pewacsqsjpocgnsp",
+    },
+  },
+});
 
 // Throttle windows by event type (in seconds)
 const THROTTLE_WINDOWS: Record<string, number> = {
@@ -360,22 +370,25 @@ serve(async (req) => {
     console.log(`📧 Subject: ${subject}`);
 
     try {
-      const { data, error } = await resend.emails.send({
-        from: 'Top10Lists Funnel <notifications@top10lists.us>',
+      await smtpClient.send({
+        from: "Robert Maynard <robert@top10lists.us>",
         to: ADMIN_EMAIL,
         subject: subject,
+        content: "auto",
         html: html,
       });
 
-      if (error) {
-        console.error(`[email-error] Resend error:`, error);
-      } else {
-        emailSent = true;
-        console.log(`✅ Funnel notification sent via Resend: ${event_type}`, data);
-      }
+      emailSent = true;
+      console.log(`✅ Funnel notification sent via Gmail SMTP: ${event_type}`);
     } catch (emailError) {
       console.error(`[email-error] ${event_type}:`, emailError);
       // Continue - don't throw, email failure is non-fatal
+    } finally {
+      try {
+        await smtpClient.close();
+      } catch (closeError) {
+        console.warn('SMTP close error:', closeError);
+      }
     }
 
     // Create Pipedrive activity for key events

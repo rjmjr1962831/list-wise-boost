@@ -1,7 +1,17 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+const smtpClient = new SMTPClient({
+  connection: {
+    hostname: "smtp.gmail.com",
+    port: 465,
+    tls: true,
+    auth: {
+      username: "robert@top10lists.us",
+      password: "pewacsqsjpocgnsp",
+    },
+  },
+});
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -250,33 +260,35 @@ const handler = async (req: Request): Promise<Response> => {
     const subject = `${cityName}: ${categoryName} - ${professionalName}`;
 
     // Send email to the admin email
-    const { error: adminError } = await resend.emails.send({
-      from: 'Robert from Top10lists <hello@top10lists.us>',
-      replyTo: 'robert@top10lists.us',
-      to: ['contactforms@top10lists.us'],
-      subject: subject,
-      html: emailHtml,
-    });
-
-    if (adminError) {
+    try {
+      await smtpClient.send({
+        from: "Robert Maynard <robert@top10lists.us>",
+        to: "contactforms@top10lists.us",
+        subject: subject,
+        content: "auto",
+        html: emailHtml,
+      });
+      
+      console.log('Admin email sent successfully via Gmail SMTP');
+    } catch (adminError) {
       console.error('Error sending admin email:', adminError);
-      throw new Error(adminError.message);
+      throw adminError;
     }
 
     // If verification link exists, also send copy to professional
     if (verificationLink && professionalEmail) {
-      const { error: profError } = await resend.emails.send({
-        from: 'Robert from Top10lists <hello@top10lists.us>',
-        replyTo: 'robert@top10lists.us',
-        to: [professionalEmail],
-        subject: `New Lead from Top10Lists + Verify Your Listing`,
-        html: emailHtml,
-      });
-      
-      if (profError) {
-        console.error('Error sending professional email:', profError);
-      } else {
+      try {
+        await smtpClient.send({
+          from: "Robert Maynard <robert@top10lists.us>",
+          to: professionalEmail,
+          subject: `New Lead from Top10Lists + Verify Your Listing`,
+          content: "auto",
+          html: emailHtml,
+        });
+        
         console.log('Verification email also sent to professional:', professionalEmail);
+      } catch (profError) {
+        console.error('Error sending professional email:', profError);
       }
     }
 
@@ -298,6 +310,12 @@ const handler = async (req: Request): Promise<Response> => {
         headers: { 'Content-Type': 'application/json', ...corsHeaders },
       }
     );
+  } finally {
+    try {
+      await smtpClient.close();
+    } catch (closeError) {
+      console.warn('SMTP close error:', closeError);
+    }
   }
 };
 
