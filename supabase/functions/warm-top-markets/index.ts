@@ -96,16 +96,23 @@ async function fetchTopNeighborhoods(supabase: any, topPercentage: number = 0.25
   return urls;
 }
 
-async function warmUrl(url: string): Promise<WarmResult> {
+async function warmUrl(url: string, forceRefresh: boolean = false): Promise<WarmResult> {
   const startTime = Date.now();
   
   try {
+    const headers: Record<string, string> = {
+      "User-Agent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) GPTBot/1.0",
+      "X-Cache-Warming": "true",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    };
+    
+    // Add force refresh header to bust cache
+    if (forceRefresh) {
+      headers["X-Force-Refresh"] = "true";
+    }
+    
     const response = await fetch(url, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) GPTBot/1.0",
-        "X-Cache-Warming": "true",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      },
+      headers,
       signal: AbortSignal.timeout(30000),
     });
 
@@ -134,7 +141,8 @@ async function warmUrl(url: string): Promise<WarmResult> {
 
 async function warmPages(
   urls: string[], 
-  concurrency: number = 5
+  concurrency: number = 5,
+  forceRefresh: boolean = false
 ): Promise<{ successful: number; failed: number; totalTimeMs: number }> {
   const startTime = Date.now();
   let successful = 0;
@@ -143,7 +151,7 @@ async function warmPages(
   // Process in batches for concurrency control
   for (let i = 0; i < urls.length; i += concurrency) {
     const batch = urls.slice(i, i + concurrency);
-    const batchPromises = batch.map(path => warmUrl(`${BASE_URL}${path}`));
+    const batchPromises = batch.map(path => warmUrl(`${BASE_URL}${path}`, forceRefresh));
     const batchResults = await Promise.all(batchPromises);
 
     for (const result of batchResults) {
@@ -172,13 +180,15 @@ serve(async (req) => {
       topPercentage = 0.25,  // Default to top 25%
       concurrency = 5,
       staticOnly = false,
+      forceRefresh = false,  // Add force refresh option to bust cache
     } = body;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     console.log(`\n🔥 Starting cache warming for top ${topPercentage * 100}% of markets`);
     console.log(`States: Arizona, California`);
-    console.log(`Concurrency: ${concurrency}\n`);
+    console.log(`Concurrency: ${concurrency}`);
+    console.log(`Force Refresh: ${forceRefresh ? 'YES (busting cache)' : 'NO'}\n`);
 
     // Build URL list
     let allUrls: string[] = [];
@@ -200,7 +210,7 @@ serve(async (req) => {
     console.log(`\nTotal pages to warm: ${allUrls.length}\n`);
 
     // Warm the cache
-    const results = await warmPages(allUrls, concurrency);
+    const results = await warmPages(allUrls, concurrency, forceRefresh);
 
     const summary = {
       total_pages: allUrls.length,
