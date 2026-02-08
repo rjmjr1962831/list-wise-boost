@@ -20015,6 +20015,16 @@ var index_default = {
       if (cachedResponse) {
         const newHdrs = new Headers(cachedResponse.headers);
         newHdrs.set("X-Cache", "HIT");
+        
+        // Log bot visit (fire-and-forget, won't block response)
+        if (isBot) {
+          fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI' },
+            body: JSON.stringify({ url: url.pathname, user_agent: ua, cache_status: 'HIT', timestamp: new Date().toISOString() })
+          }).catch(() => {}); // Ignore errors
+        }
+        
         return new Response(cachedResponse.body, { status: cachedResponse.status, headers: newHdrs });
       }
     }
@@ -20080,6 +20090,16 @@ var index_default = {
           }
         });
         await cache.put(cacheKey, response.clone());
+        
+        // Log bot visit for MISS (fire-and-forget)
+        if (isBot) {
+          fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI' },
+            body: JSON.stringify({ url: url.pathname, user_agent: ua, cache_status: 'MISS', timestamp: new Date().toISOString() })
+          }).catch(() => {});
+        }
+        
         return response;
       } else {
         return new Response(html, { headers: { "content-type": "text/html", "X-Error": "Invalid-Render" } });

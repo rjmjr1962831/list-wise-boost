@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map } from "lucide-react";
+import { Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map, Bot } from "lucide-react";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
@@ -46,6 +46,13 @@ const AdminDashboardDirect = () => {
               <h1 className="text-4xl font-bold mb-2">Admin Tools</h1>
               <p className="text-muted-foreground">Manage system operations and data</p>
             </div>
+            <a 
+              href="/a/bot-analytics" 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Bot className="h-4 w-4" />
+              Bot Analytics
+            </a>
           </div>
 
           <Tabs defaultValue="enrichment" className="w-full">
