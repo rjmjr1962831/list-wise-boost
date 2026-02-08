@@ -176,26 +176,37 @@ export const AgentFunnelTester = () => {
                 setLoading(true);
                 try {
                   console.log('Generating token for profile:', ADMIN_TEST_PROFILE_ID);
-                  const { data, error } = await supabase.functions.invoke('generate-test-profile-token', {
-                    body: { professionalId: ADMIN_TEST_PROFILE_ID }
-                  });
+                  
+                  // Generate a new verification token
+                  const newToken = crypto.randomUUID();
+                  const expiresAt = new Date();
+                  expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+                  
+                  console.log('Generated new token:', newToken);
+                  console.log('Expires at:', expiresAt.toISOString());
 
-                  console.log('Token response:', { data, error });
+                  // Update the professional record directly
+                  const { data, error } = await supabase
+                    .from('professionals')
+                    .update({
+                      verification_token: newToken,
+                      verification_token_expires_at: expiresAt.toISOString(),
+                      verification_started_at: new Date().toISOString(),
+                      funnel_status: 'welcome'
+                    })
+                    .eq('id', ADMIN_TEST_PROFILE_ID)
+                    .select('id, name')
+                    .single();
+
+                  console.log('Update response:', { data, error });
 
                   if (error) throw error;
                   
-                  if (!data || !data.token) {
-                    throw new Error('No token returned from server');
-                  }
-
-                  const newToken = data.token;
-                  console.log('Generated token:', newToken);
-                  
                   setTestToken(newToken);
-                  setFunnelUrl(data.funnelUrl);
-                  setExpiresAt(data.expiresAt);
+                  setFunnelUrl(`/profile/${newToken}`);
+                  setExpiresAt(expiresAt.toISOString());
 
-                  toast.success('Token generated! Navigating to funnel...');
+                  toast.success(`Token generated for ${data?.name}! Navigating...`);
                   
                   // Navigate to the funnel with fresh token
                   console.log('Navigating to:', `/profile/${newToken}`);
@@ -204,7 +215,7 @@ export const AgentFunnelTester = () => {
                   }, 100);
                 } catch (error: any) {
                   console.error('Error generating token:', error);
-                  toast.error(`Failed to generate token: ${error.message}`);
+                  toast.error(`Failed: ${error.message}`);
                   setLoading(false);
                 }
               }}
