@@ -183,7 +183,6 @@ export const AgentFunnelTester = () => {
                   expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
                   
                   console.log('Generated new token:', newToken);
-                  console.log('Expires at:', expiresAt.toISOString());
 
                   // Update the professional record directly
                   const { data, error } = await supabase
@@ -198,20 +197,17 @@ export const AgentFunnelTester = () => {
                     .select('id, name')
                     .single();
 
-                  console.log('Update response:', { data, error });
-
                   if (error) throw error;
                   
                   setTestToken(newToken);
-                  setFunnelUrl(`/profile/${newToken}`);
                   setExpiresAt(expiresAt.toISOString());
 
-                  toast.success(`Token generated for ${data?.name}! Navigating...`);
+                  toast.success(`Token generated!`);
                   
-                  // Navigate to the funnel with fresh token
-                  console.log('Navigating to:', `/profile/${newToken}`);
+                  // Navigate to the SIMPLE funnel test page
+                  console.log('Navigating to:', `/funnel-test/${newToken}`);
                   setTimeout(() => {
-                    navigate(`/profile/${newToken}`);
+                    navigate(`/funnel-test/${newToken}`);
                   }, 100);
                 } catch (error: any) {
                   console.error('Error generating token:', error);

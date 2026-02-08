@@ -92,6 +92,7 @@ const FunnelStep0 = lazy(() => import("./pages/profile/FunnelStep0"));
 const ProfileCardPreview = lazy(() => import("./pages/profile/ProfileCardPreview"));
 const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
 const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
+const SimpleFunnelTest = lazy(() => import("./pages/profile/SimpleFunnelTest"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
 const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
@@ -230,6 +231,8 @@ const App = () => (
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
                     {/* Short link redirect for magic links */}
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
+                    {/* Simple funnel test page (no complex logic) */}
+                    <Route path="/funnel-test/:token" element={<SimpleFunnelTest />} />
                     {/* Step 0: Introduction and Context (entry point for magic links) */}
                     <Route path="/profile/:token" element={<FunnelStep0 />} />
                     {/* Step 1: Card Preview (shows current profile before edits) */}
