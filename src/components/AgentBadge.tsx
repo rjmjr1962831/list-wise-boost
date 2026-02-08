@@ -320,6 +320,7 @@ export const AgentBadge = ({
         target="_blank"
         rel="noopener noreferrer"
         className="block group h-full"
+        data-agent="true"
       >
         <Card className={cn(
           "relative overflow-hidden transition-all duration-300 h-full",
