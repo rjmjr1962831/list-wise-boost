@@ -93,6 +93,17 @@ const ProfileCardPreview = lazy(() => import("./pages/profile/ProfileCardPreview
 const AccountSetup = lazy(() => import("./pages/profile/AccountSetup"));
 const StreamlinedOnboarding = lazy(() => import("./pages/profile/StreamlinedOnboarding"));
 const SimpleFunnelTest = lazy(() => import("./pages/profile/SimpleFunnelTest"));
+
+// New Simple Funnel Pages
+const Step1Intro = lazy(() => import("./pages/funnel/Step1Intro"));
+const Step2Review1 = lazy(() => import("./pages/funnel/Step2Review1"));
+const Step3Review2 = lazy(() => import("./pages/funnel/Step3Review2"));
+const Step4ReviewFinal = lazy(() => import("./pages/funnel/Step4ReviewFinal"));
+const Step5Cities = lazy(() => import("./pages/funnel/Step5Cities"));
+const Step6Neighborhoods = lazy(() => import("./pages/funnel/Step6Neighborhoods"));
+const Step7Pricing = lazy(() => import("./pages/funnel/Step7Pricing"));
+const StepSuccess = lazy(() => import("./pages/funnel/StepSuccess"));
+
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
 const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
@@ -233,6 +244,15 @@ const App = () => (
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Simple funnel test page (no complex logic) */}
                     <Route path="/funnel-test/:token" element={<SimpleFunnelTest />} />
+                    {/* New Simple Funnel (7 steps) - Working reliably */}
+                    <Route path="/funnel/:token" element={<Step1Intro />} />
+                    <Route path="/funnel/:token/review-1" element={<Step2Review1 />} />
+                    <Route path="/funnel/:token/review-2" element={<Step3Review2 />} />
+                    <Route path="/funnel/:token/review-final" element={<Step4ReviewFinal />} />
+                    <Route path="/funnel/:token/cities" element={<Step5Cities />} />
+                    <Route path="/funnel/:token/neighborhoods" element={<Step6Neighborhoods />} />
+                    <Route path="/funnel/:token/pricing" element={<Step7Pricing />} />
+                    <Route path="/funnel/:token/success" element={<StepSuccess />} />
                     {/* Step 0: Introduction and Context (entry point for magic links) */}
                     <Route path="/profile/:token" element={<FunnelStep0 />} />
                     {/* Step 1: Card Preview (shows current profile before edits) */}

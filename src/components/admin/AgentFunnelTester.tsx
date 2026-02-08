@@ -204,10 +204,10 @@ export const AgentFunnelTester = () => {
 
                   toast.success(`Token generated!`);
                   
-                  // Navigate to the SIMPLE funnel test page
-                  console.log('Navigating to:', `/funnel-test/${newToken}`);
+                  // Navigate to the NEW SIMPLE funnel
+                  console.log('Navigating to:', `/funnel/${newToken}`);
                   setTimeout(() => {
-                    navigate(`/funnel-test/${newToken}`);
+                    navigate(`/funnel/${newToken}`);
                   }, 100);
                 } catch (error: any) {
                   console.error('Error generating token:', error);
