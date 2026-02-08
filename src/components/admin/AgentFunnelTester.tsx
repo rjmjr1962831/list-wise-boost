@@ -172,26 +172,49 @@ export const AgentFunnelTester = () => {
           <div className="flex gap-2">
             <Button
               size="sm"
-              onClick={() => navigate(`/profile/${ADMIN_TEST_TOKEN}`)}
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  const { data, error } = await supabase.functions.invoke('generate-test-profile-token', {
+                    body: { professionalId: ADMIN_TEST_PROFILE_ID }
+                  });
+
+                  if (error) throw error;
+
+                  setTestToken(data.token);
+                  setFunnelUrl(data.funnelUrl);
+                  setExpiresAt(data.expiresAt);
+
+                  // Navigate to the funnel with fresh token
+                  navigate(`/profile/${data.token}`);
+                  
+                  toast.success('Opening funnel with fresh token');
+                } catch (error: any) {
+                  console.error('Error generating token:', error);
+                  toast.error(`Failed to generate token: ${error.message}`);
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              disabled={loading}
               className="flex-1"
             >
-              <ExternalLink className="mr-2 h-3 w-3" />
-              Open Funnel
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                navigator.clipboard.writeText(`https://staging.top10lists.us/profile/${ADMIN_TEST_TOKEN}`);
-                toast.success('Magic link copied!');
-              }}
-            >
-              <Copy className="h-3 w-3" />
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <ExternalLink className="mr-2 h-3 w-3" />
+                  Open Funnel (Fresh Token)
+                </>
+              )}
             </Button>
           </div>
-          <code className="block text-xs bg-background p-2 rounded truncate">
-            https://staging.top10lists.us/profile/{ADMIN_TEST_TOKEN}
-          </code>
+          <p className="text-xs text-muted-foreground">
+            This will generate a fresh token that expires in 7 days
+          </p>
         </div>
 
         <Alert>
