@@ -33,6 +33,8 @@ export default function SimpleFunnelTest() {
       return;
     }
 
+    console.log('[SimpleFunnelTest] Looking up token:', token);
+
     try {
       const { data, error: fetchError } = await supabase
         .from('professionals')
@@ -40,8 +42,17 @@ export default function SimpleFunnelTest() {
         .eq('verification_token', token)
         .single();
 
-      if (fetchError || !data) {
-        setError('Invalid or expired token');
+      console.log('[SimpleFunnelTest] Database response:', { data, error: fetchError });
+
+      if (fetchError) {
+        console.error('[SimpleFunnelTest] Database error:', fetchError);
+        setError(`Database error: ${fetchError.message} (Code: ${fetchError.code})`);
+        setLoading(false);
+        return;
+      }
+
+      if (!data) {
+        setError('No professional found with this token');
         setLoading(false);
         return;
       }
@@ -49,17 +60,25 @@ export default function SimpleFunnelTest() {
       // Check if token is expired
       if (data.verification_token_expires_at) {
         const expiresAt = new Date(data.verification_token_expires_at);
-        if (expiresAt < new Date()) {
-          setError('Token has expired');
+        const now = new Date();
+        console.log('[SimpleFunnelTest] Token expiration check:', {
+          expiresAt: expiresAt.toISOString(),
+          now: now.toISOString(),
+          isExpired: expiresAt < now
+        });
+        
+        if (expiresAt < now) {
+          setError(`Token expired at ${expiresAt.toLocaleString()}`);
           setLoading(false);
           return;
         }
       }
 
+      console.log('[SimpleFunnelTest] Token valid! Professional:', data.name);
       setProfessional(data);
       setError(null);
     } catch (err: any) {
-      console.error('Error loading professional:', err);
+      console.error('[SimpleFunnelTest] Unexpected error:', err);
       setError(err.message || 'Failed to load professional');
     } finally {
       setLoading(false);
@@ -88,11 +107,26 @@ export default function SimpleFunnelTest() {
                 <CardTitle>Link Invalid or Expired</CardTitle>
               </div>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground">
                 {error || 'This link is invalid or has expired.'}
               </p>
-              <p className="text-sm text-muted-foreground">
+              
+              {token && (
+                <div className="border rounded-lg p-3 bg-muted/50">
+                  <p className="text-xs font-medium mb-1">Token being looked up:</p>
+                  <code className="text-xs break-all">{token}</code>
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Button onClick={loadProfessional} variant="outline" size="sm">
+                  <Loader2 className="h-3 w-3 mr-2" />
+                  Retry
+                </Button>
+              </div>
+              
+              <p className="text-sm text-muted-foreground pt-2 border-t">
                 Questions? Call <a href="tel:6027589600" className="underline">(602) 758-9600</a>
               </p>
             </CardContent>
