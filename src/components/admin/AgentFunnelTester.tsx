@@ -131,10 +131,10 @@ export const AgentFunnelTester = () => {
     : false;
 
   const funnelSteps = [
-    { path: `/profile/${TEST_PROFILE_ID}`, name: 'Welcome', status: 'welcome' },
-    { path: `/profile/${TEST_PROFILE_ID}/edit`, name: 'Edit Profile', status: 'edit_complete' },
-    { path: `/profile/${TEST_PROFILE_ID}/preview`, name: 'Preview', status: 'preview' },
-    { path: `/profile/${TEST_PROFILE_ID}/success`, name: 'Success', status: 'success' },
+    { path: `/profile/${ADMIN_TEST_TOKEN}`, name: 'Welcome', status: 'welcome' },
+    { path: `/profile/${ADMIN_TEST_TOKEN}/edit`, name: 'Edit Profile', status: 'edit_complete' },
+    { path: `/profile/${ADMIN_TEST_TOKEN}/preview`, name: 'Preview', status: 'preview' },
+    { path: `/profile/${ADMIN_TEST_TOKEN}/success`, name: 'Success', status: 'success' },
   ];
 
   const verificationSteps = [
@@ -172,7 +172,7 @@ export const AgentFunnelTester = () => {
           <div className="flex gap-2">
             <Button
               size="sm"
-              onClick={() => navigate(`/profile/${ADMIN_TEST_PROFILE_ID}`)}
+              onClick={() => navigate(`/profile/${ADMIN_TEST_TOKEN}`)}
               className="flex-1"
             >
               <ExternalLink className="mr-2 h-3 w-3" />
@@ -182,7 +182,7 @@ export const AgentFunnelTester = () => {
               size="sm"
               variant="outline"
               onClick={() => {
-                navigator.clipboard.writeText(`https://top10lists.us/profile/${ADMIN_TEST_PROFILE_ID}`);
+                navigator.clipboard.writeText(`https://staging.top10lists.us/profile/${ADMIN_TEST_TOKEN}`);
                 toast.success('Magic link copied!');
               }}
             >
@@ -190,7 +190,7 @@ export const AgentFunnelTester = () => {
             </Button>
           </div>
           <code className="block text-xs bg-background p-2 rounded truncate">
-            https://top10lists.us/profile/{ADMIN_TEST_PROFILE_ID}
+            https://staging.top10lists.us/profile/{ADMIN_TEST_TOKEN}
           </code>
         </div>
 
