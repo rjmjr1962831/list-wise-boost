@@ -175,24 +175,36 @@ export const AgentFunnelTester = () => {
               onClick={async () => {
                 setLoading(true);
                 try {
+                  console.log('Generating token for profile:', ADMIN_TEST_PROFILE_ID);
                   const { data, error } = await supabase.functions.invoke('generate-test-profile-token', {
                     body: { professionalId: ADMIN_TEST_PROFILE_ID }
                   });
 
-                  if (error) throw error;
+                  console.log('Token response:', { data, error });
 
-                  setTestToken(data.token);
+                  if (error) throw error;
+                  
+                  if (!data || !data.token) {
+                    throw new Error('No token returned from server');
+                  }
+
+                  const newToken = data.token;
+                  console.log('Generated token:', newToken);
+                  
+                  setTestToken(newToken);
                   setFunnelUrl(data.funnelUrl);
                   setExpiresAt(data.expiresAt);
 
-                  // Navigate to the funnel with fresh token
-                  navigate(`/profile/${data.token}`);
+                  toast.success('Token generated! Navigating to funnel...');
                   
-                  toast.success('Opening funnel with fresh token');
+                  // Navigate to the funnel with fresh token
+                  console.log('Navigating to:', `/profile/${newToken}`);
+                  setTimeout(() => {
+                    navigate(`/profile/${newToken}`);
+                  }, 100);
                 } catch (error: any) {
                   console.error('Error generating token:', error);
                   toast.error(`Failed to generate token: ${error.message}`);
-                } finally {
                   setLoading(false);
                 }
               }}
