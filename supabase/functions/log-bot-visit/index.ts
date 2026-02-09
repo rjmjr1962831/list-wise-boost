@@ -131,7 +131,11 @@ serve(async (req) => {
     
     if (error && error.code !== '23505') { // Ignore duplicate errors
       console.error("Insert error:", error);
-      throw error;
+      const errorMsg = error.message || JSON.stringify(error);
+      return new Response(
+        JSON.stringify({ success: false, error: `Database error: ${errorMsg}` }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(
@@ -140,10 +144,10 @@ serve(async (req) => {
     );
 
   } catch (error: unknown) {
-    const errMsg = error instanceof Error ? error.message : String(error);
-    console.error("Error:", errMsg);
+    console.error("Error in log-bot-visit:", error);
+    const errMsg = error instanceof Error ? error.message : JSON.stringify(error);
     return new Response(
-      JSON.stringify({ success: false, error: errMsg }),
+      JSON.stringify({ success: false, error: `Catch error: ${errMsg}` }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
