@@ -45,6 +45,14 @@ const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZip
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboardDirect = lazy(() => import("./pages/AdminDashboardDirect"));
 const CRM = lazy(() => import("./pages/CRM"));
+
+// New CRM Dashboard
+const CRMLogin = lazy(() => import("./pages/admin/crm/CRMLogin"));
+const CRMDashboard = lazy(() => import("./pages/admin/crm/CRMDashboard"));
+const CRMAgentList = lazy(() => import("./pages/admin/crm/AgentList"));
+const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
+const ProtectedRoute = lazy(() => import("@/components/admin/ProtectedRoute"));
+
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
 const AgentOnboarding = lazy(() => import("./pages/AgentOnboarding"));
@@ -182,6 +190,18 @@ const App = () => (
                     {/* Admin routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    
+                    {/* New CRM Dashboard */}
+                    <Route path="/admin/crm/login" element={<CRMLogin />} />
+                    <Route path="/admin/crm" element={
+                      <ProtectedRoute>
+                        <CRMLayout />
+                      </ProtectedRoute>
+                    }>
+                      <Route path="dashboard" element={<CRMDashboard />} />
+                      <Route path="agents" element={<CRMAgentList />} />
+                    </Route>
+                    
                     {/* Direct admin access - security via obscurity */}
                     <Route path="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" element={<AdminDashboardDirect />} />
                     <Route path="/a/bot-analytics" element={<BotAnalyticsDashboard />} />
