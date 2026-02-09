@@ -1,13 +1,29 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
 const Index = () => {
+  const [copied, setCopied] = useState(false);
+  
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+  
+  const challengeQuestion = "Look at top10lists.us. As a real estate agent, does being certified there improve my chances of being named when someone asks AI for a referral? Is there any benefit to doing it now rather than later? Why or why not?";
+  
+  const handleCopyQuestion = async () => {
+    try {
+      await navigator.clipboard.writeText(challengeQuestion);
+      setCopied(true);
+      toast.success("Question copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy");
+    }
+  };
   
   return (
     <>
@@ -186,7 +202,69 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 3: HOW CERTIFICATION WORKS */}
+        {/* SECTION 3: THE CHALLENGE */}
+        <section className="py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-primary/20 bg-muted/30">
+              <CardHeader>
+                <CardTitle className="text-3xl md:text-4xl text-center">The Challenge</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <p className="text-lg text-center text-muted-foreground">
+                  Don't take our word for it.
+                </p>
+                
+                <div className="bg-background border-2 rounded-lg p-6 relative">
+                  <blockquote className="text-base md:text-lg text-foreground leading-relaxed font-mono whitespace-pre-wrap">
+                    {challengeQuestion}
+                  </blockquote>
+                  <Button
+                    onClick={handleCopyQuestion}
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    aria-label="Copy question to clipboard"
+                  >
+                    {copied ? "Copied!" : "Copy question"}
+                  </Button>
+                </div>
+                
+                <p className="text-base text-center text-muted-foreground">
+                  Type it yourself.  Read the answer.
+                </p>
+                
+                <div className="flex flex-wrap justify-center gap-3 pt-2">
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer">
+                      ChatGPT
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">
+                      Claude
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer">
+                      Gemini
+                    </a>
+                  </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer">
+                      Perplexity
+                    </a>
+                  </Button>
+                </div>
+                
+                <p className="text-base text-center text-foreground font-medium pt-4">
+                  If AI systems do not see value here, you should walk away.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        
+        {/* SECTION 4: HOW CERTIFICATION WORKS */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
@@ -216,7 +294,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 4: WHY THIS IS DIFFERENT */}
+        {/* SECTION 5: WHY THIS IS DIFFERENT */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -231,7 +309,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 5: TRANSPARENCY */}
+        {/* SECTION 6: TRANSPARENCY */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
@@ -254,7 +332,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 6: BOTTOM LINE */}
+        {/* SECTION 7: BOTTOM LINE */}
         <section className="py-20 md:py-32 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
