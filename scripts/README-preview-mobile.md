@@ -35,16 +35,20 @@ node scripts/preview-mobile.js https://staging.top10lists.us/about about-page
 
 ## Output
 
-Screenshots are saved to:
+Screenshots are saved to `screenshots/[page-name]/` and an **HTML preview page** is automatically generated and opened in your browser:
+
 ```
 screenshots/
   └── homepage/
+      ├── index.html             # Interactive preview (auto-opens in browser)
       ├── iphone-13.png
       ├── iphone-13-pro-max.png
       ├── iphone-se.png
       ├── samsung-galaxy-s21.png
       └── pixel-5.png
 ```
+
+The HTML preview displays all screenshots side-by-side in a responsive grid for easy visual comparison across devices.
 
 ## Use Cases
 
