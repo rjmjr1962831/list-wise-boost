@@ -1,0 +1,40 @@
+---
+description: Verification protocol - confirm changes work before claiming completion
+alwaysApply: true
+---
+
+# Verification Protocol
+
+**You are not done until you confirm the change actually worked.**
+
+## Before Saying "Done"
+
+1. **Deploy the change** (commit, push, wait for build)
+2. **Load the actual live page** in browser (if applicable)
+3. **Verify the specific thing you changed** appears correctly
+4. **Take a screenshot** or describe exactly what you see
+
+## What "Done" Means
+
+### Not done:
+- "I've made the changes"
+- "The code is updated"
+- "This should work now"
+
+### Actually done:
+- "Deployed. Verified at [URL]. Screenshot shows [specific element] rendering as [expected behavior]."
+
+## If You Cannot Verify
+
+Say:
+- "Changes deployed. Cannot verify without [browser/auth/etc]. Please check [specific URL] for [specific element]."
+
+**Do not say "done" if you did not actually see it working.**
+
+## The Rule
+
+If the task involves visible UI changes, you must see those changes live before claiming completion. 
+
+**Code changes alone are not completion.**
+
+**Deployment + visual confirmation = completion.**
