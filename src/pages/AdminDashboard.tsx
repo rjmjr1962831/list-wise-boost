@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map } from "lucide-react";
+import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
@@ -177,6 +177,59 @@ const AdminDashboard = () => {
             >
               <MailCheck className="mr-2 h-4 w-4" />
               Confirm All Emails
+            </Button>
+            <Button
+              onClick={async () => {
+                toast.info("Generating mobile preview...");
+                const stagingUrl = 'https://staging.top10lists.us';
+                const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+                const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+                
+                // Open new window immediately (prevents popup blocker)
+                const previewWindow = window.open('about:blank', '_blank', 'width=1400,height=900');
+                if (previewWindow) {
+                  previewWindow.document.write('<html><body style="margin:0;padding:40px;font-family:sans-serif;text-align:center;"><h2>📱 Generating mobile preview...</h2><p>Please wait while we capture screenshots...</p><p style="color:#666;font-size:14px;">This may take 20-30 seconds...</p></body></html>');
+                }
+                
+                try {
+                  const response = await fetch(`${supabaseUrl}/functions/v1/mobile-preview`, {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${supabaseKey}`
+                    },
+                    body: JSON.stringify({ url: stagingUrl })
+                  });
+                  
+                  if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                  }
+                  
+                  const html = await response.text();
+                  
+                  if (previewWindow && !previewWindow.closed) {
+                    previewWindow.document.open();
+                    previewWindow.document.write(html);
+                    previewWindow.document.close();
+                  }
+                  
+                  toast.success('Mobile preview generated!');
+                } catch (err: any) {
+                  console.error('Mobile preview error:', err);
+                  toast.error(`Preview failed: ${err.message}`);
+                  if (previewWindow && !previewWindow.closed) {
+                    previewWindow.document.open();
+                    previewWindow.document.write(`<html><body style="margin:0;padding:40px;font-family:sans-serif;"><h2>❌ Preview Failed</h2><p>${err.message}</p><p style="color:#666;font-size:14px;margin-top:20px;">Check browser console for details.</p></body></html>`);
+                    previewWindow.document.close();
+                  }
+                }
+              }}
+              variant="outline"
+              className="h-auto py-3 border-blue-500 text-blue-600 hover:bg-blue-50"
+            >
+              <Smartphone className="mr-2 h-4 w-4" />
+              Mobile Preview
             </Button>
           </div>
         </div>
