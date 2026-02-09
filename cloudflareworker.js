@@ -20028,8 +20028,13 @@ var index_default = {
       return fetch(new Request(originUrl.toString(), request));
     }
 
-    // Cache Check
-    const cacheKey = new Request(url.toString(), { method: "GET" });
+    // Cache Check - normalize cache key to share across all bots
+    const cacheKey = new Request(url.toString(), { 
+      method: "GET",
+      headers: {
+        'User-Agent': 'bot-cache-normalized' // All bots share same cache key
+      }
+    });
     const cache = caches.default;
     
     if (!forceRefresh) {
