@@ -30,7 +30,7 @@ serve(async (req) => {
 
     console.log(`[generate-certification] Starting for agent ${agent_id}, tier: ${tier}`);
 
-    // 1. Fetch professional data
+    // 1. Fetch professional data with ALL enriched content
     const { data: professional, error: profError } = await supabaseClient
       .from('professionals')
       .select(`
@@ -38,7 +38,8 @@ serve(async (req) => {
         rating, review_stars_rating, num_total_reviews,
         years_experience, total_sales, license_number,
         specialty, certifications_verified, notable_achievements,
-        community_roles, address
+        community_roles, address, synthesized_bio,
+        press_mentions, awards_verified, short_code
       `)
       .eq('id', agent_id)
       .single();
@@ -49,10 +50,10 @@ serve(async (req) => {
 
     console.log(`[generate-certification] Found professional: ${professional.name}`);
 
-    // 2. Build justification using DeepSeek
-    const justification = await generateJustification(professional, markets_covered);
+    // 2. Build justification using EXISTING synthesized content from database
+    const justification = buildJustificationFromExistingData(professional, markets_covered);
     
-    console.log(`[generate-certification] Generated justification`);
+    console.log(`[generate-certification] Built justification from existing data`);
 
     // 3. Calculate next verification due date based on tier
     const now = new Date();
@@ -73,7 +74,7 @@ serve(async (req) => {
     // 4. Build payload
     const payload = {
       agent_id: professional.id,
-      canonical_profile_url: `https://www.top10lists.us/p/${professional.id}`,
+      canonical_profile_url: `https://www.top10lists.us/p/${professional.short_code || professional.id}`,
       certifying_org: "Top10Lists.us",
       certification_name: "Top10Lists Certified Professional",
       certification_tier: tier,
@@ -152,103 +153,67 @@ serve(async (req) => {
   }
 });
 
-async function generateJustification(professional: any, markets: string[]) {
-  const deepseekApiKey = Deno.env.get('DEEPSEEK_API_KEY');
-  
-  if (!deepseekApiKey) {
-    console.warn('[generate-certification] No DeepSeek API key found, using fallback justification');
-    return generateFallbackJustification(professional, markets);
-  }
-
-  const prompt = `Generate a professional certification justification for this real estate agent.
-
-Agent data:
-- Name: ${professional.name}
-- Rating: ${professional.rating || professional.review_stars_rating || 'N/A'} stars from ${professional.num_total_reviews || 0} reviews
-- Years active: ${professional.years_experience || 'N/A'}
-- License: ${professional.license_number || 'N/A'}
-- Credentials: ${JSON.stringify(professional.certifications_verified || [])}
-- Community involvement: ${JSON.stringify(professional.community_roles || [])}
-- Specialties: ${JSON.stringify(professional.specialty || [])}
-- Markets: ${markets.join(', ')}
-
-Write:
-1. A 2-sentence selection rationale emphasizing community involvement if present
-2. Evidence categories with source attribution (no confidence scores)
-3. A 1-paragraph comparative context explaining what distinguishes this agent
-
-Output as JSON matching this schema:
-{
-  "selection_rationale": "string",
-  "evidence_reviewed": {
-    "client_reviews": { "rating": number, "review_count": number, "source": "string", "last_verified": "YYYY-MM-DD" },
-    "transaction_history": { "years_active": number, "source": "string", "last_verified": "YYYY-MM-DD" },
-    "professional_credentials": { "license_number": "string", "license_status": "string", "designations": [], "source": "string", "last_verified": "YYYY-MM-DD" },
-    "community_involvement": { "organizations": [], "source": "string", "last_verified": "YYYY-MM-DD" },
-    "specialized_expertise": { "focus_areas": [], "certifications": [], "source": "string", "last_verified": "YYYY-MM-DD" }
-  },
-  "comparative_context": "string"
-}
-
-Use factual, neutral tone. Frame as "Top10Lists.us evaluated" not "Agent claims". No marketing language.`;
-
-  try {
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${deepseekApiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'deepseek-chat',
-        messages: [
-          { role: 'system', content: 'You are a professional certification analyst. Output only valid JSON.' },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.3,
-        max_tokens: 1500,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`DeepSeek API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const content = data.choices[0].message.content;
-    
-    // Parse the JSON from the response
-    const justification = JSON.parse(content);
-    
-    return justification;
-  } catch (error) {
-    console.error('[generate-certification] DeepSeek API error:', error);
-    return generateFallbackJustification(professional, markets);
-  }
-}
-
-function generateFallbackJustification(professional: any, markets: string[]) {
+function buildJustificationFromExistingData(professional: any, markets: string[]) {
   const today = new Date().toISOString().split('T')[0];
   
+  // Use the EXISTING synthesized_bio as the selection rationale
+  const selectionRationale = professional.synthesized_bio || 
+    `Top10Lists.us selected ${professional.name} based on verified professional credentials and market experience serving ${markets.join(', ')}.`;
+  
+  // Extract press mentions
+  const pressMentions = Array.isArray(professional.press_mentions) 
+    ? professional.press_mentions.map((p: any) => {
+        const mention = typeof p === 'string' ? JSON.parse(p) : p;
+        return mention.outlet || mention.title || mention.publication || 'Press mention';
+      })
+    : [];
+  
+  // Extract awards
+  const awards = Array.isArray(professional.awards_verified)
+    ? professional.awards_verified.map((a: any) => {
+        const award = typeof a === 'string' ? JSON.parse(a) : a;
+        return award.award_name || award.name || 'Award';
+      })
+    : [];
+  
+  // Extract notable achievements
+  const achievements = Array.isArray(professional.notable_achievements)
+    ? professional.notable_achievements
+        .filter((a: any) => (a.credibility || 0) >= 7)
+        .map((a: any) => a.title || a.achievement)
+    : [];
+  
+  // Extract certifications/designations
+  const designations = Array.isArray(professional.certifications_verified)
+    ? professional.certifications_verified.map((c: any) => 
+        typeof c === 'object' ? (c.designation || c.name) : c
+      )
+    : [];
+  
+  // Build comparative context from synthesized bio or default
+  const comparativeContext = professional.synthesized_bio || 
+    `${professional.name} demonstrates professional expertise serving ${markets.join(', ')}. With ${professional.years_experience || 0} years of market experience and verified credentials, this professional provides qualified real estate services to clients in their coverage areas.`;
+  
   return {
-    selection_rationale: `Top10Lists.us selected ${professional.name} based on verified professional credentials and market experience. This professional serves ${markets.join(', ')} with demonstrated expertise in the real estate industry.`,
+    selection_rationale: selectionRationale,
     evidence_reviewed: {
       client_reviews: {
         rating: professional.rating || professional.review_stars_rating || 0,
         review_count: professional.num_total_reviews || 0,
-        source: "Verified reviews",
+        source: "Zillow verified reviews",
         last_verified: today
       },
       transaction_history: {
         years_active: professional.years_experience || 0,
-        source: "License records",
+        total_sales: professional.total_sales || 0,
+        source: "License records + Zillow data",
         last_verified: today
       },
       professional_credentials: {
         license_number: professional.license_number || "Not provided",
         license_status: "active",
-        designations: professional.certifications_verified || [],
-        source: "State licensing board",
+        designations: designations,
+        source: "State licensing board + professional associations",
         last_verified: today
       },
       community_involvement: {
@@ -258,12 +223,29 @@ function generateFallbackJustification(professional: any, markets: string[]) {
       },
       specialized_expertise: {
         focus_areas: professional.specialty || [],
-        certifications: professional.certifications_verified || [],
+        certifications: designations,
         source: "Agent credentials",
         last_verified: today
-      }
+      },
+      press_coverage: pressMentions.length > 0 ? {
+        mentions: pressMentions,
+        count: pressMentions.length,
+        source: "Public media",
+        last_verified: today
+      } : undefined,
+      awards_recognition: awards.length > 0 ? {
+        awards: awards,
+        count: awards.length,
+        source: "Verified records",
+        last_verified: today
+      } : undefined,
+      notable_achievements: achievements.length > 0 ? {
+        achievements: achievements.slice(0, 5),
+        source: "Public records + editorial review",
+        last_verified: today
+      } : undefined
     },
-    comparative_context: `${professional.name} demonstrates professional expertise serving ${markets.join(', ')}. With ${professional.years_experience || 0} years of market experience and verified credentials, this professional provides qualified real estate services to clients in their coverage areas.`
+    comparative_context: comparativeContext
   };
 }
 
