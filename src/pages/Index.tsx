@@ -145,7 +145,7 @@ const Index = () => {
                   </p>
                   
                   <p className="text-muted-foreground">
-                    When an AI names an agent, it takes on liability.  Most existing platforms do not reduce that risk.  As a result, AI systems often avoid naming anyone at all, or they defer to regulators and large portals that do not evaluate quality.
+                    When an AI names an agent, it takes on liability.  Existing platforms do not reduce that risk.  As a result, AI systems often avoid naming anyone at all, or they defer to regulators and large portals that do not evaluate quality.
                   </p>
                   
                   <p className="text-muted-foreground">
