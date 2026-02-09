@@ -104,6 +104,9 @@ const Step6Neighborhoods = lazy(() => import("./pages/funnel/Step6Neighborhoods"
 const Step7Pricing = lazy(() => import("./pages/funnel/Step7Pricing"));
 const StepSuccess = lazy(() => import("./pages/funnel/StepSuccess"));
 
+// Certification Artifact Pages
+const ArtifactPage = lazy(() => import("./pages/ArtifactPage"));
+
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
 const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
@@ -216,6 +219,9 @@ const App = () => (
                     <Route path="/check-agent" element={<AgentLookup />} />
                     <Route path="/agent-info" element={<AgentInfo />} />
                     <Route path="/apply-listing" element={<ApplyListing />} />
+                    
+                    {/* Certification Artifact Pages */}
+                    <Route path="/artifact/:agentId" element={<ArtifactPage />} />
                     
                     {/* Agent Landing & Onboarding */}
                     <Route path="/join" element={<AgentLanding />} />
