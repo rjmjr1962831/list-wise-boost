@@ -9,7 +9,10 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "format-bios": "tsx scripts/format-agent-bios.ts"
+    "format-bios": "tsx scripts/format-agent-bios.ts",
+    "preview:mobile": "node scripts/preview-mobile.js",
+    "preview:staging": "node scripts/preview-mobile.js https://staging.top10lists.us",
+    "preview:prod": "node scripts/preview-mobile.js https://www.top10lists.us"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
