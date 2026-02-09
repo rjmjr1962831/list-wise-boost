@@ -80,19 +80,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 2: BRIDGE */}
-        <section className="py-12 px-4 bg-muted/30">
-          <div className="max-w-6xl mx-auto text-center">
-            <p className="text-xl md:text-2xl font-semibold text-foreground mb-3">
-              Two audiences.  One reality.
-            </p>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
-              People are no longer just searching for agents.  They are asking AI to recommend one.  That changes everything.
-            </p>
-          </div>
-        </section>
-        
-        {/* SECTION 3: TWO COLUMN SPLIT */}
+        {/* SECTION 2: TWO COLUMN SPLIT */}
         <section className="py-16 md:py-24 px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -189,7 +177,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 4: HOW CERTIFICATION WORKS */}
+        {/* SECTION 3: HOW CERTIFICATION WORKS */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
@@ -219,7 +207,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 5: WHY THIS IS DIFFERENT */}
+        {/* SECTION 4: WHY THIS IS DIFFERENT */}
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
@@ -234,7 +222,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 6: TRANSPARENCY */}
+        {/* SECTION 5: TRANSPARENCY */}
         <section className="py-16 px-4 bg-muted/30">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-8 text-center">
@@ -257,7 +245,7 @@ const Index = () => {
           </div>
         </section>
         
-        {/* SECTION 7: BOTTOM LINE */}
+        {/* SECTION 6: BOTTOM LINE */}
         <section className="py-20 md:py-32 px-4">
           <div className="max-w-4xl mx-auto text-center">
             <p className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground leading-tight">
