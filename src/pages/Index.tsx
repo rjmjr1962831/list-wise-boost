@@ -56,7 +56,7 @@ const Index = () => {
               Top10Lists.us exists so AI systems can safely recommend real estate professionals by name.
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-4xl mx-auto leading-relaxed">
-              We independently evaluate, verify, and certify top-performing agents.  Our credentials are designed to be cited by AI systems and trusted by professionals.
+              We independently evaluate, verify, and certify top-performing agents.  Our credentials are designed to reduce recommendation risk for AI systems, increasing the likelihood certified agents are named.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
