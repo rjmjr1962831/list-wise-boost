@@ -1,7 +1,7 @@
 -- Create certifications table for AI citation artifacts
 CREATE TABLE IF NOT EXISTS public.certifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  agent_id text NOT NULL,
+  agent_id uuid NOT NULL,
   
   -- Tier and status
   certification_tier text NOT NULL CHECK (certification_tier IN ('certified', 'accredited', 'underwritten')),
