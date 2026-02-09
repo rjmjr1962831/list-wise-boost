@@ -19934,7 +19934,7 @@ var puppeteer_cloudflare_default = puppeteer;
 
 // src/index.js
 var index_default = {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const ua = request.headers.get("user-agent") || "";
     
@@ -20043,27 +20043,29 @@ var index_default = {
         const newHdrs = new Headers(cachedResponse.headers);
         newHdrs.set("X-Cache", "HIT");
         
-        // Log bot visit (fire-and-forget, won't block response)
+        // Log bot visit (background task, won't block response)
         if (isBot) {
-          fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json', 
-              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
-            },
-            body: JSON.stringify({ 
-              url: url.href,
-              path: url.pathname,
-              user_agent: ua,
-              bot_type: botType,
-              cache_status: 'HIT',
-              client_ip: request.headers.get('CF-Connecting-IP'),
-              country: request.headers.get('CF-IPCountry'),
-              ray_id: request.headers.get('CF-Ray'),
-              method: request.method,
-              timestamp: new Date().toISOString()
-            })
-          }).catch(() => {}); // Ignore errors
+          ctx.waitUntil(
+            fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
+              },
+              body: JSON.stringify({ 
+                url: url.href,
+                path: url.pathname,
+                user_agent: ua,
+                bot_type: botType,
+                cache_status: 'HIT',
+                client_ip: request.headers.get('CF-Connecting-IP'),
+                country: request.headers.get('CF-IPCountry'),
+                ray_id: request.headers.get('CF-Ray'),
+                method: request.method,
+                timestamp: new Date().toISOString()
+              })
+            }).catch(() => {}) // Ignore errors
+          );
         }
         
         return new Response(cachedResponse.body, { status: cachedResponse.status, headers: newHdrs });
@@ -20132,27 +20134,29 @@ var index_default = {
         });
         await cache.put(cacheKey, response.clone());
         
-        // Log bot visit for MISS (fire-and-forget)
+        // Log bot visit for MISS (background task, won't block response)
         if (isBot) {
-          fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json', 
-              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
-            },
-            body: JSON.stringify({ 
-              url: url.href,
-              path: url.pathname,
-              user_agent: ua,
-              bot_type: botType,
-              cache_status: 'MISS',
-              client_ip: request.headers.get('CF-Connecting-IP'),
-              country: request.headers.get('CF-IPCountry'),
-              ray_id: request.headers.get('CF-Ray'),
-              method: request.method,
-              timestamp: new Date().toISOString()
-            })
-          }).catch(() => {});
+          ctx.waitUntil(
+            fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json', 
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
+              },
+              body: JSON.stringify({ 
+                url: url.href,
+                path: url.pathname,
+                user_agent: ua,
+                bot_type: botType,
+                cache_status: 'MISS',
+                client_ip: request.headers.get('CF-Connecting-IP'),
+                country: request.headers.get('CF-IPCountry'),
+                ray_id: request.headers.get('CF-Ray'),
+                method: request.method,
+                timestamp: new Date().toISOString()
+              })
+            }).catch(() => {}) // Ignore errors
+          );
         }
         
         return response;
@@ -20180,5 +20184,11 @@ addEventListener('fetch', event => {
   const env = {
     MYBROWSER: typeof MYBROWSER !== 'undefined' ? MYBROWSER : undefined
   };
-  event.respondWith(index_default.fetch(event.request, env));
+  
+  // Create a context object with waitUntil
+  const ctx = {
+    waitUntil: (promise) => event.waitUntil(promise)
+  };
+  
+  event.respondWith(index_default.fetch(event.request, env, ctx));
 });
