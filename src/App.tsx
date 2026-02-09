@@ -23,6 +23,7 @@ const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile")
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
+const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AICompare = lazy(() => import("./pages/AICompare"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
@@ -184,6 +185,7 @@ const App = () => (
                     {/* Direct admin access - security via obscurity */}
                     <Route path="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" element={<AdminDashboardDirect />} />
                     <Route path="/a/bot-analytics" element={<BotAnalyticsDashboard />} />
+                    <Route path="/agent/bot-analytics" element={<AgentBotAnalyticsDashboard />} />
                     <Route path="/og-preview" element={<OGPreview />} />
                     <Route path="/crm" element={<CRM />} />
                     <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />

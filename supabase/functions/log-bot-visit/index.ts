@@ -50,7 +50,19 @@ serve(async (req) => {
   }
 
   try {
-    const { url, user_agent, cache_status, timestamp } = await req.json();
+    const payload = await req.json();
+    const { 
+      url, 
+      path,
+      user_agent, 
+      bot_type: providedBotType,
+      cache_status, 
+      client_ip,
+      country,
+      ray_id,
+      method,
+      timestamp 
+    } = payload;
     
     if (!url) {
       return new Response(
@@ -59,26 +71,62 @@ serve(async (req) => {
       );
     }
 
-    const { isBot, botType } = detectBot(user_agent);
+    // Use provided bot_type if available, otherwise detect
+    let finalBotType = providedBotType;
+    let isBot = !!providedBotType;
+    
+    if (!finalBotType) {
+      const detected = detectBot(user_agent);
+      finalBotType = detected.botType;
+      isBot = detected.isBot;
+    }
     
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    
+    // Extract agent_id from path if it's an agent profile or artifact page
+    let agentId: string | null = null;
+    const urlPath = path || url;
+    
+    // Pattern 1: /artifact/{uuid} or /artifact/{uuid}/payload.json or /artifact/{uuid}/justification
+    const artifactMatch = urlPath.match(/\/artifact\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+    if (artifactMatch) {
+      agentId = artifactMatch[1];
+    } else {
+      // Pattern 2: /{state}/agents/{slug} - need to look up by canonical_slug
+      const agentMatch = urlPath.match(/\/[^\/]+\/agents\/([^\/\?]+)/);
+      if (agentMatch) {
+        const slug = agentMatch[1];
+        // Look up agent by canonical_slug
+        const { data: professional } = await supabase
+          .from('professionals')
+          .select('id')
+          .eq('canonical_slug', slug)
+          .eq('active', true)
+          .single();
+        
+        if (professional) {
+          agentId = professional.id;
+        }
+      }
+    }
     
     const { error } = await supabase
       .from("cloudflare_request_logs")
       .insert({
         timestamp: timestamp || new Date().toISOString(),
-        client_ip: null,
+        client_ip: client_ip || null,
         user_agent: user_agent || null,
         url: url,
-        path: url,
-        method: 'GET',
+        path: path || url,
+        method: method || 'GET',
         cache_status: cache_status || 'UNKNOWN',
         cache_response_status: null,
-        country: null,
-        ray_id: null,
-        bot_type: botType,
+        country: country || null,
+        ray_id: ray_id || null,
+        bot_type: finalBotType,
         is_bot: isBot,
-        raw_log: { url, user_agent, cache_status, timestamp },
+        agent_id: agentId,
+        raw_log: payload,
       });
     
     if (error && error.code !== '23505') { // Ignore duplicate errors

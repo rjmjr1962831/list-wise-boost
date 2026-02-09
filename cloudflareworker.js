@@ -19938,14 +19938,36 @@ var index_default = {
     const url = new URL(request.url);
     const ua = request.headers.get("user-agent") || "";
     
-    // Bot detection list
-    const bots = [
-      "googlebot", "bingbot", "slurp", "duckduckbot", "baiduspider", "gptbot", 
-      "chatgpt-user", "claudebot", "anthropic-ai", "perplexitybot", 
-      "google-inspectiontool", "googleother", "ccbot", "oai-searchbot",
-      "facebookexternalhit", "twitterbot", "linkedinbot", "slackbot", "top10lists"
-    ];
-    const isBot = bots.some((b) => ua.toLowerCase().includes(b));
+    // Bot detection with type identification
+    const botPatterns = {
+      googlebot: /googlebot|google-inspectiontool|googleother/i,
+      claudebot: /claudebot|claude-web|anthropic-ai/i,
+      gptbot: /gptbot|chatgpt-user|oai-searchbot/i,
+      bingbot: /bingbot|msnbot/i,
+      perplexitybot: /perplexitybot/i,
+      slurp: /slurp/i,
+      duckduckbot: /duckduckbot/i,
+      baiduspider: /baiduspider/i,
+      yandexbot: /yandexbot/i,
+      facebookbot: /facebookexternalhit/i,
+      twitterbot: /twitterbot/i,
+      linkedinbot: /linkedinbot/i,
+    };
+    
+    let botType = null;
+    for (const [name, pattern] of Object.entries(botPatterns)) {
+      if (pattern.test(ua)) {
+        botType = name;
+        break;
+      }
+    }
+    
+    // Fallback for unknown bots
+    if (!botType && (ua.includes('bot') || ua.includes('crawler') || ua.includes('spider'))) {
+      botType = 'unknown_bot';
+    }
+    
+    const isBot = botType !== null;
     const isCacheWarming = request.headers.get("X-Cache-Warming") === "true";
     const forceRefresh = request.headers.get("X-Force-Refresh") === "true";
 
@@ -20020,8 +20042,22 @@ var index_default = {
         if (isBot) {
           fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI' },
-            body: JSON.stringify({ url: url.pathname, user_agent: ua, cache_status: 'HIT', timestamp: new Date().toISOString() })
+            headers: { 
+              'Content-Type': 'application/json', 
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
+            },
+            body: JSON.stringify({ 
+              url: url.href,
+              path: url.pathname,
+              user_agent: ua,
+              bot_type: botType,
+              cache_status: 'HIT',
+              client_ip: request.headers.get('CF-Connecting-IP'),
+              country: request.headers.get('CF-IPCountry'),
+              ray_id: request.headers.get('CF-Ray'),
+              method: request.method,
+              timestamp: new Date().toISOString()
+            })
           }).catch(() => {}); // Ignore errors
         }
         
@@ -20095,8 +20131,22 @@ var index_default = {
         if (isBot) {
           fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI' },
-            body: JSON.stringify({ url: url.pathname, user_agent: ua, cache_status: 'MISS', timestamp: new Date().toISOString() })
+            headers: { 
+              'Content-Type': 'application/json', 
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
+            },
+            body: JSON.stringify({ 
+              url: url.href,
+              path: url.pathname,
+              user_agent: ua,
+              bot_type: botType,
+              cache_status: 'MISS',
+              client_ip: request.headers.get('CF-Connecting-IP'),
+              country: request.headers.get('CF-IPCountry'),
+              ray_id: request.headers.get('CF-Ray'),
+              method: request.method,
+              timestamp: new Date().toISOString()
+            })
           }).catch(() => {});
         }
         
