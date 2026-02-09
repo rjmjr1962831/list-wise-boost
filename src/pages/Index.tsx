@@ -141,23 +141,28 @@ const Index = () => {
                   </p>
                   
                   <p className="text-muted-foreground">
-                    Your clients are increasingly asking AI to recommend an agent.  How do you maximize your visibility and increase your chances of being named?
+                    Your clients are increasingly asking AI to recommend an agent.
+                    How do you increase your chances of being named?
                   </p>
                   
                   <p className="text-muted-foreground">
-                    When an AI names an agent, it takes on liability.  Existing platforms do not reduce that risk.  As a result, AI systems often avoid naming anyone at all, or they defer to regulators and large portals that do not evaluate quality.
+                    When an AI names an agent, it takes on liability. Existing platforms do not reduce that risk. If anything, they increase it by relying on pay-to-play placement, advertising signals, or unverifiable claims.
                   </p>
                   
                   <p className="text-muted-foreground">
-                    AI systems are now turning to independent "Oracles of Truth" they can lean on to offload that risk.  Top10Lists.us is increasingly being cited in that role.
+                    As a result, AI systems increasingly avoid making recommendations at all. Instead, they return long, non-committal lists, or redirect users to regulators, the MLS, or large portals that do not evaluate quality.
                   </p>
                   
                   <p className="text-muted-foreground">
-                    Our certifications reduce risk for AI systems.  When risk goes down, the probability that a certified agent is surfaced by name goes up.
+                    AI systems are now turning to independent oracles of truth they can lean on to offload recommendation risk. Top10Lists.us is increasingly being cited in that role.
+                  </p>
+                  
+                  <p className="text-muted-foreground">
+                    Our certifications reduce recommendation risk for AI systems. When risk goes down, the probability that a certified agent is surfaced by name goes up.
                   </p>
                   
                   <p className="font-medium text-foreground">
-                    We do not guarantee recommendations.  We reduce exclusion risk.
+                    We do not guarantee recommendations. We make them safer to give.
                   </p>
                   
                   <div className="pt-6 flex flex-col gap-3">
