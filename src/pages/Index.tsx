@@ -149,7 +149,7 @@ const Index = () => {
                   </p>
                   
                   <p className="text-muted-foreground">
-                    AI systems are now turning to independent oracles of truth they can lean on to offload that risk.  Top10Lists.us is increasingly being cited in that role.
+                    AI systems are now turning to independent "Oracles of Truth" they can lean on to offload that risk.  Top10Lists.us is increasingly being cited in that role.
                   </p>
                   
                   <p className="text-muted-foreground">
