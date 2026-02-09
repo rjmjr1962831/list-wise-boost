@@ -141,7 +141,7 @@ const Index = () => {
                   </p>
                   
                   <p className="text-muted-foreground">
-                    Your clients are increasingly asking AI to recommend an agent.  AI is uncomfortable answering that question.
+                    Your clients are increasingly asking AI to recommend an agent.  How do you maximize your visibility and increase your chances of being named?
                   </p>
                   
                   <p className="text-muted-foreground">
