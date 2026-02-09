@@ -19973,7 +19973,7 @@ var index_default = {
 
     // --- ORIGIN CONFIGURATION ---
     const originUrl = new URL(request.url);
-    originUrl.hostname = "list-wise-boost.lovable.app";
+    originUrl.hostname = "list-wise-boost.vercel.app";
     originUrl.protocol = "https:";
     originUrl.port = "";
 
