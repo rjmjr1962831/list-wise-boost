@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { PartyPopper, Clock } from "lucide-react";
+import { PartyPopper, Clock, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -20,6 +20,7 @@ export default function AreYouAnAgent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [foundAgent, setFoundAgent] = useState<FoundAgent | null>(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -106,6 +107,18 @@ export default function AreYouAnAgent() {
       sessionStorage.setItem('visibility_professional_token', foundAgent.id);
     }
     navigate('/visibility/coverage');
+  };
+
+  const handleCopyQuestion = async () => {
+    const questionText = "What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?";
+    try {
+      await navigator.clipboard.writeText(questionText);
+      setCopied(true);
+      toast.success("Question copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy to clipboard");
+    }
   };
 
   return (
@@ -291,10 +304,23 @@ export default function AreYouAnAgent() {
             <p className="text-muted-foreground mb-4">
               Ask the AI you use today:
             </p>
-            <div className="bg-primary/5 border-2 border-primary/30 rounded-xl p-8 my-8">
-              <p className="text-lg font-medium text-foreground italic leading-relaxed">
+            <div className="bg-primary/5 border-2 border-primary/30 rounded-xl p-8 my-8 relative">
+              <p className="text-lg font-medium text-foreground italic leading-relaxed pr-12">
                 What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?
               </p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyQuestion}
+                className="absolute top-4 right-4"
+                title="Copy to clipboard"
+              >
+                {copied ? (
+                  <Check className="h-5 w-5 text-primary" />
+                ) : (
+                  <Copy className="h-5 w-5" />
+                )}
+              </Button>
             </div>
           </div>
 
