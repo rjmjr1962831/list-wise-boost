@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map } from "lucide-react";
+import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
@@ -177,6 +177,17 @@ const AdminDashboard = () => {
             >
               <MailCheck className="mr-2 h-4 w-4" />
               Confirm All Emails
+            </Button>
+            <Button
+              onClick={() => {
+                window.open('/admin/mobile-preview', '_blank', 'width=1600,height=900');
+                toast.success('Mobile preview opened!');
+              }}
+              variant="outline"
+              className="h-auto py-3 border-blue-500 text-blue-600 hover:bg-blue-50"
+            >
+              <Smartphone className="mr-2 h-4 w-4" />
+              Mobile Preview
             </Button>
           </div>
         </div>

@@ -19940,16 +19940,20 @@ var index_default = {
     
     // Bot detection with type identification
     const botPatterns = {
-      googlebot: /googlebot|google-inspectiontool|googleother/i,
+      googlebot: /googlebot|google-inspectiontool|googleother|adsbot-google/i,
       claudebot: /claudebot|claude-web|anthropic-ai/i,
       gptbot: /gptbot|chatgpt-user|oai-searchbot/i,
       bingbot: /bingbot|msnbot/i,
       perplexitybot: /perplexitybot/i,
+      metabot: /meta-externalagent|facebookexternalhit|facebookbot/i,
+      amazonbot: /amazonbot/i,
+      bytespider: /bytespider/i,
+      semrushbot: /semrushbot/i,
+      ahrefsbot: /ahrefsbot/i,
       slurp: /slurp/i,
       duckduckbot: /duckduckbot/i,
       baiduspider: /baiduspider/i,
       yandexbot: /yandexbot/i,
-      facebookbot: /facebookexternalhit/i,
       twitterbot: /twitterbot/i,
       linkedinbot: /linkedinbot/i,
     };
@@ -20029,7 +20033,10 @@ var index_default = {
     }
 
     // Cache Check - normalize cache key to share across all bots
-    const cacheKey = new Request(url.toString(), { 
+    // Strip query parameters to ensure same page = same cache regardless of query string
+    const cacheUrl = new URL(url);
+    cacheUrl.search = ''; // Remove all query parameters
+    const cacheKey = new Request(cacheUrl.toString(), { 
       method: "GET",
       headers: {
         'User-Agent': 'bot-cache-normalized' // All bots share same cache key

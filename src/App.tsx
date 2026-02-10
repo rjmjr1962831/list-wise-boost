@@ -44,6 +44,7 @@ const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZip
 
 const AdminLogin = lazy(() => import("./pages/AdminLogin"));
 const AdminDashboardDirect = lazy(() => import("./pages/AdminDashboardDirect"));
+const MobilePreview = lazy(() => import("./pages/MobilePreview"));
 const CRM = lazy(() => import("./pages/CRM"));
 
 // New CRM Dashboard
@@ -202,6 +203,7 @@ const App = () => (
                       <Route path="agents" element={<CRMAgentList />} />
                     </Route>
                     
+                    <Route path="/admin/mobile-preview" element={<MobilePreview />} />
                     {/* Direct admin access - security via obscurity */}
                     <Route path="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" element={<AdminDashboardDirect />} />
                     <Route path="/a/bot-analytics" element={<BotAnalyticsDashboard />} />
