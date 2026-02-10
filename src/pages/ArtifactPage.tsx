@@ -11,7 +11,7 @@ interface CertificationData {
   id: string;
   name: string;
   review_stars_rating: number;
-  rating: number;
+  ratings: number;
   num_total_reviews: number;
   years_experience: number | null;
   license_number: string | null;
@@ -59,7 +59,7 @@ export default function ArtifactPage() {
             id,
             name,
             review_stars_rating,
-            rating,
+            ratings,
             num_total_reviews,
             years_experience,
             license_number,
@@ -316,7 +316,7 @@ export default function ArtifactPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {data.review_stars_rating || data.rating || 'N/A'}
+                    {data.review_stars_rating || data.ratings || 'N/A'}
                   </div>
                   <div className="text-sm text-muted-foreground">Rating</div>
                 </div>
