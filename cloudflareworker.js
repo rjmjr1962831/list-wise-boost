@@ -20029,7 +20029,10 @@ var index_default = {
     }
 
     // Cache Check - normalize cache key to share across all bots
-    const cacheKey = new Request(url.toString(), { 
+    // Strip query parameters to ensure same page = same cache regardless of query string
+    const cacheUrl = new URL(url);
+    cacheUrl.search = ''; // Remove all query parameters
+    const cacheKey = new Request(cacheUrl.toString(), { 
       method: "GET",
       headers: {
         'User-Agent': 'bot-cache-normalized' // All bots share same cache key
