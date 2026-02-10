@@ -1484,6 +1484,254 @@ serve(async (req) => {
       });
     }
 
+
+    // ============ PUBLIC API: agents-search ============
+    if (req.method === 'GET' && action === 'agents-search') {
+      const state = url.searchParams.get('state');
+      const city = url.searchParams.get('city');
+      const zip = url.searchParams.get('zip');
+      const specialty = url.searchParams.get('specialty');
+      const minRating = parseFloat(url.searchParams.get('min_rating') || '4.8');
+      const minReviews = parseInt(url.searchParams.get('min_reviews') || '20');
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '10'), 50);
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+
+      const startTime = Date.now();
+
+      let query = supabase
+        .from('professionals')
+        .select('id, name, company, profile_shortcode, review_stars_rating, num_total_reviews, years_experience, license_number, city, state, zip_code, specialties, phone, email, website', { count: 'exact' })
+        .eq('active', true)
+        .gte('review_stars_rating', minRating)
+        .gte('num_total_reviews', minReviews);
+
+      if (state) query = query.ilike('state', `%${state}%`);
+      if (city) query = query.ilike('city', `%${city}%`);
+      if (zip) query = query.eq('zip_code', zip);
+      if (specialty) query = query.contains('specialties', [specialty]);
+
+      query = query
+        .order('review_stars_rating', { ascending: false })
+        .order('num_total_reviews', { ascending: false })
+        .range(offset, offset + limit - 1);
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ error: 'Database query failed' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const results = (data || []).map(agent => ({
+        agent_id: agent.id,
+        name: agent.name,
+        company: agent.company,
+        profile_url: `https://www.top10lists.us/p/${agent.profile_shortcode}`,
+        qualifications: {
+          rating: agent.review_stars_rating,
+          review_count: agent.num_total_reviews,
+          years_experience: agent.years_experience,
+          license_number: agent.license_number,
+          license_verified: !!agent.license_number
+        },
+        markets: {
+          city: agent.city,
+          state: agent.state,
+          zip: agent.zip_code
+        },
+        specialties: agent.specialties || [],
+        contact: {
+          phone: agent.phone,
+          email: agent.email,
+          website: agent.website
+        }
+      }));
+
+      return new Response(
+        JSON.stringify({
+          results,
+          pagination: {
+            total: count || 0,
+            limit,
+            offset,
+            has_more: (offset + limit) < (count || 0)
+          },
+          query_time_ms: Date.now() - startTime
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=300' } }
+      );
+    }
+
+    // ============ PUBLIC API: agent-details ============
+    if (req.method === 'GET' && action === 'agent-details') {
+      const agentId = url.searchParams.get('id');
+
+      if (!agentId) {
+        return new Response(
+          JSON.stringify({ error: 'Agent ID required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('*')
+        .eq('id', agentId)
+        .eq('active', true)
+        .single();
+
+      if (error || !data) {
+        return new Response(
+          JSON.stringify({ error: 'Agent not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          agent_id: data.id,
+          name: data.name,
+          title: data.title,
+          company: data.company,
+          bio: data.synthesized_bio,
+          image_url: data.image_url,
+          profile_url: `https://www.top10lists.us/p/${data.profile_shortcode}`,
+          contact: {
+            phone: data.phone,
+            email: data.email,
+            website: data.website,
+            zillow_profile: data.zillow_profile_url
+          },
+          qualifications: {
+            rating: data.review_stars_rating,
+            review_count: data.num_total_reviews,
+            years_experience: data.years_experience,
+            license_number: data.license_number,
+            license_type: data.license_type,
+            license_verified: !!data.license_number,
+            certifications: data.certifications || [],
+            languages: data.languages || [],
+            specialties: data.specialties || []
+          },
+          markets: {
+            city: data.city,
+            state: data.state,
+            state_slug: data.state_slug,
+            city_slug: data.canonical_slug,
+            zip: data.zip_code,
+            neighborhoods: data.served_cities || [],
+            service_areas: data.service_areas || []
+          },
+          performance: {
+            zillow_member_since: data.zillow_member_since,
+            sales_count_all_time: data.sales_count_all_time,
+            sales_count_last_year: data.sales_count_last_year,
+            price_range_min: data.price_range_3yr_min,
+            price_range_max: data.price_range_3yr_max,
+            average_price_3yr: data.average_value_3yr,
+            active_listings: data.active_for_sale_count,
+            stats_last_updated: data.zillow_last_scraped_at
+          },
+          recognition: {
+            press_mentions: data.press_mentions || [],
+            notable_achievements: data.notable_achievements || [],
+            community_roles: data.community_roles || []
+          },
+          methodology: {
+            url: 'https://www.top10lists.us/methodology',
+            version: '1.0'
+          }
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=600' } }
+      );
+    }
+
+    // ============ PUBLIC API: markets ============
+    if (req.method === 'GET' && action === 'markets') {
+      const state = url.searchParams.get('state');
+
+      let query = supabase
+        .from('professionals')
+        .select('state, state_slug, city, city_slug')
+        .eq('active', true);
+
+      if (state) query = query.ilike('state', `%${state}%`);
+
+      const { data: citiesData, error } = await query;
+
+      if (error) {
+        return new Response(
+          JSON.stringify({ error: 'Failed to retrieve markets' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const statesMap = new Map();
+      const cityCountsMap = new Map();
+
+      citiesData.forEach(row => {
+        const stateKey = row.state;
+        const cityKey = `${row.state}:${row.city}`;
+
+        if (!statesMap.has(stateKey)) {
+          statesMap.set(stateKey, {
+            state: row.state,
+            state_slug: row.state_slug,
+            cities: new Map()
+          });
+        }
+
+        const stateData = statesMap.get(stateKey);
+        if (!stateData.cities.has(cityKey)) {
+          stateData.cities.set(cityKey, {
+            city: row.city,
+            city_slug: row.city_slug,
+            agent_count: 0,
+            url: `https://www.top10lists.us/${row.state_slug}/${row.city_slug}/top10realestateagents`
+          });
+        }
+
+        cityCountsMap.set(cityKey, (cityCountsMap.get(cityKey) || 0) + 1);
+      });
+
+      statesMap.forEach(stateData => {
+        stateData.cities.forEach((cityData, cityKey) => {
+          cityData.agent_count = cityCountsMap.get(cityKey) || 0;
+        });
+      });
+
+      const states = Array.from(statesMap.values()).map(state => {
+        const cities = Array.from(state.cities.values());
+        const agentCount = cities.reduce((sum, city) => sum + city.agent_count, 0);
+        
+        return {
+          state: state.state,
+          state_slug: state.state_slug,
+          agent_count: agentCount,
+          cities
+        };
+      });
+
+      const totalAgents = citiesData.length;
+      const totalCities = Array.from(statesMap.values())
+        .reduce((sum, state) => sum + state.cities.size, 0);
+
+      return new Response(
+        JSON.stringify({
+          states,
+          summary: {
+            total_states: states.length,
+            total_cities: totalCities,
+            total_agents: totalAgents
+          },
+          last_updated: new Date().toISOString()
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=3600' } }
+      );
+    }
+
     // Invalid action - show all available actions
     return new Response(
       JSON.stringify({ 
@@ -1513,9 +1761,13 @@ serve(async (req) => {
           // Promotion
           promote_to_professional: 'POST ?action=promote_to_professional - Promote qualified license (body: {license_id})',
           // Custom query
-          query: 'POST ?action=query - Custom query (body: {table, select, filters: [{field, operator, value}], limit, offset})',
+          // Custom query
           // City matching
-          'match-city': 'POST ?action=match-city - Match city name variations (body: {query, state})'
+          // Public API endpoints
+          'agents-search': 'GET ?action=agents-search&city=Scottsdale - Search agents by location/specialty',
+          'agent-details': 'GET ?action=agent-details&id=5289 - Get full agent profile',
+          'markets': 'GET ?action=markets - List all covered states and cities'
+          // City matching
         }
       }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
