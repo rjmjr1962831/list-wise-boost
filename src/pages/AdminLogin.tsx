@@ -64,9 +64,9 @@ const AdminLogin = () => {
       // Check if user has admin role
       console.log("[AdminLogin] Checking user roles...");
       const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
+        .from("admin_users")
         .select("role")
-        .eq("user_id", authData.user.id);
+        .eq("id", authData.user.id);
       
       console.log("[AdminLogin] Roles query result:", { roles, rolesError });
       
