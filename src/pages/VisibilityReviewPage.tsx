@@ -129,9 +129,9 @@ export default function VisibilityReviewPage() {
 
           // Check if user is admin - allow them to proceed with test professional
           const { data: adminRole } = await supabase
-            .from('user_roles')
+            .from('admin_users')
             .select('role')
-            .eq('user_id', user.id)
+            .eq('id', user.id)
             .eq('role', 'admin')
             .maybeSingle();
 
