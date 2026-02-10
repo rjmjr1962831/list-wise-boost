@@ -1,9 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/v1/agents/search", "destination": "/api/v1/agents/search" },
-    { "source": "/api/v1/agents/:id", "destination": "/api/v1/agents/[id]" },
-    { "source": "/api/v1/markets", "destination": "/api/v1/markets" },
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/((?!api).*)", "destination": "/" }
   ],
   "headers": [
     {
@@ -20,6 +17,10 @@
         {
           "key": "Access-Control-Allow-Headers",
           "value": "Content-Type"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, must-revalidate"
         }
       ]
     }
