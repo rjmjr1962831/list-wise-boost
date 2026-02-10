@@ -19940,16 +19940,20 @@ var index_default = {
     
     // Bot detection with type identification
     const botPatterns = {
-      googlebot: /googlebot|google-inspectiontool|googleother/i,
+      googlebot: /googlebot|google-inspectiontool|googleother|adsbot-google/i,
       claudebot: /claudebot|claude-web|anthropic-ai/i,
       gptbot: /gptbot|chatgpt-user|oai-searchbot/i,
       bingbot: /bingbot|msnbot/i,
       perplexitybot: /perplexitybot/i,
+      metabot: /meta-externalagent|facebookexternalhit|facebookbot/i,
+      amazonbot: /amazonbot/i,
+      bytespider: /bytespider/i,
+      semrushbot: /semrushbot/i,
+      ahrefsbot: /ahrefsbot/i,
       slurp: /slurp/i,
       duckduckbot: /duckduckbot/i,
       baiduspider: /baiduspider/i,
       yandexbot: /yandexbot/i,
-      facebookbot: /facebookexternalhit/i,
       twitterbot: /twitterbot/i,
       linkedinbot: /linkedinbot/i,
     };
