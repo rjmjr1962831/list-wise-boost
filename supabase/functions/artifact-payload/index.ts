@@ -43,20 +43,26 @@ serve(async (req) => {
         num_total_reviews,
         years_experience,
         license_number,
-        specialties,
-        certifications_designations,
-        languages,
-        city,
-        state,
-        canonical_slug,
-        sales_count_all_time,
-        sales_count_last_year,
-        price_range_3yr_min,
-        price_range_3yr_max,
-        active_for_sale_count,
-        community_roles,
+        specialty,
+        certifications_verified,
+        phone,
+        email,
+        website,
+        company,
+        rating,
+        total_sales,
         notable_achievements,
+        community_roles,
+        synthesized_bio,
         press_mentions,
+        awards_verified,
+        short_code,
+        cities:city_id (
+          name,
+          state,
+          state_slug,
+          slug
+        ),
         certifications!inner (
           certification_tier,
           certification_status,
@@ -82,12 +88,18 @@ serve(async (req) => {
 
     const cert = data.certifications[0];
     const tier = cert.certification_tier;
+    const city = data.cities;
+    
+    // Build profile URL
+    const profileUrl = data.short_code 
+      ? `https://www.top10lists.us/p/${data.short_code}`
+      : `https://www.top10lists.us/${city.state_slug}/agents/${city.slug}`;
 
     // Build base payload structure
     let payload: any = {
       agent_id: data.id,
       agent_name: data.name,
-      profile_url: `https://www.top10lists.us/${data.state.toLowerCase()}/agents/${data.canonical_slug}`,
+      profile_url: profileUrl,
       
       certification: {
         status: cert.certification_status,
@@ -110,10 +122,10 @@ serve(async (req) => {
       payload.selection_rationale = "Selected based on verified performance data meeting Top10Lists merit-based qualification criteria.";
       
       payload.qualifications = {
-        rating: data.review_stars_rating,
+        rating: data.review_stars_rating || data.rating,
         review_count: data.num_total_reviews,
         license_number: data.license_number,
-        markets: cert.markets_covered || [data.city]
+        markets: cert.markets_covered || [city.name]
       };
     }
 
@@ -127,16 +139,16 @@ serve(async (req) => {
       payload.methodology.version = cert.methodology_version;
       
       payload.qualifications = {
-        rating: data.review_stars_rating,
+        rating: data.review_stars_rating || data.rating,
         review_count: data.num_total_reviews,
         years_experience: data.years_experience,
         license_number: data.license_number,
-        specialties: data.specialties || [],
-        certifications: data.certifications_designations || []
+        specialties: data.specialty || [],
+        certifications: data.certifications_verified || []
       };
 
       payload.markets = {
-        cities: cert.markets_covered || [data.city],
+        cities: cert.markets_covered || [city.name],
         neighborhoods: cert.neighborhoods_covered || []
       };
 
@@ -150,19 +162,14 @@ serve(async (req) => {
     if (tier === 'underwritten') {
       payload.methodology.selection_criteria = 
         "Merit-based qualification using verified performance data. Payment does not influence inclusion, rank, or visibility.";
-      
-      payload.qualifications.languages = data.languages || [];
 
       payload.performance = {
-        sales_count_all_time: data.sales_count_all_time || null,
-        sales_count_last_year: data.sales_count_last_year || null,
-        price_range_min: data.price_range_3yr_min || null,
-        price_range_max: data.price_range_3yr_max || null,
-        active_listings: data.active_for_sale_count || null,
+        sales_count_all_time: data.total_sales || null,
         last_updated: cert.last_verified_at
       };
 
       payload.recognition.press_mentions = data.press_mentions || [];
+      payload.recognition.awards = data.awards_verified || [];
     }
 
     // Return formatted JSON payload

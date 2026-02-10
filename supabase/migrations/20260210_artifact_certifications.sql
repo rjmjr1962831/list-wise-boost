@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS public.certifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  professional_id text NOT NULL REFERENCES public.professionals(id),
+  professional_id uuid NOT NULL REFERENCES public.professionals(id),
   
   -- Core certification fields
   certification_tier text NOT NULL CHECK (certification_tier IN ('certified', 'accredited', 'underwritten')),
@@ -59,7 +59,7 @@ CREATE TRIGGER update_certifications_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Seed test data for George Laughton (professional_id = 5289)
+-- Seed test data for Allison Cahill (professional_id = 1b975c55-a33b-4d21-8998-dc2d9b2dd91d)
 INSERT INTO public.certifications (
   professional_id,
   certification_tier,
@@ -72,27 +72,27 @@ INSERT INTO public.certifications (
   neighborhoods_covered,
   justification_data
 ) VALUES (
-  '5289',
+  '1b975c55-a33b-4d21-8998-dc2d9b2dd91d',
   'accredited',
   'active',
   '2026-02-01T00:00:00Z',
   '2026-02-10T00:00:00Z',
   '2026-03-10T00:00:00Z',
   '1.0',
-  ARRAY['Tucson'],
-  ARRAY['Downtown Tucson', 'Foothills', 'Oro Valley'],
+  ARRAY['Scottsdale'],
+  ARRAY['Grayhawk', 'DC Ranch', 'Troon North'],
   jsonb_build_object(
-    'selection_rationale', 'Top10Lists.us selected George Laughton based on perfect client satisfaction across 20 years and active leadership in the Sierra Vista Chamber of Commerce. Community engagement combined with specialized military relocation expertise distinguishes him among Tucson-area professionals.',
+    'selection_rationale', 'Top10Lists.us selected Allison Cahill based on consistently excellent client satisfaction and deep market expertise in North Scottsdale luxury communities. Her specialization in Grayhawk and DC Ranch, combined with verified transaction history, distinguishes her among Scottsdale professionals.',
     'verified_transactions', jsonb_build_object(
-      'Downtown Tucson', 145,
-      'Foothills', 98,
-      'Oro Valley', 77
+      'Grayhawk', 67,
+      'DC Ranch', 45,
+      'Troon North', 23
     ),
     'evidence_considered', jsonb_build_array(
-      '5.0 star rating across 45 reviews',
-      '320 lifetime transactions',
-      'Active chamber board member',
-      'Military relocation specialist certification'
+      'High client satisfaction ratings',
+      'Verified transaction history in target markets',
+      'Luxury home specialization',
+      'Active market presence in North Scottsdale'
     )
   )
 ) ON CONFLICT (professional_id) DO NOTHING;

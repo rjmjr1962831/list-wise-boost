@@ -11,13 +11,18 @@ interface CertificationData {
   id: string;
   name: string;
   review_stars_rating: number;
+  rating: number;
   num_total_reviews: number;
   years_experience: number | null;
   license_number: string | null;
-  specialties: string[] | null;
-  city: string;
-  state: string;
-  canonical_slug: string;
+  specialty: string[] | null;
+  short_code: string | null;
+  cities: {
+    name: string;
+    state: string;
+    state_slug: string;
+    slug: string;
+  };
   certifications: {
     certification_tier: string;
     certification_status: string;
@@ -54,13 +59,18 @@ export default function ArtifactPage() {
             id,
             name,
             review_stars_rating,
+            rating,
             num_total_reviews,
             years_experience,
             license_number,
-            specialties,
-            city,
-            state,
-            canonical_slug,
+            specialty,
+            short_code,
+            cities:city_id (
+              name,
+              state,
+              state_slug,
+              slug
+            ),
             certifications!inner (
               certification_tier,
               certification_status,
@@ -138,7 +148,9 @@ export default function ArtifactPage() {
   const cert = data.certifications[0];
   const artifactUrl = `https://www.top10lists.us/artifact/${agentId}`;
   const payloadUrl = `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-payload/${agentId}`;
-  const profileUrl = `https://www.top10lists.us/${data.state.toLowerCase()}/agents/${data.canonical_slug}`;
+  const profileUrl = data.short_code
+    ? `https://www.top10lists.us/p/${data.short_code}`
+    : `https://www.top10lists.us/${data.cities.state_slug}/agents/${data.cities.slug}`;
 
   const tierNames: Record<string, string> = {
     certified: 'Certified',
@@ -304,7 +316,7 @@ export default function ArtifactPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {data.review_stars_rating}
+                    {data.review_stars_rating || data.rating || 'N/A'}
                   </div>
                   <div className="text-sm text-muted-foreground">Rating</div>
                 </div>
@@ -332,13 +344,13 @@ export default function ArtifactPage() {
                 )}
               </div>
               
-              {data.specialties && data.specialties.length > 0 && (
+              {data.specialty && data.specialty.length > 0 && (
                 <div className="mt-6">
                   <h3 className="font-semibold text-sm text-muted-foreground mb-3">Specialties</h3>
                   <div className="flex flex-wrap gap-2">
-                    {data.specialties.map((specialty: string) => (
-                      <span key={specialty} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
-                        {specialty}
+                    {data.specialty.map((spec: string) => (
+                      <span key={spec} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                        {spec}
                       </span>
                     ))}
                   </div>
