@@ -11,7 +11,10 @@ interface CertificationData {
   id: string;
   name: string;
   review_stars_rating: number;
-  ratings: number;
+  ratings: {
+    count: number;
+    average: number;
+  };
   num_total_reviews: number;
   years_experience: number | null;
   license_number: string | null;
@@ -37,7 +40,7 @@ interface CertificationData {
       verified_transactions?: Record<string, number>;
       evidence_considered?: string[];
     };
-  }[];
+  };
 }
 
 export default function ArtifactPage() {
@@ -128,7 +131,7 @@ export default function ArtifactPage() {
     );
   }
 
-  if (!data || !data.certifications?.[0]) {
+  if (!data || !data.certifications) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center max-w-md">
@@ -145,7 +148,7 @@ export default function ArtifactPage() {
     );
   }
 
-  const cert = data.certifications[0];
+  const cert = data.certifications;
   const artifactUrl = `https://www.top10lists.us/artifact/${agentId}`;
   const payloadUrl = `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-payload/${agentId}`;
   const profileUrl = data.short_code
@@ -316,7 +319,7 @@ export default function ArtifactPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="text-center p-4 bg-muted rounded-lg">
                   <div className="text-3xl font-bold text-primary mb-1">
-                    {data.review_stars_rating || data.ratings || 'N/A'}
+                    {data.review_stars_rating || data.ratings?.average || 'N/A'}
                   </div>
                   <div className="text-sm text-muted-foreground">Rating</div>
                 </div>
