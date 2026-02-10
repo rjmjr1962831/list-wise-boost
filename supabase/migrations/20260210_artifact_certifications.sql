@@ -1,7 +1,11 @@
 -- Top10Lists Artifact Badge System - Certifications Table
 -- Stores certification data for agent artifact pages and machine-readable payloads
 
-CREATE TABLE IF NOT EXISTS public.certifications (
+-- Drop existing table and all dependencies (safe to re-run)
+DROP TABLE IF EXISTS public.certifications CASCADE;
+
+-- Create fresh certifications table
+CREATE TABLE public.certifications (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   professional_id uuid NOT NULL REFERENCES public.professionals(id),
   
@@ -35,13 +39,17 @@ CREATE TABLE IF NOT EXISTS public.certifications (
 );
 
 -- Indexes for performance
-CREATE INDEX idx_certifications_professional ON public.certifications(professional_id);
-CREATE INDEX idx_certifications_status ON public.certifications(certification_status);
-CREATE INDEX idx_certifications_tier ON public.certifications(certification_tier);
-CREATE INDEX idx_certifications_verification_due ON public.certifications(next_verification_due);
+CREATE INDEX IF NOT EXISTS idx_certifications_professional ON public.certifications(professional_id);
+CREATE INDEX IF NOT EXISTS idx_certifications_status ON public.certifications(certification_status);
+CREATE INDEX IF NOT EXISTS idx_certifications_tier ON public.certifications(certification_tier);
+CREATE INDEX IF NOT EXISTS idx_certifications_verification_due ON public.certifications(next_verification_due);
 
 -- Enable RLS
 ALTER TABLE public.certifications ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Anyone can read active certifications" ON public.certifications;
+DROP POLICY IF EXISTS "Service role can manage certifications" ON public.certifications;
 
 -- Public can read active certifications (for artifact pages and payloads)
 CREATE POLICY "Anyone can read active certifications"
@@ -54,6 +62,7 @@ CREATE POLICY "Service role can manage certifications"
   USING (auth.jwt()->>'role' = 'service_role');
 
 -- Trigger to auto-update updated_at
+DROP TRIGGER IF EXISTS update_certifications_updated_at ON public.certifications;
 CREATE TRIGGER update_certifications_updated_at
   BEFORE UPDATE ON public.certifications
   FOR EACH ROW

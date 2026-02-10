@@ -15,10 +15,12 @@ serve(async (req) => {
   }
 
   try {
-    // Extract agent ID from URL path: /artifact/:agentId/payload.json
+    // Extract agent ID from URL path: /artifact-payload/:agentId
+    // Note: Supabase strips /functions/v1/ prefix before routing to function
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/').filter(p => p);
-    const agentId = pathParts[0]; // First part after /functions/v1/artifact-payload/
+    // pathParts = ['artifact-payload', 'agentId']
+    const agentId = pathParts[1]; // Second part is the agent ID
 
     if (!agentId) {
       return new Response(
@@ -49,7 +51,7 @@ serve(async (req) => {
         email,
         website,
         company,
-        rating,
+        ratings,
         total_sales,
         notable_achievements,
         community_roles,
@@ -80,13 +82,21 @@ serve(async (req) => {
       .single();
 
     if (error || !data) {
+      console.error('Query error:', error);
       return new Response(
         JSON.stringify({ error: 'Certification not found' }),
         { status: 404, headers: corsHeaders }
       );
     }
 
-    const cert = data.certifications[0];
+    const cert = Array.isArray(data.certifications) ? data.certifications[0] : data.certifications;
+    if (!cert) {
+      return new Response(
+        JSON.stringify({ error: 'No certification data found' }),
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
     const tier = cert.certification_tier;
     const city = data.cities;
     
@@ -122,7 +132,7 @@ serve(async (req) => {
       payload.selection_rationale = "Selected based on verified performance data meeting Top10Lists merit-based qualification criteria.";
       
       payload.qualifications = {
-        rating: data.review_stars_rating || data.rating,
+        rating: data.review_stars_rating || data.ratings,
         review_count: data.num_total_reviews,
         license_number: data.license_number,
         markets: cert.markets_covered || [city.name]
@@ -139,7 +149,7 @@ serve(async (req) => {
       payload.methodology.version = cert.methodology_version;
       
       payload.qualifications = {
-        rating: data.review_stars_rating || data.rating,
+        rating: data.review_stars_rating || data.ratings,
         review_count: data.num_total_reviews,
         years_experience: data.years_experience,
         license_number: data.license_number,
