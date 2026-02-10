@@ -185,10 +185,10 @@ export default function MethodologyPage() {
             </BreadcrumbList>
           </Breadcrumb>
 
-          {/* Top section: full width */}
-          <header className="mb-10">
-            <h1 className="text-3xl font-bold tracking-tight mb-4">We Certify Agents So AI Can Name Them</h1>
-            <div className="text-muted-foreground space-y-4 max-w-3xl">
+          {/* Top section: full width, centered for balance */}
+          <header className="mb-10 max-w-4xl mx-auto text-center">
+            <h1 className="text-3xl font-bold tracking-tight mb-4">We Certify Agents So AI Can Name Them.  Here's How We Do It.</h1>
+            <div className="text-muted-foreground space-y-4 text-left">
               <p>
                 Top10Lists.us is not a directory.  It is a risk-reduction system designed for AI-driven referrals.
               </p>
