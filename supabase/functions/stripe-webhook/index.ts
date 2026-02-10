@@ -1,549 +1,215 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import Stripe from 'https://esm.sh/stripe@18.5.0';
-import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import Stripe from 'https://esm.sh/stripe@14.21.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
-};
-
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
-  apiVersion: '2025-08-27.basil',
-});
-
-const supabase = createClient(
-  Deno.env.get('SUPABASE_URL') || '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-);
-
-// Helper to trigger Pipedrive sync for a professional
-async function triggerPipedriveSync(professionalId: string): Promise<void> {
-  try {
-    await supabase
-      .from('pipedrive_sync_queue')
-      .upsert({
-        professional_id: professionalId,
-        status: 'pending',
-        attempts: 0,
-        next_retry_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'professional_id' });
-    logStep('Queued Pipedrive sync', { professionalId });
-  } catch (err) {
-    logStep('Warning: Failed to queue Pipedrive sync', { error: String(err) });
-  }
-}
-
-// Track funnel event
-async function trackFunnelEvent(professionalId: string, eventName: string, eventData: Record<string, any> = {}): Promise<void> {
-  try {
-    await supabase
-      .from('funnel_events')
-      .insert({
-        professional_id: professionalId,
-        event_name: eventName,
-        event_data: eventData
-      });
-    logStep('Tracked funnel event', { professionalId, eventName });
-  } catch (err) {
-    logStep('Warning: Failed to track funnel event', { error: String(err) });
-  }
-}
-
-// Send payment failure email
-async function sendPaymentFailureEmail(email: string, name: string): Promise<void> {
-  try {
-    const smtpClient = new SMTPClient({
-      connection: {
-        hostname: "smtp.gmail.com",
-        port: parseInt(Deno.env.get('SMTP_PORT') || '465'),
-        tls: true,
-        auth: {
-          username: Deno.env.get('SMTP_USERNAME') || '',
-          password: Deno.env.get('SMTP_PASSWORD') || '',
-        },
-      },
-    });
-
-    const fromEmail = Deno.env.get('SMTP_FROM_EMAIL') || 'hello@top10lists.us';
-
-    await smtpClient.send({
-      from: fromEmail,
-      to: email,
-      subject: '⚠️ Payment Issue with Your Top10Lists Subscription',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background-color: white; border-radius: 12px; padding: 40px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-            <h1 style="color: #1a1a1a;">Payment Issue</h1>
-            <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-              Hi ${name},
-            </p>
-            <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-              We had trouble processing your latest payment for your Top10Lists Premium Placement subscription.
-            </p>
-            <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-              Please update your payment method to keep your guaranteed Top 10 placement active.
-            </p>
-            <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-              If you have any questions, just reply to this email.
-            </p>
-            <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-top: 32px;">
-              Best regards,<br>
-              <strong>The Top10Lists Team</strong>
-            </p>
-          </div>
-        </body>
-        </html>
-      `,
-    });
-
-    await smtpClient.close();
-    logStep('Sent payment failure email', { email });
-  } catch (err) {
-    logStep('Warning: Failed to send payment failure email', { error: String(err) });
-  }
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, stripe-signature',
 }
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(
+      JSON.stringify({ error: 'Method not allowed' }),
+      { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
   }
 
   try {
-    const body = await req.text();
-    const sig = req.headers.get('stripe-signature');
+    const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
+      apiVersion: '2023-10-16',
+    })
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    const signature = req.headers.get('stripe-signature')
+    const body = await req.text()
     
-    // For now, parse without signature verification (add STRIPE_WEBHOOK_SECRET later)
-    // const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET');
-    // const event = stripe.webhooks.constructEvent(body, sig!, webhookSecret!);
-    
-    const event = JSON.parse(body) as Stripe.Event;
-    
-    logStep('Received event', { type: event.type, id: event.id });
+    let event: Stripe.Event
+
+    // Verify webhook signature
+    const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
+    if (webhookSecret && signature) {
+      try {
+        event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
+      } catch (err) {
+        console.error('Webhook signature verification failed:', err)
+        return new Response(
+          JSON.stringify({ error: 'Invalid signature' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    } else {
+      // No signature verification (testing)
+      event = JSON.parse(body)
+    }
+
+    console.log('Stripe webhook received:', event.type)
 
     switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const professionalId = session.metadata?.professionalId || session.client_reference_id;
-        
-        if (!professionalId) {
-          logStep('No professionalId in session', { sessionId: session.id });
-          break;
-        }
-
-        logStep('Processing checkout.session.completed', { professionalId, sessionId: session.id });
-
-        // Extract data from session
-        const cityIds = session.metadata?.cityIds?.split(',').filter(Boolean) || [];
-        const packageName = session.metadata?.packageName || '';
-        const monthlyTotal = parseInt(session.metadata?.monthlyTotal || '0');
-        
-        // NEW: Extract neighborhood data for visibility flow
-        const neighborhoodIds = session.metadata?.neighborhoodIds?.split(',').filter(Boolean) || [];
-        const billingPeriod = session.metadata?.billingPeriod || 'monthly';
-        const configVersion = session.metadata?.configVersion || null;
-        
-        // Get promo code if used
-        let promoCode: string | null = null;
-        let discountAmountCents = 0;
-        if (session.total_details?.amount_discount) {
-          discountAmountCents = session.total_details.amount_discount;
-        }
-        
-        // Expand session to get discount details
-        const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
-          expand: ['total_details.breakdown.discounts']
-        });
-        
-        const discounts = (expandedSession.total_details?.breakdown as any)?.discounts || [];
-        if (discounts.length > 0 && discounts[0].discount?.coupon?.name) {
-          promoCode = discounts[0].discount.coupon.name;
-        }
-
-        // Get city names (legacy flow)
-        const { data: cities } = await supabase
-          .from('arizona_city_pricing')
-          .select('city_name')
-          .in('id', cityIds);
-        const cityNames = cities?.map(c => c.city_name) || [];
-
-        // Record payment transaction
-        await supabase
-          .from('payment_transactions')
-          .insert({
-            professional_id: professionalId,
-            stripe_event_id: event.id,
-            stripe_subscription_id: typeof session.subscription === 'string' 
-              ? session.subscription 
-              : (session.subscription as any)?.id,
-            event_type: 'checkout.session.completed',
-            amount_cents: session.amount_total || 0,
-            currency: session.currency || 'usd',
-            promo_code: promoCode,
-            discount_amount_cents: discountAmountCents,
-            status: 'succeeded',
-            cities_purchased: cityNames,
-            package_name: packageName
-          });
-
-        // Update professional with subscription details
-        await supabase
-          .from('professionals')
-          .update({
-            is_brand_builder: true,
-            funnel_status: 'subscribed',
-            funnel_completed_at: new Date().toISOString(),
-            subscription_status: 'active',
-            promo_code_used: promoCode,
-            monthly_revenue_cents: monthlyTotal * 100,
-            last_payment_at: new Date().toISOString(),
-            last_payment_status: 'succeeded',
-            cities_subscribed: cityNames
-          })
-          .eq('id', professionalId);
-
-        // NEW: Create neighborhood subscriptions if present
-        if (neighborhoodIds.length > 0) {
-          logStep('Creating neighborhood subscriptions', { count: neighborhoodIds.length, billingPeriod });
-          
-          const stripeSubscriptionId = typeof session.subscription === 'string' 
-            ? session.subscription 
-            : (session.subscription as any)?.id;
-          
-          // Get neighborhood details for tier_at_purchase
-          const { data: neighborhoods } = await supabase
-            .from('neighborhood_catalog')
-            .select('id, tier')
-            .in('id', neighborhoodIds);
-
-          // Calculate subscription dates
-          const startedAt = new Date();
-          const expiresAt = billingPeriod === 'annual' 
-            ? new Date(startedAt.getTime() + 365 * 24 * 60 * 60 * 1000)
-            : null; // Monthly subscriptions renew, no fixed expiry
-
-          // Calculate price per neighborhood from session amount
-          const pricePerNeighborhood = Math.round((session.amount_total || 0) / neighborhoodIds.length);
-
-          // Insert subscription records
-          const subscriptionRecords = neighborhoodIds.map((neighborhoodId: string) => ({
-            professional_id: professionalId,
-            neighborhood_id: neighborhoodId,
-            tier_at_purchase: neighborhoods?.find((n: { id: string; tier: string }) => n.id === neighborhoodId)?.tier || 'Main',
-            price_paid: pricePerNeighborhood,
-            config_version_used: configVersion,
-            stripe_subscription_id: stripeSubscriptionId,
-            subscription_type: billingPeriod,
-            is_active: true,
-            started_at: startedAt.toISOString(),
-            expires_at: expiresAt?.toISOString() || null,
-          }));
-
-          const { error: subError } = await supabase
-            .from('agent_neighborhood_subscriptions')
-            .upsert(subscriptionRecords, { 
-              onConflict: 'professional_id,neighborhood_id' 
-            });
-
-          if (subError) {
-            logStep('Warning: Could not create neighborhood subscriptions', { error: subError.message });
-          } else {
-            logStep('Neighborhood subscriptions created', { count: neighborhoodIds.length });
-          }
-        }
-
-        // Track funnel event
-        await trackFunnelEvent(professionalId, 'checkout_completed', {
-          session_id: session.id,
-          amount_cents: session.amount_total,
-          promo_code: promoCode,
-          discount_cents: discountAmountCents,
-          package_name: packageName,
-          city_count: cityIds.length,
-          city_names: cityNames,
-          neighborhood_count: neighborhoodIds.length,
-          billing_period: billingPeriod
-        });
-
-        // Trigger Pipedrive sync
-        await triggerPipedriveSync(professionalId);
-
-        logStep('Checkout completed', { professionalId, amount: session.amount_total, neighborhoodCount: neighborhoodIds.length });
-        break;
-      }
-
+      case 'invoice.paid':
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = typeof invoice.subscription === 'string' 
-          ? invoice.subscription 
-          : (invoice.subscription as any)?.id;
-        
-        if (!subscriptionId) {
-          logStep('No subscriptionId in invoice');
-          break;
-        }
-
-        // Find professional by subscription ID
-        const { data: subscription } = await supabase
-          .from('agent_city_subscriptions')
-          .select('professional_id')
-          .eq('stripe_subscription_id', subscriptionId)
-          .limit(1)
-          .single();
-
-        if (!subscription?.professional_id) {
-          logStep('Could not find professional for subscription', { subscriptionId });
-          break;
-        }
-
-        const professionalId = subscription.professional_id;
-
-        // Record payment transaction
-        await supabase
-          .from('payment_transactions')
-          .insert({
-            professional_id: professionalId,
-            stripe_event_id: event.id,
-            stripe_invoice_id: invoice.id,
-            stripe_subscription_id: subscriptionId,
-            stripe_charge_id: typeof invoice.charge === 'string' ? invoice.charge : null,
-            event_type: 'invoice.payment_succeeded',
-            amount_cents: invoice.amount_paid || 0,
-            currency: invoice.currency || 'usd',
-            status: 'succeeded'
-          });
-
-        // Update professional payment status
-        await supabase
-          .from('professionals')
-          .update({
-            subscription_status: 'active',
-            last_payment_at: new Date().toISOString(),
-            last_payment_status: 'succeeded'
-          })
-          .eq('id', professionalId);
-
-        // Track funnel event
-        await trackFunnelEvent(professionalId, 'recurring_payment_succeeded', {
-          invoice_id: invoice.id,
-          amount_cents: invoice.amount_paid
-        });
-
-        // Trigger Pipedrive sync
-        await triggerPipedriveSync(professionalId);
-
-        logStep('Invoice payment succeeded', { professionalId, amount: invoice.amount_paid });
-        break;
+        await handleInvoicePaid(event.data.object, supabase)
+        break
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
-        const subscriptionId = typeof invoice.subscription === 'string' 
-          ? invoice.subscription 
-          : (invoice.subscription as any)?.id;
-        
-        if (!subscriptionId) break;
-
-        // Find professional
-        const { data: subscription } = await supabase
-          .from('agent_city_subscriptions')
-          .select('professional_id, professionals!inner(name, email)')
-          .eq('stripe_subscription_id', subscriptionId)
-          .limit(1)
-          .single();
-
-        if (!subscription?.professional_id) break;
-
-        const professionalId = subscription.professional_id;
-        const professional = (subscription as any).professionals;
-
-        // Record failed payment
-        await supabase
-          .from('payment_transactions')
-          .insert({
-            professional_id: professionalId,
-            stripe_event_id: event.id,
-            stripe_invoice_id: invoice.id,
-            stripe_subscription_id: subscriptionId,
-            event_type: 'invoice.payment_failed',
-            amount_cents: invoice.amount_due || 0,
-            currency: invoice.currency || 'usd',
-            status: 'failed',
-            failure_reason: (invoice as any).last_payment_error?.message || 'Payment failed'
-          });
-
-        // Update professional status
-        await supabase
-          .from('professionals')
-          .update({
-            subscription_status: 'past_due',
-            last_payment_at: new Date().toISOString(),
-            last_payment_status: 'failed'
-          })
-          .eq('id', professionalId);
-
-        // Track funnel event
-        await trackFunnelEvent(professionalId, 'payment_failed', {
-          invoice_id: invoice.id,
-          amount_cents: invoice.amount_due
-        });
-
-        // Send failure notification email
-        if (professional?.email) {
-          await sendPaymentFailureEmail(professional.email, professional.name || 'there');
-        }
-
-        // Trigger Pipedrive sync
-        await triggerPipedriveSync(professionalId);
-
-        logStep('Invoice payment failed', { professionalId });
-        break;
+        await handlePaymentFailed(event.data.object, supabase)
+        break
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
-        const subscriptionId = subscription.id;
-
-        // Find professional - check both city subscriptions (legacy) and neighborhood subscriptions (new)
-        let professionalId: string | null = null;
-        
-        // Try legacy city subscriptions first
-        const { data: citySubData } = await supabase
-          .from('agent_city_subscriptions')
-          .select('professional_id')
-          .eq('stripe_subscription_id', subscriptionId)
-          .limit(1)
-          .single();
-        
-        if (citySubData?.professional_id) {
-          professionalId = citySubData.professional_id;
-        } else {
-          // Try neighborhood subscriptions
-          const { data: neighborhoodSubData } = await supabase
-            .from('agent_neighborhood_subscriptions')
-            .select('professional_id')
-            .eq('stripe_subscription_id', subscriptionId)
-            .limit(1)
-            .single();
-          
-          if (neighborhoodSubData?.professional_id) {
-            professionalId = neighborhoodSubData.professional_id;
-          }
-        }
-
-        if (!professionalId) {
-          logStep('Could not find professional for canceled subscription', { subscriptionId });
-          break;
-        }
-
-        // Deactivate all city subscriptions (legacy)
-        await supabase
-          .from('agent_city_subscriptions')
-          .update({ is_active: false })
-          .eq('stripe_subscription_id', subscriptionId);
-
-        // Deactivate all neighborhood subscriptions (new)
-        await supabase
-          .from('agent_neighborhood_subscriptions')
-          .update({ is_active: false })
-          .eq('stripe_subscription_id', subscriptionId);
-
-        // Update professional status
-        await supabase
-          .from('professionals')
-          .update({
-            is_brand_builder: false,
-            subscription_status: 'canceled',
-            funnel_status: 'churned'
-          })
-          .eq('id', professionalId);
-
-        // Record transaction
-        await supabase
-          .from('payment_transactions')
-          .insert({
-            professional_id: professionalId,
-            stripe_event_id: event.id,
-            stripe_subscription_id: subscriptionId,
-            event_type: 'subscription.deleted',
-            amount_cents: 0,
-            currency: 'usd',
-            status: 'canceled'
-          });
-
-        // Track funnel event
-        await trackFunnelEvent(professionalId, 'subscription_canceled', {
-          subscription_id: subscriptionId
-        });
-
-        // Trigger Pipedrive sync
-        await triggerPipedriveSync(professionalId);
-
-        logStep('Subscription canceled', { professionalId, subscriptionId });
-        break;
+        await handleSubscriptionDeleted(event.data.object, supabase)
+        break
       }
 
-      case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge;
-        const invoiceId = typeof charge.invoice === 'string' ? charge.invoice : null;
-
-        // Find professional by invoice
-        if (invoiceId) {
-          const { data: txn } = await supabase
-            .from('payment_transactions')
-            .select('professional_id')
-            .eq('stripe_invoice_id', invoiceId)
-            .limit(1)
-            .single();
-
-          if (txn?.professional_id) {
-            // Record refund
-            await supabase
-              .from('payment_transactions')
-              .insert({
-                professional_id: txn.professional_id,
-                stripe_event_id: event.id,
-                stripe_charge_id: charge.id,
-                event_type: 'charge.refunded',
-                amount_cents: charge.amount_refunded || 0,
-                currency: charge.currency || 'usd',
-                status: 'refunded'
-              });
-
-            // Track funnel event
-            await trackFunnelEvent(txn.professional_id, 'payment_refunded', {
-              charge_id: charge.id,
-              amount_refunded: charge.amount_refunded
-            });
-
-            logStep('Charge refunded', { professionalId: txn.professional_id, amount: charge.amount_refunded });
-          }
-        }
-        break;
+      case 'customer.subscription.updated': {
+        await handleSubscriptionUpdated(event.data.object, supabase)
+        break
       }
 
       default:
-        logStep('Unhandled event type', { type: event.type });
+        console.log(`Unhandled event type: ${event.type}`)
     }
 
-    return new Response(JSON.stringify({ received: true }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-
-  } catch (error: any) {
-    logStep('ERROR', { message: error.message });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ received: true }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  } catch (error) {
+    console.error('Error processing webhook:', error)
+    return new Response(
+      JSON.stringify({ error: 'Webhook processing failed', details: String(error) }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
   }
-});
+})
+
+async function handleInvoicePaid(invoice: any, supabase: any) {
+  const customerEmail = invoice.customer_email
+  const amountPaid = invoice.amount_paid / 100
+
+  console.log('Processing payment:', { email: customerEmail, amount: amountPaid })
+
+  if (!customerEmail) {
+    console.error('No customer email in invoice')
+    return
+  }
+
+  // Determine tier based on amount
+  let tier = 'certified'
+  if (amountPaid >= 150) {
+    tier = 'underwritten'
+  } else if (amountPaid >= 50) {
+    tier = 'accredited'
+  }
+
+  console.log('Determined tier:', tier)
+
+  // Find professional by email (case-insensitive)
+  const { data: professional, error: lookupError } = await supabase
+    .from('professionals')
+    .select('id, name, email')
+    .ilike('email', customerEmail)
+    .single()
+
+  if (lookupError || !professional) {
+    console.error('Professional not found for email:', customerEmail, lookupError)
+    return
+  }
+
+  console.log('Found professional:', professional.id)
+
+  // Update professional with new tier
+  const { error: updateError } = await supabase
+    .from('professionals')
+    .update({
+      badge_tier: tier,
+      badge_status: 'active',
+      last_payment_at: new Date().toISOString(),
+      payment_failed_at: null,
+      grace_period_ends_at: null,
+      subscription_status: 'active',
+      monthly_revenue_cents: amountPaid * 100,
+      last_payment_status: 'succeeded',
+    })
+    .eq('id', professional.id)
+
+  if (updateError) {
+    console.error('Failed to update professional:', updateError)
+    return
+  }
+
+  console.log(`✅ Updated professional ${professional.id} to tier ${tier}`)
+}
+
+async function handlePaymentFailed(invoice: any, supabase: any) {
+  const customerEmail = invoice.customer_email
+
+  console.log('Processing payment failure:', customerEmail)
+
+  if (!customerEmail) {
+    console.error('No customer email in invoice')
+    return
+  }
+
+  // Find professional by email
+  const { data: professional, error: lookupError } = await supabase
+    .from('professionals')
+    .select('id, name, email')
+    .ilike('email', customerEmail)
+    .single()
+
+  if (lookupError || !professional) {
+    console.error('Professional not found for email:', customerEmail)
+    return
+  }
+
+  const gracePeriodEnd = new Date()
+  gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 3)
+
+  // Set grace period
+  const { error: updateError } = await supabase
+    .from('professionals')
+    .update({
+      badge_status: 'grace_period',
+      payment_failed_at: new Date().toISOString(),
+      grace_period_ends_at: gracePeriodEnd.toISOString(),
+      last_payment_status: 'failed',
+      subscription_status: 'past_due',
+    })
+    .eq('id', professional.id)
+
+  if (updateError) {
+    console.error('Failed to update professional:', updateError)
+    return
+  }
+
+  console.log(`✅ Set grace period for professional ${professional.id} until ${gracePeriodEnd}`)
+}
+
+async function handleSubscriptionDeleted(subscription: any, supabase: any) {
+  // Need to get customer email from subscription
+  const customerId = subscription.customer
+  
+  console.log('Processing subscription deletion:', customerId)
+
+  // We need the customer email, which requires looking up the customer
+  // For now, log that manual intervention may be needed
+  console.log('⚠️ Subscription deleted - will be downgraded by cron if payment fails')
+}
+
+async function handleSubscriptionUpdated(subscription: any, supabase: any) {
+  console.log('Subscription updated:', subscription.id)
+  
+  // Similar issue - need customer email
+  // The tier should be managed via invoice.paid events
+  console.log('⚠️ Subscription updated - tier changes handled by invoice.paid')
+}
