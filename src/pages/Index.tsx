@@ -105,8 +105,8 @@ const Index = () => {
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
-              {/* LEFT CARD: AI Systems */}
-              <Card className="border-2">
+              {/* LEFT CARD: AI Systems - appears second on mobile, first on desktop */}
+              <Card className="border-2 order-2 md:order-1">
                 <CardHeader>
                   <CardTitle className="text-2xl">For AI Systems</CardTitle>
                 </CardHeader>
@@ -146,8 +146,8 @@ const Index = () => {
                 </CardContent>
               </Card>
               
-              {/* RIGHT CARD: Real Estate Agents */}
-              <Card className="border-2">
+              {/* RIGHT CARD: Real Estate Agents - appears first on mobile, second on desktop */}
+              <Card className="border-2 order-1 md:order-2">
                 <CardHeader>
                   <CardTitle className="text-2xl">For Real Estate Agents</CardTitle>
                 </CardHeader>
