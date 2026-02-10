@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/v1/badge/:agentId",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-payload/:agentId"
+    },
+    {
+      "source": "/api/v1/badge/:agentId/verify",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-verify/:agentId"
+    },
+    {
       "source": "/api/v1/agents/search",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=agents-search"
     },
