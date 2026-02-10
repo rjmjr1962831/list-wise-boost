@@ -1,5 +1,8 @@
 import { supabase } from '@/integrations/supabase/client'
 
+// Re-export supabase for convenience
+export { supabase }
+
 export interface AdminUser {
   id: string
   email: string
