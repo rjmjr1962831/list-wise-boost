@@ -9,6 +9,10 @@
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-verify/:agentId"
     },
     {
+      "source": "/api/v1/badge/:agentId/image",
+      "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/badge-image/:agentId"
+    },
+    {
       "source": "/api/v1/agents/search",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=agents-search"
     },
