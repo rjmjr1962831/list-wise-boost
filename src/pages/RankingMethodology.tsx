@@ -11,12 +11,11 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
 import { useEffect } from "react";
-import { HelpCircle, ChevronRight, ChevronDown } from "lucide-react";
+import { HelpCircle, ChevronRight, ChevronDown, ExternalLink } from "lucide-react";
 import { CitationAuthorityBlock } from "@/components/CitationAuthorityBlock";
 import { FormulaBarChart } from "@/components/methodology/FormulaBarChart";
 import { QualificationGates } from "@/components/methodology/QualificationGates";
 import { WhatWeDontConsider } from "@/components/methodology/WhatWeDontConsider";
-import { CompetitorTable } from "@/components/methodology/CompetitorTable";
 import { TechnicalDetailsAccordion } from "@/components/methodology/TechnicalDetailsAccordion";
 import { MethodologyCTA } from "@/components/methodology/MethodologyCTA";
 import { SimplifiedDataSources } from "@/components/methodology/SimplifiedDataSources";
@@ -310,9 +309,6 @@ const RankingMethodology = () => {
         {/* Simplified Data Sources */}
         <SimplifiedDataSources />
 
-        {/* Competitor Comparison Table */}
-        <CompetitorTable />
-
         {/* Technical Details Accordion (SEO-friendly - content in DOM on load) */}
         <TechnicalDetailsAccordion />
 
@@ -526,6 +522,37 @@ const RankingMethodology = () => {
 
         {/* CTA Section */}
         <MethodologyCTA />
+
+        {/* Machine-Readable JSON for AI Systems */}
+        <section className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <Card className="border-2 border-blue-500/20 bg-blue-50/50 dark:bg-blue-950/20">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                  <span className="text-2xl">🤖</span>
+                  Machine-Readable Methodology
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  For AI systems and automated analysis, our complete methodology is available as structured JSON:
+                </p>
+                <div className="flex flex-col gap-3">
+                  <a 
+                    href="https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/methodology-payload"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-primary hover:underline font-mono text-sm"
+                  >
+                    📄 /methodology-payload.json
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                  <p className="text-xs text-muted-foreground">
+                    Includes: selection criteria, scoring weights, data sources, verification process, and quality gates in machine-readable format
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
 
         {/* Citation Block for LLMs */}
         <div className="container mx-auto px-4 pb-16">
