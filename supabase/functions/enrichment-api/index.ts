@@ -22,24 +22,31 @@ serve(async (req) => {
   }
 
   try {
-    // Validate custom API key
-    const apiKey = req.headers.get('x-enrichment-key');
-    const expectedKey = Deno.env.get('ENRICHMENT_API_KEY');
+    const url = new URL(req.url);
+    const action = url.searchParams.get('action');
     
-    if (!apiKey || apiKey !== expectedKey) {
-      console.error('enrichment-api - Invalid or missing API key');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized: Invalid or missing X-Enrichment-Key header' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Public API actions don't require authentication
+    const publicActions = ['agents-search', 'agent-details', 'markets'];
+    const isPublicAction = publicActions.includes(action || '');
+    
+    // Validate custom API key for non-public actions
+    if (!isPublicAction) {
+      const apiKey = req.headers.get('x-enrichment-key');
+      const expectedKey = Deno.env.get('ENRICHMENT_API_KEY');
+      
+      if (!apiKey || apiKey !== expectedKey) {
+        console.error('enrichment-api - Invalid or missing API key');
+        return new Response(
+          JSON.stringify({ error: 'Unauthorized: Invalid or missing X-Enrichment-Key header' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Initialize Supabase client with service role
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    const url = new URL(req.url);
     const action = url.searchParams.get('action');
 
     // ============ NEW: GET action=schema ============
