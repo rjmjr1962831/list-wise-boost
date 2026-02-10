@@ -1,11 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { Trash2, Database, Globe, Loader2, Flame, RefreshCw, Square } from 'lucide-react';
+import { Trash2, Database, Globe, Loader2, Flame, RefreshCw } from 'lucide-react';
 
 interface ProgressState {
   step: number;
@@ -32,9 +32,6 @@ export function CloudflareCacheManager() {
   const [isFullRefresh, setIsFullRefresh] = useState(false);
   const [progress, setProgress] = useState<ProgressState | null>(null);
   const [result, setResult] = useState<{ cdnPurged?: number; kvDeleted?: number; warmResult?: WarmResult; error?: string } | null>(null);
-  
-  // Ref to track cancellation request
-  const cancelRequestedRef = useRef(false);
 
   const purgeCdnCache = async (urls?: string[]) => {
     const { data, error } = await supabase.functions.invoke('cloudflare-purge-cache', {
@@ -56,14 +53,15 @@ export function CloudflareCacheManager() {
     return data;
   };
 
-  const warmCache = async (region?: string, limit?: number, offset?: number, urls?: string[]) => {
-    const { data, error } = await supabase.functions.invoke('warm-cache', {
-      body: urls ? { urls } : { region, limit, offset }
-    });
+  const warmCache = async (region?: string, limit?: number, offset?: number, urls?: string[], options?: { background?: boolean }) => {
+    const body = options?.background
+      ? { background: true, region: region || 'arizona', includeCities: true, includeNeighborhoods: true }
+      : urls ? { urls } : { region, limit, offset };
+    const { data, error } = await supabase.functions.invoke('warm-cache', { body });
     
     if (error) throw error;
     if (!data.success && data.error) throw new Error(data.error);
-    return data as WarmResult;
+    return data as WarmResult & { job_id?: string; message?: string; pages?: { total: number } };
   };
 
   const handleWarmSingleUrl = async (url: string) => {
@@ -91,90 +89,79 @@ export function CloudflareCacheManager() {
     }
   };
 
-  // Warm all pages in sequential batches
-  const warmAllPages = async (region: string, batchSize: number = 10) => {
-    let offset = 0;
-    let totalWarmed = 0;
-    let totalFailed = 0;
-    let totalPages = 0;
-    let batchNum = 1;
-    let wasCancelled = false;
-
-    while (true) {
-      // Check for cancellation
-      if (cancelRequestedRef.current) {
-        wasCancelled = true;
-        console.log('Warming cancelled by user');
-        break;
-      }
-
-      setProgress({ 
-        step: batchNum, 
-        totalSteps: totalPages > 0 ? Math.ceil(totalPages / batchSize) : batchNum, 
-        message: `Warming batch ${batchNum} (pages ${offset + 1}-${offset + batchSize})...`, 
-        percent: totalPages > 0 ? Math.round((offset / totalPages) * 100) : 50 
+  // Start full cache warm on the server (runs in background; safe to close browser)
+  const handleWarmBackground = async (region: string = 'arizona') => {
+    setIsWarming(true);
+    setResult(null);
+    setProgress({ step: 1, totalSteps: 1, message: 'Starting cache warming in background...', percent: 20 });
+    try {
+      const data = await warmCache(region, undefined, undefined, undefined, { background: true });
+      setProgress({ step: 1, totalSteps: 1, message: 'Started.', percent: 100 });
+      const total = data.pages?.total ?? data.summary?.total ?? 'all';
+      setResult({
+        warmResult: {
+          total: typeof total === 'number' ? total : 0,
+          warmed: 0,
+          failed: 0,
+          hasMore: false,
+          nextOffset: 0
+        }
       });
-
-      const result = await warmCache(region, batchSize, offset);
-      
-      totalWarmed += result.warmed;
-      totalFailed += result.failed;
-      totalPages = result.total;
-      
-      console.log(`Batch ${batchNum}: ${result.warmed}/${batchSize} warmed, hasMore: ${result.hasMore}`);
-
-      if (!result.hasMore) {
-        break;
-      }
-
-      offset = result.nextOffset;
-      batchNum++;
+      toast.success(
+        data.job_id
+          ? `Cache warming started in background (job ${data.job_id}). You can close this page.`
+          : 'Cache warming started in background. You can close this page.'
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      setResult({ error: message });
+      toast.error(`Failed: ${message}`);
+    } finally {
+      setIsWarming(false);
+      setTimeout(() => setProgress(null), 3000);
     }
-
-    return { total: totalPages, warmed: totalWarmed, failed: totalFailed, cancelled: wasCancelled };
   };
 
-  const handleCancel = () => {
-    cancelRequestedRef.current = true;
-    toast.info('Cancelling after current batch completes...');
-  };
-
-  // Full workflow: Purge → Clear KV → Warm
+  // Full workflow: Purge → Clear KV → Start warm in background
   const handleFullRefresh = async () => {
-    if (!confirm('This will purge all caches and re-warm them. This may take several minutes. Continue?')) return;
+    if (!confirm('This will purge all caches, then start cache warming in the background. You can close this page after it starts. Continue?')) return;
     
     setIsFullRefresh(true);
     setResult(null);
-    cancelRequestedRef.current = false;
     
     try {
-      // Step 1: Purge CDN
       setProgress({ step: 1, totalSteps: 3, message: 'Purging CDN cache...', percent: 10 });
       await purgeCdnCache();
       
-      // Step 2: Clear KV
       setProgress({ step: 2, totalSteps: 3, message: 'Clearing KV cache...', percent: 30 });
       const kvResult = await clearKvCache(undefined, true);
       
-      // Step 3: Warm cache in batches
-      setProgress({ step: 3, totalSteps: 3, message: 'Warming cache (running batches)...', percent: 50 });
-      const warmResult = await warmAllPages('arizona', 10);
+      setProgress({ step: 3, totalSteps: 3, message: 'Starting cache warming in background...', percent: 50 });
+      const data = await warmCache('arizona', undefined, undefined, undefined, { background: true });
       
-      setProgress({ step: 3, totalSteps: 3, message: warmResult.cancelled ? 'Cancelled!' : 'Complete!', percent: 100 });
-      setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted, warmResult: { ...warmResult, hasMore: false, nextOffset: 0 } });
-      
-      if (warmResult.cancelled) {
-        toast.warning(`Warming cancelled. Warmed ${warmResult.warmed}/${warmResult.total} pages before stopping.`);
-      } else {
-        toast.success(`Full refresh complete! Warmed ${warmResult.warmed}/${warmResult.total} pages`);
-      }
+      setProgress({ step: 3, totalSteps: 3, message: 'Done. Warming runs on server.', percent: 100 });
+      setResult({
+        cdnPurged: 1,
+        kvDeleted: kvResult.deleted,
+        warmResult: {
+          total: data.pages?.total ?? 0,
+          warmed: 0,
+          failed: 0,
+          hasMore: false,
+          nextOffset: 0
+        }
+      });
+      toast.success(
+        data.job_id
+          ? `Full refresh started. Warming running in background (job ${data.job_id}). You can close this page.`
+          : 'Full refresh started. Warming running in background. You can close this page.'
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       setResult({ error: message });
       toast.error(`Failed: ${message}`);
     } finally {
       setIsFullRefresh(false);
-      cancelRequestedRef.current = false;
       setTimeout(() => setProgress(null), 3000);
     }
   };
@@ -201,33 +188,6 @@ export function CloudflareCacheManager() {
       toast.error(`Failed: ${message}`);
     } finally {
       setIsClearingAll(false);
-      setTimeout(() => setProgress(null), 2000);
-    }
-  };
-
-  const handleWarmOnly = async (region: string, batchSize: number = 10) => {
-    setIsWarming(true);
-    setResult(null);
-    cancelRequestedRef.current = false;
-    setProgress({ step: 1, totalSteps: 1, message: 'Starting cache warming...', percent: 10 });
-    
-    try {
-      const warmResult = await warmAllPages(region, batchSize);
-      setProgress({ step: 1, totalSteps: 1, message: warmResult.cancelled ? 'Cancelled!' : 'Complete!', percent: 100 });
-      setResult({ warmResult: { ...warmResult, hasMore: false, nextOffset: 0 } });
-      
-      if (warmResult.cancelled) {
-        toast.warning(`Warming cancelled. Warmed ${warmResult.warmed}/${warmResult.total} pages before stopping.`);
-      } else {
-        toast.success(`Cache warmed: ${warmResult.warmed}/${warmResult.total} pages`);
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      setResult({ error: message });
-      toast.error(`Failed: ${message}`);
-    } finally {
-      setIsWarming(false);
-      cancelRequestedRef.current = false;
       setTimeout(() => setProgress(null), 2000);
     }
   };
@@ -338,27 +298,20 @@ export function CloudflareCacheManager() {
             Warm Cache Only
           </h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Pre-render pages without clearing existing cache.
+            Pre-render pages on the server in the background. Safe to close this page after it starts.
           </p>
           <div className="flex gap-2 flex-wrap">
             <Button 
               variant="outline"
-              onClick={() => handleWarmOnly('arizona', 10)}
+              onClick={() => handleWarmBackground('arizona')}
               disabled={isLoading}
             >
               {isWarming ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Flame className="h-4 w-4 mr-2" />}
-              Warm All (10/batch)
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => handleWarmOnly('arizona', 5)}
-              disabled={isLoading}
-            >
-              Warm All (5/batch)
+              Warm all in background
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Runs sequential batches automatically until all pages are warmed.
+            Runs on the server; you can close the browser. Check Supabase function logs for progress.
           </p>
         </div>
 
@@ -452,17 +405,6 @@ export function CloudflareCacheManager() {
               <span className="text-muted-foreground">Step {progress.step}/{progress.totalSteps}</span>
             </div>
             <Progress value={progress.percent} className="h-2" />
-            {(isWarming || isFullRefresh) && (
-              <Button 
-                variant="destructive" 
-                size="sm" 
-                onClick={handleCancel}
-                className="mt-2"
-              >
-                <Square className="h-3 w-3 mr-2" />
-                Stop Warming
-              </Button>
-            )}
           </div>
         )}
 

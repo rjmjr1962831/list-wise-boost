@@ -22,6 +22,10 @@ export function WarmCacheCronManager() {
     try {
       const { data, error } = await supabase.rpc('check_warm_cache_cron' as any);
       if (error) {
+        if (error.code === 'PGRST116' || error.message?.includes('404') || error.message?.toLowerCase().includes('not found')) {
+          setCronStatus(null);
+          return;
+        }
         console.error('Error checking cron:', error);
         setCronStatus({ running: false });
         return;
@@ -101,6 +105,8 @@ export function WarmCacheCronManager() {
               <Loader2 className="h-3 w-3 mr-1 animate-spin" />
               Checking...
             </Badge>
+          ) : cronStatus === null ? (
+            <Badge variant="secondary">Cron status unavailable</Badge>
           ) : cronStatus?.running ? (
             <Badge className="bg-blue-500 hover:bg-blue-600">
               Scheduled ({cronStatus.schedule || '*/10 * * * *'})

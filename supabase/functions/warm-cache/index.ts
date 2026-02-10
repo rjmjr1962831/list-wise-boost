@@ -217,18 +217,23 @@ async function writeToKv(cacheKey: string, html: string): Promise<{ success: boo
   return { success: true };
 }
 
-async function fetchCityPages(supabase: any): Promise<string[]> {
-  const { data: cities, error } = await supabase
+async function fetchCityPages(supabase: any, stateFilter?: string): Promise<string[]> {
+  let query = supabase
     .from("cities")
     .select("slug, state_slug")
     .eq("active", true);
+  if (stateFilter) {
+    const slug = stateFilter.toLowerCase().replace(/\s+/g, "-");
+    query = query.eq("state_slug", slug);
+  }
+  const { data: cities, error } = await query;
 
   if (error) {
     console.error("Error fetching cities:", error);
     return [];
   }
 
-  return cities.map((city: any) => 
+  return (cities || []).map((city: any) =>
     `/${city.state_slug}/${city.slug}/top10realestateagents`
   );
 }
@@ -418,7 +423,7 @@ async function warmPages(
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 200, headers: corsHeaders });
   }
 
   try {
@@ -432,11 +437,15 @@ serve(async (req) => {
       staticOnly = false,
       neighborhoodsOnly = false,
       stateFilter = undefined,
-      concurrency = 5
+      concurrency = 5,
+      limit = undefined,
+      offset = 0,
+      region = undefined
     } = body;
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const shouldForceRefresh = forceRefresh || force;
+    const effectiveStateFilter = stateFilter ?? (typeof region === "string" && region ? region : undefined);
 
     // Build URL list
     let allUrls: string[] = [];
@@ -452,23 +461,30 @@ serve(async (req) => {
 
     if (!staticOnly) {
       if (includeCities && !neighborhoodsOnly) {
-        const cityPages = await fetchCityPages(supabase);
+        const cityPages = await fetchCityPages(supabase, effectiveStateFilter);
         cityCount = cityPages.length;
         allUrls = [...allUrls, ...cityPages];
         console.log(`Found ${cityCount} city pages to warm`);
       }
 
       if (includeNeighborhoods || neighborhoodsOnly) {
-        const neighborhoodPages = await fetchNeighborhoodPages(supabase, stateFilter);
+        const neighborhoodPages = await fetchNeighborhoodPages(supabase, effectiveStateFilter);
         neighborhoodCount = neighborhoodPages.length;
         allUrls = [...allUrls, ...neighborhoodPages];
-        console.log(`Found ${neighborhoodCount} neighborhood pages to warm${stateFilter ? ` (state: ${stateFilter})` : ''}`);
+        console.log(`Found ${neighborhoodCount} neighborhood pages to warm${effectiveStateFilter ? ` (state: ${effectiveStateFilter})` : ''}`);
       }
     }
 
-    console.log(`Total pages to warm: ${allUrls.length} (${STATIC_PAGES.length} static, ${cityCount} cities, ${neighborhoodCount} neighborhoods)`);
+    const totalCount = allUrls.length;
+    const batchLimit = typeof limit === "number" && limit > 0 ? limit : allUrls.length;
+    const batchOffset = typeof offset === "number" && offset >= 0 ? Math.min(offset, allUrls.length) : 0;
+    const batchUrls = allUrls.slice(batchOffset, batchOffset + batchLimit);
+    const hasMore = batchOffset + batchLimit < allUrls.length;
+    const nextOffset = batchOffset + batchLimit;
 
-    if (background) {
+    console.log(`Total pages to warm: ${allUrls.length} (${STATIC_PAGES.length} static, ${cityCount} cities, ${neighborhoodCount} neighborhoods); batch ${batchOffset}-${batchOffset + batchUrls.length}`);
+
+    if (background && batchUrls.length === allUrls.length) {
       const jobId = crypto.randomUUID().substring(0, 8);
       
       (globalThis as any).EdgeRuntime?.waitUntil?.(
@@ -518,16 +534,17 @@ serve(async (req) => {
       );
     }
 
-    // Synchronous processing
+    // Synchronous processing (batch or full)
     const startTime = Date.now();
-    const { results, errors } = await warmPages(allUrls, shouldForceRefresh, concurrency);
+    const { results, errors } = await warmPages(batchUrls, shouldForceRefresh, concurrency);
 
+    const successful = results.filter(r => r.success).length;
     const summary = {
-      total: allUrls.length,
+      total: totalCount,
       static_pages: STATIC_PAGES.length,
       city_pages: cityCount,
       neighborhood_pages: neighborhoodCount,
-      successful: results.filter(r => r.success).length,
+      successful,
       cached: results.filter(r => r.cache === "HIT").length,
       rendered: results.filter(r => r.rendered === "browser-rest-api").length,
       prerendered: results.filter(r => r.rendered === "prerender-io").length,
@@ -535,6 +552,24 @@ serve(async (req) => {
       failed: errors.length,
       duration_ms: Date.now() - startTime
     };
+
+    if (typeof limit === "number" && limit > 0) {
+      return new Response(
+        JSON.stringify({
+          success: true,
+          total: totalCount,
+          warmed: successful,
+          failed: errors.length,
+          hasMore,
+          nextOffset,
+          errors: errors.map((e: WarmError) => e.message || e.type),
+          summary,
+          results,
+          errors
+        }, null, 2),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     return new Response(
       JSON.stringify({ 
