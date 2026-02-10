@@ -22,9 +22,9 @@ export default function FunnelIntro() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         const { data } = await supabase
-          .from('user_roles')
+          .from('admin_users')
           .select('role')
-          .eq('user_id', session.user.id)
+          .eq('id', session.user.id)
           .eq('role', 'admin')
           .single();
         setIsAdmin(!!data);
