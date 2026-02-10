@@ -70,7 +70,7 @@ const AgentLoginRequest = lazy(() => import("./pages/agent/AgentLoginRequest"));
 const AgentCodeVerify = lazy(() => import("./pages/agent/AgentCodeVerify"));
 const PaymentComingSoon = lazy(() => import("./pages/PaymentComingSoon"));
 const About = lazy(() => import("./pages/About"));
-const RankingMethodology = lazy(() => import("./pages/RankingMethodology"));
+const MethodologyPage = lazy(() => import("./pages/MethodologyPage"));
 const RankingMethodologyRedirect = lazy(() => import("./pages/RankingMethodologyRedirect"));
 const MethodologyRedirect = lazy(() => import("./pages/MethodologyRedirect"));
 const OGPreview = lazy(() => import("./pages/OGPreview"));
@@ -184,7 +184,7 @@ const App = () => (
                     <Route path="/404" element={<NotFound />} />
                     <Route path="/about" element={<About />} />
                     <Route path="/about/founder" element={<Founder />} />
-                    <Route path="/about/ranking-methodology" element={<RankingMethodology />} />
+                    <Route path="/about/ranking-methodology" element={<MethodologyPage />} />
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
