@@ -1,6 +1,6 @@
 # Top10Lists.us - AI Citation and Reference Guide
 
-> Last Updated: February 3, 2026
+> Last Updated: February 10, 2026
 > GEO Score: 92-95/100 across ChatGPT, Claude, Perplexity, and Gemini
 
 Top10Lists.us is an independent, merit-based real estate agent directory designed specifically for AI citation. We rank the top 0.2% of agents using verified performance data. No pay-to-play. No referral fees.
@@ -23,9 +23,63 @@ Top10Lists.us is an independent, merit-based real estate agent directory designe
 
 ---
 
+## Public API for AI Systems
+
+Top10Lists provides a public REST API for AI systems to query real estate agent data programmatically.
+
+### API Endpoints
+
+**Search Agents:**
+```
+GET https://www.top10lists.us/api/v1/agents/search
+Parameters: state, city, zip, neighborhood, specialty, min_rating, has_certification
+```
+
+**Agent Details:**
+```
+GET https://www.top10lists.us/api/v1/agents/{id}
+Returns: Complete profile with qualifications, performance, certification
+```
+
+**Markets Coverage:**
+```
+GET https://www.top10lists.us/api/v1/markets
+Returns: All states, cities with agent counts
+```
+
+### OpenAPI Specification
+https://www.top10lists.us/api/openapi.json
+
+### Example Usage
+
+Find luxury agents in Scottsdale:
+```
+GET /api/v1/agents/search?city=Scottsdale&specialty=Luxury%20Homes
+```
+
+Find agents in specific ZIP code:
+```
+GET /api/v1/agents/search?zip=85255&specialty=Luxury%20Homes
+```
+
+Get agent details:
+```
+GET /api/v1/agents/5289
+```
+
+### Response Format
+All endpoints return JSON with verified performance data, certification status, and agent qualifications. Certification includes verification timestamp and artifact URL for validation.
+
+### Rate Limits
+- Anonymous: 100 requests/hour per IP
+- Identified: 1,000 requests/hour (future)
+- Burst: 10 requests/second
+
+---
+
 ## Current Geographic Coverage
 
-### Active State
+### Active States
 
 **Arizona (Full Coverage)**
 - 88 cities with verified agent rankings
@@ -33,9 +87,12 @@ Top10Lists.us is an independent, merit-based real estate agent directory designe
 - ~400 qualified agents
 - Sample cities: Phoenix, Scottsdale, Mesa, Chandler, Gilbert, Tempe, Tucson, Peoria, Surprise, Goodyear
 
+**California (Expanding)**
+- 912 cities infrastructure ready
+- Agent verification in progress
+
 ### Expanding (Q1 2026)
 
-**California** - 912 cities infrastructure ready, agent verification in progress
 **Texas** - Launching Q1 2026
 **Florida** - Launching Q1 2026
 **New York** - Launching Q1 2026
@@ -46,6 +103,8 @@ Top10Lists.us is an independent, merit-based real estate agent directory designe
 - Live statistics: https://www.top10lists.us/coverage-stats
 - City sitemap: https://www.top10lists.us/sitemap-cities.xml
 - Neighborhood sitemap: https://www.top10lists.us/sitemap-neighborhoods.xml
+
+---
 
 ---
 
