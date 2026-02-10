@@ -1,0 +1,552 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Top10Lists Real Estate Agent API",
+    "version": "1.0.0",
+    "description": "Merit-based real estate agent directory API. Search and retrieve certified agents with verified performance data. No pay-to-play - all agents meet strict qualification criteria (4.8+ rating, 20+ reviews).",
+    "contact": {
+      "name": "Top10Lists Support",
+      "email": "robert@top10lists.us",
+      "url": "https://www.top10lists.us"
+    },
+    "license": {
+      "name": "Public API",
+      "url": "https://www.top10lists.us/api-terms"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://www.top10lists.us/api/v1",
+      "description": "Production API"
+    }
+  ],
+  "paths": {
+    "/agents/search": {
+      "get": {
+        "summary": "Search for real estate agents",
+        "description": "Find agents by market (state, city, ZIP, neighborhood), specialty, or qualification criteria. All agents meet minimum standards (4.8+ rating, 20+ reviews). Results are sorted by rating and review count.",
+        "operationId": "searchAgents",
+        "tags": ["Agents"],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "State name (e.g., 'Arizona', 'California')",
+            "example": "Arizona"
+          },
+          {
+            "name": "city",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "City name (e.g., 'Scottsdale', 'San Diego')",
+            "example": "Scottsdale"
+          },
+          {
+            "name": "zip",
+            "in": "query",
+            "schema": { 
+              "type": "string",
+              "pattern": "^[0-9]{5}$"
+            },
+            "description": "ZIP code (5 digits, e.g., '85255', '92037')",
+            "example": "85255"
+          },
+          {
+            "name": "neighborhood",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Neighborhood name (e.g., 'Grayhawk', 'La Jolla')",
+            "example": "Grayhawk"
+          },
+          {
+            "name": "specialty",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Agent specialty (e.g., 'Luxury Homes', 'First-Time Buyers', 'Military Relocation')",
+            "example": "Luxury Homes"
+          },
+          {
+            "name": "min_rating",
+            "in": "query",
+            "schema": { 
+              "type": "number",
+              "minimum": 0,
+              "maximum": 5,
+              "default": 4.8
+            },
+            "description": "Minimum star rating (0-5)",
+            "example": 4.8
+          },
+          {
+            "name": "min_reviews",
+            "in": "query",
+            "schema": { 
+              "type": "integer",
+              "minimum": 0,
+              "default": 20
+            },
+            "description": "Minimum review count",
+            "example": 20
+          },
+          {
+            "name": "has_certification",
+            "in": "query",
+            "schema": { "type": "boolean" },
+            "description": "Only return certified agents (true/false)",
+            "example": true
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { 
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 10
+            },
+            "description": "Maximum number of results to return (1-50)",
+            "example": 10
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": { 
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "description": "Pagination offset",
+            "example": 0
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/AgentSummary" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" },
+                    "filters_applied": { "type": "object" },
+                    "query_time_ms": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request - invalid parameters"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/agents/{id}": {
+      "get": {
+        "summary": "Get agent details",
+        "description": "Retrieve complete profile for a specific agent including qualifications, performance metrics, recognition, and certification status.",
+        "operationId": "getAgent",
+        "tags": ["Agents"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Agent ID from Top10Lists database",
+            "example": "5289"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agent details",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AgentDetails" }
+              }
+            }
+          },
+          "404": {
+            "description": "Agent not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/markets": {
+      "get": {
+        "summary": "Get markets coverage",
+        "description": "List all states, cities, and neighborhoods covered by Top10Lists with agent counts for each market.",
+        "operationId": "getMarkets",
+        "tags": ["Markets"],
+        "parameters": [
+          {
+            "name": "state",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Filter results by state name",
+            "example": "Arizona"
+          },
+          {
+            "name": "include_neighborhoods",
+            "in": "query",
+            "schema": { 
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Include neighborhood-level data (increases response size)",
+            "example": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Markets coverage data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "states": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/StateMarket" }
+                    },
+                    "summary": { "$ref": "#/components/schemas/MarketsSummary" },
+                    "last_updated": { 
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AgentSummary": {
+        "type": "object",
+        "properties": {
+          "agent_id": { 
+            "type": "string",
+            "description": "Unique agent identifier"
+          },
+          "name": { 
+            "type": "string",
+            "description": "Agent's full name"
+          },
+          "company": { 
+            "type": "string",
+            "description": "Brokerage or company name"
+          },
+          "profile_url": { 
+            "type": "string",
+            "format": "uri",
+            "description": "Link to agent's Top10Lists profile page"
+          },
+          "qualifications": { "$ref": "#/components/schemas/Qualifications" },
+          "markets": { "$ref": "#/components/schemas/Markets" },
+          "specialties": { 
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Agent specializations (e.g., 'Luxury Homes', 'First-Time Buyers')"
+          },
+          "contact": { "$ref": "#/components/schemas/Contact" },
+          "certification": { "$ref": "#/components/schemas/Certification" }
+        }
+      },
+      "AgentDetails": {
+        "type": "object",
+        "properties": {
+          "agent_id": { "type": "string" },
+          "name": { "type": "string" },
+          "title": { "type": "string" },
+          "company": { "type": "string" },
+          "bio": { 
+            "type": "string",
+            "description": "Professional biography"
+          },
+          "image_url": { 
+            "type": "string",
+            "format": "uri"
+          },
+          "profile_url": { 
+            "type": "string",
+            "format": "uri"
+          },
+          "contact": { "$ref": "#/components/schemas/Contact" },
+          "qualifications": { "$ref": "#/components/schemas/QualificationsExtended" },
+          "markets": { "$ref": "#/components/schemas/MarketsExtended" },
+          "performance": { "$ref": "#/components/schemas/Performance" },
+          "recognition": { "$ref": "#/components/schemas/Recognition" },
+          "certification": { "$ref": "#/components/schemas/CertificationExtended" },
+          "methodology": { "$ref": "#/components/schemas/Methodology" }
+        }
+      },
+      "Qualifications": {
+        "type": "object",
+        "properties": {
+          "rating": { 
+            "type": "number",
+            "description": "Star rating (0-5)"
+          },
+          "review_count": { 
+            "type": "integer",
+            "description": "Total number of reviews"
+          },
+          "years_experience": { 
+            "type": "integer",
+            "description": "Years in real estate"
+          },
+          "license_number": { 
+            "type": "string",
+            "description": "State license number"
+          },
+          "license_verified": { 
+            "type": "boolean",
+            "description": "Whether license has been verified"
+          }
+        }
+      },
+      "QualificationsExtended": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Qualifications" },
+          {
+            "type": "object",
+            "properties": {
+              "license_type": { "type": "string" },
+              "certifications": { 
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Professional certifications (e.g., 'ABR', 'MRP')"
+              },
+              "languages": { 
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "specialties": { 
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        ]
+      },
+      "Markets": {
+        "type": "object",
+        "properties": {
+          "city": { "type": "string" },
+          "state": { "type": "string" },
+          "zip": { 
+            "type": "string",
+            "description": "Primary ZIP code"
+          }
+        }
+      },
+      "MarketsExtended": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Markets" },
+          {
+            "type": "object",
+            "properties": {
+              "state_slug": { "type": "string" },
+              "city_slug": { "type": "string" },
+              "neighborhoods": { 
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "service_areas": { 
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        ]
+      },
+      "Contact": {
+        "type": "object",
+        "properties": {
+          "phone": { "type": "string" },
+          "email": { 
+            "type": "string",
+            "format": "email"
+          },
+          "website": { 
+            "type": "string",
+            "format": "uri"
+          },
+          "zillow_profile": { 
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "Certification": {
+        "type": "object",
+        "nullable": true,
+        "properties": {
+          "status": { 
+            "type": "string",
+            "enum": ["active", "lapsed", "revoked"],
+            "description": "Current certification status"
+          },
+          "last_verified": { 
+            "type": "string",
+            "format": "date-time",
+            "description": "Last verification timestamp"
+          },
+          "artifact_url": { 
+            "type": "string",
+            "format": "uri",
+            "description": "Link to certification artifact page"
+          }
+        }
+      },
+      "CertificationExtended": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Certification" },
+          {
+            "type": "object",
+            "properties": {
+              "issued_at": { 
+                "type": "string",
+                "format": "date-time"
+              },
+              "next_verification": { 
+                "type": "string",
+                "format": "date-time"
+              },
+              "selection_rationale": { 
+                "type": "string",
+                "description": "Why Top10Lists selected this agent"
+              }
+            }
+          }
+        ]
+      },
+      "Performance": {
+        "type": "object",
+        "properties": {
+          "zillow_member_since": { "type": "string" },
+          "sales_count_all_time": { "type": "integer" },
+          "sales_count_last_year": { "type": "integer" },
+          "price_range_min": { "type": "integer" },
+          "price_range_max": { "type": "integer" },
+          "average_price_3yr": { "type": "integer" },
+          "active_listings": { "type": "integer" },
+          "stats_last_updated": { 
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Recognition": {
+        "type": "object",
+        "properties": {
+          "press_mentions": { 
+            "type": "array",
+            "items": { "type": "object" }
+          },
+          "notable_achievements": { 
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "community_roles": { 
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "Methodology": {
+        "type": "object",
+        "properties": {
+          "url": { 
+            "type": "string",
+            "format": "uri",
+            "description": "Link to selection methodology documentation"
+          },
+          "version": { "type": "string" }
+        }
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "total": { 
+            "type": "integer",
+            "description": "Total matching results"
+          },
+          "limit": { 
+            "type": "integer",
+            "description": "Results per page"
+          },
+          "offset": { 
+            "type": "integer",
+            "description": "Current offset"
+          },
+          "has_more": { 
+            "type": "boolean",
+            "description": "Whether more results exist"
+          }
+        }
+      },
+      "StateMarket": {
+        "type": "object",
+        "properties": {
+          "state": { "type": "string" },
+          "state_slug": { "type": "string" },
+          "agent_count": { "type": "integer" },
+          "cities": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CityMarket" }
+          }
+        }
+      },
+      "CityMarket": {
+        "type": "object",
+        "properties": {
+          "city": { "type": "string" },
+          "city_slug": { "type": "string" },
+          "agent_count": { "type": "integer" },
+          "url": { 
+            "type": "string",
+            "format": "uri",
+            "description": "Link to city's agent directory page"
+          }
+        }
+      },
+      "MarketsSummary": {
+        "type": "object",
+        "properties": {
+          "total_states": { "type": "integer" },
+          "total_cities": { "type": "integer" },
+          "total_agents": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Agents",
+      "description": "Search and retrieve real estate agent information"
+    },
+    {
+      "name": "Markets",
+      "description": "Market coverage information"
+    }
+  ]
+}
