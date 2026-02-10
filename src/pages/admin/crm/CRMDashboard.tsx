@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/adminAuth'
+import { supabase } from '@/integrations/supabase/client'
 
 interface Stats {
   totalAgents: number
