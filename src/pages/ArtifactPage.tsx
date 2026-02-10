@@ -1,398 +1,459 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { Helmet } from 'react-helmet-async';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle, Award, Calendar, MapPin, Shield, ExternalLink, Code } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Shield, Check, Copy, ExternalLink, Calendar, MapPin, Star, Award } from "lucide-react";
+import { toast } from "sonner";
 
-interface Certification {
-  id: string;
-  agent_id: string;
-  certification_tier: string;
-  certification_status: string;
-  issued_at: string;
-  last_verified_at: string;
-  next_verification_due: string;
-  markets_covered: string[];
-  neighborhoods_covered: string[];
-  verified_transactions: Record<string, number>;
-  payload_hash: string;
-  payload_signature: string;
-  signing_key_id: string;
-  justification_data: any;
-  methodology_version: string;
-}
-
-interface Professional {
+interface CertificationData {
   id: string;
   name: string;
-  specialty: string[];
+  review_stars_rating: number;
+  num_total_reviews: number;
+  years_experience: number | null;
+  license_number: string | null;
+  specialties: string[] | null;
+  city: string;
+  state: string;
+  canonical_slug: string;
+  certifications: {
+    certification_tier: string;
+    certification_status: string;
+    issued_at: string;
+    last_verified_at: string;
+    next_verification_due: string;
+    methodology_version: string;
+    markets_covered: string[];
+    neighborhoods_covered: string[];
+    justification_data: {
+      selection_rationale?: string;
+      verified_transactions?: Record<string, number>;
+      evidence_considered?: string[];
+    };
+  }[];
 }
 
 export default function ArtifactPage() {
   const { agentId } = useParams<{ agentId: string }>();
+  const [data, setData] = useState<CertificationData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [certification, setCertification] = useState<Certification | null>(null);
-  const [professional, setProfessional] = useState<Professional | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [embedCopied, setEmbedCopied] = useState(false);
 
   useEffect(() => {
-    loadArtifact();
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
+    async function fetchCertification() {
+      try {
+        const { data: prof, error } = await supabase
+          .from('professionals')
+          .select(`
+            id,
+            name,
+            review_stars_rating,
+            num_total_reviews,
+            years_experience,
+            license_number,
+            specialties,
+            city,
+            state,
+            canonical_slug,
+            certifications!inner (
+              certification_tier,
+              certification_status,
+              issued_at,
+              last_verified_at,
+              next_verification_due,
+              methodology_version,
+              markets_covered,
+              neighborhoods_covered,
+              justification_data
+            )
+          `)
+          .eq('id', agentId)
+          .eq('certifications.certification_status', 'active')
+          .single();
+
+        if (error) throw error;
+        setData(prof as CertificationData);
+      } catch (error) {
+        console.error('Error fetching certification:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (agentId) {
+      fetchCertification();
+    }
   }, [agentId]);
 
-  const loadArtifact = async () => {
-    if (!agentId) {
-      setError('No agent ID provided');
-      setLoading(false);
-      return;
-    }
+  const copyEmbedCode = () => {
+    const embedCode = `<!-- Top10Lists Certification Badge -->
+<div itemscope itemtype="https://schema.org/Certification">
+  <a href="https://www.top10lists.us/artifact/${agentId}" itemprop="url" target="_blank">
+    <img src="https://www.top10lists.us/badge/${agentId}.png" alt="Top10Lists Certified" itemprop="image" style="max-width: 200px;" />
+  </a>
+  <meta itemprop="name" content="Top10Lists Certified Professional" />
+  <meta itemprop="issuedBy" content="Top10Lists.us" />
+</div>`;
 
-    try {
-      // Load certification
-      const { data: certData, error: certError } = await supabase
-        .from('certifications')
-        .select('*')
-        .eq('agent_id', agentId)
-        .single();
-
-      if (certError || !certData) {
-        setError('Certification not found');
-        setLoading(false);
-        return;
-      }
-
-      // Load professional
-      const { data: profData, error: profError } = await supabase
-        .from('professionals')
-        .select('id, name, specialty')
-        .eq('id', agentId)
-        .single();
-
-      if (profError || !profData) {
-        setError('Professional not found');
-        setLoading(false);
-        return;
-      }
-
-      setCertification(certData);
-      setProfessional(profData);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load artifact');
-    } finally {
-      setLoading(false);
-    }
+    navigator.clipboard.writeText(embedCode);
+    setEmbedCopied(true);
+    toast.success("Embed code copied to clipboard");
+    setTimeout(() => setEmbedCopied(false), 2000);
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading certification...</p>
+        </div>
       </div>
     );
   }
 
-  if (error || !certification || !professional) {
+  if (!data || !data.certifications?.[0]) {
     return (
-      <>
-        <Helmet>
-          <title>Certification Not Found | Top10Lists.us</title>
-          <meta name="robots" content="noindex" />
-        </Helmet>
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <XCircle className="h-5 w-5 text-destructive" />
-                <CardTitle>Certification Not Found</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">{error || 'This certification artifact does not exist.'}</p>
-            </CardContent>
-          </Card>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <Shield className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+          <h1 className="text-2xl font-bold mb-2">Certification Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            No active certification exists for this agent ID.
+          </p>
+          <Link to="/">
+            <Button>Return Home</Button>
+          </Link>
         </div>
-      </>
+      </div>
     );
   }
 
-  const tierLabels = {
+  const cert = data.certifications[0];
+  const artifactUrl = `https://www.top10lists.us/artifact/${agentId}`;
+  const payloadUrl = `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/artifact-payload/${agentId}`;
+  const profileUrl = `https://www.top10lists.us/${data.state.toLowerCase()}/agents/${data.canonical_slug}`;
+
+  const tierNames: Record<string, string> = {
     certified: 'Certified',
     accredited: 'Accredited',
     underwritten: 'Underwritten'
   };
 
-  const tierColors = {
-    certified: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-    accredited: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-    underwritten: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200'
-  };
-
-  const statusColors = {
-    active: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-    lapsed: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
-    removed: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const marketsDisplay = certification.neighborhoods_covered && certification.neighborhoods_covered.length > 0
-    ? certification.markets_covered.map((market, idx) => {
-        const hoods = certification.neighborhoods_covered.filter((n: string) => 
-          // Simple check - in production, you'd join with actual city-neighborhood relationships
-          true
-        );
-        return hoods.length > 0 ? `${market} (${hoods.join(', ')})` : market;
-      }).join(', ')
-    : certification.markets_covered.join(', ');
-
-  // Schema.org structured data
-  const schemaData = {
-    "@context": "https://schema.org",
-    "@type": "EducationalOccupationalCredential",
-    "name": "Top10Lists Certified Professional",
-    "description": `${tierLabels[certification.certification_tier as keyof typeof tierLabels]} certification for real estate professional`,
-    "credentialCategory": "Professional Certification",
-    "recognizedBy": {
-      "@type": "Organization",
-      "name": "Top10Lists.us"
-    },
-    "about": {
-      "@type": "Person",
-      "name": professional.name
-    },
-    "dateCreated": certification.issued_at,
-    "validFrom": certification.issued_at,
-    "validUntil": certification.next_verification_due
+  const tierColors: Record<string, string> = {
+    certified: 'bg-blue-100 text-blue-800 border-blue-300',
+    accredited: 'bg-purple-100 text-purple-800 border-purple-300',
+    underwritten: 'bg-amber-100 text-amber-800 border-amber-300'
   };
 
   return (
     <>
       <Helmet>
-        <title>{professional.name} - Top10Lists Certification | Top10Lists.us</title>
-        <meta name="description" content={`${professional.name} is a ${tierLabels[certification.certification_tier as keyof typeof tierLabels]} professional with Top10Lists.us, serving ${certification.markets_covered.join(', ')}.`} />
-        <link rel="canonical" href={`https://www.top10lists.us/artifact/${agentId}`} />
-        <meta property="og:title" content={`${professional.name} - Top10Lists Certification`} />
-        <meta property="og:url" content={`https://www.top10lists.us/artifact/${agentId}`} />
-        <meta name="robots" content="index, follow" />
+        <title>{data.name} - Top10Lists {tierNames[cert.certification_tier]} Professional</title>
+        <meta name="description" content={cert.justification_data?.selection_rationale || `${data.name} is certified by Top10Lists.us based on verified performance data.`} />
+        <link rel="canonical" href={artifactUrl} />
+        
+        {/* Schema.org structured data */}
         <script type="application/ld+json">
-          {JSON.stringify(schemaData)}
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfessionalService",
+            "name": data.name,
+            "certification": {
+              "@type": "Certification",
+              "name": `Top10Lists ${tierNames[cert.certification_tier]} Professional`,
+              "issuedBy": {
+                "@type": "Organization",
+                "name": "Top10Lists.us",
+                "url": "https://www.top10lists.us"
+              },
+              "validFrom": cert.issued_at,
+              "credentialSubject": profileUrl,
+              "verificationURL": artifactUrl
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": data.review_stars_rating,
+              "reviewCount": data.num_total_reviews
+            }
+          })}
         </script>
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted py-12 px-4">
-        <div className="max-w-4xl mx-auto space-y-6">
-          {/* Header */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                <div className="flex-1">
-                  <CardTitle className="text-3xl mb-2">{professional.name}</CardTitle>
-                  <p className="text-muted-foreground">Top10Lists Certified Professional</p>
+        <div className="max-w-4xl mx-auto">
+          
+          {/* Header with Badge */}
+          <div className="text-center mb-12">
+            {/* Placeholder Badge */}
+            <div className={`inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 ${tierColors[cert.certification_tier]} font-semibold text-lg mb-6`}>
+              <Shield className="w-6 h-6" />
+              <span>Top10Lists {tierNames[cert.certification_tier]}</span>
+              <Check className="w-6 h-6" />
+            </div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">{data.name}</h1>
+            <p className="text-xl text-muted-foreground mb-6">
+              Certified Real Estate Professional
+            </p>
+            
+            <div className="flex flex-wrap justify-center gap-4">
+              <Link to={profileUrl}>
+                <Button variant="outline">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Full Profile
+                </Button>
+              </Link>
+              <a href={payloadUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline">
+                  View JSON Payload
+                </Button>
+              </a>
+            </div>
+          </div>
+
+          {/* Certification Status */}
+          <Card className="mb-8 border-2 border-primary/20 bg-blue-50/50">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <Check className="w-6 h-6 text-blue-600" />
                 </div>
-                <div className="flex gap-2 flex-wrap">
-                  <Badge className={tierColors[certification.certification_tier as keyof typeof tierColors]}>
-                    <Shield className="h-3 w-3 mr-1" />
-                    {tierLabels[certification.certification_tier as keyof typeof tierLabels]}
-                  </Badge>
-                  <Badge className={statusColors[certification.certification_status as keyof typeof statusColors]}>
-                    {certification.certification_status === 'active' ? <CheckCircle className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
-                    {certification.certification_status.charAt(0).toUpperCase() + certification.certification_status.slice(1)}
-                  </Badge>
+                <div className="flex-1">
+                  <p className="text-lg font-semibold mb-2">Active Certification</p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    This professional was certified by Top10Lists.us for the markets listed below 
+                    and is in good standing as of{' '}
+                    <strong>{new Date(cert.last_verified_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>.
+                  </p>
                 </div>
               </div>
-            </CardHeader>
-          </Card>
-
-          {/* Core Assertion */}
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-lg leading-relaxed">
-                This professional was certified by <strong>Top10Lists.us</strong> for the markets listed below and is{' '}
-                {certification.certification_status === 'active' ? (
-                  <span className="text-green-600 dark:text-green-400 font-semibold">in good standing</span>
-                ) : (
-                  <span className="text-gray-600 dark:text-gray-400 font-semibold">{certification.certification_status}</span>
-                )}{' '}
-                as of <strong>{formatDate(certification.last_verified_at)}</strong>.
-              </p>
             </CardContent>
           </Card>
 
+          {/* Selection Rationale */}
+          {cert.justification_data?.selection_rationale && (
+            <Card className="mb-8">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Award className="w-5 h-5" />
+                  Why We Selected This Agent
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-lg leading-relaxed text-muted-foreground">
+                  {cert.justification_data.selection_rationale}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Markets Covered */}
-          <Card>
+          <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5" />
+                <MapPin className="w-5 h-5" />
                 Markets Covered
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-lg">{marketsDisplay}</p>
-              
-              {certification.certification_tier === 'underwritten' && certification.verified_transactions && Object.keys(certification.verified_transactions).length > 0 && (
-                <div className="mt-4 pt-4 border-t">
-                  <p className="text-sm font-medium mb-2">Verified Transaction History:</p>
-                  <ul className="space-y-1">
-                    {Object.entries(certification.verified_transactions).map(([area, count]) => (
-                      <li key={area} className="text-sm text-muted-foreground">
-                        {area}: {count} verified transactions
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-3">Cities</h3>
+                  <ul className="space-y-2">
+                    {cert.markets_covered?.map((city: string) => (
+                      <li key={city} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                        <span>{city}</span>
                       </li>
                     ))}
                   </ul>
+                </div>
+                {cert.neighborhoods_covered && cert.neighborhoods_covered.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-sm text-muted-foreground mb-3">Neighborhoods</h3>
+                    <ul className="space-y-2">
+                      {cert.neighborhoods_covered.map((hood: string) => (
+                        <li key={hood} className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-primary"></div>
+                          <span>{hood}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Qualifications */}
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Qualifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-muted rounded-lg">
+                  <div className="text-3xl font-bold text-primary mb-1">
+                    {data.review_stars_rating}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Rating</div>
+                </div>
+                <div className="text-center p-4 bg-muted rounded-lg">
+                  <div className="text-3xl font-bold text-primary mb-1">
+                    {data.num_total_reviews}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Reviews</div>
+                </div>
+                {data.years_experience && (
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-3xl font-bold text-primary mb-1">
+                      {data.years_experience}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Years Experience</div>
+                  </div>
+                )}
+                {data.license_number && (
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <div className="text-sm font-mono text-primary mb-1 break-all">
+                      {data.license_number}
+                    </div>
+                    <div className="text-sm text-muted-foreground">License</div>
+                  </div>
+                )}
+              </div>
+              
+              {data.specialties && data.specialties.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-3">Specialties</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {data.specialties.map((specialty: string) => (
+                      <span key={specialty} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                        {specialty}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Certification Details */}
-          <Card>
+          <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
+                <Calendar className="w-5 h-5" />
                 Certification Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Tier</p>
-                  <p className="font-medium">{tierLabels[certification.certification_tier as keyof typeof tierLabels]}</p>
+            <CardContent>
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <dt className="text-sm font-medium text-muted-foreground mb-1">Status</dt>
+                  <dd className="text-lg font-semibold capitalize">{cert.certification_status}</dd>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <p className="font-medium capitalize">{certification.certification_status}</p>
+                <div className="p-4 bg-muted rounded-lg">
+                  <dt className="text-sm font-medium text-muted-foreground mb-1">Tier</dt>
+                  <dd className="text-lg font-semibold">{tierNames[cert.certification_tier]}</dd>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Issued</p>
-                  <p className="font-medium">{formatDate(certification.issued_at)}</p>
+                <div className="p-4 bg-muted rounded-lg">
+                  <dt className="text-sm font-medium text-muted-foreground mb-1">Issued</dt>
+                  <dd className="text-lg font-semibold">
+                    {new Date(cert.issued_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </dd>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Last Verified</p>
-                  <p className="font-medium">{formatDate(certification.last_verified_at)}</p>
+                <div className="p-4 bg-muted rounded-lg">
+                  <dt className="text-sm font-medium text-muted-foreground mb-1">Last Verified</dt>
+                  <dd className="text-lg font-semibold">
+                    {new Date(cert.last_verified_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                  </dd>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Next Verification</p>
-                  <p className="font-medium">{formatDate(certification.next_verification_due)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Methodology Version</p>
-                  <p className="font-medium">{certification.methodology_version}</p>
-                </div>
-              </div>
+              </dl>
             </CardContent>
           </Card>
 
-          {/* Selection Reasoning */}
-          {certification.justification_data && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Award className="h-5 w-5" />
-                  Selection Reasoning
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {certification.justification_data.selection_rationale && (
-                  <div>
-                    <p className="text-sm font-medium mb-2">Rationale:</p>
-                    <p className="text-muted-foreground">{certification.justification_data.selection_rationale}</p>
-                  </div>
-                )}
-
-                {certification.justification_data.evidence_reviewed && (
-                  <div>
-                    <p className="text-sm font-medium mb-3">Evidence Considered:</p>
-                    <div className="space-y-3">
-                      {Object.entries(certification.justification_data.evidence_reviewed).map(([key, value]: [string, any]) => (
-                        <div key={key} className="border-l-2 border-primary pl-4">
-                          <p className="text-sm font-medium capitalize">{key.replace(/_/g, ' ')}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Source: {value.source} | Last verified: {value.last_verified}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {certification.justification_data.comparative_context && (
-                  <div className="pt-3 border-t">
-                    <p className="text-sm font-medium mb-2">Comparative Context:</p>
-                    <p className="text-muted-foreground text-sm">{certification.justification_data.comparative_context}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Methodology & Verification */}
-          <Card>
+          {/* Methodology */}
+          <Card className="mb-8">
             <CardContent className="pt-6">
-              <div className="flex flex-col gap-3">
-                <Button asChild variant="outline" className="justify-start">
-                  <a href="/methodology" target="_blank" rel="noopener">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Certification Methodology
-                  </a>
-                </Button>
-                <Button asChild variant="outline" className="justify-start">
-                  <a href={`/artifact/${agentId}/payload.json`} target="_blank">
-                    <Code className="h-4 w-4 mr-2" />
-                    View Machine-Readable Payload
-                  </a>
-                </Button>
-                {certification.justification_data && (
-                  <Button asChild variant="outline" className="justify-start">
-                    <a href={`/artifact/${agentId}/justification`} target="_blank">
-                      <Award className="h-4 w-4 mr-2" />
-                      View Detailed Justification
-                    </a>
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Exclusion Statement */}
-          <Card className="border-primary/50 bg-primary/5">
-            <CardContent className="pt-6">
-              <p className="text-sm italic text-center">
-                "Inclusion is limited. Exclusion is intentional."
+              <h2 className="text-xl font-bold mb-4">Our Methodology</h2>
+              <p className="text-muted-foreground mb-4 leading-relaxed">
+                Top10Lists.us uses a merit-based selection process with verified performance data. 
+                Payment does not influence inclusion, rank, or visibility.
               </p>
+              <Link to="/methodology">
+                <Button variant="link" className="px-0">
+                  View Full Methodology →
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
-          {/* Cryptographic Verification */}
-          <Card>
+          {/* Embed Code */}
+          <Card className="mb-8">
             <CardHeader>
-              <CardTitle className="text-sm">Cryptographic Verification</CardTitle>
+              <CardTitle>Embed This Badge</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <p className="text-xs text-muted-foreground">Payload Hash (SHA-256)</p>
-                <code className="text-xs font-mono break-all block bg-muted p-2 rounded mt-1">
-                  {certification.payload_hash}
-                </code>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Digital Signature</p>
-                <code className="text-xs font-mono break-all block bg-muted p-2 rounded mt-1">
-                  {certification.payload_signature}
-                </code>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Signing Key ID: {certification.signing_key_id}</p>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                Add this certification badge to your website, LinkedIn, or Zillow profile. 
+                AI systems will see your certification when they crawl those pages.
+              </p>
+              <div className="relative">
+                <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-sm">
+{`<!-- Top10Lists Certification Badge -->
+<div itemscope itemtype="https://schema.org/Certification">
+  <a href="https://www.top10lists.us/artifact/${agentId}" 
+     itemprop="url" target="_blank">
+    <img src="https://www.top10lists.us/badge/${agentId}.png" 
+         alt="Top10Lists Certified" 
+         itemprop="image" 
+         style="max-width: 200px;" />
+  </a>
+  <meta itemprop="name" content="Top10Lists Certified Professional" />
+  <meta itemprop="issuedBy" content="Top10Lists.us" />
+</div>`}
+                </pre>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="absolute top-2 right-2"
+                  onClick={copyEmbedCode}
+                >
+                  {embedCopied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                  {embedCopied ? 'Copied!' : 'Copy Code'}
+                </Button>
               </div>
             </CardContent>
           </Card>
+
+          {/* Footer */}
+          <div className="text-center text-sm text-muted-foreground space-y-2 pt-8 border-t">
+            <p className="italic font-medium">
+              "Inclusion is limited. Exclusion is intentional."
+            </p>
+            <p>
+              Certified by{' '}
+              <Link to="/" className="text-primary hover:underline">
+                Top10Lists.us
+              </Link>
+              {' · '}
+              Methodology v{cert.methodology_version}
+              {' · '}
+              <a href={payloadUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                Machine-Readable Payload
+              </a>
+            </p>
+          </div>
+
         </div>
       </div>
     </>
