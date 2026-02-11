@@ -487,32 +487,87 @@ Must return full HTML content, not React shell.
 
 ## Claude Operational Protocol
 
-### The Takeaways Function
+### The RYK Function (Refresh Session Memory)
 
-**When Robert says "run takeaways" or "takeaways":**
+**When Robert says "ryk":**
 
-1. **Identify** information from the session that belongs in project knowledge (operational facts, configuration changes, new infrastructure, deprecated patterns)
-2. **Read** existing `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` from `/mnt/project/`
-3. **Integrate** new information into appropriate sections
-4. **Check** for conflicts or superseded information (e.g., PrivateEmail to Google Workspace)
-5. **Deprecate** outdated information by moving to "Deprecated Services" or updating inline
+1. **Read** `/mnt/project/TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md`
+2. **Refresh** Claude's session context with current knowledge
+3. **Confirm** "Session memory refreshed with v[X.X] knowledge"
+
+**Purpose:** Keeps Claude's working memory synchronized with the master knowledge file.
+
+---
+
+### The Takeaways Function (Full Integration)
+
+**Automated Schedule:**
+- **2000 MST:** Cursor and Gemini post their daily update files to GitHub
+- **2100 MST:** Cron job runs `takeaways` to integrate everything
+- **Manual trigger:** Robert can run `takeaways` anytime
+- **Result:** All systems start fresh with synchronized knowledge every morning
+
+**When Robert says "takeaways" (or cron triggers at 2100 MST):**
+
+1. **Read** current `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` from `/mnt/project/`
+
+2. **Ingest external updates:**
+   - Cursor's file: `/docs/daily-updates/cursor-YYYY-MM-DD.md`
+   - Gemini's file: `/docs/daily-updates/gemini-YYYY-MM-DD.md`
+
+3. **Integrate** all information:
+   - Session learnings (if manual run)
+   - Cursor's daily findings
+   - Gemini's daily findings
+   - Apply to appropriate sections
+
+4. **Check** for conflicts across all three sources
+
+5. **Deprecate** outdated information
+
 6. **Update** version number and date at bottom
-7. **Output** the updated file to `/mnt/user-data/outputs/` for download (Robert updates Claude Project manually)
-8. **Create sanitized version** (no secrets) and push to GitHub at `/docs/PROJECT-KNOWLEDGE.md`
 
-**Do NOT:**
-- Write a summary in chat (that's not takeaways)
-- Include educational content (like SEO history) unless it's operational
-- Add information that belongs in separate project documentation (like TVPR)
-- Include temporary troubleshooting steps or unresolved issues
-- Push secrets to GitHub
+7. **Archive** daily update files:
+   - Move to `/docs/daily-updates/archive/YYYY-MM-DD/`
+   - Keep last 7 days
+   - Delete archives older than 7 days
 
-**Include:**
-- New configuration values (structure/format only, not actual keys)
-- New infrastructure (database tables, routes, services)
-- Pattern changes (how to use Supabase client)
-- Deprecated services or approaches
-- Hard stops that emerged from mistakes
+8. **Create TWO versions:**
+   
+   **Version A - FULL (for Claude Project):**
+   - Contains all API keys, credentials, secrets
+   - Output to `/mnt/user-data/outputs/TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md`
+   - Robert manually uploads to Claude Project at `/mnt/project/`
+   - **NEVER pushed to GitHub**
+   
+   **Version B - SANITIZED (for GitHub):**
+   - Same operational knowledge, no secrets
+   - Pushed to GitHub at `/docs/PROJECT-KNOWLEDGE.md`
+   - Cursor and Gemini read this for next cycle
+
+**Integration Rules:**
+
+**Include from all sources:**
+- New bugs discovered and fixed
+- Performance optimizations
+- Database schema changes (if approved)
+- New patterns or workflows
+- Deprecated approaches
+- Hard stops from mistakes
+- Configuration changes (structure only, not actual secrets)
+
+**Exclude:**
+- Secrets or credentials
+- Temporary debugging steps
+- Unresolved issues
+- Educational content
+- Task completion notes
+
+**Version History Format:**
+```
+*Version 3.7 - February 12, 2026*
+*Updated: Cursor fixed pagination bug, Gemini optimized cache, Claude added security section*
+```
 
 ### No Crashing on Big Jobs
 
@@ -619,8 +674,8 @@ curl -s -H "Authorization: token [GET FROM ROBERT]" -H "Accept: application/vnd.
 
 ## Shorthand
 
-- **ryt** = "Remember your knowledge"
-- **takeaways** = Run the takeaways function (update project knowledge)
+- **ryk** = "Remember your knowledge" (refresh session memory with current project knowledge)
+- **takeaways** = Run the takeaways function (integrate session + Cursor + Gemini updates)
 
 ---
 
@@ -634,5 +689,5 @@ curl -s -H "Authorization: token [GET FROM ROBERT]" -H "Accept: application/vnd.
 
 ---
 
-*Version 3.6 - February 11, 2026*
-*Updated: Security section added, takeaways protocol updated for two-version approach, all secrets sanitized*
+*Version 3.7 - February 11, 2026*
+*Updated: ryk and takeaways functions corrected, daily sync protocol with Cursor/Gemini added, 7-day rolling archive*
