@@ -214,43 +214,6 @@ export default function AreYouAnAgent() {
                 </Button>
               </div>
             ) : (
-<<<<<<< Updated upstream
-              <>
-                <h3 className="text-xl font-semibold mb-4">Consider Me For Inclusion</h3>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Input
-                      type="text"
-                      placeholder="Name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      type="email"
-                      placeholder="Email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      type="url"
-                      placeholder="Zillow profile URL"
-                      value={zillowUrl}
-                      onChange={(e) => setZillowUrl(e.target.value)}
-                      className="w-full"
-                    />
-                  </div>
-                  <Button type="submit" disabled={isSubmitting} className="w-full">
-                    {isSubmitting ? "Submitting..." : "Submit For Review"}
-                  </Button>
-                </form>
-              </>
-=======
               <form onSubmit={handleSubmit} noValidate className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Name</label>
@@ -289,7 +252,6 @@ export default function AreYouAnAgent() {
                   {isSubmitting ? "Checking..." : "Submit For Review"}
                 </Button>
               </form>
->>>>>>> Stashed changes
             )}
           </div>
 
