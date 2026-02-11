@@ -21,6 +21,7 @@ const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile")
 
 // Lazy load all pages except Index and NotFound for better initial load performance
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
+const UnifiedCRM = lazy(() => import("./pages/admin/UnifiedCRM"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
 const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
