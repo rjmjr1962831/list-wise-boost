@@ -27,9 +27,7 @@ export default function AreYouAnAgent() {
     window.scrollTo(0, 0);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const submitForm = async () => {
     if (!name.trim()) {
       toast.error("Please enter your name");
       return;
@@ -110,6 +108,11 @@ export default function AreYouAnAgent() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    void submitForm();
   };
 
   const handleReviewProfile = () => {
@@ -211,6 +214,7 @@ export default function AreYouAnAgent() {
                 </Button>
               </div>
             ) : (
+<<<<<<< Updated upstream
               <>
                 <h3 className="text-xl font-semibold mb-4">Consider Me For Inclusion</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -246,6 +250,46 @@ export default function AreYouAnAgent() {
                   </Button>
                 </form>
               </>
+=======
+              <form onSubmit={handleSubmit} noValidate className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <Input
+                    type="text"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email address</label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Zillow profile URL</label>
+                  <Input
+                    type="url"
+                    placeholder="https://www.zillow.com/profile/..."
+                    value={zillowUrl}
+                    onChange={(e) => setZillowUrl(e.target.value)}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                  {isSubmitting ? "Checking..." : "Submit For Review"}
+                </Button>
+              </form>
+>>>>>>> Stashed changes
             )}
           </div>
 

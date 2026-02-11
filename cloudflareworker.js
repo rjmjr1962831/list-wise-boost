@@ -20027,6 +20027,15 @@ var index_default = {
     originUrl.protocol = "https:";
     originUrl.port = "";
 
+    // Build origin request with Vercel protection bypass header when configured
+    const originRequest = (() => {
+      const headers = new Headers(request.headers);
+      if (env.VERCEL_PROTECTION_BYPASS) headers.set("x-vercel-protection-bypass", env.VERCEL_PROTECTION_BYPASS);
+      const init = { method: request.method, headers };
+      if (request.method !== "GET" && request.method !== "HEAD") init.body = request.body;
+      return new Request(originUrl.toString(), init);
+    })();
+
     // --- Agent State Redirect Logic ---
     const pathname = url.pathname;
     const pathParts = pathname.split('/').filter(Boolean);
@@ -20075,7 +20084,7 @@ var index_default = {
 
     // Humans: Direct pass-through
     if (!isBot && !isCacheWarming) {
-      return fetch(new Request(originUrl.toString(), request));
+      return fetch(originRequest);
     }
 
     // Cache Check - normalize cache key to share across all bots
@@ -20138,7 +20147,9 @@ var index_default = {
 
       const page = await browser.newPage();
       await page.setViewport({ width: 1920, height: 1080 });
-      
+      if (env.VERCEL_PROTECTION_BYPASS) {
+        await page.setExtraHTTPHeaders({ "x-vercel-protection-bypass": env.VERCEL_PROTECTION_BYPASS });
+      }
       await page.goto(originUrl.toString(), {
         waitUntil: "domcontentloaded",
         timeout: 15000 
@@ -20225,7 +20236,7 @@ var index_default = {
         newHdrs.set("X-Worker-Error", "Render-Failed");
         return new Response(fallbackCachedResponse.body, { status: fallbackCachedResponse.status, headers: newHdrs });
       }
-      return fetch(new Request(originUrl.toString(), request), { redirect: "manual" });
+      return fetch(originRequest, { redirect: "manual" });
     }
   }
 };
@@ -20235,7 +20246,9 @@ addEventListener('fetch', event => {
   // In Service Worker format, bindings are global variables
   // Create an env object that the ES module code expects
   const env = {
-    MYBROWSER: typeof MYBROWSER !== 'undefined' ? MYBROWSER : undefined
+    MYBROWSER: typeof MYBROWSER !== 'undefined' ? MYBROWSER : undefined,
+    WARM_SECRET: typeof WARM_SECRET !== 'undefined' ? WARM_SECRET : undefined,
+    VERCEL_PROTECTION_BYPASS: typeof VERCEL_PROTECTION_BYPASS !== 'undefined' ? VERCEL_PROTECTION_BYPASS : undefined
   };
   
   // Create a context object with waitUntil
