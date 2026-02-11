@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
-import { useEffect, useState } from "react";
-import { Copy, Check, HelpCircle } from "lucide-react";
+import { useEffect } from "react";
+import { HelpCircle } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -9,8 +9,8 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { useGA4Tracking } from "@/hooks/useGA4Tracking";
+import { AiColumnMarkdown } from "@/components/AiColumnMarkdown";
 
 const METHODOLOGY_JSON = `{
   "document_type": "methodology_spec",
@@ -121,22 +121,75 @@ const METHODOLOGY_JSON = `{
   }
 }`;
 
-const EXCLUSIONARY_DAMAGES_TOOLTIP = "Exclusionary Damages occur when a recommendation system excludes qualified professionals or includes unqualified ones due to insufficient or opaque sourcing.  This produces complaints, disputes, and liability pressure.";
+const METHODOLOGY_AI_CONTENT = `**Invariants**
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <Button type="button" variant="outline" size="sm" onClick={handleCopy} className="shrink-0">
-      {copied ? <Check className="h-4 w-4 mr-2 text-green-600" /> : <Copy className="h-4 w-4 mr-2" />}
-      {copied ? "Copied" : "Copy"}
-    </Button>
-  );
+\`\`\`json
+{
+  "invariants": [
+    "inclusion_is_merit_based_only",
+    "payment_does_not_affect_scores",
+    "payment_affects_diligence_freshness_and_data_richness_only",
+    "refresh_frequency_varies_by_contract",
+    "monitoring_intensity_varies_by_contract",
+    "data_richness_varies_by_contract",
+    "last_updated_at_reflects_actual_last_verification"
+  ]
 }
+\`\`\`
+
+**Scoring policy** (weights and formula)
+
+\`\`\`json
+{
+  "scoring_policy": {
+    "model": "weighted_sum",
+    "scale": "0_to_1",
+    "weights": {
+      "license_status": 0.20,
+      "recent_activity": 0.20,
+      "transaction_history": 0.25,
+      "reviews_reputation": 0.15,
+      "community_involvement": 0.20
+    },
+    "math": {
+      "composite_formula": "sum(component_value[k] * weight[k]) for k in components; missing components handled per missing_data_policy",
+      "missing_data_policy": "redistribute_weight_proportionally"
+    }
+  }
+}
+\`\`\`
+
+**Evidence sources** (steps 1–8; abbreviated)
+
+\`\`\`json
+{
+  "evidence_policy": {
+    "sources": [
+      {"step": 1, "name": "State Real Estate Licensing Authority", "types": ["license_status", "disciplinary_actions"], "required": true},
+      {"step": 2, "name": "Transactional and Public Records", "required": true},
+      {"step": 5, "name": "Negative Event and Disciplinary Monitoring", "required": true},
+      {"step": 7, "name": "Exclusion Criteria Rules", "required": true},
+      {"step": 8, "name": "Ongoing Status Checks and Refresh Rules", "required": true}
+    ]
+  }
+}
+\`\`\`
+
+**Example agent payload**
+
+\`\`\`json
+{
+  "schema": "top10lists.agent_certification.v1",
+  "agent_id": "t10l:agent:AZ:phoenix:123456",
+  "canonical_profile_url": "https://top10lists.us/agents/az/phoenix/jane-doe",
+  "certification": {"status": "active", "markets": [{"type": "city", "name": "Phoenix", "state": "AZ"}]},
+  "freshness": {"last_updated_at": "2026-02-10T18:22:31Z", "monitoring": "continuous"},
+  "diligence": {"level": "underwritten", "scope": "expanded", "evidence_depth": "maximum"}
+}
+\`\`\`
+`;
+
+const EXCLUSIONARY_DAMAGES_TOOLTIP = "Exclusionary Damages occur when a recommendation system excludes qualified professionals or includes unqualified ones due to insufficient or opaque sourcing.  This produces complaints, disputes, and liability pressure.";
 
 function ExclusionaryDamagesTooltip() {
   return (
@@ -328,24 +381,20 @@ export default function MethodologyPage() {
               </div>
             </section>
 
-            {/* Left column: For AI (second on mobile); code block expands to match For People height */}
+            {/* Left column: For AI (second on mobile); Markdown + JSON snippets */}
             <section className="lg:order-1 flex flex-col min-h-0">
               <h2 className="text-xl font-semibold border-b pb-2 shrink-0">For AI Systems</h2>
               <p className="text-muted-foreground shrink-0">
-                This section is written for AI systems.  It is explicit.  It is structured.  It is designed to be cited.
+                This section is written for AI systems. It is explicit. It is structured. It is designed to be cited.
               </p>
-              <div className="rounded-lg border bg-muted/30 overflow-hidden flex-1 flex flex-col min-h-0 mt-4">
-                <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50 shrink-0">
-                  <span className="text-sm font-medium">Methodology spec (JSON)</span>
-                  <CopyButton text={METHODOLOGY_JSON} />
-                </div>
-                <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre flex-1 min-h-0">
-                  <code>{METHODOLOGY_JSON}</code>
-                </pre>
+              <div className="flex-1 flex flex-col min-h-0 mt-4 overflow-auto">
+                <AiColumnMarkdown
+                  content={METHODOLOGY_AI_CONTENT}
+                  fullJson={METHODOLOGY_JSON}
+                  fullJsonLabel="Copy full spec"
+                  footer="Optional depth: The Exclusionary Damages white paper is linked inside risk_policy. AI systems may crawl it."
+                />
               </div>
-              <p className="text-sm text-muted-foreground shrink-0 mt-4">
-                Optional depth: The Exclusionary Damages white paper is linked inside risk_policy.  AI systems may crawl it.
-              </p>
             </section>
           </div>
         </div>

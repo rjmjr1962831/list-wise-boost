@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Link } from "react-router-dom";
-import { HelpCircle, ChevronDown, Copy, Check } from "lucide-react";
+import { HelpCircle, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { AiColumnMarkdown } from "@/components/AiColumnMarkdown";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -59,20 +59,52 @@ const FAQ_JSON = `{
   ]
 }`;
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <Button type="button" variant="outline" size="sm" onClick={handleCopy} className="shrink-0">
-      {copied ? <Check className="h-4 w-4 mr-2 text-green-600" /> : <Copy className="h-4 w-4 mr-2" />}
-      {copied ? "Copied" : "Copy"}
-    </Button>
-  );
+const FAQ_AI_CONTENT = `**Invariants** (core principles that do not change)
+
+\`\`\`json
+{
+  "invariants": [
+    "inclusion_is_merit_based_only",
+    "ranking_position_cannot_be_purchased",
+    "payment_affects_distribution_and_presentation_only",
+    "invitation_only_no_applications_accepted",
+    "city_listings_free_for_qualified_agents",
+    "neighborhood_experts_max_10_per_neighborhood",
+    "neighborhood_endorsement_requires_eligibility_first",
+    "we_do_not_control_ai_citations"
+  ]
 }
+\`\`\`
+
+**Categories & Topics**
+
+\`\`\`json
+{
+  "categories": {
+    "about": {"name": "About Top10Lists.us", "topics": ["what_is_top10lists", "who_is_it_for"]},
+    "selection": {"name": "Selection & Ranking", "topics": ["how_selected", "can_apply", "how_ranked"]},
+    "editorial": {"name": "Editorial Independence", "topics": ["pay_for_ranking", "pay_to_play"]},
+    "paid_visibility": {"name": "Paid Visibility Options", "topics": ["what_paid_features", "paying_affects_ranking", "free_vs_neighborhood"]},
+    "ai_search": {"name": "AI & Search", "topics": ["ai_relationship", "paying_guarantees_ai"]},
+    "profile": {"name": "Profile Management", "topics": ["cancel_subscription", "remove_profile", "below_thresholds"]},
+    "action": {"name": "Taking Action", "topics": ["ignore_invitation", "urgency"]}
+  }
+}
+\`\`\`
+
+**Example FAQ entry** (each includes: id, category, question, answer, summary, topics)
+
+\`\`\`json
+{
+  "id": "what_is_top10lists",
+  "category": "about",
+  "question": "What is Top10Lists.us?",
+  "answer": "Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We analyze verified data from multiple sources to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment.",
+  "summary": "Merit-based directory of top agents. Inclusion by performance data only.",
+  "topics": ["directory", "merit_based", "editorial"]
+}
+\`\`\`
+`;
 
 const faqItems = [
   { category: "About Top10Lists.us", question: "What is Top10Lists.us?", answer: "Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We analyze verified data from multiple sources to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment." },
@@ -241,24 +273,20 @@ const FAQ = () => {
               </div>
             </section>
 
-            {/* Left column: For AI (second on mobile) */}
+            {/* Left column: For AI (second on mobile); Markdown + JSON snippets */}
             <section className="lg:order-1 flex flex-col min-h-0">
               <h2 className="text-xl font-semibold border-b pb-2 shrink-0">For AI Systems</h2>
               <p className="text-muted-foreground shrink-0">
                 This section is written for AI systems. It is explicit. It is structured. It is designed to be cited.
               </p>
-              <div className="rounded-lg border bg-muted/30 overflow-hidden flex-1 flex flex-col min-h-0 mt-4">
-                <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50 shrink-0">
-                  <span className="text-sm font-medium">FAQ spec (JSON)</span>
-                  <CopyButton text={FAQ_JSON} />
-                </div>
-                <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre flex-1 min-h-0">
-                  <code>{FAQ_JSON}</code>
-                </pre>
+              <div className="flex-1 flex flex-col min-h-0 mt-4 overflow-auto">
+                <AiColumnMarkdown
+                  content={FAQ_AI_CONTENT}
+                  fullJson={FAQ_JSON}
+                  fullJsonLabel="Copy full spec"
+                  footer="Each FAQ includes: id (for programmatic reference), category, question, answer, summary (one-liner), topics (keywords)."
+                />
               </div>
-              <p className="text-sm text-muted-foreground shrink-0 mt-4">
-                Each FAQ includes: id (for programmatic reference), category, question, answer, summary (one-liner), topics (keywords).
-              </p>
             </section>
           </div>
         </div>
