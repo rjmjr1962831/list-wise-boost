@@ -67,7 +67,7 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 - Touch routing without "ROUTING CHANGE APPROVED:" in the message
 - Touch database schema without explicit approval
 - Touch `is_brand_builder` field for any reason
-- Use Resend, Perplexity, Gemini, or any deprecated service
+- Use Resend, Perplexity, or any deprecated service
 - Create individual page files for cities/states/neighborhoods
 - Use non-www URLs anywhere
 - Run bulk operations without a 10-record test first
@@ -175,7 +175,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 | **DeepSeek** | `[STORED IN CLAUDE PROJECT]` | Main tier (90% cheaper) |
 | **OpenAI** | `[STORED IN CLAUDE PROJECT]` | |
 | **Perplexity** | `[STORED IN CLAUDE PROJECT]` | DEPRECATED - avoid |
-| **Gemini** | DO NOT USE | Has 403 errors |
+| **Gemini** | `[STORED IN CLAUDE PROJECT]` | Back in play (new key Feb 2026) |
 
 ### Infrastructure
 | Service | Key |
@@ -207,7 +207,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 | Prime | Claude Sonnet | Higher quality |
 | Luxury | Claude Sonnet | Higher quality |
 
-**DO NOT use Gemini** - Has persistent 403 errors.
+**DO NOT use Perplexity** - Deprecated for cost reasons.
 
 ### Discovery & Scraping
 - **Exa.ai:** Zillow profile ID discovery only
@@ -473,7 +473,6 @@ Must return full HTML content, not React shell.
 | Service | Replacement | Reason |
 |---------|-------------|--------|
 | Perplexity API | DeepSeek | Cost |
-| Gemini API | DeepSeek | 403 errors |
 | Resend | Google Workspace | Reliability |
 | PrivateEmail (Namecheap) | Google Workspace | Service quality, incompatible with outreach tools |
 | Zoho Mail | Google Workspace | Blocks cold email campaigns |
@@ -611,5 +610,5 @@ curl -s -H "Authorization: token [STORED IN CLAUDE PROJECT]" -H "Accept: applica
 
 ---
 
-*Version 3.4 - February 11, 2026*
-*Updated: MCP server deprecated, takeaways workflow now includes GitHub push, agent link patterns, database status snapshot, state readiness table*
+*Version 3.5 - February 11, 2026*
+*Updated: Gemini reactivated with new API key, removed from deprecated services and hard stops*
