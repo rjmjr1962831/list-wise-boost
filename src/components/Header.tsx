@@ -134,14 +134,25 @@ export const Header = () => {
   }, [checkAgentSession]);
 
   const checkAdminStatus = async (userId: string) => {
-    const { data } = await supabase
-      .from('admin_users')
-      .select('role')
-      .eq('id', userId)
-      .eq('role', 'admin')
-      .single();
-    
-    setIsAdmin(!!data);
+    try {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('role')
+        .eq('id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      if (error) {
+        // Silently fail - user is not an admin
+        setIsAdmin(false);
+        return;
+      }
+      
+      setIsAdmin(!!data);
+    } catch (err) {
+      // Silently fail - user is not an admin
+      setIsAdmin(false);
+    }
   };
 
   const fetchAgentProfile = async (email: string | undefined) => {
