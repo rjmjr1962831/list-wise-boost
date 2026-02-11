@@ -214,7 +214,17 @@ export default function AreYouAnAgent() {
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} noValidate className="space-y-4">
+              <form
+                onSubmit={handleSubmit}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void submitForm();
+                  }
+                }}
+                noValidate
+                className="space-y-4"
+              >
                 <div>
                   <label className="block text-sm font-medium mb-2">Name</label>
                   <Input
@@ -248,7 +258,12 @@ export default function AreYouAnAgent() {
                     className="w-full"
                   />
                 </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                <Button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => void submitForm()}
+                  className="w-full sm:w-auto"
+                >
                   {isSubmitting ? "Checking..." : "Submit For Review"}
                 </Button>
               </form>
