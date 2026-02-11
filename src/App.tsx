@@ -8,7 +8,6 @@ import { RateLimitGuard } from "@/components/RateLimitGuard";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Chatbot } from "@/components/Chatbot";
-import { StagingAdminLink } from "@/components/StagingAdminLink";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -21,8 +20,7 @@ const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile")
 
 // Lazy load all pages except Index and NotFound for better initial load performance
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
+const AdminDashboard = lazy(() => const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
 const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AICompare = lazy(() => import("./pages/AICompare"));
@@ -42,9 +40,7 @@ const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCatego
 const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCategoryRouter"));
 const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZipCategoryRouter"));
 
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
-const AdminDashboardDirect = lazy(() => import("./pages/AdminDashboardDirect"));
-const MobilePreview = lazy(() => import("./pages/MobilePreview"));
+const AdminLogin = lazy(() => const AdminDashboardDirect = lazy(() => const MobilePreview = lazy(() => import("./pages/MobilePreview"));
 const CRM = lazy(() => import("./pages/CRM"));
 
 // New CRM Dashboard
@@ -52,8 +48,7 @@ const CRMLogin = lazy(() => import("./pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("./pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("./pages/admin/crm/AgentList"));
 const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
-const ProtectedRoute = lazy(() => import("@/components/admin/ProtectedRoute"));
-
+const ProtectedRoute = lazy(() => 
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
 const AgentOnboarding = lazy(() => import("./pages/AgentOnboarding"));
@@ -141,10 +136,7 @@ const AILiability = lazy(() => import("./pages/AILiability"));
 const AICitationWhitepaper = lazy(() => import("./pages/AICitationWhitepaper"));
 const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
 const PaymentsSecurity = lazy(() => import("./pages/PaymentsSecurity"));
-const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods"));
-const NeighborhoodWriteups = lazy(() => import("./pages/admin/NeighborhoodWriteups"));
-const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
-const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
+const IngestNeighborhoods = lazy(() => const NeighborhoodWriteups = lazy(() => const AdminExportAgents = lazy(() => const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 const QualifiedAgentsPage = lazy(() => import("./pages/QualifiedAgentsPage"));
 const AreaAgentsPage = lazy(() => import("./pages/AreaAgentsPage"));
 
@@ -169,7 +161,6 @@ const App = () => (
         <RateLimitGuard>
           <Toaster />
         <div className="flex flex-col min-h-screen">
-            <StagingAdminLink />
             <Header />
             <main className="flex-1">
               <ErrorBoundary>
@@ -188,24 +179,8 @@ const App = () => (
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* Admin routes */}
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
-                    
-                    {/* New CRM Dashboard */}
-                    <Route path="/admin/crm/login" element={<CRMLogin />} />
-                    <Route path="/admin/crm" element={
-                      <ProtectedRoute>
-                        <CRMLayout />
-                      </ProtectedRoute>
-                    }>
-                      <Route path="dashboard" element={<CRMDashboard />} />
-                      <Route path="agents" element={<CRMAgentList />} />
-                    </Route>
-                    
-                    <Route path="/admin/mobile-preview" element={<MobilePreview />} />
-                    {/* Direct admin access - security via obscurity */}
-                    <Route path="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" element={<AdminDashboardDirect />} />
+                    {/* Admin routes */}                    
+                    <Route path="/admin/mobile-preview" element={<MobilePreview />} />                    <Route path="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" element={<AdminDashboardDirect />} />
                     <Route path="/a/bot-analytics" element={<BotAnalyticsDashboard />} />
                     <Route path="/agent/bot-analytics" element={<AgentBotAnalyticsDashboard />} />
                     <Route path="/og-preview" element={<OGPreview />} />
