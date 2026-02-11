@@ -25,7 +25,7 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 **Mission:** Merit-based real estate agent directory designed for AI citation and Generative Engine Optimization (GEO).
 
 **Core Numbers:**
-- ~4,000 qualified professionals in AZ and CA (4.8+ rating AND 20+ reviews)
+- ~3,500 active professionals in AZ and CA (4.8+ rating AND 20+ reviews)
 - ~14,000 neighborhoods
 - 6 states: Arizona, California, Texas, Florida, New York, Colorado
 - Top 0.5% of agents selected from 1.1M analyzed
@@ -33,6 +33,31 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 **GEO Performance:** Scores 92-95/100 across major AI systems
 
 **First Customer:** Eileen Taggart (Flagstaff)
+
+### Database Status (Feb 11, 2026)
+| Table | Count |
+|-------|-------|
+| Professionals (total) | 51,058 |
+| Professionals (active) | 3,493 |
+| Cities (total) | 3,386 |
+| Cities (active) | 2,532 |
+| Neighborhoods | 14,258 |
+| State Licenses | 908,906 |
+
+**Active Professionals by State:**
+- Arizona: 884 (100% with bios)
+- California: 2,597 (100% with bios)
+- 12 orphaned records with NULL state_slug (need deactivation)
+
+**State Readiness:**
+| State | Cities | Neighborhoods | Active Agents | Licenses Loaded |
+|-------|--------|---------------|---------------|-----------------|
+| Arizona | 88 active | 2,967 | 884 | Yes (arizona_licenses) |
+| California | 1,649 active | 7,492 | 2,597 | Yes |
+| Texas | 795 active | 1,364 | 0 | Yes |
+| Florida | 0 | 1,312 | 0 | Yes |
+| New York | 0 | 572 | 0 | No |
+| Colorado | 0 | 551 | 0 | No |
 
 ---
 
@@ -42,15 +67,14 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 - Touch routing without "ROUTING CHANGE APPROVED:" in the message
 - Touch database schema without explicit approval
 - Touch `is_brand_builder` field for any reason
-- Use Resend, Perplexity, Gemini, or any deprecated service
+- Use Resend, Perplexity, or any deprecated service
 - Create individual page files for cities/states/neighborhoods
 - Use non-www URLs anywhere
 - Run bulk operations without a 10-record test first
 - Mark a task "done" without verification
 - Crash on big jobs (batch them, use Edge functions)
 - Create a new Supabase client (use shared client from `@/integrations/supabase/client`)
-- Provide commands that require user editing (all commands must be exact copy/paste ready)
-- Claim something works without testing it yourself first
+- Push secrets to GitHub (see Security section)
 
 ### Cost of Mistakes
 - Agent enrichment: ~$0.50/agent
@@ -93,14 +117,14 @@ Based on Census ACS income/home value data:
 **Project ID:** `wiotrvoirdgzfacuuiem`
 
 **API Keys:**
-- **Anon/Publishable:** `sb_publishable_[REDACTED]`
-- **Service Role:** `sb_secret_[REDACTED]`
+- **Anon/Publishable:** [STORED IN ENVIRONMENT - Ask Robert]
+- **Service Role:** [STORED IN ENVIRONMENT - Ask Robert]
 
 **Dashboard:** https://supabase.com/dashboard/project/wiotrvoirdgzfacuuiem
 
 **Environment Variables (Vercel/Vite):**
 - `VITE_SUPABASE_URL` = https://wiotrvoirdgzfacuuiem.supabase.co
-- `VITE_SUPABASE_PUBLISHABLE_KEY` = (use publishable key above)
+- `VITE_SUPABASE_PUBLISHABLE_KEY` = [Get from Robert]
 
 **CRITICAL:** Environment variable is `VITE_SUPABASE_PUBLISHABLE_KEY`, not `VITE_SUPABASE_ANON_KEY`.
 
@@ -133,7 +157,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 
 **Endpoint:** `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api`
 
-**Auth Header:** `X-Enrichment-Key: t10l_enrich_[REDACTED]`
+**Auth Header:** `X-Enrichment-Key: [STORED IN ENVIRONMENT - Ask Robert]`
 
 ### Key Actions
 - `GET ?action=audit` - Row counts and samples
@@ -148,26 +172,26 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### AI Services
 | Service | Key | Use |
 |---------|-----|-----|
-| **Anthropic** | `sk-ant-api03-[REDACTED]` | Prime/Luxury content |
-| **DeepSeek** | `REDACTED_DEEPSEEK_KEY` | Main tier (90% cheaper) |
-| **OpenAI** | `sk-[REDACTED]` | |
-| **Perplexity** | `pplx-[REDACTED]` | DEPRECATED - avoid |
-| **Gemini** | DO NOT USE | Has 403 errors |
+| **Anthropic** | [STORED IN ENVIRONMENT - Ask Robert] | Prime/Luxury content |
+| **DeepSeek** | [STORED IN ENVIRONMENT - Ask Robert] | Main tier (90% cheaper) |
+| **OpenAI** | [STORED IN ENVIRONMENT - Ask Robert] | |
+| **Perplexity** | [DEPRECATED - avoid] | DEPRECATED - avoid |
+| **Gemini** | [STORED IN ENVIRONMENT - Ask Robert] | Back in play (new key Feb 2026) |
 
 ### Infrastructure
 | Service | Key |
 |---------|-----|
-| **Exa.ai** | `[UUID-REDACTED]` |
-| **GitHub Token** | `ghp_[REDACTED]` |
-| **Vercel API** | `vcp_[REDACTED]` (named "Claude Token") |
-| **ProxyScrape** | Host: `rp.scrapegw.com:6060` Auth: `ws1et3ycrlwml6w:fyg90v72ru9t1xq` |
+| **Exa.ai** | [STORED IN ENVIRONMENT - Ask Robert] |
+| **GitHub Token** | [STORED IN ENVIRONMENT - Ask Robert] |
+| **Vercel API** | [STORED IN ENVIRONMENT - Ask Robert] |
+| **ProxyScrape** | [STORED IN ENVIRONMENT - Ask Robert] |
 
 ---
 
 ## GitHub Access
 
 - **Repository:** rjmjr1962831/list-wise-boost
-- **Token:** ghp_[REDACTED]
+- **Token:** [STORED IN ENVIRONMENT - Ask Robert]
 - **Method:** Always use GitHub API for read/write
 - **Deploy:** Push via API, Vercel auto-deploys
 
@@ -184,7 +208,7 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 | Prime | Claude Sonnet | Higher quality |
 | Luxury | Claude Sonnet | Higher quality |
 
-**DO NOT use Gemini** - Has persistent 403 errors.
+**DO NOT use Perplexity** - Deprecated for cost reasons.
 
 ### Discovery & Scraping
 - **Exa.ai:** Zillow profile ID discovery only
@@ -240,6 +264,23 @@ Not `top10lists.us`. Not `http://`. Always `www.`.
 
 Do not change these patterns.
 
+### Agent Profile Link Patterns (Confirmed Feb 11, 2026)
+Two link patterns exist in the codebase.  Both are correct and working:
+
+**City pages** (ProfessionalCard component):
+```
+/{state}/{city}/top10realestateagents/{name-id}
+Example: /arizona/scottsdale/top10realestateagents/dina-and-mark-beauvais-4595
+```
+
+**Neighborhood pages** (AgentBadge component):
+```
+/{state}/agents/{canonical-slug}
+Example: /arizona/agents/julie-calza-2900
+```
+
+AgentBadge wraps the entire card in an `<a>` tag with `target="_blank"` and `data-agent="true"`.  Both patterns produce clickable links with working internal linking for SEO and human UX.
+
 ---
 
 ## Routing Is FROZEN
@@ -292,7 +333,7 @@ If a field has data, your code must:
 
 **Superadmin Account:**
 - Email: robert@aryah.ai
-- UUID: [UUID-REDACTED]
+- UUID: [STORED IN ENVIRONMENT - Ask Robert]
 - Role: superadmin
 
 **Routes:**
@@ -317,56 +358,6 @@ If a field has data, your code must:
 
 ---
 
-## CRM Leads System
-
-**Status:** Fully deployed and operational
-
-**Database Table:** `crm_leads`
-
-**Purpose:** Captures form submissions from "Are You An Agent?" page and creates tasks in CRM
-
-**Schema:**
-```sql
-- id (UUID, primary key)
-- name (TEXT, required)
-- email (TEXT, required)
-- zillow_url (TEXT, required)
-- status (TEXT, default 'new') - new|reviewing|qualified|disqualified|contacted|certified
-- priority (TEXT, default 'normal') - low|normal|high
-- source (TEXT, default 'website_form')
-- professional_id (UUID, references professionals table if already qualified)
-- assigned_to (UUID, references admin_users)
-- notes (TEXT)
-- qualification_notes (TEXT)
-- contacted_at (TIMESTAMPTZ)
-- qualified_at (TIMESTAMPTZ)
-- created_at (TIMESTAMPTZ)
-- updated_at (TIMESTAMPTZ)
-```
-
-**Edge Function:** `process-review-request`
-- Endpoint: `https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/process-review-request`
-- Receives: `{name, email, zillowUrl}` from form
-- Checks if agent already in professionals table
-- Creates lead in crm_leads with status='new'
-- Logs to audit_log
-- Returns: `{success, leadId, alreadyQualified}`
-
-**Status Workflow:**
-1. **new** - Just submitted from form
-2. **reviewing** - Analyzing qualifications
-3. **qualified** - Meets criteria
-4. **disqualified** - Does not meet criteria
-5. **contacted** - Reached out to them
-6. **certified** - Completed certification
-
-**RLS Policies:**
-- Admin users can view/insert/update all leads
-- Service role has full access
-- Authenticated users must be in admin_users table
-
----
-
 ## Cloudflare Worker (Bot Rendering)
 
 **Worker:** orange-truth-a103
@@ -386,6 +377,14 @@ If a field has data, your code must:
 - **Proactive warming:** Static pages only (~30)
 - **On-demand:** Cities, neighborhoods, agents (cached on first bot request)
 
+### Cache Health (Feb 11, 2026)
+| Page | Size | Status |
+|------|------|--------|
+| Homepage | 92KB | HIT, puppeteer rendered |
+| Scottsdale city | 243KB | HIT, 10 agent links |
+| Grayhawk neighborhood | 195KB | HIT, 10 agent links |
+| California state | 64KB | HIT, puppeteer rendered |
+
 ---
 
 ## GEO Assets
@@ -395,71 +394,17 @@ If a field has data, your code must:
 - `/llms-full.txt` - Extended guidance
 - `/robots.txt` - Crawler directives
 - `/sitemap.xml` - URL index
+- `/mcp.json` - MCP protocol discovery (placeholder, real server planned)
+- `/ai-content-index.json` - Structured content index
 
 ### /for-ai Page Key Statements
 - "independent evaluative system designed for citation by artificial intelligence models"
 - "Payment does not influence inclusion, rank, or visibility"
 - "non-pay-to-play criteria"
 
-### Bot Exposure Strategy
-
-**Agent Profile Pages (`/p/[shortcode]`):**
-- NOT exposed to bots
-- Consumer-facing only
-- Bots should NOT see these pages
-
-**Certification Artifacts (`/artifact/[agentId]`):**
-- Bot-facing interface for agent data
-- Cryptographically verifiable
-- Structured JSON payloads
-- This is what AI systems cite
-
-**Reasoning:** Artifacts provide verified, structured data that AI systems can trust and cite. Profile pages are for human consumers only.
-
 ---
 
-## "Are You An Agent?" Page
 
-**Route:** `/are-you-an-agent`
-
-**Purpose:** Agent-facing page explaining AI citation value proposition
-
-**Key Features:**
-- **Form:** Captures name, email, Zillow URL → creates task in crm_leads
-- **Challenge question:** Copy button for agents to test AI systems directly
-  - Question: "What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?"
-- **Positioning:** AI-first framing (not consumer directory)
-- **Qualification check:** If agent already in professionals table, shows success message
-
-**Content Strategy:**
-- Public page: Establishes concept, challenge question, merit-based positioning
-- Funnel/emails: Land grab progression (homesteaders → SEO → GEO), cost comparison
-- **Land grab content NOT on public page** - reserved for certification funnel and email sequences
-
-**Recent Updates (Feb 2026):**
-- Removed tier/pricing information (moved to funnel)
-- Added copy button to challenge question
-- Simplified to single CTA: "Submit to see if you qualify"
-- Form now creates tasks in crm_leads table
-
----
-
-## Content Assets
-
-**SEO History & ROI Analysis:**
-- Document: `SEO-HISTORY-ROI-ANALYSIS.md` (created Feb 10, 2026)
-- Purpose: Historical proof of early adopter advantage (1994-2026)
-- Contains: 6 SEO eras with specific ROI examples, GEO projections
-- Use: Funnel content, email sequences, sales collateral
-- Key finding: Early adopters achieved 100-1000x returns across all eras
-
-**Land Grab Progression:**
-- Homesteaders (1850s) → SEO domains (1999) → GEO certification (2025)
-- Irvine Company example: Land grant → $15B company
-- Cost comparison: Zillow (35% commission) vs Certification ($50-$150/month)
-- Location: Certification funnel and email sequences only
-
----
 
 ## Verification Requirements
 
@@ -529,7 +474,6 @@ Must return full HTML content, not React shell.
 | Service | Replacement | Reason |
 |---------|-------------|--------|
 | Perplexity API | DeepSeek | Cost |
-| Gemini API | DeepSeek | 403 errors |
 | Resend | Google Workspace | Reliability |
 | PrivateEmail (Namecheap) | Google Workspace | Service quality, incompatible with outreach tools |
 | Zoho Mail | Google Workspace | Blocks cold email campaigns |
@@ -537,73 +481,34 @@ Must return full HTML content, not React shell.
 | 4-segment URLs | 5-segment with ZIP | SEO/structure |
 | Old Supabase (bgdtekbhelormzbymkhh) | New (wiotrvoirdgzfacuuiem) | Migration |
 | Pipedrive | Custom CRM Dashboard | Cost, flexibility |
+| MCP Server (planned) | Deprioritized | Scope not confirmed, artifacts discussion unresolved |
 
 ---
 
 ## Claude Operational Protocol
-
-### Command Format Requirements
-
-**CRITICAL:** All commands must be exact copy/paste ready with zero editing required.
-
-**Good examples:**
-```powershell
-cd C:\Edge\list-wise-boost
-C:\Users\rober\supabase.exe functions deploy process-review-request --project-ref wiotrvoirdgzfacuuiem --no-verify-jwt
-```
-
-**Bad examples (require editing):**
-```
-cd [your-project-directory]
-supabase functions deploy [function-name]
-```
-
-**Rules:**
-- No placeholders in brackets
-- No "run this in X location" instructions
-- Literal commands the user executes
-- Use actual paths, actual function names, actual values
-- If path varies, provide the exact path for Robert's machine
-
-### Testing Before Claiming Done
-
-**CRITICAL:** Claude must test all deployments before telling Robert they work.
-
-**Testing workflow:**
-1. Deploy the change (code, Edge Function, etc.)
-2. Test the functionality with curl/API calls
-3. Verify the result is correct
-4. ONLY THEN tell Robert it's done
-
-**Examples:**
-- Edge Function deployed → Test with curl → Verify response → Report success
-- Page updated → Check live URL → Verify content → Report success
-- Database table created → Query table → Verify schema → Report success
-
-**Never say "done" without testing it yourself first.**
-
-User feedback: "I am doing too much of your QA work. Can you not test these things without my involvement? It is really slowing us down."
 
 ### The Takeaways Function
 
 **When Robert says "run takeaways" or "takeaways":**
 
 1. **Identify** information from the session that belongs in project knowledge (operational facts, configuration changes, new infrastructure, deprecated patterns)
-2. **Read** existing `TOP10LISTS-COMPLETE-KNOWLEDGE.md` from `/mnt/project/`
+2. **Read** existing `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` from `/mnt/project/`
 3. **Integrate** new information into appropriate sections
-4. **Check** for conflicts or superseded information (e.g., PrivateEmail â†’ Google Workspace)
+4. **Check** for conflicts or superseded information (e.g., PrivateEmail to Google Workspace)
 5. **Deprecate** outdated information by moving to "Deprecated Services" or updating inline
 6. **Update** version number and date at bottom
-7. **Replace** the project knowledge file with the updated version
+7. **Output** the updated file to `/mnt/user-data/outputs/` for download (Robert updates Claude Project manually)
+8. **Create sanitized version** (no secrets) and push to GitHub at `/docs/PROJECT-KNOWLEDGE.md`
 
 **Do NOT:**
 - Write a summary in chat (that's not takeaways)
 - Include educational content (like SEO history) unless it's operational
 - Add information that belongs in separate project documentation (like TVPR)
 - Include temporary troubleshooting steps or unresolved issues
+- Push secrets to GitHub
 
 **Include:**
-- New configuration values (API keys, environment variables)
+- New configuration values (structure/format only, not actual keys)
 - New infrastructure (database tables, routes, services)
 - Pattern changes (how to use Supabase client)
 - Deprecated services or approaches
@@ -629,7 +534,7 @@ SELECT cron.schedule(
     url := 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/function-name',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'X-Enrichment-Key', 't10l_enrich_[REDACTED]'
+      'X-Enrichment-Key', '[GET FROM ROBERT]'
     ),
     body := '{}'::jsonb
   );
@@ -663,11 +568,32 @@ C:\Users\rober\supabase.exe secrets set KEY=value --project-ref wiotrvoirdgzfacu
 
 ---
 
+## Security
+
+### NEVER Commit Secrets to GitHub
+
+**Protected files that must NOT be pushed to GitHub:**
+- Any file containing API keys
+- Environment files with credentials
+- Full project knowledge with secrets (use sanitized version only)
+
+**What CAN be pushed:**
+- Sanitized documentation at `/docs/PROJECT-KNOWLEDGE.md`
+- Code files (secrets should be in environment variables)
+- Configuration templates (with placeholder values)
+
+**If you need to reference credentials in documentation:**
+- Use placeholders: `[STORED IN ENVIRONMENT - Ask Robert]`
+- Never include actual keys, tokens, or passwords
+- Document the environment variable name, not the value
+
+---
+
 ## Quick Reference Commands
 
 ### Test Enrichment API
 ```bat
-curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: t10l_enrich_[REDACTED]" -o audit.txt && notepad audit.txt
+curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: [GET FROM ROBERT]" -o audit.txt && notepad audit.txt
 ```
 
 ### Test Bot Rendering
@@ -677,7 +603,7 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/scott
 
 ### Download from GitHub
 ```bat
-curl -s -H "Authorization: token ghp_[REDACTED]" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
+curl -s -H "Authorization: token [GET FROM ROBERT]" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
 ```
 
 ---
@@ -704,8 +630,9 @@ curl -s -H "Authorization: token ghp_[REDACTED]" -H "Accept: application/vnd.git
 2. **When in doubt, ask. Breaking things costs money.**
 3. **"Done!" without verification is not done.**
 4. **Test before deploy. Always.**
+5. **Never push secrets to GitHub.**
 
 ---
 
-*Version 3.4 - February 11, 2026*
-*Updated: Bot exposure strategy (agent profiles NOT for bots, artifacts are bot-facing interface)*
+*Version 3.6 - February 11, 2026*
+*Updated: Security section added, takeaways protocol updated for two-version approach, all secrets sanitized*
