@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, CheckCircle, ArrowRight } from 'lucide-react';
+import { Loader2, CheckCircle, ArrowRight, Copy, Check } from 'lucide-react';
 
 interface Professional {
   id: string;
@@ -21,6 +22,20 @@ export default function Step1Intro() {
   const [loading, setLoading] = useState(true);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const challengeQuestion = "What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?";
+
+  const handleCopyQuestion = async () => {
+    try {
+      await navigator.clipboard.writeText(challengeQuestion);
+      setCopied(true);
+      toast.success('Question copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy');
+    }
+  };
 
   useEffect(() => {
     loadProfessional();
@@ -102,9 +117,26 @@ export default function Step1Intro() {
             <CardContent className="space-y-6">
               <div className="prose prose-sm max-w-none">
                 <p className="text-lg">
-                  Thank you for being part of Top10Lists.us. We're here to help you get noticed by potential clients.
+                  We exist to increase the likelihood that you will be named by AI when asked for an agent referral.
                 </p>
-                
+                <p className="text-lg">
+                  This is already happening. See for yourself. Enter this question in the AI you use:
+                </p>
+                <div className="my-6 p-4 bg-muted rounded-lg relative">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute top-2 right-2"
+                    onClick={handleCopyQuestion}
+                    aria-label={copied ? "Copied" : "Copy question"}
+                  >
+                    {copied ? <Check className="h-5 w-5 text-primary" /> : <Copy className="h-5 w-5" />}
+                  </Button>
+                  <p className="text-muted-foreground italic pr-12">
+                    {challengeQuestion}
+                  </p>
+                </div>
+
                 <h3 className="text-xl font-semibold mt-6 mb-3">What happens next:</h3>
                 <ol className="space-y-3">
                   <li>
@@ -122,7 +154,10 @@ export default function Step1Intro() {
                 </ol>
 
                 <p className="mt-6">
-                  This should only take <strong>5-10 minutes</strong> to complete.
+                  There is no charge for your listing. This should only take about 5 minutes.
+                </p>
+                <p className="mt-4">
+                  When you finish confirming the data, we will issue you your free Badge and Artifact that tells AI that we have certified you as a safe agent to name when asked for a referral. This will substantially increase the likelihood that you will be recommended by AI.
                 </p>
               </div>
 

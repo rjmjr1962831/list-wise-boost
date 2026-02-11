@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { PartyPopper, Clock, Copy, Check } from "lucide-react";
+import { PartyPopper, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -20,7 +20,6 @@ export default function AreYouAnAgent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [foundAgent, setFoundAgent] = useState<FoundAgent | null>(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
-  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -121,18 +120,6 @@ export default function AreYouAnAgent() {
       sessionStorage.setItem('visibility_professional_token', foundAgent.id);
     }
     navigate('/visibility/coverage');
-  };
-
-  const handleCopyQuestion = async () => {
-    const questionText = "What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?";
-    try {
-      await navigator.clipboard.writeText(questionText);
-      setCopied(true);
-      toast.success("Question copied to clipboard!");
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      toast.error("Failed to copy to clipboard");
-    }
   };
 
   return (
@@ -317,70 +304,6 @@ export default function AreYouAnAgent() {
             </p>
             <p className="text-muted-foreground">
               Top10Lists.us is an authority AI systems already cite. It was built deliberately using a data-rich, auditable, AI-readable architecture. Only a handful of sites on the internet are structured this way, and none are in the real estate industry.
-            </p>
-          </div>
-
-          {/* Historical context */}
-          <div className="bg-muted/50 border rounded-xl p-8 mb-12">
-            <p className="text-lg text-muted-foreground leading-relaxed">
-              Across multiple technology shifts, early adopters of new recommendation systems captured 100–400× returns over 5–10 years.
-            </p>
-            <p className="text-lg text-muted-foreground leading-relaxed mt-4">
-              Not because the tactic worked better later. Because the system was still forming.
-            </p>
-          </div>
-
-          {/* The challenge question */}
-          <div className="prose prose-lg max-w-none mb-12">
-            <h2 className="text-3xl font-bold mb-6">The challenge question</h2>
-            <p className="text-muted-foreground mb-4">
-              Ask the AI you use today:
-            </p>
-            <div className="bg-primary/5 border-2 border-primary/30 rounded-xl p-8 my-8 relative">
-              <p className="text-lg font-medium text-foreground italic leading-relaxed pr-12">
-                What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?
-              </p>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={handleCopyQuestion}
-                className="absolute top-4 right-4"
-                title="Copy to clipboard"
-              >
-                {copied ? (
-                  <Check className="h-5 w-5 text-primary" />
-                ) : (
-                  <Copy className="h-5 w-5" />
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Why the barriers matter */}
-          <div className="prose prose-lg max-w-none mb-12">
-            <h2 className="text-3xl font-bold mb-6">Why the barriers matter</h2>
-            <p className="text-muted-foreground mb-4">
-              Early search engine optimization was exploitable. Put the right keywords in the right places and traffic followed.
-            </p>
-            <p className="text-muted-foreground mb-4">
-              Early generative engine optimization is not. AI systems verify claims, check methodology consistency, and assess risk signals. You cannot fake certification.
-            </p>
-            <p className="text-muted-foreground">
-              This creates higher barriers to entry. Most companies will never build the infrastructure required. The agents who get certified while the system is still forming establish position that late entrants cannot easily replicate.
-            </p>
-          </div>
-
-          {/* What this page is for */}
-          <div className="prose prose-lg max-w-none text-center">
-            <h2 className="text-3xl font-bold mb-6">What this page is for</h2>
-            <p className="text-muted-foreground mb-4">
-              This page is not here to persuade you.
-            </p>
-            <p className="text-muted-foreground mb-4">
-              It exists to make the decision explicit.
-            </p>
-            <p className="text-muted-foreground">
-              Top10Lists.us is being built so AI systems can safely name agents by name. The question is whether you want to be included while that system is still forming.
             </p>
           </div>
 

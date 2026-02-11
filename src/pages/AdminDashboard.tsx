@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map, Smartphone } from "lucide-react";
 import { toast } from "sonner";
-import { ContactEnrichmentQueue } from "@/components/admin/ContactEnrichmentQueue";
 import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
 import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
 import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedriveProfileLinkRepair";
@@ -198,10 +197,6 @@ const AdminDashboard = () => {
               <Database className="mr-2 h-4 w-4" />
               Pipedrive Sync
             </TabsTrigger>
-            <TabsTrigger value="enrichment-queue">
-              <Zap className="mr-2 h-4 w-4" />
-              Enrichment Queue
-            </TabsTrigger>
             <TabsTrigger value="bulk-synthesis">
               <Zap className="mr-2 h-4 w-4" />
               Profile Synthesis
@@ -239,10 +234,6 @@ const AdminDashboard = () => {
             <AdminPipedriveAutoSync />
             <AdminPipedriveSync />
             <AdminPipedriveDuplicateCleanup />
-          </TabsContent>
-
-          <TabsContent value="enrichment-queue" className="space-y-4">
-            <ContactEnrichmentQueue />
           </TabsContent>
 
           <TabsContent value="bulk-synthesis" className="space-y-4">

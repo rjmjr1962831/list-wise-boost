@@ -32,7 +32,7 @@ export const StagingAdminLink = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
         <Shield className="h-4 w-4 text-yellow-700" />
         <Link 
-          to="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" 
+          to="/admin" 
           className="text-sm font-medium text-yellow-700 hover:text-yellow-900 underline"
         >
           Admin Dashboard
