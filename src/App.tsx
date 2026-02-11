@@ -52,7 +52,6 @@ const CRMLogin = lazy(() => import("./pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("./pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("./pages/admin/crm/AgentList"));
 const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
-const ProtectedRoute = lazy(() => import("@/components/admin/ProtectedRoute"));
 
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
@@ -194,11 +193,7 @@ const App = () => (
                     
                     {/* New CRM Dashboard */}
                     <Route path="/admin/crm/login" element={<CRMLogin />} />
-                    <Route path="/admin/crm" element={
-                      <ProtectedRoute>
-                        <CRMLayout />
-                      </ProtectedRoute>
-                    }>
+                    <Route path="/admin/crm" element={<CRMLayout />}>
                       <Route path="dashboard" element={<CRMDashboard />} />
                       <Route path="agents" element={<CRMAgentList />} />
                     </Route>
