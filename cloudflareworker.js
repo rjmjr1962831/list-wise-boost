@@ -19937,7 +19937,53 @@ var index_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const ua = request.headers.get("user-agent") || "";
-    
+
+    // Warm endpoint: accept prerendered HTML and store in same cache bots read from
+    if (url.pathname === "/__warm" && request.method === "POST") {
+      const secret = request.headers.get("X-Warm-Secret");
+      if (secret && env.WARM_SECRET && secret === env.WARM_SECRET) {
+        try {
+          const body = await request.json();
+          const targetUrl = body.url;
+          const html = body.html;
+          if (targetUrl && typeof html === "string") {
+            const cacheUrl = new URL(targetUrl);
+            cacheUrl.search = "";
+            const cacheKey = new Request(cacheUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
+            const cache = caches.default;
+            await cache.put(cacheKey, new Response(html, { headers: { "Content-Type": "text/html;charset=UTF-8", "Cache-Control": "public, max-age=604800" } }));
+            return new Response(JSON.stringify({ ok: true, url: targetUrl }), { status: 200, headers: { "Content-Type": "application/json" } });
+          }
+        } catch (e) { /* invalid body */ }
+      }
+      return new Response(JSON.stringify({ error: "Unauthorized or invalid" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    }
+
+    // Purge endpoint: delete listed URLs from the cache bots read from
+    if (url.pathname === "/__purge" && request.method === "POST") {
+      const secret = request.headers.get("X-Warm-Secret");
+      if (secret && env.WARM_SECRET && secret === env.WARM_SECRET) {
+        try {
+          const body = await request.json();
+          const urls = Array.isArray(body.urls) ? body.urls : [];
+          const cache = caches.default;
+          let purged = 0;
+          for (const targetUrl of urls) {
+            if (typeof targetUrl !== "string") continue;
+            try {
+              const cacheUrl = new URL(targetUrl);
+              cacheUrl.search = "";
+              const cacheKey = new Request(cacheUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
+              const deleted = await cache.delete(cacheKey);
+              if (deleted) purged++;
+            } catch (e) { /* skip invalid url */ }
+          }
+          return new Response(JSON.stringify({ ok: true, purged, total: urls.length }), { status: 200, headers: { "Content-Type": "application/json" } });
+        } catch (e) { /* invalid body */ }
+      }
+      return new Response(JSON.stringify({ error: "Unauthorized or invalid" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    }
+
     // Bot detection with type identification
     const botPatterns = {
       googlebot: /googlebot|google-inspectiontool|googleother|adsbot-google/i,

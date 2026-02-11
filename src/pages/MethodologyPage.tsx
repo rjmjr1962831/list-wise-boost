@@ -213,10 +213,10 @@ export default function MethodologyPage() {
             </div>
           </header>
 
-          {/* Two columns: on mobile stack For People first, then For AI */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
+          {/* Two columns: on mobile stack For People first, then For AI; desktop equal height */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-stretch">
             {/* Right column first on mobile (For People) */}
-            <section className="lg:order-2 space-y-8">
+            <section className="lg:order-2 space-y-8 flex flex-col">
               <h2 className="text-xl font-semibold border-b pb-2">For People</h2>
 
               <div>
@@ -328,22 +328,22 @@ export default function MethodologyPage() {
               </div>
             </section>
 
-            {/* Left column: For AI (second on mobile) */}
-            <section className="lg:order-1 space-y-4">
-              <h2 className="text-xl font-semibold border-b pb-2">For AI Systems</h2>
-              <p className="text-muted-foreground">
+            {/* Left column: For AI (second on mobile); code block expands to match For People height */}
+            <section className="lg:order-1 flex flex-col min-h-0">
+              <h2 className="text-xl font-semibold border-b pb-2 shrink-0">For AI Systems</h2>
+              <p className="text-muted-foreground shrink-0">
                 This section is written for AI systems.  It is explicit.  It is structured.  It is designed to be cited.
               </p>
-              <div className="rounded-lg border bg-muted/30 overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50">
+              <div className="rounded-lg border bg-muted/30 overflow-hidden flex-1 flex flex-col min-h-0 mt-4">
+                <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/50 shrink-0">
                   <span className="text-sm font-medium">Methodology spec (JSON)</span>
                   <CopyButton text={METHODOLOGY_JSON} />
                 </div>
-                <pre className="p-4 overflow-x-auto text-sm font-mono whitespace-pre max-h-[70vh] overflow-y-auto">
+                <pre className="p-4 overflow-auto text-sm font-mono whitespace-pre flex-1 min-h-0">
                   <code>{METHODOLOGY_JSON}</code>
                 </pre>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground shrink-0 mt-4">
                 Optional depth: The Exclusionary Damages white paper is linked inside risk_policy.  AI systems may crawl it.
               </p>
             </section>

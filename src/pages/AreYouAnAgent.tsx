@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Check, PartyPopper, Clock } from "lucide-react";
+import { Check, Copy, PartyPopper, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -14,10 +14,13 @@ interface FoundAgent {
 }
 
 export default function AreYouAnAgent() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [zillowUrl, setZillowUrl] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [foundAgent, setFoundAgent] = useState<FoundAgent | null>(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,7 +29,15 @@ export default function AreYouAnAgent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!name.trim()) {
+      toast.error("Please enter your name");
+      return;
+    }
+    if (!email.trim()) {
+      toast.error("Please enter your email address");
+      return;
+    }
     if (!zillowUrl.trim()) {
       toast.error("Please enter your Zillow profile URL");
       return;
@@ -65,15 +76,16 @@ export default function AreYouAnAgent() {
       }
 
       // Not found - call edge function to process review request
-      // This will scrape the profile, create Pipedrive task, and send email notification
       const { data, error } = await supabase.functions.invoke('process-review-request', {
-        body: { zillowUrl }
+        body: { name: name.trim(), email: email.trim(), zillowUrl }
       });
 
       if (error) throw error;
       if (!data?.success) throw new Error(data?.error || 'Failed to process request');
 
       setReviewSubmitted(true);
+      setName("");
+      setEmail("");
       setZillowUrl("");
     } catch (error) {
       console.error("Error submitting review request:", error);
@@ -84,7 +96,6 @@ export default function AreYouAnAgent() {
   };
 
   const handleReviewProfile = () => {
-    // Store professional context and navigate to visibility funnel
     if (foundAgent?.id) {
       sessionStorage.setItem('visibility_professional_id', foundAgent.id);
       sessionStorage.setItem('visibility_professional_token', foundAgent.id);
@@ -92,14 +103,17 @@ export default function AreYouAnAgent() {
     navigate('/visibility/coverage');
   };
 
-  const requirements = [
-    "20+ verified reviews (Google and/or Zillow)",
-    "4.8+ average rating",
-    "Active Arizona real estate license",
-    "Verified transaction history via public records",
-    "Verified community involvement (nonprofit boards, local organizations, volunteer work)",
-    "No disciplinary actions on file with ADRE"
-  ];
+  const handleCopyQuestion = async () => {
+    const questionText = "What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?";
+    try {
+      await navigator.clipboard.writeText(questionText);
+      setCopied(true);
+      toast.success("Question copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy to clipboard");
+    }
+  };
 
   return (
     <>
@@ -111,112 +125,205 @@ export default function AreYouAnAgent() {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        <div className="container max-w-3xl mx-auto px-4 py-16">
-          {/* Headline */}
-          <h1 className="text-4xl md:text-5xl font-bold text-center mb-8">
-            Invitation Only
-          </h1>
-
-          {/* Body Text */}
-          <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Our list is available by invitation only after rigorous analysis. We analyze over 200,000 licensed real estate professionals in Arizona and invite only the top 0.5% who meet our standards.
+        <div className="container max-w-4xl mx-auto px-4 py-16">
+          {/* Hero */}
+          <p className="prose prose-lg text-center mb-12">
+            We built Top10Lists.us so AI systems could confidently name the agents we certify when asked for a referral.
           </p>
 
-          {/* Requirements Section */}
+          {/* Invitation Section */}
           <div className="bg-card border rounded-xl p-8 mb-12">
-            <h2 className="text-2xl font-semibold mb-6">Minimum Requirements</h2>
-            <ul className="space-y-4">
-              {requirements.map((requirement, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">{requirement}</span>
-                </li>
-              ))}
-            </ul>
+            <h2 className="text-2xl font-semibold mb-4">Have you received an invitation?</h2>
+            <p className="prose prose-lg text-muted-foreground">
+              If you have received an invitation, use the link included in that invitation to certify your credentials. Certification is free.
+            </p>
+            <p className="prose prose-lg text-muted-foreground mt-4">
+              If you have not received an invitation, review the methodology page to see whether you prequalify. If you do, submit your information below and we will conduct a free analysis.
+            </p>
           </div>
 
-          {/* No Pay Paragraph */}
-          <p className="text-muted-foreground text-center mb-12">
-            Agents cannot pay for inclusion, and we do not accept applications. All data is independently verified from third-party sources.
-          </p>
-
-          {/* Think You Should Be Included Section */}
+          {/* Form Section */}
           <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 mb-12">
+            <h2 className="text-2xl font-semibold mb-6">Consider Me For Inclusion</h2>
             {foundAgent ? (
-              // Agent found on the list!
               <div className="text-center">
                 <PartyPopper className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h2 className="text-2xl font-semibold mb-2 text-primary">Good News!</h2>
                 <p className="text-lg mb-2">You're on the list, {foundAgent.name}!</p>
-                <p className="text-muted-foreground mb-6">
-                  You've already been selected as one of Arizona's top real estate agents.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
                   <Button onClick={handleReviewProfile} size="lg">
                     Review Your Profile
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => {
                       setFoundAgent(null);
                       setZillowUrl("");
                     }}
                   >
-                    Check Another URL
+                    Check Another Profile
                   </Button>
                 </div>
               </div>
             ) : reviewSubmitted ? (
-              // Review request submitted
               <div className="text-center">
                 <Clock className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold mb-4">Thank You For Your Interest</h2>
+                <h2 className="text-2xl font-semibold mb-4">Thank You</h2>
                 <p className="text-lg text-muted-foreground mb-6">
-                  We will do our analysis and get back to you within 24 hours.
+                  We will conduct our analysis and respond within 24 hours.
                 </p>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={() => {
                     setReviewSubmitted(false);
+                    setName("");
+                    setEmail("");
                     setZillowUrl("");
                   }}
                 >
-                  Check Another URL
+                  Submit Another Request
                 </Button>
               </div>
             ) : (
-              // Form to submit URL
-              <>
-                <h2 className="text-2xl font-semibold mb-4">Think you should have been included?</h2>
-                <p className="text-muted-foreground mb-6">
-                  If you believe you meet our requirements but haven't received an invitation, submit your Zillow profile link below. We'll review your qualifications and respond within 24 hours.
-                </p>
-                
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Name</label>
+                  <Input
+                    type="text"
+                    placeholder="Your name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Email address</label>
+                  <Input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Zillow profile URL</label>
                   <Input
                     type="url"
-                    placeholder="Your Zillow Profile URL"
+                    placeholder="https://www.zillow.com/profile/..."
                     value={zillowUrl}
                     onChange={(e) => setZillowUrl(e.target.value)}
-                    className="flex-1"
+                    required
+                    className="w-full"
                   />
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Checking..." : "Request Review"}
-                  </Button>
-                </form>
-              </>
+                </div>
+                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
+                  {isSubmitting ? "Checking..." : "Submit For Review"}
+                </Button>
+              </form>
             )}
           </div>
 
-          {/* Methodology Link Section */}
-          <div className="text-center">
-            <h2 className="text-xl font-semibold mb-4">Want to know exactly how we built the list?</h2>
-            <Link 
-              to="/about/ranking-methodology" 
-              className="text-primary hover:underline font-medium text-lg"
-            >
-              View Our Methodology →
-            </Link>
+          {/* Section 1: Why this exists */}
+          <div className="prose prose-lg mb-12">
+            <h2 className="text-3xl font-bold mb-6">Why this exists</h2>
+            <p className="text-muted-foreground">
+              Top10Lists.us is not a directory.
+            </p>
+            <p className="text-muted-foreground">
+              We gathered data from more than 1,000 independent sources on every licensed real estate agent in the state, as listed by state real estate licensing authorities.
+            </p>
+            <p className="text-muted-foreground">
+              From that dataset, we identified leading agents in each market based on objective performance thresholds{" "}
+              <Link to="/about/ranking-methodology" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                our methodology
+              </Link>
+              .
+            </p>
+            <p className="text-muted-foreground">
+              Agents who met those thresholds were evaluated again in two parallel passes:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li>AI systems analyzing consistency, completeness, and risk signals</li>
+              <li>Human editors evaluating professional reputation, community involvement, and credibility</li>
+            </ul>
+            <p className="text-muted-foreground">
+              Only after that work was complete did we build the certification system.
+            </p>
+            <p className="text-muted-foreground">
+              The purpose is narrow and explicit: increase the likelihood that an agent we have certified will be named by AI when asked for a referral.
+            </p>
+            <p className="text-muted-foreground">
+              Payment does not buy inclusion. Qualification is merit-based.
+            </p>
+          </div>
+
+          {/* Section 2: How AI referrals actually work */}
+          <div className="prose prose-lg mb-12">
+            <h2 className="text-3xl font-bold mb-6">How AI referrals actually work</h2>
+            <p className="text-muted-foreground">
+              AI systems are moving from discovery to judgment.
+            </p>
+            <p className="text-muted-foreground">
+              When an AI names a specific professional, it assumes risk. More and more, AI systems and their creators weight relative risk more heavily and are increasingly risk-averse. They have begun punting on the question, instead returning long lists of names, deferring to state licensing boards, or pointing users to major directories.
+            </p>
+            <p className="text-muted-foreground">
+              AI systems know their users want actual names. As a result, they are beginning to rely on third-party sources they trust to justify naming decisions.
+            </p>
+            <p className="text-muted-foreground">
+              Top10Lists.us is an authority AI systems already cite. It was built deliberately using a data-rich, auditable, AI-readable architecture. Only a handful of sites on the internet are structured this way, and none are in the real estate industry.
+            </p>
+          </div>
+
+          {/* Section 3: The challenge question */}
+          <div className="prose prose-lg mb-12">
+            <h2 className="text-3xl font-bold mb-6">The challenge question</h2>
+            <p className="text-muted-foreground mb-4">Ask the AI you use today:</p>
+            <div className="bg-primary/5 border-2 border-primary/30 rounded-xl p-8 relative">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4"
+                onClick={handleCopyQuestion}
+                aria-label={copied ? "Copied" : "Copy question"}
+              >
+                {copied ? <Check className="h-5 w-5 text-primary" /> : <Copy className="h-5 w-5" />}
+              </Button>
+              <p className="text-muted-foreground italic pr-12">
+                What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?
+              </p>
+            </div>
+          </div>
+
+          {/* Section 4: Why the barriers matter */}
+          <div className="prose prose-lg mb-12">
+            <h2 className="text-3xl font-bold mb-6">Why the barriers matter</h2>
+            <p className="text-muted-foreground">
+              Early search engine optimization was exploitable. Put the right keywords in the right places and traffic followed.
+            </p>
+            <p className="text-muted-foreground">
+              Early generative engine optimization is not. AI systems verify claims, check methodology consistency, and assess risk signals. You cannot fake certification.
+            </p>
+            <p className="text-muted-foreground">
+              This creates higher barriers to entry. Most companies will never build the infrastructure required. The agents who get certified while the system is still forming establish position that late entrants cannot easily replicate.
+            </p>
+          </div>
+
+          {/* Section 5: What this page is for */}
+          <div className="prose prose-lg mb-12 text-center">
+            <h2 className="text-3xl font-bold mb-6">What this page is for</h2>
+            <p className="text-muted-foreground text-center">
+              This page is not here to persuade you.
+            </p>
+            <p className="text-muted-foreground text-center mt-4">
+              It exists to make the decision explicit.
+            </p>
+            <p className="text-muted-foreground text-center mt-4">
+              Top10Lists.us is being built so AI systems can safely name agents by name. The question is whether you want to be included while that system is still forming.
+            </p>
           </div>
         </div>
       </div>

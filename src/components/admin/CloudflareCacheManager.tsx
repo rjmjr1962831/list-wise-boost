@@ -31,7 +31,7 @@ export function CloudflareCacheManager() {
   const [isWarming, setIsWarming] = useState(false);
   const [isFullRefresh, setIsFullRefresh] = useState(false);
   const [progress, setProgress] = useState<ProgressState | null>(null);
-  const [result, setResult] = useState<{ cdnPurged?: number; kvDeleted?: number; warmResult?: WarmResult; error?: string } | null>(null);
+  const [result, setResult] = useState<{ cdnPurged?: number; kvDeleted?: number; workerPurged?: number; warmResult?: WarmResult; error?: string } | null>(null);
 
   const purgeCdnCache = async (urls?: string[]) => {
     const { data, error } = await supabase.functions.invoke('cloudflare-purge-cache', {
@@ -51,6 +51,13 @@ export function CloudflareCacheManager() {
     if (error) throw error;
     if (!data.success) throw new Error(data.error);
     return data;
+  };
+
+  const purgeWorkerCache = async () => {
+    const { data, error } = await supabase.functions.invoke('purge-worker-cache', { body: {} });
+    if (error) throw error;
+    if (!data.success) throw new Error(data.error);
+    return data as { purged: number; total: number };
   };
 
   const warmCache = async (region?: string, limit?: number, offset?: number, urls?: string[], options?: { background?: boolean }) => {
@@ -167,21 +174,24 @@ export function CloudflareCacheManager() {
   };
 
   const handleClearAll = async () => {
-    if (!confirm('This will clear ALL CDN cache AND ALL KV cache. Are you sure?')) return;
+    if (!confirm('This will clear ALL CDN cache, Worker bot cache, AND ALL KV cache. Are you sure?')) return;
     
     setIsClearingAll(true);
     setResult(null);
-    setProgress({ step: 1, totalSteps: 2, message: 'Purging CDN cache...', percent: 25 });
+    setProgress({ step: 1, totalSteps: 3, message: 'Purging CDN cache...', percent: 15 });
     
     try {
       await purgeCdnCache();
-      setProgress({ step: 2, totalSteps: 2, message: 'Clearing KV cache...', percent: 75 });
+      setProgress({ step: 2, totalSteps: 3, message: 'Purging Worker bot cache...', percent: 50 });
       
+      const workerResult = await purgeWorkerCache();
+      
+      setProgress({ step: 3, totalSteps: 3, message: 'Clearing KV cache...', percent: 85 });
       const kvResult = await clearKvCache(undefined, true);
       
-      setProgress({ step: 2, totalSteps: 2, message: 'Complete!', percent: 100 });
-      setResult({ cdnPurged: 1, kvDeleted: kvResult.deleted });
-      toast.success(`Cache cleared! CDN purged, ${kvResult.deleted} KV keys deleted`);
+      setProgress({ step: 3, totalSteps: 3, message: 'Complete!', percent: 100 });
+      setResult({ cdnPurged: 1, workerPurged: workerResult.purged, kvDeleted: kvResult.deleted });
+      toast.success(`Cache cleared! CDN purged, ${workerResult.purged} Worker entries, ${kvResult.deleted} KV keys deleted`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       setResult({ error: message });
@@ -417,6 +427,7 @@ export function CloudflareCacheManager() {
               <div>
                 <p>✅ Operation completed successfully</p>
                 {result.cdnPurged !== undefined && <p>• CDN: Purged</p>}
+                {result.workerPurged !== undefined && <p>• Worker bot cache: {result.workerPurged} entries purged</p>}
                 {result.kvDeleted !== undefined && <p>• KV: {result.kvDeleted} keys deleted</p>}
                 {result.warmResult && (
                   <p>• Warmed: {result.warmResult.warmed}/{result.warmResult.total} pages ({result.warmResult.failed} failed)</p>

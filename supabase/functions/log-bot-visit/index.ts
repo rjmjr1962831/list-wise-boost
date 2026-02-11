@@ -44,6 +44,144 @@ function detectBot(userAgent: string | null): { isBot: boolean; botType: string 
   return { isBot: false, botType: null };
 }
 
+const STATE_SLUG_TO_ABBR: Record<string, string> = {
+  arizona: "AZ", california: "CA", texas: "TX", florida: "FL",
+  "new-york": "NY", colorado: "CO",
+};
+
+const STATE_SLUG_TO_VALUES: Record<string, string[]> = {
+  arizona: ["AZ", "Arizona"], california: ["CA", "California"], texas: ["TX", "Texas"],
+  florida: ["FL", "Florida"], "new-york": ["NY", "New York"], colorado: ["CO", "Colorado"],
+};
+
+function getPathSegments(pathOrUrl: string): string[] {
+  let path = pathOrUrl;
+  try {
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      path = new URL(path).pathname;
+    }
+  } catch (_) {}
+  return path.split("/").filter(Boolean);
+}
+
+interface ListPageContext {
+  list_page_type: "city" | "neighborhood";
+  location_display: string;
+  agents_shown: { canonical_slug: string; name: string }[];
+}
+
+async function resolveListPageContext(
+  pathOrUrl: string,
+  supabase: ReturnType<typeof createClient>
+): Promise<ListPageContext | null> {
+  const seg = getPathSegments(pathOrUrl);
+  if (seg.length < 2) return null;
+
+  // City list: /state/city or /state/city/top10realestateagents
+  const isCityList =
+    (seg.length === 2) ||
+    (seg.length === 3 && seg[2] === "top10realestateagents");
+  if (isCityList) {
+    const stateSlug = seg[0];
+    const citySlug = seg[1];
+    const { data: city, error: cityErr } = await supabase
+      .from("cities")
+      .select("id, name, state_slug")
+      .eq("state_slug", stateSlug)
+      .eq("slug", citySlug)
+      .eq("active", true)
+      .maybeSingle();
+    if (cityErr || !city) return null;
+    const { data: cat } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", "top10realestateagents")
+      .maybeSingle();
+    if (!cat) return null;
+    const { data: profs } = await supabase
+      .from("professionals")
+      .select("canonical_slug, name")
+      .eq("city_id", city.id)
+      .eq("category_id", cat.id)
+      .eq("active", true)
+      .gte("review_stars_rating", 4.8)
+      .gte("num_total_reviews", 20)
+      .order("is_brand_builder", { ascending: false, nullsFirst: false })
+      .order("rank", { ascending: true })
+      .order("name", { ascending: true })
+      .limit(10);
+    if (!profs || profs.length === 0) return null;
+    const abbr = STATE_SLUG_TO_ABBR[stateSlug] || stateSlug.toUpperCase();
+    return {
+      list_page_type: "city",
+      location_display: `${city.name}, ${abbr}`,
+      agents_shown: profs.map((p: any) => ({
+        canonical_slug: p.canonical_slug || "",
+        name: p.name || "",
+      })),
+    };
+  }
+
+  // Neighborhood list: /state/city/zip/neighborhood/top10realestateagents or /state/city/neighborhood/top10realestateagents
+  const isNeighborhood5 =
+    seg.length === 5 && seg[4] === "top10realestateagents";
+  const isNeighborhood4 =
+    seg.length === 4 && seg[3] === "top10realestateagents";
+  if (!isNeighborhood5 && !isNeighborhood4) return null;
+
+  let hoodQuery = supabase
+    .from("neighborhood_catalog")
+    .select("id, neighborhood, city_area, state")
+    .eq("city_area_slug", seg[1])
+    .eq("neighborhood_slug", isNeighborhood5 ? seg[3] : seg[2])
+    .eq("is_active", true);
+  if (isNeighborhood5) {
+    hoodQuery = hoodQuery.eq("primary_zip", seg[2]);
+  }
+  const stateValues = STATE_SLUG_TO_VALUES[seg[0]] || [STATE_SLUG_TO_ABBR[seg[0]] || seg[0]];
+  hoodQuery = hoodQuery.in("state", stateValues);
+  const { data: hood, error: hoodErr } = await hoodQuery.maybeSingle();
+  if (hoodErr || !hood) return null;
+
+  const expertIds = new Set<string>();
+  const agentsShown: { canonical_slug: string; name: string }[] = [];
+  const { data: subs } = await supabase
+    .from("agent_neighborhood_subscriptions")
+    .select("professional_id, professionals(canonical_slug, name)")
+    .eq("neighborhood_id", hood.id)
+    .eq("is_active", true);
+  if (subs) {
+    for (const sub of subs) {
+      const p = (sub as any).professionals;
+      if (p && p.canonical_slug) {
+        expertIds.add((sub as any).professional_id);
+        agentsShown.push({ canonical_slug: p.canonical_slug, name: p.name || "" });
+      }
+    }
+  }
+  const { data: activeAgents } = await supabase.rpc("get_neighborhood_active_agents", {
+    p_neighborhood_id: hood.id,
+  });
+  if (Array.isArray(activeAgents)) {
+    for (const row of activeAgents) {
+      const id = (row as any).professional_id;
+      if (id && !expertIds.has(id) && agentsShown.length < 10) {
+        agentsShown.push({
+          canonical_slug: (row as any).canonical_slug || "",
+          name: (row as any).agent_name || "",
+        });
+      }
+    }
+  }
+  if (agentsShown.length === 0) return null;
+  const abbr = typeof hood.state === "string" && hood.state.length === 2 ? hood.state : STATE_SLUG_TO_ABBR[seg[0]] || "?";
+  return {
+    list_page_type: "neighborhood",
+    location_display: `${hood.neighborhood}, ${hood.city_area}, ${abbr}`,
+    agents_shown: agentsShown.slice(0, 10),
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -109,6 +247,22 @@ serve(async (req) => {
         }
       }
     }
+
+    let list_page_type: string | null = null;
+    let location_display: string | null = null;
+    let agents_shown: ListPageContext["agents_shown"] | null = null;
+    if (isBot && urlPath) {
+      try {
+        const ctx = await resolveListPageContext(urlPath, supabase);
+        if (ctx) {
+          list_page_type = ctx.list_page_type;
+          location_display = ctx.location_display;
+          agents_shown = ctx.agents_shown;
+        }
+      } catch (e) {
+        console.warn("List page resolve failed:", e);
+      }
+    }
     
     const { error } = await supabase
       .from("cloudflare_request_logs")
@@ -126,6 +280,9 @@ serve(async (req) => {
         bot_type: finalBotType,
         is_bot: isBot,
         agent_id: agentId,
+        list_page_type,
+        location_display,
+        agents_shown: agents_shown ?? null,
         raw_log: payload,
       });
     
