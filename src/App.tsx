@@ -51,6 +51,7 @@ const CRM = lazy(() => import("./pages/CRM"));
 const CRMLogin = lazy(() => import("./pages/admin/crm/CRMLogin"));
 const CRMDashboard = lazy(() => import("./pages/admin/crm/CRMDashboard"));
 const CRMAgentList = lazy(() => import("./pages/admin/crm/AgentList"));
+const CRMLeads = lazy(() => import("./pages/admin/crm/Leads"));
 const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 
 const MigrateData = lazy(() => import("./pages/MigrateData"));
@@ -196,6 +197,7 @@ const App = () => (
                     <Route path="/admin/crm" element={<CRMLayout />}>
                       <Route path="dashboard" element={<CRMDashboard />} />
                       <Route path="agents" element={<CRMAgentList />} />
+                      <Route path="leads" element={<CRMLeads />} />
                     </Route>
                     
                     <Route path="/admin/mobile-preview" element={<MobilePreview />} />
