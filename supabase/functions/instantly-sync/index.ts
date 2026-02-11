@@ -16,16 +16,39 @@ serve(async (req) => {
   try {
     const { action, data } = await req.json();
 
+    console.log("Action:", action);
+    console.log("API Key exists:", !!INSTANTLY_API_KEY);
+    console.log("API Key length:", INSTANTLY_API_KEY?.length || 0);
+
     if (action === "test") {
-      // Test API connection
+      if (!INSTANTLY_API_KEY) {
+        return new Response(
+          JSON.stringify({ error: "INSTANTLY_API_KEY not set in environment" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const response = await fetch(`${INSTANTLY_API_BASE}/campaigns`, {
         headers: {
           "Authorization": `Bearer ${INSTANTLY_API_KEY}`,
         },
       });
 
+      console.log("Instantly API status:", response.status);
       const campaigns = await response.json();
+      console.log("Instantly response:", campaigns);
       
+      if (response.status !== 200) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Instantly API error",
+            status: response.status,
+            response: campaigns
+          }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       return new Response(
         JSON.stringify({ 
           success: true, 
@@ -33,48 +56,6 @@ serve(async (req) => {
           campaigns: campaigns.items || [],
           count: campaigns.items?.length || 0
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (action === "add_lead") {
-      // Add lead to campaign
-      const { campaign_id, email, first_name, last_name, custom_variables } = data;
-
-      const response = await fetch(`${INSTANTLY_API_BASE}/leads/add`, {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${INSTANTLY_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          campaign_id,
-          email,
-          first_name,
-          last_name,
-          custom_variables: custom_variables || {},
-        }),
-      });
-
-      const result = await response.json();
-
-      return new Response(
-        JSON.stringify({ success: true, result }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    if (action === "list_campaigns") {
-      const response = await fetch(`${INSTANTLY_API_BASE}/campaigns`, {
-        headers: {
-          "Authorization": `Bearer ${INSTANTLY_API_KEY}`,
-        },
-      });
-
-      const result = await response.json();
-
-      return new Response(
-        JSON.stringify({ success: true, campaigns: result.items || [] }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
