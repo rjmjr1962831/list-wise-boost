@@ -38,7 +38,6 @@ interface AgentSession {
 
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [agentProfile, setAgentProfile] = useState<AgentProfile | null>(null);
   const [agentSession, setAgentSession] = useState<AgentSession | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -99,7 +98,6 @@ export const Header = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
         fetchAgentProfile(session.user.email);
       }
     });
@@ -108,7 +106,6 @@ export const Header = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
         fetchAgentProfile(session.user.email);
       } else {
         setIsAdmin(false);
@@ -133,27 +130,6 @@ export const Header = () => {
     return () => clearInterval(interval);
   }, [checkAgentSession]);
 
-  const checkAdminStatus = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('role')
-        .eq('id', userId)
-        .eq('role', 'admin')
-        .maybeSingle();
-      
-      if (error) {
-        // Silently fail - user is not an admin
-        setIsAdmin(false);
-        return;
-      }
-      
-      setIsAdmin(!!data);
-    } catch (err) {
-      // Silently fail - user is not an admin
-      setIsAdmin(false);
-    }
-  };
 
   const fetchAgentProfile = async (email: string | undefined) => {
     if (!email) return;
@@ -225,7 +201,6 @@ export const Header = () => {
               Compare Us
             </Link>
             {isAdmin && (
-              <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Admin
               </Link>
             )}
@@ -287,8 +262,6 @@ export const Header = () => {
                     </DropdownMenuItem>
                   )}
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate("/admin")}>
-                      <Shield className="mr-2 h-4 w-4" />
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
@@ -412,9 +385,7 @@ export const Header = () => {
                           <Button 
                             variant="outline" 
                             className="justify-start" 
-                            onClick={() => navigate("/admin")}
                           >
-                            <Shield className="mr-2 h-4 w-4" />
                             Admin Dashboard
                           </Button>
                         </SheetClose>
