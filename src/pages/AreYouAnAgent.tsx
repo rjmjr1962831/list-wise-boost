@@ -78,13 +78,24 @@ export default function AreYouAnAgent() {
       }
 
       // Not found - call edge function to process review request
+      console.log('Calling process-review-request with:', { name: name.trim(), email: email.trim(), zillowUrl: zillowUrl.trim() });
+      
       const { data, error } = await supabase.functions.invoke('process-review-request', {
         body: { name: name.trim(), email: email.trim(), zillowUrl: zillowUrl.trim() }
       });
 
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Failed to process request');
+      console.log('Edge function response:', { data, error });
 
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+      if (!data?.success) {
+        console.error('Edge function returned failure:', data);
+        throw new Error(data?.error || 'Failed to process request');
+      }
+
+      console.log('Form submission successful');
       setReviewSubmitted(true);
       setName("");
       setEmail("");
