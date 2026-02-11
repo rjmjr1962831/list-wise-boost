@@ -1,6 +1,17 @@
 <!doctype html>
 <html lang="en-US">
   <head>
+    <!-- Noindex for staging -->
+    <script>
+      if (window.location.hostname === 'staging.top10lists.us' || 
+          window.location.hostname.includes('vercel.app')) {
+        const meta = document.createElement('meta');
+        meta.name = 'robots';
+        meta.content = 'noindex, nofollow';
+        document.head.appendChild(meta);
+      }
+    </script>
+    
     <!-- Google Tag Manager -->
     <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
