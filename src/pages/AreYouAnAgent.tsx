@@ -34,10 +34,12 @@ export default function AreYouAnAgent() {
       toast.error("Please enter your name");
       return;
     }
+
     if (!email.trim()) {
       toast.error("Please enter your email address");
       return;
     }
+
     if (!zillowUrl.trim()) {
       toast.error("Please enter your Zillow profile URL");
       return;
@@ -77,7 +79,7 @@ export default function AreYouAnAgent() {
 
       // Not found - call edge function to process review request
       const { data, error } = await supabase.functions.invoke('process-review-request', {
-        body: { name: name.trim(), email: email.trim(), zillowUrl }
+        body: { name: name.trim(), email: email.trim(), zillowUrl: zillowUrl.trim() }
       });
 
       if (error) throw error;
@@ -119,9 +121,9 @@ export default function AreYouAnAgent() {
     <>
       <Helmet>
         <title>Are You an Agent? | Top10Lists.us</title>
-        <meta name="description" content="Learn about our invitation-only selection process for top real estate agents. We analyze 200,000+ agents and invite only the top 0.5% who meet our rigorous standards." />
+        <meta name="description" content="Top10Lists.us is built so AI systems can confidently name certified agents when asked for a referral. Merit-based certification for real estate professionals." />
         <meta name="robots" content="index, follow" />
-        <link rel="canonical" href="https://top10lists.us/are-you-an-agent" />
+        <link rel="canonical" href="https://www.top10lists.us/are-you-an-agent" />
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
@@ -148,7 +150,7 @@ export default function AreYouAnAgent() {
             {foundAgent ? (
               <div className="text-center">
                 <PartyPopper className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold mb-2 text-primary">Good News!</h2>
+                <h3 className="text-2xl font-semibold mb-2 text-primary">Good News!</h3>
                 <p className="text-lg mb-2">You're on the list, {foundAgent.name}!</p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
                   <Button onClick={handleReviewProfile} size="lg">
@@ -158,6 +160,8 @@ export default function AreYouAnAgent() {
                     variant="outline"
                     onClick={() => {
                       setFoundAgent(null);
+                      setName("");
+                      setEmail("");
                       setZillowUrl("");
                     }}
                   >
@@ -185,6 +189,7 @@ export default function AreYouAnAgent() {
                 </Button>
               </div>
             ) : (
+<<<<<<< HEAD
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Name</label>
