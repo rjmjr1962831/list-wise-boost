@@ -119,7 +119,7 @@ export default function Step1Intro() {
                 <p className="text-lg">
                   We exist to increase the likelihood that you will be named by AI when asked for an agent referral.
                 </p>
-                <p className="text-lg">
+                <p className="text-lg mt-6">
                   This is already happening. See for yourself. Enter this question in the AI you use:
                 </p>
                 <div className="my-6 p-4 bg-muted rounded-lg relative">
@@ -140,7 +140,7 @@ export default function Step1Intro() {
                 <h3 className="text-xl font-semibold mt-6 mb-3">What happens next:</h3>
                 <ol className="space-y-3">
                   <li>
-                    <strong>Review your profile</strong> - We'll show you the information we have about you
+                    <strong>Review your profile</strong> - We'll show you the information we have gathered about you
                   </li>
                   <li>
                     <strong>Update if needed</strong> - Make any corrections or additions
