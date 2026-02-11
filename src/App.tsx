@@ -20,7 +20,6 @@ const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile")
 
 // Lazy load all pages except Index and NotFound for better initial load performance
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
-const AdminDashboard = lazy(() => const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
 const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AICompare = lazy(() => import("./pages/AICompare"));
@@ -40,14 +39,8 @@ const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCatego
 const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCategoryRouter"));
 const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZipCategoryRouter"));
 
-const AdminLogin = lazy(() => const AdminDashboardDirect = lazy(() => const MobilePreview = lazy(() => import("./pages/MobilePreview"));
-const CRM = lazy(() => import("./pages/CRM"));
 
 // New CRM Dashboard
-const CRMLogin = lazy(() => import("./pages/admin/crm/CRMLogin"));
-const CRMDashboard = lazy(() => import("./pages/admin/crm/CRMDashboard"));
-const CRMAgentList = lazy(() => import("./pages/admin/crm/AgentList"));
-const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 const ProtectedRoute = lazy(() => 
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
@@ -136,7 +129,6 @@ const AILiability = lazy(() => import("./pages/AILiability"));
 const AICitationWhitepaper = lazy(() => import("./pages/AICitationWhitepaper"));
 const ProtocolServices = lazy(() => import("./pages/ProtocolServices"));
 const PaymentsSecurity = lazy(() => import("./pages/PaymentsSecurity"));
-const IngestNeighborhoods = lazy(() => const NeighborhoodWriteups = lazy(() => const AdminExportAgents = lazy(() => const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 const QualifiedAgentsPage = lazy(() => import("./pages/QualifiedAgentsPage"));
 const AreaAgentsPage = lazy(() => import("./pages/AreaAgentsPage"));
 
@@ -180,14 +172,9 @@ const App = () => (
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
                     {/* Admin routes */}                    
-                    <Route path="/admin/mobile-preview" element={<MobilePreview />} />                    <Route path="/a/znfltH7o8qO0qjapxBKmtuhQXvARldgt" element={<AdminDashboardDirect />} />
-                    <Route path="/a/bot-analytics" element={<BotAnalyticsDashboard />} />
                     <Route path="/agent/bot-analytics" element={<AgentBotAnalyticsDashboard />} />
                     <Route path="/og-preview" element={<OGPreview />} />
                     <Route path="/crm" element={<CRM />} />
-                    <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />
-                    <Route path="/admin/neighborhood-writeups" element={<NeighborhoodWriteups />} />
-                    <Route path="/admin/export-agents" element={<AdminExportAgents />} />
                     <Route path="/test-visibility-components" element={<TestVisibilityComponents />} />
                     {/* Visibility funnel */}
                     <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
