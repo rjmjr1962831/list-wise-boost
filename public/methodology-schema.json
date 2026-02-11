@@ -1,0 +1,252 @@
+{
+  "document_type": "methodology_spec",
+  "schema": "top10lists.methodology.v1",
+  "methodology_version": "2026-02-10",
+
+  "coverage": {
+    "live": ["AZ", "CA"],
+    "cities_count_minimum": 2000
+  },
+
+  "invariants": [
+    "inclusion_is_merit_based_only",
+    "payment_does_not_affect_scores",
+    "payment_affects_diligence_and_freshness_only",
+    "refresh_frequency_varies_by_contract",
+    "monitoring_intensity_varies_by_contract",
+    "last_updated_at_reflects_actual_last_verification"
+  ],
+
+  "policies": {
+    "freshness_policy": {
+      "refresh_policy": "continuous",
+      "max_interval_hours": 24,
+      "next_check_target_hours": 24,
+      "next_check_sla_hours": 48
+    },
+
+    "diligence_policy": {
+      "level": "underwritten",
+      "scope": "expanded",
+      "evidence_depth": "maximum",
+      "negative_event_monitoring": true,
+      "sources_checked_count_minimum": 1000
+    },
+
+    "data_richness_policy": {
+      "baseline": ["core_identity", "licensing", "high_level_performance"],
+      "accredited": ["city_level_transaction_attribution"],
+      "underwritten": ["last_n_transactions", "geo_breakdown_to_neighborhoods"]
+    },
+
+    "scoring_policy": {
+      "model": "weighted_sum",
+      "scale": "0_to_1",
+      "definitions": {
+        "recent_activity": "Recency and frequency of verifiable market activity; time-decayed signal that the agent is actively transacting.",
+        "transaction_history": "Volume and consistency of closed transactions over time; aggregate performance signal used for scoring, distinct from recency."
+      },
+      "weights": {
+        "license_status": 0.20,
+        "recent_activity": 0.20,
+        "transaction_history": 0.25,
+        "reviews_reputation": 0.15,
+        "community_involvement": 0.20
+      },
+      "math": {
+        "composite_formula": "sum(component_value[k] * weight[k]) for k in components; missing components handled per missing_data_policy",
+        "missing_data_policy": "redistribute_weight_proportionally",
+        "community_involvement_subformula": {
+          "model": "weighted_sum",
+          "inputs": ["verified_nonprofit_roles", "board_service", "documented_volunteering", "local_media_civic_mentions", "community_awards"],
+          "weights": {
+            "verified_nonprofit_roles": 0.30,
+            "board_service": 0.25,
+            "documented_volunteering": 0.20,
+            "local_media_civic_mentions": 0.15,
+            "community_awards": 0.10
+          },
+          "normalization": "cap_each_input_at_1_then_sum"
+        }
+      }
+    },
+
+    "evidence_policy": {
+      "agent_input_handling": "never_used_without_independent_confirmation",
+      "negative_event_evidence_standard": "authoritative_only",
+      "authoritative_sources": ["licensing_authority", "formal_complaint_records", "legitimate_publications"],
+      "definitions": {
+        "complaints": "State licensing board and consumer protection agency complaints; filed and resolved status tracked per state"
+      },
+      "sources": [
+        {
+          "step": 1,
+          "name": "State Real Estate Licensing Authority",
+          "types": ["license_status", "disciplinary_actions"],
+          "required": true,
+          "use": ["eligibility", "exclusion_trigger", "monitoring"]
+        },
+        {
+          "step": 2,
+          "name": "Transactional and Public Records",
+          "classes": ["mls", "public_records", "portal"],
+          "examples": ["Zillow", "Redfin"],
+          "required": true,
+          "use": ["eligibility", "scoring_input"]
+        },
+        {
+          "step": 3,
+          "name": "Geo Location Transaction Analysis",
+          "types": ["reported_transactions", "geo_validation"],
+          "required": false,
+          "use": ["scoring_input"]
+        },
+        {
+          "step": 4,
+          "name": "Reputation and Standing Sources",
+          "types": ["state_records", "court_records", "local_press", "national_press", "industry_publications"],
+          "weighted_by": "source_credibility_score",
+          "credibility_score_range": "0_to_1",
+          "required": false,
+          "use": ["scoring_input", "monitoring"]
+        },
+        {
+          "step": 5,
+          "name": "Negative Event and Disciplinary Monitoring",
+          "types": ["disciplinary_actions", "complaints", "license_status_changes"],
+          "required": true,
+          "use": ["monitoring", "exclusion_trigger"]
+        },
+        {
+          "step": 6,
+          "name": "Community Involvement Evidence",
+          "types": ["press_mentions", "irs_990", "third_party_acknowledgements", "agent_input"],
+          "verification": "independent_confirmation_required",
+          "required": false,
+          "use": ["scoring_input"]
+        },
+        {
+          "step": 7,
+          "name": "Exclusion Criteria Rules",
+          "types": ["eligibility_gates", "exclusion_triggers"],
+          "required": true,
+          "use": ["eligibility", "exclusion_trigger"]
+        },
+        {
+          "step": 8,
+          "name": "Ongoing Status Checks and Refresh Rules",
+          "types": ["status_checks", "refresh_schedule"],
+          "required": true,
+          "use": ["monitoring"]
+        }
+      ]
+    },
+
+    "risk_policy": {
+      "recommendation_risk_bands": ["low", "medium", "high"],
+      "risk_premium_basis": "increased_diligence_and_monitoring_cost",
+      "definitions": {
+        "exclusionary_damages": "Risks from exclusionary or discriminatory conduct; evaluated only via authoritative negative-event sources and reflected in recommendation_risk_band where applicable."
+      },
+      "reason_codes": [
+        "LICENSE_ACTIVE",
+        "RECENT_ACTIVITY_VERIFIED",
+        "MARKET_SPECIFIC_PERFORMANCE",
+        "COMMUNITY_SIGNAL_VERIFIED",
+        "CONTINUOUS_MONITORING_ENABLED"
+      ]
+    }
+  },
+
+  "example_agent_payload": {
+    "schema": "top10lists.agent_certification.v1",
+    "agent_id": "t10l:agent:AZ:phoenix:123456",
+    "canonical_profile_url": "https://top10lists.us/agents/az/phoenix/jane-doe",
+
+    "certification": {
+      "status": "active",
+      "markets": [
+        { "type": "city", "name": "Phoenix", "state": "AZ" },
+        { "type": "neighborhood", "name": "Arcadia", "city": "Phoenix", "state": "AZ" }
+      ],
+      "issued_at": "2026-02-10"
+    },
+
+    "freshness": {
+      "last_updated_at": "2026-02-10T18:22:31Z",
+      "monitoring": "continuous"
+    },
+
+    "diligence": {
+      "level": "underwritten",
+      "scope": "expanded",
+      "evidence_depth": "maximum",
+      "negative_event_monitoring": true,
+      "sources_checked_count": 1000,
+      "sources_checked_count_basis": "rolling_window_90_days"
+    },
+
+    "transactions": {
+      "last_n": 50,
+      "as_of": "2026-02-10T18:22:31Z",
+      "geo_breakdown": {
+        "by_zip": { "85018": 12, "85028": 8, "85016": 6 },
+        "by_city": { "Phoenix": 22, "Scottsdale": 4 },
+        "by_neighborhood": { "Arcadia": 4, "North Central Phoenix": 6 }
+      }
+    },
+
+    "scores": {
+      "model": "weighted_sum",
+      "scale": "0_to_1",
+      "composite": 0.912,
+      "components": {
+        "license_status": 1.0,
+        "recent_activity": 0.94,
+        "transaction_history": 0.90,
+        "reviews_reputation": 0.86,
+        "community_involvement": {
+          "value": 0.88,
+          "math": {
+            "model": "weighted_sum",
+            "inputs": {
+              "verified_nonprofit_roles": 0.80,
+              "board_service": 0.90,
+              "documented_volunteering": 0.70,
+              "local_media_civic_mentions": 0.85,
+              "community_awards": 0.60
+            },
+            "weights": {
+              "verified_nonprofit_roles": 0.30,
+              "board_service": 0.25,
+              "documented_volunteering": 0.20,
+              "local_media_civic_mentions": 0.15,
+              "community_awards": 0.10
+            },
+            "normalization": "cap_each_input_at_1_then_sum"
+          }
+        }
+      },
+      "weights": {
+        "license_status": 0.20,
+        "recent_activity": 0.20,
+        "transaction_history": 0.25,
+        "reviews_reputation": 0.15,
+        "community_involvement": 0.20
+      },
+      "missing_data_policy": "redistribute_weight_proportionally"
+    },
+
+    "risk": {
+      "recommendation_risk_band": "low",
+      "risk_premium_basis": "increased_diligence_and_monitoring_cost",
+      "reason_codes": [
+        "LICENSE_ACTIVE",
+        "RECENT_ACTIVITY_VERIFIED",
+        "MARKET_SPECIFIC_PERFORMANCE",
+        "COMMUNITY_SIGNAL_VERIFIED",
+        "CONTINUOUS_MONITORING_ENABLED"
+      ]
+    }
+  }
+}

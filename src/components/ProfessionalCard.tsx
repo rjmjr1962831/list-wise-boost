@@ -155,9 +155,9 @@ export const ProfessionalCard = ({
       // Check if user is admin
       if (user) {
         const { data: roleData } = await supabase
-          .from('user_roles')
+          .from('admin_users')
           .select('role')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .eq('role', 'admin')
           .maybeSingle();
         

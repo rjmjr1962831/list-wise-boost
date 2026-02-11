@@ -30,9 +30,9 @@ const CRM = () => {
       }
 
       const { data: roles } = await supabase
-        .from("user_roles")
+        .from("admin_users")
         .select("role")
-        .eq("user_id", user.id);
+        .eq("id", user.id);
 
       if (!roles || !roles.some(r => r.role === "admin")) {
         toast.error("You don't have access to CRM");

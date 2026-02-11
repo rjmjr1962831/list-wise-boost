@@ -135,9 +135,9 @@ export const Header = () => {
 
   const checkAdminStatus = async (userId: string) => {
     const { data } = await supabase
-      .from('user_roles')
+      .from('admin_users')
       .select('role')
-      .eq('user_id', userId)
+      .eq('id', userId)
       .eq('role', 'admin')
       .single();
     
