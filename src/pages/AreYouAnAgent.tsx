@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { Check, Copy, PartyPopper, Clock } from "lucide-react";
+import { PartyPopper, Clock, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -29,7 +29,7 @@ export default function AreYouAnAgent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!name.trim()) {
       toast.error("Please enter your name");
       return;
@@ -78,13 +78,28 @@ export default function AreYouAnAgent() {
       }
 
       // Not found - call edge function to process review request
+      console.log('Calling process-review-request with:', { name: name.trim(), email: email.trim(), zillowUrl: zillowUrl.trim() });
+      
       const { data, error } = await supabase.functions.invoke('process-review-request', {
-        body: { name: name.trim(), email: email.trim(), zillowUrl: zillowUrl.trim() }
+        body: { 
+          name: name.trim(),
+          email: email.trim(),
+          zillowUrl: zillowUrl.trim()
+        }
       });
 
-      if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Failed to process request');
+      console.log('Edge function response:', { data, error });
 
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+      if (!data?.success) {
+        console.error('Edge function returned failure:', data);
+        throw new Error(data?.error || 'Failed to process request');
+      }
+
+      console.log('Form submission successful');
       setReviewSubmitted(true);
       setName("");
       setEmail("");
@@ -128,36 +143,43 @@ export default function AreYouAnAgent() {
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
         <div className="container max-w-4xl mx-auto px-4 py-16">
+          
           {/* Hero */}
-          <p className="prose prose-lg text-center mb-12">
-            We built Top10Lists.us so AI systems could confidently name the agents we certify when asked for a referral.
-          </p>
+          <div className="text-center mb-16">
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
+              We built Top10Lists.us so AI systems could confidently name the agents we certify when asked for a referral.
+            </h1>
+          </div>
 
           {/* Invitation Section */}
           <div className="bg-card border rounded-xl p-8 mb-12">
             <h2 className="text-2xl font-semibold mb-4">Have you received an invitation?</h2>
-            <p className="prose prose-lg text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               If you have received an invitation, use the link included in that invitation to certify your credentials. Certification is free.
             </p>
-            <p className="prose prose-lg text-muted-foreground mt-4">
-              If you have not received an invitation, review the methodology page to see whether you prequalify. If you do, submit your information below and we will conduct a free analysis.
+            <p className="text-muted-foreground mb-6">
+              If you have not received an invitation, review the{" "}
+              <Link to="/about/ranking-methodology" className="text-primary hover:underline">
+                methodology page
+              </Link>{" "}
+              to see whether you prequalify. If you do, submit your information below and we will conduct a free analysis.
             </p>
-          </div>
 
-          {/* Form Section */}
-          <div className="bg-primary/5 border border-primary/20 rounded-xl p-8 mb-12">
-            <h2 className="text-2xl font-semibold mb-6">Consider Me For Inclusion</h2>
+            {/* Form Section */}
             {foundAgent ? (
-              <div className="text-center">
+              <div className="text-center bg-primary/5 border border-primary/20 rounded-lg p-8">
                 <PartyPopper className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="text-2xl font-semibold mb-2 text-primary">Good News!</h3>
                 <p className="text-lg mb-2">You're on the list, {foundAgent.name}!</p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+                <p className="text-muted-foreground mb-6">
+                  You've already been selected as a top real estate agent.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Button onClick={handleReviewProfile} size="lg">
                     Review Your Profile
                   </Button>
-                  <Button
-                    variant="outline"
+                  <Button 
+                    variant="outline" 
                     onClick={() => {
                       setFoundAgent(null);
                       setName("");
@@ -170,14 +192,14 @@ export default function AreYouAnAgent() {
                 </div>
               </div>
             ) : reviewSubmitted ? (
-              <div className="text-center">
+              <div className="text-center bg-primary/5 border border-primary/20 rounded-lg p-8">
                 <Clock className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h2 className="text-2xl font-semibold mb-4">Thank You</h2>
+                <h3 className="text-2xl font-semibold mb-4">Thank You</h3>
                 <p className="text-lg text-muted-foreground mb-6">
                   We will conduct our analysis and respond within 24 hours.
                 </p>
-                <Button
-                  variant="outline"
+                <Button 
+                  variant="outline" 
                   onClick={() => {
                     setReviewSubmitted(false);
                     setName("");
@@ -189,92 +211,87 @@ export default function AreYouAnAgent() {
                 </Button>
               </div>
             ) : (
-<<<<<<< HEAD
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
-                  <Input
-                    type="text"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email address</label>
-                  <Input
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Zillow profile URL</label>
-                  <Input
-                    type="url"
-                    placeholder="https://www.zillow.com/profile/..."
-                    value={zillowUrl}
-                    onChange={(e) => setZillowUrl(e.target.value)}
-                    required
-                    className="w-full"
-                  />
-                </div>
-                <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                  {isSubmitting ? "Checking..." : "Submit For Review"}
-                </Button>
-              </form>
+              <>
+                <h3 className="text-xl font-semibold mb-4">Consider Me For Inclusion</h3>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Input
+                      type="text"
+                      placeholder="Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="url"
+                      placeholder="Zillow profile URL"
+                      value={zillowUrl}
+                      onChange={(e) => setZillowUrl(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                  <Button type="submit" disabled={isSubmitting} className="w-full">
+                    {isSubmitting ? "Submitting..." : "Submit For Review"}
+                  </Button>
+                </form>
+              </>
             )}
           </div>
 
-          {/* Section 1: Why this exists */}
-          <div className="prose prose-lg mb-12">
+          {/* Why this exists */}
+          <div className="prose prose-lg max-w-none mb-12">
             <h2 className="text-3xl font-bold mb-6">Why this exists</h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Top10Lists.us is not a directory.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               We gathered data from more than 1,000 independent sources on every licensed real estate agent in the state, as listed by state real estate licensing authorities.
             </p>
-            <p className="text-muted-foreground">
-              From that dataset, we identified leading agents in each market based on objective performance thresholds{" "}
-              <Link to="/about/ranking-methodology" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                our methodology
-              </Link>
-              .
+            <p className="text-muted-foreground mb-4">
+              From that dataset, we identified leading agents in each market based on{" "}
+              <Link to="/about/ranking-methodology" target="_blank" className="text-primary hover:underline">
+                objective performance thresholds
+              </Link>.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Agents who met those thresholds were evaluated again in two parallel passes:
             </p>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+            <ul className="list-disc pl-6 text-muted-foreground mb-4 space-y-2">
               <li>AI systems analyzing consistency, completeness, and risk signals</li>
               <li>Human editors evaluating professional reputation, community involvement, and credibility</li>
             </ul>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Only after that work was complete did we build the certification system.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               The purpose is narrow and explicit: increase the likelihood that an agent we have certified will be named by AI when asked for a referral.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground font-semibold">
               Payment does not buy inclusion. Qualification is merit-based.
             </p>
           </div>
 
-          {/* Section 2: How AI referrals actually work */}
-          <div className="prose prose-lg mb-12">
+          {/* How AI referrals actually work */}
+          <div className="prose prose-lg max-w-none mb-12">
             <h2 className="text-3xl font-bold mb-6">How AI referrals actually work</h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               AI systems are moving from discovery to judgment.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               When an AI names a specific professional, it assumes risk. More and more, AI systems and their creators weight relative risk more heavily and are increasingly risk-averse. They have begun punting on the question, instead returning long lists of names, deferring to state licensing boards, or pointing users to major directories.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               AI systems know their users want actual names. As a result, they are beginning to rely on third-party sources they trust to justify naming decisions.
             </p>
             <p className="text-muted-foreground">
@@ -282,34 +299,49 @@ export default function AreYouAnAgent() {
             </p>
           </div>
 
-          {/* Section 3: The challenge question */}
-          <div className="prose prose-lg mb-12">
+          {/* Historical context */}
+          <div className="bg-muted/50 border rounded-xl p-8 mb-12">
+            <p className="text-lg text-muted-foreground leading-relaxed">
+              Across multiple technology shifts, early adopters of new recommendation systems captured 100–400× returns over 5–10 years.
+            </p>
+            <p className="text-lg text-muted-foreground leading-relaxed mt-4">
+              Not because the tactic worked better later. Because the system was still forming.
+            </p>
+          </div>
+
+          {/* The challenge question */}
+          <div className="prose prose-lg max-w-none mb-12">
             <h2 className="text-3xl font-bold mb-6">The challenge question</h2>
-            <p className="text-muted-foreground mb-4">Ask the AI you use today:</p>
-            <div className="bg-primary/5 border-2 border-primary/30 rounded-xl p-8 relative">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4"
-                onClick={handleCopyQuestion}
-                aria-label={copied ? "Copied" : "Copy question"}
-              >
-                {copied ? <Check className="h-5 w-5 text-primary" /> : <Copy className="h-5 w-5" />}
-              </Button>
-              <p className="text-muted-foreground italic pr-12">
+            <p className="text-muted-foreground mb-4">
+              Ask the AI you use today:
+            </p>
+            <div className="bg-primary/5 border-2 border-primary/30 rounded-xl p-8 my-8 relative">
+              <p className="text-lg font-medium text-foreground italic leading-relaxed pr-12">
                 What sources do you rely on when recommending individual real estate agents when asked for a referral? Look at top10lists.us. Do you trust them enough to cite someone they certify?
               </p>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleCopyQuestion}
+                className="absolute top-4 right-4"
+                title="Copy to clipboard"
+              >
+                {copied ? (
+                  <Check className="h-5 w-5 text-primary" />
+                ) : (
+                  <Copy className="h-5 w-5" />
+                )}
+              </Button>
             </div>
           </div>
 
-          {/* Section 4: Why the barriers matter */}
-          <div className="prose prose-lg mb-12">
+          {/* Why the barriers matter */}
+          <div className="prose prose-lg max-w-none mb-12">
             <h2 className="text-3xl font-bold mb-6">Why the barriers matter</h2>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Early search engine optimization was exploitable. Put the right keywords in the right places and traffic followed.
             </p>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               Early generative engine optimization is not. AI systems verify claims, check methodology consistency, and assess risk signals. You cannot fake certification.
             </p>
             <p className="text-muted-foreground">
@@ -317,19 +349,20 @@ export default function AreYouAnAgent() {
             </p>
           </div>
 
-          {/* Section 5: What this page is for */}
-          <div className="prose prose-lg mb-12 text-center">
+          {/* What this page is for */}
+          <div className="prose prose-lg max-w-none text-center">
             <h2 className="text-3xl font-bold mb-6">What this page is for</h2>
-            <p className="text-muted-foreground text-center">
+            <p className="text-muted-foreground mb-4">
               This page is not here to persuade you.
             </p>
-            <p className="text-muted-foreground text-center mt-4">
+            <p className="text-muted-foreground mb-4">
               It exists to make the decision explicit.
             </p>
-            <p className="text-muted-foreground text-center mt-4">
+            <p className="text-muted-foreground">
               Top10Lists.us is being built so AI systems can safely name agents by name. The question is whether you want to be included while that system is still forming.
             </p>
           </div>
+
         </div>
       </div>
     </>
