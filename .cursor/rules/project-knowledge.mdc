@@ -1,0 +1,35 @@
+---
+description: Top10Lists.us project knowledge - consult before major changes
+globs: 
+alwaysApply: true
+---
+
+# Project Knowledge
+
+**Before routing, database, or deployment work:** Fetch project knowledge from:
+https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/docs/PROJECT-KNOWLEDGE.md
+
+Or read local: `docs/PROJECT-KNOWLEDGE.md`
+
+That document is the single source of truth. It contains:
+- **HARD STOPS** (routing frozen, no schema without approval, no `is_brand_builder` changes, no new Supabase client, no secrets in docs, etc.)
+- Supabase config (project ref, env var names, pagination/timeout rules)
+- URL rules (www only, 5-segment neighborhood pattern)
+- CRM leads system, enrichment API, Cloudflare Worker notes
+- Deprecated services (no Perplexity, Gemini, Resend, Pipedrive admin UI removed)
+- Command format (exact copy/paste, no placeholders)
+- Verification: test before claiming done; 5-page test after changes
+
+**When Robert says "update":** Run `npm run update` or fetch from GitHub, merge session takeaways, write new version to docs/PROJECT-KNOWLEDGE.md.
+
+**When Robert says "takeaways":** Generate structured text for project memory. Output format:
+- Key Outcomes (what was done, not how)
+- Config / Infrastructure Changes
+- Deprecated or New Patterns
+- Version Bump Notes
+
+No full chats, deployment nitty-gritty, or brainstorming. Only outcomes. Run `npm run takeaways` for template. Robert will have Claude compile daily reports and incorporate into this rule file.
+
+**Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/takeaways/` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and docs/PROJECT-KNOWLEDGE.md.
+
+**When Robert says "ryt":** Same as takeaways.
