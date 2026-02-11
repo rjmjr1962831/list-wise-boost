@@ -401,6 +401,21 @@ If a field has data, your code must:
 - "Payment does not influence inclusion, rank, or visibility"
 - "non-pay-to-play criteria"
 
+### Bot Exposure Strategy
+
+**Agent Profile Pages (`/p/[shortcode]`):**
+- NOT exposed to bots
+- Consumer-facing only
+- Bots should NOT see these pages
+
+**Certification Artifacts (`/artifact/[agentId]`):**
+- Bot-facing interface for agent data
+- Cryptographically verifiable
+- Structured JSON payloads
+- This is what AI systems cite
+
+**Reasoning:** Artifacts provide verified, structured data that AI systems can trust and cite. Profile pages are for human consumers only.
+
 ---
 
 ## "Are You An Agent?" Page
@@ -692,5 +707,5 @@ curl -s -H "Authorization: token ghp_[REDACTED]" -H "Accept: application/vnd.git
 
 ---
 
-*Version 3.3 - February 10, 2026*
-*Updated: CRM Leads System (crm_leads table, process-review-request Edge Function), Command format requirements, Testing requirements, "Are You An Agent" page updates, Land grab content strategy, SEO history analysis document*
+*Version 3.4 - February 11, 2026*
+*Updated: Bot exposure strategy (agent profiles NOT for bots, artifacts are bot-facing interface)*
