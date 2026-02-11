@@ -25,7 +25,7 @@ export default function FunnelIntro() {
           .from('admin_users')
           .select('role')
           .eq('id', session.user.id)
-          .eq('role', 'admin')
+          .in('role', ['admin', 'superadmin'])
           .single();
         setIsAdmin(!!data);
       }

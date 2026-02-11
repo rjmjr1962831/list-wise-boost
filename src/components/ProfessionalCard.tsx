@@ -158,7 +158,7 @@ export const ProfessionalCard = ({
           .from('admin_users')
           .select('role')
           .eq('id', user.id)
-          .eq('role', 'admin')
+          .in('role', ['admin', 'superadmin'])
           .maybeSingle();
         
         setIsAdmin(!!roleData);

@@ -139,7 +139,7 @@ export const Header = () => {
         .from('admin_users')
         .select('role')
         .eq('id', userId)
-        .eq('role', 'admin')
+        .in('role', ['admin', 'superadmin'])
         .maybeSingle();
       
       if (error) {

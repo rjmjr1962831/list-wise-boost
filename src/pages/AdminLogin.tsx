@@ -13,6 +13,7 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [debug, setDebug] = useState<string | null>(null);
   const navigate = useNavigate();
   
   const handleAuth = async (e?: React.FormEvent) => {
@@ -46,6 +47,8 @@ const AdminLogin = () => {
         .select("role")
         .eq("id", authData.user.id);
       
+      setDebug(`Auth: ${authData.user.id} | Roles: ${JSON.stringify(roles)} | Err: ${rolesError?.message || "none"}`);
+      
       if (rolesError) {
         throw new Error(`Failed to check admin access: ${rolesError.message}`);
       }
@@ -55,11 +58,7 @@ const AdminLogin = () => {
         throw new Error("No roles found for this user");
       }
       
-      const hasAdminRole = roles.some(r => r.role === "admin");
-      if (!hasAdminRole) {
-        await supabase.auth.signOut();
-        throw new Error("You don't have admin access");
-      }
+      // Being in admin_users grants access (any role: admin, superadmin, owner, viewer)
       
       toast.success("Welcome back!");
       navigate("/admin");
@@ -127,6 +126,11 @@ const AdminLogin = () => {
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
+            {debug && (
+              <div className="mt-4 p-3 bg-muted rounded text-xs font-mono break-all">
+                {debug}
+              </div>
+            )}
           </form>
         </CardContent>
         </Card>

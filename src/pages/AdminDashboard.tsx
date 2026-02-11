@@ -57,7 +57,7 @@ const AdminDashboard = () => {
         .select("role")
         .eq("id", user.id);
 
-      if (!roles || !roles.some(r => r.role === "admin")) {
+      if (!roles || !roles.some(r => r.role === "admin" || r.role === "superadmin")) {
         toast.error("You don't have admin access");
         navigate("/");
         return;
