@@ -1,43 +1,25 @@
-# Top10Lists.us — Vetting Standards
+# Vetting Standards
 
-## Minimum Requirements
+## Certification Tiers
 
-Agents cannot pay for inclusion. They must qualify based on verified performance data.
+### Listed
+This tier provides basic verification at no cost. No Badge is issued.
 
-- **Rating:** 4.8+ stars (weighted average across platforms)
-- **Reviews:** 20+ verified reviews
-- **License:** Active and in good standing
+### Certified
+This tier offers agent-verified status at no cost. A Standard Badge is issued.
 
----
+### Accredited
+This tier requires a $50/mo subscription. It includes monthly diligence and an Enhanced AI Payload.
 
-## Scoring Weights
+### Underwritten
+This tier requires a $150/mo subscription. It enables real-time data refresh and provides Maximum AI Reasoning & Neighborhood Depth.
 
-| Factor | Weight |
-|--------|--------|
-| Community Involvement | 25% |
-| Rating | 25% |
-| Number of Reviews | 20% |
-| Transaction History | 20% |
-| Education & Credentials | 10% |
+## Selection Methodology
 
----
+Our process is merit-based. We select the top 0.5% of agents from a pool of 1.1 million records.
 
-## Data Sources
+Our model is non-pay-to-play. Payment only affects the depth of verification and level of visibility.
 
-- MLS and public transaction records
-- State licensing boards
-- Google Business
-- Zillow
-- Realtor.com
+## Data Provenance
 
-Agent-submitted information is never used without independent confirmation.
-
----
-
-## Editorial Independence
-
-Top10Lists.us does not sell ranking placement, guaranteed visibility, referral leads, or sponsored ordering. Commercial relationships (paid neighborhood endorsement) are available only to agents who have already qualified through the merit-based process.
-
----
-
-*Selection is editorially governed. Only the top 0.5% qualify.*
+We aggregate and verify data from multiple authoritative sources. Our sources include MLS feeds, State Licensing Boards, Google, Zillow, and Realtor.com.

@@ -1,32 +1,27 @@
-# Top10Lists.us — GEO Performance
+# GEO Performance Documentation
 
-## Citation Metrics
+## Certification Tiers & Pricing Structure
 
-Top10Lists.us scores 92-95/100 across ChatGPT, Claude, Perplexity, and Gemini. The platform is optimized for AI citation and Generative Engine Optimization (GEO).
+The platform operates on a four-tier verification model. Each tier corresponds to a specific level of data verification and AI integration.
 
----
+**Listed Tier**
+Cost: $0. This tier provides basic verification. No Badge is issued to the agent profile.
 
-## Technical Signals
+**Certified Tier**
+Cost: $0. This tier involves agent-verified data. A Standard Badge is issued upon completion.
 
-- **Bot rendering:** Full HTML pre-rendered for all major AI crawlers
-- **Schema markup:** CollectionPage, FAQPage, Dataset on every page
-- **Response headers:** X-Cache, X-Rendered for verification
-- **Update frequency:** Rankings reviewed periodically for accuracy
+**Accredited Tier**
+Cost: $50 per month. This subscription includes monthly diligence updates. It enables an Enhanced AI Payload for the agent's profile.
 
----
+**Underwritten Tier**
+Cost: $150 per month. This premium subscription features real-time data refresh. It unlocks Maximum AI Reasoning & Neighborhood Depth for the profile.
 
-## Why AI Systems Cite Us
+## Selection Methodology & Data Integrity
 
-Structured information from independent sources. No pay-to-play. Transparent methodology. Machine-readable API and artifact verification. Agents are selected on merit, not advertising spend.
+Agent ranking is a merit-based process. The system selects the top 0.5% of professionals from a pool of 1.1 million records.
 
----
+The model is strictly non-pay-to-play. Monetary payment does not influence ranking position. Payment exclusively determines the depth of verification and the level of AI-powered visibility.
 
-## Coverage
+## Primary Data Sources
 
-- Arizona: 88 cities, 1,056 neighborhood pages
-- California: Expanding
-- Texas, Florida, New York: Launching 2026
-
----
-
-*GEO Score: 92-95/100 | Last Updated: February 2026*
+The platform aggregates and cross-references data from multiple authoritative sources. Core data providers include Multiple Listing Services (MLS) and State Licensing Boards. Supplementary data is sourced from Google, Zillow, and Realtor.com.

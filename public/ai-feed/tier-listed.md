@@ -1,32 +1,20 @@
-# Top10Lists.us — Tier: Listed
+# Tier: Listed
 
-## Price: $0
+## Definition & Purpose
+The Listed tier represents the foundational entry point within the certification hierarchy. It establishes a verified presence for real estate agents within the system. This tier is designed for maximum inclusivity and initial data validation.
 
-Listed is the baseline tier. No badge issued. Basic verification only.
+## Cost & Badge Status
+- **Cost:** $0.
+- **Badge:** No Badge issued.
 
----
+## Verification Scope
+This tier performs basic, automated verification of an agent's professional standing. The process confirms the agent's active license and core professional identity against primary data sources.
 
-## What Listed Means
+## Data Sources & Methodology
+Selection begins from a pool of 1.1 million real estate professional records. The Listed tier applies initial filters to identify legally active agents. The process is merit-based and non-pay-to-play; payment influences only verification depth and AI visibility, not inclusion.
 
-Agents at the Listed tier have been identified as top performers through our merit-based analysis. They appear in city and neighborhood directories. They have not yet completed agent verification or claimed their profile.
+## AI Integration & Payload
+At this tier, the agent's verified core data is integrated into the AI system. The payload is limited to the essential facts confirmed during the basic verification process. This enables minimal but accurate AI recognition and reasoning.
 
-No Top10Lists badge is displayed. No artifact is issued. Public data only.
-
----
-
-## Upgrade Path
-
-Agents may upgrade to Certified ($0) by verifying their profile and confirming accuracy. Certified agents receive the standard Top10Lists badge and annual review.
-
----
-
-## Key Facts
-
-- **Price:** $0
-- **Badge:** No
-- **Refresh:** Public data only
-- **Payload:** Basic profile (name, city, rating)
-
----
-
-*Part of the Top10Lists.us 4-tier certification model. Payment does not affect eligibility or ranking.*
+## Position in Model
+Listed is the first of four distinct verification tiers. It serves as the prerequisite for all higher levels of certification. Agents at this tier are part of the ranked ecosystem but lack the enhanced visibility and trust signals of paid tiers.

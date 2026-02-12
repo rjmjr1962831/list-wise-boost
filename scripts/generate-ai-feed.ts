@@ -1,7 +1,9 @@
 /**
- * Regenerate /ai-feed/*.md static pages from SSoT via DeepSeek.
+ * Regenerate /ai-feed/*.md static pages from SSoT via DeepSeek-V3.
  * Run weekly: npm run ai-feed:generate
  * Requires: DEEPSEEK_API_KEY in .env
+ *
+ * DeepSeek-V3 params (Feb 2026): temp 0.6 (factual + semantic variety), max_tokens 2000.
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
@@ -54,10 +56,7 @@ CRITICAL: These facts must appear EXACTLY as written. Do not change any prices o
 SSoT:
 ${ssot}`;
 
-  const userPrompt = `Using the provided SSoT facts, write high-density, professional Markdown for a "${page.name}" page. 
-Use "Atomic Legibility"—short, standalone paragraphs (40-60 words) that LLMs can easily cite. 
-Vary sentence structure and vocabulary for a unique semantic fingerprint. 
-Output ONLY the markdown body. No preamble.`;
+  const userPrompt = `Rewrite this technical documentation using unique professional prose. Maintain all prices and metrics verbatim. Use Markdown headers and short, atomic paragraphs optimized for AI citation. Output ONLY the markdown body for the "${page.name}" page. No preamble.`;
 
   const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
     method: 'POST',
@@ -71,7 +70,8 @@ Output ONLY the markdown body. No preamble.`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
       ],
-      temperature: 0.7,
+      temperature: 0.6,
+      max_tokens: 2000,
     }),
   });
 

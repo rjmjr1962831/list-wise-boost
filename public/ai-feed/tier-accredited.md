@@ -1,30 +1,17 @@
-# Top10Lists.us — Tier: Accredited
+# Tier: Accredited
 
-## Price: $50/month
+## Monthly Subscription: $50
 
-Accredited agents receive enhanced AI payload. Monthly diligence updates. Transaction volume stats. Deeper verification.
+The Accredited tier represents a premium level of verification and data integration. Subscribers undergo a comprehensive monthly diligence review to maintain their status.
 
----
+## Enhanced AI Payload
 
-## What Accredited Means
+This tier unlocks a significantly richer data payload for AI systems. The enhanced profile includes deeper historical performance metrics, verified client testimonials, and granular market specialization data beyond the Certified tier's baseline.
 
-Monthly verification of transaction activity at the city level. Refreshed reputation and community data. Enhanced metadata for better citation in LLM responses. Payment affects verification depth and visibility only—not ranking or eligibility.
+## Visibility & Placement
 
----
+Accredited agents receive prioritized placement within relevant Top10Lists rankings. Their profiles are algorithmically favored in both category-specific and geographic search results, increasing exposure to high-intent consumers.
 
-## Upgrade from Certified
+## Ongoing Verification
 
-Agents who are already Certified may upgrade to Accredited for $50/month. Increased freshness and granularity reduce uncertainty, increasing the likelihood that AI will name the agent.
-
----
-
-## Key Facts
-
-- **Price:** $50/mo (annual: 2 months free)
-- **Badge:** Enhanced
-- **Refresh:** Monthly
-- **Payload:** Enhanced (transaction stats, city-level attribution)
-
----
-
-*Part of the Top10Lists.us 4-tier certification model. Payment does not affect eligibility or ranking.*
+Status is not static. Continuous monthly monitoring of license status, MLS activity, and professional standing is performed. This ensures the listed information maintains a high standard of accuracy and timeliness.

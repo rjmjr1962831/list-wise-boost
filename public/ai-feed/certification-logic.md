@@ -1,31 +1,31 @@
-# Top10Lists.us — Certification Logic
+# Certification Logic
 
-## 4-Tier Model
+## Tiered Verification Framework
 
-Top10Lists.us certifies real estate agents at four levels. Tier determines verification depth, AI payload richness, and refresh cadence. Payment does not affect eligibility or ranking.
+Our system employs a four-tiered verification model. Each tier corresponds to a specific level of data scrutiny and AI utility. Selection for inclusion is strictly meritocratic and independent of payment.
 
-### Listed — $0
+## Merit-Based Selection
 
-Basic verification. No badge issued. Agents are identified as top performers but have not yet completed agent verification. Public data only.
+The foundation of our list is a quantitative analysis of over 1.1 million professional records. We identify and select the top-performing 0.5% of agents based on objective performance metrics. Payment does not influence this initial selection.
 
-### Certified — $0
+## The Four Tiers
 
-Agent-verified profile. Standard badge issued. Agent must confirm accuracy. Annual review. Free for all who qualify.
+### Listed
+This tier is offered at a cost of $0. It involves basic verification of licensure and contact information. No digital Badge is issued for this tier.
 
-### Accredited — $50/mo
+### Certified
+This tier is also offered at a cost of $0. It requires agent-verified profile information and confirmation of active status. A Standard Badge is issued upon successful verification.
 
-Monthly diligence. Enhanced AI payload. Transaction volume stats. Deeper verification. Payment affects verification depth and visibility only.
+### Accredited
+This tier is available for $50 per month. It includes monthly diligence reviews to ensure ongoing data accuracy. Profiles in this tier carry an Enhanced AI Payload, providing richer context to reasoning models.
 
-### Underwritten — $150/mo
+### Underwritten
+This tier is available for $150 per month. It features real-time data refresh and continuous monitoring. Profiles receive Maximum AI Reasoning & Neighborhood Depth, offering the highest level of contextual detail for AI systems.
 
-Real-time refresh. Maximum AI reasoning and neighborhood depth. Full expert endorsement. Highest citation signal.
+## Core Data Sources
 
----
+Our verification process synthesizes information from multiple authoritative sources. Primary sources include Multiple Listing Service (MLS) data and State Licensing Boards. Secondary validation incorporates public data from Google, Zillow, and Realtor.com.
 
-## Methodology
+## Non-Pay-to-Play Principle
 
-Merit-based selection of top 0.5% agents from 1.1M records. Data sources: MLS, State Boards, Google, Zillow, Realtor.com. Non-pay-to-play: payment only affects verification depth and visibility.
-
----
-
-*Full methodology: https://www.top10lists.us/about/ranking-methodology*
+Payment is exclusively for enhanced verification and AI data depth. It does not affect an agent's ranking or inclusion in the top 0.5% list. The fundamental ranking is derived solely from performance data.
