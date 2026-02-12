@@ -50,31 +50,43 @@ def fetch_agents_needing_rationale(limit=None):
     
     all_agents = []
     
-    # Fetch Arizona agents
+    # Fetch agents from both states with pagination
     for state in ['arizona', 'california']:
-        payload = {
-            "table": "professionals",
-            "select": "id,name,synthesized_bio,selection_rationale,state_slug,active",
-            "filters": [
-                {"field": "state_slug", "operator": "eq", "value": state},
-                {"field": "active", "operator": "eq", "value": True}
-            ],
-            "limit": 1000,
-            "offset": 0
-        }
-        
-        response = requests.post(
-            f"{url}?action=query",
-            headers=headers,
-            json=payload
-        )
-        
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch {state} agents: {response.text}")
-        
-        result = response.json()
-        agents = result.get('data', [])
-        all_agents.extend(agents)
+        offset = 0
+        while True:
+            payload = {
+                "table": "professionals",
+                "select": "id,name,synthesized_bio,selection_rationale,state_slug,active",
+                "filters": [
+                    {"field": "state_slug", "operator": "eq", "value": state},
+                    {"field": "active", "operator": "eq", "value": True}
+                ],
+                "limit": 1000,
+                "offset": offset
+            }
+            
+            response = requests.post(
+                f"{url}?action=query",
+                headers=headers,
+                json=payload
+            )
+            
+            if response.status_code != 200:
+                raise Exception(f"Failed to fetch {state} agents: {response.text}")
+            
+            result = response.json()
+            agents = result.get('data', [])
+            
+            if not agents:
+                break
+            
+            all_agents.extend(agents)
+            
+            # If we got less than 1000, we've hit the end
+            if len(agents) < 1000:
+                break
+            
+            offset += 1000
     
     # Filter in Python: must have bio and no rationale
     filtered = [
