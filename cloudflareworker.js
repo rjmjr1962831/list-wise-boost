@@ -20087,6 +20087,11 @@ var index_default = {
       return fetch(originRequest);
     }
 
+    // Admin routes: never render for bots (internal tool, no SEO value)
+    if (pathname === '/admin' || pathname.startsWith('/admin/') || pathname === '/crm' || pathname.startsWith('/crm/')) {
+      return fetch(originRequest);
+    }
+
     // Cache Check - normalize cache key to share across all bots
     // Strip query parameters to ensure same page = same cache regardless of query string
     const cacheUrl = new URL(url);
