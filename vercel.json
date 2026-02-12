@@ -1,7 +1,9 @@
 {
   "redirects": [
     { "source": "/for-ai", "destination": "/ai-feed/for-ai.md", "permanent": true },
-    { "source": "/methodology", "destination": "/ai-feed/certification-logic.md", "permanent": true }
+    { "source": "/for-ai/", "destination": "/ai-feed/for-ai.md", "permanent": true },
+    { "source": "/methodology", "destination": "/ai-feed/certification-logic.md", "permanent": true },
+    { "source": "/methodology/", "destination": "/ai-feed/certification-logic.md", "permanent": true }
   ],
   "rewrites": [
     {
@@ -28,7 +30,7 @@
       "source": "/api/v1/markets",
       "destination": "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=markets"
     },
-    { "source": "/((?!api).*)", "destination": "/" }
+    { "source": "/((?!api|for-ai|methodology).*)", "destination": "/" }
   ],
   "headers": [
     {
