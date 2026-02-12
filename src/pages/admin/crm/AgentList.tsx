@@ -13,6 +13,7 @@ interface Agent {
   monthly_revenue_cents: number
   last_payment_at: string | null
   cities_subscribed: string[] | null
+  selection_rationale: string | null
   updated_at: string
 }
 
@@ -34,7 +35,7 @@ export default function AgentList() {
     
     let query = supabase
       .from('professionals')
-      .select('id, name, email, phone, state_slug, funnel_status, subscription_status, monthly_revenue_cents, last_payment_at, cities_subscribed, updated_at')
+      .select('id, name, email, phone, state_slug, funnel_status, subscription_status, monthly_revenue_cents, last_payment_at, cities_subscribed, selection_rationale, updated_at')
       .order('updated_at', { ascending: false })
       .limit(100)
 
