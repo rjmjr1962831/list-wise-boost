@@ -1,8 +1,8 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const APIFY_TOKEN = 'apify_api_a1FiHb7tfFdqm2HKKl71O0E17QfEJr1QOsJx'
-const MEMO23_ACTOR_ID = 'memo23/zillow-api-scraper'
+const APIFY_TOKEN = Deno.env.get('APIFY_TOKEN') ?? ''
+const MEMO23_ACTOR_ID = 'memo23/apify-zillow-agents-cheerio'
 
 serve(async (req) => {
   try {
@@ -44,11 +44,9 @@ serve(async (req) => {
               'Authorization': `Bearer ${APIFY_TOKEN}`
             },
             body: JSON.stringify({
-              url: agent.zillow_profile_url,
-              scrapeReviews: true,
-              scrapeListings: true,
-              scrapeTransactionHistory: true,
-              proxyConfiguration: {
+              startUrls: [{ url: agent.zillow_profile_url }],
+              maxItems: 1,
+              proxy: {
                 useApifyProxy: false,
                 proxyUrls: [
                   'http://ws1et3ycrlwml6w:fyg90v72ru9t1xq@rp.scrapegw.com:6060'
