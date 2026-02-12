@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
-import { isAdminTestToken, getAdminTestProfessional } from '@/utils/funnelAdminTest';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,13 +56,6 @@ export default function Step1Intro() {
         .single();
 
       if (fetchError || !data) {
-        // Admin bypass: allow funnel test with mock data when DB lookup fails
-        if (isAdminTestToken(token)) {
-          setProfessional(getAdminTestProfessional({ verification_token: token }));
-          setError(null);
-          setLoading(false);
-          return;
-        }
         setError('Invalid or expired link');
         setLoading(false);
         return;

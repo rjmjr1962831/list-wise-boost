@@ -100,7 +100,7 @@ const AdminDashboard = () => {
               Test Dashboard (Robert)
             </Button>
             <Button
-              onClick={() => navigate('/funnel/ee5a75fc-2a6e-4a03-980e-f40532c55f59')}
+              onClick={() => navigate('/claim?token=e1e71db2-6469-46ec-b777-e009e02133b6')}
               variant="outline"
               className="h-auto py-3 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
             >

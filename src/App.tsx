@@ -117,6 +117,7 @@ const StepSuccess = lazy(() => import("./pages/funnel/StepSuccess"));
 // Certification Artifact Pages
 const ArtifactPage = lazy(() => import("./pages/ArtifactPage"));
 
+const ClaimRedirect = lazy(() => import("./pages/ClaimRedirect"));
 const ShortLinkRedirect = lazy(() => import("./pages/ShortLinkRedirect"));
 const AzMagicLinkRedirect = lazy(() => import("./pages/AzMagicLinkRedirect"));
 const AzNeighborhoodRedirect = lazy(() => import("./pages/AzNeighborhoodRedirect"));
@@ -265,6 +266,8 @@ const App = () => (
                     <Route path="/verify/:token/specialties" element={<VerifySpecialties />} />
                     <Route path="/verify/:token/cities" element={<VerifyCities />} />
                     <Route path="/verify-listing/:professionalId" element={<VerifyAgentListing />} />
+                    {/* Claim link redirect: /claim?token=xxx -> /funnel/xxx */}
+                    <Route path="/claim" element={<ClaimRedirect />} />
                     {/* Short link redirect for magic links */}
                     <Route path="/p/:shortCode" element={<ShortLinkRedirect />} />
                     {/* Simple funnel test page (no complex logic) */}
