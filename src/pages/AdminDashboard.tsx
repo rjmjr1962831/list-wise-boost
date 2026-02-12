@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Briefcase, CreditCard, LayoutDashboard, MailCheck, BarChart3, Smartphone } from "lucide-react";
+import { LogOut, Briefcase, CreditCard, LayoutDashboard, MailCheck, BarChart3, Smartphone, TestTube2 } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminDashboard = () => {
@@ -98,6 +98,14 @@ const AdminDashboard = () => {
             >
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Test Dashboard (Robert)
+            </Button>
+            <Button
+              onClick={() => navigate('/funnel/ee5a75fc-2a6e-4a03-980e-f40532c55f59')}
+              variant="outline"
+              className="h-auto py-3 border-emerald-500 text-emerald-600 hover:bg-emerald-50"
+            >
+              <TestTube2 className="mr-2 h-4 w-4" />
+              Test Funnel
             </Button>
             <Button
               onClick={async () => {
