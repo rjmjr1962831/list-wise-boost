@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
+import { isAdminTestToken, getAdminTestProfessional } from '@/utils/funnelAdminTest';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -52,7 +53,18 @@ export default function Step2Review1() {
         .single();
 
       if (error || !data) {
-        navigate('/404');
+        if (isAdminTestToken(token)) {
+          const mock = getAdminTestProfessional() as Professional;
+          setProfessional(mock);
+          setFormData({
+            name: mock.name || '',
+            email: mock.email || '',
+            phone: mock.phone || '',
+            company: mock.company || '',
+          });
+        } else {
+          navigate('/404');
+        }
         return;
       }
 
@@ -75,6 +87,11 @@ export default function Step2Review1() {
 
     setSaving(true);
     try {
+      if (isAdminTestToken(token)) {
+        toast.success('Demo: skipping save');
+        navigate(`/funnel/${token}/review-2`);
+        return;
+      }
       const { error } = await supabase
         .from('professionals')
         .update({
