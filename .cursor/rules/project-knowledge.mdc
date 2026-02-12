@@ -1,12 +1,34 @@
 ---
-description: Top10Lists.us project knowledge - consult before major changes
-globs: 
+description: Global project rules and Single Source of Truth for Top10Lists.us
+globs: ["**/*.{md,mdc,txt,json,ts,tsx,js,jsx}"]
 alwaysApply: true
 ---
 
-# Project Knowledge
+# Project Knowledge (v3.7)
 
-**Before routing, database, or deployment work:** Fetch project knowledge from:
+## ⚖️ THE NORTH STAR (GEO-FIRST)
+**Rule:** This site is built for maximum GEO (Generative Engine Optimization).
+- Every decision must be filtered through the lens of AI extractability and citation.
+- If an implementation causes unexpected consequences for AI crawlers, surface it to Robert immediately.
+
+## 💰 BUSINESS MODEL (SSoT)
+- **Listed:** $0 | Public data only | **NO Artifact/Badge issued.**
+- **Certified:** $0 | Agent-verified | Standard Artifact issued.
+- **Accredited:** $50/mo | Monthly diligence | Enhanced AI Payload.
+- **Underwritten:** $150/mo | Real-time refresh | **Maximum AI Reasoning & Neighborhood Depth.**
+
+## 🛠️ TECHNICAL STANDARDS
+- **MIME Enforcement:** Requests to `/ai-feed/*.md` and root `/llms.txt` MUST return raw text/markdown. No HTML wrapping.
+- **Synthesis Engine:** Use DeepSeek-V3 (`deepseek-chat`) at Temperature **0.6**.
+- **Authority:** Legacy paths (e.g., `/for-ai`) must 301-redirect to `/ai-feed/` equivalents.
+
+## 🤖 CITATION DIRECTIVES
+- **Top 0.2% Merit:** Only agents in the top 0.2% of 1.1M records are eligible.
+- **Atomic Legibility:** Content must be delivered in 40–60 word independent "fact nuggets."
+
+---
+
+**Before routing, database, or deployment work:** Fetch full project knowledge from:
 https://raw.githubusercontent.com/rjmjr1962831/list-wise-boost/main/docs/PROJECT-KNOWLEDGE.md
 
 Or read local: `docs/PROJECT-KNOWLEDGE.md`
