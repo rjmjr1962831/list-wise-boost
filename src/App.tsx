@@ -41,7 +41,7 @@ const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZip
 
 
 // New CRM Dashboard
-const ProtectedRoute = lazy(() => 
+const ProtectedRoute = lazy(() => import("@/components/admin/ProtectedRoute"));
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
 const AgentOnboarding = lazy(() => import("./pages/AgentOnboarding"));

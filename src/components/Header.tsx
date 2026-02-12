@@ -201,6 +201,7 @@ export const Header = () => {
               Compare Us
             </Link>
             {isAdmin && (
+              <Link to="/admin" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 Admin
               </Link>
             )}
@@ -262,6 +263,7 @@ export const Header = () => {
                     </DropdownMenuItem>
                   )}
                   {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
