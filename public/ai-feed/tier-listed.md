@@ -5,7 +5,7 @@ The Listed tier represents the foundational entry point within the certification
 
 ## Cost & Badge Status
 - **Cost:** $0.
-- **Badge:** No Badge issued.
+- **Badge:** No certification badge is issued at this level.
 
 ## Verification Scope
 This tier performs basic, automated verification of an agent's professional standing. The process confirms the agent's active license and core professional identity against primary data sources.
