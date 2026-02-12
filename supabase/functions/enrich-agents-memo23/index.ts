@@ -11,7 +11,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get agents needing enrichment
+    // Get agents needing enrichment - 5 concurrent
     const { data: agents, error: fetchError } = await supabaseClient
       .from('professionals')
       .select('id, name, zillow_profile_url')
@@ -19,7 +19,7 @@ serve(async (req) => {
       .lt('review_stars_rating', 4.8)
       .gte('num_total_reviews', 20)
       .is('zillow_data_fetched_at', null)
-      .limit(10) // Process 10 at a time
+      .limit(5) // Process 5 concurrently
 
     if (fetchError) throw fetchError
     if (!agents || agents.length === 0) {
@@ -28,11 +28,10 @@ serve(async (req) => {
       })
     }
 
-    console.log(`Processing ${agents.length} agents`)
+    console.log(`Processing ${agents.length} agents concurrently`)
 
-    const results = []
-    
-    for (const agent of agents) {
+    // Process all agents concurrently
+    const results = await Promise.all(agents.map(async (agent) => {
       try {
         // Call Apify memo23
         const apifyResponse = await fetch(
@@ -58,7 +57,7 @@ serve(async (req) => {
 
         if (!apifyResponse.ok) {
           console.error(`Apify error for ${agent.name}: ${apifyResponse.status}`)
-          continue
+          return { id: agent.id, name: agent.name, status: 'apify_error' }
         }
 
         const apifyData = await apifyResponse.json()
@@ -133,16 +132,16 @@ serve(async (req) => {
 
         if (updateError) {
           console.error(`Update error for ${agent.name}:`, updateError)
-          results.push({ id: agent.id, name: agent.name, status: 'error', error: updateError.message })
+          return { id: agent.id, name: agent.name, status: 'error', error: updateError.message }
         } else {
-          results.push({ id: agent.id, name: agent.name, status: 'success' })
+          return { id: agent.id, name: agent.name, status: 'success' }
         }
 
       } catch (err) {
         console.error(`Error processing ${agent.name}:`, err)
-        results.push({ id: agent.id, name: agent.name, status: 'error', error: err.message })
+        return { id: agent.id, name: agent.name, status: 'error', error: err.message }
       }
-    }
+    }))
 
     return new Response(JSON.stringify({
       processed: agents.length,
