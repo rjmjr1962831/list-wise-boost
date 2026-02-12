@@ -3,14 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Database, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map, Smartphone } from "lucide-react";
+import { LogOut, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map, Smartphone } from "lucide-react";
 import { toast } from "sonner";
-import AdminPipedriveSync from "@/components/admin/AdminPipedriveSync";
-import { AdminPipedriveAutoSync } from "@/components/admin/AdminPipedriveAutoSync";
-import { AdminPipedriveProfileLinkRepair } from "@/components/admin/AdminPipedriveProfileLinkRepair";
-import { AdminPipedriveDuplicateCleanup } from "@/components/admin/AdminPipedriveDuplicateCleanup";
-import { BulkPipedriveSyncAll } from "@/components/admin/BulkPipedriveSyncAll";
-import { BulkPipedriveReQueue } from "@/components/admin/BulkPipedriveReQueue";
 import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
 import { SynthesisTester } from '@/components/admin/SynthesisTester';
 import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
@@ -162,11 +156,11 @@ const AdminDashboard = () => {
             </Button>
             <Button
               onClick={async () => {
-                toast.info("Confirming all emails and syncing to Pipedrive...");
+                toast.info("Confirming all emails...");
                 try {
                   const { data, error } = await supabase.functions.invoke('bulk-confirm-emails');
                   if (error) throw error;
-                  toast.success(`Confirmed ${data.confirmed} emails, queued ${data.pipedriveQueued} for Pipedrive sync`);
+                  toast.success(`Confirmed ${data.confirmed} emails`);
                 } catch (err: any) {
                   toast.error(`Failed: ${err.message}`);
                 }
@@ -191,12 +185,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="pipedrive-sync" className="space-y-6">
+        <Tabs defaultValue="bulk-synthesis" className="space-y-6">
           <TabsList className="inline-flex w-full max-w-7xl h-auto flex-wrap gap-1 p-2">
-            <TabsTrigger value="pipedrive-sync">
-              <Database className="mr-2 h-4 w-4" />
-              Pipedrive Sync
-            </TabsTrigger>
             <TabsTrigger value="bulk-synthesis">
               <Zap className="mr-2 h-4 w-4" />
               Profile Synthesis
@@ -226,15 +216,6 @@ const AdminDashboard = () => {
               Neighborhood Aliases
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="pipedrive-sync" className="space-y-4">
-            <BulkPipedriveReQueue />
-            <BulkPipedriveSyncAll />
-            <AdminPipedriveProfileLinkRepair />
-            <AdminPipedriveAutoSync />
-            <AdminPipedriveSync />
-            <AdminPipedriveDuplicateCleanup />
-          </TabsContent>
 
           <TabsContent value="bulk-synthesis" className="space-y-4">
             <IncompleteSynthesisRunner />

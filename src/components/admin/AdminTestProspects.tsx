@@ -121,7 +121,7 @@ export default function AdminTestProspects() {
       <div>
         <h2 className="text-2xl font-bold mb-2">Populate Prospects</h2>
         <p className="text-muted-foreground">
-          Prospects are real estate agents to be synced with Pipedrive
+          Prospects are real estate agents eligible for outreach
         </p>
       </div>
 
@@ -208,7 +208,7 @@ export default function AdminTestProspects() {
                 <li>Click any Arizona city button or enter a custom city</li>
                 <li>Wait 1-3 minutes for the scrape to complete</li>
                 <li>All agents (rating ≥4.9) are automatically added to prospects</li>
-                <li>Return to <strong>Pipedrive Sync</strong> tab to sync them</li>
+                <li>Prospects are available in the CRM for follow-up</li>
               </ol>
             </div>
           </div>

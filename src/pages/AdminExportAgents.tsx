@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-type ExportFilter = "active" | "qualified" | "pipedrive_ready";
+type ExportFilter = "active" | "qualified";
 
 const AdminExportAgents = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -79,8 +79,8 @@ const AdminExportAgents = () => {
               Export Agents
             </CardTitle>
             <CardDescription>
-              Export agents from the professionals table. Choose whether to export all active agents, only qualified agents (4.8+
-              rating & 20+ reviews), or Pipedrive-ready agents.
+              Export agents from the professionals table. Choose whether to export all active agents or only qualified agents (4.8+
+              rating & 20+ reviews).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -97,12 +97,6 @@ const AdminExportAgents = () => {
                   <RadioGroupItem value="qualified" id="filter-qualified" />
                   <Label htmlFor="filter-qualified" className="font-normal cursor-pointer">
                     Qualified (4.8+ rating, 20+ reviews)
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="pipedrive_ready" id="filter-pipedrive" />
-                  <Label htmlFor="filter-pipedrive" className="font-normal cursor-pointer">
-                    Pipedrive-ready (qualified + email + synthesized bio)
                   </Label>
                 </div>
               </RadioGroup>

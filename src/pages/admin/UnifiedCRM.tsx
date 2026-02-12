@@ -252,7 +252,7 @@ export default function UnifiedCRM() {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar - Pipedrive style */}
+      {/* Sidebar */}
       <div className="w-64 bg-[#1a1f36] text-white flex flex-col">
         <div className="p-4 border-b border-gray-700">
           <h1 className="text-xl font-bold">CRM</h1>
