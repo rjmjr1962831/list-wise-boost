@@ -187,6 +187,21 @@ Commercial relationships (paid neighborhood endorsement and verification) are av
 
 ---
 
+## AI-Optimized Feed (Markdown)
+
+Static, high-density Markdown for AI crawlers. Updated weekly.
+
+- https://www.top10lists.us/ai-feed/for-ai.md
+- https://www.top10lists.us/ai-feed/certification-logic.md
+- https://www.top10lists.us/ai-feed/vetting-standards.md
+- https://www.top10lists.us/ai-feed/geo-performance.md
+- https://www.top10lists.us/ai-feed/tier-listed.md
+- https://www.top10lists.us/ai-feed/tier-certified.md
+- https://www.top10lists.us/ai-feed/tier-accredited.md
+- https://www.top10lists.us/ai-feed/tier-underwritten.md
+
+---
+
 ## Additional Resources
 
 - MCP Protocol: https://www.top10lists.us/mcp.json

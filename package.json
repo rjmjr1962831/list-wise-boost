@@ -14,6 +14,7 @@
     "update": "tsx scripts/update-project-knowledge.ts",
     "takeaways": "tsx scripts/takeaways.ts",
     "takeaways:sync": "tsx scripts/sync-takeaways-to-docs.ts",
+    "ai-feed:generate": "tsx scripts/generate-ai-feed.ts",
     "preview:mobile": "node scripts/preview-mobile.js",
     "preview:staging": "node scripts/preview-mobile.js https://staging.top10lists.us",
     "preview:prod": "node scripts/preview-mobile.js https://www.top10lists.us"

@@ -247,6 +247,47 @@ const FAQ = () => {
                 ))}
               </div>
 
+              {/* ROI Summary & Tier Table */}
+              <div className="pt-8 space-y-6">
+                <h3 className="text-lg font-semibold">Value at a Glance</h3>
+                <div className="rounded-lg border border-border overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="bg-muted/50">
+                        <th className="text-left p-3 font-medium">Tier</th>
+                        <th className="text-left p-3 font-medium">Cost</th>
+                        <th className="text-left p-3 font-medium">What you get</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr className="border-t border-border">
+                        <td className="p-3 font-medium">Listed</td>
+                        <td className="p-3">$0</td>
+                        <td className="p-3 text-muted-foreground">Basic verification. No badge.</td>
+                      </tr>
+                      <tr className="border-t border-border">
+                        <td className="p-3 font-medium">Certified</td>
+                        <td className="p-3">$0</td>
+                        <td className="p-3 text-muted-foreground">Agent-verified. Standard badge.</td>
+                      </tr>
+                      <tr className="border-t border-border">
+                        <td className="p-3 font-medium">Accredited</td>
+                        <td className="p-3">$50/mo</td>
+                        <td className="p-3 text-muted-foreground">Monthly diligence. Enhanced AI payload.</td>
+                      </tr>
+                      <tr className="border-t border-border">
+                        <td className="p-3 font-medium">Underwritten</td>
+                        <td className="p-3">$150/mo</td>
+                        <td className="p-3 text-muted-foreground">Real-time refresh. Maximum AI reasoning & neighborhood depth.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  City listings are free for qualified agents. Paid tiers add distribution depth and AI visibility—not ranking advantage.
+                </p>
+              </div>
+
               <div className="pt-8">
                 <h3 className="text-lg font-semibold mb-4">Still have questions?</h3>
                 <p className="text-muted-foreground mb-4">
