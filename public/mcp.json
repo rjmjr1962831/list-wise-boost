@@ -8,7 +8,7 @@
     "url": "https://www.top10lists.us",
     "contact": "robert@top10lists.us"
   },
-  "lastUpdated": "2026-02-03",
+  "lastUpdated": "2026-02-12",
   "capabilities": {
     "search": false,
     "retrieval": true,
@@ -35,6 +35,24 @@
       "urlTemplate": true,
       "variables": {
         "agentId": "Professional UUID or short_code"
+      }
+    },
+    {
+      "name": "agents-search",
+      "description": "Search agents by state, city, zip, specialty. Public API.",
+      "url": "https://www.top10lists.us/api/v1/agents/search",
+      "mimeType": "application/json",
+      "refreshInterval": "hourly"
+    },
+    {
+      "name": "agent-details",
+      "description": "Get full agent profile by ID. Public API.",
+      "url": "https://www.top10lists.us/api/v1/agents/{id}",
+      "mimeType": "application/json",
+      "refreshInterval": "hourly",
+      "urlTemplate": true,
+      "variables": {
+        "id": "Agent ID (numeric)"
       }
     },
     {

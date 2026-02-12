@@ -1647,7 +1647,7 @@ serve(async (req) => {
             community_roles: data.community_roles || []
           },
           methodology: {
-            url: 'https://www.top10lists.us/methodology',
+            url: 'https://www.top10lists.us/about/ranking-methodology',
             version: '1.0'
           }
         }),

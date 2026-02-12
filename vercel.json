@@ -3,7 +3,8 @@
     { "source": "/for-ai", "destination": "/ai-feed/for-ai.md", "permanent": true },
     { "source": "/for-ai/", "destination": "/ai-feed/for-ai.md", "permanent": true },
     { "source": "/methodology", "destination": "/ai-feed/certification-logic.md", "permanent": true },
-    { "source": "/methodology/", "destination": "/ai-feed/certification-logic.md", "permanent": true }
+    { "source": "/methodology/", "destination": "/ai-feed/certification-logic.md", "permanent": true },
+    { "source": "/api-terms", "destination": "/terms", "permanent": true }
   ],
   "rewrites": [
     {
