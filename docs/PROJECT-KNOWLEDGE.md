@@ -74,7 +74,7 @@ Claude is the **lead developer** for Top10Lists.us, responsible for:
 - Mark a task "done" without verification
 - Crash on big jobs (batch them, use Edge functions)
 - Create a new Supabase client (use shared client from `@/integrations/supabase/client`)
-- Push secrets to GitHub (see Security section)
+- Give Robert commands, scripts, or PowerShell snippets to run when Claude can execute them directly
 
 ### Cost of Mistakes
 - Agent enrichment: ~$0.50/agent
@@ -117,14 +117,14 @@ Based on Census ACS income/home value data:
 **Project ID:** `wiotrvoirdgzfacuuiem`
 
 **API Keys:**
-- **Anon/Publishable:** [STORED IN ENVIRONMENT - Ask Robert]
-- **Service Role:** [STORED IN ENVIRONMENT - Ask Robert]
+- **Anon/Publishable:** `[STORED IN ENVIRONMENT - Ask Robert]`
+- **Service Role:** `[STORED IN ENVIRONMENT - Ask Robert]`
 
 **Dashboard:** https://supabase.com/dashboard/project/wiotrvoirdgzfacuuiem
 
 **Environment Variables (Vercel/Vite):**
 - `VITE_SUPABASE_URL` = https://wiotrvoirdgzfacuuiem.supabase.co
-- `VITE_SUPABASE_PUBLISHABLE_KEY` = [Get from Robert]
+- `VITE_SUPABASE_PUBLISHABLE_KEY` = (use publishable key above)
 
 **CRITICAL:** Environment variable is `VITE_SUPABASE_PUBLISHABLE_KEY`, not `VITE_SUPABASE_ANON_KEY`.
 
@@ -172,19 +172,19 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 ### AI Services
 | Service | Key | Use |
 |---------|-----|-----|
-| **Anthropic** | [STORED IN ENVIRONMENT - Ask Robert] | Prime/Luxury content |
-| **DeepSeek** | [STORED IN ENVIRONMENT - Ask Robert] | Main tier (90% cheaper) |
-| **OpenAI** | [STORED IN ENVIRONMENT - Ask Robert] | |
-| **Perplexity** | [DEPRECATED - avoid] | DEPRECATED - avoid |
-| **Gemini** | [STORED IN ENVIRONMENT - Ask Robert] | Back in play (new key Feb 2026) |
+| **Anthropic** | `[STORED IN ENVIRONMENT - Ask Robert]` | Prime/Luxury content |
+| **DeepSeek** | `[STORED IN ENVIRONMENT - Ask Robert]` | Main tier (90% cheaper), selection rationale generation |
+| **OpenAI** | `[STORED IN ENVIRONMENT - Ask Robert]` | |
+| **Perplexity** | `[DEPRECATED]` | DEPRECATED - avoid |
+| **Gemini** | `[STORED IN ENVIRONMENT - Ask Robert]` | Back in play (new key Feb 2026) |
 
 ### Infrastructure
 | Service | Key |
 |---------|-----|
-| **Exa.ai** | [STORED IN ENVIRONMENT - Ask Robert] |
-| **GitHub Token** | [STORED IN ENVIRONMENT - Ask Robert] |
-| **Vercel API** | [STORED IN ENVIRONMENT - Ask Robert] |
-| **ProxyScrape** | [STORED IN ENVIRONMENT - Ask Robert] |
+| **Exa.ai** | `[STORED IN ENVIRONMENT - Ask Robert]` |
+| **GitHub Token** | `[STORED IN ENVIRONMENT - Ask Robert]` |
+| **Vercel API** | `[STORED IN ENVIRONMENT - Ask Robert]` (named "Claude Token") |
+| **ProxyScrape** | Host: `rp.scrapegw.com:6060` Auth: `[STORED IN ENVIRONMENT - Ask Robert]` |
 
 ---
 
@@ -219,6 +219,51 @@ Supabase returns max 1,000 rows by default. **Always paginate.** Never assume 1,
 - Census Bureau geocoding API
 - Endpoint: `https://geocoding.geo.census.gov/geocoder/geographies/coordinates?x={lon}&y={lat}&benchmark=2020&vintage=2020&layers=all&format=json`
 - Zip at: `result.geographies['Zip Code Tabulation Areas'][0].ZCTA5`
+
+### Selection Rationale Generation
+**Purpose:** Generate "Why We Selected" explanations for certified agents using DeepSeek AI.
+
+**Database:**
+- Column: `professionals.selection_rationale TEXT`
+- Column: `professionals.selection_rationale_generated_at TIMESTAMP`
+
+**Script:** `/scripts/enrichment/generate_selection_rationale.py`
+
+**Prompt:**
+```
+Based on this agent's complete profile, write a concise 2-3 sentence explanation 
+of why they were selected for Top10Lists certification.
+
+Focus on:
+- Quantifiable performance metrics (rating, review count, transactions)
+- Community involvement and credentials
+- What makes them stand out in their market
+
+Write in third person, present tense. Start with "Selected for..."
+Keep it factual and merit-based. Max 280 characters.
+```
+
+**Example Output:**
+```
+Selected for his consistent performance, completing 92 transactions with a 
+perfect 5-star rating across 52 reviews. His 11-year expertise in diverse 
+property types, from new construction to distressed sales, makes him a 
+standout market resource.
+```
+
+**CRM Display:**
+- AgentDetail component shows rationale in dedicated "Why We Selected This Agent" section
+- Appears between Performance & Revenue and Bio sections
+
+**Usage:**
+```bash
+python scripts/enrichment/generate_selection_rationale.py --test  # Test on 1 agent
+python scripts/enrichment/generate_selection_rationale.py --all   # Process all active AZ/CA agents
+```
+
+**Cost:** ~$7 for all 3,500 agents (DeepSeek pricing)
+
+**Status:** Infrastructure complete, tested and working (Feb 12, 2026)
 
 ---
 
@@ -333,7 +378,7 @@ If a field has data, your code must:
 
 **Superadmin Account:**
 - Email: robert@aryah.ai
-- UUID: [STORED IN ENVIRONMENT - Ask Robert]
+- UUID: cabfb11c-dbaa-4af2-81b9-15e4bd097400
 - Role: superadmin
 
 **Routes:**
@@ -487,87 +532,31 @@ Must return full HTML content, not React shell.
 
 ## Claude Operational Protocol
 
-### The RYK Function (Refresh Session Memory)
+### The Takeaways Function
 
-**When Robert says "ryk":**
+**When Robert says "run takeaways" or "takeaways":**
 
-1. **Read** `/mnt/project/TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md`
-2. **Refresh** Claude's session context with current knowledge
-3. **Confirm** "Session memory refreshed with v[X.X] knowledge"
-
-**Purpose:** Keeps Claude's working memory synchronized with the master knowledge file.
-
----
-
-### The Takeaways Function (Full Integration)
-
-**Automated Schedule:**
-- **2000 MST:** Cursor and Gemini post their daily update files to GitHub
-- **2100 MST:** Cron job runs `takeaways` to integrate everything
-- **Manual trigger:** Robert can run `takeaways` anytime
-- **Result:** All systems start fresh with synchronized knowledge every morning
-
-**When Robert says "takeaways" (or cron triggers at 2100 MST):**
-
-1. **Read** current `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` from `/mnt/project/`
-
-2. **Ingest external updates:**
-   - Cursor's file: `/docs/daily-updates/cursor-YYYY-MM-DD.md`
-   - Gemini's file: `/docs/daily-updates/gemini-YYYY-MM-DD.md`
-
-3. **Integrate** all information:
-   - Session learnings (if manual run)
-   - Cursor's daily findings
-   - Gemini's daily findings
-   - Apply to appropriate sections
-
-4. **Check** for conflicts across all three sources
-
-5. **Deprecate** outdated information
-
+1. **Identify** information from the session that belongs in project knowledge (operational facts, configuration changes, new infrastructure, deprecated patterns)
+2. **Read** existing `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` from `/mnt/project/`
+3. **Integrate** new information into appropriate sections
+4. **Check** for conflicts or superseded information (e.g., PrivateEmail to Google Workspace)
+5. **Deprecate** outdated information by moving to "Deprecated Services" or updating inline
 6. **Update** version number and date at bottom
+7. **Output** the updated file to `/mnt/user-data/outputs/` for download
+8. **Push to GitHub** via API to `TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md` in repo root
 
-7. **Archive** daily update files:
-   - Move to `/docs/daily-updates/archive/YYYY-MM-DD/`
-   - Keep last 7 days
-   - Delete archives older than 7 days
+**Do NOT:**
+- Write a summary in chat (that's not takeaways)
+- Include educational content (like SEO history) unless it's operational
+- Add information that belongs in separate project documentation (like TVPR)
+- Include temporary troubleshooting steps or unresolved issues
 
-8. **Create TWO versions:**
-   
-   **Version A - FULL (for Claude Project):**
-   - Contains all API keys, credentials, secrets
-   - Output to `/mnt/user-data/outputs/TOP10LISTS-COMPLETE-KNOWLEDGE-UPDATED.md`
-   - Robert manually uploads to Claude Project at `/mnt/project/`
-   - **NEVER pushed to GitHub**
-   
-   **Version B - SANITIZED (for GitHub):**
-   - Same operational knowledge, no secrets
-   - Pushed to GitHub at `/docs/PROJECT-KNOWLEDGE.md`
-   - Cursor and Gemini read this for next cycle
-
-**Integration Rules:**
-
-**Include from all sources:**
-- New bugs discovered and fixed
-- Performance optimizations
-- Database schema changes (if approved)
-- New patterns or workflows
-- Deprecated approaches
-- Hard stops from mistakes
-- Configuration changes (structure only, not actual secrets)
-
-**Exclude:**
-- Secrets or credentials
-- Temporary debugging steps
-- Unresolved issues
-- Educational content
-- Task completion notes
-
-**Version History Format:**
-```
-*Version 3.7 - February 12, 2026*
-*Updated: Cursor fixed pagination bug, Gemini optimized cache, Claude added security section*
-```
+**Include:**
+- New configuration values (API keys, environment variables)
+- New infrastructure (database tables, routes, services)
+- Pattern changes (how to use Supabase client)
+- Deprecated services or approaches
+- Hard stops that emerged from mistakes
 
 ### No Crashing on Big Jobs
 
@@ -589,7 +578,7 @@ SELECT cron.schedule(
     url := 'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/function-name',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
-      'X-Enrichment-Key', '[GET FROM ROBERT]'
+      'X-Enrichment-Key', '[STORED IN ENVIRONMENT - Ask Robert]'
     ),
     body := '{}'::jsonb
   );
@@ -623,32 +612,11 @@ C:\Users\rober\supabase.exe secrets set KEY=value --project-ref wiotrvoirdgzfacu
 
 ---
 
-## Security
-
-### NEVER Commit Secrets to GitHub
-
-**Protected files that must NOT be pushed to GitHub:**
-- Any file containing API keys
-- Environment files with credentials
-- Full project knowledge with secrets (use sanitized version only)
-
-**What CAN be pushed:**
-- Sanitized documentation at `/docs/PROJECT-KNOWLEDGE.md`
-- Code files (secrets should be in environment variables)
-- Configuration templates (with placeholder values)
-
-**If you need to reference credentials in documentation:**
-- Use placeholders: `[STORED IN ENVIRONMENT - Ask Robert]`
-- Never include actual keys, tokens, or passwords
-- Document the environment variable name, not the value
-
----
-
 ## Quick Reference Commands
 
 ### Test Enrichment API
 ```bat
-curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: [GET FROM ROBERT]" -o audit.txt && notepad audit.txt
+curl -s -X GET "https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=audit" -H "X-Enrichment-Key: [STORED IN ENVIRONMENT - Ask Robert]" -o audit.txt && notepad audit.txt
 ```
 
 ### Test Bot Rendering
@@ -658,7 +626,7 @@ curl -s -D - -H "User-Agent: claudebot" "https://www.top10lists.us/arizona/scott
 
 ### Download from GitHub
 ```bat
-curl -s -H "Authorization: token [GET FROM ROBERT]" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
+curl -s -H "Authorization: token [STORED IN ENVIRONMENT - Ask Robert]" -H "Accept: application/vnd.github.v3.raw" "https://api.github.com/repos/rjmjr1962831/list-wise-boost/contents/path/to/file.ts" -o file.ts
 ```
 
 ---
@@ -674,8 +642,8 @@ curl -s -H "Authorization: token [GET FROM ROBERT]" -H "Accept: application/vnd.
 
 ## Shorthand
 
-- **ryk** = "Remember your knowledge" (refresh session memory with current project knowledge)
-- **takeaways** = Run the takeaways function (integrate session + Cursor + Gemini updates)
+- **ryt** = "Remember your knowledge"
+- **takeaways** = Run the takeaways function (update project knowledge)
 
 ---
 
@@ -685,9 +653,8 @@ curl -s -H "Authorization: token [GET FROM ROBERT]" -H "Accept: application/vnd.
 2. **When in doubt, ask. Breaking things costs money.**
 3. **"Done!" without verification is not done.**
 4. **Test before deploy. Always.**
-5. **Never push secrets to GitHub.**
 
 ---
 
-*Version 3.7 - February 11, 2026*
-*Updated: ryk and takeaways functions corrected, daily sync protocol with Cursor/Gemini added, 7-day rolling archive*
+*Version 3.6 - February 12, 2026*
+*Updated: Added selection_rationale infrastructure, new DeepSeek API key, HARD STOP rule against giving Robert commands Claude can execute*
