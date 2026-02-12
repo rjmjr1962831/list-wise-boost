@@ -22,7 +22,7 @@ from datetime import datetime
 # Configuration
 SUPABASE_URL = "https://wiotrvoirdgzfacuuiem.supabase.co"
 ENRICHMENT_KEY = "t10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a"
-DEEPSEEK_API_KEY = "REDACTED_DEEPSEEK_KEY"
+DEEPSEEK_API_KEY = "sk-7fba7f66337d4108bfceeee4151e8b8f"
 
 DEEPSEEK_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 
@@ -41,40 +41,51 @@ Keep it factual and merit-based. Max 280 characters."""
 
 
 def fetch_agents_needing_rationale(limit=None):
-    """Fetch agents with bios but no selection_rationale."""
+    """Fetch active agents in AZ/CA with bios but no selection_rationale."""
     url = f"{SUPABASE_URL}/functions/v1/enrichment-api"
     headers = {
         "X-Enrichment-Key": ENRICHMENT_KEY,
         "Content-Type": "application/json"
     }
     
-    # Fetch agents with synthesized_bio
-    # Filter for NULL selection_rationale in Python since API doesn't handle NULL filters well
-    payload = {
-        "table": "professionals",
-        "select": "id,name,synthesized_bio,selection_rationale",
-        "filters": [],  # No filters, we'll filter in Python
-        "limit": limit or 1000,
-        "offset": 0
-    }
+    all_agents = []
     
-    response = requests.post(
-        f"{url}?action=query",
-        headers=headers,
-        json=payload
-    )
-    
-    if response.status_code != 200:
-        raise Exception(f"Failed to fetch agents: {response.text}")
-    
-    result = response.json()
-    agents = result.get('data', [])
+    # Fetch Arizona agents
+    for state in ['arizona', 'california']:
+        payload = {
+            "table": "professionals",
+            "select": "id,name,synthesized_bio,selection_rationale,state_slug,active",
+            "filters": [
+                {"field": "state_slug", "operator": "eq", "value": state},
+                {"field": "active", "operator": "eq", "value": True}
+            ],
+            "limit": 1000,
+            "offset": 0
+        }
+        
+        response = requests.post(
+            f"{url}?action=query",
+            headers=headers,
+            json=payload
+        )
+        
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch {state} agents: {response.text}")
+        
+        result = response.json()
+        agents = result.get('data', [])
+        all_agents.extend(agents)
     
     # Filter in Python: must have bio and no rationale
     filtered = [
-        a for a in agents 
-        if a.get('synthesized_bio') and not a.get('selection_rationale')
+        a for a in all_agents 
+        if a.get('synthesized_bio') 
+        and not a.get('selection_rationale')
     ]
+    
+    # Apply user limit AFTER filtering
+    if limit:
+        filtered = filtered[:limit]
     
     return filtered
 
