@@ -47,7 +47,13 @@ serve(async (req) => {
               url: agent.zillow_profile_url,
               scrapeReviews: true,
               scrapeListings: true,
-              scrapeTransactionHistory: true
+              scrapeTransactionHistory: true,
+              proxyConfiguration: {
+                useApifyProxy: false,
+                proxyUrls: [
+                  'http://ws1et3ycrlwml6w:fyg90v72ru9t1xq@rp.scrapegw.com:6060'
+                ]
+              }
             })
           }
         )
