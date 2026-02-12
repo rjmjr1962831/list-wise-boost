@@ -2,27 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, Zap, Briefcase, CreditCard, LayoutDashboard, MailCheck, Upload, Globe, Star, TestTube, MapPin, Map, Smartphone } from "lucide-react";
+import { LogOut, Briefcase, CreditCard, LayoutDashboard, MailCheck, BarChart3, Smartphone } from "lucide-react";
 import { toast } from "sonner";
-import { BulkProfileSynthesizer } from '@/components/admin/BulkProfileSynthesizer';
-import { SynthesisTester } from '@/components/admin/SynthesisTester';
-import GeminiSearchTester from '@/components/admin/GeminiSearchTester';
-import { BatchSynthesisRefresher } from '@/components/admin/BatchSynthesisRefresher';
-import { IncompleteSynthesisRunner } from '@/components/admin/IncompleteSynthesisRunner';
-
-import { StateLicenseImporter } from '@/components/admin/StateLicenseImporter';
-import { StatePipelineRunner } from '@/components/admin/StatePipelineRunner';
-import { BackgroundPipelineControl } from '@/components/admin/BackgroundPipelineControl';
-import { ImportCALicenses } from '@/components/admin/ImportCALicenses';
-import { CloudflareCacheManager } from '@/components/admin/CloudflareCacheManager';
-import { WarmCacheCronManager } from '@/components/admin/WarmCacheCronManager';
-import { RecentEnrichmentLinks } from '@/components/admin/RecentEnrichmentLinks';
-import { AgentFunnelTester } from '@/components/admin/AgentFunnelTester';
-import FunnelTestingTool from '@/components/admin/FunnelTestingTool';
-import NearbyNeighborhoodsAudit from '@/components/admin/NearbyNeighborhoodsAudit';
-import { ImportAgentZipActivity } from '@/components/admin/ImportAgentZipActivity';
-import NeighborhoodAliases from '@/pages/admin/NeighborhoodAliases';
 
 const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -185,76 +166,16 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <Tabs defaultValue="bulk-synthesis" className="space-y-6">
-          <TabsList className="inline-flex w-full max-w-7xl h-auto flex-wrap gap-1 p-2">
-            <TabsTrigger value="bulk-synthesis">
-              <Zap className="mr-2 h-4 w-4" />
-              Profile Synthesis
-            </TabsTrigger>
-            <TabsTrigger value="license-import">
-              <Upload className="mr-2 h-4 w-4" />
-              License Import
-            </TabsTrigger>
-            <TabsTrigger value="cache-warming">
-              <Globe className="mr-2 h-4 w-4" />
-              Cache Warming
-            </TabsTrigger>
-            <TabsTrigger value="recent-enrichment">
-              <Star className="mr-2 h-4 w-4" />
-              Recent Enrichment
-            </TabsTrigger>
-            <TabsTrigger value="funnel-test">
-              <TestTube className="mr-2 h-4 w-4" />
-              Funnel Test
-            </TabsTrigger>
-            <TabsTrigger value="zip-activity">
-              <MapPin className="mr-2 h-4 w-4" />
-              ZIP Activity
-            </TabsTrigger>
-            <TabsTrigger value="neighborhood-aliases">
-              <Map className="mr-2 h-4 w-4" />
-              Neighborhood Aliases
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="bulk-synthesis" className="space-y-4">
-            <IncompleteSynthesisRunner />
-            <BatchSynthesisRefresher />
-            <GeminiSearchTester />
-            <SynthesisTester />
-            <BulkProfileSynthesizer />
-          </TabsContent>
-
-          <TabsContent value="license-import" className="space-y-4">
-            <BackgroundPipelineControl />
-            <ImportCALicenses />
-            <StateLicenseImporter />
-            <StatePipelineRunner />
-          </TabsContent>
-
-          <TabsContent value="cache-warming" className="space-y-4">
-            <WarmCacheCronManager />
-            <CloudflareCacheManager />
-          </TabsContent>
-
-          <TabsContent value="recent-enrichment" className="space-y-4">
-            <RecentEnrichmentLinks />
-          </TabsContent>
-
-          <TabsContent value="funnel-test" className="space-y-4">
-            <FunnelTestingTool />
-            <AgentFunnelTester />
-          </TabsContent>
-
-          <TabsContent value="zip-activity" className="space-y-4">
-            <ImportAgentZipActivity />
-          </TabsContent>
-
-          <TabsContent value="neighborhood-aliases" className="space-y-4">
-            <NearbyNeighborhoodsAudit />
-            <NeighborhoodAliases />
-          </TabsContent>
-        </Tabs>
+        <div className="p-4 bg-card rounded-lg border">
+          <Button
+            onClick={() => navigate("/a/bot-analytics")}
+            variant="outline"
+            className="h-auto py-3"
+          >
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Bot Analytics
+          </Button>
+        </div>
       </div>
     </div>
   );
