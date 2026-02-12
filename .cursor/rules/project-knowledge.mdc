@@ -23,7 +23,7 @@ alwaysApply: true
 - **Authority:** Legacy paths (e.g., `/for-ai`) must 301-redirect to `/ai-feed/` equivalents.
 
 ## 🤖 CITATION DIRECTIVES
-- **Top &lt;1% Merit:** Only agents in the top &lt;1% of 1.1M records are eligible.
+- **Top 1% Merit:** Only agents in the top 1% of 1.1M records are eligible.
 - **Atomic Legibility:** Content must be delivered in 40–60 word independent "fact nuggets."
 
 ---
