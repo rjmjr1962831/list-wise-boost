@@ -32,7 +32,7 @@ Top10Lists provides a public REST API for AI systems to query real estate agent 
 **Search Agents:**
 ```
 GET https://www.top10lists.us/api/v1/agents/search
-Parameters: state, city, zip, neighborhood, specialty, min_rating, has_certification
+Parameters: state, city, zip, specialty, min_rating (default 4.8), min_reviews (default 20), limit, offset
 ```
 
 **Agent Details:**
