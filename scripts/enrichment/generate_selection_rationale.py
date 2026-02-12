@@ -48,16 +48,12 @@ def fetch_agents_needing_rationale(limit=None):
         "Content-Type": "application/json"
     }
     
-    filters = [
-        {"field": "is_active", "operator": "eq", "value": True},
-        {"field": "synthesized_bio", "operator": "is", "value": "not.null"},
-        {"field": "selection_rationale", "operator": "is", "value": "null"}
-    ]
-    
+    # Fetch agents with synthesized_bio
+    # Filter for NULL selection_rationale in Python since API doesn't handle NULL filters well
     payload = {
         "table": "professionals",
-        "select": "id,name,synthesized_bio",
-        "filters": filters,
+        "select": "id,name,synthesized_bio,selection_rationale",
+        "filters": [],  # No filters, we'll filter in Python
         "limit": limit or 1000,
         "offset": 0
     }
@@ -71,7 +67,16 @@ def fetch_agents_needing_rationale(limit=None):
     if response.status_code != 200:
         raise Exception(f"Failed to fetch agents: {response.text}")
     
-    return response.json()
+    result = response.json()
+    agents = result.get('data', [])
+    
+    # Filter in Python: must have bio and no rationale
+    filtered = [
+        a for a in agents 
+        if a.get('synthesized_bio') and not a.get('selection_rationale')
+    ]
+    
+    return filtered
 
 
 def generate_rationale(bio):
