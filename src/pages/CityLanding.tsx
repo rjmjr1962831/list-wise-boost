@@ -250,7 +250,7 @@ export default function CityLanding() {
         </header>
 
         <main>
-          <CityMarketOverview citySlug={city.slug} cityName={city.name} stateName={city.state} />
+          <CityMarketOverview citySlug={city.slug} cityName={city.name} stateName={city.state} cityId={city.id} stateSlug={(city as any).state_slug || normalizedStateSlug} />
         </main>
 
         <footer className="py-12 bg-muted/50">

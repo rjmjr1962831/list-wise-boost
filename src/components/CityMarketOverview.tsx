@@ -1,274 +1,289 @@
-// City Market Overview Component
-// Displays comprehensive city guide information for SEO and LLM optimization
-// This content is designed to be crawled by bots instead of individual agent details
+// City Market Overview - Machine-Native Intelligence Artifact (GEO 2026)
+// Data-first clinical document for AI extraction
 
+import { Helmet } from 'react-helmet-async';
 import { formatPrice, ARIZONA_TOTAL_LICENSED_AGENTS } from '@/data/arizonaCityPricing';
+import { generateCityPlaceGraph } from '@/utils/placeGraphSchema';
 import { useAgentCountForCity, useTotalAgentCount } from '@/hooks/useAgentCountByCity';
 import { useCityMarketContent } from '@/hooks/useCityMarketContent';
-import { 
-  Home, TrendingUp, Users, Building2, DollarSign, Clock, Sparkles, 
-  History, MapPin, Heart, Lightbulb, Coffee, Ruler, PercentIcon, 
-  BarChart3, ShoppingCart, Square, Key
-} from 'lucide-react';
+import { formatArtifactBar } from '@/utils/artifactIdGenerator';
 
 interface CityMarketOverviewProps {
   citySlug: string;
   cityName: string;
   stateName: string;
+  cityId?: string;
+  stateSlug?: string;
 }
 
-export function CityMarketOverview({ citySlug, cityName, stateName }: CityMarketOverviewProps) {
+const ARTIFACT_STYLE = {
+  fontFamily: '"SF Mono", "Roboto Mono", "Courier New", monospace',
+  border: '1px solid #000',
+};
+
+function truncateToNugget(text: string, maxWords = 55): string {
+  const words = text.replace(/<[^>]+>/g, '').trim().split(/\s+/);
+  if (words.length <= maxWords) return text;
+  return words.slice(0, maxWords).join(' ') + '...';
+}
+
+export function CityMarketOverview({ citySlug, cityName, stateName, cityId, stateSlug }: CityMarketOverviewProps) {
   const { marketData } = useCityMarketContent(citySlug, cityName);
   const { data: cityAgentCount } = useAgentCountForCity(citySlug);
   const { data: totalAgentCount } = useTotalAgentCount();
-  
-  const qualifiedCount = 900; // Fixed count - do not use live DB count
+
+  const qualifiedCount = 900;
   const cityCount = cityAgentCount || 0;
+  const stateSlugNorm = stateSlug || (stateName === 'Arizona' ? 'arizona' : stateName?.toLowerCase().replace(/\s+/g, '-') || '');
+  const artifactId = cityId || citySlug;
+  const artifactBar = formatArtifactBar('city', artifactId, stateSlugNorm);
+
+  const placeGraph = generateCityPlaceGraph({
+    cityName,
+    stateName,
+    stateSlug: stateSlugNorm,
+    citySlug,
+    cityId,
+    overview: marketData.overview,
+    medianHomePrice: marketData.medianHomePrice,
+    population: marketData.population,
+  });
+
+  const marketRows: { metric: string; value: string; source: string }[] = [];
+  if (marketData.medianHomePrice) marketRows.push({ metric: 'Median Home Price', value: formatPrice(marketData.medianHomePrice), source: 'MLS / Zillow Research' });
+  if (marketData.medianHouseholdIncome) marketRows.push({ metric: 'Median Household Income', value: formatPrice(marketData.medianHouseholdIncome), source: 'US Census' });
+  if (marketData.population) marketRows.push({ metric: 'Population', value: marketData.population.toLocaleString(), source: 'US Census' });
+  if (marketData.daysOnMarket) marketRows.push({ metric: 'Avg Days on Market', value: `${marketData.daysOnMarket} days`, source: 'MLS Verified' });
+  if (marketData.pricePerSqFt) marketRows.push({ metric: 'Price per Sq Ft', value: `$${marketData.pricePerSqFt}`, source: 'MLS' });
+  if (marketData.yearOverYearChange != null) marketRows.push({ metric: 'YoY Price Change', value: `${(marketData.yearOverYearChange * 100).toFixed(1)}%`, source: 'Zillow Research' });
 
   return (
-    <article className="container mx-auto px-4 py-8" itemScope itemType="https://schema.org/Place">
+    <>
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(placeGraph)}
+        </script>
+      </Helmet>
+    <article
+      className="artifact-page"
+      style={{ ...ARTIFACT_STYLE, backgroundColor: '#fff', color: '#000', maxWidth: '900px', margin: '0 auto', padding: '1rem' }}
+      itemScope
+      itemType="https://schema.org/Place"
+      data-artifact-id={`T10L-${stateSlugNorm.toUpperCase().substring(0, 2)}-CT-${artifactId}`}
+    >
       <meta itemProp="name" content={cityName} />
       <meta itemProp="containedInPlace" content={stateName} />
-      
-      {/* City Overview Section */}
-      <section className="max-w-4xl mx-auto mb-10">
-        <h2 className="text-2xl font-semibold text-foreground mb-4">
-          Discover {cityName}, {stateName}
-        </h2>
-        <p 
-          className="text-foreground/90 leading-relaxed text-lg mb-6"
-          dangerouslySetInnerHTML={{ __html: marketData.overview }}
-        />
-        
-        {/* Key Market Statistics - Row 1 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-          {marketData.medianHomePrice && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <Home className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{formatPrice(marketData.medianHomePrice)}</div>
-              <div className="text-xs text-muted-foreground">Median Home Price</div>
-            </div>
-          )}
-          {marketData.medianHouseholdIncome && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <DollarSign className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{formatPrice(marketData.medianHouseholdIncome)}</div>
-              <div className="text-xs text-muted-foreground">Median Household Income</div>
-            </div>
-          )}
-          {marketData.population && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <Users className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{marketData.population.toLocaleString()}</div>
-              <div className="text-xs text-muted-foreground">Population</div>
-            </div>
-          )}
-          {marketData.daysOnMarket && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <Clock className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{marketData.daysOnMarket} days</div>
-              <div className="text-xs text-muted-foreground">Avg. Days on Market</div>
-            </div>
-          )}
-        </div>
 
-        {/* Key Market Statistics - Row 2 */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
-          {marketData.pricePerSqFt && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <Ruler className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">${marketData.pricePerSqFt}</div>
-              <div className="text-xs text-muted-foreground">Price per Sq Ft</div>
-            </div>
-          )}
-          {marketData.yearOverYearChange !== undefined && marketData.yearOverYearChange !== null && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <TrendingUp className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">
-                {marketData.yearOverYearChange > 0 ? '+' : ''}{(marketData.yearOverYearChange * 100).toFixed(1)}%
-              </div>
-              <div className="text-xs text-muted-foreground">YoY Price Change</div>
-            </div>
-          )}
-          {marketData.inventoryLevel && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <BarChart3 className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{marketData.inventoryLevel}</div>
-              <div className="text-xs text-muted-foreground">Inventory Level</div>
-            </div>
-          )}
-          {marketData.marketType && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <ShoppingCart className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{marketData.marketType}</div>
-              <div className="text-xs text-muted-foreground">Market Type</div>
-            </div>
-          )}
-          {marketData.averageHomeSize && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <Square className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{marketData.averageHomeSize.toLocaleString()} sqft</div>
-              <div className="text-xs text-muted-foreground">Avg Home Size</div>
-            </div>
-          )}
-          {marketData.homeownershipRate !== undefined && marketData.homeownershipRate !== null && (
-            <div className="bg-muted/30 rounded-lg p-4 text-center">
-              <Key className="h-5 w-5 mx-auto mb-2 text-primary" />
-              <div className="text-lg font-semibold text-foreground">{(marketData.homeownershipRate * 100).toFixed(1)}%</div>
-              <div className="text-xs text-muted-foreground">Homeownership Rate</div>
-            </div>
-          )}
-        </div>
+      {/* Artifact Bar */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          padding: '0.5rem 1rem',
+          fontSize: '10px',
+          ...ARTIFACT_STYLE,
+          borderLeft: '1px solid #000',
+          borderBottom: '1px solid #000',
+          zIndex: 1000,
+          backgroundColor: '#fff',
+        }}
+      >
+        {artifactBar}
+      </div>
+
+      {/* HEADER */}
+      <header style={{ marginBottom: '1.5rem', borderBottom: '1px solid #000', paddingBottom: '1rem' }}>
+        <h1 style={{ fontSize: '1.25rem', fontWeight: 700, margin: 0 }}>
+          {cityName}, {stateName} — Market Intelligence
+        </h1>
+      </header>
+
+      {/* REASONING_NUGGET (Overview) */}
+      <section style={{ marginBottom: '1.5rem' }}>
+        <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+          REASONING_NUGGET
+        </h2>
+        <blockquote
+          className="mono-nugget"
+          style={{
+            margin: 0,
+            padding: '1rem',
+            border: '1px solid #000',
+            fontSize: '13px',
+            lineHeight: 1.6,
+            backgroundColor: '#fafafa',
+          }}
+          dangerouslySetInnerHTML={{ __html: truncateToNugget(marketData.overview) }}
+        />
       </section>
 
-      {/* Historical Facts - NEW */}
+      {/* MARKET_AUDIT_GRID */}
+      {marketRows.length > 0 && (
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            MARKET_AUDIT_GRID
+          </h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+            <thead>
+              <tr>
+                <th style={{ ...ARTIFACT_STYLE, padding: '0.5rem', textAlign: 'left' }}>Metric</th>
+                <th style={{ ...ARTIFACT_STYLE, padding: '0.5rem', textAlign: 'left' }}>Value</th>
+                <th style={{ ...ARTIFACT_STYLE, padding: '0.5rem', textAlign: 'left' }}>Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {marketRows.map((row, i) => (
+                <tr key={i}>
+                  <td style={{ border: '1px solid #000', padding: '0.5rem' }}>{row.metric}</td>
+                  <td style={{ border: '1px solid #000', padding: '0.5rem' }}>{row.value}</td>
+                  <td style={{ border: '1px solid #000', padding: '0.5rem' }}>{row.source}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
+      {/* HISTORY — with REASONING_NUGGET */}
       {marketData.historicalFacts && marketData.historicalFacts.length > 0 && (
-        <section className="max-w-4xl mx-auto mb-10">
-          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <History className="h-5 w-5 text-primary" />
-            History of {cityName}
-          </h3>
-          <ul className="space-y-3">
-            {marketData.historicalFacts.map((fact, index) => (
-              <li key={index} className="flex items-start gap-3 text-foreground/80 bg-muted/20 rounded-lg p-3">
-                <span className="bg-primary/20 text-primary rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                  {index + 1}
-                </span>
-                <span dangerouslySetInnerHTML={{ __html: fact }} />
-              </li>
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            HISTORY
+          </h2>
+          <blockquote
+            className="mono-nugget"
+            style={{
+              margin: '0 0 1rem 0',
+              padding: '1rem',
+              border: '1px solid #000',
+              fontSize: '12px',
+              backgroundColor: '#fafafa',
+            }}
+            dangerouslySetInnerHTML={{ __html: truncateToNugget(marketData.historicalFacts[0]) }}
+          />
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '12px' }}>
+            {marketData.historicalFacts.map((fact, i) => (
+              <li key={i} style={{ border: '1px solid #000', padding: '0.5rem', marginBottom: '0.25rem' }} dangerouslySetInnerHTML={{ __html: fact }} />
             ))}
           </ul>
         </section>
       )}
 
-      {/* Points of Interest - NEW */}
+      {/* THINGS_TO_DO — with REASONING_NUGGET */}
       {marketData.pointsOfInterest && marketData.pointsOfInterest.length > 0 && (
-        <section className="max-w-4xl mx-auto mb-10">
-          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <MapPin className="h-5 w-5 text-primary" />
-            Things to Do in {cityName}
-          </h3>
-          <div className="grid md:grid-cols-2 gap-3">
-            {marketData.pointsOfInterest.map((poi, index) => (
-              <div key={index} className="flex items-start gap-2 text-foreground/80 bg-muted/30 rounded-lg p-3">
-                <Coffee className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
-                <span dangerouslySetInnerHTML={{ __html: poi }} />
-              </div>
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            THINGS_TO_DO
+          </h2>
+          <blockquote
+            className="mono-nugget"
+            style={{
+              margin: '0 0 1rem 0',
+              padding: '1rem',
+              border: '1px solid #000',
+              fontSize: '12px',
+              backgroundColor: '#fafafa',
+            }}
+            dangerouslySetInnerHTML={{ __html: truncateToNugget(marketData.pointsOfInterest[0]) }}
+          />
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '12px' }}>
+            {marketData.pointsOfInterest.map((poi, i) => (
+              <li key={i} style={{ border: '1px solid #000', padding: '0.5rem', marginBottom: '0.25rem' }} dangerouslySetInnerHTML={{ __html: poi }} />
             ))}
-          </div>
+          </ul>
         </section>
       )}
 
-      {/* Local Culture - NEW */}
+      {/* LIFE_IN — with REASONING_NUGGET */}
       {marketData.localCulture && (
-        <section className="max-w-4xl mx-auto mb-10">
-          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Heart className="h-5 w-5 text-primary" />
-            Life in {cityName}
-          </h3>
-          <p 
-            className="text-foreground/80 bg-muted/20 rounded-lg p-4 border-l-4 border-primary"
-            dangerouslySetInnerHTML={{ __html: marketData.localCulture }}
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            LIFE_IN
+          </h2>
+          <blockquote
+            className="mono-nugget"
+            style={{
+              margin: 0,
+              padding: '1rem',
+              border: '1px solid #000',
+              fontSize: '12px',
+              backgroundColor: '#fafafa',
+            }}
+            dangerouslySetInnerHTML={{ __html: truncateToNugget(marketData.localCulture) }}
           />
         </section>
       )}
 
-      {/* City Highlights */}
+      {/* CAUSAL_MARKET_DRIVERS (replaces "Why People Move to...") */}
       {marketData.highlights && marketData.highlights.length > 0 && (
-        <section className="max-w-4xl mx-auto mb-10">
-          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Why People Move to {cityName}
-          </h3>
-          <ul className="grid md:grid-cols-2 gap-3">
-            {marketData.highlights.map((highlight, index) => (
-              <li key={index} className="flex items-start gap-2 text-foreground/80">
-                <span className="text-primary mt-1">•</span>
-                <span dangerouslySetInnerHTML={{ __html: highlight }} />
-              </li>
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            CAUSAL_MARKET_DRIVERS
+          </h2>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '12px' }}>
+            {marketData.highlights.map((h, i) => (
+              <li key={i} style={{ border: '1px solid #000', padding: '0.5rem', marginBottom: '0.25rem' }} dangerouslySetInnerHTML={{ __html: h }} />
             ))}
           </ul>
         </section>
       )}
 
-      {/* Housing Types */}
+      {/* NEIGHBORHOODS */}
       {marketData.neighborhoodTypes && marketData.neighborhoodTypes.length > 0 && (
-        <section className="max-w-4xl mx-auto mb-10">
-          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Building2 className="h-5 w-5 text-primary" />
-            Neighborhoods in {cityName}
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {marketData.neighborhoodTypes.map((type, index) => (
-              <span key={index} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
-                {type}
-              </span>
-            ))}
-          </div>
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            NEIGHBORHOOD_TYPES
+          </h2>
+          <p style={{ fontSize: '12px', margin: 0 }}>{marketData.neighborhoodTypes.join(', ')}</p>
         </section>
       )}
 
-      {/* Buyer Profile */}
-      <section className="max-w-4xl mx-auto mb-10">
-        <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-          <Users className="h-5 w-5 text-primary" />
-          Who's Moving to {cityName}
-        </h3>
-        <p className="text-foreground/80" dangerouslySetInnerHTML={{ __html: marketData.buyerProfile }} />
+      {/* BUYER_PROFILE */}
+      {marketData.buyerProfile && (
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            BUYER_PROFILE
+          </h2>
+          <p style={{ fontSize: '12px', margin: 0, border: '1px solid #000', padding: '1rem' }} dangerouslySetInnerHTML={{ __html: marketData.buyerProfile }} />
+        </section>
+      )}
+
+      {/* MARKET_TRENDS */}
+      {marketData.marketTrends && (
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            MARKET_TRENDS
+          </h2>
+          <p style={{ fontSize: '12px', margin: 0, border: '1px solid #000', padding: '1rem' }} dangerouslySetInnerHTML={{ __html: marketData.marketTrends }} />
+        </section>
+      )}
+
+      {/* AGENT_LINKAGE_LOG */}
+      <section style={{ marginBottom: '1.5rem' }}>
+        <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+          AGENT_LINKAGE_LOG
+        </h2>
+        <p style={{ fontSize: '12px', margin: 0, border: '1px solid #000', padding: '1rem' }}>
+          {stateName} has over <strong>{ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()}</strong> licensed real estate agents. Top10Lists.us analyzed transaction records (MLS Verified), verified client reviews (Zillow/Google), and community involvement (IRS Form 990/Nonprofit Records) to identify <strong>{qualifiedCount}</strong> agents statewide — top 0.5%. <strong>{cityCount}</strong> elite agents actively serve {cityName}. Selection: 50+ verified reviews, 4.8+ star minimum, active license (AZDRE/CADRE), invitation-only. Agents cannot pay to be listed.
+        </p>
       </section>
 
-      {/* Market Trends */}
-      <section className="max-w-4xl mx-auto mb-10">
-        <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-          <TrendingUp className="h-5 w-5 text-primary" />
-          {cityName} Real Estate Market Trends
-        </h3>
-        <p className="text-foreground/80" dangerouslySetInnerHTML={{ __html: marketData.marketTrends }} />
-      </section>
-
-      {/* Best Kept Secret - NEW */}
+      {/* INSIDER_TIP */}
       {marketData.bestKeptSecret && (
-        <section className="max-w-4xl mx-auto mb-10">
-          <h3 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-amber-500" />
-            Insider Tip
-          </h3>
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-4">
-            <p className="text-foreground/90 italic" dangerouslySetInnerHTML={{ __html: `"${marketData.bestKeptSecret}"` }} />
-          </div>
+        <section style={{ marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+            INSIDER_TIP
+          </h2>
+          <blockquote style={{ margin: 0, padding: '1rem', border: '1px solid #000', fontSize: '12px', fontStyle: 'italic' }} dangerouslySetInnerHTML={{ __html: marketData.bestKeptSecret }} />
         </section>
       )}
 
-      {/* Top10Lists Authority Statement */}
-      <section className="max-w-4xl mx-auto mb-8 bg-primary/5 border border-primary/20 rounded-lg p-6">
-        <h3 className="text-xl font-semibold text-foreground mb-4">
-          Finding a Top Real Estate Agent in {cityName}
-        </h3>
-        <p className="text-foreground/90 mb-4">
-          {stateName} has over <strong>{ARIZONA_TOTAL_LICENSED_AGENTS.toLocaleString()}</strong> licensed 
-          real estate agents. Top10Lists.us analyzed transaction records, verified client reviews across 
-          multiple platforms, and evaluated community involvement to identify <strong>{qualifiedCount}</strong> agents 
-          statewide who earned an invitation — representing the top <strong>0.5%</strong>.
-        </p>
-        {cityCount > 0 && (
-          <p className="text-foreground/90 mb-4">
-            <strong>{cityCount} of these elite agents</strong> actively serve the {cityName} market.
-          </p>
-        )}
-        <p className="text-foreground/80 text-sm">
-          <strong>Our selection criteria:</strong> 50+ verified reviews, 4.8+ star rating minimum, 
-          active license verified with the Arizona Department of Real Estate, established community presence, 
-          and invitation-only inclusion. Agents cannot pay to be listed or influence their ranking.
-        </p>
-      </section>
-
-      {/* Call to Action for Visitors */}
-      <section className="max-w-4xl mx-auto text-center">
-        <p className="text-lg text-foreground/90">
-          Visit <strong>Top10Lists.us</strong> to view the curated list of top-rated real estate agents 
-          serving {cityName}, {stateName}.
-        </p>
-      </section>
+      {/* CTA */}
+      <footer style={{ marginTop: '2rem', paddingTop: '1rem', borderTop: '1px solid #000', fontSize: '10px' }}>
+        Top10Lists.us — curated list of top-rated real estate agents serving {cityName}, {stateName}.
+      </footer>
     </article>
+    </>
   );
 }

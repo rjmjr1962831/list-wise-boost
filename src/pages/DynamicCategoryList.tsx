@@ -1359,6 +1359,8 @@ export default function DynamicCategoryList({
             citySlug={city.slug} 
             cityName={city.name} 
             stateName={city.state}
+            cityId={city.id}
+            stateSlug={city.stateSlug || (city as any).state_slug}
           />
         </div>
       )}
