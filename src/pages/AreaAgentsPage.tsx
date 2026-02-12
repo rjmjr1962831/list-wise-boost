@@ -27,10 +27,9 @@ interface NeighborhoodData {
  * within 1.5 miles of the target neighborhood. Paginated at 10 per page.
  */
 export default function AreaAgentsPage() {
-  const { stateSlug, citySlug, zipCode, neighborhoodSlug } = useParams<{
+  const { stateSlug, citySlug, neighborhoodSlug } = useParams<{
     stateSlug: string;
     citySlug: string;
-    zipCode?: string;
     neighborhoodSlug: string;
   }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -129,9 +128,8 @@ export default function AreaAgentsPage() {
   }
 
   // Build qualified agents page URL
-  const qualifiedAgentsUrl = zipCode 
-    ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/qualified-real-estate-agents`
-    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
+  // Always use ZIP-less format (neighborhoods can span multiple ZIPs)
+  const qualifiedAgentsUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
   return (
     <>
