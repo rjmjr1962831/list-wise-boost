@@ -6,10 +6,12 @@ import { Loader2 } from 'lucide-react';
 import AgentProfileDossier, { Memo23Agent, StateLicense, Review } from '@/components/AgentProfileDossier';
 import { Professional } from '@/types/professional';
 import { generateAgentProfileSchema, professionalToSchemaData } from '@/utils/agentSchema';
-import { generateVerifiedAgentSchema, generateCitationText } from '@/utils/verifiedAgentSchema';
+import { generateVerifiedAgentSchema, generatePersonSchema, generateCitationText } from '@/utils/verifiedAgentSchema';
 import { professionalToVerifiedAgent } from '@/utils/professionalToVerifiedAgent';
 import { VerifiedAgent } from '@/types/verifiedAgent';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
+import { getStateDRESource } from '@/config/dataSources';
+import type { PressMentionRow, AwardRow, VerificationSourceRow } from '@/components/AgentProfileDossier';
 
 interface DBProfessional {
   id: string;
@@ -210,6 +212,93 @@ function extractAwards(awardsVerified: any, notableAchievements: any): string[] 
   }
   
   return awards.length > 0 ? awards.slice(0, 6) : null;
+}
+
+// Extract raw press mentions for MEDIA_COVERAGE table
+function extractRawPressMentions(pressMentions: any): PressMentionRow[] | null {
+  if (!pressMentions || !Array.isArray(pressMentions)) return null;
+  return pressMentions
+    .filter((p: any) => p.source || p.outlet || p.title)
+    .map((p: any) => ({
+      date: p.date || p.publishedAt,
+      publication: p.publication || p.outlet || p.source,
+      source: p.source,
+      outlet: p.outlet,
+      title: p.title,
+      url: p.url,
+    }))
+    .slice(0, 15);
+}
+
+// Extract raw awards for PROFESSIONAL_HONORS table
+function extractRawAwards(awardsVerified: any, notableAchievements: any): AwardRow[] | null {
+  const rows: AwardRow[] = [];
+  if (awardsVerified && Array.isArray(awardsVerified)) {
+    awardsVerified.forEach((a: any) => {
+      if (typeof a === 'string') {
+        rows.push({ title: a });
+      } else if (a.title || a.name) {
+        rows.push({
+          year: a.year,
+          issuingBody: a.issuingOrganization || a.organization,
+          organization: a.organization,
+          source: a.source,
+          name: a.name,
+          title: a.title,
+        });
+      }
+    });
+  }
+  if (notableAchievements && Array.isArray(notableAchievements)) {
+    notableAchievements
+      .filter((a: any) => a.credibility >= 7 && (a.title || a.name))
+      .forEach((a: any) => {
+        if (!rows.some(r => (r.title || r.name) === (a.title || a.name))) {
+          rows.push({
+            year: a.year,
+            issuingBody: a.organization || a.source,
+            organization: a.organization,
+            source: a.source,
+            name: a.name,
+            title: a.title,
+          });
+        }
+      });
+  }
+  return rows.length > 0 ? rows.slice(0, 15) : null;
+}
+
+// Build verification sources for DATA_VERIFICATION_LOG
+function buildVerificationSources(
+  dbProf: DBProfessional,
+  stateAbbrev: string,
+  licenseAgencyName: string
+): VerificationSourceRow[] {
+  const stateDRE = getStateDRESource(stateAbbrev);
+  const rows: VerificationSourceRow[] = [];
+
+  if (dbProf.license_number) {
+    rows.push({ claim: 'License', source: `${licenseAgencyName || stateDRE.name} Active Registry` });
+  }
+  if (dbProf.agent_sales_stats?.countAllTime || dbProf.total_sales) {
+    rows.push({ claim: 'Transactions', source: 'MLS Verified' });
+  }
+  if (dbProf.num_total_reviews || (dbProf.ratings as any)?.count) {
+    rows.push({ claim: 'Reviews', source: 'Platform Verified (Zillow/Google)' });
+  }
+  const dataLog = dbProf.data_sources_log as any[];
+  if (dataLog && Array.isArray(dataLog)) {
+    dataLog.forEach((entry: any) => {
+      const name = entry.sourceName || entry.source;
+      if (name && !rows.some(r => r.source.includes(name))) {
+        rows.push({
+          claim: entry.fieldsUpdated?.[0] || 'Data',
+          source: name,
+        });
+      }
+    });
+  }
+  return rows;
 }
 
 function convertToProfessional(dbProf: DBProfessional): Professional {
@@ -434,14 +523,25 @@ export default function CanonicalAgentProfile() {
   );
   const agentSchema = generateAgentProfileSchema(schemaData);
 
-  // Generate enhanced verified schema if available
-  const verifiedSchema = verifiedAgent ? generateVerifiedAgentSchema(verifiedAgent) : null;
+  // Generate enhanced verified schema if available (use canonical URL)
+  const verifiedSchema = verifiedAgent
+    ? generateVerifiedAgentSchema(verifiedAgent, { profileUrl: canonicalUrl })
+    : null;
+  const personSchema = verifiedAgent
+    ? generatePersonSchema(verifiedAgent, { profileUrl: canonicalUrl })
+    : null;
   const citationText = verifiedAgent ? generateCitationText(verifiedAgent) : null;
 
   // Convert data for AgentProfileDossier
   const memo23Agent = convertToMemo23Agent(rawDbProf);
   const licenseInfo = convertToLicense(rawDbProf, city.state);
   const selectedReviews = extractReviews(rawDbProf);
+  const stateAbbrev = city.state === 'Arizona' ? 'AZ' : city.state.substring(0, 2).toUpperCase();
+  const verificationSources = buildVerificationSources(
+    rawDbProf,
+    stateAbbrev,
+    licenseInfo?.agencyName || ''
+  );
 
   return (
     <>
@@ -464,42 +564,54 @@ export default function CanonicalAgentProfile() {
           {JSON.stringify(agentSchema)}
         </script>
         
-        {/* Enhanced Verified JSON-LD Schema */}
+        {/* Enhanced Verified JSON-LD Schema (RealEstateAgent + Person) */}
         {verifiedSchema && (
           <script type="application/ld+json">
             {JSON.stringify(verifiedSchema)}
           </script>
         )}
+        {personSchema && (
+          <script type="application/ld+json">
+            {JSON.stringify(personSchema)}
+          </script>
+        )}
       </Helmet>
 
-      {/* Breadcrumbs */}
-      <div className="container mx-auto px-4 pt-6 max-w-6xl">
-        <nav className="mb-2 text-sm text-muted-foreground">
-          <ol className="flex items-center space-x-2">
-            <li><a href="/" className="hover:text-foreground">Home</a></li>
-            <li>/</li>
-            <li><a href={`/${stateSlug}`} className="hover:text-foreground">{city.state}</a></li>
-            <li>/</li>
-            <li><a href={`/${stateSlug}/${city.slug}`} className="hover:text-foreground">{city.name}</a></li>
-            <li>/</li>
-            <li className="text-foreground">{professional.name}</li>
-          </ol>
-        </nav>
-      </div>
+      {/* Machine-Native Artifact - Breadcrumbs + Dossier */}
+      <div className="artifact-page">
+        <div className="container mx-auto px-4 pt-6 max-w-6xl">
+          <nav className="mb-2 text-[11px]" style={{ fontFamily: 'inherit' }}>
+            <ol className="flex items-center space-x-2">
+              <li><a href="/" style={{ color: '#000', textDecoration: 'underline' }}>Home</a></li>
+              <li>/</li>
+              <li><a href={`/${stateSlug}`} style={{ color: '#000', textDecoration: 'underline' }}>{city.state}</a></li>
+              <li>/</li>
+              <li><a href={`/${stateSlug}/${city.slug}`} style={{ color: '#000', textDecoration: 'underline' }}>{city.name}</a></li>
+              <li>/</li>
+              <li style={{ color: '#000' }}>{professional.name}</li>
+            </ol>
+          </nav>
+        </div>
 
-      {/* New AgentProfileDossier Component */}
+      {/* Machine-Native Artifact AgentProfileDossier */}
       <AgentProfileDossier
         agent={memo23Agent}
+        agentId={rawDbProf.id}
         license={licenseInfo}
         verificationUpdatedAt={new Date(rawDbProf.updated_at || rawDbProf.created_at)}
         getToKnowMe={rawDbProf.get_to_know_me}
         synthesizedBio={rawDbProf.synthesized_bio}
         selectionRationale={rawDbProf.selection_rationale}
         pressMentions={extractPressMentions(rawDbProf.press_mentions)}
+        rawPressMentions={extractRawPressMentions(rawDbProf.press_mentions)}
         certifications={extractCertifications(rawDbProf.certifications, rawDbProf.certifications_verified)}
         awards={extractAwards(rawDbProf.awards_verified, rawDbProf.notable_achievements)}
+        rawAwards={extractRawAwards(rawDbProf.awards_verified, rawDbProf.notable_achievements)}
         selectedReviews={selectedReviews}
+        verificationSources={verificationSources}
+        stateAbbrev={stateAbbrev}
       />
+      </div>
 
       {/* Hidden LLM Citation Block - uses inline styles for guaranteed hiding */}
       {citationText && (

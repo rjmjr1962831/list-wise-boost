@@ -1,16 +1,28 @@
 import { VerifiedAgent, Certification, Award, PressMention, PlatformReview } from '@/types/verifiedAgent';
 
 /**
+ * Options for schema generation
+ */
+export interface VerifiedAgentSchemaOptions {
+  /** Override profile URL (e.g. canonical page URL) */
+  profileUrl?: string;
+}
+
+/**
  * Generate comprehensive JSON-LD schema for a verified agent profile
  * Optimized for LLM citation and search engine structured data
  */
-export function generateVerifiedAgentSchema(agent: VerifiedAgent): object {
+export function generateVerifiedAgentSchema(
+  agent: VerifiedAgent,
+  options?: VerifiedAgentSchemaOptions
+): object {
+  const profileUrl = options?.profileUrl || agent.profileUrl;
   const schema: any = {
     '@context': 'https://schema.org',
     '@type': 'RealEstateAgent',
-    '@id': agent.profileUrl,
+    '@id': profileUrl,
     name: agent.name,
-    url: agent.profileUrl,
+    url: profileUrl,
     dateCreated: agent.cardCreatedAt,
     dateModified: agent.cardUpdatedAt,
   };
@@ -28,8 +40,10 @@ export function generateVerifiedAgentSchema(agent: VerifiedAgent): object {
     };
   }
 
-  // Description
-  if (agent.synthesizedBio || agent.description) {
+  // Description - prefer selection_rationale for LLM extraction
+  if (agent.selectionRationale) {
+    schema.description = agent.selectionRationale;
+  } else if (agent.synthesizedBio || agent.description) {
     schema.description = agent.synthesizedBio || agent.description;
   }
 
@@ -198,16 +212,20 @@ export function generateVerifiedAgentSchema(agent: VerifiedAgent): object {
   // Contact information
   if (agent.phone) schema.telephone = agent.phone;
   if (agent.email) schema.email = agent.email;
-  if (agent.website) schema.url = agent.website;
+  schema.url = profileUrl;
 
-  // Social profiles
+  // sameAs: state registry, verified 3rd-party profiles, social
+  const sameAs: string[] = [];
+  if (agent.license?.verificationUrl) {
+    sameAs.push(agent.license.verificationUrl);
+  }
+  if (agent.website) sameAs.push(agent.website);
   if (agent.socialLinks) {
-    const sameAs: string[] = [];
     if (agent.socialLinks.linkedin) sameAs.push(agent.socialLinks.linkedin);
     if (agent.socialLinks.facebook) sameAs.push(agent.socialLinks.facebook);
     if (agent.socialLinks.instagram) sameAs.push(agent.socialLinks.instagram);
-    if (sameAs.length > 0) schema.sameAs = sameAs;
   }
+  if (sameAs.length > 0) schema.sameAs = sameAs;
 
   // Member of Top10Lists
   schema.memberOf = {
@@ -216,6 +234,42 @@ export function generateVerifiedAgentSchema(agent: VerifiedAgent): object {
     url: 'https://top10lists.us',
   };
 
+  return schema;
+}
+
+/**
+ * Generate Person JSON-LD schema for dual-entity coverage
+ * Complements RealEstateAgent for comprehensive crawler extraction
+ */
+export function generatePersonSchema(
+  agent: VerifiedAgent,
+  options?: VerifiedAgentSchemaOptions
+): object {
+  const profileUrl = options?.profileUrl || agent.profileUrl;
+  const schema: any = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': `${profileUrl}#person`,
+    name: agent.name,
+    url: profileUrl,
+    jobTitle: 'Real Estate Agent',
+    description: agent.selectionRationale || agent.synthesizedBio || agent.description,
+  };
+  if (agent.imageUrl) schema.image = agent.imageUrl;
+  if (agent.phone) schema.telephone = agent.phone;
+  if (agent.email) schema.email = agent.email;
+  const sameAs: string[] = [];
+  if (agent.license?.verificationUrl) sameAs.push(agent.license.verificationUrl);
+  if (agent.website) sameAs.push(agent.website);
+  if (agent.socialLinks) {
+    if (agent.socialLinks.linkedin) sameAs.push(agent.socialLinks.linkedin);
+    if (agent.socialLinks.facebook) sameAs.push(agent.socialLinks.facebook);
+    if (agent.socialLinks.instagram) sameAs.push(agent.socialLinks.instagram);
+  }
+  if (sameAs.length > 0) schema.sameAs = sameAs;
+  if (agent.brokerage) {
+    schema.worksFor = { '@type': 'Organization', name: agent.brokerage.value };
+  }
   return schema;
 }
 
