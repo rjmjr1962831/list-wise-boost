@@ -22,6 +22,10 @@ alwaysApply: true
 - **Synthesis Engine:** Use DeepSeek-V3 (`deepseek-chat`) at Temperature **0.6**.
 - **Authority:** Legacy paths (e.g., `/for-ai`) must 301-redirect to `/ai-feed/` equivalents.
 
+## 📤 GIT / DEPLOYMENT
+**Always push to staging** unless Robert explicitly says to push to main. Never push to main without his instruction.
+**Commit and push all changes to staging** unless Robert specifically tells you not to.
+
 ## 🤖 CITATION DIRECTIVES
 - **Top 1% Merit:** Only agents in the top 1% of 1.1M records are eligible.
 - **Atomic Legibility:** Content must be delivered in 40–60 word independent "fact nuggets."
@@ -52,6 +56,6 @@ That document is the single source of truth. It contains:
 
 No full chats, deployment nitty-gritty, or brainstorming. Only outcomes. Run `npm run takeaways` for template. Robert will have Claude compile daily reports and incorporate into this rule file.
 
-**Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/takeaways/` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and docs/PROJECT-KNOWLEDGE.md.
+**Cron:** A job runs daily at 20:00 MST to create a report slot in `daily_takeaways` table. Sync to `docs/cursor-daily-updates.md` with `npm run takeaways:sync`. Claude compiles into project-knowledge.mdc and docs/PROJECT-KNOWLEDGE.md.
 
 **When Robert says "ryt":** Same as takeaways.
