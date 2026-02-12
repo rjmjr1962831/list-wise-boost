@@ -186,6 +186,9 @@ verify_jwt = false
 [functions.track-profile-event]
 verify_jwt = false
 
+[functions.funnel-select-tier]
+verify_jwt = false
+
 [functions.generate-test-profile-token]
 verify_jwt = true
 
@@ -319,6 +322,9 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.health-check]
+verify_jwt = false
+
+[functions.takeaways]
 verify_jwt = false
 
 [functions.send-frontend-error-alert]
