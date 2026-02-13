@@ -20,7 +20,6 @@ const MODELS = {
   
   // DeepSeek - Cost-effective for coding and structured tasks
   'deepseek-chat': { provider: 'deepseek', model: 'deepseek-chat' },
-  'deepseek-reasoner': { provider: 'deepseek', model: 'deepseek-reasoner' },
 };
 
 // Task routing configuration - which model to use for each task type
