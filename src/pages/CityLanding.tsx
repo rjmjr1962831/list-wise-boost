@@ -1,16 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
-import { MapPin, Search, ArrowLeft, Users, Loader2 } from "lucide-react";
+import { Link, Navigate, useParams } from "react-router-dom";
+import { MapPin, ArrowLeft, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { CityMarketOverview } from "@/components/CityMarketOverview";
-import { formatCityName } from "@/utils/routeHelpers";
 import { normalizeStateSlug } from "@/utils/stateSlugMapping";
 
 type CityRow = {
@@ -23,10 +19,6 @@ type CityRow = {
 
 export default function CityLanding() {
   const { stateSlug, citySlug } = useParams<{ stateSlug: string; citySlug: string }>();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   // ALL HOOKS MUST BE ABOVE ANY CONDITIONAL RETURNS
   useEffect(() => {
@@ -74,31 +66,6 @@ export default function CityLanding() {
     staleTime: 1000 * 60 * 10,
   });
 
-  const { data: stateCities = [] } = useQuery({
-    queryKey: ["cities-by-state", normalizedStateSlug, searchQuery],
-    queryFn: async (): Promise<CityRow[]> => {
-      if (!normalizedStateSlug) return [];
-
-      let query = supabase
-        .from("cities")
-        .select("id,name,slug,state,state_slug")
-        .eq("state_slug", normalizedStateSlug.toLowerCase())
-        .order("name", { ascending: true })
-        .limit(50);
-
-      if (searchQuery.trim()) {
-        query = query.ilike("name", `%${searchQuery.trim()}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return (data ?? []).filter((c) => c.slug !== citySlugLower);
-    },
-    enabled: !!normalizedStateSlug && !needsStateRedirect,
-    staleTime: 1000 * 60 * 10,
-  });
-
   // If state slug is an abbreviation, redirect to canonical full name URL
   // This must be AFTER all hooks
   if (needsStateRedirect) {
@@ -125,16 +92,7 @@ export default function CityLanding() {
     return <Navigate to="/404" replace />;
   }
 
-  const handleCitySelect = (selectedCity: CityRow) => {
-    setDialogOpen(false);
-    setSearchQuery("");
-    navigate(`/${normalizedStateSlug}/${selectedCity.slug}`);
-  };
-
-  // Determine if user came from the list page
   const listUrl = `/${normalizedStateSlug}/${city.slug}/top10realestateagents`;
-  const cameFromList = location.state?.fromList || document.referrer.includes(listUrl);
-
   const cityName = `${city.name}, ${city.state}`;
   const canonicalUrl = `https://www.top10lists.us/${normalizedStateSlug}/${city.slug}`;
 
@@ -194,57 +152,6 @@ export default function CityLanding() {
               <p className="text-xl text-muted-foreground mb-8">
                 City facts, neighborhoods, and buyer/seller context—built for humans and AI readability.
               </p>
-
-              <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button 
-                  size="lg" 
-                  onClick={() => navigate(listUrl)}
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  Search for an Agent
-                </Button>
-                <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button size="lg" variant="outline">
-                      <Search className="h-4 w-4 mr-2" />
-                      Search another city
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Search cities in {city.state}</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <Input
-                        placeholder="Start typing a city name..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        autoFocus
-                      />
-                      <ScrollArea className="h-64">
-                        <div className="space-y-1">
-                          {stateCities.length > 0 ? (
-                            stateCities.map((c) => (
-                              <button
-                                key={c.slug}
-                                onClick={() => handleCitySelect(c)}
-                                className="w-full text-left px-3 py-2 rounded-md hover:bg-primary/10 transition-colors flex items-center gap-2"
-                              >
-                                <MapPin className="h-4 w-4 text-muted-foreground" />
-                                {c.name}
-                              </button>
-                            ))
-                          ) : (
-                            <p className="text-sm text-muted-foreground text-center py-4">
-                              No cities found matching "{searchQuery}"
-                            </p>
-                          )}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
             </div>
           </div>
         </header>

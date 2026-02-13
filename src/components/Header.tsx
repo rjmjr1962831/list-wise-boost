@@ -20,7 +20,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogOut, User as UserIcon, Shield, LayoutDashboard, Menu } from "lucide-react";
+import { LogOut, User as UserIcon, Shield, LayoutDashboard, Menu, Bot } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Logo } from "@/components/brand/Logo";
 
@@ -281,10 +281,16 @@ export const Header = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {!isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate("/agent/dashboard")}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      My Dashboard
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/agent/dashboard")}>
+                        <LayoutDashboard className="mr-2 h-4 w-4" />
+                        My Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/agent/bot-analytics")}>
+                        <Bot className="mr-2 h-4 w-4" />
+                        Bot Analytics
+                      </DropdownMenuItem>
+                    </>
                   )}
                   {isAdmin && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>

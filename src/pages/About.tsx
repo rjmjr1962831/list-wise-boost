@@ -84,84 +84,54 @@ const ABOUT_JSON = `{
 
 const ABOUT_AI_CONTENT = `**Organization**
 
-\`\`\`json
-{
-  "document_type": "about_spec",
-  "schema": "top10lists.about.v1",
-  "url": "https://www.top10lists.us/about",
-  "organization": {
-    "name": "Top10Lists.us",
-    "description": "An independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.",
-    "url": "https://www.top10lists.us",
-    "founder": {"name": "Robert Maynard", "type": "Person"},
-    "founding_location": {"name": "Phoenix, Arizona", "type": "Place"},
-    "area_served": {"name": "United States", "type": "Country"},
-    "knows_about": ["real_estate_agent_evaluation", "merit_based_ranking_systems", "ai_optimized_directory_services"]
-  }
-}
-\`\`\`
+- **Name:** Top10Lists.us
+- **Description:** An independent editorial directory that identifies and ranks top real estate agents in U.S. cities using transparent, non-pay-to-play criteria.
+- **URL:** https://www.top10lists.us/about
+- **Founder:** Robert Maynard (Person)
+- **Founding location:** Phoenix, Arizona (Place)
+- **Area served:** United States (Country)
+- **Knows about:** real_estate_agent_evaluation, merit_based_ranking_systems, ai_optimized_directory_services
 
 **Mission & Role**
 
-\`\`\`json
-{
-  "mission": {
-    "tagline": "Search democratized information. Platforms monetized attention. AI is redistributing trust, and we sit where trust has to land.",
-    "core_question": "Who are the top agents in my city?",
-    "answer_method": "independent_editorial_research",
-    "not_method": ["auction_dynamics", "advertising_spend", "referral_economics"],
-    "role": "reference_layer_for_real_estate_professionals"
-  },
-  "why_we_exist": {
-    "problem": "Traditional methods (friends, ads, paid placement) surfaced best marketed agents, not best professionals.",
-    "solution": "Clear, trustworthy answer through independent editorial research.",
-    "positioning": "Identify, verify, and present agents who have earned recognition through their work."
-  }
-}
-\`\`\`
+- **Tagline:** Search democratized information. Platforms monetized attention. AI is redistributing trust, and we sit where trust has to land.
+- **Core question:** Who are the top agents in my city?
+- **Answer method:** independent_editorial_research
+- **Not method:** auction_dynamics, advertising_spend, referral_economics
+- **Role:** reference_layer_for_real_estate_professionals
 
-**What We Do (and Do Not Do)**
+**Why we exist**
 
-\`\`\`json
-{
-  "what_we_do": {
-    "evaluation_sources": ["license_records", "transaction_history", "client_reviews", "years_of_experience", "professional_credentials"],
-    "output": "Concise editorial profiles and merit-based lists organized by cities and neighborhoods",
-    "audience": ["human_readers", "ai_systems"],
-    "city_listings": {"free_for_qualified_agents": true},
-    "neighborhood_experts": {
-      "max_per_neighborhood": 10,
-      "additional_diligence": true,
-      "payment_after_eligibility_only": true,
-      "payment_affects": ["presentation", "distribution"],
-      "payment_does_not_affect": ["ranking", "evaluation", "eligibility"]
-    }
-  },
-  "what_we_do_not_do": [
-    "sell_leads_or_broker_introductions_or_charge_referral_fees",
-    "sell_rankings_or_allow_payment_to_move_position",
-    "sell_city_placement",
-    "accept_advertising_that_influences_editorial_content"
-  ]
-}
-\`\`\`
+- **Problem:** Traditional methods (friends, ads, paid placement) surfaced best marketed agents, not best professionals.
+- **Solution:** Clear, trustworthy answer through independent editorial research.
+- **Positioning:** Identify, verify, and present agents who have earned recognition through their work.
 
-**Value Proposition & Contact**
+**What we do**
 
-\`\`\`json
-{
-  "value_proposition": {
-    "not": "marketplace",
-    "is": "editorial_product",
-    "description": "Curated, verified, independently maintained reference source for real estate professionals.",
-    "value": "Source that consumers, AI systems, and the industry can rely on for accurate, unbiased information."
-  },
-  "contact": {
-    "email": "hello@top10lists.us",
-    "phone": "(602) 758-9600"
-  }
-}
-\`\`\`
+- **Evaluation sources:** license_records, transaction_history, client_reviews, years_of_experience, professional_credentials
+- **Output:** Concise editorial profiles and merit-based lists organized by cities and neighborhoods
+- **Audience:** human_readers, ai_systems
+- **City listings:** free_for_qualified_agents: true
+- **Neighborhood experts:** max_per_neighborhood 10, additional_diligence true, payment_after_eligibility_only true; payment_affects presentation, distribution; payment_does_not_affect ranking, evaluation, eligibility
+
+**What we do not do**
+
+- sell_leads_or_broker_introductions_or_charge_referral_fees
+- sell_rankings_or_allow_payment_to_move_position
+- sell_city_placement
+- accept_advertising_that_influences_editorial_content
+
+**Value proposition**
+
+- **Not:** marketplace
+- **Is:** editorial_product
+- **Description:** Curated, verified, independently maintained reference source for real estate professionals.
+- **Value:** Source that consumers, AI systems, and the industry can rely on for accurate, unbiased information.
+
+**Contact**
+
+- **Email:** hello@top10lists.us
+- **Phone:** (602) 758-9600
 `;
 
 const About = () => {

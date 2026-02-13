@@ -61,49 +61,35 @@ const FAQ_JSON = `{
 
 const FAQ_AI_CONTENT = `**Invariants** (core principles that do not change)
 
-\`\`\`json
-{
-  "invariants": [
-    "inclusion_is_merit_based_only",
-    "ranking_position_cannot_be_purchased",
-    "payment_affects_distribution_and_presentation_only",
-    "invitation_only_no_applications_accepted",
-    "city_listings_free_for_qualified_agents",
-    "neighborhood_experts_max_10_per_neighborhood",
-    "neighborhood_endorsement_requires_eligibility_first",
-    "we_do_not_control_ai_citations"
-  ]
-}
-\`\`\`
+- inclusion_is_merit_based_only
+- ranking_position_cannot_be_purchased
+- payment_affects_distribution_and_presentation_only
+- invitation_only_no_applications_accepted
+- city_listings_free_for_qualified_agents
+- neighborhood_experts_max_10_per_neighborhood
+- neighborhood_endorsement_requires_eligibility_first
+- we_do_not_control_ai_citations
 
 **Categories & Topics**
 
-\`\`\`json
-{
-  "categories": {
-    "about": {"name": "About Top10Lists.us", "topics": ["what_is_top10lists", "who_is_it_for"]},
-    "selection": {"name": "Selection & Ranking", "topics": ["how_selected", "can_apply", "how_ranked"]},
-    "editorial": {"name": "Editorial Independence", "topics": ["pay_for_ranking", "pay_to_play"]},
-    "paid_visibility": {"name": "Paid Visibility Options", "topics": ["what_paid_features", "paying_affects_ranking", "free_vs_neighborhood"]},
-    "ai_search": {"name": "AI & Search", "topics": ["ai_relationship", "paying_guarantees_ai"]},
-    "profile": {"name": "Profile Management", "topics": ["cancel_subscription", "remove_profile", "below_thresholds"]},
-    "action": {"name": "Taking Action", "topics": ["ignore_invitation", "urgency"]}
-  }
-}
-\`\`\`
+| Category | Name | Topics |
+|----------|------|--------|
+| about | About Top10Lists.us | what_is_top10lists, who_is_it_for |
+| selection | Selection & Ranking | how_selected, can_apply, how_ranked |
+| editorial | Editorial Independence | pay_for_ranking, pay_to_play |
+| paid_visibility | Paid Visibility Options | what_paid_features, paying_affects_ranking, free_vs_neighborhood |
+| ai_search | AI & Search | ai_relationship, paying_guarantees_ai |
+| profile | Profile Management | cancel_subscription, remove_profile, below_thresholds |
+| action | Taking Action | ignore_invitation, urgency |
 
 **Example FAQ entry** (each includes: id, category, question, answer, summary, topics)
 
-\`\`\`json
-{
-  "id": "what_is_top10lists",
-  "category": "about",
-  "question": "What is Top10Lists.us?",
-  "answer": "Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We analyze verified data from multiple sources to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment.",
-  "summary": "Merit-based directory of top agents. Inclusion by performance data only.",
-  "topics": ["directory", "merit_based", "editorial"]
-}
-\`\`\`
+- **id:** what_is_top10lists
+- **category:** about
+- **question:** What is Top10Lists.us?
+- **answer:** Top10Lists.us is a merit-based directory that identifies and lists top-performing real estate agents in each city. We analyze verified data from multiple sources to determine which agents meet our quality thresholds. Editorial inclusion is based entirely on performance data—not payment.
+- **summary:** Merit-based directory of top agents. Inclusion by performance data only.
+- **topics:** directory, merit_based, editorial
 `;
 
 const faqItems = [

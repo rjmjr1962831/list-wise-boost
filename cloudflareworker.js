@@ -19933,58 +19933,34 @@ var { connect, history, launch, limits, sessions, acquire } = puppeteer;
 var puppeteer_cloudflare_default = puppeteer;
 
 // src/index.js
-var index_default = {
+const index_default = {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const ua = request.headers.get("user-agent") || "";
 
-    // Warm endpoint: accept prerendered HTML and store in same cache bots read from
+    // 1. Warm & Purge Endpoints
     if (url.pathname === "/__warm" && request.method === "POST") {
       const secret = request.headers.get("X-Warm-Secret");
       if (secret && env.WARM_SECRET && secret === env.WARM_SECRET) {
         try {
           const body = await request.json();
           const targetUrl = body.url;
-          const html = body.html;
-          if (targetUrl && typeof html === "string") {
+          const content = body.html || body.content;
+          const isMarkdown = body.format === "markdown" || (typeof content === "string" && content.includes("# ") && (content.includes("## `") || content.includes("REASONING_NUGGET")));
+          if (targetUrl && typeof content === "string") {
             const cacheUrl = new URL(targetUrl);
             cacheUrl.search = "";
             const cacheKey = new Request(cacheUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
-            const cache = caches.default;
-            await cache.put(cacheKey, new Response(html, { headers: { "Content-Type": "text/html;charset=UTF-8", "Cache-Control": "public, max-age=604800" } }));
+            const contentType = isMarkdown ? "text/markdown; charset=utf-8" : "text/html;charset=UTF-8";
+            await caches.default.put(cacheKey, new Response(content, { headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=604800" } }));
             return new Response(JSON.stringify({ ok: true, url: targetUrl }), { status: 200, headers: { "Content-Type": "application/json" } });
           }
-        } catch (e) { /* invalid body */ }
+        } catch (e) {}
       }
       return new Response(JSON.stringify({ error: "Unauthorized or invalid" }), { status: 401, headers: { "Content-Type": "application/json" } });
     }
 
-    // Purge endpoint: delete listed URLs from the cache bots read from
-    if (url.pathname === "/__purge" && request.method === "POST") {
-      const secret = request.headers.get("X-Warm-Secret");
-      if (secret && env.WARM_SECRET && secret === env.WARM_SECRET) {
-        try {
-          const body = await request.json();
-          const urls = Array.isArray(body.urls) ? body.urls : [];
-          const cache = caches.default;
-          let purged = 0;
-          for (const targetUrl of urls) {
-            if (typeof targetUrl !== "string") continue;
-            try {
-              const cacheUrl = new URL(targetUrl);
-              cacheUrl.search = "";
-              const cacheKey = new Request(cacheUrl.toString(), { method: "GET", headers: { "User-Agent": "bot-cache-normalized" } });
-              const deleted = await cache.delete(cacheKey);
-              if (deleted) purged++;
-            } catch (e) { /* skip invalid url */ }
-          }
-          return new Response(JSON.stringify({ ok: true, purged, total: urls.length }), { status: 200, headers: { "Content-Type": "application/json" } });
-        } catch (e) { /* invalid body */ }
-      }
-      return new Response(JSON.stringify({ error: "Unauthorized or invalid" }), { status: 401, headers: { "Content-Type": "application/json" } });
-    }
-
-    // Bot detection with type identification
+    // 2. Bot Identification
     const botPatterns = {
       googlebot: /googlebot|google-inspectiontool|googleother|adsbot-google/i,
       claudebot: /claudebot|claude-web|anthropic-ai/i,
@@ -19992,256 +19968,247 @@ var index_default = {
       bingbot: /bingbot|msnbot/i,
       perplexitybot: /perplexitybot/i,
       metabot: /meta-externalagent|facebookexternalhit|facebookbot/i,
-      amazonbot: /amazonbot/i,
       bytespider: /bytespider/i,
-      semrushbot: /semrushbot/i,
       ahrefsbot: /ahrefsbot/i,
-      slurp: /slurp/i,
-      duckduckbot: /duckduckbot/i,
-      baiduspider: /baiduspider/i,
-      yandexbot: /yandexbot/i,
-      twitterbot: /twitterbot/i,
-      linkedinbot: /linkedinbot/i,
     };
     
     let botType = null;
     for (const [name, pattern] of Object.entries(botPatterns)) {
-      if (pattern.test(ua)) {
-        botType = name;
-        break;
-      }
+      if (pattern.test(ua)) { botType = name; break; }
     }
-    
-    // Fallback for unknown bots
-    if (!botType && (ua.includes('bot') || ua.includes('crawler') || ua.includes('spider'))) {
-      botType = 'unknown_bot';
-    }
+    if (!botType && (ua.includes('bot') || ua.includes('crawler'))) botType = 'unknown_bot';
     
     const isBot = botType !== null;
-    const isCacheWarming = request.headers.get("X-Cache-Warming") === "true";
     const forceRefresh = request.headers.get("X-Force-Refresh") === "true";
+
+    // 2b. Enqueue bot detection for async notifications (non-blocking)
+    if (isBot && env.NOTIFICATION_QUEUE) {
+      const path = url.pathname;
+      let agentId = null;
+      let agentSlug = null;
+      const artifactMatch = path.match(/^\/artifact\/([^/]+)/);
+      if (artifactMatch) agentId = artifactMatch[1];
+      else {
+        const agentsMatch = path.match(/\/([^/]+)\/agents\/([^/]+)/);
+        if (agentsMatch) agentSlug = agentsMatch[2];
+      }
+      const payload = {
+        agent_id: agentId,
+        agent_slug: agentSlug,
+        bot_name: botType,
+        timestamp: new Date().toISOString(),
+        request_url: request.url,
+        user_agent: request.headers.get("user-agent") || null
+      };
+      ctx.waitUntil(env.NOTIFICATION_QUEUE.send(payload));
+    }
+
+    // 3. Cache Key Normalization
+    const cache = caches.default;
+    const cacheUrl = new URL(url);
+    cacheUrl.search = ''; 
+    const cacheKey = new Request(cacheUrl.toString(), { 
+      method: "GET", 
+      headers: { 'User-Agent': 'bot-cache-normalized' } 
+    });
+
+    if (isBot && !forceRefresh) {
+      const cachedResponse = await cache.match(cacheKey);
+      if (cachedResponse) {
+        const dateHeader = cachedResponse.headers.get("Date");
+        const cacheAge = dateHeader ? (Date.now() - new Date(dateHeader).getTime()) / 1000 : 0;
+        
+        // SWR Trigger: If older than 24 hours, refresh in background
+        if (cacheAge > 86400) {
+          ctx.waitUntil(this.renderAndStore(request, env, cacheKey));
+        }
+
+        const hitHdrs = new Headers(cachedResponse.headers);
+        hitHdrs.set("X-Cache", "HIT");
+        return new Response(cachedResponse.body, { status: cachedResponse.status, headers: hitHdrs });
+      }
+    }
 
     // --- ORIGIN CONFIGURATION ---
     const originUrl = new URL(request.url);
     originUrl.hostname = "list-wise-boost.vercel.app";
     originUrl.protocol = "https:";
-    originUrl.port = "";
 
-    // Build origin request with Vercel protection bypass header when configured
-    const originRequest = (() => {
-      const headers = new Headers(request.headers);
-      if (env.VERCEL_PROTECTION_BYPASS) headers.set("x-vercel-protection-bypass", env.VERCEL_PROTECTION_BYPASS);
-      const init = { method: request.method, headers };
-      if (request.method !== "GET" && request.method !== "HEAD") init.body = request.body;
-      return new Request(originUrl.toString(), init);
-    })();
-
-    // --- Agent State Redirect Logic ---
-    const pathname = url.pathname;
-    const pathParts = pathname.split('/').filter(Boolean);
-    
-    if (pathParts.length === 3 && pathParts[1] === 'agents') {
-      const urlState = pathParts[0];
-      const agentSlug = pathParts[2];
-      const agentSlugPattern = /-\d{4}$/;
-      
-      if (agentSlugPattern.test(agentSlug)) {
-        try {
-          const redirectResp = await fetch(
-            'https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/enrichment-api?action=query',
-            {
-              method: 'POST',
-              headers: {
-                'X-Enrichment-Key': 't10l_enrich_0448c4870d72ed90fd43171123fd0e44558f019a2b5807d1b297604dad6b235a',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                table: 'professionals',
-                select: 'canonical_slug,state_slug',
-                filters: [
-                  { field: 'canonical_slug', operator: 'eq', value: agentSlug },
-                  { field: 'active', operator: 'eq', value: true }
-                ],
-                limit: 1
-              })
-            }
-          );
-          
-          if (redirectResp.ok) {
-            const data = await redirectResp.json();
-            if (data.data && data.data.length > 0) {
-              const agent = data.data[0];
-              if (agent.state_slug && agent.state_slug !== urlState) {
-                return Response.redirect('https://www.top10lists.us/' + agent.state_slug + '/agents/' + agent.canonical_slug, 301);
-              }
-            }
-          }
-        } catch (e) {
-          console.error('Agent redirect error:', e.message);
-        }
-      }
+    // 4. Fallback for non-bots
+    if (!isBot) {
+      const originHeaders = new Headers(request.headers);
+      if (env.VERCEL_PROTECTION_BYPASS) originHeaders.set("x-vercel-protection-bypass", env.VERCEL_PROTECTION_BYPASS);
+      return fetch(new Request(originUrl.toString(), { method: request.method, headers: originHeaders }));
     }
 
-    // Humans: Direct pass-through
-    if (!isBot && !isCacheWarming) {
-      return fetch(originRequest);
-    }
+    return this.renderAndStore(request, env, cacheKey);
+  },
 
-    // Admin routes: never render for bots (internal tool, no SEO value)
-    if (pathname === '/admin' || pathname.startsWith('/admin/') || pathname === '/crm' || pathname.startsWith('/crm/')) {
-      return fetch(originRequest);
-    }
-
-    // Cache Check - normalize cache key to share across all bots
-    // Strip query parameters to ensure same page = same cache regardless of query string
-    const cacheUrl = new URL(url);
-    cacheUrl.search = ''; // Remove all query parameters
-    const cacheKey = new Request(cacheUrl.toString(), { 
-      method: "GET",
-      headers: {
-        'User-Agent': 'bot-cache-normalized' // All bots share same cache key
-      }
-    });
-    const cache = caches.default;
-    
-    if (!forceRefresh) {
-      const cachedResponse = await cache.match(cacheKey);
-      if (cachedResponse) {
-        const newHdrs = new Headers(cachedResponse.headers);
-        newHdrs.set("X-Cache", "HIT");
-        
-        // Log bot visit (background task, won't block response)
-        if (isBot) {
-          ctx.waitUntil(
-            fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
-              },
-              body: JSON.stringify({ 
-                url: url.href,
-                path: url.pathname,
-                user_agent: ua,
-                bot_type: botType,
-                cache_status: 'HIT',
-                client_ip: request.headers.get('CF-Connecting-IP'),
-                country: request.headers.get('CF-IPCountry'),
-                ray_id: request.headers.get('CF-Ray'),
-                method: request.method,
-                timestamp: new Date().toISOString()
-              })
-            }).catch(() => {}) // Ignore errors
-          );
-        }
-        
-        return new Response(cachedResponse.body, { status: cachedResponse.status, headers: newHdrs });
-      }
-    }
-
-    // --- OPTIMIZED PUPPETEER LOGIC ---
+  async renderAndStore(request, env, cacheKey) {
     let browser;
+    const url = new URL(request.url);
+    const originUrl = "https://list-wise-boost.vercel.app" + url.pathname;
+
     try {
       const sessions = await puppeteer.sessions(env.MYBROWSER);
       const reuseSession = sessions.find(s => !s.connectionId);
-      if (reuseSession) {
-        browser = await puppeteer.connect(env.MYBROWSER, reuseSession.sessionId);
-      } else {
-        browser = await puppeteer.launch(env.MYBROWSER, { keep_alive: 600000 });
-      }
+      
+      browser = reuseSession 
+        ? await puppeteer.connect(env.MYBROWSER, reuseSession.sessionId)
+        : await puppeteer.launch(env.MYBROWSER, { keep_alive: 600000 });
 
       const page = await browser.newPage();
+      
+      // Set a strict local timeout (e.g., 20s) to stay under Worker limits
+      page.setDefaultTimeout(20000); 
+      page.setDefaultNavigationTimeout(20000);
+
       await page.setViewport({ width: 1920, height: 1080 });
+      
       if (env.VERCEL_PROTECTION_BYPASS) {
         await page.setExtraHTTPHeaders({ "x-vercel-protection-bypass": env.VERCEL_PROTECTION_BYPASS });
       }
-      await page.goto(originUrl.toString(), {
-        waitUntil: "domcontentloaded",
+
+      // High-reliability navigation
+      await page.goto(originUrl, { 
+        waitUntil: "domcontentloaded", 
         timeout: 15000 
       });
-      
-      // --- ENHANCED WAIT CONDITIONS FOR AGENT DATA ---
+
+      // RACE CONDITION: Wait for any valid content indicator
       try {
-        // Wait for multiple possible selectors for agent content
         await Promise.race([
-          page.waitForSelector('[itemtype="https://schema.org/Person"]', { timeout: 5000 }),
-          page.waitForSelector('article', { timeout: 5000 }),
-          page.waitForSelector('[data-agent]', { timeout: 5000 }),
-          page.waitForSelector('.agent-card', { timeout: 5000 })
+          page.waitForSelector('[data-artifact-id]', { timeout: 7000 }),
+          page.waitForSelector('article', { timeout: 7000 }),
+          page.waitForFunction(() => document.querySelector('main')?.textContent?.length > 800, { timeout: 5000 })
         ]);
-        
-        // Additional wait to ensure all content loads
-        await page.waitForFunction(
-          () => document.querySelector('main')?.textContent?.length > 1000,
-          { timeout: 3000 }
-        );
-        
-        // Extra 2-second buffer for any final rendering
-        await new Promise(resolve => setTimeout(resolve, 500));
-      } catch (e) {
-        console.log("Agent content markers timed out - attempting content capture anyway.");
+      } catch (selectorError) {
+        console.warn("Artifact markers missing, attempting capture anyway.");
       }
-      
+
+      const extracted = await page.evaluate(function extractArtifact() {
+        function getText(el) {
+          if (!el) return "";
+          return (el.textContent || el.innerText || "").trim().replace(/\s+/g, " ");
+        }
+        var root = document.querySelector("[data-artifact-id]") || document.querySelector("article.artifact-page") || document.querySelector("article") || document.querySelector("main");
+        if (!root) return null;
+        var title = getText(root.querySelector("h1"));
+        var sections = [];
+        var h2s = root.querySelectorAll("h2");
+        for (var i = 0; i < h2s.length; i++) {
+          var h2 = h2s[i];
+          var header = getText(h2);
+          if (!header) continue;
+          var content = { type: "text", value: "" };
+          var next = h2.nextElementSibling;
+          if (next) {
+            if (next.tagName === "BLOCKQUOTE") {
+              content = { type: "blockquote", value: getText(next) };
+            } else if (next.tagName === "TABLE") {
+              var rows = [];
+              var thead = next.querySelector("thead tr");
+              if (thead) {
+                var headers = [];
+                thead.querySelectorAll("th, td").forEach(function (c) { headers.push(getText(c)); });
+                rows.push(headers);
+              }
+              next.querySelectorAll("tbody tr").forEach(function (tr) {
+                var cells = [];
+                tr.querySelectorAll("td, th").forEach(function (c) { cells.push(getText(c)); });
+                if (cells.length) rows.push(cells);
+              });
+              content = { type: "table", value: rows };
+            } else if (next.tagName === "UL") {
+              var items = [];
+              next.querySelectorAll("li").forEach(function (li) { items.push(getText(li)); });
+              content = { type: "list", value: items };
+            } else if (next.tagName === "P" || next.tagName === "DIV") {
+              content = { type: "text", value: getText(next) };
+            }
+          }
+          sections.push({ header: header, content: content });
+        }
+        return { title: title, sections: sections };
+      });
+
       const html = await page.content();
       await browser.disconnect();
 
-      const isXml = url.pathname.endsWith(".xml");
-      const isEmptyShell = !isXml && /<div id="root"[^>]*>\s*<\/div>/i.test(html);
-      const hasHtmlTag = isXml || html.includes("<html");
-      const hasH1 = isXml || html.toLowerCase().includes("<h1");
-      const minLength = isXml ? 100 : 5000;
-
-      if (html.length >= minLength && hasHtmlTag && hasH1 && !isEmptyShell) {
-        const contentType = isXml ? "application/xml" : "text/html;charset=UTF-8";
-        const response = new Response(html, {
-          headers: {
-            "content-type": contentType,
-            "X-Cache": "MISS",
-            "X-Rendered": "puppeteer",
-            "Cache-Control": "public, max-age=604800"
+      var markdown = "";
+      if (extracted && extracted.sections && extracted.sections.length > 0) {
+        function escapePipe(s) { return (s || "").replace(/\|/g, "\\|"); }
+        markdown = "# " + (extracted.title || "Intelligence Artifact") + "\n\n";
+        for (var i = 0; i < extracted.sections.length; i++) {
+          var s = extracted.sections[i];
+          markdown += "## `" + s.header + "`\n\n";
+          if (s.content.type === "blockquote") {
+            markdown += "> " + (s.content.value || "").replace(/\n/g, "\n> ") + "\n\n";
+          } else if (s.content.type === "table" && s.content.value && s.content.value.length > 0) {
+            var rows = s.content.value;
+            var colCount = rows[0] ? rows[0].length : 0;
+            var sep = "|" + Array(colCount).fill("---").join("|") + "|";
+            markdown += "| " + (rows[0] || []).map(escapePipe).join(" | ") + " |\n";
+            markdown += sep + "\n";
+            for (var r = 1; r < rows.length; r++) {
+              markdown += "| " + (rows[r] || []).map(escapePipe).join(" | ") + " |\n";
+            }
+            markdown += "\n";
+          } else if (s.content.type === "list" && s.content.value && s.content.value.length > 0) {
+            s.content.value.forEach(function (item) { markdown += "- " + item + "\n"; });
+            markdown += "\n";
+          } else {
+            markdown += (s.content.value || "") + "\n\n";
           }
-        });
-        await cache.put(cacheKey, response.clone());
-        
-        // Log bot visit for MISS (background task, won't block response)
-        if (isBot) {
-          ctx.waitUntil(
-            fetch('https://wiotrvoirdgzfacuuiem.supabase.co/functions/v1/log-bot-visit', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json', 
-                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indpb3Rydm9pcmRnemZhY3V1aWVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk4MTcwNzcsImV4cCI6MjA4NTM5MzA3N30.BZAli-r81llqnq9xStghKNqK8MnrSNQMOIqkkE09mwI'
-              },
-              body: JSON.stringify({ 
-                url: url.href,
-                path: url.pathname,
-                user_agent: ua,
-                bot_type: botType,
-                cache_status: 'MISS',
-                client_ip: request.headers.get('CF-Connecting-IP'),
-                country: request.headers.get('CF-IPCountry'),
-                ray_id: request.headers.get('CF-Ray'),
-                method: request.method,
-                timestamp: new Date().toISOString()
-              })
-            }).catch(() => {}) // Ignore errors
-          );
         }
-        
-        return response;
-      } else {
-        return new Response(html, { headers: { "content-type": "text/html", "X-Error": "Invalid-Render" } });
       }
-    } catch (e) {
+
+      if (!markdown || markdown.length < 200) {
+        var bodyMatch = html && html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+        var bodyText = bodyMatch ? bodyMatch[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() : "";
+        if (bodyText.length > 300) {
+          markdown = "# " + (extracted && extracted.title ? extracted.title : "Intelligence Artifact") + "\n\n" + bodyText;
+        } else if (html && html.length > 5000) {
+          markdown = "# Fallback\n\nContent could not be fully extracted as artifact. Page length: " + html.length + " chars.";
+        }
+      }
+
+      if (!markdown || markdown.length < 50) throw new Error("Invalid or empty render result.");
+
+      var response = new Response(markdown, {
+        headers: {
+          "Content-Type": "text/markdown; charset=utf-8",
+          "X-Cache": "MISS",
+          "Cache-Control": "public, max-age=604800, stale-while-revalidate=31536000"
+        }
+      });
+      await caches.default.put(cacheKey, response.clone());
+      return response;
+
+    } catch (err) {
+      // CRITICAL: Cleanup browser resources on ANY failure to avoid usage leaks
       if (browser) await browser.disconnect();
-      const fallbackCachedResponse = await cache.match(cacheKey);
-      if (fallbackCachedResponse) {
-        const newHdrs = new Headers(fallbackCachedResponse.headers);
-        newHdrs.set("X-Cache", "HIT");
-        newHdrs.set("X-Worker-Error", "Render-Failed");
-        return new Response(fallbackCachedResponse.body, { status: fallbackCachedResponse.status, headers: newHdrs });
+      console.error("Puppeteer Render Failed:", err.message);
+
+      // EMERGENCY FALLBACK: Serve raw origin content to prevent 500 errors
+      const originHeaders = new Headers(request.headers);
+      if (env.VERCEL_PROTECTION_BYPASS) {
+        originHeaders.set("x-vercel-protection-bypass", env.VERCEL_PROTECTION_BYPASS);
       }
-      return fetch(originRequest, { redirect: "manual" });
+
+      const originResponse = await fetch(new Request(originUrl, { 
+        method: "GET", 
+        headers: originHeaders 
+      }));
+
+      // Tag the response so you can identify failures in your logs
+      const fallbackHeaders = new Headers(originResponse.headers);
+      fallbackHeaders.set("X-Render-Status", "FAILED_FALLBACK");
+      
+      return new Response(originResponse.body, {
+        status: originResponse.status,
+        headers: fallbackHeaders
+      });
     }
   }
 };
@@ -20253,7 +20220,8 @@ addEventListener('fetch', event => {
   const env = {
     MYBROWSER: typeof MYBROWSER !== 'undefined' ? MYBROWSER : undefined,
     WARM_SECRET: typeof WARM_SECRET !== 'undefined' ? WARM_SECRET : undefined,
-    VERCEL_PROTECTION_BYPASS: typeof VERCEL_PROTECTION_BYPASS !== 'undefined' ? VERCEL_PROTECTION_BYPASS : undefined
+    VERCEL_PROTECTION_BYPASS: typeof VERCEL_PROTECTION_BYPASS !== 'undefined' ? VERCEL_PROTECTION_BYPASS : undefined,
+    NOTIFICATION_QUEUE: typeof NOTIFICATION_QUEUE !== 'undefined' ? NOTIFICATION_QUEUE : undefined
   };
   
   // Create a context object with waitUntil

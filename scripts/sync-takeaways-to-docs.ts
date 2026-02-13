@@ -1,10 +1,12 @@
 /**
- * Sync daily_takeaways from Supabase to docs/takeaways/
+ * Sync daily_takeaways from Supabase to docs/cursor-daily-updates.md
  * Run: npm run takeaways:sync
  */
 import { createClient } from '@supabase/supabase-js';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
+
+const OUTPUT_FILE = 'docs/cursor-daily-updates.md';
 
 function loadEnv(): void {
   const envPath = resolve(process.cwd(), '.env');
@@ -40,18 +42,17 @@ async function main() {
     process.exit(1);
   }
 
-  const dir = resolve(process.cwd(), 'docs/takeaways');
-  mkdirSync(dir, { recursive: true });
+  const outPath = resolve(process.cwd(), OUTPUT_FILE);
+  mkdirSync(resolve(process.cwd(), 'docs'), { recursive: true });
 
-  let count = 0;
+  const sections: string[] = ['# Cursor Daily Updates\n\n'];
   for (const row of data || []) {
-    const fn = `${row.report_date}.md`;
-    const content = row.content || `# Daily Takeaways — ${row.report_date}\n\n(Empty)\n`;
-    writeFileSync(resolve(dir, fn), content, 'utf-8');
-    count++;
+    const content = row.content || `(Empty)`;
+    sections.push(`## ${row.report_date}\n\n${content}\n\n`);
   }
 
-  console.log(`Synced ${count} reports to docs/takeaways/`);
+  writeFileSync(outPath, sections.join(''), 'utf-8');
+  console.log(`Synced ${(data || []).length} reports to ${OUTPUT_FILE}`);
 }
 
 main();

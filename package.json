@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings -1",
     "preview": "vite preview",
     "format-bios": "tsx scripts/format-agent-bios.ts",
     "test:api": "tsx scripts/test-api-connections.ts",

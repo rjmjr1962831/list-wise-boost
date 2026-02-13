@@ -90,8 +90,23 @@ function hasStructuredData(html: string): boolean {
     (html.includes("RealEstateAgent") || html.includes("ItemList"));
 }
 
+function isMarkdownArtifact(content: string): boolean {
+  return !!content && content.length >= 500 &&
+    (content.startsWith("# ") || content.includes("## `") || content.includes("REASONING_NUGGET") || content.includes("MARKET_AUDIT_GRID"));
+}
+
 function validateRenderedHtml(html: string, url: string): { ok: boolean; reason?: string } {
-  if (!html || html.length < 1000 || !html.includes("</html>")) {
+  if (!html || html.length < 500) {
+    return { ok: false, reason: "Response too short" };
+  }
+
+  // Support markdown artifact format (worker returns text/markdown)
+  if (isMarkdownArtifact(html)) {
+    return { ok: true };
+  }
+
+  // Legacy HTML validation
+  if (html.length < 1000 || !html.includes("</html>")) {
     return { ok: false, reason: "Invalid HTML response" };
   }
 
@@ -194,10 +209,11 @@ async function fetchBotHtml(url: string, forceRefresh: boolean): Promise<{ succe
   }
 }
 
-async function writeToWorkerCache(url: string, html: string): Promise<{ success: boolean; error?: string }> {
+async function writeToWorkerCache(url: string, content: string, format?: "html" | "markdown"): Promise<{ success: boolean; error?: string }> {
   if (!WARM_SECRET) {
     return { success: false, error: "WARM_SECRET not configured" };
   }
+  const body = format === "markdown" ? { url, html: content, format: "markdown" } : { url, html: content };
   try {
     const response = await fetch(WORKER_WARM_URL, {
       method: "POST",
@@ -205,7 +221,7 @@ async function writeToWorkerCache(url: string, html: string): Promise<{ success:
         "Content-Type": "application/json",
         "X-Warm-Secret": WARM_SECRET,
       },
-      body: JSON.stringify({ url, html }),
+      body: JSON.stringify(body),
     });
     if (!response.ok) {
       const text = await response.text();
@@ -383,7 +399,7 @@ async function warmUrl(url: string, forceRefresh: boolean): Promise<WarmResult |
     }
 
     // Primary: write to Worker cache (same store bots read from). This fixes low hit rate.
-    const workerResult = await writeToWorkerCache(url, html);
+    const workerResult = await writeToWorkerCache(url, html, isMarkdownArtifact(html) ? "markdown" : "html");
     if (!workerResult.success && WARM_SECRET) {
       console.warn(`Worker cache write failed for ${url}: ${workerResult.error}`);
     }

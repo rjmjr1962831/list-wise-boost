@@ -1,7 +1,9 @@
-# Daily Takeaways
+# Daily Takeaways (deprecated)
 
-Daily project memory reports. Cron runs at 20:00 MST to create a report slot in `daily_takeaways` table.
+**Replaced by:** `docs/cursor-daily-updates.md`
 
-**Sync to this directory:** Run `npm run takeaways:sync` to fetch from DB and write `YYYY-MM-DD.md` files.
+Cron runs at 20:00 MST to create a report slot in `daily_takeaways` table.
+
+**Sync:** Run `npm run takeaways:sync` to fetch from DB and write to `docs/cursor-daily-updates.md`.
 
 Claude compiles these into project-knowledge.mdc and docs/PROJECT-KNOWLEDGE.md.

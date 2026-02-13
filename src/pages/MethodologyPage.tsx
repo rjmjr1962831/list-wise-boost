@@ -123,70 +123,37 @@ const METHODOLOGY_JSON = `{
 
 const METHODOLOGY_AI_CONTENT = `**Invariants**
 
-\`\`\`json
-{
-  "invariants": [
-    "inclusion_is_merit_based_only",
-    "payment_does_not_affect_scores",
-    "payment_affects_diligence_freshness_and_data_richness_only",
-    "refresh_frequency_varies_by_contract",
-    "monitoring_intensity_varies_by_contract",
-    "data_richness_varies_by_contract",
-    "last_updated_at_reflects_actual_last_verification"
-  ]
-}
-\`\`\`
+- inclusion_is_merit_based_only
+- payment_does_not_affect_scores
+- payment_affects_diligence_freshness_and_data_richness_only
+- refresh_frequency_varies_by_contract
+- monitoring_intensity_varies_by_contract
+- data_richness_varies_by_contract
+- last_updated_at_reflects_actual_last_verification
 
 **Scoring policy** (weights and formula)
 
-\`\`\`json
-{
-  "scoring_policy": {
-    "model": "weighted_sum",
-    "scale": "0_to_1",
-    "weights": {
-      "license_status": 0.20,
-      "recent_activity": 0.20,
-      "transaction_history": 0.25,
-      "reviews_reputation": 0.15,
-      "community_involvement": 0.20
-    },
-    "math": {
-      "composite_formula": "sum(component_value[k] * weight[k]) for k in components; missing components handled per missing_data_policy",
-      "missing_data_policy": "redistribute_weight_proportionally"
-    }
-  }
-}
-\`\`\`
+- **Model:** weighted_sum, scale 0–1
+- **Weights:** license_status 20%, recent_activity 20%, transaction_history 25%, reviews_reputation 15%, community_involvement 20%
+- **Formula:** sum(component_value[k] × weight[k]) for k in components; missing components handled per missing_data_policy
+- **Missing data policy:** redistribute_weight_proportionally
 
 **Evidence sources** (steps 1–8; abbreviated)
 
-\`\`\`json
-{
-  "evidence_policy": {
-    "sources": [
-      {"step": 1, "name": "State Real Estate Licensing Authority", "types": ["license_status", "disciplinary_actions"], "required": true},
-      {"step": 2, "name": "Transactional and Public Records", "required": true},
-      {"step": 5, "name": "Negative Event and Disciplinary Monitoring", "required": true},
-      {"step": 7, "name": "Exclusion Criteria Rules", "required": true},
-      {"step": 8, "name": "Ongoing Status Checks and Refresh Rules", "required": true}
-    ]
-  }
-}
-\`\`\`
+1. State Real Estate Licensing Authority (license_status, disciplinary_actions) — required
+2. Transactional and Public Records — required
+5. Negative Event and Disciplinary Monitoring — required
+7. Exclusion Criteria Rules — required
+8. Ongoing Status Checks and Refresh Rules — required
 
 **Example agent payload**
 
-\`\`\`json
-{
-  "schema": "top10lists.agent_certification.v1",
-  "agent_id": "t10l:agent:AZ:phoenix:123456",
-  "canonical_profile_url": "https://top10lists.us/agents/az/phoenix/jane-doe",
-  "certification": {"status": "active", "markets": [{"type": "city", "name": "Phoenix", "state": "AZ"}]},
-  "freshness": {"last_updated_at": "2026-02-10T18:22:31Z", "monitoring": "continuous"},
-  "diligence": {"level": "underwritten", "scope": "expanded", "evidence_depth": "maximum"}
-}
-\`\`\`
+- **Schema:** top10lists.agent_certification.v1
+- **agent_id:** t10l:agent:AZ:phoenix:123456
+- **canonical_profile_url:** https://top10lists.us/agents/az/phoenix/jane-doe
+- **certification:** status active, markets Phoenix AZ
+- **freshness:** last_updated_at 2026-02-10T18:22:31Z, monitoring continuous
+- **diligence:** level underwritten, scope expanded, evidence_depth maximum
 `;
 
 const EXCLUSIONARY_DAMAGES_TOOLTIP = "Exclusionary Damages occur when a recommendation system excludes qualified professionals or includes unqualified ones due to insufficient or opaque sourcing.  This produces complaints, disputes, and liability pressure.";

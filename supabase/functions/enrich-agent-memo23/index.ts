@@ -1,6 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+declare const EdgeRuntime: {
+  waitUntil(promise: Promise<any>): void;
+};
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -55,6 +59,60 @@ serve(async (req) => {
 
     console.log(`📋 Enriching: ${professional.name} - ${professional.zillow_profile_url}`);
 
+    // Mark enrichment as started
+    await supabase
+      .from('professionals')
+      .update({
+        zillow_scrape_status: 'processing',
+        zillow_last_scraped_at: new Date().toISOString()
+      })
+      .eq('id', professionalId);
+
+    // Start background enrichment task
+    const backgroundTask = async () => {
+      try {
+        await enrichAgent(professionalId, professional, supabaseUrl, supabaseKey);
+      } catch (error) {
+        console.error('Background enrichment error:', error);
+      }
+    };
+
+    // Use EdgeRuntime.waitUntil to keep function alive for background processing
+    EdgeRuntime.waitUntil(backgroundTask());
+
+    // Return immediate response
+    return new Response(
+      JSON.stringify({
+        success: true,
+        professionalId,
+        name: professional.name,
+        message: 'Memo23 enrichment started in background',
+        status: 'processing'
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('❌ Memo23 enrichment error:', error);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
+
+async function enrichAgent(
+  professionalId: string,
+  professional: any,
+  supabaseUrl: string,
+  supabaseKey: string
+) {
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  try {
     const apifyToken = Deno.env.get('APIFY_API_TOKEN');
     if (!apifyToken) {
       throw new Error('APIFY_API_TOKEN not configured');
@@ -162,7 +220,7 @@ serve(async (req) => {
       zillow_scrape_error: null,
       zillow_data_source: 'memo23',
       raw_scraper_data: agentData, // Store complete raw data from memo23
-    };
+      };
 
     // Basic fields
     if (agentData.name) updateData.name = agentData.name;
@@ -380,25 +438,13 @@ serve(async (req) => {
     }
 
     console.log(`🎉 Memo23 enrichment complete for ${professional.name}`);
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        professionalId,
-        name: professional.name,
-        message: 'Memo23 enrichment complete'
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
-    console.error('❌ Memo23 enrichment error:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error(`❌ Enrichment failed for ${professionalId}:`, error);
+    
+    // Mark as failed
+    await supabase.from('professionals').update({
+      zillow_scrape_status: 'failed',
+      zillow_scrape_error: error instanceof Error ? error.message : 'Unknown error'
+    }).eq('id', professionalId);
   }
-});
+}

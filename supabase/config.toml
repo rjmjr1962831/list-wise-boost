@@ -288,6 +288,9 @@ verify_jwt = false
 [functions.update-cloudflare-worker]
 verify_jwt = false
 
+[functions.setup-agent-notifications-queue]
+verify_jwt = false
+
 [functions.process-review-request]
 verify_jwt = false
 
