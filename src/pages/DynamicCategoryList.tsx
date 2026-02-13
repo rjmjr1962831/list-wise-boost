@@ -25,7 +25,7 @@ import { NeighborhoodExpertPage } from '@/components/NeighborhoodExpertPage';
 import { DatasetSchema } from '@/components/seo/DatasetSchema';
 import { SourceAttributionSchema } from '@/components/seo/SourceAttributionSchema';
 import { CitationAuthorityBlock } from '@/components/CitationAuthorityBlock';
-import { Info } from 'lucide-react';
+import { Info, Loader2 } from 'lucide-react';
 import { getValidImageUrl } from '@/utils/imageUrlValidator';
 import { DualSearchBox } from '@/components/DualSearchBox';
 import { useNeighborhoodWriteup } from '@/hooks/useNeighborhoodWriteup';
@@ -1039,8 +1039,13 @@ export default function DynamicCategoryList({
     );
   }
 
-  if (!city || !category) {
-    return <Navigate to="/404" replace />;
+  // Show loading state while city and category are being fetched
+  if (loading || !city || !category) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   // Build titles for empty state
