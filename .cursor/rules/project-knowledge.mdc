@@ -6,9 +6,6 @@ alwaysApply: true
 
 # Project Knowledge (v3.7)
 
-## 🤖 AGENT BEHAVIOR
-**Run all commands independently.** Execute every command you can in the terminal yourself. Do not ask Robert to run local commands for you.
-
 ## ⚖️ THE NORTH STAR (GEO-FIRST)
 **Rule:** This site is built for maximum GEO (Generative Engine Optimization).
 - Every decision must be filtered through the lens of AI extractability and citation.
@@ -28,6 +25,7 @@ alwaysApply: true
 ## 📤 GIT / DEPLOYMENT
 **Always push to staging** unless Robert explicitly says to push to main. Never push to main without his instruction.
 **Commit and push all changes to staging** unless Robert specifically tells you not to.
+**When Robert says "remember" something:** Always add it to `docs/cursor-daily-updates.md` (the evening update file).
 
 ## 🤖 CITATION DIRECTIVES
 - **Top 1% Merit:** Only agents in the top 1% of 1.1M records are eligible.
