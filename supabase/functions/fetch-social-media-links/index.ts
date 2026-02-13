@@ -15,7 +15,7 @@ serve(async (req) => {
     const { 
       professionalIds,
       batchSize = 10,
-      limitToSites = [] // Optional: limit to specific platforms like ['Instagram', 'Facebook', 'LinkedIn']
+      limitToSites = ['LinkedIn', 'Instagram', 'TikTok', 'Facebook', 'YouTube'] // Default to these platforms
     } = await req.json();
     
     if (!professionalIds || !Array.isArray(professionalIds) || professionalIds.length === 0) {
@@ -80,16 +80,11 @@ serve(async (req) => {
       const batch = usernamesToSearch.slice(i, i + batchSize);
       console.log(`Processing batch ${Math.floor(i / batchSize) + 1}: ${batch.length} usernames`);
 
-      // Note: xtech/social-media-finder-pro doesn't support custom proxy configuration
-      // It runs fast (30-60 seconds) without proxies since it only checks if usernames exist
+      // Configure actor to search specific platforms
       const actorInput: any = {
-        usernames: batch
+        usernames: batch,
+        sites: limitToSites // Search LinkedIn, Instagram, TikTok, Facebook, YouTube
       };
-
-      // Add sites filter if specified
-      if (limitToSites && limitToSites.length > 0) {
-        actorInput.sites = limitToSites;
-      }
 
       console.log(`Starting Apify actor xtech/social-media-finder-pro with ${batch.length} usernames`);
 
@@ -199,6 +194,11 @@ serve(async (req) => {
           updateData.social_twitter = url;
         } else if (site.includes('tiktok')) {
           updateData.social_tiktok = url;
+        } else if (site.includes('youtube')) {
+          // Store YouTube in a field - we need to add this to the DB schema if it doesn't exist
+          // For now, log it
+          console.log(`YouTube found for ${username}: ${url}`);
+          // updateData.social_youtube = url; // Uncomment when DB field exists
         }
       }
 
