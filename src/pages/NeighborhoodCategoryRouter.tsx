@@ -5,16 +5,15 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Lazy load the components
 const AgentProfile = lazy(() => import("./AgentProfile"));
+const DynamicCategoryList = lazy(() => import("./DynamicCategoryList"));
 
 /**
  * Smart router for /:stateSlug/:citySlug/:thirdSegment/:fourthSegment
  *
- * This router now prioritizes agent profile detection:
- * 1. First checks if fourthSegment matches an agent's canonical_slug
- * 2. If agent found → render AgentProfile
- * 3. If not agent → check if it's an old 4-segment neighborhood URL
- * 4. If neighborhood found → 301 redirect to new 5-segment format with ZIP
- * 5. Otherwise → 404
+ * This router handles two cases:
+ * 1. Agent profiles: fourthSegment matches an agent's canonical_slug → render AgentProfile
+ * 2. Neighborhood pages: thirdSegment is a neighborhood_slug → render DynamicCategoryList with neighborhood context
+ * 3. Otherwise → 404
  */
 const NeighborhoodCategoryRouter = () => {
   const { stateSlug, citySlug, thirdSegment, fourthSegment } = useParams<{
@@ -28,6 +27,7 @@ const NeighborhoodCategoryRouter = () => {
   const [loading, setLoading] = useState(true);
   const [isAgentRoute, setIsAgentRoute] = useState<boolean | null>(null);
   const [redirectPath, setRedirectPath] = useState<string | null>(null);
+  const [neighborhoodData, setNeighborhoodData] = useState<{ name: string; slug: string } | null>(null);
 
   useEffect(() => {
     const determineRoute = async () => {
@@ -61,8 +61,8 @@ const NeighborhoodCategoryRouter = () => {
           }
         }
 
-        // STEP 2: Not an agent - check if this is an old neighborhood URL format
-        // Old format: /state/city/neighborhood/category
+        // STEP 2: Not an agent - check if this is a neighborhood URL
+        // Format: /state/city/neighborhood/category
         // thirdSegment = neighborhood_slug, fourthSegment = category_slug
         const { data: neighborhood, error: neighborhoodError } = await supabase
           .from('neighborhood_catalog')
@@ -73,16 +73,15 @@ const NeighborhoodCategoryRouter = () => {
           .maybeSingle();
 
         if (neighborhood && !neighborhoodError) {
-          // This is an old 4-segment neighborhood URL - redirect to new 5-segment format
-          const primaryZip = neighborhood.primary_zip || (neighborhood.zips && neighborhood.zips[0]);
-          
-          if (primaryZip) {
-            const newPath = `/${stateSlug}/${citySlug}/${primaryZip}/${thirdSegment}/${fourthSegment}`;
-            console.log(`[NeighborhoodCategoryRouter] Redirecting old neighborhood URL → ${newPath}`);
-            setRedirectPath(newPath);
-            setLoading(false);
-            return;
-          }
+          // This is a neighborhood page - render DynamicCategoryList with neighborhood context
+          console.log(`[NeighborhoodCategoryRouter] Neighborhood found: ${neighborhood.neighborhood}`);
+          setNeighborhoodData({
+            name: neighborhood.neighborhood,
+            slug: neighborhood.neighborhood_slug
+          });
+          setIsAgentRoute(false);
+          setLoading(false);
+          return;
         }
 
         // STEP 3: Neither agent nor neighborhood - 404
@@ -111,7 +110,7 @@ const NeighborhoodCategoryRouter = () => {
     return loader;
   }
 
-  // Handle redirects (both neighborhood redirects and 404s)
+  // Handle redirects (both agent canonical redirects and 404s)
   if (redirectPath) {
     return <Navigate to={redirectPath} replace />;
   }
@@ -121,6 +120,19 @@ const NeighborhoodCategoryRouter = () => {
     return (
       <Suspense fallback={loader}>
         <AgentProfile />
+      </Suspense>
+    );
+  }
+
+  // Route to neighborhood page (thirdSegment=neighborhood, fourthSegment=category)
+  if (neighborhoodData) {
+    return (
+      <Suspense fallback={loader}>
+        <DynamicCategoryList
+          categorySlugOverride={fourthSegment}
+          neighborhoodSlug={neighborhoodData.slug}
+          neighborhoodName={neighborhoodData.name}
+        />
       </Suspense>
     );
   }

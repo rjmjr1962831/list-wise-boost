@@ -129,9 +129,8 @@ export default function AreaAgentsPage() {
   }
 
   // Build qualified agents page URL
-  const qualifiedAgentsUrl = zipCode 
-    ? `/${stateSlug}/${citySlug}/${zipCode}/${neighborhoodSlug}/qualified-real-estate-agents`
-    : `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
+  // Build qualified agents URL (4-segment format without ZIP)
+  const qualifiedAgentsUrl = `/${stateSlug}/${citySlug}/${neighborhoodSlug}/qualified-real-estate-agents`;
 
   return (
     <>
