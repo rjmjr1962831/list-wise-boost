@@ -279,7 +279,7 @@ export function NeighborhoodOverview({ neighborhoodSlug, citySlug, stateSlug }: 
       </section>
 
       {/* NEARBY_NEIGHBORHOODS */}
-      {neighborhood.nearby_neighborhoods && neighborhood.nearby_neighborhoods.length > 0 && (
+      {neighborhood.nearby_neighborhoods && Array.isArray(neighborhood.nearby_neighborhoods) && neighborhood.nearby_neighborhoods.length > 0 && (
         <section style={{ marginBottom: '1.5rem' }}>
           <h2 style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.5rem' }}>
             NEARBY_NEIGHBORHOODS
