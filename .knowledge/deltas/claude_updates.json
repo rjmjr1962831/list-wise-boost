@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-02-13",
+  "agent": "claude",
+  "critical_findings": [
+    {
+      "topic": "Arcadia Zoning Change",
+      "effective_date": "2026-01-01",
+      "description": "Middle Housing Overlay District (MHOD) now active in Phoenix per ARS 9-462.13. Allows up to 4 dwelling units per lot (duplexes, triplexes, fourplexes, townhomes) in areas previously zoned single-family only.",
+      "impact": "Arcadia properties within 1 mile of downtown Phoenix may now permit multi-family development. Conflicts with current 'luxury single-family' neighborhood positioning.",
+      "action_required": "Verify Arcadia neighborhood writeups don't misrepresent zoning as single-family exclusive where MHOD applies.",
+      "risk": "GEO credibility issue if AI systems detect zoning classification mismatch"
+    }
+  ]
+}
