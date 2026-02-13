@@ -25,16 +25,9 @@ serve(async (req) => {
     const APIFY_TOKEN = Deno.env.get('APIFY_TOKEN');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const ROTATING_PROXY_ENDPOINT = Deno.env.get('ROTATING_PROXY_ENDPOINT');
-    const ROTATING_PROXY_USERNAME = Deno.env.get('ROTATING_PROXY_USERNAME');
-    const ROTATING_PROXY_PASSWORD = Deno.env.get('ROTATING_PROXY_PASSWORD');
     
     if (!APIFY_TOKEN) {
       throw new Error('APIFY_TOKEN not configured');
-    }
-
-    if (!ROTATING_PROXY_ENDPOINT || !ROTATING_PROXY_USERNAME || !ROTATING_PROXY_PASSWORD) {
-      throw new Error('Proxyscrape residential proxy credentials not configured');
     }
 
     console.log(`Starting social media search for ${professionalIds.length} professionals`);
@@ -87,15 +80,10 @@ serve(async (req) => {
       const batch = usernamesToSearch.slice(i, i + batchSize);
       console.log(`Processing batch ${Math.floor(i / batchSize) + 1}: ${batch.length} usernames`);
 
-      // Prepare Apify actor input with proxyscrape residential proxies
-      const proxyUrl = `http://${ROTATING_PROXY_USERNAME}:${ROTATING_PROXY_PASSWORD}@${ROTATING_PROXY_ENDPOINT}`;
-      
+      // Note: xtech/social-media-finder-pro doesn't support custom proxy configuration
+      // It runs fast (30-60 seconds) without proxies since it only checks if usernames exist
       const actorInput: any = {
-        usernames: batch,
-        proxyConfiguration: {
-          useApifyProxy: false, // Use external proxy instead
-          proxyUrls: [proxyUrl]
-        }
+        usernames: batch
       };
 
       // Add sites filter if specified
