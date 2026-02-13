@@ -9,6 +9,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Chatbot } from "@/components/Chatbot";
 import { StagingAdminLink } from "@/components/StagingAdminLink";
+import { AdminRouteGuard } from "@/components/AdminRouteGuard";
 import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -189,27 +190,27 @@ const App = () => (
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* Admin routes */}
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/admin" element={<AdminDashboard />} />
+                    {/* Admin routes - Only accessible on staging */}
+                    <Route path="/admin/login" element={<AdminRouteGuard><AdminLogin /></AdminRouteGuard>} />
+                    <Route path="/admin" element={<AdminRouteGuard><AdminDashboard /></AdminRouteGuard>} />
                     
                     {/* New CRM Dashboard */}
-                    <Route path="/admin/crm/login" element={<CRMLogin />} />
-                    <Route path="/admin/crm" element={<CRMLayout />}>
+                    <Route path="/admin/crm/login" element={<AdminRouteGuard><CRMLogin /></AdminRouteGuard>} />
+                    <Route path="/admin/crm" element={<AdminRouteGuard><CRMLayout /></AdminRouteGuard>}>
                       <Route path="dashboard" element={<CRMDashboard />} />
                       <Route path="agents" element={<CRMAgentList />} />
                       <Route path="leads" element={<CRMLeads />} />
                     </Route>
                     
-                    <Route path="/admin/mobile-preview" element={<MobilePreview />} />
-                    <Route path="/a/bot-analytics" element={<BotAnalyticsDashboard />} />
-                    <Route path="/agent/bot-analytics" element={<AgentBotAnalyticsDashboard />} />
-                    <Route path="/og-preview" element={<OGPreview />} />
-                    <Route path="/crm" element={<CRM />} />
-                    <Route path="/admin/ingest-neighborhoods" element={<IngestNeighborhoods />} />
-                    <Route path="/admin/neighborhood-writeups" element={<NeighborhoodWriteups />} />
-                    <Route path="/admin/export-agents" element={<AdminExportAgents />} />
-                    <Route path="/test-visibility-components" element={<TestVisibilityComponents />} />
+                    <Route path="/admin/mobile-preview" element={<AdminRouteGuard><MobilePreview /></AdminRouteGuard>} />
+                    <Route path="/a/bot-analytics" element={<AdminRouteGuard><BotAnalyticsDashboard /></AdminRouteGuard>} />
+                    <Route path="/agent/bot-analytics" element={<AdminRouteGuard><AgentBotAnalyticsDashboard /></AdminRouteGuard>} />
+                    <Route path="/og-preview" element={<AdminRouteGuard><OGPreview /></AdminRouteGuard>} />
+                    <Route path="/crm" element={<AdminRouteGuard><CRM /></AdminRouteGuard>} />
+                    <Route path="/admin/ingest-neighborhoods" element={<AdminRouteGuard><IngestNeighborhoods /></AdminRouteGuard>} />
+                    <Route path="/admin/neighborhood-writeups" element={<AdminRouteGuard><NeighborhoodWriteups /></AdminRouteGuard>} />
+                    <Route path="/admin/export-agents" element={<AdminRouteGuard><AdminExportAgents /></AdminRouteGuard>} />
+                    <Route path="/test-visibility-components" element={<AdminRouteGuard><TestVisibilityComponents /></AdminRouteGuard>} />
                     {/* Visibility funnel */}
                     <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
                     <Route path="/visibility/coverage" element={<VisibilityCoveragePage />} />

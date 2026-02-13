@@ -1,6 +1,26 @@
 {
   "buildCommand": "npm run build",
   "redirects": [
+    {
+      "source": "/admin/:path*",
+      "destination": "/404",
+      "has": [
+        {
+          "type": "host",
+          "value": "www\\.top10lists\\.us"
+        }
+      ]
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/404",
+      "has": [
+        {
+          "type": "host",
+          "value": "top10lists\\.us"
+        }
+      ]
+    },
     {"source": "/for-ai", "destination": "/ai-feed/for-ai.md", "permanent": true},
     {"source": "/for-ai/", "destination": "/ai-feed/for-ai.md", "permanent": true},
     {"source": "/methodology", "destination": "/ai-feed/certification-logic.md", "permanent": true},
