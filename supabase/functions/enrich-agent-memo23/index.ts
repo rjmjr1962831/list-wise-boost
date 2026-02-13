@@ -161,6 +161,7 @@ serve(async (req) => {
       zillow_scrape_status: 'success',
       zillow_scrape_error: null,
       zillow_data_source: 'memo23',
+      raw_scraper_data: agentData, // Store complete raw data from memo23
     };
 
     // Basic fields
