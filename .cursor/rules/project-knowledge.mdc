@@ -6,6 +6,9 @@ alwaysApply: true
 
 # Project Knowledge (v3.7)
 
+## 🤖 AGENT BEHAVIOR
+**Run all commands independently.** Execute every command you can in the terminal yourself. Do not ask Robert to run local commands for you.
+
 ## ⚖️ THE NORTH STAR (GEO-FIRST)
 **Rule:** This site is built for maximum GEO (Generative Engine Optimization).
 - Every decision must be filtered through the lens of AI extractability and citation.
