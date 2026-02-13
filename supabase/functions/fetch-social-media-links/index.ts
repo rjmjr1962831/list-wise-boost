@@ -54,17 +54,32 @@ serve(async (req) => {
       // Generate potential usernames from name
       const nameParts = prof.name.toLowerCase().split(' ').filter(Boolean);
       if (nameParts.length >= 2) {
-        // firstname.lastname
-        const username1 = `${nameParts[0]}.${nameParts[nameParts.length - 1]}`;
-        // firstnamelastname
-        const username2 = `${nameParts[0]}${nameParts[nameParts.length - 1]}`;
-        // firstname_lastname
-        const username3 = `${nameParts[0]}_${nameParts[nameParts.length - 1]}`;
+        const firstName = nameParts[0];
+        const lastName = nameParts[nameParts.length - 1];
         
-        usernamesToSearch.push(username1, username2, username3);
-        usernameToIdMap[username1] = prof.id;
-        usernameToIdMap[username2] = prof.id;
-        usernameToIdMap[username3] = prof.id;
+        // Common patterns for real estate agents
+        const variations = [
+          // LinkedIn-style (most common)
+          `${firstName}-${lastName}`,
+          `${firstName}${lastName}`,
+          `${firstName}.${lastName}`,
+          `${firstName}_${lastName}`,
+          // With profession indicators
+          `${firstName}-${lastName}-realtor`,
+          `${firstName}-${lastName}-broker`,
+          `${firstName}${lastName}realtor`,
+          // First initial + last name
+          `${firstName[0]}${lastName}`,
+          `${firstName[0]}.${lastName}`,
+          // Instagram/TikTok style
+          `${firstName}.${lastName}.realtor`,
+          `${firstName}_${lastName}_realestate`,
+        ];
+        
+        variations.forEach(username => {
+          usernamesToSearch.push(username);
+          usernameToIdMap[username] = prof.id;
+        });
       } else if (nameParts.length === 1) {
         usernamesToSearch.push(nameParts[0]);
         usernameToIdMap[nameParts[0]] = prof.id;
