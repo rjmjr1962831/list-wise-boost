@@ -103,9 +103,10 @@ serve(async (req) => {
 
       console.log(`Starting Apify actor xtech/social-media-finder-pro with ${batch.length} usernames`);
 
-      // Start the Apify actor
-      const startResponse = await fetch(
-        'https://api.apify.com/v2/acts/xtech~social-media-finder-pro/runs',
+      // Use synchronous endpoint that returns dataset items directly
+      // This is faster and simpler than polling
+      const response = await fetch(
+        'https://api.apify.com/v2/acts/xtech~social-media-finder-pro/run-sync-get-dataset-items',
         {
           method: 'POST',
           headers: {
@@ -116,55 +117,13 @@ serve(async (req) => {
         }
       );
 
-      if (!startResponse.ok) {
-        const errorText = await startResponse.text();
-        throw new Error(`Failed to start actor: ${startResponse.status} - ${errorText}`);
-      }
-
-      const { data: runData } = await startResponse.json();
-      const runId = runData.id;
-      console.log(`Actor started with run ID: ${runId}`);
-
-      // Poll for completion
-      let status = 'RUNNING';
-      let attempts = 0;
-      const maxAttempts = 60; // 5 minutes max (5 sec intervals)
-
-      while (status === 'RUNNING' && attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-        
-        const statusResponse = await fetch(
-          `https://api.apify.com/v2/actor-runs/${runId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${APIFY_TOKEN}`,
-            },
-          }
-        );
-
-        const { data: statusData } = await statusResponse.json();
-        status = statusData.status;
-        attempts++;
-        
-        console.log(`Run status: ${status}, attempt ${attempts}/${maxAttempts}`);
-      }
-
-      if (status !== 'SUCCEEDED') {
-        console.error(`Actor run did not succeed. Final status: ${status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Actor run failed: ${response.status} - ${errorText}`);
         continue; // Skip this batch but continue with others
       }
 
-      // Get results
-      const resultsResponse = await fetch(
-        `https://api.apify.com/v2/actor-runs/${runId}/dataset/items`,
-        {
-          headers: {
-            'Authorization': `Bearer ${APIFY_TOKEN}`,
-          },
-        }
-      );
-
-      const batchResults = await resultsResponse.json();
+      const batchResults = await response.json();
       console.log(`Retrieved ${batchResults.length} results for batch`);
       
       results.push(...batchResults);
