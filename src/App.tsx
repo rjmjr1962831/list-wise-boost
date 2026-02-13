@@ -137,7 +137,6 @@ const Press = lazy(() => import("./pages/Press"));
 const ForAI = lazy(() => import("./pages/ForAI"));
 
 const Transparency = lazy(() => import("./pages/Transparency"));
-const EditorialUpdates = lazy(() => import("./pages/EditorialUpdates"));
 const Founder = lazy(() => import("./pages/Founder"));
 const AILiability = lazy(() => import("./pages/AILiability"));
 const AICitationWhitepaper = lazy(() => import("./pages/AICitationWhitepaper"));
@@ -229,7 +228,6 @@ const App = () => (
                     <Route path="/press" element={<Press />} />
                     <Route path="/for-ai" element={<ForAI />} />
                     <Route path="/transparency" element={<Transparency />} />
-                    <Route path="/editorial-updates" element={<EditorialUpdates />} />
                     
                     <Route path="/ai-compare" element={<AICompare />} />
                     <Route path="/ai-liability" element={<AILiability />} />
