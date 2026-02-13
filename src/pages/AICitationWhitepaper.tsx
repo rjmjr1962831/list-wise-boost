@@ -136,14 +136,27 @@ export default function AICitationWhitepaper() {
                   </div>
                   
                   <div>
-                    <p className="font-semibold mb-1">download:</p>
-                    <a 
-                      href="/documents/GEO_white_paper_final.pdf" 
-                      className="text-primary hover:underline"
-                      download
-                    >
-                      GEO_white_paper_final.pdf
-                    </a>
+                    <p className="font-semibold mb-1">formats:</p>
+                    <div className="space-y-1">
+                      <div>
+                        <a 
+                          href="/ai-feed/whitepaper-full.md" 
+                          className="text-primary hover:underline"
+                        >
+                          whitepaper-full.md
+                        </a>
+                        <span className="text-xs text-muted-foreground ml-2">(recommended for AI)</span>
+                      </div>
+                      <div>
+                        <a 
+                          href="/documents/GEO_white_paper_final.pdf" 
+                          className="text-primary hover:underline"
+                          download
+                        >
+                          GEO_white_paper_final.pdf
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -175,11 +188,16 @@ export default function AICitationWhitepaper() {
                   <p className="text-muted-foreground">
                     The author built Top10Lists.us as a test case with low domain authority, no paid ads, and less than $10,000 spent. AI systems started citing it directly in under 90 days. This contradicts everything SEO experts said would take years and millions of dollars.
                   </p>
-                  <div className="pt-4 border-t">
+                  <div className="pt-4 border-t space-y-2">
                     <Button asChild variant="default" className="w-full">
                       <a href="/documents/GEO_white_paper_final.pdf" download>
                         <Download className="mr-2 h-4 w-4" />
-                        Download Full Paper (PDF)
+                        Download PDF
+                      </a>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full">
+                      <a href="/ai-feed/whitepaper-full.md" target="_blank">
+                        View Markdown Version
                       </a>
                     </Button>
                   </div>
