@@ -13,9 +13,9 @@ serve(async (req) => {
   try {
     const { agentName, brokerage, specialties, yearsExperience, zillowData } = await req.json();
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    const VERCEL_API_KEY = Deno.env.get("VERCEL_API_KEY");
+    if (!VERCEL_API_KEY) {
+      throw new Error("VERCEL_API_KEY is not configured");
     }
 
     // Build the prompt
@@ -39,10 +39,10 @@ Generate only the bio text, no additional commentary.`;
 
     console.log("Generating bio for:", agentName);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const response = await fetch("https://ai.gateway.vercel.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${VERCEL_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -56,7 +56,7 @@ Generate only the bio text, no additional commentary.`;
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Lovable AI error:", response.status, errorText);
+      console.error("Vercel AI error:", response.status, errorText);
       
       if (response.status === 429) {
         return new Response(

@@ -261,8 +261,8 @@ serve(async (req) => {
       }
 
       // Generate AI bio if no description exists
-      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-      if (LOVABLE_API_KEY) {
+      const VERCEL_API_KEY = Deno.env.get("VERCEL_API_KEY");
+      if (VERCEL_API_KEY) {
         try {
           // Build context from available agent data
           const specialties = agent.specialties?.join(', ') || 'real estate';
@@ -284,10 +284,10 @@ Requirements:
 - Highlight what makes them a great choice
 - DO NOT mention or estimate years of experience`;
 
-          const bioResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          const bioResponse = await fetch("https://ai.gateway.vercel.dev/v1/chat/completions", {
             method: "POST",
             headers: {
-              Authorization: `Bearer ${LOVABLE_API_KEY}`,
+              Authorization: `Bearer ${VERCEL_API_KEY}`,
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -313,7 +313,7 @@ Requirements:
           console.error(`Error generating bio for ${agent.name}:`, error);
         }
       } else {
-        console.log(`⚠ No LOVABLE_API_KEY found, skipping bio generation`);
+        console.log(`⚠ No VERCEL_API_KEY found, skipping bio generation`);
       }
 
       // Extract website from professionalInformation - prioritize this source

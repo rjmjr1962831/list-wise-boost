@@ -25,9 +25,9 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
+    const VERCEL_API_KEY = Deno.env.get('VERCEL_API_KEY');
+    if (!VERCEL_API_KEY) {
+      throw new Error('VERCEL_API_KEY not configured');
     }
 
     // If no cities provided, fetch cities that have existing content but no marketStats
@@ -106,10 +106,10 @@ Return ONLY a JSON object with these exact fields (no other text):
   "rentToIncomeRatio": <number - median rent as percentage of median income, e.g. 0.28>
 }`;
 
-        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        const response = await fetch('https://ai.gateway.vercel.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Authorization': `Bearer ${VERCEL_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({

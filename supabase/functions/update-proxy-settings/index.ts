@@ -23,7 +23,7 @@ serve(async (req) => {
 
     // Note: In Supabase, secrets are managed via the Supabase CLI or dashboard
     // This function validates and returns success
-    // The actual storage would be handled by Lovable's secrets management
+    // The actual storage would be handled by Vercel's secrets management
     
     if (!endpoint || !username || !password) {
       return new Response(

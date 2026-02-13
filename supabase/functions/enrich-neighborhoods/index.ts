@@ -22,12 +22,12 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const VERCEL_API_KEY = Deno.env.get("VERCEL_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    if (!VERCEL_API_KEY) {
+      throw new Error("VERCEL_API_KEY is not configured");
     }
 
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
@@ -64,7 +64,7 @@ serve(async (req) => {
       console.log(`Enriching: ${hood.neighborhood}, ${hood.city_area}, ${hood.state}`);
 
       try {
-        // Call Lovable AI to get neighborhood data
+        // Call Vercel AI to get neighborhood data
         const prompt = `You are a real estate data analyst. Provide accurate market data for this Arizona neighborhood.
 
 Neighborhood: ${hood.neighborhood}
@@ -83,10 +83,10 @@ Research this specific neighborhood and provide:
 
 Be specific to this exact neighborhood. If you're unsure, provide reasonable estimates based on the city and ZIP code.`;
 
-        const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        const aiResponse = await fetch("https://ai.gateway.vercel.dev/v1/chat/completions", {
           method: "POST",
           headers: {
-            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            Authorization: `Bearer ${VERCEL_API_KEY}`,
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
