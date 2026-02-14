@@ -82,6 +82,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             <h1 className="text-2xl font-semibold text-foreground">Something went wrong</h1>
             <p className="text-muted-foreground">An unexpected error occurred while rendering this page.</p>
             <pre className="text-left text-xs bg-muted p-3 rounded overflow-auto max-h-32 font-mono">{msg}</pre>
+            <p className="text-xs text-muted-foreground">If your browser shows &quot;SES&quot; or &quot;lockdown&quot; in the console, try a private/incognito window or disable that extension.</p>
             {showAlertSent && <p className="text-sm text-muted-foreground">An alert has been sent to the admin.</p>}
             <button 
               onClick={this.handleRetry} 

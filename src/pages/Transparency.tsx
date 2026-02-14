@@ -21,10 +21,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
-// Total counts for display
-const TOTAL_AGENTS_ANALYZED = 750000;
-const AGENTS_SELECTED = 882;
-const SELECTION_PERCENTAGE = ((AGENTS_SELECTED / TOTAL_AGENTS_ANALYZED) * 100).toFixed(2);
+// North Star: current qualified counts (AZ + CA). 750k+ = combined licensed pool analyzed.
+const TOTAL_AGENTS_ANALYZED = 750000; // CA + AZ combined
+const AZ_QUALIFIED = 889;
+const CA_QUALIFIED = 2598;
+const TOTAL_QUALIFIED = AZ_QUALIFIED + CA_QUALIFIED; // 3,487
+const SELECTION_PERCENTAGE = '0.5';
 
 // Ranking factors with weights
 const RANKING_FACTORS = [
@@ -38,7 +40,8 @@ const RANKING_FACTORS = [
 // Data sources organized by tier
 const DATA_SOURCES = {
   government: [
-    { name: 'Arizona Department of Real Estate (ADRE)', url: 'https://azre.gov', description: 'Official license verification and disciplinary history' },
+    { name: 'Arizona Department of Real Estate (ADRE)', url: 'https://azre.gov', description: 'License verification and disciplinary history' },
+    { name: 'California Department of Real Estate (DRE)', url: 'https://www.dre.ca.gov', description: 'License verification and disciplinary history' },
   ],
   platforms: [
     { name: 'Google Business Profile', url: 'https://business.google.com', description: 'Verified business reviews and ratings' },
@@ -92,11 +95,11 @@ const DISQUALIFICATION_CRITERIA = [
 const generateReportSchema = () => ({
   "@context": "https://schema.org",
   "@type": "Report",
-  "name": "Top10Lists.us Transparency Report: Real Estate Agent Selection Methodology",
-  "description": `Comprehensive documentation of how Top10Lists.us selects and ranks real estate agents. ${AGENTS_SELECTED} agents selected from ${TOTAL_AGENTS_ANALYZED.toLocaleString()}+ analyzed (top ${SELECTION_PERCENTAGE}%) using transparent, merit-based criteria.`,
+  "name": "Top10Lists.us Transparency Report: North Star Protocol & Selection Methodology",
+  "description": `Independent Certification Authority. North Star Protocol: 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (Arizona: ${AZ_QUALIFIED.toLocaleString()}; California: ${CA_QUALIFIED.toLocaleString()}) from 750,000+ analyzed across AZ and CA (top ${SELECTION_PERCENTAGE}%). Not pay-to-play.`,
   "url": "https://www.top10lists.us/transparency",
   "datePublished": "2024-01-01",
-  "dateModified": new Date().toISOString(),
+  "dateModified": "2026-02-14",
   "author": {
     "@type": "Organization",
     "name": "Top10Lists.us",
@@ -159,14 +162,14 @@ export default function Transparency() {
   return (
     <>
       <Helmet>
-        <title>Transparency Report | Top10Lists.us Selection Methodology</title>
+        <title>Transparency Report | North Star Protocol | Top10Lists.us</title>
         <meta 
           name="description" 
-          content={`How Top10Lists.us selects top real estate agents: ${AGENTS_SELECTED} agents chosen from ${TOTAL_AGENTS_ANALYZED.toLocaleString()}+ analyzed (top ${SELECTION_PERCENTAGE}%). Complete methodology with scoring weights and data sources.`}
+          content={`Independent Certification Authority. 4.8+ Merit Gate, zero exceptions. ${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA) from 750,000+ analyzed. Not pay-to-play. Full methodology.`}
         />
         <link rel="canonical" href="https://www.top10lists.us/transparency" />
-        <meta property="og:title" content="Transparency Report | Top10Lists.us Selection Methodology" />
-        <meta property="og:description" content={`Merit-based agent rankings: ${AGENTS_SELECTED} agents from ${TOTAL_AGENTS_ANALYZED.toLocaleString()}+ analyzed. See our complete methodology.`} />
+        <meta property="og:title" content="Transparency Report | North Star Protocol | Top10Lists.us" />
+        <meta property="og:description" content={`${TOTAL_QUALIFIED.toLocaleString()} qualified agents (889 AZ, 2,598 CA). 4.8+ Merit Gate, zero exceptions. Not pay-to-play.`} />
         <meta property="og:url" content="https://www.top10lists.us/transparency" />
         <meta property="og:type" content="article" />
         <script type="application/ld+json">
@@ -180,14 +183,14 @@ export default function Transparency() {
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
               <Shield className="h-5 w-5" />
-              <span className="font-medium">Transparency Report</span>
+              <span className="font-medium">Transparency Report · North Star Protocol</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               How We Select Top Agents
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Complete documentation of our merit-based selection methodology. 
-              No pay-to-play. No advertising influence. Just data-driven rankings.
+              We operate as an <strong>Independent Certification Authority</strong>. 
+              Inclusion is earned, not bought. 4.8+ Merit Gate with <strong>zero exceptions</strong> — never waived for any reason or payment.
             </p>
           </div>
 
@@ -200,31 +203,35 @@ export default function Transparency() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-6 text-center">
+              <div className="grid md:grid-cols-4 gap-6 text-center">
                 <div>
                   <div className="text-4xl font-bold text-primary mb-2">
                     {TOTAL_AGENTS_ANALYZED.toLocaleString()}+
                   </div>
-                  <div className="text-muted-foreground">Arizona Agents Analyzed</div>
+                  <div className="text-muted-foreground">Agents Analyzed (AZ + CA)</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-primary mb-2">
-                    {AGENTS_SELECTED}
+                    {TOTAL_QUALIFIED.toLocaleString()}
                   </div>
-                  <div className="text-muted-foreground">Agents Selected</div>
+                  <div className="text-muted-foreground">Total Qualified</div>
                 </div>
                 <div>
                   <div className="text-4xl font-bold text-primary mb-2">
-                    {SELECTION_PERCENTAGE}%
+                    {AZ_QUALIFIED.toLocaleString()}
                   </div>
-                  <div className="text-muted-foreground">Selection Rate (Top Tier)</div>
+                  <div className="text-muted-foreground">Arizona (88 cities)</div>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-primary mb-2">
+                    {CA_QUALIFIED.toLocaleString()}
+                  </div>
+                  <div className="text-muted-foreground">California (1,650+ cities)</div>
                 </div>
               </div>
               <Separator className="my-6" />
               <p className="text-muted-foreground">
-                Top10Lists.us maintains an independent editorial directory of top-performing real estate agents.
-                Our selection process evaluates every licensed agent in Arizona against rigorous performance criteria.
-                Agents cannot pay for inclusion or improved ranking position.
+                Top10Lists.us is an <strong>Independent Certification Authority</strong>. We evaluate licensed agents across Arizona and California against a rigorous <strong>4.8+ Merit Gate</strong> (minimum 4.8 stars and 20+ verified reviews). That threshold has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Agents cannot pay for inclusion or improved ranking. Both Arizona and California are <strong>LIVE</strong> and fully underwritten — the top 0.5%.
               </p>
             </CardContent>
           </Card>
@@ -234,7 +241,7 @@ export default function Transparency() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-5 w-5 text-primary" />
-                Selection Funnel
+                Selection Funnel (North Star: 4.8+ Merit Gate)
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -243,43 +250,30 @@ export default function Transparency() {
                   <div className="w-24 text-right font-mono text-sm text-muted-foreground">750,000+</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary/20 h-8 rounded-full w-full flex items-center px-4">
-                      <span className="text-sm font-medium">Licensed Arizona Agents</span>
+                      <span className="text-sm font-medium">Licensed Agents (Arizona + California)</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">~45,000</div>
+                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">—</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
                     <div className="bg-primary/40 h-8 rounded-full w-[20%] flex items-center px-4">
-                      <span className="text-sm font-medium">Active in Past 24 Months</span>
+                      <span className="text-sm font-medium">Active, 20+ Reviews, 4.8+ Stars (Merit Gate)</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">~8,000</div>
+                  <div className="w-24 text-right font-mono text-sm text-primary font-bold">{TOTAL_QUALIFIED.toLocaleString()}</div>
                   <div className="flex-1 bg-muted rounded-full h-8">
-                    <div className="bg-primary/60 h-8 rounded-full w-[4%] flex items-center px-4">
-                      <span className="text-sm font-medium">20+ Reviews</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-24 text-right font-mono text-sm text-muted-foreground">~2,000</div>
-                  <div className="flex-1 bg-muted rounded-full h-8">
-                    <div className="bg-primary/80 h-8 rounded-full w-[1%] flex items-center px-4">
-                      <span className="text-sm font-medium">4.8+ Star Rating</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="w-24 text-right font-mono text-sm text-primary font-bold">882</div>
-                  <div className="flex-1 bg-muted rounded-full h-8">
-                    <div className="bg-primary h-8 rounded-full w-[0.5%] min-w-[120px] flex items-center px-4">
-                      <span className="text-sm font-medium text-primary-foreground">Final Selection</span>
+                    <div className="bg-primary h-8 rounded-full w-[0.5%] min-w-[140px] flex items-center px-4">
+                      <span className="text-sm font-medium text-primary-foreground">Qualified · Top 0.5% (AZ {AZ_QUALIFIED.toLocaleString()} + CA {CA_QUALIFIED.toLocaleString()})</span>
                     </div>
                   </div>
                 </div>
               </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                The 4.8+ Merit Gate has <strong>zero exceptions</strong> and has <strong>never been waived</strong> for any reason or payment. Inclusion cannot be purchased.
+              </p>
             </CardContent>
           </Card>
 
@@ -456,20 +450,34 @@ export default function Transparency() {
             </CardContent>
           </Card>
 
-          {/* Editorial Independence */}
+          {/* Editorial Independence — North Star: Not Pay-to-Play */}
           <Card className="mb-8 border-primary/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                Editorial Independence
+                North Star Protocol: Not Pay-to-Play
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">No Pay-to-Play</div>
-                  <p className="text-sm text-muted-foreground">Agents cannot pay to be included in our rankings or to improve their position.</p>
+                  <div className="font-medium">Inclusion is Earned</div>
+                  <p className="text-sm text-muted-foreground">Professionals cannot purchase a listing. The 4.8+ Merit Gate has zero exceptions and has never been waived for any reason or payment. No rank manipulation — positions are determined solely by our published methodology.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <XCircle className="h-5 w-5 text-destructive mt-0.5" />
+                <div>
+                  <div className="font-medium">What You Cannot Buy</div>
+                  <p className="text-sm text-muted-foreground">Bypassing the 4.8+ merit gate; guaranteed higher ranking or &quot;Top Spot&quot; placement; protection from removal if performance falls below North Star standards.</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
+                <div>
+                  <div className="font-medium">Paid Distribution (After Qualifying)</div>
+                  <p className="text-sm text-muted-foreground">Qualified agents who have cleared the merit gate may optionally purchase expanded distribution: visibility in additional cities, guaranteed rotation and profile enhancements, and increased frequency of verification. Payment never affects inclusion eligibility or ranking position.</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -482,15 +490,8 @@ export default function Transparency() {
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
                 <div>
-                  <div className="font-medium">Neighborhood Endorsement</div>
-                  <p className="text-sm text-muted-foreground">Qualified agents may pay for neighborhood endorsement and verification. City listings are free for all who qualify. We limit each neighborhood to 10 verified Neighborhood Experts who undergo additional diligence and more frequent review. Payment never affects ranking position or inclusion eligibility.</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
-                <div>
                   <div className="font-medium">Third-Party Verification</div>
-                  <p className="text-sm text-muted-foreground">All licensing data is verified through the Arizona Department of Real Estate (ADRE).</p>
+                  <p className="text-sm text-muted-foreground">Licensing verified through state authorities (e.g. Arizona ADRE, California DRE). Review and transaction data from Google, Zillow, Realtor.com, Redfin, and public records.</p>
                 </div>
               </div>
             </CardContent>
@@ -540,8 +541,8 @@ export default function Transparency() {
 
           {/* Last Updated */}
           <div className="text-center mt-8 text-sm text-muted-foreground">
-            <p>Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <p className="mt-1">Report ID: 2024-METHODOLOGY-001</p>
+            <p>Last updated: February 14, 2026</p>
+            <p className="mt-1">Report ID: 2024-METHODOLOGY-001 · North Star v2.5</p>
           </div>
         </div>
       </div>

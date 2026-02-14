@@ -17,3 +17,33 @@ Merge made by the 'ort' strategy.
  create mode 100644 supabase/functions/instantly-sync/index.ts
  create mode 100644 supabase/functions/instantly-webhook/index.ts
 Already up to date.
+On branch staging
+Your branch is ahead of 'origin/staging' by 2 commits.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+M	deploy-log.txt
+Your branch is up to date with 'origin/main'.
+Updating 8f558156..54249280
+Fast-forward
+ .env                                             |   6 +-
+ supabase/functions/enrich-agent-memo23/index.ts  | 403 +----------------------
+ supabase/functions/enrich-agents-memo23/index.ts |  33 +-
+ 3 files changed, 34 insertions(+), 408 deletions(-)
+CONFLICT (modify/delete): .env deleted in staging and modified in HEAD.  Version HEAD of .env left in tree.
+Auto-merging docs/PROJECT-KNOWLEDGE.md
+CONFLICT (add/add): Merge conflict in docs/PROJECT-KNOWLEDGE.md
+Auto-merging index.html
+Auto-merging src/App.tsx
+CONFLICT (content): Merge conflict in src/App.tsx
+Auto-merging src/components/Header.tsx
+CONFLICT (content): Merge conflict in src/components/Header.tsx
+Auto-merging src/pages/AreYouAnAgent.tsx
+CONFLICT (content): Merge conflict in src/pages/AreYouAnAgent.tsx
+Auto-merging src/pages/AreaAgentsPage.tsx
+CONFLICT (content): Merge conflict in src/pages/AreaAgentsPage.tsx
+Auto-merging src/pages/QualifiedAgentsPage.tsx
+CONFLICT (content): Merge conflict in src/pages/QualifiedAgentsPage.tsx
+Auto-merging supabase/functions/enrich-agent-memo23/index.ts
+CONFLICT (content): Merge conflict in supabase/functions/enrich-agent-memo23/index.ts
+Automatic merge failed; fix conflicts and then commit the result.
