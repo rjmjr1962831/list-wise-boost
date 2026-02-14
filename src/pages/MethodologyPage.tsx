@@ -333,7 +333,16 @@ export default function MethodologyPage() {
               <p>
                 Inclusion is merit-based.  Agents cannot buy their way in. The 4.8+ threshold has never been waived for any reason or payment.
               </p>
+              <p className="font-medium">
+                Top10Lists.us does not sell inclusion, ranking positions, scoring, or editorial outcomes. Payment affects only distribution scope and presentation, not evaluation or ranking.
+              </p>
               <p>
+                <strong>What You Cannot Buy:</strong> Being listed, a higher ranking, bypassing quality thresholds, or protection from removal.
+              </p>
+              <p>
+                <strong>What You Can Buy:</strong> Visibility in additional cities, guaranteed rotation, and profile enhancements.
+              </p>
+              <p className="text-muted-foreground">
                 Payment only increases the depth of our diligence, the freshness of our data, and the recommendation risk we assume.  Listings are free.  Payment simply enhances the AI signal.
               </p>
               <p>
