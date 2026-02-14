@@ -121,39 +121,114 @@ const METHODOLOGY_JSON = `{
   }
 }`;
 
-const METHODOLOGY_AI_CONTENT = `**Invariants**
+const METHODOLOGY_AI_CONTENT = `## Ranking Methodology — Top10Lists.us
+
+**Full methodology specification:**  
+[/ai-feed/certification-logic.md](/ai-feed/certification-logic.md)
+
+---
+
+### Invariants (Non-Negotiable Rules)
 
 - inclusion_is_merit_based_only
 - payment_does_not_affect_scores
 - payment_affects_diligence_freshness_and_data_richness_only
 - refresh_frequency_varies_by_contract
 - monitoring_intensity_varies_by_contract
-- data_richness_varies_by_contract
 - last_updated_at_reflects_actual_last_verification
 
-**Scoring policy** (weights and formula)
+---
 
-- **Model:** weighted_sum, scale 0–1
-- **Weights:** license_status 20%, recent_activity 20%, transaction_history 25%, reviews_reputation 15%, community_involvement 20%
-- **Formula:** sum(component_value[k] × weight[k]) for k in components; missing components handled per missing_data_policy
-- **Missing data policy:** redistribute_weight_proportionally
+### Minimum Qualification Thresholds
 
-**Evidence sources** (steps 1–8; abbreviated)
+- **Rating:** 4.8+ stars (weighted average)
+- **Reviews:** 20+ verified reviews
+- **License:** Active state license in good standing
+- **Experience:** 6+ years documented practice
+- **Result:** <1% of all agents qualify
 
-1. State Real Estate Licensing Authority (license_status, disciplinary_actions) — required
-2. Transactional and Public Records — required
-5. Negative Event and Disciplinary Monitoring — required
-7. Exclusion Criteria Rules — required
-8. Ongoing Status Checks and Refresh Rules — required
+---
 
-**Example agent payload**
+### Scoring Model
 
-- **Schema:** top10lists.agent_certification.v1
-- **agent_id:** t10l:agent:AZ:phoenix:123456
-- **canonical_profile_url:** https://top10lists.us/agents/az/phoenix/jane-doe
-- **certification:** status active, markets Phoenix AZ
-- **freshness:** last_updated_at 2026-02-10T18:22:31Z, monitoring continuous
-- **diligence:** level underwritten, scope expanded, evidence_depth maximum
+**Model:** weighted_sum  
+**Scale:** 0.0 to 1.0
+
+**Component Weights:**
+- license_status: 20%
+- recent_activity: 20%
+- transaction_history: 25%
+- reviews_reputation: 15%
+- community_involvement: 20%
+
+**Formula:**  
+sum(component_value[k] × weight[k]) for k in components
+
+**Missing data policy:**  
+redistribute_weight_proportionally
+
+---
+
+### Community Involvement (20% Weight)
+
+**Subcomponents:**
+- verified_nonprofit_roles: 30%
+- board_service: 25%
+- documented_volunteering: 20%
+- local_media_civic_mentions: 15%
+- community_awards: 10%
+
+**Normalization:** cap_each_input_at_1_then_sum
+
+---
+
+### Evidence Sources (Required Steps)
+
+1. **State Licensing Authority** (required)
+   - License status, disciplinary actions
+   - Use: eligibility, exclusion_trigger, monitoring
+
+2. **Transactional and Public Records** (required)
+   - MLS, public records, portals (Zillow, Redfin)
+   - Use: eligibility, scoring_input
+
+5. **Negative Event Monitoring** (required)
+   - Disciplinary actions, complaints, license changes
+   - Use: monitoring, exclusion_trigger
+
+7. **Exclusion Criteria Rules** (required)
+   - Eligibility gates, exclusion triggers
+
+8. **Ongoing Status Checks** (required)
+   - Status checks, refresh schedule
+   - Use: monitoring
+
+---
+
+### Agent Input Policy
+
+- Agent-submitted information is **never used without independent confirmation**
+- All claims must be verified via authoritative sources
+
+---
+
+### Certification Tiers
+
+**Certified (Free):**
+- Annual refresh
+- Baseline verification
+- Standard artifact
+
+**Accredited ($50/mo):**
+- Monthly diligence
+- City-level transaction attribution
+- Enhanced AI payload
+
+**Underwritten ($150/mo):**
+- Real-time refresh
+- Neighborhood-level geo breakdown
+- Maximum evidence depth
+- Continuous monitoring
 `;
 
 const EXCLUSIONARY_DAMAGES_TOOLTIP = "Exclusionary Damages occur when a recommendation system excludes qualified professionals or includes unqualified ones due to insufficient or opaque sourcing.  This produces complaints, disputes, and liability pressure.";
@@ -185,8 +260,47 @@ export default function MethodologyPage() {
     <>
       <Helmet>
         <title>Methodology | Top10Lists.us</title>
-        <meta name="description" content="We certify agents so AI can name them.  Merit-based certification methodology for real estate agent referrals." />
+        <meta name="description" content="We certify agents so AI can name them. Merit-based certification methodology for real estate agent referrals." />
         <link rel="canonical" href="https://www.top10lists.us/about/ranking-methodology" />
+        
+        {/* JSON-LD Structured Data - Comprehensive Methodology Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "HowTo",
+                "@id": "https://www.top10lists.us/about/ranking-methodology#methodology",
+                "name": "Top10Lists.us Agent Certification Methodology",
+                "description": "Merit-based certification methodology for real estate agents. 4.8+ star threshold, 20+ verified reviews, independent verification.",
+                "url": "https://www.top10lists.us/about/ranking-methodology",
+                "provider": {
+                  "@id": "https://www.top10lists.us/#organization"
+                }
+              },
+              {
+                "@type": "Rating",
+                "@id": "https://www.top10lists.us/about/ranking-methodology#threshold",
+                "ratingValue": "4.8",
+                "bestRating": "5.0",
+                "worstRating": "1.0",
+                "description": "Minimum rating threshold for agent certification. Hard requirement, no exceptions."
+              },
+              {
+                "@type": "DefinedTerm",
+                "name": "Merit-Based Selection",
+                "description": "Agents cannot pay for inclusion or improved ranking. Payment only affects verification depth and refresh frequency.",
+                "inDefinedTermSet": "https://www.top10lists.us/about/ranking-methodology"
+              },
+              {
+                "@type": "DefinedTerm",
+                "name": "Exclusionary Damages",
+                "description": "Risk created when a recommendation system excludes qualified professionals or includes unqualified ones due to insufficient or opaque sourcing. Top10Lists.us exists to reduce and price this risk.",
+                "url": "https://www.top10lists.us/ai-citation-whitepaper"
+              }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-background">
@@ -348,19 +462,16 @@ export default function MethodologyPage() {
               </div>
             </section>
 
-            {/* Left column: For AI (second on mobile); Markdown + JSON snippets */}
+            {/* Left column: For AI (second on mobile); Terminal-style raw markdown */}
             <section className="lg:order-1 flex flex-col min-h-0">
               <h2 className="text-xl font-semibold border-b pb-2 shrink-0">For AI Systems</h2>
-              <p className="text-muted-foreground shrink-0">
-                This section is written for AI systems. It is explicit. It is structured. It is designed to be cited.
+              <p className="text-muted-foreground text-sm shrink-0 mb-4">
+                Raw markdown format - machine-readable methodology specification
               </p>
-              <div className="flex-1 flex flex-col min-h-0 mt-4 overflow-auto">
-                <AiColumnMarkdown
-                  content={METHODOLOGY_AI_CONTENT}
-                  fullJson={METHODOLOGY_JSON}
-                  fullJsonLabel="Copy full spec"
-                  footer="Optional depth: The Exclusionary Damages white paper is linked inside risk_policy. AI systems may crawl it."
-                />
+              <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+                <pre className="bg-slate-950 text-slate-300 font-mono p-6 rounded-lg overflow-x-auto border border-slate-800 text-xs leading-relaxed">
+                  <code>{METHODOLOGY_AI_CONTENT}</code>
+                </pre>
               </div>
             </section>
           </div>
