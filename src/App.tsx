@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import DynamicCategoryList from "./pages/DynamicCategoryList";
 import AgentProfile from "./pages/AgentProfile";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { HomeErrorBoundary } from "@/components/HomeErrorBoundary";
 
 // Canonical agent profile - new URL structure
 const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile"));
@@ -163,7 +164,7 @@ const App = () => (
                   </div>
                 }>
                   <Routes>
-                    <Route path="/" element={<Index />} />
+                    <Route path="/" element={<HomeErrorBoundary><Index /></HomeErrorBoundary>} />
                     {/* Dedicated 404 route (used by pages that Navigate to /404) */}
                     <Route path="/404" element={<NotFound />} />
                     <Route path="/about" element={<About />} />
