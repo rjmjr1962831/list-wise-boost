@@ -9,8 +9,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Chatbot } from "@/components/Chatbot";
 import { StagingAdminLink } from "@/components/StagingAdminLink";
-import { AdminRouteGuard } from "@/components/AdminRouteGuard";
 import { Loader2 } from "lucide-react";
+
+/** When set (e.g. Vercel Production env), admin routes are not registered and all /admin paths 404. */
+const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+const AdminRoutesLazy = lazy(() => import("./AdminRoutes").then(m => ({ default: m.AdminRoutes })));
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import DynamicCategoryList from "./pages/DynamicCategoryList";
@@ -21,13 +24,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 const CanonicalAgentProfile = lazy(() => import("./pages/CanonicalAgentProfile"));
 
 // Lazy load all pages except Index and NotFound for better initial load performance
-// NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
-const UnifiedCRM = lazy(() => import("./pages/admin/UnifiedCRM"));
-const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
-const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
-const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
-const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
-const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const AICompare = lazy(() => import("./pages/AICompare"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
@@ -45,17 +41,6 @@ const AlbuquerqueRedirect = lazy(() => import("./pages/AlbuquerqueRedirect"));
 const StateAgentOrCategoryRouter = lazy(() => import("./pages/StateAgentOrCategoryRouter"));
 const NeighborhoodCategoryRouter = lazy(() => import("./pages/NeighborhoodCategoryRouter"));
 const NeighborhoodZipCategoryRouter = lazy(() => import("./pages/NeighborhoodZipCategoryRouter"));
-
-const AdminLogin = lazy(() => import("./pages/AdminLogin"));
-const MobilePreview = lazy(() => import("./pages/MobilePreview"));
-const CRM = lazy(() => import("./pages/CRM"));
-
-// New CRM Dashboard
-const CRMLogin = lazy(() => import("./pages/admin/crm/CRMLogin"));
-const CRMDashboard = lazy(() => import("./pages/admin/crm/CRMDashboard"));
-const CRMAgentList = lazy(() => import("./pages/admin/crm/AgentList"));
-const CRMLeads = lazy(() => import("./pages/admin/crm/Leads"));
-const CRMLayout = lazy(() => import("@/components/admin/AdminLayout"));
 
 const MigrateData = lazy(() => import("./pages/MigrateData"));
 const VerifyAgentListing = lazy(() => import("./pages/VerifyAgentListing"));
@@ -76,7 +61,6 @@ const About = lazy(() => import("./pages/About"));
 const MethodologyPage = lazy(() => import("./pages/MethodologyPage"));
 const RankingMethodologyRedirect = lazy(() => import("./pages/RankingMethodologyRedirect"));
 const MethodologyRedirect = lazy(() => import("./pages/MethodologyRedirect"));
-const OGPreview = lazy(() => import("./pages/OGPreview"));
 const ProfileView = lazy(() => import("./pages/ProfileView"));
 // NOTE: Loaded eagerly (not lazy) to avoid rare chunk-load hangs on public traffic.
 const CheckProfile = lazy(() => import("./pages/CheckProfile"));
@@ -169,7 +153,7 @@ const App = () => (
         <RateLimitGuard>
           <Toaster />
         <div className="flex flex-col min-h-screen">
-            <StagingAdminLink />
+            {!isProductionBuild && <StagingAdminLink />}
             <Header />
             <main className="flex-1">
               <ErrorBoundary>
@@ -188,27 +172,21 @@ const App = () => (
                     <Route path="/ranking-methodology" element={<RankingMethodologyRedirect />} />
                     <Route path="/methodology" element={<MethodologyRedirect />} />
                     <Route path="/main" element={<Navigate to="/" replace />} />
-                    {/* Admin routes - Only accessible on staging */}
-                    <Route path="/admin/login" element={<AdminRouteGuard><AdminLogin /></AdminRouteGuard>} />
-                    <Route path="/admin" element={<AdminRouteGuard><AdminDashboard /></AdminRouteGuard>} />
-                    
-                    {/* New CRM Dashboard */}
-                    <Route path="/admin/crm/login" element={<AdminRouteGuard><CRMLogin /></AdminRouteGuard>} />
-                    <Route path="/admin/crm" element={<AdminRouteGuard><CRMLayout /></AdminRouteGuard>}>
-                      <Route path="dashboard" element={<CRMDashboard />} />
-                      <Route path="agents" element={<CRMAgentList />} />
-                      <Route path="leads" element={<CRMLeads />} />
-                    </Route>
-                    
-                    <Route path="/admin/mobile-preview" element={<AdminRouteGuard><MobilePreview /></AdminRouteGuard>} />
-                    <Route path="/a/bot-analytics" element={<AdminRouteGuard><BotAnalyticsDashboard /></AdminRouteGuard>} />
-                    <Route path="/agent/bot-analytics" element={<AdminRouteGuard><AgentBotAnalyticsDashboard /></AdminRouteGuard>} />
-                    <Route path="/og-preview" element={<AdminRouteGuard><OGPreview /></AdminRouteGuard>} />
-                    <Route path="/crm" element={<AdminRouteGuard><CRM /></AdminRouteGuard>} />
-                    <Route path="/admin/ingest-neighborhoods" element={<AdminRouteGuard><Navigate to="/404" replace /></AdminRouteGuard>} />
-                    <Route path="/admin/neighborhood-writeups" element={<AdminRouteGuard><Navigate to="/404" replace /></AdminRouteGuard>} />
-                    <Route path="/admin/export-agents" element={<AdminRouteGuard><AdminExportAgents /></AdminRouteGuard>} />
-                    <Route path="/test-visibility-components" element={<AdminRouteGuard><TestVisibilityComponents /></AdminRouteGuard>} />
+                    {/* Admin routes: excluded from production build (VITE_IS_PRODUCTION=1) for security */}
+                    {isProductionBuild ? (
+                      <>
+                        <Route path="/admin/*" element={<Navigate to="/404" replace />} />
+                        <Route path="/a/bot-analytics" element={<Navigate to="/404" replace />} />
+                        <Route path="/agent/bot-analytics" element={<Navigate to="/404" replace />} />
+                        <Route path="/og-preview" element={<Navigate to="/404" replace />} />
+                        <Route path="/crm" element={<Navigate to="/404" replace />} />
+                        <Route path="/test-visibility-components" element={<Navigate to="/404" replace />} />
+                      </>
+                    ) : (
+                      <Suspense fallback={null}>
+                        <AdminRoutesLazy />
+                      </Suspense>
+                    )}
                     {/* Visibility funnel */}
                     <Route path="/visibility" element={<Navigate to="/visibility/coverage" replace />} />
                     <Route path="/visibility/coverage" element={<VisibilityCoveragePage />} />

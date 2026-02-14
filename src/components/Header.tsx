@@ -36,9 +36,12 @@ interface AgentSession {
   sessionToken: string;
 }
 
+const isProductionBuild = import.meta.env.VITE_IS_PRODUCTION === "1" || import.meta.env.VITE_IS_PRODUCTION === "true";
+
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminState, setAdminState] = useState(false);
+  const isAdmin = isProductionBuild ? false : adminState;
   const [agentProfile, setAgentProfile] = useState<AgentProfile | null>(null);
   const [agentSession, setAgentSession] = useState<AgentSession | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -99,7 +102,7 @@ export const Header = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
+        if (!isProductionBuild) checkAdminStatus(session.user.id);
         fetchAgentProfile(session.user.email);
       }
     });
@@ -108,10 +111,10 @@ export const Header = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        checkAdminStatus(session.user.id);
+        if (!isProductionBuild) checkAdminStatus(session.user.id);
         fetchAgentProfile(session.user.email);
       } else {
-        setIsAdmin(false);
+        setAdminState(false);
         setAgentProfile(null);
       }
     });
@@ -144,14 +147,14 @@ export const Header = () => {
       
       if (error) {
         // Silently fail - user is not an admin
-        setIsAdmin(false);
+        setAdminState(false);
         return;
       }
       
-      setIsAdmin(!!data);
+      setAdminState(!!data);
     } catch (err) {
       // Silently fail - user is not an admin
-      setIsAdmin(false);
+      setAdminState(false);
     }
   };
 
@@ -178,7 +181,7 @@ export const Header = () => {
     // Also sign out of Supabase Auth if applicable
     await supabase.auth.signOut();
     setAgentProfile(null);
-    setIsAdmin(false);
+    setAdminState(false);
 
     toast({
       title: "Logged out successfully",
