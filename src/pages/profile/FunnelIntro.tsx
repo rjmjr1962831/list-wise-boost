@@ -7,12 +7,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useFunnelTracking, FUNNEL_EVENTS } from '@/hooks/useFunnelTracking';
 import { LiveAIVerdict } from '@/components/LiveAIVerdict';
 
+/** Module-level so minifier cannot drop declaration and leave references broken. */
+const IS_ADMIN = false;
+
 /** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 export default function FunnelIntro() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const [firstName, setFirstName] = useState<string | null>(null);
-  const isAdmin = false;
   const [showAIVerdict, setShowAIVerdict] = useState(false);
   const { trackEvent } = useFunnelTracking(token);
 
@@ -122,7 +124,7 @@ export default function FunnelIntro() {
       </Helmet>
 
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/30">
-        {isAdmin && (
+        {IS_ADMIN && (
           <div className="fixed top-2 right-2 z-50">
             <Link 
               to="/admin" 

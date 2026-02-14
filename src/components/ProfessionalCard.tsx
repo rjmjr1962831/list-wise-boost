@@ -19,6 +19,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { extractYearsFromBio } from "@/utils/bioParser";
 
+/** Module-level so minifier cannot drop declaration and leave !isAdmin references broken. */
+const IS_ADMIN = false;
+
 /** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 
 interface ProfessionalCardProps {
@@ -74,7 +77,6 @@ export const ProfessionalCard = ({
   
   // Press enrichment states
   const [enrichingPress, setEnrichingPress] = useState(false);
-  const isAdmin = false;
   
   // Helper to strip HTML tags
   const stripHtml = (html: string): string => {
@@ -2030,7 +2032,7 @@ export const ProfessionalCard = ({
                             </div>
                             
                             {/* Manual Press Enrichment Button (Admin only) */}
-                            {isAdmin && (
+                            {IS_ADMIN && (
                               <div className="border-t pt-3 flex flex-col items-center gap-2">
                                 {profileLastSynthesized && (
                                   <p className="text-xs text-muted-foreground">
@@ -2273,7 +2275,7 @@ export const ProfessionalCard = ({
                              )}
                              
                              {/* Manual Press Enrichment Button (Admin only) - also show when data exists */}
-                             {isAdmin && (
+                             {IS_ADMIN && (
                                <div className="border-t mt-4 pt-3 flex flex-col items-center gap-2">
                                  {(professional as any).profile_last_synthesized_at && (
                                    <p className="text-xs text-muted-foreground">

@@ -24,6 +24,9 @@ import { LogOut, User as UserIcon, Shield, LayoutDashboard, Menu, Bot } from "lu
 import { toast } from "@/hooks/use-toast";
 import { Logo } from "@/components/brand/Logo";
 
+/** Module-level so minifier cannot drop declaration and leave !isAdmin references broken. */
+const IS_ADMIN = false;
+
 interface AgentProfile {
   id: string;
   name: string;
@@ -39,7 +42,6 @@ interface AgentSession {
 /** EMERGENCY: Hard-coded to stop ReferenceError. Restore effectiveIsAdmin after production is stable. */
 export const Header = () => {
   const [user, setUser] = useState<User | null>(null);
-  const isAdmin = false;
   const [agentProfile, setAgentProfile] = useState<AgentProfile | null>(null);
   const [agentSession, setAgentSession] = useState<AgentSession | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -199,7 +201,7 @@ export const Header = () => {
             <Link to="/compare" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
               Compare Us
             </Link>
-            {isAdmin && (
+            {IS_ADMIN && (
               <Link to="/admin" className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
                 Admin
               </Link>
@@ -255,7 +257,7 @@ export const Header = () => {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  {!isAdmin && (
+                  {!IS_ADMIN && (
                     <>
                       <DropdownMenuItem onClick={() => navigate("/agent/dashboard")}>
                         <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -267,7 +269,7 @@ export const Header = () => {
                       </DropdownMenuItem>
                     </>
                   )}
-                  {isAdmin && (
+                  {IS_ADMIN && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
                       <Shield className="mr-2 h-4 w-4" />
                       Admin Dashboard
@@ -333,7 +335,7 @@ export const Header = () => {
                     Compare Us
                   </Link>
                 </SheetClose>
-                {isAdmin && (
+                {IS_ADMIN && (
                   <SheetClose asChild>
                     <Link 
                       to="/admin" 
@@ -376,7 +378,7 @@ export const Header = () => {
                           </p>
                         </div>
                       </div>
-                      {!isAdmin && (
+                      {!IS_ADMIN && (
                         <SheetClose asChild>
                           <Button 
                             variant="outline" 
@@ -388,7 +390,7 @@ export const Header = () => {
                           </Button>
                         </SheetClose>
                       )}
-                      {isAdmin && (
+                      {IS_ADMIN && (
                         <SheetClose asChild>
                           <Button 
                             variant="outline" 
