@@ -26,8 +26,6 @@ const UnifiedCRM = lazy(() => import("./pages/admin/UnifiedCRM"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const BotAnalyticsDashboard = lazy(() => import("./pages/BotAnalyticsDashboard"));
 const AgentBotAnalyticsDashboard = lazy(() => import("./pages/AgentBotAnalyticsDashboard"));
-const IngestNeighborhoods = lazy(() => import("./pages/admin/IngestNeighborhoods"));
-const NeighborhoodWriteups = lazy(() => import("./pages/admin/NeighborhoodWriteups"));
 const AdminExportAgents = lazy(() => import("./pages/AdminExportAgents"));
 const TestVisibilityComponents = lazy(() => import("./pages/TestVisibilityComponents"));
 const Privacy = lazy(() => import("./pages/Privacy"));
@@ -207,8 +205,8 @@ const App = () => (
                     <Route path="/agent/bot-analytics" element={<AdminRouteGuard><AgentBotAnalyticsDashboard /></AdminRouteGuard>} />
                     <Route path="/og-preview" element={<AdminRouteGuard><OGPreview /></AdminRouteGuard>} />
                     <Route path="/crm" element={<AdminRouteGuard><CRM /></AdminRouteGuard>} />
-                    <Route path="/admin/ingest-neighborhoods" element={<AdminRouteGuard><IngestNeighborhoods /></AdminRouteGuard>} />
-                    <Route path="/admin/neighborhood-writeups" element={<AdminRouteGuard><NeighborhoodWriteups /></AdminRouteGuard>} />
+                    <Route path="/admin/ingest-neighborhoods" element={<AdminRouteGuard><Navigate to="/404" replace /></AdminRouteGuard>} />
+                    <Route path="/admin/neighborhood-writeups" element={<AdminRouteGuard><Navigate to="/404" replace /></AdminRouteGuard>} />
                     <Route path="/admin/export-agents" element={<AdminRouteGuard><AdminExportAgents /></AdminRouteGuard>} />
                     <Route path="/test-visibility-components" element={<AdminRouteGuard><TestVisibilityComponents /></AdminRouteGuard>} />
                     {/* Visibility funnel */}
